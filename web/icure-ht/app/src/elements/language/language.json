@@ -5212,6 +5212,6 @@
     "ehb.annexesNotAllAssignedAnyMore": "As not all its annexes are assigned anymore.",
     "ehb.allAnnexesAssignedBasedOnNiss": "Indeed, all annexes of current message got automatically assigned based on your patients' NISS nuùber",
     "ehb.capacity": "Capacity",
-    "ehb.disconnected": "Disconnected"
+    "ehb.disconnected": "Niet verbonden"
   }
 }
