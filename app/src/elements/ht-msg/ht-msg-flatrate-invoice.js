@@ -339,7 +339,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 }
 
                 .batch-status {
-                    font-size: 24px;
+                    font-size: 18px;
                     text-transform: capitalize;
                     padding-top: 5px;
                     display: flex;
@@ -579,6 +579,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     line-height: 0.8;
                     text-align: center;
                     height: 10px;
+                    margin-right: 5px;
                 }
                 .batchPending{background-color: var(--paper-orange-400);}
                 .batchToBeCorrected{background-color: var(--paper-red-400);}
@@ -938,6 +939,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
                 .actionButtonsRight {
                     float:right;
+                    display:flex;
                 }
 
                 .actionButtonsRight iron-icon {
@@ -1009,14 +1011,14 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
 
             <div id="batchStatus" class="batch-status">
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span></template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span> [[localize('j20_toBeCorrected','Factures à corriger',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span> [[localize('j20_toBeSend','Factures à envoyer',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span> [[localize('j20_process','Envois en cours',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span> [[localize('j20_reject','Envois rejetés',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span> [[localize('j20_partiallyAccepted','Envois partiellement acceptés',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span> [[localize('j20_accept','Envois acceptés',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span> [[localize('j20_archive','Envois archivés',language)]]</template>
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span> [[localize('j20_reset','Supprimer un envoi',language)]]</template>
             </div>
 
 
@@ -1436,6 +1438,76 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     </div>
                 </div>
             </template>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <!-- Medical Houses - Flatrate E-Invoicing -->
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda')]]">
+            
+<!--                    1) Did NOT ask this month yet -> show<br />-->
+<!--                    2) Already asked this month but did not ask for answer -> Button ask for answer<br />-->
+<!--                    3) Ask for answer but not there yet<br />-->
+<!--                        &nbsp;&nbsp;&nbsp;&nbsp;a) > 24 hours -> by pass<br />-->
+<!--                        &nbsp;&nbsp;&nbsp;&nbsp;b) < 24 hours -> ask for 24 hours<br />-->
+<!--                    4) Answer is there -> get + confirm back + show shatus (green/red) X/Y OA<br />-->
+<!--                    5) Réponse obtained -> aller sur réponse du dernier appel<br /><br />            -->
+
+                <div class="textAlignCenter valignCenter">
+                    <p class="textAlignCenter fw700">[[localize('checkMdaData','Vérifier les données patient (Member data) pour la facturation du forfait électronique',language)]]:</p>
+                    <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt30 pb60" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('checkMdaData2','Vérifier les données',language)]] ([[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]])</paper-button>
+                </div>
+                
+            </template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda_history')]]">ej20_mda_history</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeCorrected')]]">ej20_toBeCorrected</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeSend')]]">ej20_toBeSend</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_process')]]">ej20_process</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reject')]]">ej20_reject</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_partiallyAccepted')]]">ej20_partiallyAccepted</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_accept')]]">ej20_accept</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_archive')]]">ej20_archive</template>
+            
+            
+            
+            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reset')]]">ej20_reset</template>
+            <!-- Medical Houses - Flatrate E-Invoicing -->
+
+
+
+
 
 
 
@@ -1733,6 +1805,10 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             overrideBatchNumber:{
                 type: Boolean,
                 value: false
+            },
+            eInvoicingDate: {
+                type: Number,
+                value: 202006
             }
         };
     }
@@ -4503,7 +4579,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     insurancesData: dataObject.insurancesData,
                     parentInsurancesData: dataObject.parentInsurancesData,
                     roughData: _.chain(messages).uniqBy('id').value().map(message=> {
-                        const st = message.status
+                        const st = message.status;
                         const invoiceStatus =
                             !!(st & (1 << 21)) ? { hrLabel: this.localize('inv_arch','Archived',this.language), finalStatus:"archived" }:
                                 !!(st & (1 << 17)) ? { hrLabel: this.localize('inv_err','Error',this.language), finalStatus:"error" }:
@@ -4513,7 +4589,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 !!(st & (1 << 11)) ? { hrLabel: this.localize('inv_tre','Treated',this.language), finalStatus:"treated" }:
                                                     !!(st & (1 << 10)) ? { hrLabel: this.localize('inv_acc_tre','Accepted for treatment',this.language), finalStatus:"acceptedForTreatment" }:
                                                         !!(st & (1 << 9))  ? { hrLabel: this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language), finalStatus:"successfullySentToOA" }:
-                                                            !!(st & (1 << 8))  ? { hrLabel: this.localize('inv_pen','Pending',this.language), finalStatus:"pending" }: ""
+                                                            !!(st & (1 << 8))  ? { hrLabel: this.localize('inv_pen','Pending',this.language), finalStatus:"pending" }: "";
 
                         const acceptedAmount =
                             _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
@@ -4521,7 +4597,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.totalAmount", "0.00")))):
                                         _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.acceptedAmount", _.get(message, "metas.totalAmount", "0.00"))))):
                                             _.get(invoiceStatus, "finalStatus") === "archived" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.acceptedAmount", _.get(message, "metas.totalAmount", "0.00"))))):
-                                                "0,00"
+                                                "0,00";
 
                         const refusedAmount =
                             _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
@@ -4529,7 +4605,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? "0,00":
                                         _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.refusedAmount", "0.00")))):
                                             _.get(invoiceStatus, "finalStatus") === "archived" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.refusedAmount", "0.00")))):
-                                                "0,00"
+                                                "0,00";
 
                         return _.merge(message, {
                             messageInfo: {
@@ -4566,15 +4642,15 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         slips : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:INVOICING-SLIP" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc']),
                         pdfs : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:INVOICING-PDF" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc']),
                         oaPdfs : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:PARENT-OA-INVOICING-PDF" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc'])
-                    }
+                    };
                     countByStatus[statusKey] = parseInt(_.size(dataByStatus[statusKey].flatFiles))
-                })
+                });
 
-                this.api.setPreventLogging()
+                this.api.setPreventLogging();
                 // Eval error invoices based on fully rejected or partially accepted
                 return Promise.all( _.map( _.concat(dataByStatus.partiallyAccepted.flatFiles, dataByStatus.rejected.flatFiles), msg => {
-                    const originalMessage = msg
-                    const invoiceIds = _.compact(_.uniq(msg.invoiceIds))
+                    const originalMessage = msg;
+                    const invoiceIds = _.compact(_.uniq(msg.invoiceIds));
                     return this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: invoiceIds}))
                         .then(allInvoices=>this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.map(allInvoices,"correctiveInvoiceId")})))
                         .then(invoicesToBeCorrected =>{
@@ -4609,9 +4685,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .then(invAndPatIds => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndPatIds.map(x => x[1]))})).then(pats => invAndPatIds.map(it => [it[0], pats.find(p => p.id === it[1])])))
                         .then(invoicesAndPatient=>_.orderBy(
                             _.map(invoicesAndPatient, invAndPat => {
-                                let invoiceData = invAndPat[0]
-                                const patientData = invAndPat[1]
-                                invoiceData = _.merge(invoiceData, {invoiceDate:_.trim(_.get(invoiceData, "invoiceDate","")) || moment(_.get(invoiceData, "created","0")).startOf('month').format("YYYYMMDD") })
+                                let invoiceData = invAndPat[0];
+                                const patientData = invAndPat[1];
+                                invoiceData = _.merge(invoiceData, {invoiceDate:_.trim(_.get(invoiceData, "invoiceDate","")) || moment(_.get(invoiceData, "created","0")).startOf('month').format("YYYYMMDD") });
                                 return {
                                     id: _.get(invoiceData, "id", ""),
                                     oaId: _.get(invoiceData, "recipientId", ""),
@@ -4635,30 +4711,30 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .catch((e)=>console.log(e))
                 })).then(x=>{
 
-                    dataByStatus.error = _.orderBy( _.flatMap(x), ['oaCode','invoiceData.invoiceReference','patientData.firstName','patientData.lastName'], ['asc','asc','asc','asc'] )
-                    countByStatus.error = parseInt(_.size(dataByStatus.error))
+                    dataByStatus.error = _.orderBy( _.flatMap(x), ['oaCode','invoiceData.invoiceReference','patientData.firstName','patientData.lastName'], ['asc','asc','asc','asc'] );
+                    countByStatus.error = parseInt(_.size(dataByStatus.error));
 
                     // "Reset" data = ONE batch per month and by batchExportTstamp - to be cancelled / reset / deleted
-                    dataByStatus.reset.flatFiles = _.orderBy(_.uniqBy(this.messagesCachedData.roughData, it => _.trim(_.get(it,"metas.batchExportTstamp",""))), ['metas.exportedDate','metas.batchExportTstamp'], ['desc', 'desc'])
-                    countByStatus.reset = parseInt(_.size(dataByStatus.reset.flatFiles))
+                    dataByStatus.reset.flatFiles = _.orderBy(_.uniqBy(this.messagesCachedData.roughData, it => _.trim(_.get(it,"metas.batchExportTstamp",""))), ['metas.exportedDate','metas.batchExportTstamp'], ['desc', 'desc']);
+                    countByStatus.reset = parseInt(_.size(dataByStatus.reset.flatFiles));
 
 
 
-                    const batchExportTstamps = _.compact(_.map(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp",false)))
+                    const batchExportTstamps = _.compact(_.map(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp",false)));
 
                     _.map( batchExportTstamps, batchExportTstamp => {
 
-                        let invoicedAmount = 0
-                        let acceptedAmount = 0
-                        let refusedAmount = 0
-                        const targetMessage = _.find(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp )
-                        const batchExportTstampFileMessages = _.filter(_.get(this,"messagesCachedData.roughData",[]), it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp && _.get(it,"transportGuid","") === "MH:FLATRATE:INVOICING-FLATFILE"  )
+                        let invoicedAmount = 0;
+                        let acceptedAmount = 0;
+                        let refusedAmount = 0;
+                        const targetMessage = _.find(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp );
+                        const batchExportTstampFileMessages = _.filter(_.get(this,"messagesCachedData.roughData",[]), it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp && _.get(it,"transportGuid","") === "MH:FLATRATE:INVOICING-FLATFILE"  );
 
                         _.map(batchExportTstampFileMessages, it => {
-                            invoicedAmount += parseFloat(_.trim(_.get(it,"messageInfo.invoicedAmount","")).replace(".","").replace(",",".")) * 10000
-                            acceptedAmount += parseFloat(_.trim(_.get(it,"messageInfo.acceptedAmount","")).replace(".","").replace(",",".")) * 10000
+                            invoicedAmount += parseFloat(_.trim(_.get(it,"messageInfo.invoicedAmount","")).replace(".","").replace(",",".")) * 10000;
+                            acceptedAmount += parseFloat(_.trim(_.get(it,"messageInfo.acceptedAmount","")).replace(".","").replace(",",".")) * 10000;
                             refusedAmount += parseFloat(_.trim(_.get(it,"messageInfo.refusedAmount","")).replace(".","").replace(",",".")) * 10000
-                        })
+                        });
 
                         _.assign(targetMessage, {
                             totalInvoicedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(invoicedAmount/10000)),
@@ -4666,13 +4742,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             totalRefusedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(refusedAmount/10000)),
                         })
 
-                    })
+                    });
 
 
 
                     // For us (has to be assigned at once)
-                    this.set("messagesCachedData.dataByStatus", dataByStatus)
-                    this.set("messagesCachedData.countByStatus", countByStatus)
+                    this.set("messagesCachedData.dataByStatus", dataByStatus);
+                    this.set("messagesCachedData.countByStatus", countByStatus);
 
                     // For msg-menu
                     this.dispatchEvent(new CustomEvent('initialize-batch-counter-j20', { bubbles: true, composed: true, detail: this.messagesCachedData.countByStatus }));
@@ -4686,21 +4762,21 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .catch((e)=>console.log(e))
             .finally(()=>{
 
-                this.set("messagesGridData", [])
-                this.set("messagesGridDataReset", [])
+                this.set("messagesGridData", []);
+                this.set("messagesGridDataReset", []);
                 const messagesGrid = this.root.querySelector('#messagesGrid'); messagesGrid && messagesGrid.clearCache();
                 const messagesGrid2 = this.root.querySelector('#messagesGrid2'); messagesGrid2 && messagesGrid2.clearCache();
                 const messagesGrid3 = this.root.querySelector('#messagesGrid3'); messagesGrid3 && messagesGrid3.clearCache();
 
-                this.set("messagesGridData", this._getBatchDataByMenuSection(this.flatrateMenuSection, 'flatFiles'))
-                this.set("messagesGridDataReset", _.get(this, "messagesCachedData.dataByStatus.reset.flatFiles", []))
+                this.set("messagesGridData", this._getBatchDataByMenuSection(this.flatrateMenuSection, 'flatFiles'));
+                this.set("messagesGridDataReset", _.get(this, "messagesCachedData.dataByStatus.reset.flatFiles", []));
 
                 messagesGrid && messagesGrid.clearCache();
                 messagesGrid2 && messagesGrid2.clearCache();
                 messagesGrid3 && messagesGrid3.clearCache();
 
-                this.set('_isLoadingSmall', false )
-                this.api.setPreventLogging(false)
+                this.set('_isLoadingSmall', false );
+                this.api.setPreventLogging(false);
                 return prom
 
             })
@@ -4709,7 +4785,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _getPatientsWithValidInvoiceForExportedMonth(patients, exportedMonth) {
 
-        let prom = Promise.resolve([])
+        let prom = Promise.resolve([]);
 
         _.map(patients, pat => {
             prom = prom.then(promisesCarrier => this.api.invoice().findBy(_.get(this,"user.healthcarePartyId"), pat)
@@ -4723,10 +4799,18 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 .then(patId => _.concat(promisesCarrier, [patId]))
                 .catch(()=>_.concat(promisesCarrier, [false]))
             )
-        })
+        });
 
         return prom.then(x=>_.compact(x))
 
+    }
+
+    _isBeforeEInvoicingDate() {
+        return moment().isBefore(moment(this.eInvoicingDate,"YYYYMM"));
+    }
+
+    _isAfterEInvoicingDate() {
+        return moment().isAfter(moment(this.eInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.eInvoicingDate,"YYYYMM"));
     }
 
     _exportFlatRateInvoicing() {
@@ -4773,8 +4857,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     pendingInvoicesToResend: [],
                     pendingInvoicesAndPatToResend: [],
                     hcpValorisationsByMonth: []
-                }
-                this.reportCurrentDateMomentObject = moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                };
+                this.reportCurrentDateMomentObject = moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD");
                 this.flatRateInvoicingDataObject.hcpData = _.merge(this.flatRateInvoicingDataObject.hcpData, {
                     phone: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "phone"}), "[0].telecomNumber", "")) || _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "mobile"}), "[0].telecomNumber", "")),
                     email: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "email"}), "[0].telecomNumber", "")),
@@ -4784,7 +4868,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         bic: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bic", "")) || this.api.getBicByIban(_.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bankAccount", ""))),
                         name: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.name", "")),
                     }
-                })
+                });
 
 
                 // Make sure - refuse to proceed if missing
@@ -4800,11 +4884,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 this.api.hcparty().getHealthcareParty(_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.contactPersonHcpId")))
                     .then(hcpContactPerson => {
                         if (!_.size(hcpContactPerson) || !_.trim(_.get(hcpContactPerson, "id", "")) || !_.trim(_.get(hcpContactPerson, "lastName", "")) || !_.trim(_.get(hcpContactPerson, "firstName", ""))) throw new Error("missing-contact-person");
-                        const contactPerson = _.trim(_.trim(_.get(hcpContactPerson, "lastName", "")) + " " + _.trim(_.get(hcpContactPerson, "firstName", "")))
+                        const contactPerson = _.trim(_.trim(_.get(hcpContactPerson, "lastName", "")) + " " + _.trim(_.get(hcpContactPerson, "firstName", "")));
                         this.set("contactPerson", contactPerson);
                         this.flatRateInvoicingDataObject.hcpData.contactPerson = contactPerson
                     })
-                    .catch((e) => { throw new Error("missing-contact-person"); })
+                    .catch((e) => { throw new Error("missing-contact-person"); });
 
 
                 // Get valorisations for last X months - as of export date
@@ -4841,7 +4925,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 ["startOfValidity"],
                                                 ["desc"]
                                             )
-                                        )
+                                        );
                                         return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
                                             code: _.trim(_.get(singleNomenclature, "code")),
                                             label: _.get(singleNomenclature, "label"),
@@ -4854,12 +4938,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             )
                         )
                     }
-                })
+                });
 
 
                 // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
-                const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
-                const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ))
+                const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("");
+                const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ));
 
                 // At least one MH valorisation is missing
                 if (
@@ -4873,7 +4957,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(()=>{ //2
 
                 // Make sure we won't get disconnected if process runs for over an hour
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}));
 
                 // Check for existing exports - did it run already? - do we have anything to run again for this month?
                 //     1. Get existing messages of month we're trying to export
@@ -4898,7 +4982,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                                 !!(m.status & (1 << 10)) ? "acceptedForTreatment" :
                                                                     !!(m.status & (1 << 9))  ? "successfullySentToOA" :
                                                                         !!(m.status & (1 << 8))  ? "pending" :
-                                                                            ""
+                                                                            "";
                                     return m
                                         && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
                                         && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
@@ -4917,7 +5001,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 ).then(foundMessages=> {
 
                     // Export already ran this month - any message at all?
-                    this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt( _.size(_.filter(foundMessages, m=>{return _.trim(_.get(m,"metas.exportedDate",0))=== _.trim(this.flatRateInvoicingDataObject.exportedDate) })) )
+                    this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt( _.size(_.filter(foundMessages, m=>{return _.trim(_.get(m,"metas.exportedDate",0))=== _.trim(this.flatRateInvoicingDataObject.exportedDate) })) );
 
                     // Invoices / no invoices to resend
                     return !parseInt(_.size(foundMessages)) ? [] :
@@ -4932,7 +5016,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                             _.compact(
                                                 _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
                                                     // Make sure I have to take it into account (all false but the pending bool)
-                                                    const invoicingCodes = _.get(inv, "invoicingCodes", [])
+                                                    const invoicingCodes = _.get(inv, "invoicingCodes", []);
                                                     return !parseInt(_.size(invoicingCodes)) ? false :
                                                         _.every(invoicingCodes, ic => {
                                                             return _.get(ic,"accepted",false)===false
@@ -4960,7 +5044,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .chain(invoicesToAdd)
                         .map(inv => {
                             // Make sure I have to take it into account (all false but the pending bool)
-                            const invoicingCodes = _.get(inv, "invoicingCodes", [])
+                            const invoicingCodes = _.get(inv, "invoicingCodes", []);
                             return !parseInt(_.size(invoicingCodes)) ? false :
                                 _.every(invoicingCodes, ic => {
                                     return _.get(ic,"accepted",false)===false
@@ -4976,8 +5060,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     )
             }) // 2 Bis
             .then(pendingInvoicesToResend => { //3
-                if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran")
-                this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend
+                if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran");
+                this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_2',this.language), icon:"arrow-forward"});
                 return !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth ? false : this._getPatientsByHcp(_.get(this.hcp, "id")).then(myPatients => _
@@ -5000,12 +5084,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
                         .then(invoicesAndPatient=>{
                             invoicesAndPatient = _.compact(_.map(invoicesAndPatient, invAndPat => {
-                                let tempPat = _.cloneDeep(invAndPat[1])
-                                tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{})
-                                tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"")
-                                tempPat.lastName = (tempPat.lastName||"").toUpperCase()
-                                tempPat.firstName = (tempPat.firstName||"").toUpperCase()
-                                tempPat.dateOfBirth = (tempPat.dateOfBirth?moment(tempPat.dateOfBirth+"", "YYYYMMDD").format('DD/MM/YYYY'):"")
+                                let tempPat = _.cloneDeep(invAndPat[1]);
+                                tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{});
+                                tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"");
+                                tempPat.lastName = (tempPat.lastName||"").toUpperCase();
+                                tempPat.firstName = (tempPat.firstName||"").toUpperCase();
+                                tempPat.dateOfBirth = (tempPat.dateOfBirth?moment(tempPat.dateOfBirth+"", "YYYYMMDD").format('DD/MM/YYYY'):"");
                                 tempPat.finalInsurability = _.find(
                                     tempPat.insurabilities,
                                     (ins) => {
@@ -5031,24 +5115,24 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                         // When resending a corrective invoice, make sure we match PAT's INS to whom original invoice was sent to
                                         // _.trim(_.get(tempPat,"invoiceToBeResent.recipientId","")) === _.trim(_.get( ins, "insuranceId", "" ))
                                     }
-                                )
-                                tempPat.insurancePersonType = !_.trim( _.get( tempPat, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(tempPat, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C"
-                                tempPat.titularyId = _.trim( _.get( tempPat, "finalInsurability.titularyId", "" ))
-                                invAndPat[1] = tempPat
+                                );
+                                tempPat.insurancePersonType = !_.trim( _.get( tempPat, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(tempPat, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C";
+                                tempPat.titularyId = _.trim( _.get( tempPat, "finalInsurability.titularyId", "" ));
+                                invAndPat[1] = tempPat;
                                 // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
                                 return !_.size(_.get(tempPat,"finalInsurability",[])) ? false : invAndPat
-                            }))
-                            this.flatRateInvoicingDataObject.pendingInvoicesAndPatToResend = invoicesAndPatient
+                            }));
+                            this.flatRateInvoicingDataObject.pendingInvoicesAndPatToResend = invoicesAndPatient;
                             return { myPatients: _.compact(myPatients), myPatientsToResend: _.compact(_.map(invoicesAndPatient,x=>x[1])) }
                         })
             }) //4
             .then(patsAndPatsToResend=>{
 
                 // PATS of mine, to be invoiced this month
-                let myPatients = patsAndPatsToResend.myPatients
+                let myPatients = patsAndPatsToResend.myPatients;
 
                 // PATS of previous invoices (either rejected + corrected OR from PAT's timeline)
-                const myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend)
+                const myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend);
 
                 // If same PAT of same INS -> collect all invoicing codes under 1! invoice
                 // If same PAT with different INS -> duplicate PAT with all invoicing codes of THAT INS (and append invoicing codes when already existing)
@@ -5060,7 +5144,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     const patWithThatIns = _.find(myPatients, pat => { return pat &&
                         _.trim(_.get(pat,"ssin","")) === _.trim(_.get(patToResend,"ssin","")) &&
                         _.trim(_.get(pat,"finalInsurability.insuranceId","")) === _.trim(_.get(patToResend,"finalInsurability.insuranceId",""))
-                    })
+                    });
                     if(_.size(patWithThatIns)) {
                         patWithThatIns.invoiceToBeResent = _.concat((patWithThatIns.invoiceToBeResent||[]), patToResend.invoiceToBeResent)
                     }
@@ -5069,7 +5153,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         patToResend.invoiceToBeResent = [patToResend.invoiceToBeResent];
                         myPatients.push(patToResend);
                     }
-                })
+                });
 
                 // Todo: refactor this:
                 // Either is not a resent -> can let go as below
@@ -5084,7 +5168,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 .chain(pat.medicalHouseContracts||[])
                                 .filter(mhc => {
                                     // Eval final MHC either based on export date OR based on resent invoice date
-                                    let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                                    let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD");
                                     return (
                                         !!mhc &&
                                         !!_.size(mhc) &&
@@ -5117,9 +5201,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             ["desc"]
                         ),
                         "[0]", []
-                    )
+                    );
                     return _.size( pat.finalMedicalHouseContracts ) ? pat : false
-                }))
+                }));
 
 
 
@@ -5132,31 +5216,31 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             pat.finalMedicalHouseContracts,
                             {startOfCoverage: parseInt(moment(_.trim(_.get(pat.finalMedicalHouseContracts, "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').format("YYYYMMDD"))}
                         )
-                })
+                });
 
-                this.flatRateInvoicingDataObject.patientsData = myPatients
+                this.flatRateInvoicingDataObject.patientsData = myPatients;
                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3',this.language), icon:"arrow-forward"});
                 return this._getInsuranceTitularyInfo(myPatients)
 
             }) //5
             .then((myPatientsWithInsuranceTitularyInfo)=>{
-                this.flatRateInvoicingDataObject.patientsData = myPatientsWithInsuranceTitularyInfo
+                this.flatRateInvoicingDataObject.patientsData = myPatientsWithInsuranceTitularyInfo;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4',this.language), icon:"arrow-forward"});
                 return this._getInsurancesDataByPatientsList(myPatientsWithInsuranceTitularyInfo).then(x=>x)
             }) //6
             .then((insurancesData)=>{
-                this.flatRateInvoicingDataObject.insurancesData = insurancesData
+                this.flatRateInvoicingDataObject.insurancesData = insurancesData;
                 return this._getIOsDataByInsurancesList(this.flatRateInvoicingDataObject.insurancesData).then(x=>x);}) //7
             .then((iosData) => {
                 // Ins 306 has to be seen as a child of 300
                 return this._getInsurancesDataByCode(300)
                     .then(ins300=>{
-                        iosData = parseInt(_.size(_.filter(iosData, {code:"300"}))) ? iosData : _.size(_.filter(iosData, {code:"306"})) ? _.sortBy(_.concat(iosData, _.head(ins300)), "code") : iosData
-                        _.remove(iosData, i=>_.trim(_.get(i,"code",""))==="306")
-                        this.flatRateInvoicingDataObject.iosData = iosData
-                        this.flatRateInvoicingDataObject.insurancesData = _.map(this.flatRateInvoicingDataObject.insurancesData, ins => { if(_.trim(_.get(ins, "code", "")) === "306") ins.parent = _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {code:"300"}), "[0].id", "")); return ins })
+                        iosData = parseInt(_.size(_.filter(iosData, {code:"300"}))) ? iosData : _.size(_.filter(iosData, {code:"306"})) ? _.sortBy(_.concat(iosData, _.head(ins300)), "code") : iosData;
+                        _.remove(iosData, i=>_.trim(_.get(i,"code",""))==="306");
+                        this.flatRateInvoicingDataObject.iosData = iosData;
+                        this.flatRateInvoicingDataObject.insurancesData = _.map(this.flatRateInvoicingDataObject.insurancesData, ins => { if(_.trim(_.get(ins, "code", "")) === "306") ins.parent = _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {code:"300"}), "[0].id", "")); return ins });
                         return null
                     })
                     .then(()=>{
@@ -5164,19 +5248,19 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5',this.language), icon:"arrow-forward"});
 
-                        const listsData = { list5: [], list6: [], list8: [] }
+                        const listsData = { list5: [], list6: [], list8: [] };
 
                         // Eval pat's list 5/6/8
                         _.map(this.flatRateInvoicingDataObject.patientsData, pat => {
 
                             // None of the contracts -> Drop (Valid INS vs. exported date and valid MHC vs. exported date are already checked against at this stage)
-                            if(!(_.get(pat, "finalMedicalHouseContracts.gp", false) || _.get(pat, "finalMedicalHouseContracts.kine", false) || _.get(pat, "finalMedicalHouseContracts.nurse", false))) return false
+                            if(!(_.get(pat, "finalMedicalHouseContracts.gp", false) || _.get(pat, "finalMedicalHouseContracts.kine", false) || _.get(pat, "finalMedicalHouseContracts.nurse", false))) return false;
 
                             // Can only be a resent if for current exported month THAT PAT with THAT INS doesn't exist (most likely rejected+correct invoice OR invoice create via timeline AND for another INS)
                             // Ie: isResent is evaluated on BOTH pat's NISS AND pat's INS (between existing pats and pats to resend -> rejected+correct OR timeline)
-                            const isResent = _.get(pat, "isResent", false)
-                            const mhcStartOfCoverage = moment(_.get(pat,"finalMedicalHouseContracts.startOfCoverage"), "YYYYMMDD").startOf("month")
-                            const mhcStartOfContract = moment(_.get(pat,"finalMedicalHouseContracts.startOfContract"), "YYYYMMDD").startOf("month")
+                            const isResent = _.get(pat, "isResent", false);
+                            const mhcStartOfCoverage = moment(_.get(pat,"finalMedicalHouseContracts.startOfCoverage"), "YYYYMMDD").startOf("month");
+                            const mhcStartOfContract = moment(_.get(pat,"finalMedicalHouseContracts.startOfContract"), "YYYYMMDD").startOf("month");
 
                             // When is a resent -> Only look at the most recent invoice to define which list pat belongs to (remember: if original invoices of list 5/6 are to be resent: patient is known by now -> list 8).
                             // When not a resent = patient IS to be exported for this month (even though may have invoices to resend) -> always look at the month's exported date (at it will be the most recent date, we never re-invoice data of the future)
@@ -5186,21 +5270,21 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 .head()
                                 .get("invoiceDate")
                                 .value()
-                            ),"YYYYMMDD").startOf("month").subtract(1, "month")
+                            ),"YYYYMMDD").startOf("month").subtract(1, "month");
 
                             // List 5 = New patients WITHOUT tryout (double amounts / must appear twice): Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month === Start of month of contract
                             // List 6 = New patients WITH tryout (double amounts / must appear twice) - Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month > Start of month of contract
                             // List 8 = "Old" patients: Start of month of start cover must be BEFORE (start of export month -1 month) - (Ie: start of coverage began 2+ month before exported month)
-                            const isList5 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isSame(mhcStartOfContract)
-                            const isList6 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isAfter(mhcStartOfContract)
-                            const isList8 = mhcStartOfCoverage.isBefore(compareDate)
+                            const isList5 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isSame(mhcStartOfContract);
+                            const isList6 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isAfter(mhcStartOfContract);
+                            const isList8 = mhcStartOfCoverage.isBefore(compareDate);
 
                             return isList8 ? listsData.list8 = _.concat(listsData.list8, [pat]) :
                                 isList5 ? listsData.list5 = _.concat(listsData.list5, [pat]) :
                                     isList6 ? listsData.list6 = _.concat(listsData.list6, [pat]) :
                                         false
 
-                        })
+                        });
 
                         return listsData;
 
@@ -5209,17 +5293,17 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //8
             .then((listsData)=> {
 
-                this.flatRateInvoicingDataObject.listsData = listsData
-                this.flatRateInvoicingDataObject.invoicesToBeModified = []
+                this.flatRateInvoicingDataObject.listsData = listsData;
+                this.flatRateInvoicingDataObject.invoicesToBeModified = [];
 
                 // Drop patients we couldn't find in list (no valorisation)
-                const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i => i.id))) || []
-                this.flatRateInvoicingDataObject.patientsData = _.compact(_.map(this.flatRateInvoicingDataObject.patientsData, i => patientsInLists.indexOf(_.trim(i.id)) > -1 ? i : false))
-                if (!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData) || 0)) throw new Error("no-data-to-export")
+                const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i => i.id))) || [];
+                this.flatRateInvoicingDataObject.patientsData = _.compact(_.map(this.flatRateInvoicingDataObject.patientsData, i => patientsInLists.indexOf(_.trim(i.id)) > -1 ? i : false));
+                if (!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData) || 0)) throw new Error("no-data-to-export");
 
                 // Drop when not in use
-                this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) || []).indexOf(_.trim(i.id)) > -1 ? i : false))
-                this.flatRateInvoicingDataObject.iosData = _.compact(_.map(this.flatRateInvoicingDataObject.iosData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ? i : false))
+                this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) || []).indexOf(_.trim(i.id)) > -1 ? i : false));
+                this.flatRateInvoicingDataObject.iosData = _.compact(_.map(this.flatRateInvoicingDataObject.iosData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ? i : false));
 
                 this._setLoadingMessage({message: this.localize('mhListing.spinner.step_5_done', this.language),icon: "check-circle",updateLastMessage: true,done: true});
                 this._setLoadingMessage({message: this.localize('mhInvoicing.spinner.step_4', this.language),icon: "arrow-forward"});
@@ -5229,8 +5313,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(() => {
                 return Promise.all(_.toPairs(this.flatRateInvoicingDataObject.listsData).map(list => {
 
-                    const typeList = list[0]
-                    const patientList = list[1]
+                    const typeList = list[0];
+                    const patientList = list[1];
                     const codesList = typeList === "list5" || typeList === "list6" ?
                         // Lists 5 & 6 = NEW patients with respectively no tryout ; tryout
                         _.concat(
@@ -5238,7 +5322,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(1,"month").format("YYYYMMDD")))}), "valorisations")
                         ) :
                         // List 8 = old / regular patients
-                        _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations")
+                        _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations");
 
                     return _.compact(_.map(patientList, pat => {
 
@@ -5250,17 +5334,17 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 (code.flatRateType === "nurse" && pat.finalMedicalHouseContracts.nurse === true) ||
                                 (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true)
                             )
-                        )
+                        );
 
                         const additionalInvoicingCodes = _.flatMap(_.map(_.get(pat,"invoiceToBeResent",[]), invoiceToBeResent => {
 
                             // In case we inherit of an invoice to be resent, make sure we don't invoice month to be resent twice
-                            const invoiceCodesToBeDeleted = _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) > -1 )
+                            const invoiceCodesToBeDeleted = _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) > -1 );
 
                             // 1+ times the same invoicing codes ? Update IC codes & DB
                             if( !!parseInt(_.size(invoiceCodesToBeDeleted)) ) {
-                                const newInvoicingCodes = _.compact(_.map(invoiceToBeResent.invoicingCodes, ic => _.compact(_.map(invoiceCodesToBeDeleted,"id")).indexOf(_.trim(_.get(ic,"id",false)))>-1 ? false : ic ))
-                                const invoiceToBeResentWithOmittedDuplicatedInvCodes = _.assign(_.cloneDeep(invoiceToBeResent), {invoicingCodes:newInvoicingCodes})
+                                const newInvoicingCodes = _.compact(_.map(invoiceToBeResent.invoicingCodes, ic => _.compact(_.map(invoiceCodesToBeDeleted,"id")).indexOf(_.trim(_.get(ic,"id",false)))>-1 ? false : ic ));
+                                const invoiceToBeResentWithOmittedDuplicatedInvCodes = _.assign(_.cloneDeep(invoiceToBeResent), {invoicingCodes:newInvoicingCodes});
                                 this.flatRateInvoicingDataObject.invoicesToBeModified.push(invoiceToBeResentWithOmittedDuplicatedInvCodes)
                             }
 
@@ -5274,13 +5358,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 })
                             )
 
-                        })||[])
+                        })||[]);
 
                         // Say we generate month 01, then we generate month 02
                         // Then we flag invoices of month 01 as rejected + corrected
                         // Then we re-run month 02
                         // Export should only hold pat X for month 01 but not for month 02
-                        const finalInvoicingCodes = _.compact(_.concat( additionalInvoicingCodes||[], (_.get(this,"flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth",[]).indexOf(_.get(pat,"id")) > -1 ? [] : originalInvoicingCodes) ))
+                        const finalInvoicingCodes = _.compact(_.concat( additionalInvoicingCodes||[], (_.get(this,"flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth",[]).indexOf(_.get(pat,"id")) > -1 ? [] : originalInvoicingCodes) ));
 
                         return !_.size(finalInvoicingCodes) ? false : _.assign(pat, {
                             invoicingCodes: _.orderBy(_.map(finalInvoicingCodes, ic => ({
@@ -5310,7 +5394,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         console.log("--- Before generate invoices ---");
                         console.log(_.cloneDeep(this.flatRateInvoicingDataObject));
 
-                        let prom = Promise.resolve([])
+                        let prom = Promise.resolve([]);
                         let invoicesToBeModified = _.cloneDeep(this.flatRateInvoicingDataObject.invoicesToBeModified);
                         return !parseInt(_.size(invoicesToBeModified||[])) ?
                             prom :
@@ -5325,7 +5409,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .then(()=>this._createOrUpdateMedicalHousePatientsInvoices())
             }) //11
             .then(invoicesData=>{
-                this.flatRateInvoicingDataObject.invoicesData = invoicesData
+                this.flatRateInvoicingDataObject.invoicesData = invoicesData;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_7',this.language), icon:"arrow-forward"});
                 return this._generateJ20FlatFiles().then(x=>x)
@@ -5345,7 +5429,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         parentOaId: i.io,
                         oaInvoiceIds: i.oaInvoiceIds,
                     }
-                })
+                });
 
                 this.flatRateInvoicingDataObject.generatedFiles.slips = _.map(flatFileObjects,i=>{
                     return {
@@ -5360,7 +5444,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         parentOaId: i.io,
                         oaInvoiceIds: i.oaInvoiceIds,
                     }
-                })
+                });
 
                 this.flatRateInvoicingDataObject = _.merge(this.flatRateInvoicingDataObject,{
                     totalByParentOa: _.map(
@@ -5388,7 +5472,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
                         }
                     )
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.flatFiles.map( singleFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5412,11 +5496,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singleFileObject, {messageId:createdMessage.id})
+                            _.merge(singleFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("text/plain"), name: _.trim(singleFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singleFileObject, {documentId:createdDocument.id})
+                            _.merge(singleFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment flatfile---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5444,11 +5528,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     }))
                                 )
                                 .then(createdMessage => {
-                                    _.merge(singleFileObject, {messageId:createdMessage.id})
+                                    _.merge(singleFileObject, {messageId:createdMessage.id});
                                     return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("text/plain"), name: _.trim(singleFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                                 })
                                 .then(createdDocument => {
-                                    _.merge(singleFileObject, {documentId:createdDocument.id})
+                                    _.merge(singleFileObject, {documentId:createdDocument.id});
                                     return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5460,7 +5544,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 let limit = promiseLimit(100);
                                 return Promise.all(invoices.map(inv => {
                                     return limit(() => {
-                                        inv.sentDate = moment().format("YYYYMMDD")
+                                        inv.sentDate = moment().format("YYYYMMDD");
                                         return retry.retry(() => (this.api.invoice().modifyInvoice(inv).then(inv =>this.api.register(inv,'invoice'))))
                                     })
                                 }))
@@ -5486,9 +5570,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.insurancesData, {id:i.oaId}), "[0].code" )),
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.insurancesData, {id:i.oaId}), "[0].finalName" )),
                         +new Date()
-                    ]).join(" ")) + ".pdf"
+                    ]).join(" ")) + ".pdf";
                     return i;
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.pdfs.map( singlePdfFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5514,11 +5598,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singlePdfFileObject, {messageId:createdMessage.id})
+                            _.merge(singlePdfFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/pdf"), name: _.trim(singlePdfFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singlePdfFileObject, {documentId:createdDocument.id})
+                            _.merge(singlePdfFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5540,9 +5624,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {id:i.oaId}), "[0].code" )),
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {id:i.oaId}), "[0].finalName" )),
                         +new Date()
-                    ]).join(" ")) + ".pdf"
+                    ]).join(" ")) + ".pdf";
                     return i;
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.oaPdfs.map( singlePdfFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5568,11 +5652,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singlePdfFileObject, {messageId:createdMessage.id})
+                            _.merge(singlePdfFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/pdf"), name: _.trim(singlePdfFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singlePdfFileObject, {documentId:createdDocument.id})
+                            _.merge(singlePdfFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5580,11 +5664,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //18
             .then(()=>{
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8',this.language), icon:"arrow-forward"})
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8',this.language), icon:"arrow-forward"});
                 return this._createMhExportZipArchive().then(x=>x)
             }) //19
             .then(batchZipFileBlob=>{
-                this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob = batchZipFileBlob
+                this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob = batchZipFileBlob;
                 return this.api.message().newInstance(this.user)
                     .then(newMessageInstance => this.api.message().createMessage(
                         _.merge(newMessageInstance, {
@@ -5607,18 +5691,18 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         }))
                     )
                     .then(createdMessage => {
-                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {messageId:createdMessage.id})
+                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {messageId:createdMessage.id});
                         return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/zip"), name: _.trim(this.flatRateInvoicingDataObject.finalArchive.archiveDownloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                     })
                     .then(createdDocument => {
-                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id})
+                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id});
                         return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                     })
                     .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
             }) //20
             .then(()=>{
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"})
+                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"});
                 this.api.triggerFileDownload( this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob, "application/zip", this.flatRateInvoicingDataObject.finalArchive.archiveDownloadFileName )
             }) //21
             .catch((e)=>{
@@ -5636,7 +5720,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //22
             .finally(()=>{
                 console.log(this.flatRateInvoicingDataObject);
-                this.flatRateInvoicingDataObject = {}
+                this.flatRateInvoicingDataObject = {};
                 this.set('_isLoading', false );
                 this.set('activeGridItem', null );
                 this.set('messagesCachedData', null );
@@ -5651,6 +5735,33 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //23
 
     }
+
+
+
+
+
+
+
+    _e_getCurrentMonthHr() {
+
+      return this.localize('month_' + moment().format('M'),this.language)
+
+    }
+
+    _e_getCurrentYear() {
+
+      return moment().format('YYYY');
+
+    }
+
+    _e_checkForMdaData() {
+
+        console.log("_e_checkForMdaData");
+        console.log("aller rechercher toute la patientelle + timeline sam + tout ce qui est à corriger");
+
+    }
+
+
 
 }
 

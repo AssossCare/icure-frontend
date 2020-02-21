@@ -7,7 +7,7 @@
 		"eattest_reason_cancel_E": "e-Attest replaced by e-Fact",
 		"eattest_reason_cancel_F": "e-Attest replaced by ASD paper. Sending an eASD for a patient in front of or wishing to receive a paper-based ASD (ex .: payment to another account, accident at work, police, technical problem, …)",
 		"eattest_reason_cancel_G": "Situation not allowing the establishment of an e-Attest (eASD established by mistake ex: no consultation but issue of a prescription, simple telephone contact, …). It is therefore a pure and simple cancellation of the eASD",
-		"electronicFlatrateInvoicing" : "Electronic flatrate invoicing",
+		"electronicFlatrateInvoicing" : "Flatrate invoicing (electronic)",
 		"createAccessLog" : "create an access log",
 		"modifyPatientWithUser": "modification of the administrative data of the patient",
 		"createPatientWithUser": "patient creation",
@@ -953,7 +953,7 @@
 		"first_con": "First connexion",
 		"first_ctc": "First contact",
 		"flatrateAttachment": "Attachment",
-		"flatrateInvoicing": "Flat rate invoicing",
+		"flatrateInvoicing": "Flat rate invoicing (cd-rom)",
 		"serviceFeeInvoicing": "Service fee invoicing",
 		"flatrateList": "List",
 		"flatrate_reimb": "Reimbursement",
@@ -2355,6 +2355,8 @@
 		"mhFlatRateConfirmDeleteBatch": "Are you sure you wish to delete this batch?",
 		"hcp_info": "HCP information",
 		"_e_flatrateinv_report": "Check patients",
+		"mhEInvoicingMdaPatientCheck": "Check patients (Member data)",
+		"mhEInvoicingMdaPatientCheckHistory": "Check patients history (Member data)",
 		"ok-flatrate-patient": "flatrate: ok",
 		"nok-flatrate-patient": "flatrate: not ok",
 		"ok-no-flatrate-patient": "no flatrate: ok",
@@ -2505,7 +2507,9 @@
 		"downloadList" : "Download list",
 		"downloadListAndFiles" : "Download list & files",
 		"error_payment": "Error in your payment data",
-		"_e_memberData" : "Check patients by member data"
+		"_e_memberData" : "Check patients by member data",
+		"checkMdaData" : "Vérifier les données patient (Member data) pour la facturation du forfait électronique",
+		"checkMdaData2" : "Vérifier les données"
 	},
 	"fr": {
 		"createAccessLog" : "création d'un log d'accès",
@@ -3424,7 +3428,7 @@
 		"first_ctc": "Données générales",
 		"flatrateAttachment": "Annexe",
 		"serviceFeeInvoicing": "Facturation à l'acte",
-		"flatrateInvoicing": "Facturation au forfait",
+		"flatrateInvoicing": "Facturation au forfait (cd-rom)",
 		"flatrateList": "Liste",
 		"flatrate_reimb": "Remboursement",
 		"modification_of": "Modification de ",
@@ -4873,6 +4877,8 @@
 		"mhFlatRateConfirmDeleteBatch": "Attention, êtes-vous sûr de vouloir supprimer cet export ?",
 		"hcp_info": "Informations prestataire",
 		"_e_flatrateinv_report": "Contrôle patients",
+		"mhEInvoicingMdaPatientCheck": "Contrôle patients (Member data)",
+		"mhEInvoicingMdaPatientCheckHistory": "Historique contrôle patients (Member data)",
 		"ok-flatrate-patient": "au forfait: ok",
 		"nok-flatrate-patient": "au forfait: pas ok",
 		"ok-no-flatrate-patient": "pas au forfait: ok",
@@ -5026,7 +5032,7 @@
 		"eattest_reason_cancel_E": "e-Attest remplacée par e-Fact",
 		"eattest_reason_cancel_F": "e-Attest remplacée par ASD papier. Envoi d’une eASD pour un patient devant ou souhaitant recevoir une ASD papier (ex. : versement sur un autre compte, accident de travail, police, problème technique, …)",
 		"eattest_reason_cancel_G": "Situation ne permettant pas l'établissement d'une e-Attest (eASD établie par erreur ex : pas de consultation mais délivrance d’une prescription, simple contact téléphonique, …). Il s’agit donc d’une annulation pure et simple de l’eASD",
-		"electronicFlatrateInvoicing" : "Facturation électronique au forfait",
+		"electronicFlatrateInvoicing" : "Facturation au forfait (électronique)",
 		"mda-patientData" : "Informations sur le patient",
 		"mda-name" : "Nom",
 		"mda-firstName" : "Prénom",
@@ -5099,7 +5105,9 @@
 		"invoicing_no_derogation" : "Soit rajoutez les dérogations dans un/certains code(s) nomenclature(s), soit annulez l'eattest :",
 		"invoicing_no_derogation_title" : "Attention, Prestation déjà facturée/attestée!",
 		"error_payment": "Erreur dans vos données de paiements",
-		"_e_memberData" : "Contrôle via member data"
+		"_e_memberData" : "Contrôle via member data",
+		"checkMdaData" : "Vérifier les données (Member data) pour la facturation du forfait électronique",
+		"checkMdaData2" : "Vérifier les données"
 	},
 	"nl": {
 		"createAccessLog" : "maak een toegangslogboek",
@@ -6016,7 +6024,7 @@
 		"first_con": "Eerste connectie",
 		"first_ctc": "Eerste contact",
 		"flatrateAttachment": "Bijlage",
-		"flatrateInvoicing": "Forfaitaire facturatie",
+		"flatrateInvoicing": "Forfaitaire facturatie (cd-rom)",
 		"serviceFeeInvoicing": "Facturatie per prestatie",
 		"flatrateList": "Lijst",
 		"flatrate_reimb": "Terugbetaling",
@@ -7424,6 +7432,8 @@
 		"mhFlatRateConfirmDeleteBatch": "Are you sure you wish to delete this batch?",
 		"hcp_info": "HCP information",
 		"_e_flatrateinv_report": "Controle patiënten",
+		"mhEInvoicingMdaPatientCheck": "Controle patiënten (member data)",
+		"mhEInvoicingMdaPatientCheckHistory": "Historische controle patiënten (member data)",
 		"ok-flatrate-patient": "in forfait: ok",
 		"nok-flatrate-patient": "in forfait: niet ok",
 		"ok-no-flatrate-patient": "niet in forfait: ok",
@@ -7577,7 +7587,7 @@
 		"eattest_reason_cancel_E": "e-Attest vervangen door e-Fact",
 		"eattest_reason_cancel_F": "e-Attest vervangen door ASD-papier. Stuur een eASD voor een patiënt voor of die een papieren ASD wenst te ontvangen (bijv. Betaling op een ander account, arbeidsongeval, politie, technisch probleem, ...)",
 		"eattest_reason_cancel_G": "Situatie waarbij de oprichting van een e-Attest niet mogelijk is (eASD is per ongeluk vastgesteld ex: geen overleg, maar een recept, eenvoudig telefonisch contact, ...). Het is daarom een pure en eenvoudige annulering van de eASD",
-		"electronicFlatrateInvoicing" : "Electronic flatrate invoicing",
+		"electronicFlatrateInvoicing" : "Flatrate invoicing (electronic)",
 		"mda-patientData" : "Patient informations",
 		"mda-name" : "Name",
 		"mda-firstName" : "First name",
@@ -7649,6 +7659,8 @@
 		"invoicing_no_derogation" : "Het ontbreekt aan de uitzonderingen in een of enkele code-nomenclatuur(en). Weet u zeker dat u wilt doorgaan?",
 		"invoicing_no_derogation_title" : "Aandacht, ontbrekende afwijking!",
 		"error_payment": "Fout in uw betalingsgegevens",
-		"_e_memberData" : "Controle via member data"
+		"_e_memberData" : "Controle via member data",
+		"checkMdaData" : "Vérifier les données (Member data) pour la facturation au forfait électronique",
+		"checkMdaData2" : "Vérifier les données"
 	}
 }

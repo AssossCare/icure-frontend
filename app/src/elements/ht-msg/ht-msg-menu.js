@@ -7,6 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
+
 import '../filter-panel/filter-panel.js';
 
 import '../collapse-button/collapse-button.js';
@@ -21,6 +22,7 @@ import "@polymer/paper-icon-button/paper-icon-button"
 import "@polymer/paper-item/paper-item"
 import "@polymer/paper-listbox/paper-listbox"
 
+import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
 import styx from '../../../scripts/styx';
 
@@ -136,11 +138,11 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
 
             collapse-button .menu-item.iron-selected,
             collapse-button paper-item.iron-selected{
-\t\t\t\t@apply --padding-menu-item;
-\t\t\t\tcolor:var(--app-text-color-light);
-\t\t\t\tbackground:var(--app-primary-color);
-\t\t\t\t@apply --text-shadow;
-\t\t\t}
+                @apply --padding-menu-item;
+                color:var(--app-text-color-light);
+                background:var(--app-primary-color);
+                @apply --text-shadow;
+            }
 
             collapse-button paper-item.iron-selected{
                 background: var(--app-background-color-dark);
@@ -161,13 +163,13 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 background: var(--app-primary-color);
             }
 
-\t\t\tcollapse-button paper-item iron-icon, paper-item iron-icon{
-\t\t\t\theight: 20px;
-\t\t\t\twidth: 20px;
-\t\t\t\tpadding:4px;
-\t\t\t\tcolor: var(--app-text-color);
-\t\t\t\topacity: .5;
-\t\t\t}
+            collapse-button paper-item iron-icon, paper-item iron-icon{
+                height: 20px;
+                width: 20px;
+                padding:4px;
+                color: var(--app-text-color);
+                opacity: .5;
+            }
 
             collapse-button paper-icon-button{
                 min-width: 40px;
@@ -195,23 +197,23 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 height:48px;
             }
 
-\t\t\t.menu-item{
-\t\t\t\t@apply --padding-menu-item;
-\t\t\t\theight:48px;
-\t\t\t\t@apply --paper-font-button;
-\t\t\t\ttext-transform: inherit;
-\t\t\t\tjustify-content: space-between;
-\t\t\t\tcursor: pointer;
-\t\t\t\t@apply --transition;
-\t\t\t}
+			.menu-item{
+				@apply --padding-menu-item;
+				height:48px;
+				@apply --paper-font-button;
+				text-transform: inherit;
+				justify-content: space-between;
+				cursor: pointer;
+				@apply --transition;
+			}
 
-\t\t\t.sublist .menu-item {
-\t\t\t\tfont-size: 13px;
-\t\t\t\tmin-height:32px;
-\t\t\t\theight:32px;
-\t\t\t\tpadding-left: 8px;
-\t\t\t}
-\t\t\t.sublist .menu-item.flex-start {
+			.sublist .menu-item {
+				font-size: 13px;
+				min-height:32px;
+				height:32px;
+				padding-left: 8px;
+			}
+			.sublist .menu-item.flex-start {
                 justify-content: flex-start;
             }
 
@@ -425,18 +427,18 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 max-width: 100%;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-\t\t\t\toverflow: hidden;
-\t\t\t\talign-items: center;
-\t\t\t\tdisplay: flex;
-\t\t\t\tflex-flow: row nowrap;
-\t\t\t\tjustify-content: flex-start;
-\t\t\t}
+				overflow: hidden;
+				align-items: center;
+				display: flex;
+				flex-flow: row nowrap;
+				justify-content: flex-start;
+			}
 
-\t\t\t.one-line-menu.list-title > div {
-\t\t\t\tmax-width: 100%;
-\t\t\t\toverflow: hidden;
-\t\t\t\ttext-overflow: ellipsis;
-\t\t\t}
+			.one-line-menu.list-title > div {
+				max-width: 100%;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
 
             #inbox {
                 flex-direction: row;
@@ -583,12 +585,16 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 </paper-item>
                     <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
                     <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
-                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j3"><div class="one-line-menu list-title"><iron-icon icon="view-headline"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_listing','Export listing',language)]]</span></div></paper-item>
-                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="archivej3"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_archives_listing','Archives listing',language)]]</span></div></paper-item>
-
-                    <hr class="menuHr"/>
+                    <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
+                        <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j3"><div class="one-line-menu list-title"><iron-icon icon="view-headline"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_listing','Export listing',language)]]</span></div></paper-item>
+                        <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="archivej3"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_archives_listing','Archives listing',language)]]</span></div></paper-item>
+                        <hr class="menuHr"/>
+                    </template>    
+                    
                     <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[j20_batchCounter.error]]</span></paper-item>
-                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
+                    <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
+                        <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
+                    </template>
                     <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[j20_batchCounter.pending]]</span></paper-item>
                     <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[j20_batchCounter.rejected]]</span></paper-item>
                     <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.partiallyAccepted]]</span></paper-item>
@@ -606,28 +612,29 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             <!-- Electronic flatrate invoicing -->
             <template is="dom-if" if="[[isAMedicalHouse]]">
                 <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
-                    <collapse-button id="flatRateInvoicingListingBoxCollapse">
-                        <paper-item id="flatRateInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBoxTapped" elevation="">
-                            <div class="one-line-menu list-title"><iron-icon icon="accessibility"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('electronicFlatrateInvoicing','Facturation électronique du forfait',language)]]</span></div>
+                    <collapse-button id="flatRateeInvoicingListingBoxCollapse">
+                        <paper-item id="flatRateeInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateeInvoivingBoxTapped" elevation="">
+                            <div class="one-line-menu list-title"><iron-icon icon="accessibility"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('electronicFlatrateInvoicing','Facturation au forfait (électronique)',language)]]</span></div>
                             <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
                         </paper-item>
-                        <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
-                            <paper-item class="one-line-menu menu-item" id="e_memberData" data-status="mbd"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_memberData','Member data',language)]]</span></div></paper-item>
-
+                        <paper-listbox id="flatRateeInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateeInvoicingSelectionIndex}}" selected-item="{{flatRateeInvoicingSelectionItem}}" selectable="paper-item">
+                            <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_mda"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('mhEInvoicingMdaPatientCheck','Contrôle patients (Member data)',language)]]</span></div></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_mda_history"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('mhEInvoicingMdaPatientCheckHistory','Historique contrôle patients (Member data)',language)]]</span></div></paper-item>
+        
                             <hr class="menuHr"/>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[j20_batchCounter.error]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[j20_batchCounter.pending]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[j20_batchCounter.rejected]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.partiallyAccepted]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_accept"><div class="one-line-menu list-title"><iron-icon icon="check-circle"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_accept','Accepted',language)]]</span></div> <span class="batchNumber j20_batchNumber batchAccepted">[[j20_batchCounter.fullyAccepted]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_archive"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_archive','Archived',language)]]</span></div> <span class="batchNumber j20_batchNumber batchArchived">[[j20_batchCounter.archived]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reset"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reset','Reset',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRed">[[j20_batchCounter.reset]]</span></paper-item>
-
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[ej20_batchCounter.error]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[ej20_batchCounter.pending]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[ej20_batchCounter.rejected]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.partiallyAccepted]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_accept"><div class="one-line-menu list-title"><iron-icon icon="check-circle"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_accept','Accepted',language)]]</span></div> <span class="batchNumber j20_batchNumber batchAccepted">[[ej20_batchCounter.fullyAccepted]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_archive"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_archive','Archived',language)]]</span></div> <span class="batchNumber j20_batchNumber batchArchived">[[ej20_batchCounter.archived]]</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_reset"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reset','Reset',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRed">[[ej20_batchCounter.reset]]</span></paper-item>
                         </paper-listbox>
                     </collapse-button>
                 </template>
-            </template>
+            </template>            
 
 
 
@@ -690,6 +697,21 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                     reset: 0
                 })
             },
+            ej20_batchCounter: {
+                type: Object,
+                value: () => ({
+                    archived: 0,
+                    error: 0,
+                    partiallyAccepted: 0,
+                    fullyAccepted: 0,
+                    rejected: 0,
+                    treated: 0,
+                    acceptedForTreatment: 0,
+                    successfullySentToOA: 0,
+                    pending: 0,
+                    reset: 0
+                })
+            },
             personalEHealthBoxTotalsByFolder: {
                 type: Object,
                 value: () => ({
@@ -709,6 +731,10 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 value: null
             },
             flatRateInvoicingSelectionIndex: {
+                type: Number,
+                value: null
+            },
+            flatRateeInvoicingSelectionIndex: {
                 type: Number,
                 value: null
             },
@@ -739,6 +765,10 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             medicalHouseBillingTypeIsFlatRate: {
                 type: Boolean,
                 value: false
+            },
+            eInvoicingDate: {
+                type: Number,
+                value: 202006
             }
         };
     }
@@ -749,7 +779,8 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             '_inboxSelectionIndexChanged(inboxSelectionIndex)',
             '_documentBoxSelectionIndexChanged(documentBoxSelectionIndex)',
             '_invoiceSelectionIndexChanged(invoiceSelectionIndex)',
-            '_flatRateInvoicingSelectionIndexChanged(flatRateInvoicingSelectionIndex)'
+            '_flatRateInvoicingSelectionIndexChanged(flatRateInvoicingSelectionIndex)',
+            '_flatRateeInvoicingSelectionIndexChanged(flatRateeInvoicingSelectionIndex)'
         ];
     }
 
@@ -792,6 +823,10 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
         if(_.size(e.detail)) _.map(e.detail, (batchCount,batchKey) => this.set("j20_batchCounter." + batchKey , parseInt(batchCount)))
     }
 
+    initializeBatchCountereJ20(e){
+        if(_.size(e.detail)) _.map(e.detail, (batchCount,batchKey) => this.set("ej20_batchCounter." + batchKey , parseInt(batchCount)))
+    }
+
     updatePersonalInboxMenuFoldersTotals(e){
         if(_.size(e.detail)) _.map(e.detail, (totalMessages,folderName) => this.set("personalEHealthBoxTotalsByFolder." + folderName , parseInt(totalMessages)))
     }
@@ -811,10 +846,12 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
         this.set('documentBoxSelectionIndex', null)
         this.set('invoiceSelectionIndex', null)
         this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
         this.$.inbox.classList.add('iron-selected')
         this.$.documentBox.classList.remove('iron-selected')
         this.$.invoicebox.classList.remove('iron-selected')
         this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
     }
 
     _inboxSelectionIndexChanged() {
@@ -823,10 +860,12 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             this.set('invoiceSelectionIndex', null)
             this.set('documentBoxSelectionIndex', null)
             this.set('flatRateInvoicingSelectionIndex', null)
+            this.set('flatRateeInvoicingSelectionIndex', null)
             this.$.inbox.classList.remove('iron-selected')
             this.$.documentBox.classList.remove('iron-selected')
             this.$.invoicebox.classList.remove('iron-selected')
             this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+            this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
         }
     }
 
@@ -838,10 +877,12 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
         this.set('documentBoxSelectionIndex', null)
         this.set('invoiceSelectionIndex', null)
         this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
         this.$.inbox.classList.remove('iron-selected')
         this.$.documentBox.classList.add('iron-selected')
         this.$.invoicebox.classList.remove('iron-selected')
         this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
     }
 
     _documentBoxSelectionIndexChanged() {
@@ -850,10 +891,12 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             this.set('inboxSelectionIndex', null)
             this.set('invoiceSelectionIndex', null)
             this.set('flatRateInvoicingSelectionIndex', null)
+            this.set('flatRateeInvoicingSelectionIndex', null)
             this.$.inbox.classList.remove('iron-selected')
             this.$.documentBox.classList.remove('iron-selected')
             this.$.invoicebox.classList.remove('iron-selected')
             this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+            this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
         }
     }
 
@@ -865,10 +908,12 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
         this.set('documentBoxSelectionIndex', null)
         this.set('invoiceSelectionIndex', null)
         this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
         this.$.inbox.classList.remove('iron-selected')
         this.$.documentBox.classList.remove('iron-selected')
         this.$.invoicebox.classList.add('iron-selected')
         this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
     }
 
     _invoiceSelectionIndexChanged() {
@@ -877,41 +922,45 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             this.set('inboxSelectionIndex', null)
             this.set('documentBoxSelectionIndex', null)
             this.set('flatRateInvoicingSelectionIndex', null)
+            this.set('flatRateeInvoicingSelectionIndex', null)
             this.$.inbox.classList.remove('iron-selected')
             this.$.documentBox.classList.remove('iron-selected')
             this.$.invoicebox.classList.remove('iron-selected')
             this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+            this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
         }
     }
 
     _flatRateInvoivingBox2Tapped(e){
         e.stopPropagation()
         e.preventDefault()
-        console.log('_flatRateInvoivingBox2Tapped')
         this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'e_flatraterptOut', status: 'rpt'} } }));
         this.set('inboxSelectionIndex', null)
         this.set('documentBoxSelectionIndex', null)
         this.set('invoiceSelectionIndex', null)
         this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
         this.$.inbox.classList.remove('iron-selected')
         this.$.documentBox.classList.remove('iron-selected')
         this.$.invoicebox.classList.remove('iron-selected')
         this.$.flatRateInvoicingListingBox2 && this.$.flatRateInvoicingListingBox2.classList.add('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
     }
 
     _flatRateInvoivingBoxTapped(e){
         e.stopPropagation()
         e.preventDefault()
-        console.log('_flatRateInvoivingBoxTapped')
         this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'e_flatrateinvOut', status: 'j3'} } }));
         this.set('inboxSelectionIndex', null)
         this.set('documentBoxSelectionIndex', null)
         this.set('invoiceSelectionIndex', null)
         this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
         this.$.inbox.classList.remove('iron-selected')
         this.$.documentBox.classList.remove('iron-selected')
         this.$.invoicebox.classList.remove('iron-selected')
         this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.add('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
     }
 
     _flatRateInvoicingSelectionIndexChanged() {
@@ -920,12 +969,56 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             this.set('inboxSelectionIndex', null)
             this.set('documentBoxSelectionIndex', null)
             this.set('invoiceSelectionIndex', null)
+            this.set('flatRateeInvoicingSelectionIndex', null)
             this.$.inbox.classList.remove('iron-selected')
             this.$.documentBox.classList.remove('iron-selected')
             this.$.invoicebox.classList.remove('iron-selected')
             this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+            this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
         }
     }
+
+    _flatRateeInvoivingBoxTapped(e){
+        e.stopPropagation()
+        e.preventDefault()
+        this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'flatRateeInvoicingMenuItem', status: 'ej20_toBeSend'} } }));
+        this.set('inboxSelectionIndex', null)
+        this.set('documentBoxSelectionIndex', null)
+        this.set('invoiceSelectionIndex', null)
+        this.set('flatRateInvoicingSelectionIndex', null)
+        this.set('flatRateeInvoicingSelectionIndex', null)
+        this.$.inbox.classList.remove('iron-selected')
+        this.$.documentBox.classList.remove('iron-selected')
+        this.$.invoicebox.classList.remove('iron-selected')
+        this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+        this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.add('iron-selected')
+    }
+
+    _flatRateeInvoicingSelectionIndexChanged() {
+        if (this.flatRateeInvoicingSelectionIndex !== null && this.flatRateeInvoicingSelectionIndex !== undefined) {
+            this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.flatRateeInvoicingSelectionItem.id, status: this.flatRateeInvoicingSelectionItem.dataset.status } } }));
+            this.set('inboxSelectionIndex', null)
+            this.set('documentBoxSelectionIndex', null)
+            this.set('invoiceSelectionIndex', null)
+            this.set('flatRateInvoicingSelectionIndex', null)
+            this.$.inbox.classList.remove('iron-selected')
+            this.$.documentBox.classList.remove('iron-selected')
+            this.$.invoicebox.classList.remove('iron-selected')
+            this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+            this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
+        }
+    }
+
+    _isBeforeEInvoicingDate() {
+        return moment().isBefore(moment(this.eInvoicingDate,"YYYYMM"));
+    }
+
+    _isAfterEInvoicingDate() {
+        return moment().isAfter(moment(this.eInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.eInvoicingDate,"YYYYMM"));
+    }
+
+
+
 }
 
 customElements.define(HtMsgMenu.is, HtMsgMenu);

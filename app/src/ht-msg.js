@@ -540,12 +540,11 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox"]
 
         availableLayouts.map(i=>this.set(i,false))
-        console.log('selectedItem', selectedItem)
         if (selectedItem === 'e_invOut') {
             this.set('invoicesLayout', true)
             this.set('invoicesStatus', selectedStatus)
             setTimeout(() =>{ this.shadowRoot.querySelector("#msg-invoice").reset(); this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
-        } else if (selectedItem === 'e_flatrateinvOut') {
+        } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'flatRateeInvoicingMenuItem') {
             this.set('flatrateinvoicesLayout', true)
             this.set('flatrateMenuSection', selectedStatus)
         } else if (selectedItem === 'e_flatraterptOut' ){
@@ -558,7 +557,6 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             this.set('isEHealthBox', !(selectedFolder === "mycarenet"))
             if(selectedFolder === "mycarenet") setTimeout(() => this.shadowRoot.querySelector("#msg-mycarenet").refresh(),0)
         }
-        console.log('flatrateinvoicesReportLayout', this.flatrateinvoicesReportLayout)
         this.set('selectList', _.get(e,"detail",""))
         this._closeColumn(e)
     }

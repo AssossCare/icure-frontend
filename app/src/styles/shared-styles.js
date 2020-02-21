@@ -892,6 +892,14 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
 				transition: all .5s ease-out;
 				border:0;
 			}
+			
+			.valignCenter {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                flex-direction: column;
+            }
 
 
 		</style>
