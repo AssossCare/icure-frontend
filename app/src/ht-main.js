@@ -985,7 +985,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 
           this._updateLabResults()
 
-          this.api && this.api.bemikrono() && this.api.bemikrono().appointmentsByDate(parseInt(moment().format('YYYYMMDD'))).then(appointments => {
+          this.api && this.api.bemikrono().appointmentsByDate(parseInt(moment().format('YYYYMMDD'))).then(appointments => {
               return appointments && this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ ids: appointments.map(a => a.patientId) })).then(patients => {
                   //todo wtf JSON not valid
                   patients.forEach((p, idx) => appointments[idx].patient = p);

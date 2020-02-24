@@ -973,6 +973,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     margin:0 auto;
                 }
 
+                .batchNumberInput {
+                    width:50%;
+                    margin:0 auto;
+                }
+
             </style>
         </custom-style>
 
@@ -1025,10 +1030,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j3')]]">
                 <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingListing()]]"><div class="warningMessage" id="warningMessageListing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingWarningMessage', 'Attention\\, veuillez ne procéder à la facturation qu\\'entre le premier et le cinquième jour du mois.', language)]]</div></div></template>-->
                 <div class="centerCenter">
-                    <div class="exportMonthPicker">
+                    <div class="exportMonthPicker pb20">
                         <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
                         <vaadin-combo-box id="listingExportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
                         <vaadin-combo-box id="listingExportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
                     </div>
                     <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListing','Téléchargement listing',language)]]</paper-button>
                     <!--<div id="exportRangeNotification">(*) [[localize('exportedPeriod', language)]]: [[localize('from2', language)]] <span>[[_startOfPreviousMonth()]]</span> [[localize('till', language)]] <span>[[_endOfPreviousMonth()]]</span></div>-->
