@@ -29,9 +29,10 @@ import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
 class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
+
+    static get template() {
     return html`
-<custom-style>
+        <custom-style>
             <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
 
                 :host {
@@ -1650,7 +1651,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 `;
   }
 
-  static get is() {
+    static get is() {
       return 'ht-msg-flatrate-invoice';
   }
 

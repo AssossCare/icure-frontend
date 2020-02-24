@@ -1,5 +1,5 @@
 import * as models from 'icc-api/dist/icc-api/model/models'
-import '../filter-panel/filter-panel.js';
+import '../../filter-panel/filter-panel.js';
 
 import '../../collapse-button/collapse-button.js';
 import '../../icons/icure-icons.js';
@@ -21,7 +21,7 @@ import '@polymer/paper-toast/paper-toast';
 import '@polymer/paper-radio-button/paper-radio-button';
 import moment from 'moment/src/moment'
 import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "../tk-localizer";
+import {TkLocalizerMixin} from "../../tk-localizer";
 
 class HtPatOtherFormDialog extends TkLocalizerMixin(PolymerElement){
 
