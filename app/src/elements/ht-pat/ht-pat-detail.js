@@ -4345,7 +4345,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _getBiometricFromService(biometrics, service) {
-        this._biometrics.forEach(biometric => {
+        _.get(this,"_biometrics",[]).forEach(biometric => {
             if ((biometric.code && _.get(service, 'tags', []).some(t => _.get(t, 'type', null) === "CD-PARAMETER" && _.get(t, 'code', '') === _.get(biometric, 'code', null))) ||
                 (biometric.regex && service.label && service.label.match(biometric.regex))) {
                 if (!(biometric.key in biometrics))
@@ -5026,9 +5026,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgPending')
             this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgOk')
             this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgNOk')
-            this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultPending')
-            this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultNOk')
-            this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultOk')
+            this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultPending')
+            this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultNOk')
+            this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultOk')
         }
 
         this._closeRnConsultChangedNotification()
