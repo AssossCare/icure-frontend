@@ -5808,7 +5808,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.trim(_.get(it,"dateOfBirth", "")) &&
                             _.size(_.get(it,"insurabilities", [])) &&
                             _.some(_.get(it, "medicalHouseContracts",[]), mhc => _.trim(_.get(mhc,"hcpId")) === _.trim(this.user.healthcarePartyId)) &&
-                            (!parseInt(_.get(it, "dateOfDeath", 0)) || (parseInt(_.get(it, "dateOfDeath", 0)) && moment( _.get(it, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(momentExportedDate.startOf('month'))))
+                            // Either alive or died "this" month -> still take into account if so
+                            (!parseInt(_.get(it, "dateOfDeath", 0)) || (parseInt(_.get(it, "dateOfDeath", 0)) && moment( _.get(it, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(momentExportedDate.startOf('month')))) &&
+                            _.size(_.get(it, "medicalHouseContracts", []))
                         )
                         .map(it => {
                             it.ssin = _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,"")
@@ -5825,7 +5827,43 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             )
                             it.insurancePersonType = !_.trim(_.get(it,"finalInsurability.titularyId","")) ? "T" : (momentExportedDate.diff(moment(_.get(it,"dateOfBirth"+"","0")+"", "DD/MM/YYYY"), 'years') < 18) ? "E" : "C"
                             it.titularyId = _.trim(_.get(it,"finalInsurability.titularyId",""))
-                            return !_.trim(_.get(it,"finalInsurability.insuranceId")) ? false : it
+                            it.finalMedicalHouseContracts = _
+                                .chain(_.get(it, "medicalHouseContracts", []))
+                                .filter(mhc => mhc &&
+                                    (mhc.kine || mhc.gp || mhc.nurse) &&
+                                    _.trim(_.get(mhc,"hcpId", null)) === _.trim(this.user.healthcarePartyId) &&
+                                    _.get(mhc,"startOfContract") &&
+                                    !_.get(mhc,"forcedSuspension", false) &&
+
+                                    // Has to begin in the past
+                                    moment(_.trim(_.get(mhc,"startOfContract")), "YYYYMMDD").startOf('month').isBefore(momentExportedDate) &&
+
+                                    // Either end of contract is in the future or is not set
+                                    (moment(_.trim(_.get(mhc,"endOfContract","0")), "YYYYMMDD").endOf('month').isAfter(momentExportedDate) || !parseInt(_.get(mhc,"endOfContract",0))) &&
+
+                                    // Either start of coverage is before this month AND set OR Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
+                                    (
+                                        (parseInt(_.get(mhc,"startOfCoverage",0)) && moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(momentExportedDate)) ||
+                                        (!parseInt(_.get(mhc,"startOfCoverage",0)) && moment(_.trim(_.get(_.cloneDeep(mhc), "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').isBefore(momentExportedDate))
+                                    ) &&
+
+                                    // Either no startOfSuspension (we ignore suspensions that only have endOfSuspension as they are incomplete data)
+                                    // OR the exportDate is before startOfSuspension
+                                    // OR the exportDate is after endOfSuspension
+                                    (
+                                        (parseInt(_.get(mhc,"startOfSuspension",-1)) < 0) ||
+                                        (parseInt(_.get(mhc,"startOfSuspension",0)) && moment(_.trim(_.get(mhc, "startOfSuspension", "0")), "YYYYMMDD").isAfter(momentExportedDate)) ||
+                                        (parseInt(_.get(mhc,"endOfSuspension",0)) && moment(_.trim(_.get(mhc, "endOfSuspension", 0)), "YYYYMMDD").isBefore(momentExportedDate))
+                                    )
+                                )
+                                .orderBy(["startOfContract"],["desc"])
+                                .head()
+                                .value()
+
+                            // Make sure it exists or set to default = startOfContract + 1 month
+                            _.assign(it.finalMedicalHouseContracts, {startOfCoverage: (parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage")))||0) ? parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage"))) : parseInt(moment(_.trim(_.get(_.cloneDeep(it), "finalMedicalHouseContracts.startOfContract")), "YYYYMMDD").startOf('month').add(1, 'months').format("YYYYMMDD")) })
+
+                            return !_.trim(_.get(it,"finalInsurability.insuranceId")) || !_.trim(_.get(it,"finalMedicalHouseContracts.hcpId",null)) ? false : it
                         })
                         .compact()
                         .value()
@@ -5848,43 +5886,90 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(() => this.api.setPreventLogging())
             .then(() => this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true})))
             .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1',this.language), icon:"arrow-forward"}))
+
+            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
             .then(() => this._getInvoicesToResendFromPreviousExports(exportedDate))
+
+            // 2 - Get invoices to add from timeline
             .then(invoicesToResendFromPreviousExports => this._getInvoicesToAddFromTimeline(exportedDate).then(invoicesToAddFromTimeline => _.concat((invoicesToAddFromTimeline||[]),(invoicesToResendFromPreviousExports||[]))))
+
+            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
             .then(invoicesToResend => !_.size(invoicesToResend) ? Promise.resolve([]) : this._e_getPatAndInsOutOfInvoicesToResend(invoicesToResend))
+
+            // 4 - Get all patients
             .then(patsToResend => {
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
                 return this._e_getPatients(exportedDate).then(myPatients => _
                     .chain(_.concat((myPatients||[]),(patsToResend||[])))
                     .map(it => { return {
-                        id: _.trim(_.get(it,"id")),
-                        firstName: _.trim(_.get(it,"firstName")),
-                        lastName: _.trim(_.get(it,"lastName")),
-                        ssin: _.trim(_.get(it,"ssin")),
+                        patientId: _.trim(_.get(it,"id")),
+                        patientSsin: _.trim(_.get(it,"ssin")),
                         insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
-                        identificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
+                        patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
                         queryDate: (parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)
                     }})
-                    .filter(it => _.trim(it.ssin) || (_.trim(it.insuranceId) && _.trim(it.identificationNumber)))
+                    .filter(it => _.trim(it.insuranceId) && (_.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber)))
                     .orderBy(["insuranceId","queryDate"], ["desc","desc"])
                     .value()
                 )
             })
-            .then(pats => {
 
+            // 5 - Resolve insurances
+            .then(pats => {
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3',this.language), icon:"arrow-forward"})
+                return this._getInsurancesDataByIds(_.uniq(_.map(pats, "insuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceId:_.trim(_.get(_.find(insurances, {id:it.insuranceId}),"parent")), insuranceCode:_.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code"))})))
+            })
 
-                console.log( "patsToResend + myPats", pats )
-                console.log( "TODO: dans le _e_getPatients => vérifier que a valid MHC pour la date exportée" )
-                console.log( "Quand fini ceci -> buter les f & l names des data -> pas requis / plus léger" )
-                console.log( "Résoudre assurances + injecter oa code / parent oa code dans pats" )
-                console.log( "Grouper data comme il faut -> 1! msg par OA et 1! période (mois) par niss" )
-                console.log( "Save msg db" )
+            // 6 - Resolve OAs
+            .then(pats => this._getInsurancesDataByIds(_.uniq(_.map(pats, "parentInsuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceCode:_.trim(_.get(_.find(insurances, {id:it.parentInsuranceId}),"code"))}))))
+
+            // 7 - Make && save request
+            .then(pats => !_.size(pats) ? promResolve : promResolve.then(() => {
+
+                let prom = Promise.resolve([]);
+                const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
+
+                _.map(mdaRequestedDataByOa, (v,k) => {
+                    prom = prom.then(createdDocuments => this.api.message().newInstance(this.user)
+                        .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+                            transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(k),
+                            recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                            recipients: [this.user.healthcarePartyId],
+                            toAddresses: [this.user.healthcarePartyId],
+                            metas: {
+                                oa: _.trim(k),
+                                requestDate: moment().format("YYYYMMDDHHmmss"),
+                                requestedDate: exportedDate,
+                                totalPats: _.size(v),
+                                requestId: this.api.crypto().randomUuid(),
+                                responseMessageId: "",
+                                responseDate: "",
+                            },
+                            status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
+                            subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(k),
+                        })))))
+                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}))
+                        .then(newDocumentInstance => retry.retry(() => (this.api.document().createDocument(newDocumentInstance))))
+                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
+                        .then(({createdDocument, encryptedFileContent}) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))))
+                        .then(x => _.concat(createdDocuments, [x]))
+                        .catch(()=>_.concat(createdDocuments, [false]))
+                    )
+                });
+
+                return prom.then(createdDocuments=>([mdaRequestedDataByOa,createdDocuments]))
+
+            }))
+            .then(([mdaRequestedDataByOa,createdDocuments])=>{
+
+                console.log( "mdaRequestedDataByOa", mdaRequestedDataByOa )
+                console.log( "createdDocuments", createdDocuments )
+
                 console.log( "Faire semblant interroge + dire merci à l'écran + revenir dans 24h" )
                 console.log( "Revoir affichage de l'écran, fonction des réponses / status / requests / ..." )
-
-
+                console.log( "Une fois réponse reçue de MDA / OA -> status message = this.invoiceMessageStatuses.treated.status + ajouter responseDate: moment().format(\"YYYYMMDDHHmmss\") sur le msg de request + enregistrer réponse + MAJ responseMessageId du message de request" )
 
             })
             .finally(() => {
@@ -5892,7 +5977,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 this.api.setPreventLogging(false)
             })
 
-        //return this._sleep(1000);
+        //return this._sleep(3000);
 
     }
 
