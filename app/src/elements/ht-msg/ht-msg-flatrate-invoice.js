@@ -1469,9 +1469,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 <!--                    4) Answer is there -> get + confirm back + show shatus (green/red) X/Y OA<br />-->
 <!--                    5) Réponse obtained -> aller sur réponse du dernier appel<br /><br />            -->
 
-                <div class="textAlignCenter valignCenter">
-                    <p class="textAlignCenter fw700">[[localize('checkMdaData','Vérifier les données patient (Member data) pour la facturation du forfait électronique',language)]]:</p>
-                    <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt30 pb60" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('checkMdaData2','Vérifier les données',language)]] ([[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]])</paper-button>
+                <div class="textAlignCenter">
+                    <div class="exportMonthPicker pb20">
+                        <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                        <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                        <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt20 pb40" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
+                    </div>
                 </div>
                 
             </template>
@@ -4821,6 +4824,103 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         return moment().isAfter(moment(this.eInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.eInvoicingDate,"YYYYMM"));
     }
 
+    _getInvoicesToResendFromPreviousExports(exportedDate) {
+
+        // Check for existing exports - did it run already? - do we have anything to run again for this month?
+        //     1. Get existing messages of month we're trying to export
+        //     2. No message found -> allow to run. Only of status fullyAccepted / pending -> don't allow to run again. If some of status archived / error / partiallyAccepted / rejected -> allow to run again (after checking invoicingCode booleans).
+        //     3. Take & resolve invoiceIds
+        //     4. Only keep (old) invoices with a correctiveInvoiceId
+        //     5. Resolve corrective invoices & drop already sent ones
+        //     6. Filter inv.invoicingCodes based on all bool false but "pending" === true (when BOTH pending & resent are true -> invoice will appear under "Invoices to be corrected" / customer has to flag as being corrected)
+        //     7. One+ record found? Export may run again
+        return this.api.getRowsUsingPagination(
+            (key,docId) =>
+                this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-FLATFILE', null, key, docId, 1000)
+                    .then(pl => { return {
+                        rows:_.filter(pl.rows, m => {
+                            m.evaluatedStatus = !!(m.status & (1 << 21)) ? "archived" :
+                                !!(m.status & (1 << 17)) ? "error" :
+                                !!(m.status & (1 << 16)) ? "partiallyAccepted" :
+                                !!(m.status & (1 << 15)) ? "fullyAccepted" :
+                                !!(m.status & (1 << 12)) ? "rejected" :
+                                !!(m.status & (1 << 11)) ? "treated" :
+                                !!(m.status & (1 << 10)) ? "acceptedForTreatment" :
+                                !!(m.status & (1 << 9))  ? "successfullySentToOA" :
+                                !!(m.status & (1 << 8))  ? "pending" :
+                                ""
+                            ;
+                            return m
+                                && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
+                                && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
+                                && parseInt( _.get(m, "metas.batchExportTstamp", 0) )
+                                && parseInt( _.size( _.get(m, "invoiceIds", [] ) ) )
+                                && ( parseInt( _.get(m, "metas.exportedDate", "" ) ) === parseInt(exportedDate) || parseInt( _.get(m, "metas.exportedDate", "" ) ) < parseInt(exportedDate) ) // Either current month Or before, NEVER take resent invoices "in the future"
+                        }),
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }})
+                    .catch(()=>{ return Promise.resolve(); })
+        ).then(foundMessages=> {
+
+            // Export already ran this month - any message at all?
+            if(_.size(_.get(this,"flatRateInvoicingDataObject",{}))) this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt(_.size(_.filter(foundMessages, m => _.trim(_.get(m,"metas.exportedDate",0)) === _.trim(exportedDate))));
+
+            // Invoices / no invoices to resend
+            return !parseInt(_.size(foundMessages)) ? [] :
+
+                // All are pending or fully accepted, nothing to resend
+                !parseInt( _.size(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }))) ? [] :
+
+                    this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.flatMap(_.map(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }), "invoiceIds"))))}))
+                        .then(invoicesToBeCorrected => !parseInt(_.size(invoicesToBeCorrected)) ? [] :
+                            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))}))
+                                .then(correctiveInvoices => !parseInt(_.size(correctiveInvoices)) ? [] :
+                                    _.compact(
+                                        _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
+                                            // Make sure I have to take it into account (all false but the pending bool)
+                                            const invoicingCodes = _.get(inv, "invoicingCodes", []);
+                                            return !parseInt(_.size(invoicingCodes)) ? false :
+                                                _.every(invoicingCodes, ic => {
+                                                    return _.get(ic,"accepted",false)===false
+                                                        && _.get(ic,"archived",false)===false
+                                                        && _.get(ic,"canceled",false)===false
+                                                        && _.get(ic,"resent",false)===false
+                                                        && _.get(ic,"lost",false)===false
+                                                        && _.get(ic,"pending",false)===true
+                                                }) ? inv : false
+                                        })
+                                    )
+                                ).catch(e => { console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))); console.log(e); return false; })
+                        ).catch(e => { console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds"))))); console.log(e); return false; })
+        })
+
+    }
+
+    _getInvoicesToAddFromTimeline(exportedDate) {
+
+        const flatRateUtil = this.$.flatrateUtils;
+
+        // Go for any invoice(s) to be added in the batch (could be manually created using PAT's timeline (timeline && pat-flatrate-utils)
+        // For performance purposes, such invoices could be found by scanning for messages with transportGuid "MH:FLATRATE:INVOICE-TO-ADD" (current or previous month allowed, never in the future), then go for the invoiceIds
+        return flatRateUtil.getInvoicesToAddFromTimelineByMaxExportDate(parseInt(exportedDate))
+            .then(invoicesToAdd => _.map(invoicesToAdd, inv => {
+                // Make sure I have to take it into account (all false but the pending bool)
+                const invoicingCodes = _.get(inv, "invoicingCodes", []);
+                return !parseInt(_.size(invoicingCodes)) ? false :
+                    _.every(invoicingCodes, ic => {
+                        return _.get(ic,"accepted",false)===false
+                            && _.get(ic,"archived",false)===false
+                            && _.get(ic,"canceled",false)===false
+                            && _.get(ic,"resent",false)===false
+                            && _.get(ic,"lost",false)===false
+                            && _.get(ic,"pending",false)===true
+                    }) ? inv : false
+            }))
+
+    }
+
     _exportFlatRateInvoicing() {
 
         this.set('_isLoading', true );
@@ -4831,6 +4931,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
         // Force refresh - could be new "valorisation" / bce / bank account / contact person / ... was just set
         if(_.size(_.get(this.api.hcparty().cache, _.get(this.user, "healthcarePartyId", "" )))) delete this.api.hcparty().cache[_.get(this.user, "healthcarePartyId", "" )];
+
+        // Make sure we won't get disconnected if process runs for over an hour
+        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}));
 
         this.api.hcparty().getHealthcareParty(_.get(this.user, "healthcarePartyId", "" )) //0
             .then(hcp => { //1
@@ -4962,111 +5065,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 return null
 
             }) //1
-            .then(()=>{ //2
-
-                // Make sure we won't get disconnected if process runs for over an hour
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}));
-
-                // Check for existing exports - did it run already? - do we have anything to run again for this month?
-                //     1. Get existing messages of month we're trying to export
-                //     2. No message found -> allow to run. Only of status fullyAccepted / pending -> don't allow to run again. If some of status archived / error / partiallyAccepted / rejected -> allow to run again (after checking invoicingCode booleans).
-                //     3. Take & resolve invoiceIds
-                //     4. Only keep (old) invoices with a correctiveInvoiceId
-                //     5. Resolve corrective invoices & drop already sent ones
-                //     6. Filter inv.invoicingCodes based on all bool false but "pending" === true (when BOTH pending & resent are true -> invoice will appear under "Invoices to be corrected" / customer has to flag as being corrected)
-                //     7. One+ record found? Export may run again
-                return this.api.getRowsUsingPagination(
-                    (key,docId) =>
-                        this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-FLATFILE', null, key, docId, 1000)
-                            .then(pl => { return {
-                                rows:_.filter(pl.rows, m => {
-                                    m.evaluatedStatus =
-                                        !!(m.status & (1 << 21)) ? "archived" :
-                                            !!(m.status & (1 << 17)) ? "error" :
-                                                !!(m.status & (1 << 16)) ? "partiallyAccepted" :
-                                                    !!(m.status & (1 << 15)) ? "fullyAccepted" :
-                                                        !!(m.status & (1 << 12)) ? "rejected" :
-                                                            !!(m.status & (1 << 11)) ? "treated" :
-                                                                !!(m.status & (1 << 10)) ? "acceptedForTreatment" :
-                                                                    !!(m.status & (1 << 9))  ? "successfullySentToOA" :
-                                                                        !!(m.status & (1 << 8))  ? "pending" :
-                                                                            "";
-                                    return m
-                                        && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
-                                        && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
-                                        && parseInt( _.get(m, "metas.batchExportTstamp", 0) )
-                                        && parseInt( _.size( _.get(m, "invoiceIds", [] ) ) )
-                                        && (
-                                            parseInt( _.get(m, "metas.exportedDate", "" ) ) === parseInt(this.flatRateInvoicingDataObject.exportedDate)     // Either current month
-                                            || parseInt( _.get(m, "metas.exportedDate", "" ) ) < parseInt(this.flatRateInvoicingDataObject.exportedDate)    // Or before, NEVER take resent invoices "in the future"
-                                        )
-                                }),
-                                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                                done: !pl.nextKeyPair
-                            }})
-                            .catch(()=>{ return Promise.resolve(); })
-                ).then(foundMessages=> {
-
-                    // Export already ran this month - any message at all?
-                    this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt( _.size(_.filter(foundMessages, m=>{return _.trim(_.get(m,"metas.exportedDate",0))=== _.trim(this.flatRateInvoicingDataObject.exportedDate) })) );
-
-                    // Invoices / no invoices to resend
-                    return !parseInt(_.size(foundMessages)) ? [] :
-
-                        // All are pending or fully accepted, nothing to resend
-                        !parseInt( _.size(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }))) ? [] :
-
-                            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.flatMap(_.map(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }), "invoiceIds"))))}))
-                                .then(invoicesToBeCorrected => !parseInt(_.size(invoicesToBeCorrected)) ? [] :
-                                    this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))}))
-                                        .then(correctiveInvoices => !parseInt(_.size(correctiveInvoices)) ? [] :
-                                            _.compact(
-                                                _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
-                                                    // Make sure I have to take it into account (all false but the pending bool)
-                                                    const invoicingCodes = _.get(inv, "invoicingCodes", []);
-                                                    return !parseInt(_.size(invoicingCodes)) ? false :
-                                                        _.every(invoicingCodes, ic => {
-                                                            return _.get(ic,"accepted",false)===false
-                                                                && _.get(ic,"archived",false)===false
-                                                                && _.get(ic,"canceled",false)===false
-                                                                && _.get(ic,"resent",false)===false
-                                                                && _.get(ic,"lost",false)===false
-                                                                && _.get(ic,"pending",false)===true
-                                                        }) ? inv : false
-                                                })
-                                            )
-                                        )
-                                        .catch(e => { console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))); console.log(e); return false; })
-                                )
-                                .catch(e => { console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds"))))); console.log(e); return false; })
-                })
-
-            }) //2
-            .then(pendingInvoicesToResend => {
-
-                // Go for any invoice(s) to be added in the batch (could be manually created using PAT's timeline (timeline && pat-flatrate-utils)
-                // For performance purposes, such invoices could be found by scanning for messages with transportGuid "MH:FLATRATE:INVOICE-TO-ADD" (current or previous month allowed, never in the future), then go for the invoiceIds
-                return flatRateUtil.getInvoicesToAddFromTimelineByMaxExportDate(parseInt(_.get(this,"flatRateInvoicingDataObject.exportedDate")))
-                    .then(invoicesToAdd => _
-                        .chain(invoicesToAdd)
-                        .map(inv => {
-                            // Make sure I have to take it into account (all false but the pending bool)
-                            const invoicingCodes = _.get(inv, "invoicingCodes", []);
-                            return !parseInt(_.size(invoicingCodes)) ? false :
-                                _.every(invoicingCodes, ic => {
-                                    return _.get(ic,"accepted",false)===false
-                                        && _.get(ic,"archived",false)===false
-                                        && _.get(ic,"canceled",false)===false
-                                        && _.get(ic,"resent",false)===false
-                                        && _.get(ic,"lost",false)===false
-                                        && _.get(ic,"pending",false)===true
-                                }) ? inv : false
-                        })
-                        .concat((pendingInvoicesToResend||[]))
-                        .value()
-                    )
-            }) // 2 Bis
+            .then(() => this._getInvoicesToResendFromPreviousExports(this.flatRateInvoicingDataObject.exportedDate)) //2
+            .then(pendingInvoicesToResend => this._getInvoicesToAddFromTimeline(_.get(this,"flatRateInvoicingDataObject.exportedDate")).then(invoicesToAddFromTimeline => _.concat(invoicesToAddFromTimeline, (pendingInvoicesToResend||[])) )) // 2 Bis
             .then(pendingInvoicesToResend => { //3
                 if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran");
                 this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend;
@@ -5750,6 +5750,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
 
 
+    // ---------------------------- e-Invoicing ----------------------------
+
     _e_getCurrentMonthHr() {
 
       return this.localize('month_' + moment().format('M'),this.language)
@@ -5762,10 +5764,135 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _e_getPatAndInsOutOfInvoicesToResend(invoicesToResend) {
+
+        return Promise.all(invoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
+            .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
+            .then(invoicesAndPatient => _
+                .chain(invoicesAndPatient)
+                .map(invAndPat => {
+                    let tempPat = _.cloneDeep(invAndPat[1]);
+                    const momentInvoiceDate = moment(_.trim(_.get(invAndPat,"[0].invoiceDate",0)),"YYYYMMDD")
+                    tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{});
+                    tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"");
+                    tempPat.lastName = (_.get(tempPat,"lastName","")).toUpperCase()
+                    tempPat.firstName = (_.get(tempPat,"firstName","")).toUpperCase()
+                    tempPat.dateOfBirth = (!!_.trim(_.get(tempPat,"dateOfBirth",""))?moment(_.trim(_.get(tempPat,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+                    tempPat.finalInsurability = _.find(tempPat.insurabilities,ins =>_.size(ins) &&
+                        _.trim(_.get( ins, "insuranceId", "" )) &&
+                        _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                        _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                        ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                        (moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore(momentInvoiceDate) || moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(momentInvoiceDate) || !parseInt(_.get(ins, "startDate", 0))) &&
+                        (moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(momentInvoiceDate) || moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(momentInvoiceDate) || !parseInt(_.get(ins, "endDate", 0)))
+                    )
+                    // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
+                    return !_.trim(_.get(tempPat,"finalInsurability.insuranceId")) ? false : tempPat
+                })
+                .compact()
+                .value()
+            )
+
+    }
+
+    _e_getPatients(exportedDate) {
+
+        const momentExportedDate = moment(_.trim(exportedDate),"YYYYMMDD")
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, this.user.healthcarePartyId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => _.get(it,"active", true) &&
+                            _.trim(_.get(it,"dateOfBirth", "")) &&
+                            _.size(_.get(it,"insurabilities", [])) &&
+                            _.some(_.get(it, "medicalHouseContracts",[]), mhc => _.trim(_.get(mhc,"hcpId")) === _.trim(this.user.healthcarePartyId)) &&
+                            (!parseInt(_.get(it, "dateOfDeath", 0)) || (parseInt(_.get(it, "dateOfDeath", 0)) && moment( _.get(it, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(momentExportedDate.startOf('month'))))
+                        )
+                        .map(it => {
+                            it.ssin = _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,"")
+                            it.lastName = (_.get(it,"lastName","")).toUpperCase()
+                            it.firstName = (_.get(it,"firstName","")).toUpperCase()
+                            it.dateOfBirth = (!!_.trim(_.get(it,"dateOfBirth",""))?moment(_.trim(_.get(it,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+                            it.finalInsurability = _.find(it.insurabilities, ins => _.size(ins) &&
+                                _.trim(_.get( ins, "insuranceId", "" )) &&
+                                _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                                _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                                ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                                (moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore(momentExportedDate, 'date') ||  moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(momentExportedDate, 'date') || !parseInt(_.get(ins, "startDate", 0))) &&
+                                (moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(momentExportedDate, 'date') || moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(momentExportedDate, 'date') || !parseInt(_.get(ins, "endDate", 0)))
+                            )
+                            it.insurancePersonType = !_.trim(_.get(it,"finalInsurability.titularyId","")) ? "T" : (momentExportedDate.diff(moment(_.get(it,"dateOfBirth"+"","0")+"", "DD/MM/YYYY"), 'years') < 18) ? "E" : "C"
+                            it.titularyId = _.trim(_.get(it,"finalInsurability.titularyId",""))
+                            return !_.trim(_.get(it,"finalInsurability.insuranceId")) ? false : it
+                        })
+                        .compact()
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(pats => _.orderBy(pats,["lastName","firstName"],["asc","asc"]))
+            .catch(() => Promise.resolve([]))
+
+    }
+
     _e_checkForMdaData() {
 
-        console.log("_e_checkForMdaData");
-        console.log("aller rechercher toute la patientelle + timeline sam + tout ce qui est à corriger");
+        const promResolve = Promise.resolve();
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return promResolve
+            .then(() => this.set('_isLoading', true ))
+            .then(() => this.api.setPreventLogging())
+            .then(() => this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true})))
+            .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1',this.language), icon:"arrow-forward"}))
+            .then(() => this._getInvoicesToResendFromPreviousExports(exportedDate))
+            .then(invoicesToResendFromPreviousExports => this._getInvoicesToAddFromTimeline(exportedDate).then(invoicesToAddFromTimeline => _.concat((invoicesToAddFromTimeline||[]),(invoicesToResendFromPreviousExports||[]))))
+            .then(invoicesToResend => !_.size(invoicesToResend) ? Promise.resolve([]) : this._e_getPatAndInsOutOfInvoicesToResend(invoicesToResend))
+            .then(patsToResend => {
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
+                return this._e_getPatients(exportedDate).then(myPatients => _
+                    .chain(_.concat((myPatients||[]),(patsToResend||[])))
+                    .map(it => { return {
+                        id: _.trim(_.get(it,"id")),
+                        firstName: _.trim(_.get(it,"firstName")),
+                        lastName: _.trim(_.get(it,"lastName")),
+                        ssin: _.trim(_.get(it,"ssin")),
+                        insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
+                        identificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
+                        queryDate: (parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)
+                    }})
+                    .filter(it => _.trim(it.ssin) || (_.trim(it.insuranceId) && _.trim(it.identificationNumber)))
+                    .orderBy(["insuranceId","queryDate"], ["desc","desc"])
+                    .value()
+                )
+            })
+            .then(pats => {
+
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3',this.language), icon:"arrow-forward"})
+
+                console.log( "patsToResend + myPats", pats )
+                console.log( "TODO: dans le _e_getPatients => vérifier que a valid MHC pour la date exportée" )
+                console.log( "Quand fini ceci -> buter les f & l names des data -> pas requis / plus léger" )
+                console.log( "Résoudre assurances + injecter oa code / parent oa code dans pats" )
+                console.log( "Grouper data comme il faut -> 1! msg par OA et 1! période (mois) par niss" )
+                console.log( "Save msg db" )
+                console.log( "Faire semblant interroge + dire merci à l'écran + revenir dans 24h" )
+                console.log( "Revoir affichage de l'écran, fonction des réponses / status / requests / ..." )
+
+
+
+            })
+            .finally(() => {
+                this.set("_isLoading",false)
+                this.api.setPreventLogging(false)
+            })
+
+        //return this._sleep(1000);
 
     }
 
