@@ -111,6 +111,10 @@ class IccApi extends PolymerElement {
           electronHost: {
               type: String,
               value: "http://127.0.0.1:16042"
+          },
+          flatRateEInvoicingDate: {
+              type: Number,
+              value: 202006
           }
       }
   }

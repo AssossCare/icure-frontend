@@ -32,6 +32,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     static get template() {
     return html`
+
+
+
         <custom-style>
             <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
 
@@ -978,11 +981,63 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     width:50%;
                     margin:0 auto;
                 }
+                
+                #mdaOasContainer {}
+                
+                #mdaOaHeaders {
+                    display:flex;
+                    justify-content: space-around;
+                    background-color: #dddddd;
+                    border: 1px solid #666;
+                    border-left: 0;
+                    border-right: 0;
+                    font-weight: 500;
+                }
+                                
+                #mdaOaHeaders > div {
+                    padding: 5px 0 5px 0;
+                    border-right: 1px solid #666;
+                    text-align:center;
+                }
+                
+                .mdaOaContainer {
+                    display:flex;
+                    justify-content: space-around;
+                }
+                
+                .mdaOaContainer:nth-child(odd) {
+                    background-color:#f5f5f5;
+                }                
+                
+                .mdaOaContainer > div {
+                    text-align:center;
+                    font-size:.9em;
+                    border-bottom:1px solid #ddd;
+                    padding:5px 0;
+                }
+                
+                .mdaOaContainerCol1 { width:80px; text-transform: uppercase; font-weight:500; }
+                .mdaOaContainerCol2 { width:100px; }
+                .mdaOaContainerCol3 { width:190px; }
+                .mdaOaContainerCol4 { width:210px; }
+                .mdaOaContainerCol5 { flex-grow:1; }
+                .mdaOaContainerCol6 { width:100px; border-right:0!important; }
+                
+                .statusBullet {
+                    display:inline-block;
+                    width:14px;
+                    height:14px;
+                    border-radius: 8px;
+                    margin-top:3px;
+                }
+                
+                .statusBullet.red {background-color:#ef5350;}
+                .statusBullet.green {background-color:#66bb6a;}
 
             </style>
         </custom-style>
 
-        
+
         
         <div class="invoice-panel">
 
@@ -1460,22 +1515,63 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             
             <!-- Medical Houses - Flatrate E-Invoicing -->
             <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda')]]">
-            
-<!--                    1) Did NOT ask this month yet -> show<br />-->
-<!--                    2) Already asked this month but did not ask for answer -> Button ask for answer<br />-->
-<!--                    3) Ask for answer but not there yet<br />-->
-<!--                        &nbsp;&nbsp;&nbsp;&nbsp;a) > 24 hours -> by pass<br />-->
-<!--                        &nbsp;&nbsp;&nbsp;&nbsp;b) < 24 hours -> ask for 24 hours<br />-->
-<!--                    4) Answer is there -> get + confirm back + show shatus (green/red) X/Y OA<br />-->
-<!--                    5) Réponse obtained -> aller sur réponse du dernier appel<br /><br />            -->
 
-                <div class="textAlignCenter">
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
-                        <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
-                        <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt20 pb40" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
+                <!-- MDA request -->
+                <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaRequest')]]">
+                    <div class="textAlignCenter">
+                        <div class="exportMonthPicker pb20">
+                            <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                            <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                            <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
+                        </div>
                     </div>
-                </div>
+                </template>
+                
+                <!-- MDA responses -->
+                <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponse')]]">
+                    <div class="textAlignCenter">
+                        <div class="exportMonthPicker pb20 mw90pc">
+                        
+                            <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                            <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                            
+                            <div id="mdaOasContainer">
+                                <div id="mdaOaHeaders">
+                                    <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
+                                    <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]]</div>
+                                    <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
+                                    <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
+                                    <div class="mdaOaContainerCol5">[[localize("answeredOn","Répondu le", language)]]</div>
+                                    <div class="mdaOaContainerCol6">[[localize("inv_stat","Status", language)]]</div>
+                                </div>                            
+                                <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="item" id="domRepeatMdaRequests">
+                                    <div class="mdaOaContainer">
+                                        <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
+                                        <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
+                                        <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
+                                        <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
+                                        <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                        <div class="mdaOaContainerCol6">
+                                            <template is="dom-if" if="[[item.metas.responseMessageId]]"><span class="statusBullet green"></span></template>
+                                            <template is="dom-if" if="[[!item.metas.responseMessageId]]"><span class="statusBullet red"></span></template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            
+                            <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]"><paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button></template>
+                            
+                            <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
+                                <br /><br /><br />
+                                Bug ici: c'est le FIRST EVER check (tous msg confondus) qui doit avoir été fait > 24h<br />(je check à l'instant, toujours pas de réponse -> je dois pouvoir bypasser)<br /><br />
+                                Got checked at least once && last call more than X hours ago<br />
+                                Fabien: check en plus que au moins 1 n'ait pas encore répondu (qqch du genre mdaRequestsData.missingAtLeastOneAnswer)<br />
+                                Alors bouton pour by passer
+                            </template>                            
+                            
+                        </div>
+                    </div>                    
+                </template>
                 
             </template>
             
@@ -1643,6 +1739,18 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     <paper-button class="button button--save" on-tap="_doDeleteBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
                 </div>
             </paper-dialog>
+            
+            <!-- Medical Houses - Flatrate E-Invoicing -->
+            <paper-dialog class="modalDialog" id="mdaRequestsSent" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="">[[localize('mh_eInvoicing.mda.text1','We could not find any data to export',language)]]</p>
+                    <p class="fw700">[[localize('mh_eInvoicing.mda.text2','We could not find any data to export',language)]]</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_e_closeMdaRequestsSentDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                </div>
+            </paper-dialog>            
 
 
 
@@ -1650,6 +1758,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
 
         </div>
+
+
 
 `;
   }
@@ -1817,9 +1927,17 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 type: Boolean,
                 value: false
             },
-            eInvoicingDate: {
+            eInvoicingStep: {
+                type: String,
+                value: ""
+            },
+            mdaRequestsData: {
+                type: Object,
+                value:()=>{}
+            },
+            mdaMinimumHoursGapBetweenChecks: {
                 type: Number,
-                value: 202006
+                value: 24
             }
         };
     }
@@ -1875,6 +1993,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }
 
         }
+
+        // Study mda status / step we're in
+        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_setEInvoicingStep();
 
     }
 
@@ -4817,11 +4938,30 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _isBeforeEInvoicingDate() {
-        return moment().isBefore(moment(this.eInvoicingDate,"YYYYMM"));
+        return moment().isBefore(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
     }
 
     _isAfterEInvoicingDate() {
-        return moment().isAfter(moment(this.eInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.eInvoicingDate,"YYYYMM"));
+        return moment().isAfter(moment(this.api.flatRateEInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
+    }
+
+    _getStatusHr(status) {
+
+        return !!(status & (1 << 22)) ? "errorsInPreliminaryControl" :
+            !!(status & (1 << 21)) ? "archived" :
+            !!(status & (1 << 18)) ? "analyzed" :
+            !!(status & (1 << 17)) ? "error" :
+            !!(status & (1 << 16)) ? "partiallyAccepted" :
+            !!(status & (1 << 15)) ? "fullyAccepted" :
+            !!(status & (1 << 12)) ? "rejected" :
+            !!(status & (1 << 11)) ? "treated" :
+            !!(status & (1 << 10)) ? "acceptedForTreatment" :
+            !!(status & (1 << 9))  ? "successfullySentToOA" :
+            !!(status & (1 << 8))  ? "pending" :
+            !!(status & (1 << 7))  ? "sent" :
+            !!(status & (1 << 6))  ? "efact" :
+            ""
+
     }
 
     _getInvoicesToResendFromPreviousExports(exportedDate) {
@@ -4838,24 +4978,14 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             (key,docId) =>
                 this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-FLATFILE', null, key, docId, 1000)
                     .then(pl => { return {
-                        rows:_.filter(pl.rows, m => {
-                            m.evaluatedStatus = !!(m.status & (1 << 21)) ? "archived" :
-                                !!(m.status & (1 << 17)) ? "error" :
-                                !!(m.status & (1 << 16)) ? "partiallyAccepted" :
-                                !!(m.status & (1 << 15)) ? "fullyAccepted" :
-                                !!(m.status & (1 << 12)) ? "rejected" :
-                                !!(m.status & (1 << 11)) ? "treated" :
-                                !!(m.status & (1 << 10)) ? "acceptedForTreatment" :
-                                !!(m.status & (1 << 9))  ? "successfullySentToOA" :
-                                !!(m.status & (1 << 8))  ? "pending" :
-                                ""
-                            ;
-                            return m
-                                && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
-                                && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
-                                && parseInt( _.get(m, "metas.batchExportTstamp", 0) )
-                                && parseInt( _.size( _.get(m, "invoiceIds", [] ) ) )
-                                && ( parseInt( _.get(m, "metas.exportedDate", "" ) ) === parseInt(exportedDate) || parseInt( _.get(m, "metas.exportedDate", "" ) ) < parseInt(exportedDate) ) // Either current month Or before, NEVER take resent invoices "in the future"
+                        rows:_.filter(pl.rows, it => {
+                            it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
+                            return it &&
+                                _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                                _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                                parseInt(_.get(it,"metas.batchExportTstamp",0)) &&
+                                parseInt(_.size(_.get(it,"invoiceIds",[]))) &&
+                                (parseInt(_.get(it,"metas.exportedDate","")) === parseInt(exportedDate) || parseInt(_.get(it,"metas.exportedDate","")) < parseInt(exportedDate)) // Either current month Or before, NEVER take resent invoices "in the future"
                         }),
                         nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
                         nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
@@ -5876,16 +6006,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _e_checkForMdaData() {
+    _e_getPatientsEligibleForExport(exportedDate) {
 
         const promResolve = Promise.resolve();
-        const exportedDate = moment().format("YYYYMM") + "01"
 
         return promResolve
-            .then(() => this.set('_isLoading', true ))
-            .then(() => this.api.setPreventLogging())
-            .then(() => this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true})))
-            .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1',this.language), icon:"arrow-forward"}))
 
             // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
             .then(() => this._getInvoicesToResendFromPreviousExports(exportedDate))
@@ -5898,8 +6023,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
             // 4 - Get all patients
             .then(patsToResend => {
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_1_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
                 return this._e_getPatients(exportedDate).then(myPatients => _
                     .chain(_.concat((myPatients||[]),(patsToResend||[])))
                     .map(it => { return {
@@ -5907,13 +6030,65 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         patientSsin: _.trim(_.get(it,"ssin")),
                         insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
                         patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
-                        queryDate: (parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)
+                        startDate: parseInt(moment(_.trim((parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)),"YYYYMMDD").subtract(1, 'months').format("YYYYMMDD")) // Always one month before
                     }})
+                    .map(it => _.assign(it, {endDate: parseInt(moment(_.get(_.cloneDeep(it),"startDate"),"YYYYMMDD").add(1, 'months').format("YYYYMMDD"))}))
                     .filter(it => _.trim(it.insuranceId) && (_.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber)))
-                    .orderBy(["insuranceId","queryDate"], ["desc","desc"])
+                    .orderBy(["insuranceId","startDate"], ["desc","desc"])
                     .value()
                 )
             })
+
+    }
+
+    _e_closeMdaRequestsSentDialog() {
+        this._closeDialogs()
+        this._e_setEInvoicingStep()
+    }
+
+    _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
+
+        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.mdaMinimumHoursGapBetweenChecks)||24)
+
+    }
+
+    _e_getAsyncMemberData(oa, requestedData, requestId) {
+
+        // Should be something like: this.api.fhc().MemberDataController().getAsyncMemberData()
+        // OR wait for Max's input on async MDA batch call
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(()=>this._sleep(500)) // Pretend call happened for the moment
+            .then(()=>_.assign({},{
+                message: "MDA fake answer",
+                oa: oa,
+                requestId: requestId,
+                requestMdaResponse: this.api.crypto().randomUuid(),
+            }))
+            .catch(()=>null)
+
+    }
+
+    _e_checkForMdaData() {
+
+        const promResolve = Promise.resolve();
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
+            })
+
+            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
+            // 2 - Get invoices to add from timeline
+            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
+            // 4 - Get all patients of mine
+            .then(() => this._e_getPatientsEligibleForExport(exportedDate))
 
             // 5 - Resolve insurances
             .then(pats => {
@@ -5925,61 +6100,165 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             // 6 - Resolve OAs
             .then(pats => this._getInsurancesDataByIds(_.uniq(_.map(pats, "parentInsuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceCode:_.trim(_.get(_.find(insurances, {id:it.parentInsuranceId}),"code"))}))))
 
-            // 7 - Make && save request
+            // 7 - Save MDA requests
             .then(pats => !_.size(pats) ? promResolve : promResolve.then(() => {
+
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language), icon:"arrow-forward"})
 
                 let prom = Promise.resolve([]);
                 const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
 
-                _.map(mdaRequestedDataByOa, (v,k) => {
-                    prom = prom.then(createdDocuments => this.api.message().newInstance(this.user)
+                _.map(mdaRequestedDataByOa, (v,oa) => {
+                    prom = prom.then(promisesCarrier => this.api.message().newInstance(this.user)
                         .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
-                            transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(k),
+                            transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
                             recipientsType: "org.taktik.icure.entities.HealthcareParty",
                             recipients: [this.user.healthcarePartyId],
                             toAddresses: [this.user.healthcarePartyId],
                             metas: {
-                                oa: _.trim(k),
+                                oa: _.trim(oa),
+                                totalPats: _.size(v),
+                                requestId: "oa-" + _.trim(oa) + "-" + exportedDate + "-" + this.api.crypto().randomUuid(),
                                 requestDate: moment().format("YYYYMMDDHHmmss"),
                                 requestedDate: exportedDate,
-                                totalPats: _.size(v),
-                                requestId: this.api.crypto().randomUuid(),
+                                requestMdaResponse: "",
                                 responseMessageId: "",
                                 responseDate: "",
+                                responseLastCheckDate: "",
+                                overriddenByUser: 0
                             },
                             status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
-                            subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(k),
-                        })))))
-                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}))
-                        .then(newDocumentInstance => retry.retry(() => (this.api.document().createDocument(newDocumentInstance))))
-                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                        .then(({createdDocument, encryptedFileContent}) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))))
-                        .then(x => _.concat(createdDocuments, [x]))
-                        .catch(()=>_.concat(createdDocuments, [false]))
+                            subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
+                        }))), 4, 1000, 1.5))
+                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
+                        .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
+                        .then(([createdMessage,createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(encryptedFileContent => ([createdMessage,createdDocument,encryptedFileContent])))
+                        .then(([createdMessage,createdDocument,encryptedFileContent]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(()=>createdMessage)), 4, 1000, 1.5))
+                        .then(createdMessage => this._sleep(500) && createdMessage) // Cool down
+                        .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
+                        .catch(()=>_.concat(promisesCarrier, [false]))
                     )
                 });
 
-                return prom.then(createdDocuments=>([mdaRequestedDataByOa,createdDocuments]))
+                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
 
             }))
-            .then(([mdaRequestedDataByOa,createdDocuments])=>{
 
-                console.log( "mdaRequestedDataByOa", mdaRequestedDataByOa )
-                console.log( "createdDocuments", createdDocuments )
+            // 8 - Make MDA requests
+            .then(([mdaRequestedDataByOa,createdMessages]) => {
 
-                console.log( "Faire semblant interroge + dire merci à l'écran + revenir dans 24h" )
-                console.log( "Revoir affichage de l'écran, fonction des réponses / status / requests / ..." )
-                console.log( "Une fois réponse reçue de MDA / OA -> status message = this.invoiceMessageStatuses.treated.status + ajouter responseDate: moment().format(\"YYYYMMDDHHmmss\") sur le msg de request + enregistrer réponse + MAJ responseMessageId du message de request" )
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4_done',this.language), icon:"arrow-forward", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language), icon:"arrow-forward"})
+
+                let prom = Promise.resolve([]);
+                _.map(mdaRequestedDataByOa, (v,oa) => {
+                    const targetMessage = _.find(createdMessages,m=>_.trim(_.get(m,"metas.oa"))===_.trim(oa))
+                    const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
+                    prom = prom.then(promisesCarrier => this._e_getAsyncMemberData(oa,v,_.get(targetMessage,"metas.requestId"))
+                        .then(response => !_.get(response,"requestMdaResponse") ? promResolve : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{requestMdaResponse:_.get(response,"requestMdaResponse")}})).then(msg =>this.api.register(msg, 'message'))), 4, 1000, 1.5))
+                        .then(modifiedMessage => this._sleep(500) && modifiedMessage) // Cool down
+                        .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                        .catch(()=>_.concat(promisesCarrier, [false]))
+                    )
+                });
+
+                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
 
             })
-            .finally(() => {
-                this.set("_isLoading",false)
-                this.api.setPreventLogging(false)
-            })
 
-        //return this._sleep(3000);
+            // Confirm & goto mda responses
+            .then(([mdaRequestedDataByOa,modifiedMessage]) => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
+            .finally(() => this.set("_isLoading",false))
 
     }
+
+    _e_setEInvoicingStep() {
+
+        let eInvoicingStep = "mdaRequest"
+        const promResolve = Promise.resolve();
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"arrow-forward"})
+            })
+            .then(() => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000)
+                .then(pl => { return {
+                    rows:_.filter(pl.rows, it => {
+                        it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
+                        return it &&
+                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
+                    }),
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }})
+                .catch(()=>promResolve)
+            ))
+            .then(mdaRequestMessages => _.orderBy(mdaRequestMessages,["metas.oa"],["asc"]))
+            .then(mdaRequestMessages => {
+
+                // Did not invoke "MDA request" yet (this month)
+                if(!_.size(mdaRequestMessages)) throw new Error("shouldNotGoAnyFurther");
+
+                // Once requests got placed -> go for responses
+                eInvoicingStep = "mdaCheckForResponse"
+
+                const mostRecentCheck = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.responseLastCheckDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentRequestDate = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.requestDate",0))||0).orderBy([],["desc"]).head().value()
+
+                this.set("mdaRequestsData",{
+                    messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
+                        requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                        responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                        responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
+                    }})),
+                    everGotChecked: !!mostRecentCheck,
+                    lastCheckedHoursAgo: moment().diff(moment(_.trim((!mostRecentCheck ? mostRecentRequestDate : mostRecentCheck)),"YYYYMMDDHHmmss"),"hours",true)
+                })
+
+                // Did not invoke "MDA response" yet (this month)
+                // if(!_.some(mdaRequestMessages, it => _.trim(_.get(it,"metas.responseLastCheckDate")))) throw new Error("shouldNotGoAnyFurther") else eInvoicingStep = "mdaCheckForResponse"
+                // Tenir compte overriddenByUser dans les metas du message -> soit overriddenByUser, soit réponse obtained -> next step = résultat du dernier appel
+
+            })
+            .catch(()=>{})
+            .finally(()=>{
+                this.set("_isLoading",false)
+                this.set("eInvoicingStep",eInvoicingStep)
+                this.shadowRoot.getElementById("domRepeatMdaRequests") && this.shadowRoot.getElementById("domRepeatMdaRequests").render()
+            })
+
+    }
+
+    _e_checkForMdaResponses() {
+
+        console.log("_e_checkForMdaResponses");
+
+    }
+
+
+
+    // 1) Did NOT ask this month yet -> show
+    // 2) Already asked this month but did not ask for answer -> Button ask for answer
+    // 3) Ask for answer but not there yet
+    //     &nbsp;&nbsp;&nbsp;&nbsp;a) > 24 hours -> by pass
+    //     &nbsp;&nbsp;&nbsp;&nbsp;b) < 24 hours -> ask for 24 hours
+    // 4) Answer is there -> get + confirm back + show shatus (green/red) X/Y OA
+    // 5) Réponse obtained -> aller sur réponse du dernier appel
+
+
+
+    // Revoir affichage de l'écran, fonction des réponses / status / requests / ...
+    // Une fois réponse reçue de MDA / OA -> status message = this.invoiceMessageStatuses.treated.status + ajouter responseDate: moment().format(\"YYYYMMDDHHmmss\") sur le msg de request + enregistrer réponse + MAJ responseMessageId du message de request
+    // Si le user force de ne pas attendre (>24h) -> foutre overriddenByUser = 1 dans les metas du message
+
 
 
 

@@ -765,10 +765,6 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
             medicalHouseBillingTypeIsFlatRate: {
                 type: Boolean,
                 value: false
-            },
-            eInvoicingDate: {
-                type: Number,
-                value: 202006
             }
         };
     }
@@ -1010,11 +1006,11 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
     }
 
     _isBeforeEInvoicingDate() {
-        return moment().isBefore(moment(this.eInvoicingDate,"YYYYMM"));
+        return moment().isBefore(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
     }
 
     _isAfterEInvoicingDate() {
-        return moment().isAfter(moment(this.eInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.eInvoicingDate,"YYYYMM"));
+        return moment().isAfter(moment(this.api.flatRateEInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
     }
 
 
