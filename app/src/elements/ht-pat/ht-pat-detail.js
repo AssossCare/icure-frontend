@@ -2849,6 +2849,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-hub-utils id="htPatHubUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" on-hub-download="_hubDownload" on-close-hub-dialog="_closeOverlay"></ht-pat-hub-utils>
         <ht-pat-care-path-detail-dialog id="htPatCarePathDetailDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" contacts="[[contacts]]" current-contact="[[currentContact]]" resources="[[resources]]" selected-care-path-info="[[selectedCarePathInfo]]" active-health-elements="[[activeHealthElements]]" on-save-care-path="_refreshFromServices" on-closing-care-path="refreshPatient"></ht-pat-care-path-detail-dialog>
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
+        <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
 `
     }
 
@@ -3308,8 +3309,31 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             familyLinks: {
                 type: Array,
                 value: () => []
+            },
+            mdaResult:{
+                type: Object,
+                value: {}
+            },
+            hcpType: {
+                type: String,
+                value: null
+            },
+            sumehrContentOnPatientLoad:{
+                type: Object,
+                value: () => {}
+            },
+            matrixByHcpType: {
+                type: Object,
+                value: {
+                    rnConsult: ["physician", "specialist"],
+                    edmg: ["physician"],
+                    hub: ["physician", "specialist"],
+                    therLink: ["physician", "specialist"],
+                    consent: ["physician", "specialist"],
+                    mda: ["physician", "specialist"],
+                    insurability: ["medicalHouse"]
+                }
             }
-
         }
     }
 
@@ -4876,31 +4900,23 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.hubApplication = hubConfig.hubApplication
         this.set("supportBreakTheGlass", hubConfig.supportBreakTheGlass)
 
-        if (patient.ssin && (this.api.tokenId || this.api.tokenIdMH)) {
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>{
+            _.get(hcp, 'type', null).toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
+                this._isSpecialist(hcp) ? this.set('hcpType', "specialist") :
+                    this.set('hcpType', "physician")
 
-            let dlg = this.root.querySelector('#genInsDialog')
-            let dStart = null
-            const date = new Date(), y = date.getFullYear(), m = date.getMonth()
-            dStart = new Date(y, m, 1).getTime()
+            if(_.get(this.patient, 'ssin', null) && _.get(hcp, 'nihii', null) && _.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)){
+                //Physician or specialist access
+                this._checkEhealthServiceForPhysician(hcp)
 
-            if (!dlg.opened) this.set('curGenInsResp', null)
-            //api.MHContactPersonName
-            //api.MHContactPersonSsin
-            console.log("getGeneralInsurabilityUsingGET on date", dStart)
-            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
-                this.cleanNiss(patient.ssin),
-                this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
-                this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", dStart, null
-            ).then(gi => {
-                const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
-                const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
-
-                if (!dlg.opened) this.set('curGenInsResp', gi)
-
+            }else if(_.get(this.patient, 'ssin', null) && _.get(hcp, 'nihii', null) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)){
+                //MedicalHouse access
+                this._checkEhealthServiceForMedicalHouse(hcp)
+            }else{
+                //No ehealth session or patient SSIN not present
                 this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('medicalHouse')
                 this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('noInsurance')
                 this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('insuranceOk')
-
                 this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.add(genInsOk ? medicalHouse ? 'medicalHouse' : 'insuranceOk' : 'noInsurance')
                 //Polymer.updateStyles(this.$.insuranceStatus)
 
