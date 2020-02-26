@@ -1374,6 +1374,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
           lang:{
               type: String,
               value: null
+          },
+          electronUrl: {
+              type: String,
+              value: "http://127.0.0.1:16042"
           }
 
   }
@@ -1424,11 +1428,17 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
       },2000)
   }
 
+    _getDefaultElectronUrl() {
+
+        return _.trim(_.get(this,"electronUrl")) ? _.trim(_.get(this,"electronUrl")) : "http://127.0.0.1:16042"
+
+    }
+
   setUrls() {
       const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
       this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
       this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhctz.icure.cloud' : 'https://fhcprd.icure.cloud'))
-      this.set('electronUrl', params.electronUrl || "http://127.0.0.1:16042");
+      this.set('electronUrl', _.trim(_.get(params,"electronUrl")) ? _.trim(_.get(params,"electronUrl")) : this._getDefaultElectronUrl())
       this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
       this.set('defaultIcureUrl', this.icureUrl)
       this.set('defaultFhcUrl', this.fhcUrl)
@@ -1492,7 +1502,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
       this.api.isElectronAvailable().then(electron => {
           this.set("isElectron",electron)
           if (electron) {
-              this.set("socket",io(_.get(this,"api.electronHost","http://127.0.0.1:16042")))
+              this.set("socket",io(this._getDefaultElectronUrl()))
 
               this.socket.on("connect", () => {
                   console.log("connection avec le socket de electron")
@@ -1515,7 +1525,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                   }
               })
 
-              fetch('http://127.0.0.1:16042/checkDrugs',{
+              fetch(this._getDefaultElectronUrl() + '/checkDrugs',{
                   method: "GET",
                   headers: {
                       "Content-Type": "application/json; charset=utf-8"
@@ -1526,7 +1536,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
           }
 
           if(this.isElectron){
-              fetch('http://127.0.0.1:16042/getVersion')
+              fetch(this._getDefaultElectronUrl() + '/getVersion')
                   .then((response) => {
                       return response.json()
                   })
@@ -1537,7 +1547,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                       }
                   })
 
-              fetch('http://127.0.0.1:16042/getConnexionData')
+              fetch(this._getDefaultElectronUrl() + '/getConnexionData')
                   .then((response) => {
                       return response.json()
                   })
@@ -1727,7 +1737,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
                   this.loginAndRedirect(page)
               } else {
-                  fetch('http://127.0.0.1:16042/logout')
+                  fetch(this._getDefaultElectronUrl() + '/logout')
                   this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
               }
           } else {
@@ -1867,7 +1877,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
 
               this.api.isElectronAvailable().then(electron =>{
                   if(electron){
-                      fetch('http://127.0.0.1:16042/tokenFHC', {
+                      fetch(this._getDefaultElectronUrl() + '/tokenFHC', {
                           method: "POST",
                           headers: {"Content-Type": "application/json"},
                           body: !isMH ? JSON.stringify({isMH:false,tokenId:this.api.tokenId, token:this.api.token}) : JSON.stringify({isMH:true,keystoreIdMH:this.api.keystoreIdMH, tokenIdMH:this.api.tokenIdMH, tokenMH:this.api.tokenMH, nihiiMH:this.api.nihiiMH})
@@ -2388,7 +2398,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                       if(electron === false){
                           window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
                       }else{
-                          fetch('http://127.0.0.1:16042/mc', {
+                          fetch(this._getDefaultElectronUrl() + '/mc', {
                               method: "POST",
                               headers: {"Content-Type": "application/json"},
                               body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
@@ -2423,7 +2433,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                                           if(electron === false){
                                                       window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
                                           }else{
-                                              fetch('http://127.0.0.1:16042/mc', {
+                                              fetch(this._getDefaultElectronUrl() + '/mc', {
                                                   method: "POST",
                                                   headers: {"Content-Type": "application/json"},
                                                   body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
