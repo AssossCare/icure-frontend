@@ -28,1139 +28,1346 @@ import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
+
+
 class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
+
+
     static get template() {
-    return html`
 
-
-
-        <custom-style>
-            <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
-
-                :host {
-                    display: block;
-                    z-index:2;
-                }
-
-                :host *:focus {
-                    outline: 0 !important;
-                }
-
-                vaadin-grid {
-                    height: calc(100vh - 145px);
-                    box-shadow: var(--app-shadow-elevation-1);
-                    border: none;
-                    box-sizing: border-box;
-                }
-
-                .modal-title {
-                    justify-content: flex-start;
-                }
-
-                .modal-title iron-icon{
-                    margin-right: 8px;
-                }
-
-                vaadin-grid.material {
-                    outline: 0 !important;
-                    font-family: Roboto, sans-serif;
-                    background: rgba(0, 0, 0, 0);
-                    border: none;
-                    --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
-
-                    --vaadin-grid-cell: {
-                        padding: 8px;
-                    };
-
-                    --vaadin-grid-header-cell: {
-                        height: 48px;
-                        padding: 11.2px;
-                        color: rgba(0, 0, 0, var(--dark-secondary-opacity));
-                        font-size: 12px;
+        return html`
+            <custom-style>
+                <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
+    
+                    :host {
+                        display: block;
+                        z-index:2;
+                    }
+    
+                    :host *:focus {
+                        outline: 0 !important;
+                    }
+    
+                    vaadin-grid {
+                        height: calc(100vh - 145px);
+                        box-shadow: var(--app-shadow-elevation-1);
+                        border: none;
+                        box-sizing: border-box;
+                    }
+    
+                    .modal-title {
+                        justify-content: flex-start;
+                    }
+    
+                    .modal-title iron-icon{
+                        margin-right: 8px;
+                    }
+    
+                    vaadin-grid.material {
+                        outline: 0 !important;
+                        font-family: Roboto, sans-serif;
                         background: rgba(0, 0, 0, 0);
-                        border-top: 0;
-                    };
-
-                    --vaadin-grid-body-cell: {
-                        height: 48px;
+                        border: none;
+                        --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
+    
+                        --vaadin-grid-cell: {
+                            padding: 8px;
+                        };
+    
+                        --vaadin-grid-header-cell: {
+                            height: 48px;
+                            padding: 11.2px;
+                            color: rgba(0, 0, 0, var(--dark-secondary-opacity));
+                            font-size: 12px;
+                            background: rgba(0, 0, 0, 0);
+                            border-top: 0;
+                        };
+    
+                        --vaadin-grid-body-cell: {
+                            height: 48px;
+                            color: rgba(0, 0, 0, var(--dark-primary-opacity));
+                            font-size: 13px;
+                        };
+    
+                        --vaadin-grid-body-row-hover-cell: {
+                            background-color: var(--app-background-color-dark);
+                        };
+    
+                        --vaadin-grid-body-row-selected-cell: {
+                            background-color: var(--paper-grey-100);
+                        };
+    
+                        --vaadin-grid-focused-cell: {
+                            box-shadow: none;
+                            font-weight: bold;
+                        };
+    
+                    }
+    
+                    vaadin-grid.material .cell {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        height: 100%;
+                    }
+    
+                    vaadin-grid.material .cell.last {
+                        padding-right: 24px;
+                        text-align: center;
+                    }
+    
+                    vaadin-grid.material .cell.numeric {
+                        text-align: right;
+                    }
+    
+                    vaadin-grid.material paper-checkbox {
+                        --primary-color: var(--paper-indigo-500);
+                        margin: 0 24px;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter {
+                        --vaadin-grid-sorter-arrow: {
+                            display: none !important;
+                        };
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter .cell {
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter iron-icon {
+                        transform: scale(0.8);
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter:not([direction]) iron-icon {
+                        color: rgba(0, 0, 0, var(--dark-disabled-opacity));
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter[direction] {
                         color: rgba(0, 0, 0, var(--dark-primary-opacity));
-                        font-size: 13px;
-                    };
-
-                    --vaadin-grid-body-row-hover-cell: {
-                        background-color: var(--app-background-color-dark);
-                    };
-
-                    --vaadin-grid-body-row-selected-cell: {
-                        background-color: var(--paper-grey-100);
-                    };
-
-                    --vaadin-grid-focused-cell: {
-                        box-shadow: none;
-                        font-weight: bold;
-                    };
-
-                }
-
-                vaadin-grid.material .cell {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    height: 100%;
-                }
-
-                vaadin-grid.material .cell.last {
-                    padding-right: 24px;
-                    text-align: center;
-                }
-
-                vaadin-grid.material .cell.numeric {
-                    text-align: right;
-                }
-
-                vaadin-grid.material paper-checkbox {
-                    --primary-color: var(--paper-indigo-500);
-                    margin: 0 24px;
-                }
-
-                vaadin-grid.material vaadin-grid-sorter {
-                    --vaadin-grid-sorter-arrow: {
-                        display: none !important;
-                    };
-                }
-
-                vaadin-grid.material vaadin-grid-sorter .cell {
-                    flex: 1;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                vaadin-grid.material vaadin-grid-sorter iron-icon {
-                    transform: scale(0.8);
-                }
-
-                vaadin-grid.material vaadin-grid-sorter:not([direction]) iron-icon {
-                    color: rgba(0, 0, 0, var(--dark-disabled-opacity));
-                }
-
-                vaadin-grid.material vaadin-grid-sorter[direction] {
-                    color: rgba(0, 0, 0, var(--dark-primary-opacity));
-                }
-
-                vaadin-grid.material vaadin-grid-sorter[direction=desc] iron-icon {
-                    transform: scale(0.8) rotate(180deg);
-                }
-
-                vaadin-grid.material::slotted(div) {
-                    outline: 0 !important;
-                }
-
-                .invoice-panel{
-                    height: 100%;
-                    width: 100%;
-                    padding: 0 20px;
-                    box-sizing: border-box;
-                    position:relative;
-                }
-
-                .oa-col{
-                    min-width: 25px;
-                }
-
-                .bold {
-                    font-weight: 700!important;
-                }
-
-                .underlined {
-                    text-decoration:underline!important;
-                }
-
-                .textDecorationNone {
-                    text-decoration:none!important;
-                }
-
-                .ref-col{
-                    min-width: 75px;
-                }
-
-                .invoice-col{
-                    min-width: 40px;
-                }
-
-                .month-col{
-                    min-width: 40px;
-                }
-
-                .invoiceDate-col{
-                    min-width: 50px;
-                }
-
-                .invAmount-col{
-                    min-width: 50px;
-                }
-
-                .accAmount-col{
-                    min-width: 50px;
-                }
-
-                .refAmount-col{
-                    min-width: 50px;
-                }
-
-                .stat-col{
-                    min-width: 50px;
-                }
-
-                .reject-col{
-                    min-width: 100px;
-                }
-
-                .payRef-col{
-                    min-width: 50px;
-                }
-
-                .payDate-col{
-                    min-width: 40px;
-                }
-
-                .payTot-col{
-                    min-width: 40px;
-                }
-
-                .payBank-col{
-                    min-width: 50px;
-                }
-
-                .payPaid-col{
-                    min-width: 50px;
-                }
-
-                .facture-title {
-                    padding: 15px;
-                    font-size: 25px;
-                    text-transform: capitalize;
-                    margin: 0;
-                    color: #212121;
-                    height: 25px;
-                    line-height: 25px;
-                }
-
-
-                @media screen and (max-width:1025px){
-                    .invoice-panel {
-                        left: 0;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter[direction=desc] iron-icon {
+                        transform: scale(0.8) rotate(180deg);
+                    }
+    
+                    vaadin-grid.material::slotted(div) {
+                        outline: 0 !important;
+                    }
+    
+                    .invoice-panel{
+                        height: 100%;
+                        width: 100%;
+                        padding: 0 20px;
+                        box-sizing: border-box;
+                        position:relative;
+                    }
+    
+                    .oa-col{
+                        min-width: 25px;
+                    }
+    
+                    .bold {
+                        font-weight: 700!important;
+                    }
+    
+                    .underlined {
+                        text-decoration:underline!important;
+                    }
+    
+                    .textDecorationNone {
+                        text-decoration:none!important;
+                    }
+    
+                    .ref-col{
+                        min-width: 75px;
+                    }
+    
+                    .invoice-col{
+                        min-width: 40px;
+                    }
+    
+                    .month-col{
+                        min-width: 40px;
+                    }
+    
+                    .invoiceDate-col{
+                        min-width: 50px;
+                    }
+    
+                    .invAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .accAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .refAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .stat-col{
+                        min-width: 50px;
+                    }
+    
+                    .reject-col{
+                        min-width: 100px;
+                    }
+    
+                    .payRef-col{
+                        min-width: 50px;
+                    }
+    
+                    .payDate-col{
+                        min-width: 40px;
+                    }
+    
+                    .payTot-col{
+                        min-width: 40px;
+                    }
+    
+                    .payBank-col{
+                        min-width: 50px;
+                    }
+    
+                    .payPaid-col{
+                        min-width: 50px;
+                    }
+    
+                    .facture-title {
+                        padding: 15px;
+                        font-size: 25px;
+                        text-transform: capitalize;
+                        margin: 0;
+                        color: #212121;
+                        height: 25px;
+                        line-height: 25px;
+                    }
+    
+    
+                    @media screen and (max-width:1025px){
+                        .invoice-panel {
+                            left: 0;
+                            width: 100%;
+                        }
+                    }
+                    .gridContainer{
+                        height: 100%;
+                        overflow-y: hidden;
+                        overflow-x: hidden;
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+    
+                    .invoice-status {
+                        border-radius: 20px;
+                        padding: 1px 12px 1px 8px;
+                        font-size: 12px;
+                        display: block;
+                        width: auto;
+                        max-width: fit-content;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+    
+                    .invoice-status--orangeStatus{
+                        background: #fcdf354d;
+                    }
+    
+                    .invoice-status--greenStatus{
+                        background: #07f8804d;
+                    }
+    
+                    .invoice-status--blueStatus {
+                        background: #84c8ff;
+                    }
+    
+                    .invoice-status--redStatus{
+                        background: #ff4d4d4d;
+                    }
+    
+                    .statusIcon{
+                        height: 8px;
+                        width: 8px;
+                    }
+                    .statusIcon.invoice-status--orangeStatus {
+                        color: var(--app-status-color-pending);
+                    }
+                    .statusIcon.invoice-status--greenStatus {
+                        color: var(--app-status-color-ok);
+                    }
+                    .statusIcon.invoice-status--blueStatus {
+                        color: var(--paper-blue-400);
+                    }
+                    .statusIcon.invoice-status--redStatus {
+                        color: var(--app-status-color-nok);
+                    }
+                    .statusIcon.invoice-status--orangeStatus,
+                    .statusIcon.invoice-status--greenStatus,
+                    .statusIcon.invoice-status--redStatus {
+                        background: transparent !important;
+                    }
+                    .invoice-status--purpleStatus {
+                        background: #e1b6e6;
+                    }
+    
+                    *.txtcolor--orangeStatus {
+                        color: var(--paper-amber-800);
+                    }
+                    *.txtcolor--greenStatus {
+                        color: #36a201;
+                    }
+                    *.txtcolor--blueStatus {
+                        color: var(--paper-blue-400);
+                    }
+                    *.txtcolor--redStatus {
+                        color: var(--app-status-color-nok);
+                    }
+                    *.txtcolor--purpleStatus {
+                        color: var(--paper-purple-300)
+                    }
+                    #pendingDetailDialog{
+                        height: calc(100vh - 40px);
+                        width: calc(85% - 40px);
+                        z-index: 1100;
+                        position: fixed;
+                        top: 64px;
+                    }
+    
+                    #pendingGridDetail{
+                        height: calc(100% - 185px);
+                        padding: 0;
                         width: 100%;
                     }
-                }
-                .gridContainer{
-                    height: 100%;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-
-                .invoice-status {
-                    border-radius: 20px;
-                    padding: 1px 12px 1px 8px;
-                    font-size: 12px;
-                    display: block;
-                    width: auto;
-                    max-width: fit-content;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    overflow: hidden;
-                }
-
-                .invoice-status--orangeStatus{
-                    background: #fcdf354d;
-                }
-
-                .invoice-status--greenStatus{
-                    background: #07f8804d;
-                }
-
-                .invoice-status--blueStatus {
-                    background: #84c8ff;
-                }
-
-                .invoice-status--redStatus{
-                    background: #ff4d4d4d;
-                }
-
-                .statusIcon{
-                    height: 8px;
-                    width: 8px;
-                }
-                .statusIcon.invoice-status--orangeStatus {
-                    color: var(--app-status-color-pending);
-                }
-                .statusIcon.invoice-status--greenStatus {
-                    color: var(--app-status-color-ok);
-                }
-                .statusIcon.invoice-status--blueStatus {
-                    color: var(--paper-blue-400);
-                }
-                .statusIcon.invoice-status--redStatus {
-                    color: var(--app-status-color-nok);
-                }
-                .statusIcon.invoice-status--orangeStatus,
-                .statusIcon.invoice-status--greenStatus,
-                .statusIcon.invoice-status--redStatus {
-                    background: transparent !important;
-                }
-                .invoice-status--purpleStatus {
-                    background: #e1b6e6;
-                }
-
-                *.txtcolor--orangeStatus {
-                    color: var(--paper-amber-800);
-                }
-                *.txtcolor--greenStatus {
-                    color: #36a201;
-                }
-                *.txtcolor--blueStatus {
-                    color: var(--paper-blue-400);
-                }
-                *.txtcolor--redStatus {
-                    color: var(--app-status-color-nok);
-                }
-                *.txtcolor--purpleStatus {
-                    color: var(--paper-purple-300)
-                }
-                #pendingDetailDialog{
-                    height: calc(100vh - 40px);
-                    width: calc(85% - 40px);
-                    z-index: 1100;
-                    position: fixed;
-                    top: 64px;
-                }
-
-                #pendingGridDetail{
-                    height: calc(100% - 185px);
-                    padding: 0;
-                    width: 100%;
-                }
-
-                .batch-status {
-                    font-size: 18px;
-                    text-transform: capitalize;
-                    padding-top: 5px;
-                    display: flex;
-                    flex-flow: row wrap;
-                    align-items: center;
-                    justify-content: flex-start;
-                }
-
-                .unlockBtn {
-                    height: 12px;
-                    width: 12px;
-                }
-
-                .hidden {
-                    display: none;
-                }
-
-                #messagesGridContainer,#messagesGridContainer2, #messagesGridContainer3, #messagesGridContainer4 {
-                    overflow-y: auto;
-                }
-
-                .invoiceContainer{
-                    overflow-x: hidden;
-                    overflow-y: hidden;
-                    height: calc(100vh - 145px);
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-                .invoiceSubContainerBig {
-                    height: 100%;
-                }
-
-                .invoiceSubContainerMiddle {
-                    height: calc(100%);
-                    transition: all .5s ease;
-                }
-                .invoiceSubContainerMiddle vaadin-grid {
-                    /*height: 100%;*/
-                }
-                .invoiceSubContainerMiddle.half {
-                    height: 49%;
-                }
-
-                .invoiceDetailContainer,
-                .toBeCorrectedDetailContainerC{
-                    height: 50%;
-                    opacity: 0;
-                    transition: all .75s ease-out;
-                    overflow-y: auto;
-                }
-                .invoiceDetailContainer.open,
-                .toBeCorrectedDetailContainerC.open {
-                    opacity: 1;
-                    width: 100%;
-                    height: 46%;
-                    margin-top:4%
-                }
-
-                tr.hidden {
-                    display: none !important;
-                }
-
-                .mb0 {
-                    margin-bottom: 0;
-                }
-                .mb30 {
-                    margin-bottom: 30px;
-                }
-
-                #pendingDetailDialog {
-                    max-height: 80vh;
-                }
-
-                .helpdeskIcon {
-                    height: 12px;
-                    width: 12px;
-                    cursor: pointer;
-                    opacity: 0.7;
-                    transition: all .24s cubic-bezier(0.075, 0.82, 0.165, 1);
-                }
-
-                .helpdeskIcon:hover{
-                    transform: scale(1.05);
-                    opacity: 1;
-                }
-
-                iron-collapse-button #trigger{
-                    height: 45px;
-                    background: var(--app-background-color-dark);
-                    display: initial;
-                }
-
-                #invoiceCollapser {
-                    display: block;
-                    background: white;
-                    height: calc(100% - 75px);
-                    overflow-y: auto;
-                }
-
-                h3.header {
-                    margin: 0 auto
-                }
-                #collapse-grid .recipient-col {
-                    background: grey;
-                }
-
-                .rejectionReason-col {
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    max-width: 100%;
-                }
-
-                .containScroll {
-                    overflow: auto;
-                    height: 100%;
-                }
-
-                .scrollBox {
-                    width: 100%;
-                    overflow: hidden;
-                    height: 100%;
-                }
-                .scrollBox > #messagesGrid, .scrollBox > #messagesGrid2, .scrollBox > #messagesGrid3 {
-                    width: 100%;
-                    height: 100%;
-                }
-
-                .flex-header{
-                    width: 100%;
-                    display: flex;
-                    flex-flow: row nowrap;
-                    justify-content: flex-start;
-                    align-items: center;
-                    height: 48px;
-                }
-
-                iron-collapse-button:hover{
-                    background: var(--app-background-color-dark);
-                }
-
-                .flex-header span{
-                    display:block;
-                    font-size: 12px;
-                    font-weight: 400;
-                    padding: 4px 12px;
-                    box-sizing:border-box;
-                    cursor: pointer;
-                    color: rgb(115,115,115);
-                }
-
-                .flex-header span.center{
-                    text-align: center;
-                }
-
-                #invoiceGrid .footer{
-                    background: red;
-                }
-
-                #invoiceAndBatchesGridDetail {
-                    height: calc(100% - 100px);
-                }
-
-                .invoicesToBeCorrectedGrid {
-                    height: 100%;
-                }
-
-                #helpdeskInfoDialog{
-                    position: fixed;
-                    width: 50%;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    max-width: none !important;
-                    max-height: none !important;
-                    overflow-y: auto;
-                }
-
-                /*.modal-title {*/
-                /*    background: var(--app-background-color-dark);*/
-                /*    margin-top: 0;*/
-                /*    padding: 16px 24px;*/
-                /*}*/
-
-                .modal-content{
-                    display: flex;
-                    flex-flow: row wrap;
-                    align-items: center;
-                    justify-content: flex-start;
-                }
-
-                .colorAppSecondaryColorDark {
-                    color:var(--app-secondary-color-dark)
-                }
-
-                .modal-input{
-                    margin: 0 12px;
-                    flex-grow: 1;
-                }
-
-                paper-input{
-                    --paper-input-container-focus-color: var(--app-primary-color);
-                }
-
-                .buttons {
-                    /*position: absolute;*/
-                    /*right: 0;*/
-                    /*bottom: 0;*/
-                    /*margin: 8px 16px;*/
-                }
-
-                .button--accepted {
-                    --paper-button-ink-color: var(--app-status-color-ok);
-                    background-color: var(--app-status-color-ok);
-                    color: var(--app-text-color-light);
-                }
-
-                .button--partially-accepted {
-                    --paper-button-ink-color: var(--app-status-color-pending);
-                    background-color: var(--app-status-color-pending);
-                    color: var(--app-text-color-light);
-                }
-
-                .button--rejected {
-                    --paper-button-ink-color: var(--app-status-color-nok);
-                    background-color: var(--app-status-color-nok);
-                    color: var(--app-text-color-light);
-                }
-
-                .batchNumber{
-                    color: var(--app-text-color-light);
-                    border-radius: 25px;
-                    min-height: 0;
-                    margin-left: 8px;
-                    font-size: .6em;
-                    display: inline-block;
-                    padding: 4px 6px;
-                    line-height: 0.8;
-                    text-align: center;
-                    height: 10px;
-                    margin-right: 5px;
-                }
-                .batchPending{background-color: var(--paper-orange-400);}
-                .batchToBeCorrected{background-color: var(--paper-red-400);}
-                .batchProcessed{background-color: var(--paper-blue-400);}
-                .batchRejected, .batchRed{background-color: var(--paper-red-400);}
-                .batchAccepted{background-color: var(--paper-green-400);}
-                .batchArchived{background-color: var(--paper-purple-300);}
-                .batchToBeSend{background-color: var(--paper-orange-400);}
-
-                ht-spinner {
-                    margin-top:10px;
-                    margin-bottom:10px;
-                    height:42px;
-                    width:42px;
-                }
-
-                .tool-btn{
-                    margin: 0;
-                    box-sizing: border-box;
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    display: inline-block;
-                    text-align: center;
-                    --paper-button: {
-                        background: var(--app-secondary-color);
-                        color: var(--app-text-color);
-                        width: auto;
-                        margin: 0 auto;
-                        font-size: 13px;
-                        font-weight: 700;
-                        padding:10px;
-                    };
-                }
-
-                .grid-btn-small {
-                    margin: 0;
-                    padding:2px 10px;
-                    box-sizing: border-box;
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    display: inline-block;
-                    text-align: center;
-                    --paper-button: {
-                        background: var(--app-secondary-color);
-                        color: var(--app-text-color);
-                        width: auto;
-                        margin: 0 auto;
+    
+                    .batch-status {
+                        font-size: 18px;
+                        text-transform: capitalize;
+                        padding-top: 5px;
+                        display: flex;
+                        flex-flow: row wrap;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
+    
+                    .unlockBtn {
+                        height: 12px;
+                        width: 12px;
+                    }
+    
+                    .hidden {
+                        display: none;
+                    }
+    
+                    #messagesGridContainer,#messagesGridContainer2, #messagesGridContainer3, #messagesGridContainer4 {
+                        overflow-y: auto;
+                    }
+    
+                    .invoiceContainer{
+                        overflow-x: hidden;
+                        overflow-y: hidden;
+                        height: calc(100vh - 145px);
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+                    .invoiceSubContainerBig {
+                        height: 100%;
+                    }
+    
+                    .invoiceSubContainerMiddle {
+                        height: calc(100%);
+                        transition: all .5s ease;
+                    }
+                    .invoiceSubContainerMiddle vaadin-grid {
+                        /*height: 100%;*/
+                    }
+                    .invoiceSubContainerMiddle.half {
+                        height: 49%;
+                    }
+    
+                    .invoiceDetailContainer,
+                    .toBeCorrectedDetailContainerC{
+                        height: 50%;
+                        opacity: 0;
+                        transition: all .75s ease-out;
+                        overflow-y: auto;
+                    }
+                    .invoiceDetailContainer.open,
+                    .toBeCorrectedDetailContainerC.open {
+                        opacity: 1;
+                        width: 100%;
+                        height: 46%;
+                        margin-top:4%
+                    }
+    
+                    tr.hidden {
+                        display: none !important;
+                    }
+    
+                    .mb0 {
+                        margin-bottom: 0;
+                    }
+                    .mb30 {
+                        margin-bottom: 30px;
+                    }
+    
+                    #pendingDetailDialog {
+                        max-height: 80vh;
+                    }
+    
+                    .helpdeskIcon {
+                        height: 12px;
+                        width: 12px;
+                        cursor: pointer;
+                        opacity: 0.7;
+                        transition: all .24s cubic-bezier(0.075, 0.82, 0.165, 1);
+                    }
+    
+                    .helpdeskIcon:hover{
+                        transform: scale(1.05);
+                        opacity: 1;
+                    }
+    
+                    iron-collapse-button #trigger{
+                        height: 45px;
+                        background: var(--app-background-color-dark);
+                        display: initial;
+                    }
+    
+                    #invoiceCollapser {
+                        display: block;
+                        background: white;
+                        height: calc(100% - 75px);
+                        overflow-y: auto;
+                    }
+    
+                    h3.header {
+                        margin: 0 auto
+                    }
+                    #collapse-grid .recipient-col {
+                        background: grey;
+                    }
+    
+                    .rejectionReason-col {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        max-width: 100%;
+                    }
+    
+                    .containScroll {
+                        overflow: auto;
+                        height: 100%;
+                    }
+    
+                    .scrollBox {
+                        width: 100%;
+                        overflow: hidden;
+                        height: 100%;
+                    }
+                    .scrollBox > #messagesGrid, .scrollBox > #messagesGrid2, .scrollBox > #messagesGrid3 {
+                        width: 100%;
+                        height: 100%;
+                    }
+    
+                    .flex-header{
+                        width: 100%;
+                        display: flex;
+                        flex-flow: row nowrap;
+                        justify-content: flex-start;
+                        align-items: center;
+                        height: 48px;
+                    }
+    
+                    iron-collapse-button:hover{
+                        background: var(--app-background-color-dark);
+                    }
+    
+                    .flex-header span{
+                        display:block;
                         font-size: 12px;
                         font-weight: 400;
+                        padding: 4px 12px;
+                        box-sizing:border-box;
+                        cursor: pointer;
+                        color: rgb(115,115,115);
+                    }
+    
+                    .flex-header span.center{
+                        text-align: center;
+                    }
+    
+                    #invoiceGrid .footer{
+                        background: red;
+                    }
+    
+                    #invoiceAndBatchesGridDetail {
+                        height: calc(100% - 100px);
+                    }
+    
+                    .invoicesToBeCorrectedGrid {
+                        height: 100%;
+                    }
+    
+                    #helpdeskInfoDialog{
+                        position: fixed;
+                        width: 50%;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        max-width: none !important;
+                        max-height: none !important;
+                        overflow-y: auto;
+                    }
+    
+                    /*.modal-title {*/
+                    /*    background: var(--app-background-color-dark);*/
+                    /*    margin-top: 0;*/
+                    /*    padding: 16px 24px;*/
+                    /*}*/
+    
+                    .modal-content{
+                        display: flex;
+                        flex-flow: row wrap;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
+    
+                    .colorAppSecondaryColorDark {
+                        color:var(--app-secondary-color-dark)
+                    }
+    
+                    .modal-input{
+                        margin: 0 12px;
+                        flex-grow: 1;
+                    }
+    
+                    paper-input{
+                        --paper-input-container-focus-color: var(--app-primary-color);
+                    }
+    
+                    .buttons {
+                        /*position: absolute;*/
+                        /*right: 0;*/
+                        /*bottom: 0;*/
+                        /*margin: 8px 16px;*/
+                    }
+    
+                    .button--accepted {
+                        --paper-button-ink-color: var(--app-status-color-ok);
+                        background-color: var(--app-status-color-ok);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .button--partially-accepted {
+                        --paper-button-ink-color: var(--app-status-color-pending);
+                        background-color: var(--app-status-color-pending);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .button--rejected {
+                        --paper-button-ink-color: var(--app-status-color-nok);
+                        background-color: var(--app-status-color-nok);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .batchNumber{
+                        color: var(--app-text-color-light);
+                        border-radius: 25px;
+                        min-height: 0;
+                        margin-left: 8px;
+                        font-size: .6em;
+                        display: inline-block;
+                        padding: 4px 6px;
+                        line-height: 0.8;
+                        text-align: center;
+                        height: 10px;
+                        margin-right: 5px;
+                    }
+                    .batchPending{background-color: var(--paper-orange-400);}
+                    .batchToBeCorrected{background-color: var(--paper-red-400);}
+                    .batchProcessed{background-color: var(--paper-blue-400);}
+                    .batchRejected, .batchRed{background-color: var(--paper-red-400);}
+                    .batchAccepted{background-color: var(--paper-green-400);}
+                    .batchArchived{background-color: var(--paper-purple-300);}
+                    .batchToBeSend{background-color: var(--paper-orange-400);}
+    
+                    ht-spinner {
+                        margin-top:10px;
+                        margin-bottom:10px;
+                        height:42px;
+                        width:42px;
+                    }
+    
+                    .tool-btn{
+                        margin: 0;
+                        box-sizing: border-box;
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        display: inline-block;
+                        text-align: center;
+                        --paper-button: {
+                            background: var(--app-secondary-color);
+                            color: var(--app-text-color);
+                            width: auto;
+                            margin: 0 auto;
+                            font-size: 13px;
+                            font-weight: 700;
+                            padding:10px;
+                        };
+                    }
+    
+                    .grid-btn-small {
+                        margin: 0;
+                        padding:2px 10px;
+                        box-sizing: border-box;
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        display: inline-block;
+                        text-align: center;
+                        --paper-button: {
+                            background: var(--app-secondary-color);
+                            color: var(--app-text-color);
+                            width: auto;
+                            margin: 0 auto;
+                            font-size: 12px;
+                            font-weight: 400;
+                            padding:10px;
+                        };
+                    }
+    
+                    .grid-btn-small.noBg {
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        --paper-button: {
+                            background: none;
+                        };
+                    }
+    
+                    .noPad {
+                        padding:0
+                    }
+    
+                    .grid-btn-small iron-icon {
+                        max-width:20px;
+                    }
+    
+                    .tool-btn-previous-month {
+                        color:#ffffff;
+                        --paper-button: {
+                            background: var(--app-text-color);
+                            font-weight: 400;
+                        };
+                    }
+    
+                    #rightPanel {
+                        position: absolute;
+                        right: -350px;
+                        width:300px;
+                        top: 0px;
+                        background: rgba(255,255,255,1);
+                        border-left:1px solid #dddddd;
+                        box-shadow:0px 0px 3px 0px #dddddd;
+                        height: 100%;
+                        z-index: 5;
+                        transition: all 400ms ease;
+                        -moz-transition: all 400ms ease;
+                        -webkit-transition: all 400ms ease;
+                        -o-transition: all 400ms ease;
+                        -ms-transition: all 400ms ease;
+                    }
+    
+                    #rightPanel.opened {
+                        right:0;
+                    }
+    
+                    .header {
+                        padding: 10px;
+                        color: #ffffff;
+                        text-transform: uppercase;
+                        margin: 0;
+                        font-weight: 700;
+                        background-color: #777777;
+                        cursor: pointer;
+                    }
+    
+                    #rightPanel label {
+                        margin:0;
+                        padding:0;
+                    }
+    
+                    #rightPanel .pullRightIcon {
+                        margin:0;
+                        padding:0;
+                        min-width:1px;
+                        float:right;
+                    }
+    
+                    #rightPanel .body {
+                        padding: 10px;
+                    }
+    
+                    #rightPanel .body h4 {
+                        text-transform: uppercase;
+                        margin-bottom: 20px;
+                        border-bottom: 1px solid #000000;
+                        font-weight: 700;
+                        margin-top:12px;
+                        padding-bottom:2px;
+                    }
+    
+                    #rightPanelToggleContainer {
+                        position:absolute;
+                        right:20px;
+                        top:10px;
+                    }
+    
+                    #rightPanelToggleContainer .header {
+                        margin:0;
+                        color:#000000;
+                        background-color: initial;
+                        padding:0;
+                    }
+    
+                    .w30px {
+                        width:30px
+                    }
+    
+                    .h30px {
+                        height:30px
+                    }
+    
+                    .w20px {
+                        width:20px
+                    }
+    
+                    .h20px {
+                        height:20px
+                    }
+    
+                    .p-35px {
+                        padding:35px;
+                    }
+    
+                    .p-10px {
                         padding:10px;
-                    };
-                }
-
-                .grid-btn-small.noBg {
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    --paper-button: {
-                        background: none;
-                    };
-                }
-
-                .noPad {
-                    padding:0
-                }
-
-                .grid-btn-small iron-icon {
-                    max-width:20px;
-                }
-
-                .tool-btn-previous-month {
-                    color:#ffffff;
-                    --paper-button: {
-                        background: var(--app-text-color);
+                    }
+    
+                    .p-15px {
+                        padding:15px;
+                    }
+    
+                    .p-r-15px {
+                        padding-right:15px;
+                    }
+    
+                    .p-l-15px {
+                        padding-left:15px;
+                    }
+    
+                    .datePicker {
+                        width:95%;
+                    }
+    
+                    .m-t-40 {
+                        margin-top:40px;
+                    }
+    
+                    .m-t-50 {
+                        margin-top:50px!important;
+                    }
+    
+                    .m-t-20 {
+                        margin-top:20px!important;
+                    }
+    
+                    .m-t-25 {
+                        margin-top:25px!important;
+                    }
+    
+                    .w-100-pc {
+                        width:100%;
+                    }
+    
+                    .fr {
+                        float:right
+                    }
+    
+                    .m-t-20 {
+                        margin-top:20px;
+                    }
+    
+                    @media screen and (max-width: 1024px) {
+                        .hideOnMobile {display: none;opacity: 0;}
+                    }
+    
+                    .warningMessage {
+                        margin-top: 20px;
+                        margin-bottom: 30px;
+                    }
+    
+                    .warningMessageBody {
+                        padding:20px 35px;
+                        color:#7E0000;
+                        background-color: rgba(255, 0, 0, 0.15);
+                        font-weight: 700;
+                        border:1px dashed #7e0000;
+                        text-transform: uppercase;
+                        text-align: center;
+                    }
+    
+                    #loadingContainer, #loadingContainerSmall {
+                        position:absolute;
+                        width: 100%;
+                        height: 100%;
+                        top: 0;left: 0;
+                        background-color: rgba(0,0,0,.3);
+                        z-index: 10;
+                        text-align: center;
+                    }
+    
+                    #loadingContentContainer, #loadingContentContainerSmall {
+                        position:relative;
+                        width: 400px;
+                        min-height: 200px;
+                        background-color: #ffffff;
+                        padding:20px;
+                        border:3px solid var(--app-secondary-color);
+                        margin:40px auto 0 auto;
+                        text-align: center;
+                    }
+    
+                    #loadingContentContainerSmall {
+                        width: 80px;
+                        padding:10px;
+                        border:1px solid var(--app-secondary-color);
+                        min-height: 1px;
+                    }
+    
+                    #loadingContent {
+                        text-align: left;
+                    }
+    
+                    .loadingIcon {
+                        margin-right:5px;
+                    }
+    
+                    .loadingIcon.done {
+                        color: var(--app-secondary-color);
+                    }
+    
+                    .f-s-1em {
+                        font-size:1em;
+                    }
+    
+                    .f-s-08em {
+                        font-size:.8em;
+                    }
+    
+                    #exportRangeNotification {
+                        font-style:italic;
+                        margin-top:10px;
+                        color:#555555;
+                    }
+    
+                    #exportRangeNotification span {
+                        font-weight: 700;
+                    }
+    
+                    .centerCenter {
+                        text-align:center;
+                        text-align:center;
+                    }
+    
+                    .bordered {
+                        border:1px solid #888888;
+                    }
+    
+                    .textRed {
+                        color:#A80000;
+                    }
+    
+                    .textAlignCenter {
+                        text-align: center;
+                    }
+    
+                    .onlyIfRejectRate {
                         font-weight: 400;
-                    };
-                }
-
-                #rightPanel {
-                    position: absolute;
-                    right: -350px;
-                    width:300px;
-                    top: 0px;
-                    background: rgba(255,255,255,1);
-                    border-left:1px solid #dddddd;
-                    box-shadow:0px 0px 3px 0px #dddddd;
-                    height: 100%;
-                    z-index: 5;
-                    transition: all 400ms ease;
-                    -moz-transition: all 400ms ease;
-                    -webkit-transition: all 400ms ease;
-                    -o-transition: all 400ms ease;
-                    -ms-transition: all 400ms ease;
-                }
-
-                #rightPanel.opened {
-                    right:0;
-                }
-
-                .header {
-                    padding: 10px;
-                    color: #ffffff;
-                    text-transform: uppercase;
-                    margin: 0;
-                    font-weight: 700;
-                    background-color: #777777;
-                    cursor: pointer;
-                }
-
-                #rightPanel label {
-                    margin:0;
-                    padding:0;
-                }
-
-                #rightPanel .pullRightIcon {
-                    margin:0;
-                    padding:0;
-                    min-width:1px;
-                    float:right;
-                }
-
-                #rightPanel .body {
-                    padding: 10px;
-                }
-
-                #rightPanel .body h4 {
-                    text-transform: uppercase;
-                    margin-bottom: 20px;
-                    border-bottom: 1px solid #000000;
-                    font-weight: 700;
-                    margin-top:12px;
-                    padding-bottom:2px;
-                }
-
-                #rightPanelToggleContainer {
-                    position:absolute;
-                    right:20px;
-                    top:10px;
-                }
-
-                #rightPanelToggleContainer .header {
-                    margin:0;
-                    color:#000000;
-                    background-color: initial;
-                    padding:0;
-                }
-
-                .w30px {
-                    width:30px
-                }
-
-                .h30px {
-                    height:30px
-                }
-
-                .w20px {
-                    width:20px
-                }
-
-                .h20px {
-                    height:20px
-                }
-
-                .p-35px {
-                    padding:35px;
-                }
-
-                .p-10px {
-                    padding:10px;
-                }
-
-                .p-15px {
-                    padding:15px;
-                }
-
-                .p-r-15px {
-                    padding-right:15px;
-                }
-
-                .p-l-15px {
-                    padding-left:15px;
-                }
-
-                .datePicker {
-                    width:95%;
-                }
-
-                .m-t-40 {
-                    margin-top:40px;
-                }
-
-                .m-t-50 {
-                    margin-top:50px!important;
-                }
-
-                .m-t-20 {
-                    margin-top:20px!important;
-                }
-
-                .m-t-25 {
-                    margin-top:25px!important;
-                }
-
-                .w-100-pc {
-                    width:100%;
-                }
-
-                .fr {
-                    float:right
-                }
-
-                .m-t-20 {
-                    margin-top:20px;
-                }
-
-                @media screen and (max-width: 1024px) {
-                    .hideOnMobile {display: none;opacity: 0;}
-                }
-
-                .warningMessage {
-                    margin-top: 20px;
-                    margin-bottom: 30px;
-                }
-
-                .warningMessageBody {
-                    padding:20px 35px;
-                    color:#7E0000;
-                    background-color: rgba(255, 0, 0, 0.15);
-                    font-weight: 700;
-                    border:1px dashed #7e0000;
-                    text-transform: uppercase;
-                    text-align: center;
-                }
-
-                #loadingContainer, #loadingContainerSmall {
-                    position:absolute;
-                    width: 100%;
-                    height: 100%;
-                    top: 0;left: 0;
-                    background-color: rgba(0,0,0,.3);
-                    z-index: 10;
-                    text-align: center;
-                }
-
-                #loadingContentContainer, #loadingContentContainerSmall {
-                    position:relative;
-                    width: 400px;
-                    min-height: 200px;
-                    background-color: #ffffff;
-                    padding:20px;
-                    border:3px solid var(--app-secondary-color);
-                    margin:40px auto 0 auto;
-                    text-align: center;
-                }
-
-                #loadingContentContainerSmall {
-                    width: 80px;
-                    padding:10px;
-                    border:1px solid var(--app-secondary-color);
-                    min-height: 1px;
-                }
-
-                #loadingContent {
-                    text-align: left;
-                }
-
-                .loadingIcon {
-                    margin-right:5px;
-                }
-
-                .loadingIcon.done {
-                    color: var(--app-secondary-color);
-                }
-
-                .f-s-1em {
-                    font-size:1em;
-                }
-
-                .f-s-08em {
-                    font-size:.8em;
-                }
-
-                #exportRangeNotification {
-                    font-style:italic;
-                    margin-top:10px;
-                    color:#555555;
-                }
-
-                #exportRangeNotification span {
-                    font-weight: 700;
-                }
-
-                .centerCenter {
-                    text-align:center;
-                    text-align:center;
-                }
-
-                .bordered {
-                    border:1px solid #888888;
-                }
-
-                .textRed {
-                    color:#A80000;
-                }
-
-                .textAlignCenter {
-                    text-align: center;
-                }
-
-                .onlyIfRejectRate {
-                    font-weight: 400;
-                    color: #ffb7b7;
-                    display:block;
-                }
-
-                .exportMonthPicker {
-                    border:1px solid var(--app-secondary-color);
-                    padding:0px 0 10px 0;
-                    margin:40px auto;
-                    max-width:520px;
-                    -webkit-box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
-                    box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
-                }
-
-                vaadin-combo-box {
-                    margin:10px 30px 0 30px;
-                    width:130px;
-                }
-
-                .exportMonthPickerTitle {
-                    text-transform: uppercase;
-                    margin-bottom:20px;
-                    padding:10px 0 13px 0;
-                    border-bottom:1px solid var(--app-secondary-color);
-                    background-color:rgba(255, 80, 0, .2);
-                    font-weight: 700;
-                }
-
-                .invoicesGridContainer{
-                    margin-top:20px;
-                    height: auto;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-
-                .alignRight{
-                    float: right;
-                    margin-right: 1%;
-                }
-
-                #invoiceDetailHeader {
-                    padding:0 10px;
-                    min-height:40px;
-                }
-
-                #invoiceDetailHeader h4 {
-                    margin:0;
-                    padding-top:20px;
-                }
-
-                .actionButtonsRight {
-                    float:right;
-                    display:flex;
-                }
-
-                .actionButtonsRight iron-icon {
-                    max-width:20px;
-                    margin-right: 10px;
-                }
-
-                .modalDialog{
-                    /*height: 350px;*/
-                    /*width: 600px;*/
-                }
-
-                .modalDialogContent{
-                    height: 250px;
-                    width: auto;
-                    margin: 10px;
-                }
-
-                .mr5 {margin-right:5px}
-                .smallIcon { width:16px; height:16px; }
-                .displayNone {
-                    display:none!important
-                }
-
-                #largeButton {
-                    padding:20px 20px 40px 20px
-                }
-
-                .batchNumberInput {
-                    width:50%;
-                    margin:0 auto;
-                }
-
-                .batchNumberInput {
-                    width:50%;
-                    margin:0 auto;
-                }
-                
-                #mdaOasContainer {}
-                
-                #mdaOaHeaders {
-                    display:flex;
-                    justify-content: space-around;
-                    background-color: #dddddd;
-                    border: 1px solid #666;
-                    border-left: 0;
-                    border-right: 0;
-                    font-weight: 500;
-                }
-                                
-                #mdaOaHeaders > div {
-                    padding: 5px 0 5px 0;
-                    border-right: 1px solid #666;
-                    text-align:center;
-                }
-                
-                .mdaOaContainer {
-                    display:flex;
-                    justify-content: space-around;
-                }
-                
-                .mdaOaContainer:nth-child(odd) {
-                    background-color:#f5f5f5;
-                }                
-                
-                .mdaOaContainer > div {
-                    text-align:center;
-                    font-size:.9em;
-                    border-bottom:1px solid #ddd;
-                    padding:5px 0;
-                }
-                
-                .mdaOaContainerCol1 { width:80px; text-transform: uppercase; font-weight:500; }
-                .mdaOaContainerCol2 { width:100px; }
-                .mdaOaContainerCol3 { width:190px; }
-                .mdaOaContainerCol4 { width:210px; }
-                .mdaOaContainerCol5 { flex-grow:1; }
-                .mdaOaContainerCol6 { width:100px; border-right:0!important; }
-                
-                .statusBullet {
-                    display:inline-block;
-                    width:14px;
-                    height:14px;
-                    border-radius: 8px;
-                    margin-top:3px;
-                }
-                
-                .statusBullet.red {background-color:#ef5350;}
-                .statusBullet.green {background-color:#66bb6a;}
-
-            </style>
-        </custom-style>
-
-
-        
-        <div class="invoice-panel">
-
-
-
-            <div style="display:none" id="_DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices_container">
-                <paper-button class="tool-btn" on-tap="_DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices"><iron-icon icon="icons:error" class="w30px h30px"></iron-icon> &nbsp; DELETE ALL INVOICES - NOT FOR PROD !!!</paper-button>
-            </div>
-
-
-
-            <template is="dom-if" if="[[_bodyOverlay]]">
-                <div id="loadingContainer"></div>
-            </template>
-            <template is="dom-if" if="[[_isLoading]]">
-                <div id="loadingContainer">
-                    <div id="loadingContentContainer">
-                        <div style="max-width:80px; margin:0 auto"><ht-spinner class="spinner" alt="Loading..." active></ht-spinner></div>
-                        <div id="loadingContent"><p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("mhListing.spinner.step_1", language)]]</p></div>
+                        color: #ffb7b7;
+                        display:block;
+                    }
+    
+                    .exportMonthPicker {
+                        border:1px solid var(--app-secondary-color);
+                        padding:0px 0 10px 0;
+                        margin:40px auto;
+                        max-width:520px;
+                        -webkit-box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
+                        box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
+                    }
+    
+                    vaadin-combo-box {
+                        margin:10px 30px 0 30px;
+                        width:130px;
+                    }
+    
+                    .exportMonthPickerTitle {
+                        text-transform: uppercase;
+                        margin-bottom:20px;
+                        padding:10px 0 13px 0;
+                        border-bottom:1px solid var(--app-secondary-color);
+                        background-color:rgba(255, 80, 0, .2);
+                        font-weight: 700;
+                    }
+    
+                    .invoicesGridContainer{
+                        margin-top:20px;
+                        height: auto;
+                        overflow-y: hidden;
+                        overflow-x: hidden;
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+    
+                    .alignRight{
+                        float: right;
+                        margin-right: 1%;
+                    }
+    
+                    #invoiceDetailHeader {
+                        padding:0 10px;
+                        min-height:40px;
+                    }
+    
+                    #invoiceDetailHeader h4 {
+                        margin:0;
+                        padding-top:20px;
+                    }
+    
+                    .actionButtonsRight {
+                        float:right;
+                        display:flex;
+                    }
+    
+                    .actionButtonsRight iron-icon {
+                        max-width:20px;
+                        margin-right: 10px;
+                    }
+    
+                    .modalDialog{
+                        /*height: 350px;*/
+                        /*width: 600px;*/
+                    }
+    
+                    .modalDialogContent{
+                        height: 250px;
+                        width: auto;
+                        margin: 10px;
+                    }
+    
+                    .mr5 {margin-right:5px}
+                    .smallIcon { width:16px; height:16px; }
+                    .displayNone {
+                        display:none!important
+                    }
+    
+                    #largeButton {
+                        padding:20px 20px 40px 20px
+                    }
+    
+                    .batchNumberInput {
+                        width:50%;
+                        margin:0 auto;
+                    }
+    
+                    .batchNumberInput {
+                        width:50%;
+                        margin:0 auto;
+                    }
+                    
+                    #mdaOasContainer {}
+                    
+                    #mdaOaHeaders {
+                        display:flex;
+                        justify-content: space-around;
+                        background-color: #dddddd;
+                        border: 1px solid #666;
+                        border-left: 0;
+                        border-right: 0;
+                        font-weight: 500;
+                    }
+                                    
+                    #mdaOaHeaders > div {
+                        padding: 5px 0 5px 0;
+                        border-right: 1px solid #666;
+                        text-align:center;
+                    }
+                    
+                    .mdaOaContainer {
+                        display:flex;
+                        justify-content: space-around;
+                    }
+                    
+                    .mdaOaContainer:nth-child(odd) {
+                        background-color:#f5f5f5;
+                    }                
+                    
+                    .mdaOaContainer > div {
+                        text-align:center;
+                        font-size:.9em;
+                        border-bottom:1px solid #ddd;
+                        padding:5px 0;
+                    }
+                    
+                    .mdaOaContainerCol1 { width:80px; text-transform: uppercase; font-weight:500; }
+                    .mdaOaContainerCol2 { width:100px; }
+                    .mdaOaContainerCol3 { width:190px; }
+                    .mdaOaContainerCol4 { width:210px; }
+                    .mdaOaContainerCol5 { flex-grow:1; }
+                    .mdaOaContainerCol6 { width:100px; border-right:0!important; }
+                    
+                    .statusBullet {
+                        display:inline-block;
+                        width:14px;
+                        height:14px;
+                        border-radius: 8px;
+                        margin-top:3px;
+                    }
+                    
+                    .statusBullet.red {background-color:#ef5350;}
+                    .statusBullet.green {background-color:#66bb6a;}
+                    
+                    #mdaResponseCheckCtas {
+                        display:flex;
+                        justify-content: space-evenly;
+                    }
+                    
+                    #mdaResponseCheckCtaCountdown {
+                        display:flex;
+                        flex-direction:column-reverse;
+                    }
+                    
+                    #mdaResponseCheckCtaCountdownText {
+                        margin-top:-10px;
+                        margin-bottom:10px;
+                        font-size:.9em;
+                        font-style:italic;
+                    }
+    
+                </style>
+            </custom-style>
+    
+    
+            
+            <div class="invoice-panel">
+    
+    
+    
+                <template is="dom-if" if="[[_bodyOverlay]]">
+                    <div id="loadingContainer"></div>
+                </template>
+                <template is="dom-if" if="[[_isLoading]]">
+                    <div id="loadingContainer">
+                        <div id="loadingContentContainer">
+                            <div style="max-width:80px; margin:0 auto"><ht-spinner class="spinner" alt="Loading..." active></ht-spinner></div>
+                            <div id="loadingContent"><p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("mhListing.spinner.step_1", language)]]</p></div>
+                        </div>
                     </div>
+                </template>
+                <template is="dom-if" if="[[_isLoadingSmall]]">
+                    <div id="loadingContainerSmall">
+                        <div id="loadingContentContainerSmall">
+                            <ht-spinner class="spinner" alt="Loading..." active></ht-spinner>
+                            <!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
+                        </div>
+                    </div>
+                </template>
+    
+    
+    
+                <div id="batchStatus" class="batch-status">
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span> [[localize('j20_toBeCorrected','Factures à corriger',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span> [[localize('j20_toBeSend','Factures à envoyer',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span> [[localize('j20_process','Envois en cours',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span> [[localize('j20_reject','Envois rejetés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span> [[localize('j20_partiallyAccepted','Envois partiellement acceptés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span> [[localize('j20_accept','Envois acceptés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span> [[localize('j20_archive','Envois archivés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span> [[localize('j20_reset','Supprimer un envoi',language)]]</template>
                 </div>
-            </template>
-            <template is="dom-if" if="[[_isLoadingSmall]]">
-                <div id="loadingContainerSmall">
-                    <div id="loadingContentContainerSmall">
-                        <ht-spinner class="spinner" alt="Loading..." active></ht-spinner>
-                        <!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j3')]]">
+                    <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingListing()]]"><div class="warningMessage" id="warningMessageListing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingWarningMessage', 'Attention\\, veuillez ne procéder à la facturation qu\\'entre le premier et le cinquième jour du mois.', language)]]</div></div></template>-->
+                    <div class="centerCenter">
+                        <div class="exportMonthPicker pb20">
+                            <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                            <vaadin-combo-box id="listingExportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                            <vaadin-combo-box id="listingExportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+                            <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                            <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                        </div>
+                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListing','Téléchargement listing',language)]]</paper-button>
+                        <!--<div id="exportRangeNotification">(*) [[localize('exportedPeriod', language)]]: [[localize('from2', language)]] <span>[[_startOfPreviousMonth()]]</span> [[localize('till', language)]] <span>[[_endOfPreviousMonth()]]</span></div>-->
+                        <!--<paper-button class="tool-btn tool-btn-previous-month p-10px m-t-50 f-s-08em bordered" id="getListingJ3PreviousMonth" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListingPreviousMonth','Téléchargement listing du mois précédent',language)]]<span class="onlyIfRejectRate">[[localize('downloadListingPreviousMonthRemark','Only when rejection rate > 5%',language)]]</span></paper-button>-->
                     </div>
-                </div>
-            </template>
-
-
-
-            <div id="batchStatus" class="batch-status">
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span> [[localize('j20_toBeCorrected','Factures à corriger',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span> [[localize('j20_toBeSend','Factures à envoyer',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span> [[localize('j20_process','Envois en cours',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span> [[localize('j20_reject','Envois rejetés',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span> [[localize('j20_partiallyAccepted','Envois partiellement acceptés',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span> [[localize('j20_accept','Envois acceptés',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span> [[localize('j20_archive','Envois archivés',language)]]</template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span> [[localize('j20_reset','Supprimer un envoi',language)]]</template>
-            </div>
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j3')]]">
-                <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingListing()]]"><div class="warningMessage" id="warningMessageListing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingWarningMessage', 'Attention\\, veuillez ne procéder à la facturation qu\\'entre le premier et le cinquième jour du mois.', language)]]</div></div></template>-->
-                <div class="centerCenter">
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
-                        <vaadin-combo-box id="listingExportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
-                        <vaadin-combo-box id="listingExportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
-                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'archivej3')]]">
+    
+                    <div id="rightPanelToggleContainer" class=""><div class="header"><paper-button class="button button--other" on-tap="_toggleRightPanel"><iron-icon icon="icons:build" class=""></iron-icon> &nbsp; [[localize('tools', language)]]</paper-button></div></div>
+    
+                    <div id="rightPanel" class="">
+                        <div class="header"  on-tap="_toggleRightPanel">
+                            <label><iron-icon icon="icons:build"  class="w20px h20px"></iron-icon> &nbsp;[[localize('tools', language)]]</label>
+                            <paper-button class="pullRightIcon"><iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+                        </div>
+                        <div class="body">
+                            <h4 class="m-t-50"><iron-icon icon="date-range"></iron-icon> &nbsp; [[localize('filterByDate','Filtrer par date',language)]]</h4>
+                            <vaadin-date-picker label="[[localize('begin','Début',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeStart" always-float-label></vaadin-date-picker>
+                            <vaadin-date-picker label="[[localize('end','Fin',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeEnd" always-float-label></vaadin-date-picker>
+                            <paper-button class="button button--save w-100-pc" on-tap="_getListingArchives" ><iron-icon icon="icons:update" class="force-left"></iron-icon> &nbsp; [[localize('filterResults','Filtrer les résultats',language)]]</paper-button>
+                        </div>
                     </div>
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListing','Téléchargement listing',language)]]</paper-button>
-                    <!--<div id="exportRangeNotification">(*) [[localize('exportedPeriod', language)]]: [[localize('from2', language)]] <span>[[_startOfPreviousMonth()]]</span> [[localize('till', language)]] <span>[[_endOfPreviousMonth()]]</span></div>-->
-                    <!--<paper-button class="tool-btn tool-btn-previous-month p-10px m-t-50 f-s-08em bordered" id="getListingJ3PreviousMonth" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListingPreviousMonth','Téléchargement listing du mois précédent',language)]]<span class="onlyIfRejectRate">[[localize('downloadListingPreviousMonthRemark','Only when rejection rate > 5%',language)]]</span></paper-button>-->
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'archivej3')]]">
-
-                <div id="rightPanelToggleContainer" class=""><div class="header"><paper-button class="button button--other" on-tap="_toggleRightPanel"><iron-icon icon="icons:build" class=""></iron-icon> &nbsp; [[localize('tools', language)]]</paper-button></div></div>
-
-                <div id="rightPanel" class="">
-                    <div class="header"  on-tap="_toggleRightPanel">
-                        <label><iron-icon icon="icons:build"  class="w20px h20px"></iron-icon> &nbsp;[[localize('tools', language)]]</label>
-                        <paper-button class="pullRightIcon"><iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+    
+                    <div class="gridContainer m-t-25">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer3" class="invoiceSubContainerMiddle">
+                                <div class="gridContainer grid-archives-listing">
+                                    <div class="containScroll">
+                                        <vaadin-grid id="noscroll" items="[[archiveListingMessages]]">
+                                            <vaadin-grid-column flex-grow="0" width="10%" class="" >
+                                                <template class="header"><vaadin-grid-sorter path="created">[[localize('date','Date',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.hrDate]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="9%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="created">[[localize('time','Heure',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.hrTime]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="1" class="">
+                                                <template class="header"><vaadin-grid-sorter path="filename">[[localize('filename','Fichier',language)]]</vaadin-grid-sorter></template>
+                                                <template><iron-icon icon="image:picture-as-pdf" class="force-left textRed"></iron-icon> &nbsp; [[item.filename]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="10%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="totalPages">[[localize('totalPages','Nombre de pages',language)]]</vaadin-grid-sorter></template>
+                                                <template class="textAlignCenter">[[item.totalPages]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="20%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
+                                                <template><paper-button class="button button--other downloadListingArchive" on-tap="_downloadListingArchive" messageId="[[item.id]]" ><iron-icon icon="icons:cloud-download" class="force-left"></iron-icon> &nbsp; [[localize('download','Télécharger',language)]]</paper-button></vaadin-grid-sorter></template>
+                                            </vaadin-grid-column>
+                                        </vaadin-grid>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="body">
-                        <h4 class="m-t-50"><iron-icon icon="date-range"></iron-icon> &nbsp; [[localize('filterByDate','Filtrer par date',language)]]</h4>
-                        <vaadin-date-picker label="[[localize('begin','Début',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeStart" always-float-label></vaadin-date-picker>
-                        <vaadin-date-picker label="[[localize('end','Fin',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeEnd" always-float-label></vaadin-date-picker>
-                        <paper-button class="button button--save w-100-pc" on-tap="_getListingArchives" ><iron-icon icon="icons:update" class="force-left"></iron-icon> &nbsp; [[localize('filterResults','Filtrer les résultats',language)]]</paper-button>
-                    </div>
-                </div>
-
-                <div class="gridContainer m-t-25">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer3" class="invoiceSubContainerMiddle">
-                            <div class="gridContainer grid-archives-listing">
-                                <div class="containScroll">
-                                    <vaadin-grid id="noscroll" items="[[archiveListingMessages]]">
-                                        <vaadin-grid-column flex-grow="0" width="10%" class="" >
-                                            <template class="header"><vaadin-grid-sorter path="created">[[localize('date','Date',language)]]</vaadin-grid-sorter></template>
-                                            <template>[[item.hrDate]]</template>
+    
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeCorrected')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer2" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                                        <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.oaCode]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="9%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="created">[[localize('time','Heure',language)]]</vaadin-grid-sorter></template>
-                                            <template>[[item.hrTime]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="15%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="oaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.oaLabel]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="1" class="">
-                                            <template class="header"><vaadin-grid-sorter path="filename">[[localize('filename','Fichier',language)]]</vaadin-grid-sorter></template>
-                                            <template><iron-icon icon="image:picture-as-pdf" class="force-left textRed"></iron-icon> &nbsp; [[item.filename]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoiceReference">N° fact.</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.invoiceData.invoiceReference]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="10%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="totalPages">[[localize('totalPages','Nombre de pages',language)]]</vaadin-grid-sorter></template>
-                                            <template class="textAlignCenter">[[item.totalPages]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="17%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="patientData.firstName">[[localize('inv_pat','Patient',language)]] </vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.patientData.firstName]] [[item.patientData.lastName]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="20%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
-                                            <template><paper-button class="button button--other downloadListingArchive" on-tap="_downloadListingArchive" messageId="[[item.id]]" ><iron-icon icon="icons:cloud-download" class="force-left"></iron-icon> &nbsp; [[localize('download','Télécharger',language)]]</paper-button></vaadin-grid-sorter></template>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="patientData.ssin">[[localize('inv_niss','Niss',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[_formatSsinNumber(item.patientData.ssin)]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoicingCodes">Nmcl</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[_renderGridInvoiceNmcl(item.invoiceData.invoicingCodes)]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="7%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoiceDate">Date presta.</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[formatDate(item.invoiceData.invoiceDate,'date')]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column-group>
+                                            <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                                <template class="header">
+                                                    <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                                </template>
+                                                <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
+                                                <template class="footer">[[_invoicesToBeCorrectedInvoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                                <template class="header">
+                                                    <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                                </template>
+                                                <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
+                                                <template class="footer">[[_invoicesToBeCorrectedRefusedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                            </vaadin-grid-column>
+                                        </vaadin-grid-column-group>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>
+                                                <span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[localize('inv_rej','Rejected',language)]]</span>
+                                            </template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template><paper-button class="button button--save" on-tap="_flagInvoiceAsCorrected" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="check-circle" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('corrected',"Corrected",language)]]</paper-button></template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template><paper-button class="button button--other" on-tap="_flagInvoiceAsLostConfirmationDialog" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="error" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('lost',"Lost",language)]]</paper-button></template>
                                         </vaadin-grid-column>
                                     </vaadin-grid>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeCorrected')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer2" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeSend')]]">
+                    <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingDownload()]]"><div class="warningMessage" id="warningMessageInvoicing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingDownloadWarningMessage', 'Please only download invoicing at the end of the month', language)]]</div></div></template>-->
+                    <div class="textAlignCenter">
+    
+                        <div class="exportMonthPicker pb20">
+                            <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                            <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                            <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+    
+                            <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                            <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                        </div>
+    
+                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                    </div>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_process\\,j20_accept\\,j20_partiallyAccepted\\,j20_reject\\,j20_archive')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+    
+                            <div id="messagesGridContainer" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid2" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" active-item="{{activeGridItem}}" on-tap="_toggleBatchDetails">
+                                        <vaadin-grid-column flex-grow="0" width="4%" class="oa-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.parentOaCode">[[localize('inv_oa','Oa',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.parentOaCode]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="24%" class="ref-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.parentOaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.parentOaLabel]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="invoice-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.batchReference]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="month-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.invoicedMonth]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="10%" class="invoiceDate-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.generationDate]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="invAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor(item.messageInfo.invoiceStatusHr,item.messageInfo.invoicedAmount)]]">[[item.messageInfo.invoicedAmount]]€</span></template>
+                                            <template class="footer">[[_invoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="accAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-green',item.messageInfo.acceptedAmount)]]">[[item.messageInfo.acceptedAmount]]€</span></template>
+                                            <template class="footer">[[_acceptedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="refAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-red',item.messageInfo.refusedAmount)]]">[[item.messageInfo.refusedAmount]]€</span></template>
+                                            <template class="footer">[[_rejectedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="stat-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"></iron-icon> [[item.messageInfo.invoiceStatusHr]]</span></template>
+                                        </vaadin-grid-column>
+                                        <!--
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
+                                            <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadParentOaPdf" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
+                                        </vaadin-grid-column>
+                                        -->
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> &nbsp; ZIP</paper-button></template>
+                                        </vaadin-grid-column>
+                                    </vaadin-grid>
+                                </div>
+                            </div>
+    
+                            <div id="invoiceDetailContainer" class="invoiceDetailContainer">
+                                <div id="invoiceDetailHeader" class="mb30">
+                                    <div class="actionButtonsRight">
+                                        <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_process')]]">
+                                            <paper-button class="button button--save" on-tap="_acceptBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('j20_accept','Accepted batches',language)]]</paper-button>
+                                            <paper-button class="button button button--other" on-tap="_partiallyAcceptBatch"><iron-icon icon="settings-backup-restore"></iron-icon> [[localize('inv_par_acc','Partially accepted',language)]]</paper-button>
+                                            <paper-button class="button button button--other" on-tap="_rejectBatch"><iron-icon icon="cancel"></iron-icon> [[localize('j20_reject','Refused batches',language)]]</paper-button>
+                                        </template>
+                                        <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_accept\\,j20_partiallyAccepted\\,j20_reject')]]">
+                                            <paper-button class="button button--other" on-tap="_openArchiveDialogForBatch"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</paper-button>
+                                        </template>
+                                    </div>
+                                    <h4>[[localize('batchDetails',"Batch details",language)]]<span class="txtcolor--redStatus">[[activeGridItem.messageInfo.batchReference]]</span> [[localize('ofOa',"of OA",language)]] <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]] - [[activeGridItem.messageInfo.parentOaLabel]]</span></h4>
+                                </div>
+                                <vaadin-grid id="invoiceAndBatchesGridDetail" items="[[messageDetailsData]]">
                                     <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
                                         <template class="header">
                                             <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
@@ -1209,560 +1416,392 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
                                             </template>
                                             <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
-                                            <template class="footer">[[_invoicesToBeCorrectedInvoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor('force-green',item.acceptedAmount)]]">[[item.acceptedAmount]]€</span></template>
                                         </vaadin-grid-column>
                                         <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
                                             <template class="header">
                                                 <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
                                             </template>
                                             <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
-                                            <template class="footer">[[_invoicesToBeCorrectedRefusedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
                                         </vaadin-grid-column>
                                     </vaadin-grid-column-group>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                    <vaadin-grid-column flex-grow="1" class="recipient-col">
                                         <template class="header">
                                             <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
                                         </template>
                                         <template>
-                                            <span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[localize('inv_rej','Rejected',language)]]</span>
+                                            <span class$="invoice-status [[_getIconStatusClass(item.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.invoiceStatusHr)]]"></iron-icon> [[item.invoiceStatusHr]]</span>
                                         </template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template><paper-button class="button button--save" on-tap="_flagInvoiceAsCorrected" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="check-circle" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('corrected',"Corrected",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template><paper-button class="button button--other" on-tap="_flagInvoiceAsLostConfirmationDialog" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="error" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('lost',"Lost",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeSend')]]">
-                <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingDownload()]]"><div class="warningMessage" id="warningMessageInvoicing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingDownloadWarningMessage', 'Please only download invoicing at the end of the month', language)]]</div></div></template>-->
-                <div class="textAlignCenter">
-
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
-                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
-                        <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-
-                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
-                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
-                    </div>
-
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_process\\,j20_accept\\,j20_partiallyAccepted\\,j20_reject\\,j20_archive')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-
-                        <div id="messagesGridContainer" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid2" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" active-item="{{activeGridItem}}" on-tap="_toggleBatchDetails">
-                                    <vaadin-grid-column flex-grow="0" width="4%" class="oa-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.parentOaCode">[[localize('inv_oa','Oa',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.parentOaCode]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="24%" class="ref-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.parentOaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.parentOaLabel]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="8%" class="invoice-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.batchReference]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="8%" class="month-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.invoicedMonth]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="10%" class="invoiceDate-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.generationDate]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="invAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor(item.messageInfo.invoiceStatusHr,item.messageInfo.invoicedAmount)]]">[[item.messageInfo.invoicedAmount]]€</span></template>
-                                        <template class="footer">[[_invoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="accAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-green',item.messageInfo.acceptedAmount)]]">[[item.messageInfo.acceptedAmount]]€</span></template>
-                                        <template class="footer">[[_acceptedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="refAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-red',item.messageInfo.refusedAmount)]]">[[item.messageInfo.refusedAmount]]€</span></template>
-                                        <template class="footer">[[_rejectedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="stat-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"></iron-icon> [[item.messageInfo.invoiceStatusHr]]</span></template>
                                     </vaadin-grid-column>
                                     <!--
                                     <vaadin-grid-column flex-grow="1" class="stat-col">
                                         <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
-                                        <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadParentOaPdf" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
+                                        <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadOaPdfByMessageId" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
                                     </vaadin-grid-column>
                                     -->
                                     <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> &nbsp; ZIP</paper-button></template>
+                                        <template><paper-button class$="button button button--other [[_showRejectInvoiceButton(item.messageOriginalStatus, item.invoiceFinalStatus)]]" on-tap="_rejectInvoice" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="cancel" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> [[localize('rejectVerb',"Reject",language)]]</paper-button></template>
                                     </vaadin-grid-column>
                                 </vaadin-grid>
                             </div>
+    
                         </div>
-
-                        <div id="invoiceDetailContainer" class="invoiceDetailContainer">
-                            <div id="invoiceDetailHeader" class="mb30">
-                                <div class="actionButtonsRight">
-                                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_process')]]">
-                                        <paper-button class="button button--save" on-tap="_acceptBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('j20_accept','Accepted batches',language)]]</paper-button>
-                                        <paper-button class="button button button--other" on-tap="_partiallyAcceptBatch"><iron-icon icon="settings-backup-restore"></iron-icon> [[localize('inv_par_acc','Partially accepted',language)]]</paper-button>
-                                        <paper-button class="button button button--other" on-tap="_rejectBatch"><iron-icon icon="cancel"></iron-icon> [[localize('j20_reject','Refused batches',language)]]</paper-button>
-                                    </template>
-                                    <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_accept\\,j20_partiallyAccepted\\,j20_reject')]]">
-                                        <paper-button class="button button--other" on-tap="_openArchiveDialogForBatch"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</paper-button>
+                    </div>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_reset')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer4" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid3" items="[[messagesGridDataReset]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="invoice-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.batchReference]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="month-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.invoicedMonth]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="invoiceDate-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.generationDate]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="invAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor('force-blue', item.totalInvoicedAmount)]]">[[item.totalInvoicedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalInvoicedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="accAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-green',item.totalAcceptedAmount)]]">[[item.totalAcceptedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalAcceptedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="refAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-red',item.totalRefusedAmount)]]">[[item.totalRefusedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalRefusedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Download",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> ZIP</paper-button></template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('del',"Delete",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_confirmDeleteBatch" data-batch-export-tstamp="[[item.metas.batchExportTstamp]]"><iron-icon icon="icons:error" class="force-left"></iron-icon> [[localize('del',"Delete",language)]]</paper-button></template>
+                                        </vaadin-grid-column>
+                                    </vaadin-grid>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                <!-- Medical Houses - Flatrate E-Invoicing -->
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda')]]">
+    
+    
+    
+                    <!-- MDA request -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaRequest')]]">
+                        <div class="textAlignCenter">
+                            <div class="exportMonthPicker pb20">
+                                <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                                <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                                <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt15 pb40" id="largeButton" on-tap="_e_placeMdaRequests"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    
+                    
+                    <!-- MDA responses -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponses')]]">
+                        <div class="textAlignCenter">
+                            <div class="exportMonthPicker pb20 mw90pc">
+                            
+                                <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                                <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                                
+                                <div id="mdaOasContainer">
+                                    <div id="mdaOaHeaders">
+                                        <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
+                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]]</div>
+                                        <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
+                                        <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
+                                        <div class="mdaOaContainerCol5">[[localize("answeredOn","Répondu le", language)]]</div>
+                                        <div class="mdaOaContainerCol6">[[localize("inv_stat","Status", language)]]</div>
+                                    </div>                            
+                                    <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="item" id="domRepeatMdaRequests">
+                                        <div class="mdaOaContainer">
+                                            <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
+                                            <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
+                                            <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
+                                            <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
+                                            <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                            <div class="mdaOaContainerCol6">
+                                                <template is="dom-if" if="[[item.metas.responseMessageId]]"><span class="statusBullet green"></span></template>
+                                                <template is="dom-if" if="[[!item.metas.responseMessageId]]"><span class="statusBullet red"></span></template>
+                                            </div>
+                                        </div>
                                     </template>
                                 </div>
-                                <h4>[[localize('batchDetails',"Batch details",language)]]<span class="txtcolor--redStatus">[[activeGridItem.messageInfo.batchReference]]</span> [[localize('ofOa',"of OA",language)]] <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]] - [[activeGridItem.messageInfo.parentOaLabel]]</span></h4>
-                            </div>
-                            <vaadin-grid id="invoiceAndBatchesGridDetail" items="[[messageDetailsData]]">
-                                <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
+                                
+                                <div id="mdaResponseCheckCtas">
+                                    
+                                    <!-- Last call for responses > X hours ago, allow to call again -->
+                                    <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh1">
+                                        <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
                                     </template>
-                                    <template>[[item.oaCode]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="15%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="oaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[item.oaLabel]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoiceReference">N° fact.</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[item.invoiceData.invoiceReference]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="17%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="patientData.firstName">[[localize('inv_pat','Patient',language)]] </vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[item.patientData.firstName]] [[item.patientData.lastName]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="8%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="patientData.ssin">[[localize('inv_niss','Niss',language)]]</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[_formatSsinNumber(item.patientData.ssin)]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="9%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoicingCodes">Nmcl</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[_renderGridInvoiceNmcl(item.invoiceData.invoicingCodes)]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="7%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoiceDate">Date presta.</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[formatDate(item.invoiceData.invoiceDate,'date')]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column-group>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-green',item.acceptedAmount)]]">[[item.acceptedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid-column-group>
-                                <vaadin-grid-column flex-grow="1" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
-                                    </template>
-                                    <template>
-                                        <span class$="invoice-status [[_getIconStatusClass(item.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.invoiceStatusHr)]]"></iron-icon> [[item.invoiceStatusHr]]</span>
-                                    </template>
-                                </vaadin-grid-column>
-                                <!--
-                                <vaadin-grid-column flex-grow="1" class="stat-col">
-                                    <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
-                                    <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadOaPdfByMessageId" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
-                                </vaadin-grid-column>
-                                -->
-                                <vaadin-grid-column flex-grow="1" class="stat-col">
-                                    <template><paper-button class$="button button button--other [[_showRejectInvoiceButton(item.messageOriginalStatus, item.invoiceFinalStatus)]]" on-tap="_rejectInvoice" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="cancel" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> [[localize('rejectVerb',"Reject",language)]]</paper-button></template>
-                                </vaadin-grid-column>
-                            </vaadin-grid>
-                        </div>
-
-                    </div>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_reset')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer4" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid3" items="[[messagesGridDataReset]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="invoice-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.batchReference]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="month-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.invoicedMonth]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="invoiceDate-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.generationDate]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="invAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-blue', item.totalInvoicedAmount)]]">[[item.totalInvoicedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalInvoicedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="accAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-green',item.totalAcceptedAmount)]]">[[item.totalAcceptedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalAcceptedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="refAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-red',item.totalRefusedAmount)]]">[[item.totalRefusedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalRefusedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Download",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> ZIP</paper-button></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('del',"Delete",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_confirmDeleteBatch" data-batch-export-tstamp="[[item.metas.batchExportTstamp]]"><iron-icon icon="icons:error" class="force-left"></iron-icon> [[localize('del',"Delete",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            <!-- Medical Houses - Flatrate E-Invoicing -->
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda')]]">
-
-                <!-- MDA request -->
-                <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaRequest')]]">
-                    <div class="textAlignCenter">
-                        <div class="exportMonthPicker pb20">
-                            <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
-                            <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
-                            <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaData"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
-                        </div>
-                    </div>
-                </template>
-                
-                <!-- MDA responses -->
-                <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponse')]]">
-                    <div class="textAlignCenter">
-                        <div class="exportMonthPicker pb20 mw90pc">
-                        
-                            <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
-                            <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
-                            
-                            <div id="mdaOasContainer">
-                                <div id="mdaOaHeaders">
-                                    <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
-                                    <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]]</div>
-                                    <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
-                                    <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
-                                    <div class="mdaOaContainerCol5">[[localize("answeredOn","Répondu le", language)]]</div>
-                                    <div class="mdaOaContainerCol6">[[localize("inv_stat","Status", language)]]</div>
-                                </div>                            
-                                <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="item" id="domRepeatMdaRequests">
-                                    <div class="mdaOaContainer">
-                                        <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
-                                        <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
-                                        <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
-                                        <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
-                                        <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
-                                        <div class="mdaOaContainerCol6">
-                                            <template is="dom-if" if="[[item.metas.responseMessageId]]"><span class="statusBullet green"></span></template>
-                                            <template is="dom-if" if="[[!item.metas.responseMessageId]]"><span class="statusBullet red"></span></template>
+                                    
+                                    <!-- Last call for responses < X hours ago, do not let call again -->
+                                    <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh2">
+                                        <div id="mdaResponseCheckCtaCountdown">
+                                            <div id="mdaResponseCheckCtaCountdownText">[[localize('checkMdaData5','Délai avant la prochaine vérification',language)]]: [[mdaRequestsData.timeToWaitBeforeNextCallHr]]</div>
+                                            <paper-button class="button button--other tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap=""><iron-icon icon="icons:block" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
                                         </div>
-                                    </div>
-                                </template>
+                                    </template>
+                                    
+                                    <!-- Bypass response (only if got checked 1+ times && waiting for next check -->
+                                    <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
+                                        <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh3">
+                                            <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
+                                        </template>                            
+                                    </template>
+                                    
+                                </div>                            
+                                
                             </div>
-                            
-                            <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]"><paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button></template>
-                            
-                            <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
-                                <br /><br /><br />
-                                Bug ici: c'est le FIRST EVER check (tous msg confondus) qui doit avoir été fait > 24h<br />(je check à l'instant, toujours pas de réponse -> je dois pouvoir bypasser)<br /><br />
-                                Got checked at least once && last call more than X hours ago<br />
-                                Fabien: check en plus que au moins 1 n'ait pas encore répondu (qqch du genre mdaRequestsData.missingAtLeastOneAnswer)<br />
-                                Alors bouton pour by passer
-                            </template>                            
-                            
-                        </div>
-                    </div>                    
+                        </div>                    
+                    </template>
+                    
+                    
+                    
+                    <!-- MDA last call's results -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResults')]]">
+                        mdaLastCallResults
+                    </template>
+                  
+                  
+                    
                 </template>
                 
-            </template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda_history')]]">ej20_mda_history</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeCorrected')]]">ej20_toBeCorrected</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeSend')]]">ej20_toBeSend</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_process')]]">ej20_process</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reject')]]">ej20_reject</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_partiallyAccepted')]]">ej20_partiallyAccepted</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_accept')]]">ej20_accept</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_archive')]]">ej20_archive</template>
-            
-            
-            
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reset')]]">ej20_reset</template>
-            <!-- Medical Houses - Flatrate E-Invoicing -->
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda_history')]]">ej20_mda_history</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeCorrected')]]">ej20_toBeCorrected</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeSend')]]">ej20_toBeSend</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_process')]]">ej20_process</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reject')]]">ej20_reject</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_partiallyAccepted')]]">ej20_partiallyAccepted</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_accept')]]">ej20_accept</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_archive')]]">ej20_archive</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reset')]]">ej20_reset</template>
+                <!-- /Medical Houses - Flatrate E-Invoicing -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+                <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
+    
+                <paper-dialog class="modalDialog" id="archiveDialog">
+                    <h2 class="modal-title"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p>[[localize('archiveBatchConfirmation',"Voulez-vous vraiment archiver l'envoi",language)]] <b>[[activeGridItem.messageInfo.batchReference]]</b></p>
+                        <p>OA <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]]</span> [[activeGridItem.messageInfo.parentOaLabel]] ?</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('provideNihiiNumber','Please provide your number',language)]] <b>[[localize('inami','INAMI',language)]]</b>.</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('areYouSureFlagInvoiceAsLost','Are you sure you wish to flag invoice as permanently lost?',language)]]</p>
+                        <p class="">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_flagInvoiceAsLost">[[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="deleteBatchDialog">
+                    <h2 class="modal-title"><iron-icon icon="error"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p>[[localize('mhFlatRateConfirmDeleteBatch','Are you sure you wish to delete this batch?',language)]]</p>
+                        <p class="uppercase bold">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_doDeleteBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                
+                <!-- Medical Houses - Flatrate E-Invoicing -->
+                <paper-dialog class="modalDialog" id="mdaRequestsSent" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="">[[localize('mh_eInvoicing.mda.text1','We could not find any data to export',language)]]</p>
+                        <p class="fw700">[[localize('mh_eInvoicing.mda.text2','We could not find any data to export',language)]]</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_e_closeMdaRequestsSentDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>            
+    
+    
+    
+    
+    
+    
+            </div>
+        `;
 
-
-
-
-
-
-
-
-
-
-
-
-            <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
-
-            <paper-dialog class="modalDialog" id="archiveDialog">
-                <h2 class="modal-title"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p>[[localize('archiveBatchConfirmation',"Voulez-vous vraiment archiver l'envoi",language)]] <b>[[activeGridItem.messageInfo.batchReference]]</b></p>
-                    <p>OA <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]]</span> [[activeGridItem.messageInfo.parentOaLabel]] ?</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('provideNihiiNumber','Please provide your number',language)]] <b>[[localize('inami','INAMI',language)]]</b>.</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('areYouSureFlagInvoiceAsLost','Are you sure you wish to flag invoice as permanently lost?',language)]]</p>
-                    <p class="">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_flagInvoiceAsLost">[[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="deleteBatchDialog">
-                <h2 class="modal-title"><iron-icon icon="error"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p>[[localize('mhFlatRateConfirmDeleteBatch','Are you sure you wish to delete this batch?',language)]]</p>
-                    <p class="uppercase bold">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_doDeleteBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            
-            <!-- Medical Houses - Flatrate E-Invoicing -->
-            <paper-dialog class="modalDialog" id="mdaRequestsSent" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="">[[localize('mh_eInvoicing.mda.text1','We could not find any data to export',language)]]</p>
-                    <p class="fw700">[[localize('mh_eInvoicing.mda.text2','We could not find any data to export',language)]]</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_e_closeMdaRequestsSentDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>            
-
-
-
-
-
-
-        </div>
-
-
-
-`;
-  }
+    }
 
     static get is() {
       return 'ht-msg-flatrate-invoice';
@@ -1935,7 +1974,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 type: Object,
                 value:()=>{}
             },
-            mdaMinimumHoursGapBetweenChecks: {
+            minimumHoursBetweenMdaResponseChecks: {
                 type: Number,
                 value: 24
             }
@@ -1995,7 +2034,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         }
 
         // Study mda status / step we're in
-        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_setEInvoicingStep();
+        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_getEInvoicingStep();
 
     }
 
@@ -4032,31 +4071,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         }
     }
 
-    _DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices() {
-
-        this.api.getRowsUsingPagination(
-            (key,docId) =>
-                this.api.message().findMessagesByTransportGuid('MH:FLATRATE:*', null, key, docId, 1000)
-                    .then(pl => { return {
-                        rows:_.filter(pl.rows, m => _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId ),
-                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                        done: !pl.nextKeyPair
-                    }})
-                    .catch(()=>{ return Promise.resolve(); })
-        ).then(messages=>{
-            const invoiceIdsFromMessage = _.compact(_.uniq( _.flatten(_.map(messages, i=>i.invoiceIds))))
-            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: invoiceIdsFromMessage }))
-                .then(invoices=>{
-                    const correctiveInvoiceIds = _.compact(_.uniq(_.map( _.filter(invoices, i=>!!_.trim(i.correctiveInvoiceId)), "id" )))
-                    Promise.all( _.compact(_.uniq(_.concat(invoiceIdsFromMessage,correctiveInvoiceIds))).map(i => this.api.invoice().deleteInvoice(i).catch(()=>{}) ))
-                        .then(()=> !!_.size(messages) && this.api.message().deleteMessagesBatch(new models.ListOfIdsDto({ids: _.map(messages, i=>i.id)})).catch(()=>{}) );
-                })
-        })
-            .catch((e)=>console.log(e))
-
-    }
-
     _generateJ20PdfTemplateObjects() {
 
         let pdfData = {};
@@ -6043,19 +6057,23 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _e_closeMdaRequestsSentDialog() {
         this._closeDialogs()
-        this._e_setEInvoicingStep()
+        this._e_getEInvoicingStep()
     }
 
     _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
 
-        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.mdaMinimumHoursGapBetweenChecks)||24)
+        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.minimumHoursBetweenMdaResponseChecks)||24)
 
     }
 
-    _e_getAsyncMemberData(oa, requestedData, requestId) {
+    _e_getAsyncMemberDataRequest(oa, requestedData, requestId) {
 
+        // Todo
         // Should be something like: this.api.fhc().MemberDataController().getAsyncMemberData()
         // OR wait for Max's input on async MDA batch call
+
+        // Todo
+        // Call oa (100/200/300/...), with requestedData (=list of pats) and pass our own requestId (as reference)
 
         const promResolve = Promise.resolve();
 
@@ -6065,13 +6083,81 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 message: "MDA fake answer",
                 oa: oa,
                 requestId: requestId,
-                requestMdaResponse: this.api.crypto().randomUuid(),
+                mdaInputReference: this.api.crypto().randomUuid(), // This should come from OA = the REQUEST inputReference
             }))
             .catch(()=>null)
 
     }
 
-    _e_checkForMdaData() {
+    _e_getAsyncMemberDataResponse(oa, mdaInputReference) {
+
+        // Todo
+        // Should be something like: this.api.fhc().MemberDataController().getAsyncMemberData()
+        // OR wait for Max's input on async MDA batch call
+
+        // Todo
+        // Call oa (100/200/300/...), with mdaInputReference (= the oa's reference to our REQUEST original call)
+        // The "mdaInputReference" below is the answer of OA/Mda when getting the RESPONSE back
+
+        // Todo
+        // If successfull response -> confirm back to WS
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(()=>this._sleep(500)) // Pretend call happened for the moment
+            .then(()=>_.assign({},{
+                oa: oa,
+                mdaInputReference: this.api.crypto().randomUuid(), // This should come from OA = the RESPONSE inputReference
+                patients:[{
+                    patientId: "049b5711-c056-4b79-b70b-f88e02b9580a",
+                    ssin:"55102016968",
+                    firstName: "NISS6",
+                    lastName: "MDA OA300",
+                    identificationNumber: "4305178201055",
+                    isValid: true
+                },{
+                    patientId: "0720074b-8b4d-42a8-b9ac-00690f04a753",
+                    ssin:"74080925023",
+                    firstName: "NISS2",
+                    lastName: "MDA OA500",
+                    identificationNumber: "0010718080270",
+                    isValid: true
+                },{
+                    patientId: "109aeb46-77ae-46ca-97fe-a29494bd82de",
+                    ssin:"69021902691",
+                    firstName: "NISS4",
+                    lastName: "MDA OA600",
+                    identificationNumber: "0604003933270",
+                    isValid: true
+                },{
+                    patientId: "19a735d0-5491-442c-a0dd-3a7911e25ef1",
+                    ssin:"49012619462",
+                    firstName: "NISS7",
+                    lastName: "MDA OA300",
+                    identificationNumber: "6969272260149",
+                    isValid: true
+                },{
+                    patientId: "1f82ad46-b504-4e3f-8d88-be6f04d4f186",
+                    ssin:"57052511675",
+                    firstName: "NISS6",
+                    lastName: "MDA OA100",
+                    identificationNumber: "570525 210M77",
+                    isValid: true
+                },{
+                    patientId: "dc813aca-1a2c-4b07-af28-2656a2d24ec7",
+                    ssin:"73022102793",
+                    firstName: "Samuel",
+                    lastName: "Jocque",
+                    identificationNumber: "720221 145M71",
+                    isValid: true
+                }]
+            }))
+            .catch(()=>null)
+
+    }
+
+    _e_placeMdaRequests() {
 
         const promResolve = Promise.resolve();
         const exportedDate = moment().format("YYYYMM") + "01"
@@ -6110,35 +6196,37 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
 
                 _.map(mdaRequestedDataByOa, (v,oa) => {
-                    prom = prom.then(promisesCarrier => this.api.message().newInstance(this.user)
-                        .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
-                            transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
-                            recipientsType: "org.taktik.icure.entities.HealthcareParty",
-                            recipients: [this.user.healthcarePartyId],
-                            toAddresses: [this.user.healthcarePartyId],
-                            metas: {
-                                oa: _.trim(oa),
-                                totalPats: _.size(v),
-                                requestId: "oa-" + _.trim(oa) + "-" + exportedDate + "-" + this.api.crypto().randomUuid(),
-                                requestDate: moment().format("YYYYMMDDHHmmss"),
-                                requestedDate: exportedDate,
-                                requestMdaResponse: "",
-                                responseMessageId: "",
-                                responseDate: "",
-                                responseLastCheckDate: "",
-                                overriddenByUser: 0
-                            },
-                            status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
-                            subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
-                        }))), 4, 1000, 1.5))
-                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
-                        .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
-                        .then(([createdMessage,createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(encryptedFileContent => ([createdMessage,createdDocument,encryptedFileContent])))
-                        .then(([createdMessage,createdDocument,encryptedFileContent]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(()=>createdMessage)), 4, 1000, 1.5))
-                        .then(createdMessage => this._sleep(500) && createdMessage) // Cool down
-                        .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
-                        .catch(()=>_.concat(promisesCarrier, [false]))
-                    )
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                        .then(promisesCarrier => this.api.message().newInstance(this.user)
+                            .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+                                transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
+                                recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                                recipients: [this.user.healthcarePartyId],
+                                toAddresses: [this.user.healthcarePartyId],
+                                metas: {
+                                    oa: _.trim(oa),
+                                    requestId: "oa-" + _.trim(oa) + "-" + exportedDate + "-" + this.api.crypto().randomUuid(),
+                                    requestDate: moment().format("YYYYMMDDHHmmss"),
+                                    requestedDate: exportedDate,
+                                    mdaInputReference: "",
+                                    responseMessageId: "",
+                                    responseDate: "",
+                                    responseLastCheckDate: "",
+                                    totalPats: _.size(v),
+                                    overriddenByUserDate: 0
+                                },
+                                status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
+                                subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa)
+                            }))), 4, 1000, 1.5))
+                            .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
+                            .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
+                            .then(([createdMessage,createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(encryptedFileContent => ([createdMessage,createdDocument,encryptedFileContent])))
+                            .then(([createdMessage,createdDocument,encryptedFileContent]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(()=>createdMessage)), 4, 1000, 1.5))
+                            .then(createdMessage => this._sleep(500).then(()=>createdMessage)) // Cool down
+                            .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
                 });
 
                 return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
@@ -6155,12 +6243,15 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 _.map(mdaRequestedDataByOa, (v,oa) => {
                     const targetMessage = _.find(createdMessages,m=>_.trim(_.get(m,"metas.oa"))===_.trim(oa))
                     const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
-                    prom = prom.then(promisesCarrier => this._e_getAsyncMemberData(oa,v,_.get(targetMessage,"metas.requestId"))
-                        .then(response => !_.get(response,"requestMdaResponse") ? promResolve : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{requestMdaResponse:_.get(response,"requestMdaResponse")}})).then(msg =>this.api.register(msg, 'message'))), 4, 1000, 1.5))
-                        .then(modifiedMessage => this._sleep(500) && modifiedMessage) // Cool down
-                        .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
-                        .catch(()=>_.concat(promisesCarrier, [false]))
-                    )
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                        .then(promisesCarrier => this._e_getAsyncMemberDataRequest(oa,v,_.get(targetMessage,"metas.requestId"))
+                            .then(mdaResponse => !_.get(mdaResponse,"mdaInputReference") ? promResolve : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}}))), 4, 1000, 1.5))
+                            .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                            .then(modifiedMessage => this._sleep(500).then(()=>modifiedMessage)) // Cool down
+                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
                 });
 
                 return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
@@ -6173,7 +6264,140 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _e_setEInvoicingStep() {
+    _e_mdaCheckForResponsesCountDown() {
+
+        const secondsToWaitBeforeNextCall = parseInt(_.get(this,"mdaRequestsData.nextRequesDate").diff(moment(),"seconds"))||0
+        const hmsDurationsToWait = [
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").hours())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").minutes())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").seconds()))
+        ]
+
+        // Stop calling us back when reached zero && trigger interface updates
+        if(!parseInt(secondsToWaitBeforeNextCall)||parseInt(secondsToWaitBeforeNextCall)<0) {
+
+            this.set("mdaRequestsData.timeToWaitBeforeNextCallHr","00:00:00")
+            this.set("mdaRequestsData.lastCheckedHoursAgo",(parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24) + 1)
+
+            this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
+
+            return
+
+        }
+
+        this.set("mdaRequestsData.timeToWaitBeforeNextCallHr",(hmsDurationsToWait[0].length===1?"0":"") + hmsDurationsToWait[0]  + ":" + (hmsDurationsToWait[1].length===1?"0":"") + hmsDurationsToWait[1] + ":" + (hmsDurationsToWait[2].length===1?"0":"") + hmsDurationsToWait[2])
+
+        setTimeout(()=>this._e_mdaCheckForResponsesCountDown(),1000)
+
+    }
+
+    _e_bypassMdaResponses() {
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"arrow-forward"})
+            })
+            .then(() => {
+                let prom = Promise.resolve([]);
+                _.map(_.filter(_.get(this,"mdaRequestsData.originalMessages",[]), it=>!(parseInt(_.get(it,"metas.overriddenByUserDate",0))||0)), messageToModify => {
+                    prom = prom
+                        .then(promisesCarrier => retry.retry(() => (this.api.message().modifyMessage(_.merge(messageToModify, {metas:{overriddenByUserDate:moment().format("YYYYMMDDHHmmss")}}))), 4, 1000, 1.5)
+                            .then(modifiedMessage => this.api.register(modifiedMessage, 'message'))
+                            .then(modifiedMessage => this._sleep(500).then(()=>modifiedMessage)) // Cool down
+                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
+                });
+                return prom.then(promisesCarrier=>promisesCarrier)
+            })
+            .catch(()=>{})
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_getEInvoicingStep())
+
+    }
+
+    _e_checkForMdaResponses() {
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+            })
+            .then(() => {
+
+                let prom = Promise.resolve([]);
+
+                _.map(_.filter(_.get(this,"mdaRequestsData.originalMessages",[]), it=>!(parseInt(_.get(it,"metas.overriddenByUserDate",0))||0) && _.trim(_.get(it,"metas.mdaInputReference"))), requestMessage => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_6",this.language) + " " + _.trim(_.get(requestMessage,"metas.oa")) + "...", icon:"arrow-forward"})||true) && promisesCarrier)
+                        .then(promisesCarrier => retry.retry(() => (this._e_getAsyncMemberDataResponse(_.trim(_.get(requestMessage,"metas.oa")), _.trim(_.get(requestMessage,"metas.mdaInputReference")))), 4, 1000, 1.5)
+                            .then(mdaResponse => (!_.trim(_.get(mdaResponse,"mdaInputReference"))||!_.size(_.get(mdaResponse,"patients",[]))) ?
+
+                                // No / invalid answer from mda / OA -> simply update meta "responseLastCheckDate" of request message
+                                retry.retry(() => (this.api.message().modifyMessage(_.merge(requestMessage, {metas:{responseLastCheckDate: moment().format("YYYYMMDDHHmmss")}}))), 4, 1000, 1.5)
+                                    .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                                    .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                                    .catch(()=>_.concat(promisesCarrier, [false])) :
+
+                                // Valid answer from mda / oa
+                                this.api.message().newInstance(this.user)
+                                    .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+                                        transportGuid: "MH:FLATRATE-MDA-RESPONSE:" + _.trim(_.get(requestMessage,"metas.oa")),
+                                        recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                                        recipients: [this.user.healthcarePartyId],
+                                        toAddresses: [this.user.healthcarePartyId],
+                                        metas: {
+                                            oa: _.trim(_.get(requestMessage,"metas.oa")),
+                                            responseDate: moment().format("YYYYMMDDHHmmss"),
+                                            requestedDate: _.get(requestMessage,"metas.requestedDate"),
+                                            requestMessageId:  _.get(requestMessage,"id"),
+                                            mdaInputReference:_.get(mdaResponse,"mdaInputReference"),
+                                            totalPats: _.size(_.get(mdaResponse,"patients",[])),
+                                            totalValidPats: _.size(_.filter(_.get(mdaResponse,"patients",[]),{isValid:true}))
+                                        },
+                                        status: _.get(this,"invoiceMessageStatuses.treated.status",(1 << 11)),
+                                        subject: "MH:FLATRATE-MDA-RESPONSE:" + _.trim(_.get(requestMessage,"metas.oa"))
+                                    }))), 4, 1000, 1.5))
+                                    .then(responseMessage => this.api.document().newInstance(this.user, responseMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(responseMessage,"subject"))+".json"}).then(newDocumentInstance=>([responseMessage,newDocumentInstance])))
+                                    .then(([responseMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([responseMessage,createdDocument]))), 4, 1000, 1.5))
+                                    .then(([responseMessage,createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(mdaResponse)))).then(encryptedFileContent => ([responseMessage,createdDocument,encryptedFileContent])))
+                                    .then(([responseMessage,createdDocument,encryptedFileContent]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(()=>responseMessage)), 4, 1000, 1.5))
+                                    .then(responseMessage => this._sleep(500).then(()=>responseMessage)) // Cool down
+                                    .then(responseMessage => retry.retry(() => (this.api.message().modifyMessage(_.merge(requestMessage, {
+                                        status:parseInt(parseInt(requestMessage.status||_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))) | parseInt(_.get(this,"invoiceMessageStatuses.treated.status",(1 << 11)))),
+                                        metas:{
+                                            responseMessageId: _.get(responseMessage,"id"),
+                                            responseDate: _.get(responseMessage,"metas.responseDate"),
+                                            responseLastCheckDate: _.get(responseMessage,"metas.responseDate")
+                                        }
+                                    }))), 4, 1000, 1.5))
+                                    .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                                    .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                                    .catch(()=>_.concat(promisesCarrier, [false]))
+
+                            )
+                        )
+                });
+
+                return prom.then(promisesCarrier=>promisesCarrier)
+
+            })
+            .then(requestMessages=>{})
+            .catch(()=>{})
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_getEInvoicingStep())
+
+    }
+
+    _e_getEInvoicingStep() {
 
         let eInvoicingStep = "mdaRequest"
         const promResolve = Promise.resolve();
@@ -6204,28 +6428,54 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(mdaRequestMessages => _.orderBy(mdaRequestMessages,["metas.oa"],["asc"]))
             .then(mdaRequestMessages => {
 
-                // Did not invoke "MDA request" yet (this month)
-                if(!_.size(mdaRequestMessages)) throw new Error("shouldNotGoAnyFurther");
 
-                // Once requests got placed -> go for responses
-                eInvoicingStep = "mdaCheckForResponse"
 
+                // 001 - Did not invoke "MDA request" yet (this month)
+                if(!_.size(mdaRequestMessages)) throw new Error("dontGoAnyFurther");
+
+
+
+                const missingAtLeastOneAnswer = _.some((mdaRequestMessages||[]), it=>!_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate")))
                 const mostRecentCheck = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.responseLastCheckDate",0))||0).orderBy([],["desc"]).head().value()
                 const mostRecentRequestDate = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.requestDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentCheckOrRequesDate = moment(_.trim(mostRecentCheck ? mostRecentCheck : mostRecentRequestDate),"YYYYMMDDHHmmss")
+                const nextRequesDate = _.cloneDeep(mostRecentCheckOrRequesDate).add((parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24), 'hours')
 
                 this.set("mdaRequestsData",{
+                    originalMessages: _.cloneDeep((mdaRequestMessages||[])),
                     messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
                         requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
                         responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
                         responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
                     }})),
+                    nextRequesDate: nextRequesDate,
                     everGotChecked: !!mostRecentCheck,
-                    lastCheckedHoursAgo: moment().diff(moment(_.trim((!mostRecentCheck ? mostRecentRequestDate : mostRecentCheck)),"YYYYMMDDHHmmss"),"hours",true)
+                    lastCheckedHoursAgo: moment().diff(mostRecentCheckOrRequesDate,"hours",true),
                 })
 
-                // Did not invoke "MDA response" yet (this month)
-                // if(!_.some(mdaRequestMessages, it => _.trim(_.get(it,"metas.responseLastCheckDate")))) throw new Error("shouldNotGoAnyFurther") else eInvoicingStep = "mdaCheckForResponse"
-                // Tenir compte overriddenByUser dans les metas du message -> soit overriddenByUser, soit réponse obtained -> next step = résultat du dernier appel
+
+
+                // 002 - Do we have any pending responses to wait for ? (Either no metas.responseMessageId yet OR user overrid / bypassed the response checks)
+                eInvoicingStep = missingAtLeastOneAnswer ? "mdaCheckForResponses" : "mdaLastCallResults"
+                eInvoicingStep==="mdaCheckForResponses" && this._e_mdaCheckForResponsesCountDown()
+
+                // 003 - Show mda last call results ?
+                if(eInvoicingStep==="mdaCheckForResponses") throw new Error("dontGoAnyFurther");
+
+
+                // Todo: injecter les messages de response
+                // this.set("mdaResponsesData",{
+                //     messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
+                //             requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                //             responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                //             responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
+                //         }})),
+                //     nextRequesDate:nextRequesDate,
+                //     everGotChecked: !!mostRecentCheck,
+                //     lastCheckedHoursAgo: moment().diff(mostRecentCheckOrRequesDate,"hours",true),
+                // })
+
+
 
             })
             .catch(()=>{})
@@ -6236,29 +6486,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             })
 
     }
-
-    _e_checkForMdaResponses() {
-
-        console.log("_e_checkForMdaResponses");
-
-    }
-
-
-
-    // 1) Did NOT ask this month yet -> show
-    // 2) Already asked this month but did not ask for answer -> Button ask for answer
-    // 3) Ask for answer but not there yet
-    //     &nbsp;&nbsp;&nbsp;&nbsp;a) > 24 hours -> by pass
-    //     &nbsp;&nbsp;&nbsp;&nbsp;b) < 24 hours -> ask for 24 hours
-    // 4) Answer is there -> get + confirm back + show shatus (green/red) X/Y OA
-    // 5) Réponse obtained -> aller sur réponse du dernier appel
-
-
-
-    // Revoir affichage de l'écran, fonction des réponses / status / requests / ...
-    // Une fois réponse reçue de MDA / OA -> status message = this.invoiceMessageStatuses.treated.status + ajouter responseDate: moment().format(\"YYYYMMDDHHmmss\") sur le msg de request + enregistrer réponse + MAJ responseMessageId du message de request
-    // Si le user force de ne pas attendre (>24h) -> foutre overriddenByUser = 1 dans les metas du message
-
 
 
 

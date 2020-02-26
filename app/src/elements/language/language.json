@@ -5420,15 +5420,18 @@
 		"mh_eInvoicing.mda.step_2_done": "Fin de la collecte de la patientelle",
 		"mh_eInvoicing.mda.step_3": "Collecte des assurances...",
 		"mh_eInvoicing.mda.step_3_done": "Fin de la collecte des assurances",
-		"mh_eInvoicing.mda.step_4": "Sauvegarde des requêtes...",
+		"mh_eInvoicing.mda.step_4": "Sauvegarde des requêtes de l'OA",
 		"mh_eInvoicing.mda.step_4_done": "Fin de la sauvegarde des requêtes",
-		"mh_eInvoicing.mda.step_5": "Envoi des requêtes...",
-		"mh_eInvoicing.mda.step_5_done": "Fin de l'envoi des requêtes",
+		"mh_eInvoicing.mda.step_5": "Envoi des requêtes de l'OA",
+		"mh_eInvoicing.mda.step_5_done": "Fin de l'envoi des requêtes aux OA",
 		"mh_eInvoicing.mda.text1": "Merci, votre demande de vérification des données patient est en cours de traitement.",
 		"mh_eInvoicing.mda.text2": "Vous pourrez en consulter les résultats d'ici un jour.",
 		"askedOn": "Demandé le",
 		"lastCheckedOn": "Dernière vérification le",
-		"answeredOn": "Répondu le"
+		"answeredOn": "Réponse obtenue le",
+		"checkMdaData5" : "Délai avant la prochaine vérification",
+		"checkMdaData6" : "Outrepasser le délai d'attente",
+		"mh_eInvoicing.mda.step_6": "Vérification des réponses de l'OA"
 	},
 	"nl": {
 		"createAccessLog" : "maak een toegangslogboek",
