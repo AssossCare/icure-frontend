@@ -5431,7 +5431,14 @@
 		"answeredOn": "Réponse obtenue le",
 		"checkMdaData5" : "Délai avant la prochaine vérification",
 		"checkMdaData6" : "Outrepasser le délai d'attente",
-		"mh_eInvoicing.mda.step_6": "Vérification des réponses de l'OA"
+		"checkMdaData7" : "Résultat des vérifications auprès des OA",
+		"mh_eInvoicing.mda.step_6": "Vérification des réponses de l'OA",
+		"mh_eInvoicing.mda.step_7": "Chargement des requêtes de l'OA",
+		"mh_eInvoicing.mda.step_7_done": "Fin du chargement des requêtes des OA",
+		"mh_eInvoicing.mda.step_8": "Chargement des réponses de l'OA",
+		"mh_eInvoicing.mda.step_8_done": "Fin du chargement des réponses des OA",
+		"validPats": "Patients en ordre",
+		"details": "Détails"
 	},
 	"nl": {
 		"createAccessLog" : "maak een toegangslogboek",
