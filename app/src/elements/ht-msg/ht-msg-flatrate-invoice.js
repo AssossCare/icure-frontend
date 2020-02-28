@@ -1040,8 +1040,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         margin-top:3px;
                     }
                     
-                    .statusBullet.red {background-color:#ef5350;}
-                    .statusBullet.green {background-color:#66bb6a;}
+                    .statusBullet.green {background-color:#66bb6a;/*var(--paper-green-400)*/}
+                    .statusBullet.orange {background-color: var(--paper-orange-400);}
+                    .statusBullet.red {background-color:#ef5350; /*var(--paper-red-400)*/}
                     
                     #mdaResponseCheckCtas {
                         display:flex;
@@ -1085,13 +1086,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .rootLineItem span {
                         display:inline-block;
                         text-align:center;
-                        height:50px; 
-                        width:50px;
-                        border-radius:25px;
+                        height:30px; 
+                        width:30px;
+                        border-radius:30px;
                         background-color:#eeeeee;
-                        font-size:1.4em;
+                        font-size:1.1em;
                         font-weight:500;
-                        line-height:50px;
+                        line-height:30px;
                         border:1px solid #ccc;
                     }
                     
@@ -1123,11 +1124,36 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     #mdaProgressRootLineBg {
                         position: absolute;
                         background: #e6e5e5;
-                        height: 5px;
+                        height: 3px;
                         width: 80%;
                         left: 10%;
-                        top: 25px;
+                        top: 16px;
                         z-index: 1;
+                        background: -moz-linear-gradient(left,  #66bb6a 0%, #e6e5e5 25%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 0%,#e6e5e5 25%);
+                        background: linear-gradient(to right,  #66bb6a 0%,#e6e5e5 25%);
+                    }
+                    
+                    #mdaProgressRootLineBg.step2 {
+                        background: -moz-linear-gradient(left,  #66bb6a 25%, #e6e5e5 50%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 25%,#e6e5e5 50%);
+                        background: linear-gradient(to right,  #66bb6a 25%,#e6e5e5 50%);
+                    }
+                                        
+                    #mdaProgressRootLineBg.step3 {
+                        background: -moz-linear-gradient(left,  #66bb6a 50%, #e6e5e5 75%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 50%,#e6e5e5 75%);
+                        background: linear-gradient(to right,  #66bb6a 50%,#e6e5e5 75%);
+                    }
+                                                            
+                    #mdaProgressRootLineBg.step4 {
+                        background: -moz-linear-gradient(left,  #66bb6a 75%, #e6e5e5 100%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 75%,#e6e5e5 100%);
+                        background: linear-gradient(to right,  #66bb6a 75%,#e6e5e5 100%);
+                    }
+                                                                                
+                    #mdaProgressRootLineBg.step5 {
+                        background: #e6e5e5;
                     }
                     
                     .pageTitle {
@@ -1631,7 +1657,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaLastCallResults')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaLastCallResults', 'active')]]" id="mdaRootLineStep3"><span>3</span><p>[[localize("memberDataResults","Résultats Member Data",language)]]</p></div>
                             <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaLastCallResultsDetails')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaLastCallResultsDetails', 'active')]]" id="mdaRootLineStep4"><span>4</span><p>[[localize("patientCorrections","Corrections des patients",language)]]</p></div>
                             <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaDoInvoicing')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaDoInvoicing', 'active')]]" id="mdaRootLineStep5"><span>5</span><p>[[localize("_e_flatrateinv_invoicing","Facturation",language)]]</p></div>
-                            <div id="mdaProgressRootLineBg"></div>
+                            <div id="mdaProgressRootLineBg" class$="step[[_e_getRootLineStep(eInvoicingStep)]]"></div>
                         </div>
                     </template>
     
@@ -1773,7 +1799,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                             
                                             <vaadin-grid-column flex-grow="0" width="130px">
                                                 <template class="header"><vaadin-grid-sorter path="patientInsurabilityStatusHr">[[localize('insured','Insured',language)]]</vaadin-grid-sorter></template>
-                                                <template>[[item.patientInsurabilityStatusHr]]</template>
+                                                <template>
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'yes')]]"><span class="statusBullet green"></span></template> 
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'notVerified')]]"><span class="statusBullet orange"></span></template> 
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'no')]]"><span class="statusBullet red"></span></template>                                                
+                                                    [[item.patientInsurabilityStatus]] -> [[item.patientInsurabilityStatusHr]]
+                                                </template>
                                             </vaadin-grid-column>
                                             
                                             <vaadin-grid-column flex-grow="1">
@@ -6135,6 +6166,64 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _e_getRootLineStep(a) {
+
+        // Steps:
+        //     placeMdaRequests
+        //     mdaCheckForResponses
+        //     mdaLastCallResults
+        //     mdaLastCallResultsDetails
+        //     mdaDoInvoicing
+
+        return a==="placeMdaRequests" ? 1 :
+            a==="mdaCheckForResponses" ? 2 :
+            a==="mdaLastCallResults" ? 3 :
+            a==="mdaLastCallResultsDetails" ? 4 :
+            a==="mdaDoInvoicing" ? 5 :
+            ""
+
+    }
+
+    _e_mdaCheckForResponsesCountDown() {
+
+        const secondsToWaitBeforeNextCall = parseInt(_.get(this,"mdaRequestsData.nextRequesDate").diff(moment(),"seconds"))||0
+        const hmsDurationsToWait = [
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").hours())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").minutes())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").seconds()))
+        ]
+
+        // Stop calling us back when reached zero && trigger interface updates
+        if(!parseInt(secondsToWaitBeforeNextCall)||parseInt(secondsToWaitBeforeNextCall)<0) {
+
+            this.set("mdaRequestsData.timeToWaitBeforeNextCallHr","00:00:00")
+            this.set("mdaRequestsData.lastCheckedHoursAgo",(parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24) + 1)
+
+            this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
+
+            return
+
+        }
+
+        this.set("mdaRequestsData.timeToWaitBeforeNextCallHr",(hmsDurationsToWait[0].length===1?"0":"") + hmsDurationsToWait[0]  + ":" + (hmsDurationsToWait[1].length===1?"0":"") + hmsDurationsToWait[1] + ":" + (hmsDurationsToWait[2].length===1?"0":"") + hmsDurationsToWait[2])
+
+        setTimeout(()=>this._e_mdaCheckForResponsesCountDown(),1000)
+
+    }
+
+    _e_closeMdaRequestsSentDialog() {
+        this._closeDialogs()
+        this._e_getEInvoicingStep()
+    }
+
+    _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
+
+        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.minimumHoursBetweenMdaResponseChecks)||24)
+
+    }
+
     _e_getPatAndInsOutOfInvoicesToResend(invoicesToResend) {
 
         return Promise.all(invoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
@@ -6185,8 +6274,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         )
                         .map(it => {
                             it.ssin = _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,"")
-                            it.lastName = (_.get(it,"lastName","")).toUpperCase()
-                            it.firstName = (_.get(it,"firstName","")).toUpperCase()
+                            it.lastName = (_.get(it,"lastName",""))
+                            it.firstName = (_.get(it,"firstName",""))
                             it.dateOfBirth = (!!_.trim(_.get(it,"dateOfBirth",""))?moment(_.trim(_.get(it,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
                             it.finalInsurability = _.find(it.insurabilities, ins => _.size(ins) &&
                                 _.trim(_.get( ins, "insuranceId", "" )) &&
@@ -6269,10 +6358,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .map(it => { return {
                         patientId: _.trim(_.get(it,"id")),
                         patientSsin: _.trim(_.get(it,"ssin")),
-                        nameHr: _.trim(_.get(it,"lastName","")).toUpperCase() + " " + _.trim(_.get(it,"firstName","")),
+                        nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
                         insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
                         patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
-                        startDate: parseInt(moment(_.trim((parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)),"YYYYMMDD").subtract(1, 'months').format("YYYYMMDD")) // Always one month before
+                        startDate: parseInt(moment(_.trim((parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)),"YYYYMMDD").subtract(1, 'months').format("YYYYMMDD")), // Always one month before
+                        reconcileKey: this.api.crypto().randomUuid()
                     }})
                     .map(it => _.assign(it, {endDate: parseInt(moment(_.get(_.cloneDeep(it),"startDate"),"YYYYMMDD").add(1, 'months').format("YYYYMMDD"))}))
                     .filter(it => _.trim(it.insuranceId) && (_.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber)))
@@ -6280,17 +6370,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .value()
                 )
             })
-
-    }
-
-    _e_closeMdaRequestsSentDialog() {
-        this._closeDialogs()
-        this._e_getEInvoicingStep()
-    }
-
-    _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
-
-        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.minimumHoursBetweenMdaResponseChecks)||24)
 
     }
 
@@ -6415,7 +6494,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
                             .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
                             .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
-                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(v)))).then(()=>createdMessage)), 4, 1000, 1.5))
+                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(v)))).then(()=>createdMessage)), 4, 1000, 1.5))
                             .then(createdMessage => this._sleep(200).then(()=>createdMessage)) // Cool down
                             .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
                             .catch(()=>_.concat(promisesCarrier, [false]))
@@ -6454,35 +6533,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             // Confirm & goto mda responses
             .then(([mdaRequestedDataByOa,modifiedMessage]) => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
             .finally(() => this.set("_isLoading",false))
-
-    }
-
-    _e_mdaCheckForResponsesCountDown() {
-
-        const secondsToWaitBeforeNextCall = parseInt(_.get(this,"mdaRequestsData.nextRequesDate").diff(moment(),"seconds"))||0
-        const hmsDurationsToWait = [
-            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").hours())),
-            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").minutes())),
-            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").seconds()))
-        ]
-
-        // Stop calling us back when reached zero && trigger interface updates
-        if(!parseInt(secondsToWaitBeforeNextCall)||parseInt(secondsToWaitBeforeNextCall)<0) {
-
-            this.set("mdaRequestsData.timeToWaitBeforeNextCallHr","00:00:00")
-            this.set("mdaRequestsData.lastCheckedHoursAgo",(parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24) + 1)
-
-            this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
-            this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
-            this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
-
-            return
-
-        }
-
-        this.set("mdaRequestsData.timeToWaitBeforeNextCallHr",(hmsDurationsToWait[0].length===1?"0":"") + hmsDurationsToWait[0]  + ":" + (hmsDurationsToWait[1].length===1?"0":"") + hmsDurationsToWait[1] + ":" + (hmsDurationsToWait[2].length===1?"0":"") + hmsDurationsToWait[2])
-
-        setTimeout(()=>this._e_mdaCheckForResponsesCountDown(),1000)
 
     }
 
@@ -6561,7 +6611,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatInsuranceIdentificationNumber === reqPatInsuranceIdentificationNumber && reqPatInsuranceIdentificationNumber)
                                         })
 
-                                        return !_.size(responseMatchingPat) ? requestedPat : _.assign(requestedPat, {
+                                        return !_.size(responseMatchingPat) ? _.omit(requestedPat,["nameHr"]) : _.assign(_.omit(requestedPat,["patientId","nameHr","startDate","endDate","insuranceCode"]), {
                                             patientMatchedWithMdaResponse: true,
                                             mdaResponsePatientHasValidInsurability: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
                                             patientSsin: _.trim(_.get(requestedPat,"patientSsin")) ? requestedPat.patientSsin : _.trim(_.get(responseMatchingPat,"patientSsin")),
@@ -6590,7 +6640,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     .then(([reconciledMdaResponse,responseMessage]) => this.api.document().newInstance(this.user, responseMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(responseMessage,"subject"))+".json"}).then(newDocumentInstance=>([reconciledMdaResponse,responseMessage,newDocumentInstance])))
                                     .then(([reconciledMdaResponse,responseMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([reconciledMdaResponse,responseMessage,createdDocument]))), 4, 1000, 1.5))
                                     .then(([reconciledMdaResponse,responseMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([reconciledMdaResponse,responseMessage,createdDocument,extractedKeys])))
-                                    .then(([reconciledMdaResponse,responseMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(reconciledMdaResponse)))).then(()=>responseMessage)), 4, 1000, 1.5))
+                                    .then(([reconciledMdaResponse,responseMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(reconciledMdaResponse)))).then(()=>responseMessage)), 4, 1000, 1.5))
                                     .then(responseMessage => this._sleep(200).then(()=>responseMessage)) // Cool down
                                     .then(responseMessage => retry.retry(() => (this.api.message().modifyMessage(_.merge(requestMessage, {
                                         status:parseInt(parseInt(requestMessage.status||_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))) | parseInt(_.get(this,"invoiceMessageStatuses.treated.status",(1 << 11)))),
@@ -6733,9 +6783,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _e_missingMdaRequestsResponses() {
 
-        return !_.size(_.get(this,"mdaRequestsData.originalMessages")) ||
-            _.some(_.get(this,"mdaRequestsData.originalMessages"), it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
-            (_.some(_.get(this,"mdaRequestsData.originalMessages"), it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
+        const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
+
+        return !_.size(requestsOriginalMessages) ||
+            _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
+            (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
 
     }
 
@@ -6746,7 +6798,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_getEInvoicingStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_getEInvoicingStep() : promResolve)
             .then(() => {
                 this.set("_isLoading",true)
-                this.set("eInvoicingStep","mdaLastCallResultsDetails")
                 this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
                 return this._sleep(100)
             })
@@ -6754,22 +6805,24 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 .chain(_.get(this,"mdaRequestsData.messages",[]))
                 .map(requestMessage => _.map(_.get(requestMessage,"attachment"), pat => {
 
-                    const reqPatSsin = _.trim(_.get(pat,"patientSsin")).replace(/[^\d]/gmi,"")
-                    const reqPatStartDate = parseInt(_.trim(_.get(pat,"startDate")))
-                    const reqPatEndDate = parseInt(_.trim(_.get(pat,"endDate")))
-                    const reqPatInsuranceIdentificationNumber = _.trim(_.get(pat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
-
+                    // const reqPatSsin = _.trim(_.get(pat,"patientSsin")).replace(/[^\d]/gmi,"")
+                    // const reqPatStartDate = parseInt(_.trim(_.get(pat,"startDate")))
+                    // const reqPatEndDate = parseInt(_.trim(_.get(pat,"endDate")))
+                    // const reqPatInsuranceIdentificationNumber = _.trim(_.get(pat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
+                    //
                     const responseMessagePatients = _.get(_.find(_.get(this,"mdaResponsesData.messages"), it => _.trim(_.get(it,"metas.requestMessageId")) === _.trim(requestMessage.id)), "attachment.patients", [])
+                    //
+                    // const responseMatchingPat = _.size(responseMessagePatients) && _.find(responseMessagePatients, responsePat => {
+                    //     const respPatSsin = _.trim(_.get(responsePat,"patientSsin")).replace(/[^\d]/gmi,"")
+                    //     const respPatStartDate = parseInt(_.trim(_.get(responsePat,"startDate")))
+                    //     const respPatEndDate = parseInt(_.trim(_.get(responsePat,"endDate")))
+                    //     const respPatInsuranceIdentificationNumber = _.trim(_.get(responsePat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
+                    //     return responsePat &&
+                    //         (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatSsin === reqPatSsin && reqPatSsin) ||
+                    //         (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatInsuranceIdentificationNumber === reqPatInsuranceIdentificationNumber && reqPatInsuranceIdentificationNumber)
+                    // })
 
-                    const responseMatchingPat = _.size(responseMessagePatients) && _.find(responseMessagePatients, responsePat => {
-                        const respPatSsin = _.trim(_.get(responsePat,"patientSsin")).replace(/[^\d]/gmi,"")
-                        const respPatStartDate = parseInt(_.trim(_.get(responsePat,"startDate")))
-                        const respPatEndDate = parseInt(_.trim(_.get(responsePat,"endDate")))
-                        const respPatInsuranceIdentificationNumber = _.trim(_.get(responsePat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
-                        return responsePat &&
-                            (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatSsin === reqPatSsin && reqPatSsin) ||
-                            (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatInsuranceIdentificationNumber === reqPatInsuranceIdentificationNumber && reqPatInsuranceIdentificationNumber)
-                    })
+                    const responseMatchingPat = _.find(responseMessagePatients, {reconcileKey:_.trim(_.get(pat,"reconcileKey"))})
 
                     return _.merge({},pat,{
                         oa: _.trim(_.get(requestMessage,"metas.oa")),
@@ -6782,38 +6835,36 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? true : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
                         patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
                     })
-                }).map(pat => _.assign(pat, {patientInsurabilityStatusHr: this.localize(pat.patientInsurabilityStatus,this.language)})))
+                }).map(pat => _.assign(pat, {patientInsurabilityStatusHr: _.upperFirst(this.localize(pat.patientInsurabilityStatus,this.language))})))
                 .flatten()
-                .orderBy(["nameHr", "startDate"],["asc", "desc"])
+                .orderBy(["patientForcedAsValid","nameHr", "startDate"],["desc","asc", "desc"]) // Inside lodash, "true" gets a higher order than / comes after "false"
                 .value()
             )
             .then(gridData => {
 
+                const nothingButPatsWithValidIns = _.size(_.filter(gridData, "patientHasValidInsurabilityBoolean")) === _.size(gridData)
+
+                // Nothing but valid pats ? Jump to "validPatients" tab directly
+                this.set("mdaActiveTab", nothingButPatsWithValidIns ? "validPatients" : _.trim(_.get(this,"mdaActiveTab","invalidPatients")))
 
                 // Todo: continue here
+                // Todo: Fuck avec la couleur && status de assuré (notVerified / no / yes) && le libellé
+                // Todo: Searh engine ultra vite fait -> pat / niss en particulier
                 // Todo: adapter CTA grid -> l'un ou l'autre scénario
-                //     Si je n'ai QUE des pats valides (% patientHasValidInsurabilityBoolean) -> sauter directement dans la tab "validPatients"
-                //     Fonction de la tab dans laquelle je suis, retourner soit les pats en ordre, soit les pats pas en ordre (% patientHasValidInsurabilityBoolean)
-                //     Si je suis dans tab en ordre -> commencer le listing par ceux qui ont été forcés en ordre pour attirer l'attention (%patientForcedAsValid%)
-                //
-                //     this.mdaActiveTab
-                //          => invalidPatients
-                //          => validPatients
                 //
                 //     Si je force le patient comme valide (uniquement depuis la tab non-valide donc !!patientMatchedWithMdaResponse && !mdaResponsePatientHasValidInsurability)
                 //          => foutre patientForcedAsValid: true
                 //
                 //      Dès qu'une modification est faite -> this.set("mdaAtLeastOneEntryModified",true)
-                //      Foutre bullet de couleur devant statut assuré (vert - jaune - orange)
                 //      Re-tester en bypassant certaines réponses oa
-                //      Je fourre malgré tout nom & prénoms dans les response ?
                 //      Grid va pas jusqu'en bas && accents déconnent (car majuscules ?)
 
-
-                (this.set("mdaResultsGridData",gridData)||true) && this.shadowRoot.querySelector('mdaResultsDetailsGrid') && this.shadowRoot.querySelector('mdaResultsDetailsGrid').clearCache()
+                this.set("mdaResultsGridData",_.filter(gridData, it => nothingButPatsWithValidIns ? _.get(it,"patientHasValidInsurabilityBoolean",false) : !_.get(it,"patientHasValidInsurabilityBoolean",false)))
+                this.shadowRoot.querySelector('mdaResultsDetailsGrid') && this.shadowRoot.querySelector('mdaResultsDetailsGrid').clearCache()
 
             })
             .finally(() => {
+                this.set("eInvoicingStep","mdaLastCallResultsDetails")
                 this.set("mdaAtLeastOneEntryModified",false)
                 this.set("_isLoading",false)
             })
@@ -6831,6 +6882,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         console.log("_e_flagPatAsInValid",e);
 
     }
+
+
+
+// MODIFY requestDate
+// ___exportedDate = "20200201"
+// ___requestDate = "20200227091011"
+// this.api.getRowsUsingPagination((key,docId)=>this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*',null,key,docId,1000).then(pl=>{return{rows:_.filter(pl.rows,it=>_.trim(_.get(it,"metas.requestedDate"))===___exportedDate),nextKey:pl.nextKeyPair&&pl.nextKeyPair.startKey,nextDocId:pl.nextKeyPair&&pl.nextKeyPair.startKeyDocId,done:!pl.nextKeyPair}})).then(mdaRequestMessages=>Promise.all(_.map(mdaRequestMessages,it=>this.api.message().modifyMessage(_.merge(it,{metas:{requestDate:___requestDate}})))))
 
 
 
