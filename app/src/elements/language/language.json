@@ -5438,6 +5438,7 @@
 		"mh_eInvoicing.mda.step_8": "Chargement des réponses de l'OA",
 		"mh_eInvoicing.mda.step_8_done": "Fin du chargement des réponses des OA",
 		"validPats": "Patients en ordre",
+		"invalidPats": "Patients pas en ordre",
 		"details": "Détails",
 		"correctValidInvalidPatients": "Correction des patients en ordre / pas en ordre",
 		"memberDataRequests": "Appels Member Data",
