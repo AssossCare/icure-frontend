@@ -5446,10 +5446,11 @@
 		"memberDataResults": "Résultats Member Data",
 		"patientCorrections": "Corrections des patients",
 		"verifiedMonth": "Mois vérifié",
-		"flagAsValid": "Marquer en ordre",
-		"flagAsInValid": "Marquer pas en ordre",
+		"flagAsValid": "Marquer \"en ordre\"",
+		"flagAsInValid": "Marquer \"pas en ordre\"",
 		"notVerified": "Non-vérifié",
-		"insured": "Assuré"
+		"insured": "Assuré",
+		"saveChangesAndGoToNextStep": "Enregistrer les modifications et passer à l'étape suivante"
 	},
 	"nl": {
 		"createAccessLog" : "maak een toegangslogboek",

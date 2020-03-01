@@ -960,6 +960,13 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
                 height: 100%;
                 flex-direction: column;
             }
+            
+            .displayInline {display:inline;}
+            .displayBlock {display:block;}
+            .displayInlineBlock {display:inline-block;}
+            .displayFlex {display:flex;}
+            .displayInlineFlex {display:inline-flex;}
+            .displayInherit {display:inherit;}
 
 
 		</style>

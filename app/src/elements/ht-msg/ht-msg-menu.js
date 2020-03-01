@@ -562,7 +562,7 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
                         <collapse-button id="flatRateInvoicingListingBoxCollapse">
                             <paper-item id="flatRateInvoicingListingBox2" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBox2Tapped" elevation="">
-                                <div class="one-line-menu list-title"><iron-icon icon="accessibility"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
+                                <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
                                 <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
                             </paper-item>
                             <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
@@ -580,7 +580,7 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
                     <collapse-button id="flatRateInvoicingListingBoxCollapse">
                         <paper-item id="flatRateInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBoxTapped" elevation="">
-                    <div class="one-line-menu list-title"><iron-icon icon="accessibility"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
+                    <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
                     <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
                 </paper-item>
                     <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
@@ -614,7 +614,7 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
                     <collapse-button id="flatRateeInvoicingListingBoxCollapse">
                         <paper-item id="flatRateeInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateeInvoivingBoxTapped" elevation="">
-                            <div class="one-line-menu list-title"><iron-icon icon="accessibility"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('electronicFlatrateInvoicing','Facturation au forfait (électronique)',language)]]</span></div>
+                            <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('electronicFlatrateInvoicing','Facturation au forfait (électronique)',language)]]</span></div>
                             <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
                         </paper-item>
                         <paper-listbox id="flatRateeInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateeInvoicingSelectionIndex}}" selected-item="{{flatRateeInvoicingSelectionItem}}" selectable="paper-item">

@@ -12,6 +12,7 @@ import "@polymer/paper-button/paper-button"
 import "@polymer/paper-dialog/paper-dialog"
 import "@polymer/paper-tooltip/paper-tooltip"
 import "@polymer/paper-tabs/paper-tabs"
+import "@polymer/paper-input/paper-input"
 import "@vaadin/vaadin-combo-box/vaadin-combo-box"
 import "@vaadin/vaadin-date-picker/vaadin-date-picker"
 import "@vaadin/vaadin-grid/vaadin-grid"
@@ -378,7 +379,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     }
                     
                     .invoiceContainer.mdaResults {
-                        height: calc(100vh - 235px);
+                        height: calc(100vh - 357px);
                     }
                     
                     .invoiceSubContainerBig {
@@ -602,6 +603,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .batchAccepted{background-color: var(--paper-green-400);}
                     .batchArchived{background-color: var(--paper-purple-300);}
                     .batchToBeSend{background-color: var(--paper-orange-400);}
+                    .batchGreen {background-color: var(--paper-green-400);}
     
                     ht-spinner {
                         margin-top:10px;
@@ -986,11 +988,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         width:50%;
                         margin:0 auto;
                     }
-    
-                    .batchNumberInput {
-                        width:50%;
-                        margin:0 auto;
-                    }
                     
                     #mdaOasContainer {}
                     
@@ -1169,6 +1166,42 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .mdaGridContainer {
                         overflow-y:auto;
                         height:100%;
+                    }
+                    
+                    .mdaBatchNumber {
+                        min-width: 40px;
+                        height: 26px;
+                        line-height: 26px;
+                        font-size: 1em;
+                        border-radius: 15px;
+                        padding: 0 10px;                    
+                    }
+                    
+                    .mdaTabs {
+                        box-shadow:var(--app-shadow-elevation-1);
+                        background-color:#f5f5f5;
+                        margin-top:30px;                    
+                    }
+                    
+                    paper-tab {
+                        font-size:1.1em;
+                    }
+                    
+                    paper-tab.dialogTab.iron-selected {
+                        background-color:#dddddd;
+                    }
+                    
+                    #mdaSearchEngine {
+                        box-shadow:var(--app-shadow-elevation-1);
+                        padding:0 10px 10px 10px;                                        
+                    }
+                    
+                    #mdaStep4BottomButtons {
+                        position: fixed;
+                        bottom: 30px;
+                        width:calc(100% - 235px);
+                        display: flex;
+                        justify-content: flex-end;
                     }
                     
                 </style>
@@ -1772,10 +1805,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     <!-- MDA responses = last call's results details -->
                     <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResultsDetails')]]">
                         
-                        <paper-tabs selected="[[mdaActiveTab]]" attr-for-selected="name" on-selected-changed="_e_mdaActiveTabChanged">
-                            <paper-tab class="dialogTab" name="invalidPatients"><span class="batchNumber batchRed">[[mdaTotalInvalidPatients]]</span>[[localize('invalidPats','Patients pas en ordre',language)]]</paper-tab>
-                            <paper-tab class="dialogTab" name="validPatients"><span class="batchNumber batchGreen">[[mdaTotalValidPatients]</span>[[localize('validPats','Patients en ordre',language)]]</paper-tab>
-                        </paper-tabs>                        
+                        <paper-tabs selected="[[mdaActiveTab]]" attr-for-selected="name" on-selected-changed="_e_mdaActiveTabChanged" class="mdaTabs">
+                            <paper-tab class="dialogTab" name="invalidPatients"><span class="batchNumber mdaBatchNumber batchRed">[[mdaTotalInvalidPatients]]</span>[[localize('invalidPats','Patients pas en ordre',language)]]</paper-tab>
+                            <paper-tab class="dialogTab" name="validPatients"><span class="batchNumber mdaBatchNumber batchGreen">[[mdaTotalValidPatients]]</span>[[localize('validPats','Patients en ordre',language)]]</paper-tab>
+                        </paper-tabs>
+                        
+                        <div id="mdaSearchEngine"><paper-input label="[[localize('searchPatients','Search for a patient',language)]]" autofocus on-value-changed="_e_mdaSearchForPat" id="mdaSearchEngineInput"><iron-icon icon="accessibility" slot="prefix" style="margin-right:5px"></iron-icon></paper-input></div>
                         
                         <div class="invoicesGridContainer mt0">
                             <div class="invoiceContainer mdaResults">
@@ -1818,20 +1853,31 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 <template>[[item.message]]</template>
                                             </vaadin-grid-column>
                                             
-                                            <vaadin-grid-column flex-grow="0" width="210px">
-                                                
-                                                <!-- If dans la tab pas en ordre -->
-                                                <template><paper-button class="button button--save" on-tap="_e_flagPatAsValid" data-pat-id$="[[item.patientId]]" data-oa$="[[item.oa]]" data-startdate$="[[item.startDate]]"><iron-icon icon="check-circle"></iron-icon> &nbsp; [[localize("flagAsValid","Flag as valid",language)]]</paper-button></template>
-                                                
-                                                <!-- If dans la tab en ordre && que le pat ne l'était pas à la base -->
-                                                <template><paper-button class="button button--save" on-tap="_e_flagPatAsInValid" data-pat-id$="[[item.patientId]]" data-oa$="[[item.oa]]" data-startdate$="[[item.startDate]]"><iron-icon icon="highlight-off"></iron-icon> &nbsp; [[localize("flagAsInValid","Flag as invalid",language)]]</paper-button></template>
-                                                
+                                            <vaadin-grid-column flex-grow="0" width="230px">
+                                                <template>
+                                                    
+                                                    <template is="dom-if" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'false')]]">
+                                                        <template is="dom-if" if="[[_isEqual(item.patientMatchedWithMdaResponse,'true')]]">
+                                                            <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="valid"><iron-icon icon="check-circle"></iron-icon> [[localize("flagAsValid","Flag as valid",language)]]</paper-button>
+                                                        </template>
+                                                    </template>
+                                                    
+                                                    <template is="dom-if" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'true')]]">
+                                                        <template is="dom-if" if="[[_isEqual(item.patientForcedAsValid,'true')]]">
+                                                            <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="invalid"><iron-icon icon="highlight-off"></iron-icon> [[localize("flagAsInValid","Flag as invalid",language)]]</paper-button>
+                                                        </template>
+                                                    </template>
+                                                    
+                                                </template>
                                             </vaadin-grid-column>
                                         </vaadin-grid>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <div id="mdaStep4BottomButtons"><paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button></div>
+                        
                     </template>
                   
                   
@@ -2204,13 +2250,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 type: Array,
                 value:()=>[]
             },
+            rawMdaResultsGridData: {
+                type: Array,
+                value:()=>[]
+            },
             mdaActiveTab: {
                 type: String,
                 value:"invalidPatients"
-            },
-            mdaAtLeastOneEntryModified: {
-                type:Boolean,
-                value:false
             },
             mdaTotalValidPatients: {
                 type:Number,
@@ -2759,10 +2805,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _isEqual(a,b) {
+        b = typeof a !== "boolean" ? b : b === "true"
         return a === b
     }
 
     _isNotEqual(a,b) {
+        b = typeof a !== "boolean" ? b : b === "true"
         return a !== b
     }
 
@@ -6238,6 +6286,88 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _e_mdaActiveTabChanged(e) {
+
+        return this._e_gotoMdaTabAndRefreshGrid(_.trim(_.get(e,"detail.value","invalidPatients")))
+
+    }
+
+    _e_missingMdaRequestsResponses() {
+
+        const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
+
+        return !_.size(requestsOriginalMessages) ||
+            _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
+            (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
+
+    }
+
+    _e_gotoMdaTabAndRefreshGrid(tabToGoFor="") {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => {
+                this.set("_isLoading",true)
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => ({
+                patientsWithValidIns: _.filter(_.get(this,"rawMdaResultsGridData",[]), it => _.get(it,"patientHasValidInsurabilityBoolean",false)),
+                patientsWithInvalidIns: _.filter(_.get(this,"rawMdaResultsGridData",[]), it => !_.get(it,"patientHasValidInsurabilityBoolean",false))
+            }))
+            .then(({patientsWithValidIns,patientsWithInvalidIns}) => {
+                this.set("mdaTotalValidPatients", _.size(patientsWithValidIns))
+                this.set("mdaTotalInvalidPatients", _.size(patientsWithInvalidIns))
+                this.set("mdaActiveTab", _.trim(tabToGoFor) ? _.trim(tabToGoFor) : !_.size(patientsWithInvalidIns) ? "validPatients" : "invalidPatients")
+                this.set("mdaResultsGridData", this.mdaActiveTab==="validPatients" ? patientsWithValidIns : patientsWithInvalidIns)
+                this.shadowRoot.querySelector('#mdaResultsDetailsGrid') && this.shadowRoot.querySelector('#mdaResultsDetailsGrid').clearCache()
+            })
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_mdaSearchForPat(e) {
+
+        const promResolve = Promise.resolve()
+        const normalizedKeyword = _.trim(_.get(e,"detail.value","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,"")
+        const dataToSearchOn = _.filter(_.get(this,"rawMdaResultsGridData",[]), it => _.trim(_.get(this,"mdaActiveTab","invalidPatients")) === "invalidPatients" ? !_.get(it,"patientHasValidInsurabilityBoolean",false) : _.get(it,"patientHasValidInsurabilityBoolean",false))
+
+        return !_.size(dataToSearchOn) ? promResolve : promResolve
+            .then(() => {
+                this.set("_isLoading",true)
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => {
+                this.set("mdaResultsGridData", _.filter(dataToSearchOn, it => !_.trim(normalizedKeyword) || _.trim(_.get(it,"normalizedSearchTerms")).indexOf(normalizedKeyword) > -1))
+                this.shadowRoot.querySelector('#mdaResultsDetailsGrid') && this.shadowRoot.querySelector('#mdaResultsDetailsGrid').clearCache()
+            })
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_mdaFlagPatAs(e) {
+
+        const promResolve = Promise.resolve()
+        const dataset = _.get(_.find(_.get(e,"path",[]), it => _.trim(_.get(it,"nodeName"))==="PAPER-BUTTON"),"dataset",{})
+        const oa = _.trim(_.get(dataset,"oa"))
+        const action = _.trim(_.get(dataset,"action"))
+        const reconcileKey = _.trim(_.get(dataset,"reconcileKey"))
+
+        return !oa || !action || !reconcileKey ? promResolve : promResolve
+            .then(() => this.set('_isLoading', true ))
+            .then(() => this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true}))
+            .then(() => {
+                const targetOaPatients = _.get(_.find(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.oa")) === _.trim(oa)), "attachment",[])
+                const targetPatient = _.find(targetOaPatients, {reconcileKey:reconcileKey})
+                _.assign(targetPatient, {patientForcedAsValid:action==="valid"})
+            })
+            .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    // ---------------------------- e-Invoicing - qry methods ----------------------------
+
     _e_getPatAndInsOutOfInvoicesToResend(invoicesToResend) {
 
         return Promise.all(invoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
@@ -6795,17 +6925,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _e_missingMdaRequestsResponses() {
-
-        const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
-
-        return !_.size(requestsOriginalMessages) ||
-            _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
-            (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
-
-    }
-
-    _e_gotoMdaLastCallResultsDetails(e) {
+    _e_gotoMdaLastCallResultsDetails(e, tabToGoFor="invalidPatients") {
 
         const promResolve = Promise.resolve()
 
@@ -6813,31 +6933,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(() => {
                 this.set("_isLoading",true)
                 this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
-                return this._sleep(100)
             })
-            .then(() => _
+            .then(() =>  this.set("rawMdaResultsGridData", _
                 .chain(_.get(this,"mdaRequestsData.messages",[]))
                 .map(requestMessage => _.map(_.get(requestMessage,"attachment"), pat => {
-
-                    // const reqPatSsin = _.trim(_.get(pat,"patientSsin")).replace(/[^\d]/gmi,"")
-                    // const reqPatStartDate = parseInt(_.trim(_.get(pat,"startDate")))
-                    // const reqPatEndDate = parseInt(_.trim(_.get(pat,"endDate")))
-                    // const reqPatInsuranceIdentificationNumber = _.trim(_.get(pat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
-                    //
                     const responseMessagePatients = _.get(_.find(_.get(this,"mdaResponsesData.messages"), it => _.trim(_.get(it,"metas.requestMessageId")) === _.trim(requestMessage.id)), "attachment.patients", [])
-                    //
-                    // const responseMatchingPat = _.size(responseMessagePatients) && _.find(responseMessagePatients, responsePat => {
-                    //     const respPatSsin = _.trim(_.get(responsePat,"patientSsin")).replace(/[^\d]/gmi,"")
-                    //     const respPatStartDate = parseInt(_.trim(_.get(responsePat,"startDate")))
-                    //     const respPatEndDate = parseInt(_.trim(_.get(responsePat,"endDate")))
-                    //     const respPatInsuranceIdentificationNumber = _.trim(_.get(responsePat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
-                    //     return responsePat &&
-                    //         (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatSsin === reqPatSsin && reqPatSsin) ||
-                    //         (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatInsuranceIdentificationNumber === reqPatInsuranceIdentificationNumber && reqPatInsuranceIdentificationNumber)
-                    // })
-
                     const responseMatchingPat = _.find(responseMessagePatients, {reconcileKey:_.trim(_.get(pat,"reconcileKey"))})
-
                     return _.merge({},pat,{
                         oa: _.trim(_.get(requestMessage,"metas.oa")),
                         verifiedMonthHr: moment(_.trim(_.get(pat,"startDate")),"YYYYMMDD").format("MM/YYYY"),
@@ -6849,77 +6950,58 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? true : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
                         patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
                     })
-                }).map(pat => _.assign(pat, {patientInsurabilityStatusHr: _.upperFirst(this.localize(pat.patientInsurabilityStatus,this.language).toLowerCase())})))
+                }).map(pat => _.assign(pat, {
+                    patientInsurabilityStatusHr: _.upperFirst(this.localize(pat.patientInsurabilityStatus,this.language).toLowerCase()),
+                    normalizedSearchTerms: _
+                        .chain(pat)
+                        .pick(["patientId","patientSsin","ssinHr","nameHr","patientIdentificationNumber","insuranceCode","oa","message"])
+                        .flatMap()
+                        .compact()
+                        .map(it => it.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,""))
+                        .value()
+                        .join(" ")
+                })))
                 .flatten()
                 .orderBy(["patientForcedAsValid","nameHr", "startDate"],["desc","asc", "desc"]) // Inside lodash, "true" gets a higher order than / comes after "false"
                 .value()
-            )
-            .then(gridData => {
-
-                const patientsWithValidIns = _.filter(gridData, it => _.get(it,"patientHasValidInsurabilityBoolean",false))
-                const patientsWithInvalidIns = _.filter(gridData, it => !_.get(it,"patientHasValidInsurabilityBoolean",false))
-
-                const totalValidPatients = _.size(patientsWithValidIns)
-                const totalInvalidPatients = _.size(patientsWithInvalidIns)
-
-                this.set("mdaTotalValidPatients", totalValidPatients)
-                this.set("totalInvalidPatients", totalInvalidPatients)
-
-                // Nothing but valid pats ? Jump to "validPatients" tab directly
-                this.set("mdaActiveTab", !totalInvalidPatients ? "validPatients" : "invalidPatients")
-
-                this.set("mdaResultsGridData", this.mdaActiveTab==="validPatients" ? patientsWithValidIns : patientsWithInvalidIns)
-                this.shadowRoot.querySelector('mdaResultsDetailsGrid') && this.shadowRoot.querySelector('mdaResultsDetailsGrid').clearCache()
-
-                // Todo: continue here
-                // Todo: adapter CTA grid -> l'un ou l'autre scénario
-                // Todo: search engine (+btn reset) ultra vite fait pour search pat % search string (concat des valeurs)
-                //
-                //     Si je force le patient comme valide (uniquement depuis la tab non-valide donc !!patientMatchedWithMdaResponse && !mdaResponsePatientHasValidInsurability)
-                //          => foutre patientForcedAsValid: true && qqch du genre "gridModifiedPat" pour scanner rapidement ce qui doit être adapté
-                //          => lors save, remember la tab active pour revenir dessus en un coup
-                //
-                //      Dès qu'une modification est faite -> this.set("mdaAtLeastOneEntryModified",true) && "empêcher" partir si pas saved
-                //      Re-tester en bypassant certaines réponses oa (pour avoir le status orange)
-
-            })
+            ))
+            .then(()=>this._e_gotoMdaTabAndRefreshGrid(e instanceof Event ? "invalidPatients" : tabToGoFor||"invalidPatients"))
             .finally(() => {
                 this.set("eInvoicingStep","mdaLastCallResultsDetails")
-                this.set("mdaAtLeastOneEntryModified",false)
                 this.set("_isLoading",false)
             })
 
     }
 
-    _e_mdaActiveTabChanged(e) {
+    _e_step4SaveChangesAndGoToStep5() {
 
-        this.set("mdaActiveTab", _.trim(_.get(e,"detail.value","invalidPatients")))
+        // a déjà "totalPats" sur msg request
+        // foutre totalPatsWithValidInsurability ==> eval
 
-        // Todo: && refresh / update grid's data
-        // Todo: réfléchir à solution propre - rapide
-
-    }
-
-    _e_flagPatAsValid(e) {
-
-        console.log("_e_flagPatAsValid",e);
-
-    }
-
-    _e_flagPatAsInValid(e) {
-
-        console.log("_e_flagPatAsInValid",e);
+        // lors save :> on se base sur mda requests messages (et non pas original messages)
+        // omit document, edkeys (réutiliser :)), attachment
+        // omit metas.
+        //     requestDateHr
+        //     responseDateHr
+        //     responseLastCheckDateHr
 
     }
-
-
 
 }
 
 customElements.define(HtMsgFlatrateInvoice.is, HtMsgFlatrateInvoice);
 
 
-// MODIFY requestDate
-// ___exportedDate = "20200201"
-// ___requestDate = "20200227091011"
-// this.api.getRowsUsingPagination((key,docId)=>this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*',null,key,docId,1000).then(pl=>{return{rows:_.filter(pl.rows,it=>_.trim(_.get(it,"metas.requestedDate"))===___exportedDate),nextKey:pl.nextKeyPair&&pl.nextKeyPair.startKey,nextDocId:pl.nextKeyPair&&pl.nextKeyPair.startKeyDocId,done:!pl.nextKeyPair}})).then(mdaRequestMessages=>Promise.all(_.map(mdaRequestMessages,it=>this.api.message().modifyMessage(_.merge(it,{metas:{requestDate:___requestDate}})))))
+
+// Todo: Ajouter btn (juste le crayon ?) "Editer le patient" -> cfr cuisine sam (timeline): (se passer data-patient-id) && on-tap => if (target.dataset.patientId!= '0') location.replace(location.href.replace(/(.+?)#.*/, `$1#/pat/${target.dataset.patientId}`)); ==> juste l'icone devant le nom du pat ?
+// Todo: Re-tester en bypassant certaines réponses oa (pour avoir le status orange)
+// Todo: Repasser sur tout le flux navigation user / bien vérouiller % status / avoir msg clair si clique sur onglet "notExpected" / guider dans interface
+
+
+
+/*
+    // MODIFY requestDate
+    ___exportedDate = "20200301"
+    ___requestDate = "20200227091011"
+    this.api.getRowsUsingPagination((key,docId)=>this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*',null,key,docId,1000).then(pl=>{return{rows:_.filter(pl.rows,it=>_.trim(_.get(it,"metas.requestedDate"))===___exportedDate),nextKey:pl.nextKeyPair&&pl.nextKeyPair.startKey,nextDocId:pl.nextKeyPair&&pl.nextKeyPair.startKeyDocId,done:!pl.nextKeyPair}})).then(mdaRequestMessages=>Promise.all(_.map(mdaRequestMessages,it=>this.api.message().modifyMessage(_.merge(it,{metas:{requestDate:___requestDate}})))))
+ */
