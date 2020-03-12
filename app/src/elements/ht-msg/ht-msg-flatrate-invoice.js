@@ -1024,7 +1024,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     }
                     
                     .mdaOaContainerCol1 { width:80px; text-transform: uppercase; font-weight:500; }
-                    .mdaOaContainerCol2 { width:100px; }
+                    .mdaOaContainerCol2 { width:140px; }
                     .mdaOaContainerCol3 { width:190px; }
                     .mdaOaContainerCol4 { width:210px; }
                     .mdaOaContainerCol5 { flex-grow:1; }
@@ -1199,7 +1199,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     #mdaStep4BottomButtons {
                         position: fixed;
                         bottom: 30px;
-                        width:calc(100% - 235px);
+                        width:calc(100% - 342px);
                         display: flex;
                         justify-content: flex-end;
                     }
@@ -1721,7 +1721,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 <div id="mdaOasContainer">
                                     <div id="mdaOaHeaders">
                                         <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
-                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]]</div>
+                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]] ([[_e_getTotalPatsInAllMessages(mdaRequestsData.messages)]])</div>
                                         <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
                                         <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
                                         <div class="mdaOaContainerCol5">[[localize("answeredOn","Répondu le", language)]]</div>
@@ -1782,8 +1782,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     <div id="mdaOaHeaders">
                                         <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
                                         <div class="mdaOaContainerCol5">[[localize("answeredOn","Réponse obtenue le", language)]]</div>
-                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients", language)]]</div>
-                                        <div class="mdaOaContainerCol3">[[localize("validPats","Patients en ordre", language)]]</div>
+                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients", language)]] ([[_e_getTotalPatsInAllMessages(mdaResponsesData.messages)]])</div>
+                                        <div class="mdaOaContainerCol3">[[localize("validPats","Patients en ordre", language)]] ([[_e_getTotalPatsWithValidInsurabilityInAllMessages(mdaResponsesData.messages)]])</div>
                                         <div class="mdaOaContainerCol6">[[localize("details","Détails", language)]]</div>
                                     </div>                            
                                     <template is="dom-repeat" items="[[mdaResponsesData.messages]]" as="item" id="domRepeatMdaRequestsResults">
@@ -6363,6 +6363,28 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             })
             .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
             .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_getTotalPatsInAllMessages(messages) {
+
+        return _
+            .chain(messages)
+            .map(it => parseInt(_.get(it,"metas.totalPats",0))||0)
+            .compact()
+            .sum()
+            .value()
+
+    }
+
+    _e_getTotalPatsWithValidInsurabilityInAllMessages(messages) {
+
+        return _
+            .chain(messages)
+            .map(it => parseInt(_.get(it,"metas.totalPatsWithValidInsurability",0))||0)
+            .compact()
+            .sum()
+            .value()
 
     }
 
