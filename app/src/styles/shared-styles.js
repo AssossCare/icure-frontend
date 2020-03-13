@@ -565,15 +565,15 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
 			.textalignleft { text-align: left; }
 			.textalignright { text-align: right; }
 
-			.fw100 {font-weight:100}
-			.fw200 {font-weight:200}
-			.fw300 {font-weight:300}
-			.fw400 {font-weight:400}
-			.fw500 {font-weight:500}
-			.fw600 {font-weight:600}
-			.fw700 {font-weight:700}
-			.fw800 {font-weight:800}
-			.fw900 {font-weight:900}
+			.fw100 {font-weight:100!important;}
+			.fw200 {font-weight:200!important;}
+			.fw300 {font-weight:300!important;}
+			.fw400 {font-weight:400!important;}
+			.fw500 {font-weight:500!important;}
+			.fw600 {font-weight:600!important;}
+			.fw700 {font-weight:700!important;}
+			.fw800 {font-weight:800!important;}
+			.fw900 {font-weight:900!important;}
 
 			.displayblock {display:block}
 			.displayinlineblock {display:inline-block}
