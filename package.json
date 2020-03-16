@@ -12,8 +12,7 @@
     "publish-tz": "docker build --build-arg wpc=webpack.config.tz.js --build-arg task=build-tz  --build-arg dist=dist-tz -t docker.taktik.be/topaz-frontend:$npm_package_version . && docker push docker.taktik.be/topaz-frontend:$npm_package_version",
     "webpack-defaults": "webpack-defaults",
     "defaults": "webpack-defaults",
-    "demo": "polymer serve --port 3000 --open",
-    "postinstall": "symlink-dir node_modules/@taktik/iron-selector-meta-shift node_modules/@polymer/iron-selector"
+    "demo": "polymer serve --port 3000 --open"
   },
   "keywords": [
     "icure"
@@ -161,10 +160,10 @@
     "electron-tabs": "^0.9.5",
     "es-abstract": "^1.16.3",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
-    "fhc-api": "^1.0.54",
+    "fhc-api": "^1.0.50",
     "global": "^4.4.0",
     "iban": "0.0.11",
-    "icc-api": "1.0.221",
+    "icc-api": "^1.0.224",
     "intl-messageformat": "^2.2.0",
     "jasmine": "^3.5.0",
     "js-base64": "^2.5.1",

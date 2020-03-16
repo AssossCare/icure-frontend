@@ -264,6 +264,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 language="[[language]]"
                 resources="[[resources]]"
                 user="[[user]]"
+                group="invoicing"
                 on-selection-change="handleMenuChange"
             ></ht-msg-menu>
 

@@ -2226,7 +2226,10 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   })})))
                   .then(documentsInfos => ({singleDocument,documentsInfos}))
                   .then(({singleDocument,documentsInfos})=>!!_.trim(_.get(singleDocument,"id","")) && _.trim(_.get(singleDocument,"attachmentId","")) ? this.api.document().getAttachment(_.trim(_.get(singleDocument,"id","")), _.trim(_.get(singleDocument,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>({singleDocument,documentsInfos,decryptedContent})).catch(e=>{console.log("ERROR with getAttachment: ",e); return ({singleDocument,documentsInfos});}) : ({singleDocument,documentsInfos}))
-                  .then(({singleDocument,documentsInfos,decryptedContent})=>{
+                  .then(({singleDocument,documentsInfos,decryptedContent}) =>
+                      this.api.document().getAttachmentUrl(_.trim(_.get(singleDocument, "id","")), _.trim(_.get(singleDocument, "attachmentId","")), enckeys)
+                      .then(url => ({url,singleDocument,documentsInfos,decryptedContent}))
+                  ).then(({url,singleDocument,documentsInfos,decryptedContent})=>{
                       const foundExtension = _.trim(_.get(singleDocument,"name","")).split(".").pop()
                       const fileExtension = _.trim(_.get( _.compact(_.map(this.api.document().utiExts, (v,k)=>_.trim(v).toLowerCase() ===_.trim(_.get(singleDocument,"mainUti","")).toLowerCase()?k:false)), "[0]", ( _.trim(_.get(singleDocument,"name","")).indexOf(".") > -1 && _.trim(foundExtension).length<5 && _.trim(foundExtension).length>2 ? foundExtension : "" ))).toLowerCase()
                       const attachmentSize = _.get((typeof decryptedContent === "string" ? this.api.crypto().utils.text2ua(decryptedContent) : decryptedContent),"byteLength",0)
@@ -2237,7 +2240,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                               filename: _.kebabCase(_.trim(_.get(singleDocument,"name","")).replace("."+foundExtension,"")) + "." + fileExtension,
                               fileExtension: fileExtension,
                               size: this.api._powRoundFloatByPrecision( attachmentSize / (1024**attachmentSizePow) ,2) + " " + _.trim(attachmentSizePow === 2 ? "Mb" : attachmentSizePow === 1 ? "Kb" : "Bytes"),
-                              attachmentUrl: _.trim(this.api.document().getAttachmentUrl(_.trim(_.get(singleDocument, "id","")), _.trim(_.get(singleDocument, "attachmentId","")), enckeys, this.api.sessionId)),
+                              attachmentUrl: _.trim(url),
                               decryptedContent: decryptedContent,
                               mimeType: _.trim(this.api.document().mimeType(_.trim(_.get(singleDocument,"mainUti","")))) ? _.trim(this.api.document().mimeType(_.trim(_.get(singleDocument,"mainUti","")))) : "text/plain",
                               uniqueId: _.uniqueId(_.trim(_.get(singleDocument,"id","")) + "-"),

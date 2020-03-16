@@ -1685,10 +1685,6 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               this._triggerMenu()
           }
       }, 10000)
-
-
-      this.sessionInterval && clearInterval(this.sessionInterval)
-      this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
   }
 
   _timeCheck(period = 30000) {

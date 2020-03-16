@@ -630,7 +630,7 @@ class HtAdminManagementForms extends TkLocalizerMixin(PolymerElement) {
             <h2 class="modal-title">[[localize('upl_fil','Upload files',language)]]<span class="extra-info">(PDF, images and videos)</span></h2>
             <!--<paper-fab class="close-button-icon" icon="icons:close" dialog-dismiss></paper-fab>-->
             <div class="content">
-                <vaadin-upload id="vaadin-upload" files="{{files}}" target\$="[[api.host]]/form/template/[[selectedForm.id]]/attachment/multipart;jsessionid=[[api.sessionId]]" method="PUT" form-data-name="attachment" on-upload-success="_fileUpload"></vaadin-upload>
+                <vaadin-upload id="vaadin-upload" files="{{files}}" target\$="[[api.host]]/form/template/[[selectedForm.id]]/attachment/multipart" method="PUT" form-data-name="attachment" on-upload-request="_fileRequest" on-upload-success="_fileUpload"></vaadin-upload>
             </div>
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
@@ -721,11 +721,13 @@ class HtAdminManagementForms extends TkLocalizerMixin(PolymerElement) {
       this.root.querySelector('#upload-dialog').open();
   }
 
+  _fileRequest(e) {
+      e.detail.xhr.setRequestHeader('Authorization', this.api.authorizationHeader());
+  }
+
   _fileUpload() {
       setTimeout(() => this.root.querySelector('#upload-dialog').close(), 5000);
   }
-
-
 
   _initCodeMirror(tabs) {
       if (tabs === 1) {

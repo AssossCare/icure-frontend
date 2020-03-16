@@ -814,7 +814,7 @@ class HtPatPrimaryPreventionDialog extends TkLocalizerMixin(mixinBehaviors([Iron
                           const mobilePhone = ctc.patient.addresses.map(a => (a.addressType === 'home' || a.addressType === 'work') && a.telecoms.map(t=>t.telecomType === 'mobile' && t.telecomNumber).filter(x=>x)[0]).filter(x=>x)[0]
                           _.get(this.prevention, 'remindType', null) === 'sms' ? (mobilePhone && fetch(`https://msg-gw.svcacc.icure.cloud/luta/sms/to/${mobilePhone}`,{
                               method: "POST",
-                              headers: { "Content-Type" : "application/json", "Authorization": `Basic ${btoa('luta:@dv@nc3dPl@nn1ng')}` },
+                              headers: { "Content-Type" : "application/json" },
                               body: JSON.stringify({message: _.get(this.prevention, 'description', null)})
                           })) : null
                       })

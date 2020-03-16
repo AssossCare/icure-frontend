@@ -2,13 +2,14 @@ import '../ht-spinner/ht-spinner.js';
 
 import _ from 'lodash/lodash';
 import moment from 'moment/src/moment';
-import { Base64 } from 'js-base64';
+import {Base64} from 'js-base64';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
 class PrintDocument extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
+    static get template() {
+        return html`
         <style>
             .overlaySpinnerContainer {
                 position:absolute;
@@ -26,592 +27,619 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
         </style>
         <template is="dom-if" if="[[_isBusy]]"><div class="overlaySpinnerContainer"><div class="overlaySpinner"><ht-spinner active=""></ht-spinner></div></div></template>
 `;
-  }
+    }
 
-  static get is() {
-      return 'print-document';
-  }
+    static get is() {
+        return 'print-document';
+    }
 
-  static get properties() {
-      return {
-          api: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          user: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          resources: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          language: {
-              type: String,
-              noReset: true,
-              value: "fr"
-          },
-          patient: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          _isBusy: {
-              type: Boolean,
-              value: false,
-              noReset: true
-          },
-          _data: {
-              type: Object,
-              value: () => {return{
-                  currentHcp: {
-                      type: Object,
-                      value: () => {}
-                  },
-                  currentPatient: {
-                      type: Object,
-                      value: () => {}
-                  },
-                  codes: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-                  contact: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-                  document: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-              }}
-          }
-      };
-  }
+    static get properties() {
+        return {
+            api: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            user: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            resources: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            language: {
+                type: String,
+                noReset: true,
+                value: "fr"
+            },
+            patient: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            _isBusy: {
+                type: Boolean,
+                value: false,
+                noReset: true
+            },
+            _data: {
+                type: Object,
+                value: () => {
+                    return {
+                        currentHcp: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        currentPatient: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        codes: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        contact: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        document: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                    }
+                }
+            }
+        };
+    }
 
-  static get observers() {
-      return [];
-  }
+    static get observers() {
+        return [];
+    }
 
-  constructor() {
-      super();
-  }
+    constructor() {
+        super();
+    }
 
-  ready() {
-      super.ready();
-      // if(this.patientHealthCarePartiesById == null) {
-      //     Promise.all(
-      //         _.chunk(this.patient.patientHealthCareParties,100).map(uChunk =>
-      //             this.api.hcparty().getHealthcareParties(uChunk.map(u => u.healthcarePartyId).filter(id => !!id).join(','))
-      //         )
-      //     ).then(hcps => {
-      //         this.patientHealthCarePartiesById = _.flatMap(hcps).reduce((acc, hcp) => {
-      //             if(_.trim(_.get(hcp,"id",""))) acc[hcp.id] = hcp
-      //             return acc
-      //         }, {});
-      //     } )
-      // }
-  }
+    ready() {
+        super.ready();
+        // if(this.patientHealthCarePartiesById == null) {
+        //     Promise.all(
+        //         _.chunk(this.patient.patientHealthCareParties,100).map(uChunk =>
+        //             this.api.hcparty().getHealthcareParties(uChunk.map(u => u.healthcarePartyId).filter(id => !!id).join(','))
+        //         )
+        //     ).then(hcps => {
+        //         this.patientHealthCarePartiesById = _.flatMap(hcps).reduce((acc, hcp) => {
+        //             if(_.trim(_.get(hcp,"id",""))) acc[hcp.id] = hcp
+        //             return acc
+        //         }, {});
+        //     } )
+        // }
+    }
 
-  _resetComponentProperties() {
-      const promResolve = Promise.resolve();
-      return promResolve
-          .then(() => {
-              const componentProperties = PrintDocument.properties
-              Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
-              return promResolve
-          })
-  }
+    _resetComponentProperties() {
+        const promResolve = Promise.resolve();
+        return promResolve
+            .then(() => {
+                const componentProperties = PrintDocument.properties
+                Object.keys(componentProperties).forEach(k => {
+                    if (!_.get(componentProperties[k], "noReset", false)) {
+                        this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null)))
+                    }
+                })
+                return promResolve
+            })
+    }
 
-  _msTstampToDDMMYYYY(msTstamp) {
-      return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('DD/MM/YYYY') : ""
-  }
+    _msTstampToDDMMYYYY(msTstamp) {
+        return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('DD/MM/YYYY') : ""
+    }
 
-  _msTstampToYYYYMMDD(msTstamp) {
-      return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('YYYYMMDD') : ""
-  }
+    _msTstampToYYYYMMDD(msTstamp) {
+        return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('YYYYMMDD') : ""
+    }
 
-  _YYYYMMDDToDDMMYYYY(inputValue) {
-      return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDD").format('DD/MM/YYYY') : ""
-  }
+    _YYYYMMDDToDDMMYYYY(inputValue) {
+        return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)), "YYYYMMDD").format('DD/MM/YYYY') : ""
+    }
 
-  _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
-      return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
-  }
+    _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
+        return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)), "YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
+    }
 
-  _upperFirstAll(inputValue){
-      return _.trim(_.map(_.trim(inputValue).toLowerCase().split(" "),i=>_.upperFirst(_.trim(i))).join(" "))
-  }
+    _upperFirstAll(inputValue) {
+        return _.trim(_.map(_.trim(inputValue).toLowerCase().split(" "), i => _.upperFirst(_.trim(i))).join(" "))
+    }
 
-  _dobToAge(inputValue) {
-      return inputValue ? this.api.getCurrentAgeFromBirthDate(inputValue,( e , s ) => this.localize(e, s, this.language)) : ''
-  }
+    _dobToAge(inputValue) {
+        return inputValue ? this.api.getCurrentAgeFromBirthDate(inputValue, (e, s) => this.localize(e, s, this.language)) : ''
+    }
 
-  _getServiceAuthor(svc) {
-      return this.api.getAuthor(svc.author);
-  }
+    _getServiceAuthor(svc) {
+        return this.api.getAuthor(svc.author);
+    }
 
-  _getServiceShortDescription(svc) {
-      return this.api.contact().shortServiceDescription(svc, this.language);
-  }
+    _getServiceShortDescription(svc) {
+        return this.api.contact().shortServiceDescription(svc, this.language);
+    }
 
-  _prettifyText(input) {
-      return _.trim(input).replace(/\r\n|\n|\r/gm, "\n")
-  }
+    _prettifyText(input) {
+        return _.trim(input).replace(/\r\n|\n|\r/gm, "\n")
+    }
 
-  _getServiceNormalValues(svc) {
-      const c = this.api.contact().preferredContent(svc, this.language)
-      return c && c.measureValue && `${c.measureValue.ref ? c.measureValue.ref.toFixed(2) : ''} ${c.measureValue.min || c.measureValue.max ? `${c.measureValue.min ? c.measureValue.min.toFixed(1) : '*'} - ${c.measureValue.max ? c.measureValue.max.toFixed(1) : '*'}` : ''}` || '';
-  }
+    _getServiceNormalValues(svc) {
+        const c = this.api.contact().preferredContent(svc, this.language)
+        return c && c.measureValue && `${c.measureValue.ref ? c.measureValue.ref.toFixed(2) : ''} ${c.measureValue.min || c.measureValue.max ? `${c.measureValue.min ? c.measureValue.min.toFixed(1) : '*'} - ${c.measureValue.max ? c.measureValue.max.toFixed(1) : '*'}` : ''}` || '';
+    }
 
-  _getPrettifiedHcp() {
-      const promResolve = Promise.resolve()
-      return this.api.hcparty().getCurrentHealthcareParty()
-          .then(hcp => {
-              const addressData = _.find(_.get(hcp,"addresses",[]), {addressType:"work"}) || _.find(_.get(hcp,"addresses",[]), {addressType:"home"}) || _.get(hcp,"addresses[0]",[])
-              return _.merge({}, hcp, {
-                  address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
-                  postalCode: _.trim(_.get(addressData,"postalCode","")),
-                  city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
-                  country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
-                  phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
-                  mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
-                  email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
-                  firstName: this._upperFirstAll(_.get(hcp,"firstName","")),
-                  lastName: this._upperFirstAll(_.get(hcp,"lastName","")),
-                  nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp,"nihii",""))),
-                  ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp,"ssin",""))),
-              })
-          })
-          .catch(()=>promResolve)
-  }
+    _getPrettifiedHcp() {
+        const promResolve = Promise.resolve()
+        return this.api.hcparty().getCurrentHealthcareParty()
+            .then(hcp => {
+                const addressData = _.find(_.get(hcp, "addresses", []), {addressType: "work"}) || _.find(_.get(hcp, "addresses", []), {addressType: "home"}) || _.get(hcp, "addresses[0]", [])
+                return _.merge({}, hcp, {
+                    address: [_.trim(_.get(addressData, "street", "")), _.trim(_.get(addressData, "houseNumber", "")) + (!!_.trim(_.get(addressData, "postboxNumber", "")) ? "/" + _.trim(_.get(addressData, "postboxNumber", "")) : "")].join(", "),
+                    postalCode: _.trim(_.get(addressData, "postalCode", "")),
+                    city: this._upperFirstAll(_.trim(_.get(addressData, "city", ""))),
+                    country: this._upperFirstAll(_.trim(_.get(addressData, "country", ""))),
+                    phone: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "phone"}), "telecomNumber", "")),
+                    mobile: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "mobile"}), "telecomNumber", "")),
+                    email: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "email"}), "telecomNumber", "")),
+                    firstName: this._upperFirstAll(_.get(hcp, "firstName", "")),
+                    lastName: this._upperFirstAll(_.get(hcp, "lastName", "")),
+                    nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp, "nihii", ""))),
+                    ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp, "ssin", ""))),
+                })
+            })
+            .catch(() => promResolve)
+    }
 
-  _prettifyPatient(patient) {
-      const addressData = _.find(_.get(patient,"addresses",[]), {addressType:"home"}) || _.find(_.get(patient,"addresses",[]), {addressType:"work"}) || _.get(patient,"addresses[0]",[])
-      return _.merge({}, patient, {
-          address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
-          postalCode: _.trim(_.get(addressData,"postalCode","")),
-          city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
-          country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
-          phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
-          mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
-          email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
-          firstName: this._upperFirstAll(_.get(patient,"firstName","")),
-          lastName: this._upperFirstAll(_.get(patient,"lastName","")),
-          ssinHr: this.api.formatSsinNumber(_.trim(_.get(patient, "ssin", ""))),
-          gender: _.trim(_.get(patient, "gender", "male")),
-          genderHr: this._upperFirstAll(this.localize(_.trim(_.get(patient, "gender", "male")) + "GenderLong", "masculin")),
-          dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(patient, "dateOfBirth"))),
-          insuranceData: _
-              .chain(_.get(patient, "insurabilities",{}))
-              .filter((i)=>{
-                  return i &&
-                      !!moment( _.trim(_.get(i, "startDate", "0") ), "YYYYMMDD" ).isBefore(moment()) &&
-                      (!!moment( _.trim(_.get(i, "endDate", "0") ), "YYYYMMDD" ).isAfter(moment()) || !_.trim(_.get(i, "endDate", "") ) ) &&
-                      !!_.trim( _.get( i, "insuranceId", "" ) )
-              })
-              .map(i => {return {
-                  insuranceId: _.trim(_.get(i,"insuranceId","")),
-                  identificationNumber: _.trim(_.get(i,"identificationNumber","")),
-                  tc1: _.trim(_.get(i,"parameters.tc1","")),
-                  tc2: _.trim(_.get(i,"parameters.tc2","")),
-                  preferentialstatus: typeof _.get(i,"parameters.preferentialstatus") === "boolean" ? !!_.get(i,"parameters.preferentialstatus",false) : _.trim(_.get(i,"parameters.preferentialstatus")) === "true"
-              }})
-              .head()
-              .value(),
-      })
-  }
+    _prettifyPatient(patient) {
+        const addressData = _.find(_.get(patient, "addresses", []), {addressType: "home"}) || _.find(_.get(patient, "addresses", []), {addressType: "work"}) || _.get(patient, "addresses[0]", [])
+        return _.merge({}, patient, {
+            address: [_.trim(_.get(addressData, "street", "")), _.trim(_.get(addressData, "houseNumber", "")) + (!!_.trim(_.get(addressData, "postboxNumber", "")) ? "/" + _.trim(_.get(addressData, "postboxNumber", "")) : "")].join(", "),
+            postalCode: _.trim(_.get(addressData, "postalCode", "")),
+            city: this._upperFirstAll(_.trim(_.get(addressData, "city", ""))),
+            country: this._upperFirstAll(_.trim(_.get(addressData, "country", ""))),
+            phone: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "phone"}), "telecomNumber", "")),
+            mobile: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "mobile"}), "telecomNumber", "")),
+            email: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "email"}), "telecomNumber", "")),
+            firstName: this._upperFirstAll(_.get(patient, "firstName", "")),
+            lastName: this._upperFirstAll(_.get(patient, "lastName", "")),
+            ssinHr: this.api.formatSsinNumber(_.trim(_.get(patient, "ssin", ""))),
+            gender: _.trim(_.get(patient, "gender", "male")),
+            genderHr: this._upperFirstAll(this.localize(_.trim(_.get(patient, "gender", "male")) + "GenderLong", "masculin")),
+            dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(patient, "dateOfBirth"))),
+            insuranceData: _
+                .chain(_.get(patient, "insurabilities", {}))
+                .filter((i) => {
+                    return i &&
+                        !!moment(_.trim(_.get(i, "startDate", "0")), "YYYYMMDD").isBefore(moment()) &&
+                        (!!moment(_.trim(_.get(i, "endDate", "0")), "YYYYMMDD").isAfter(moment()) || !_.trim(_.get(i, "endDate", ""))) &&
+                        !!_.trim(_.get(i, "insuranceId", ""))
+                })
+                .map(i => {
+                    return {
+                        insuranceId: _.trim(_.get(i, "insuranceId", "")),
+                        identificationNumber: _.trim(_.get(i, "identificationNumber", "")),
+                        tc1: _.trim(_.get(i, "parameters.tc1", "")),
+                        tc2: _.trim(_.get(i, "parameters.tc2", "")),
+                        preferentialstatus: typeof _.get(i, "parameters.preferentialstatus") === "boolean" ? !!_.get(i, "parameters.preferentialstatus", false) : _.trim(_.get(i, "parameters.preferentialstatus")) === "true"
+                    }
+                })
+                .head()
+                .value(),
+        })
+    }
 
-  _getPrettifiedPatient(user, patientId, patientObject=null) {
-      const promResolve = Promise.resolve()
-      return !_.size(patientObject) && (!_.trim(_.get(user, "id")) || !_.trim(patientId)) ? promResolve : (!!_.size(patientObject) ? Promise.resolve(patientObject) : this.api.patient().getPatientWithUser(user, patientId))
-          .then(patient => this._prettifyPatient(patient))
-          .then(patient => this._getInsuranceData(_.trim(_.get(patient,"insuranceData.insuranceId"))).then(insuranceData => _.merge({},patient,{insuranceData:insuranceData})))
-          .catch(()=>promResolve)
-  }
+    _getPrettifiedPatient(user, patientId, patientObject = null) {
+        const promResolve = Promise.resolve()
+        return !_.size(patientObject) && (!_.trim(_.get(user, "id")) || !_.trim(patientId)) ? promResolve : (!!_.size(patientObject) ? Promise.resolve(patientObject) : this.api.patient().getPatientWithUser(user, patientId))
+            .then(patient => this._prettifyPatient(patient))
+            .then(patient => this._getInsuranceData(_.trim(_.get(patient, "insuranceData.insuranceId"))).then(insuranceData => _.merge({}, patient, {insuranceData: insuranceData})))
+            .catch(() => promResolve)
+    }
 
-  _getInsuranceData(insuranceId) {
-      const promResolve = Promise.resolve()
-      return !_.trim(insuranceId) ? promResolve : this.api.insurance().getInsurance(insuranceId)
-          .then(insuranceData => _.merge({}, {
-              code: _.trim(_.get(insuranceData, "code", "")),
-              name: this._upperFirstAll(!!_.trim(_.get(insuranceData, "name." + this.language, "")) ? _.trim(_.get(insuranceData, "name." + this.language, "")) : _.trim(_.find(_.get(insuranceData, "name", {}), _.trim)))
-          }))
-          .catch(()=>promResolve)
-  }
+    _getInsuranceData(insuranceId) {
+        const promResolve = Promise.resolve()
+        return !_.trim(insuranceId) ? promResolve : this.api.insurance().getInsurance(insuranceId)
+            .then(insuranceData => _.merge({}, {
+                code: _.trim(_.get(insuranceData, "code", "")),
+                name: this._upperFirstAll(!!_.trim(_.get(insuranceData, "name." + this.language, "")) ? _.trim(_.get(insuranceData, "name." + this.language, "")) : _.trim(_.find(_.get(insuranceData, "name", {}), _.trim)))
+            }))
+            .catch(() => promResolve)
+    }
 
-  _getCodesByType(codeType) {
-      const promResolve = Promise.resolve()
-      return !_.trim(codeType) ? promResolve : this.api.code().findPaginatedCodes("be", codeType)
-          .then(({rows}) => _
-              .chain(rows)
-              .filter(i=> !_.get(i,"disabled",false))
-              .map(i => _.merge({},i,{
-                  labelHr: codeType === "CD-TRANSACTION" ?
-                      _.upperFirst(_.trim(this.localize("cd-transaction-" + _.trim(_.get(i,"code")), _.trim(_.get(i,"code")), this.language)).toLowerCase()) :
-                      _.trim(_.get(i,"label." + this.language,"")) ?
-                          _.upperFirst(_.trim(_.get(i,"label." + this.language,"")).toLowerCase()) :
-                          _.upperFirst(_.trim(_.head(_.flatMap(_.get(i,"label","")))).toLowerCase())
-              }))
-              .orderBy(["labelHr"],["asc"])
-              .value()
-          )
-          .then(codes => _.fromPairs([[codeType,codes]]))
-          .catch(()=>promResolve)
-  }
+    _getCodesByType(codeType) {
+        const promResolve = Promise.resolve()
+        return !_.trim(codeType) ? promResolve : this.api.code().findPaginatedCodes("be", codeType)
+            .then(({rows}) => _
+                .chain(rows)
+                .filter(i => !_.get(i, "disabled", false))
+                .map(i => _.merge({}, i, {
+                    labelHr: codeType === "CD-TRANSACTION" ?
+                        _.upperFirst(_.trim(this.localize("cd-transaction-" + _.trim(_.get(i, "code")), _.trim(_.get(i, "code")), this.language)).toLowerCase()) :
+                        _.trim(_.get(i, "label." + this.language, "")) ?
+                            _.upperFirst(_.trim(_.get(i, "label." + this.language, "")).toLowerCase()) :
+                            _.upperFirst(_.trim(_.head(_.flatMap(_.get(i, "label", "")))).toLowerCase())
+                }))
+                .orderBy(["labelHr"], ["asc"])
+                .value()
+            )
+            .then(codes => _.fromPairs([[codeType, codes]]))
+            .catch(() => promResolve)
+    }
 
-  _getContact(user, contactId) {
-      const promResolve = Promise.resolve()
-      return !_.trim(_.get(user, "id")) || !_.trim(contactId) ? promResolve : this.api.contact().getContactWithUser(user, contactId)
-          .then(contact => _.merge(contact, {
-              createdHr: this._msTstampToDDMMYYYY(_.get(contact,"created","")),
-              openingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact,"openingDate","")).substring(0,8)),
-              openingDateYYYYMMDD: _.trim(_.get(contact,"openingDate","")).substring(0,8),
-              closingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact,"closingDate","")).substring(0,8)),
-          }))
-          .catch(()=>promResolve)
-  }
+    _getContact(user, contactId) {
+        const promResolve = Promise.resolve()
+        return !_.trim(_.get(user, "id")) || !_.trim(contactId) ? promResolve : this.api.contact().getContactWithUser(user, contactId)
+            .then(contact => _.merge(contact, {
+                createdHr: this._msTstampToDDMMYYYY(_.get(contact, "created", "")),
+                openingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact, "openingDate", "")).substring(0, 8)),
+                openingDateYYYYMMDD: _.trim(_.get(contact, "openingDate", "")).substring(0, 8),
+                closingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact, "closingDate", "")).substring(0, 8)),
+            }))
+            .catch(() => promResolve)
+    }
 
-  _prettifyDocInfo(docInfo) {
-      return !_.size(docInfo) ? null :_.merge({}, docInfo, {
-          demandDateHr: this._msTstampToDDMMYYYY(_.get(docInfo,"demandDate","")),
-          firstName: this._upperFirstAll(_.get(docInfo,"firstName","")),
-          lastName: this._upperFirstAll(_.get(docInfo,"lastName","")),
-          labo: this._upperFirstAll(_.get(docInfo,"labo","")),
-          ssinHr: this.api.formatSsinNumber(_.trim(_.get(docInfo,"ssin",""))),
-          dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(docInfo, "dateOfBirth"))),
-      })
-  }
+    _prettifyDocInfo(docInfo) {
+        return !_.size(docInfo) ? null : _.merge({}, docInfo, {
+            demandDateHr: this._msTstampToDDMMYYYY(_.get(docInfo, "demandDate", "")),
+            firstName: this._upperFirstAll(_.get(docInfo, "firstName", "")),
+            lastName: this._upperFirstAll(_.get(docInfo, "lastName", "")),
+            labo: this._upperFirstAll(_.get(docInfo, "labo", "")),
+            ssinHr: this.api.formatSsinNumber(_.trim(_.get(docInfo, "ssin", ""))),
+            dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(docInfo, "dateOfBirth"))),
+        })
+    }
 
-  _getDocument(user, documentId) {
-      const promResolve = Promise.resolve()
-      return !_.trim(documentId) ? promResolve : this.api.document().getDocument(documentId)
-          .then(document => !_.size(_.get(document,"encryptionKeys",[])) && !_.size(_.get(document,"delegations",[])) ?
-              Promise.resolve([document,null]) :
-              this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.trim(_.get(user,"healthcarePartyId","")), _.trim(_.get(document,"id","")), _.size(_.get(document,"encryptionKeys",[])) ? _.get(document,"encryptionKeys",[]) : _.get(document,"delegations",[]))
-                  .then(({extractedKeys: enckeys}) => ([document,enckeys]))
-                  .catch(()=>Promise.resolve([document,null]))
-          )
-          .then(([document,enckeys]) => this.api.beresultimport().canHandle(_.trim(_.get(document,"id","")), (enckeys||[]).join(',')).then(canHandle => ([document,enckeys,!!canHandle])).catch(() => Promise.resolve([document,enckeys,false])))
-          .then(([document,enckeys,canHandle]) => !canHandle ? Promise.resolve([document,enckeys]) : this.api.beresultimport().getInfos(_.trim(_.get(document,"id","")), true, null, (enckeys||[]).join(',')).then(docInfo=>([_.merge({},document,{docInfo:this._prettifyDocInfo(_.head(docInfo))}),enckeys])).catch(() => Promise.resolve([document,enckeys])))
-          .then(([document,enckeys]) => this.api.document().getAttachment(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), (enckeys||[]).join(',')).then(attachmentContent => _.merge({}, document, {attachment: {content:attachmentContent, downloadUrl:this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))}})).catch(()=>Promise.resolve(document)))
-          .then(document => {
-              const fileExtension = (_.trim(_.get(document,"name","")).split(".").pop()).toLowerCase()
-              const attachmentSize = _.get((typeof _.get(document,"attachment.content","") === "string" ? this.api.crypto().utils.text2ua(_.get(document,"attachment.content","")) : _.get(document,"attachment.content","")),"byteLength",0)
-              const attachmentSizePow = attachmentSize > (1024**2) ? 2 : attachmentSize > 1024 ? 1 : 0
-              return _.merge({},document,{attachment:{
-                  filename: _.kebabCase(_.trim(_.get(document,"name","")).toLowerCase().replace("."+fileExtension,"")) + "." + _.trim(fileExtension),
-                  fileExtension: fileExtension,
-                  size: this.api._powRoundFloatByPrecision( attachmentSize / (1024**attachmentSizePow) ,2) + " " + _.trim(attachmentSizePow === 2 ? "Mb" : attachmentSizePow === 1 ? "Kb" : "Bytes"),
-                  mimeType: _.trim(this.api.document().mimeType(_.trim(_.get(document,"mainUti","")))) ? _.trim(this.api.document().mimeType(_.trim(_.get(document,"mainUti","")))) : "text/plain",
-              }})
-          })
-          .then(document => !_.trim(_.get(document, "docInfo.ssin","")) ?
-              document :
-              this.api.patient().findByNameBirthSsinAutoWithUser(user, _.trim(_.get(user,"healthcarePartyId","")), _.trim(_.get(document, "docInfo.ssin","")), null, null, 10)
-                  .then(({rows}) => !_.size(rows) ? document : this._getPrettifiedPatient(null,null,_.chain(rows).filter(i => !!_.get(i,"active",false)).orderBy(["modified"],["desc"]).head().value()).then(patient => _.merge({},document,{docInfo:{patient:patient}})))
-                  .catch(()=>Promise.resolve(document))
-          )
-          .catch(()=>promResolve)
-  }
+    _getDocument(user, documentId) {
+        const promResolve = Promise.resolve()
+        return !_.trim(documentId) ? promResolve : this.api.document().getDocument(documentId)
+            .then(document => !_.size(_.get(document, "encryptionKeys", [])) && !_.size(_.get(document, "delegations", [])) ?
+                Promise.resolve([document, null]) :
+                this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.trim(_.get(user, "healthcarePartyId", "")), _.trim(_.get(document, "id", "")), _.size(_.get(document, "encryptionKeys", [])) ? _.get(document, "encryptionKeys", []) : _.get(document, "delegations", []))
+                    .then(({extractedKeys: enckeys}) => ([document, enckeys]))
+                    .catch(() => Promise.resolve([document, null]))
+            )
+            .then(([document, enckeys]) => this.api.beresultimport().canHandle(_.trim(_.get(document, "id", "")), (enckeys || []).join(',')).then(canHandle => ([document, enckeys, !!canHandle])).catch(() => Promise.resolve([document, enckeys, false])))
+            .then(([document, enckeys, canHandle]) => !canHandle ? Promise.resolve([document, enckeys]) : this.api.beresultimport().getInfos(_.trim(_.get(document, "id", "")), true, null, (enckeys || []).join(',')).then(docInfo => ([_.merge({}, document, {docInfo: this._prettifyDocInfo(_.head(docInfo))}), enckeys])).catch(() => Promise.resolve([document, enckeys])))
+            .then(([document, enckeys]) => this.api.document().getAttachment(_.trim(_.get(document, "id", "")), _.trim(_.get(document, "attachmentId", "")), (enckeys || []).join(','))
+                .then(attachmentContent =>
+                    this.api.document().getAttachmentUrl(_.trim(_.get(document, "id", "")), _.trim(_.get(document, "attachmentId", "")), enckeys)
+                        .then(url => ({attachmentContent, url})))
+                .then(({attachmentContent, url}) => _.merge({}, document, {
+                    attachment: {
+                        content: attachmentContent,
+                        downloadUrl: url
+                    }
+                })).catch(() => Promise.resolve(document)))
+            .then(document => {
+                const fileExtension = (_.trim(_.get(document, "name", "")).split(".").pop()).toLowerCase()
+                const attachmentSize = _.get((typeof _.get(document, "attachment.content", "") === "string" ? this.api.crypto().utils.text2ua(_.get(document, "attachment.content", "")) : _.get(document, "attachment.content", "")), "byteLength", 0)
+                const attachmentSizePow = attachmentSize > (1024 ** 2) ? 2 : attachmentSize > 1024 ? 1 : 0
+                return _.merge({}, document, {
+                    attachment: {
+                        filename: _.kebabCase(_.trim(_.get(document, "name", "")).toLowerCase().replace("." + fileExtension, "")) + "." + _.trim(fileExtension),
+                        fileExtension: fileExtension,
+                        size: this.api._powRoundFloatByPrecision(attachmentSize / (1024 ** attachmentSizePow), 2) + " " + _.trim(attachmentSizePow === 2 ? "Mb" : attachmentSizePow === 1 ? "Kb" : "Bytes"),
+                        mimeType: _.trim(this.api.document().mimeType(_.trim(_.get(document, "mainUti", "")))) ? _.trim(this.api.document().mimeType(_.trim(_.get(document, "mainUti", "")))) : "text/plain",
+                    }
+                })
+            })
+            .then(document => !_.trim(_.get(document, "docInfo.ssin", "")) ?
+                document :
+                this.api.patient().findByNameBirthSsinAutoWithUser(user, _.trim(_.get(user, "healthcarePartyId", "")), _.trim(_.get(document, "docInfo.ssin", "")), null, null, 10)
+                    .then(({rows}) => !_.size(rows) ? document : this._getPrettifiedPatient(null, null, _.chain(rows).filter(i => !!_.get(i, "active", false)).orderBy(["modified"], ["desc"]).head().value()).then(patient => _.merge({}, document, {docInfo: {patient: patient}})))
+                    .catch(() => Promise.resolve(document))
+            )
+            .catch(() => promResolve)
+    }
 
-  _isServiceOutOfRange(svc) {
-      const c = this.api.contact().preferredContent(svc, this.language)
-      return (c && c.measureValue && (c.measureValue.value < c.measureValue.min || c.measureValue.value > c.measureValue.max ))
-  }
+    _isServiceOutOfRange(svc) {
+        const c = this.api.contact().preferredContent(svc, this.language)
+        return (c && c.measureValue && (c.measureValue.value < c.measureValue.min || c.measureValue.value > c.measureValue.max))
+    }
 
-  _getServiceDate(svc) {
-      return (svc && svc.modified) ? this.api.moment(svc.modified).format(svc.modified > 99991231 ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY') : '';
-  }
+    _getServiceDate(svc) {
+        return (svc && svc.modified) ? this.api.moment(svc.modified).format(svc.modified > 99991231 ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY') : '';
+    }
 
-  _getHealthCareParty(ctc) {
-      const usr = this.api.users && this.api.users[ctc.author];
-      const hcpid = ctc.responsible ? ctc.responsible : (usr ? usr.healthcarePartyId : null);
-      let hcp = hcpid && this.patientHealthCarePartiesById ? this.patientHealthCarePartiesById[hcpid] : null;
-      hcp = hcp ? hcp : (hcpid ? this.api.hcParties[hcpid] : null);
-      let name
-      if(hcp && hcp.name != null && hcp.name != "") {
-          name = hcp && hcp.name
-      } else {
-          name = hcp && hcp.lastName + " " + (hcp.firstName && hcp.firstName.length && hcp.firstName.substr(0, 1) + ".")
-      }
-      return name || usr && usr.login || "N/A";
-  }
+    _getHealthCareParty(ctc) {
+        const usr = this.api.users && this.api.users[ctc.author];
+        const hcpid = ctc.responsible ? ctc.responsible : (usr ? usr.healthcarePartyId : null);
+        let hcp = hcpid && this.patientHealthCarePartiesById ? this.patientHealthCarePartiesById[hcpid] : null;
+        hcp = hcp ? hcp : (hcpid ? this.api.hcParties[hcpid] : null);
+        let name
+        if (hcp && hcp.name != null && hcp.name != "") {
+            name = hcp && hcp.name
+        } else {
+            name = hcp && hcp.lastName + " " + (hcp.firstName && hcp.firstName.length && hcp.firstName.substr(0, 1) + ".")
+        }
+        return name || usr && usr.login || "N/A";
+    }
 
-  _isPdf(input) {
-      return _.trim(_.get(input,"fileExtension","")) === "pdf" || _.trim(_.get(input,"mimeType","")) === "application/pdf"
-  }
+    _isPdf(input) {
+        return _.trim(_.get(input, "fileExtension", "")) === "pdf" || _.trim(_.get(input, "mimeType", "")) === "application/pdf"
+    }
 
-  _isImage(input) {
-      return ["jpg","jpeg","gif","png"].indexOf(_.trim(_.get(input,"fileExtension",""))) > -1 || _.trim(_.get(input,"mimeType","")).substring(0,6) === "image/"
-  }
+    _isImage(input) {
+        return ["jpg", "jpeg", "gif", "png"].indexOf(_.trim(_.get(input, "fileExtension", ""))) > -1 || _.trim(_.get(input, "mimeType", "")).substring(0, 6) === "image/"
+    }
 
-  _getImage(mimeType, content) {
-      return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="data:' + _.trim(mimeType) + ';base64,' + btoa(this.api.crypto().utils.ua2text(content)) + '"/></div>'
-  }
+    _getImage(mimeType, content) {
+        return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="data:' + _.trim(mimeType) + ';base64,' + btoa(this.api.crypto().utils.ua2text(content)) + '"/></div>'
+    }
 
-  _localize(value, defaultValue) {
-      return value ? this.localize(value.code, value.default, this.language) : defaultValue;
-  }
+    _localize(value, defaultValue) {
+        return value ? this.localize(value.code, value.default, this.language) : defaultValue;
+    }
 
-  _isDocument(service) {
-      return service.label === "document" || service.label === "imported document";
-  }
+    _isDocument(service) {
+        return service.label === "document" || service.label === "imported document";
+    }
 
-  _generatePdfDate(date, format = "DD/MM/YYYY hh:mm", empty = "") {
-      return date ? this.api.moment(date).format(format) : empty;
-  }
+    _generatePdfDate(date, format = "DD/MM/YYYY hh:mm", empty = "") {
+        return date ? this.api.moment(date).format(format) : empty;
+    }
 
-  _generatePdfShortDate(date, empty = "") {
-      return this._generatePdfDate(date, "DD/MM/YYYY", empty);
-  }
+    _generatePdfShortDate(date, empty = "") {
+        return this._generatePdfDate(date, "DD/MM/YYYY", empty);
+    }
 
-  _generatePdfRow(label, value, codes = null) {
-      let html = "<div class='row'>";
-      html += "<div class='label'>" + label + "</div>";
-      const code = codes ? codes.find(c => c.id == value) : null;
-      value = code ? code.label.fr : value;
-      html += "<div class='value'>" + value + "</div>";
-      html += "</div>";
-      return html;
-  }
+    _generatePdfRow(label, value, codes = null) {
+        let html = "<div class='row'>";
+        html += "<div class='label'>" + label + "</div>";
+        const code = codes ? codes.find(c => c.id == value) : null;
+        value = code ? code.label.fr : value;
+        html += "<div class='value'>" + value + "</div>";
+        html += "</div>";
+        return html;
+    }
 
-  _generatePdfContact(contact, codes, forms, templates, healthElements, documents) {
-      if ((!contact.services || contact.services.length < 1) &&
-          (!contact.subContacts || contact.subContacts.length < 1) &&
-          (!contact.healthElements || contact.healthElements.length < 1))
-          return "";
-      if (contact.encounterType && contact.encounterType.type == "CD-TRANSACTION")
-          return "";
+    _generatePdfContact(contact, codes, forms, templates, healthElements, documents) {
+        if ((!contact.services || contact.services.length < 1) &&
+            (!contact.subContacts || contact.subContacts.length < 1) &&
+            (!contact.healthElements || contact.healthElements.length < 1))
+            return "";
+        if (contact.encounterType && contact.encounterType.type == "CD-TRANSACTION")
+            return "";
 
-      let html = "<div class='contact'>";
-      html += "<div class='contact-header'>";
-      html += "<div>" + this._generatePdfDate(contact.openingDate) + "&nbsp;(" + contact.id.substring(0, 8) + ")&nbsp;</div>";
-      html += "<div>" + (contact.userDescr || "").replace(/(\r\n|\n|\r)/gm, " ") + "&nbsp;</div>";
-      html += "<div class='contact-hcp'>" + this._getHealthCareParty(contact) + "</div>";
-      //html += this._generatePdfDate(contact.closingDate);
-      html += "</div>";
+        let html = "<div class='contact'>";
+        html += "<div class='contact-header'>";
+        html += "<div>" + this._generatePdfDate(contact.openingDate) + "&nbsp;(" + contact.id.substring(0, 8) + ")&nbsp;</div>";
+        html += "<div>" + (contact.userDescr || "").replace(/(\r\n|\n|\r)/gm, " ") + "&nbsp;</div>";
+        html += "<div class='contact-hcp'>" + this._getHealthCareParty(contact) + "</div>";
+        //html += this._generatePdfDate(contact.closingDate);
+        html += "</div>";
 
-      html += "<div class='contact-body'>";
+        html += "<div class='contact-body'>";
 
-      if (contact.healthElements && contact.healthElements.length > 0) {
-          html += "<div class='b'>Elements de santé</div>";
-          contact.healthElements.forEach(healthElement => {
-              html += this._generatePdfHealthElement(healthElement, healthElements);
-          });
-      }
+        if (contact.healthElements && contact.healthElements.length > 0) {
+            html += "<div class='b'>Elements de santé</div>";
+            contact.healthElements.forEach(healthElement => {
+                html += this._generatePdfHealthElement(healthElement, healthElements);
+            });
+        }
 
-      let subContacts = contact.subContacts.filter(s => !s.status || s.status != 64);
+        let subContacts = contact.subContacts.filter(s => !s.status || s.status != 64);
 
-      if (subContacts && subContacts.length > 0) {
-          html += "<div class='b'>Sous-contacts</div>";
-          subContacts.forEach(subContact => {
-              html += this._generatePdfSubContact(subContact, contact.services, codes, forms, templates);
-          });
-      }
+        if (subContacts && subContacts.length > 0) {
+            html += "<div class='b'>Sous-contacts</div>";
+            subContacts.forEach(subContact => {
+                html += this._generatePdfSubContact(subContact, contact.services, codes, forms, templates);
+            });
+        }
 
-      let services = contact.services.filter(s => this._isDocument(s));
+        let services = contact.services.filter(s => this._isDocument(s));
 
-      if (services && services.length > 0) {
-          html += "<div class='b'>Services</div>";
-          services.forEach(service => {
-              html += this._generatePdfService(service, documents);
-          });
-      }
+        if (services && services.length > 0) {
+            html += "<div class='b'>Services</div>";
+            services.forEach(service => {
+                html += this._generatePdfService(service, documents);
+            });
+        }
 
-      html += "</div>";
-      html += "</div>";
-      return html;
-  }
+        html += "</div>";
+        html += "</div>";
+        return html;
+    }
 
-  static getHealthElementAttributes() {
-      return {
-          status: {
-              label: { code: "sta", default: "Status" },
-              values: [
-                  { id: "active-relevant", code: "act-rel", default: "Active relevant" },
-                  { id: "active-irrelevant", code: "act_irr", default: "Active irrelevant" },
-                  { id: "inactive", code: "ina", default: "Inactive" },
-                  { id: "archived", code: "archiv", default: "Archived" }
-              ]
-          },
-          certainty: {
-              type: "CD-CERTAINTY",
-              label: { code: "cert", default: "Certainty" },
-              values: [
-                  { id: "proven", code: "proven", default: "Proven" },
-                  { id: "probable", code: "probable", default: "Probable" },
-                  { id: "unprobable", code: "unprobable", default: "Improbable" },
-                  { id: "excluded", code: "excluded", default: "Excluded" }
-              ]
-          },
-          severity: {
-              type: "CD-SEVERITY",
-              label: { code: "sev", default: "Severity" },
-              values: [
-                  { id: "normal", code: "normal", default: "No problem" },
-                  { id: "verylow", code: "verylow", default: "Light" },
-                  { id: "low", code: "low", default: "Moderate" },
-                  { id: "high", code: "high", default: "Severe" },
-                  { id: "veryhigh", code: "veryhigh", default: "Total" }
-              ]
-          },
-          temporality: {
-              type: "CD-TEMPORALITY",
-              label: { code: "", default: "Rémanence" },
-              values: [
-                  { id: "chronic", code: "chronic", default: "Chronic" },
-                  { id: "subbacute", code: "subbacute", default: "Sub-acute" },
-                  { id: "acute", code: "acute", default: "Acute" }
-              ]
-          },
-          extraTemporality: {
-              type: "CD-EXTRA-TEMPORALITY",
-              label: { code: "ext_temp", default: "Extra temporalité" },
-              values: [
-                  { id: "remission", code: "remission", default: "Remission" },
-                  { id: "relapse", code: "relapse", default: "Relapse" }
-              ]
-          },
-          openingDate: {
-              label: { code: "st_da", default: "Start date" }
-          },
-          closingDate: {
-              label: { code: "en_da", default: "End date" }
-          }
-      }
-  }
+    static getHealthElementAttributes() {
+        return {
+            status: {
+                label: {code: "sta", default: "Status"},
+                values: [
+                    {id: "active-relevant", code: "act-rel", default: "Active relevant"},
+                    {id: "active-irrelevant", code: "act_irr", default: "Active irrelevant"},
+                    {id: "inactive", code: "ina", default: "Inactive"},
+                    {id: "archived", code: "archiv", default: "Archived"}
+                ]
+            },
+            certainty: {
+                type: "CD-CERTAINTY",
+                label: {code: "cert", default: "Certainty"},
+                values: [
+                    {id: "proven", code: "proven", default: "Proven"},
+                    {id: "probable", code: "probable", default: "Probable"},
+                    {id: "unprobable", code: "unprobable", default: "Improbable"},
+                    {id: "excluded", code: "excluded", default: "Excluded"}
+                ]
+            },
+            severity: {
+                type: "CD-SEVERITY",
+                label: {code: "sev", default: "Severity"},
+                values: [
+                    {id: "normal", code: "normal", default: "No problem"},
+                    {id: "verylow", code: "verylow", default: "Light"},
+                    {id: "low", code: "low", default: "Moderate"},
+                    {id: "high", code: "high", default: "Severe"},
+                    {id: "veryhigh", code: "veryhigh", default: "Total"}
+                ]
+            },
+            temporality: {
+                type: "CD-TEMPORALITY",
+                label: {code: "", default: "Rémanence"},
+                values: [
+                    {id: "chronic", code: "chronic", default: "Chronic"},
+                    {id: "subbacute", code: "subbacute", default: "Sub-acute"},
+                    {id: "acute", code: "acute", default: "Acute"}
+                ]
+            },
+            extraTemporality: {
+                type: "CD-EXTRA-TEMPORALITY",
+                label: {code: "ext_temp", default: "Extra temporalité"},
+                values: [
+                    {id: "remission", code: "remission", default: "Remission"},
+                    {id: "relapse", code: "relapse", default: "Relapse"}
+                ]
+            },
+            openingDate: {
+                label: {code: "st_da", default: "Start date"}
+            },
+            closingDate: {
+                label: {code: "en_da", default: "End date"}
+            }
+        }
+    }
 
-  _generatePdfHealthElementTag(healthElement, attribute) {
-      const tag = healthElement.tags.find(t => t.type == attribute.type);
-      if (!(tag && tag.code)) return "";
-      const label = attribute.label;
-      const value = attribute.values.find(v => v.id == tag.code);
-      return this._generatePdfRow(this._localize(label), this._localize(value, tag.code));
-  }
+    _generatePdfHealthElementTag(healthElement, attribute) {
+        const tag = healthElement.tags.find(t => t.type == attribute.type);
+        if (!(tag && tag.code)) return "";
+        const label = attribute.label;
+        const value = attribute.values.find(v => v.id == tag.code);
+        return this._generatePdfRow(this._localize(label), this._localize(value, tag.code));
+    }
 
-  _generatePdfHealthElement(healthElement, healthElements) {
-      healthElement = healthElements.find(he => he.id == healthElement.id);
-      if (!healthElement) return "";
-      let code = healthElement.codes.find(c => c.type == "ICPC");
-      let html = this._generatePdfRow((code ? code.code : healthElement.id), healthElement.descr);
+    _generatePdfHealthElement(healthElement, healthElements) {
+        healthElement = healthElements.find(he => he.id == healthElement.id);
+        if (!healthElement) return "";
+        let code = healthElement.codes.find(c => c.type == "ICPC");
+        let html = this._generatePdfRow((code ? code.code : healthElement.id), healthElement.descr);
 
-      const attributes = PrintDocument.getHealthElementAttributes();
+        const attributes = PrintDocument.getHealthElementAttributes();
 
-      if (healthElement.status) {
-          const status = parseInt(healthElement.status);
-          const value = attributes.status.values[status - 1];
-          html += this._generatePdfRow(this._localize(attributes.status.label), this._localize(value));
-      }
-      html += this._generatePdfHealthElementTag(healthElement, attributes.certainty);
-      html += this._generatePdfHealthElementTag(healthElement, attributes.severity);
-      html += this._generatePdfHealthElementTag(healthElement, attributes.temporality);
-      html += this._generatePdfHealthElementTag(healthElement, attributes.extraTemporality);
+        if (healthElement.status) {
+            const status = parseInt(healthElement.status);
+            const value = attributes.status.values[status - 1];
+            html += this._generatePdfRow(this._localize(attributes.status.label), this._localize(value));
+        }
+        html += this._generatePdfHealthElementTag(healthElement, attributes.certainty);
+        html += this._generatePdfHealthElementTag(healthElement, attributes.severity);
+        html += this._generatePdfHealthElementTag(healthElement, attributes.temporality);
+        html += this._generatePdfHealthElementTag(healthElement, attributes.extraTemporality);
 
-      html += this._generatePdfRow(this._localize(attributes.openingDate.label),
-          this._generatePdfShortDate(healthElement.openingDate));
+        html += this._generatePdfRow(this._localize(attributes.openingDate.label),
+            this._generatePdfShortDate(healthElement.openingDate));
 
-      if (healthElement.closingDate)
-          this._generatePdfRow(this._localize(attributes.closingDate.label),
-              this._generatePdfShortDate(healthElement.closingDate));
+        if (healthElement.closingDate)
+            this._generatePdfRow(this._localize(attributes.closingDate.label),
+                this._generatePdfShortDate(healthElement.closingDate));
 
-      return html;
-  }
+        return html;
+    }
 
-  _getDocumentType(code) {
-      const type = this.documentTypes.find(t => t.code == code);
-      return type ? type.name : this.localize('cd-transaction-' + code, code, this.language);
-  }
+    _getDocumentType(code) {
+        const type = this.documentTypes.find(t => t.code == code);
+        return type ? type.name : this.localize('cd-transaction-' + code, code, this.language);
+    }
 
-  _getValue(service) {
-      return
-      service.content &&
-      service.content.fr &&
-      service.content.fr.stringValue ? service.content.fr.stringValue : "";
-  }
+    _getValue(service) {
+        return
+        service.content &&
+        service.content.fr &&
+        service.content.fr.stringValue ? service.content.fr.stringValue : "";
+    }
 
-  _generatePdfService(service, documents) {
-      let html = "<div class='row'>";
-      if (service.label === "document") {
-          let tag = service.tags.find(t => t.type == "CD-TRANSACTION");
-          const code = tag && tag.code ? tag.code : null;
-          if (code)
-              html += "<div class='b'>" + this._getDocumentType(code) + ":&nbsp;</div>";
-          html += "<div>" + this._getValue(service) + "</div>";
-      } else if (service.label === "imported document") {
-          let tag = service.tags.find(t => t.type == "CD-TRANSACTION");
-          const code = tag && tag.code ? tag.code : "unknwon";
-          html += "<div class='b'>" + this._getDocumentType(code) + ":&nbsp;</div>";
-          html += "<div>" + this._getValue(service) + "</div>";
-      } else {
-          html += "<div>" + service.id + "</div>";
-          html += "<div>" + service.label + "</div>";
-      }
-      html += "</div>";
-      if (service.content && service.content.fr && service.content.fr.documentId) {
-          const document = documents.find(d => d.id == service.content.fr.documentId);
-          if (document && document.attachment && this._isImage(document.attachment))
-              html += this._getImage(document.attachment.mimeType, document.attachment.content);
-      }
-      return html;
-  }
+    _generatePdfService(service, documents) {
+        let html = "<div class='row'>";
+        if (service.label === "document") {
+            let tag = service.tags.find(t => t.type == "CD-TRANSACTION");
+            const code = tag && tag.code ? tag.code : null;
+            if (code)
+                html += "<div class='b'>" + this._getDocumentType(code) + ":&nbsp;</div>";
+            html += "<div>" + this._getValue(service) + "</div>";
+        } else if (service.label === "imported document") {
+            let tag = service.tags.find(t => t.type == "CD-TRANSACTION");
+            const code = tag && tag.code ? tag.code : "unknwon";
+            html += "<div class='b'>" + this._getDocumentType(code) + ":&nbsp;</div>";
+            html += "<div>" + this._getValue(service) + "</div>";
+        } else {
+            html += "<div>" + service.id + "</div>";
+            html += "<div>" + service.label + "</div>";
+        }
+        html += "</div>";
+        if (service.content && service.content.fr && service.content.fr.documentId) {
+            const document = documents.find(d => d.id == service.content.fr.documentId);
+            if (document && document.attachment && this._isImage(document.attachment))
+                html += this._getImage(document.attachment.mimeType, document.attachment.content);
+        }
+        return html;
+    }
 
-  _generatePdfValue(id, services, fields, codes) {
-      const service = services.find(s => s.id == id);
-      if (!service || service.endOfLife) return "";
-      // Quick and dirty, should be improved (if possible)
-      if (service.label === "Anamnèse")
-          return "";
-      const field = fields.find(f => f.name == service.label);
-      let label = field ? field.label : service.label;
-      let value = null;
-      if (service.content && service.content.fr) {
-          if (service.label == "Prescription") {
-              if (service.content.fr.medicationValue.medicinalProduct)
-                  value = service.content.fr.medicationValue.medicinalProduct.intendedname;
-              else if (service.content.fr.medicationValue.substanceProduct)
-                  value = service.content.fr.medicationValue.substanceProduct.intendedname;
-          } else if (service.content.fr.numberValue)
-              value = service.content.fr.numberValue;
-          else if (service.content.fr.stringValue)
-              value = service.content.fr.stringValue;
-          else if (service.content.fr.measureValue)
-              value = service.content.fr.measureValue.value;
-      }
-      if (!value) return "";
-      return this._generatePdfRow(label, value, codes);
-  }
+    _generatePdfValue(id, services, fields, codes) {
+        const service = services.find(s => s.id == id);
+        if (!service || service.endOfLife) return "";
+        // Quick and dirty, should be improved (if possible)
+        if (service.label === "Anamnèse")
+            return "";
+        const field = fields.find(f => f.name == service.label);
+        let label = field ? field.label : service.label;
+        let value = null;
+        if (service.content && service.content.fr) {
+            if (service.label == "Prescription") {
+                if (service.content.fr.medicationValue.medicinalProduct)
+                    value = service.content.fr.medicationValue.medicinalProduct.intendedname;
+                else if (service.content.fr.medicationValue.substanceProduct)
+                    value = service.content.fr.medicationValue.substanceProduct.intendedname;
+            } else if (service.content.fr.numberValue)
+                value = service.content.fr.numberValue;
+            else if (service.content.fr.stringValue)
+                value = service.content.fr.stringValue;
+            else if (service.content.fr.measureValue)
+                value = service.content.fr.measureValue.value;
+        }
+        if (!value) return "";
+        return this._generatePdfRow(label, value, codes);
+    }
 
-  _generatePdfSubContact(subContact, services, codes, forms, templates) {
-      let html = "";
-      if (subContact.formId) {
-          let fields = []
-          let title = subContact.formId;
-          let form = forms.find(f => f.id == subContact.formId);
-          if (form) {
-              title = form.descr;
-              const template = templates.find(t => t.id == form.formTemplateId);
-              if (template && template.layout) {
-                  if (/^(([0-9A-F]){8}-(([0-9A-F]){4}-){3}([0-9A-F]){12})$/i.test(title))
-                      title = template.layout.name;
-                  fields = template.layout.sections.flatMap(s=>s.formColumns.flatMap(c => c.formDataList.flatMap(i => i)));
-              }
-          }
-          html = "<div>" + title + "</div>";
-          subContact.services.forEach(service => {
-              html += this._generatePdfValue(service.serviceId, services, fields, codes);
-          });
-      }
-      else if (subContact.status == 64 && subContact.tags && subContact.tags.length > 0 && subContact.tags[0].type && subContact.tags[0].code)
-          html += this._generatePdfRow(subContact.tags[0].type, subContact.tags[0].code, codes);
-      return html;
-  }
+    _generatePdfSubContact(subContact, services, codes, forms, templates) {
+        let html = "";
+        if (subContact.formId) {
+            let fields = []
+            let title = subContact.formId;
+            let form = forms.find(f => f.id == subContact.formId);
+            if (form) {
+                title = form.descr;
+                const template = templates.find(t => t.id == form.formTemplateId);
+                if (template && template.layout) {
+                    if (/^(([0-9A-F]){8}-(([0-9A-F]){4}-){3}([0-9A-F]){12})$/i.test(title))
+                        title = template.layout.name;
+                    fields = template.layout.sections.flatMap(s => s.formColumns.flatMap(c => c.formDataList.flatMap(i => i)));
+                }
+            }
+            html = "<div>" + title + "</div>";
+            subContact.services.forEach(service => {
+                html += this._generatePdfValue(service.serviceId, services, fields, codes);
+            });
+        } else if (subContact.status == 64 && subContact.tags && subContact.tags.length > 0 && subContact.tags[0].type && subContact.tags[0].code)
+            html += this._generatePdfRow(subContact.tags[0].type, subContact.tags[0].code, codes);
+        return html;
+    }
 
-  _getPdfStyle() {
-      return `
+    _getPdfStyle() {
+        return `
           <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 
           <style>
@@ -696,10 +724,10 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
               .imageContainer img {max-width:100%; height:auto;}
           </style>
       `
-  }
+    }
 
-  _getPdfExtraStyle() {
-      return `
+    _getPdfExtraStyle() {
+        return `
           <style>
               .b {font-weight: bold}
               .row {
@@ -722,47 +750,47 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
               }
           </style>
       `
-  }
+    }
 
-  _getPdfScript() {
-      return '<'+'script'+'>'+'document.fonts.ready.then(() => { setInterval(() => {document.body.dispatchEvent(new CustomEvent("pdfDoneRenderingEvent"))}, 500); }); <'+'/script'+'>';
-  }
+    _getPdfScript() {
+        return '<' + 'script' + '>' + 'document.fonts.ready.then(() => { setInterval(() => {document.body.dispatchEvent(new CustomEvent("pdfDoneRenderingEvent"))}, 500); }); <' + '/script' + '>';
+    }
 
-  _getPdfPatient(patient) {
-      return `
+    _getPdfPatient(patient) {
+        return `
           <div class="pt3 pb3 pl10 pr10 mt30 mb30 borderSolid borderW1px borderColorBlack">
               <div class="fl45">
-                  <b>` + this.localize("lastAndFirstName", "Last and first names", this.language) + `:</b> `+ _.trim(_.get(patient,"lastName","-")) +` `+ _.trim(_.get(patient,"firstName","-")) +`<br />
-                  <b>` + this.localize("address", "Address", this.language) + `:</b> `+ _.trim(_.get(patient,"address","-")) +` - `+ _.trim(_.get(patient,"postalCode","-")) +` `+ _.trim(_.get(patient,"city","-")) +`<br />
-                  <b>` + this.localize("birthDate", "Birthdate", this.language) + `:</b> `+ _.trim(_.get(patient,"dateOfBirthHr","-")) +`<br />
-                  <b>` + this.localize("ssinPatVerbose", "SSIN", this.language) + `:</b> `+ _.trim(_.get(patient,"ssinHr","-")) +`<br />
+                  <b>` + this.localize("lastAndFirstName", "Last and first names", this.language) + `:</b> ` + _.trim(_.get(patient, "lastName", "-")) + ` ` + _.trim(_.get(patient, "firstName", "-")) + `<br />
+                  <b>` + this.localize("address", "Address", this.language) + `:</b> ` + _.trim(_.get(patient, "address", "-")) + ` - ` + _.trim(_.get(patient, "postalCode", "-")) + ` ` + _.trim(_.get(patient, "city", "-")) + `<br />
+                  <b>` + this.localize("birthDate", "Birthdate", this.language) + `:</b> ` + _.trim(_.get(patient, "dateOfBirthHr", "-")) + `<br />
+                  <b>` + this.localize("ssinPatVerbose", "SSIN", this.language) + `:</b> ` + _.trim(_.get(patient, "ssinHr", "-")) + `<br />
               </div>
               <div class="fr55 textalignright">
-                  <b>` + this.localize("adm_in", "Insurance", this.language) + `:</b> `+ _.trim(_.get(patient,"insuranceData.name","-")) +`<br />
-                  <b>` + this.localize("insuranceCode", "Insurance code", this.language) + `:</b> `+ _.trim(_.get(patient,"insuranceData.code","-")) +`<br />
-                  <b>CT1 - CT2:</b> `+ _.trim(_.get(patient,"insuranceData.tc1","-")) +` - `+ _.trim(_.get(patient,"insuranceData.tc2","-")) +`<br />
-                  <b>` + this.localize("AFF", "Membership number", this.language) + `:</b> `+ _.trim(_.get(patient,"insuranceData.identificationNumber","-")) +`<br />
+                  <b>` + this.localize("adm_in", "Insurance", this.language) + `:</b> ` + _.trim(_.get(patient, "insuranceData.name", "-")) + `<br />
+                  <b>` + this.localize("insuranceCode", "Insurance code", this.language) + `:</b> ` + _.trim(_.get(patient, "insuranceData.code", "-")) + `<br />
+                  <b>CT1 - CT2:</b> ` + _.trim(_.get(patient, "insuranceData.tc1", "-")) + ` - ` + _.trim(_.get(patient, "insuranceData.tc2", "-")) + `<br />
+                  <b>` + this.localize("AFF", "Membership number", this.language) + `:</b> ` + _.trim(_.get(patient, "insuranceData.identificationNumber", "-")) + `<br />
               </div>
               <div class="clear"></div>
           </div>
       `
-  }
+    }
 
-  _getPdfFooter() {
-      
-      return `<div class="pageFooter pt5 mt30 textaligncenter borderSolid borderW1px borderColorBlack bb0 br0 bl0">
-      <b>` + this.localize("doctor", "Doctor", this.language) + `:</b> ` + _.trim(_.get(this,"_data.currentHcp.lastName")) + " " + _.trim(_.get(this,"_data.currentHcp.firstName")) + ` - <b>N° ` + this.localize("inami", "INAMI", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.nihiiHr")) +`<br />
-      <b>` + this.localize("postalAddress", "Address", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.address","-")) +` -  `+ _.trim(_.get(this,"_data.currentHcp.postalCode","-")) +` `+ _.trim(_.get(this,"_data.currentHcp.city","-")) +` - <b>` + this.localize("telAbreviation", "Tel", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.phone","-")) +` - <b>` + this.localize("mobile", "Mobile", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.mobile","-")) +` - <b>E-mail:</b> `+ _.trim(_.get(this,"_data.currentHcp.email","-")) +`
+    _getPdfFooter() {
+
+        return `<div class="pageFooter pt5 mt30 textaligncenter borderSolid borderW1px borderColorBlack bb0 br0 bl0">
+      <b>` + this.localize("doctor", "Doctor", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentHcp.lastName")) + " " + _.trim(_.get(this, "_data.currentHcp.firstName")) + ` - <b>N° ` + this.localize("inami", "INAMI", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentHcp.nihiiHr")) + `<br />
+      <b>` + this.localize("postalAddress", "Address", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentHcp.address", "-")) + ` -  ` + _.trim(_.get(this, "_data.currentHcp.postalCode", "-")) + ` ` + _.trim(_.get(this, "_data.currentHcp.city", "-")) + ` - <b>` + this.localize("telAbreviation", "Tel", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentHcp.phone", "-")) + ` - <b>` + this.localize("mobile", "Mobile", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentHcp.mobile", "-")) + ` - <b>E-mail:</b> ` + _.trim(_.get(this, "_data.currentHcp.email", "-")) + `
       </div>
       </div>` +
-      '<'+'script'+'>'+'document.fonts.ready.then(() => { setInterval(() => {document.body.dispatchEvent(new CustomEvent("pdfDoneRenderingEvent"))}, 500); }); <'+'/script'+'>' + `
+            '<' + 'script' + '>' + 'document.fonts.ready.then(() => { setInterval(() => {document.body.dispatchEvent(new CustomEvent("pdfDoneRenderingEvent"))}, 500); }); <' + '/script' + '>' + `
       </body>
       </html>`
-      
-  }
 
-  _getPdfHeader() {
-      return `
+    }
+
+    _getPdfHeader() {
+        return `
           <html>
               <head>
 
@@ -856,71 +884,71 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
                   <div class="page">
 
                       <h1 class="darkBlue fw700 pb10">
-                          <span class="fl documentType ttuppercase">`+ _.trim(_.get(this,"_data.content.type","-")) +`</span>
-                          <span class="fr black fw400 fs11px textalignright documentDate">`+ ( !!_.trim(_.get(this,"_data.currentHcp.city","-")) ? _.trim(_.get(this,"_data.currentHcp.city","-")) + ", " : "" ) + _.trim(_.get(this,"_data.content.dateHr","-")) +`</span>
+                          <span class="fl documentType ttuppercase">` + _.trim(_.get(this, "_data.content.type", "-")) + `</span>
+                          <span class="fr black fw400 fs11px textalignright documentDate">` + (!!_.trim(_.get(this, "_data.currentHcp.city", "-")) ? _.trim(_.get(this, "_data.currentHcp.city", "-")) + ", " : "") + _.trim(_.get(this, "_data.content.dateHr", "-")) + `</span>
                       </h1>
-                      <h1 class="darkBlue fw400 fs13px pb5 borderSolid borderW1px borderColorDarkBlue bt0 br0 bl0">`+ _.trim(_.get(this,"_data.content.title","-")) +`</h1>
+                      <h1 class="darkBlue fw400 fs13px pb5 borderSolid borderW1px borderColorDarkBlue bt0 br0 bl0">` + _.trim(_.get(this, "_data.content.title", "-")) + `</h1>
                       <div class="pt3 pb3 pl10 pr10 mt30 mb30 borderSolid borderW1px borderColorBlack">
                       <div class="fl45">
-                      <b>` + this.localize("lastAndFirstName", "Last and first names", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.lastName","-")) +` `+ _.trim(_.get(this,"_data.currentPatient.firstName","-")) +`<br />
-                      <b>` + this.localize("address", "Address", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.address","-")) +` - `+ _.trim(_.get(this,"_data.currentPatient.postalCode","-")) +` `+ _.trim(_.get(this,"_data.currentPatient.city","-")) +`<br />
-                      <b>` + this.localize("birthDate", "Birthdate", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.dateOfBirthHr","-")) +`<br />
-                      <b>` + this.localize("ssinPatVerbose", "SSIN", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.ssinHr","-")) +`<br />
+                      <b>` + this.localize("lastAndFirstName", "Last and first names", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.lastName", "-")) + ` ` + _.trim(_.get(this, "_data.currentPatient.firstName", "-")) + `<br />
+                      <b>` + this.localize("address", "Address", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.address", "-")) + ` - ` + _.trim(_.get(this, "_data.currentPatient.postalCode", "-")) + ` ` + _.trim(_.get(this, "_data.currentPatient.city", "-")) + `<br />
+                      <b>` + this.localize("birthDate", "Birthdate", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.dateOfBirthHr", "-")) + `<br />
+                      <b>` + this.localize("ssinPatVerbose", "SSIN", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.ssinHr", "-")) + `<br />
                       </div>
                       <div class="fr55 textalignright">
-                      <b>` + this.localize("adm_in", "Insurance", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.insuranceData.name","-")) +`<br />
-                      <b>` + this.localize("insuranceCode", "Insurance code", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.insuranceData.code","-")) +`<br />
-                      <b>CT1 - CT2:</b> `+ _.trim(_.get(this,"_data.currentPatient.insuranceData.tc1","-")) +` - `+ _.trim(_.get(this,"_data.currentPatient.insuranceData.tc2","-")) +`<br />
-                      <b>` + this.localize("AFF", "Membership number", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentPatient.insuranceData.identificationNumber","-")) +`<br />
+                      <b>` + this.localize("adm_in", "Insurance", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.insuranceData.name", "-")) + `<br />
+                      <b>` + this.localize("insuranceCode", "Insurance code", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.insuranceData.code", "-")) + `<br />
+                      <b>CT1 - CT2:</b> ` + _.trim(_.get(this, "_data.currentPatient.insuranceData.tc1", "-")) + ` - ` + _.trim(_.get(this, "_data.currentPatient.insuranceData.tc2", "-")) + `<br />
+                      <b>` + this.localize("AFF", "Membership number", this.language) + `:</b> ` + _.trim(_.get(this, "_data.currentPatient.insuranceData.identificationNumber", "-")) + `<br />
                       </div>
                       <div class="clear"></div>
                       </div>
                       
                       `
-  }
+    }
 
 
-  _getPdfContent() {
-      return "" +
-          this._getPdfHeader() +
-          (
-              // Simple text
-              ((typeof _.get(this,"_data.content.body") === "string" ? "<pre>" + _.get(this,"_data.content.body") + "</pre>" : // Images
-              _.get(this,"_data.content.body") instanceof ArrayBuffer && this._isImage(_.get(this,"_data.content")) ? this._getImage(_.get(this,"_data.content.mimeType"), _.get(this,"_data.content.body")) :
+    _getPdfContent() {
+        return "" +
+            this._getPdfHeader() +
+            (
+                // Simple text
+                ((typeof _.get(this, "_data.content.body") === "string" ? "<pre>" + _.get(this, "_data.content.body") + "</pre>" : // Images
+                    _.get(this, "_data.content.body") instanceof ArrayBuffer && this._isImage(_.get(this, "_data.content")) ? this._getImage(_.get(this, "_data.content.mimeType"), _.get(this, "_data.content.body")) :
 
-              // Lab or protocol
-              _.get(this,"_data.content.body") instanceof ArrayBuffer && !!_.size(_.get(this,"_data.document.docInfo",{})) && !!_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue","")) ? "<pre>" + this._prettifyText(_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue",""))) + "</pre>" :
+                        // Lab or protocol
+                        _.get(this, "_data.content.body") instanceof ArrayBuffer && !!_.size(_.get(this, "_data.document.docInfo", {})) && !!_.trim(_.get(_.flatMap(_.get(this, "_data.document.docInfo.services[0].content", "")), "[0].stringValue", "")) ? "<pre>" + this._prettifyText(_.trim(_.get(_.flatMap(_.get(this, "_data.document.docInfo.services[0].content", "")), "[0].stringValue", ""))) + "</pre>" :
 
-              // Array of services
-              Array.isArray(_.get(this,"_data.content.body")) && !!_.size(_.get(this,"_data.content.body")) ? '' +
-                  '<div class="resultHeader fw700 ttuppercase p3 borderSolid borderW1px borderColorBlack br0 bl0 bgColor_eeeeee">' +
-                      '<div class="resultsLabel">' + this.localize("lab","Label",this.language) + '</div>' +
-                      '<div class="resultsValue">' + this.localize("val","Value",this.language) + '</div>' +
-                      '<div class="resultsNormalValue">' + this.localize("nor_val","Normal values",this.language) + '</div>' +
-                      '<!--<div class="resultsAuthor">' + this.localize("aut","Author",this.language) + '</div>-->' +
-                      '<div class="resultsDate">' + this.localize("dat","Date",this.language) + '</div>' +
-                  '</div>' +
-                  '<div class="resultLines">' +
-                      _.map(_.get(this,"_data.content.body"), (it,k) => "" +
-                          '<div class="singleLineResult p3 pt2 pb2 mb2 borderSolid borderW1px borderColorGrey bt0 br0 bl0 ' + (k%2 ? "bgColor_f5f5f5" : "") + ' ' + (!!_.get(it,"isOutOfRange",false) ? "outOfRange" : "") + '">' +
-                              '<div class="resultsLabel">' + _.trim(_.get(it,"label","")) + '</div>' +
-                              '<div class="resultsValue">' + _.trim(_.get(it,"value","")) + '</div>' +
-                              '<div class="resultsNormalValue">' + _.trim(_.get(it,"normalValue","")) + '</div>' +
-                              '<!--<div class="resultsAuthor">' + _.trim(_.get(it,"author",""))  + '</div>-->' +
-                              '<div class="resultsDate">' + (!!_.trim(_.get(it,"date","")) ? _.trim(_.get(it,"date","")) : _.trim(_.get(this,"_data.content.dateHr",""))) + '</div>' +
-                          "</div>"
-                      ).join("") +
-                  "</div>" :
+                            // Array of services
+                            Array.isArray(_.get(this, "_data.content.body")) && !!_.size(_.get(this, "_data.content.body")) ? '' +
+                                '<div class="resultHeader fw700 ttuppercase p3 borderSolid borderW1px borderColorBlack br0 bl0 bgColor_eeeeee">' +
+                                '<div class="resultsLabel">' + this.localize("lab", "Label", this.language) + '</div>' +
+                                '<div class="resultsValue">' + this.localize("val", "Value", this.language) + '</div>' +
+                                '<div class="resultsNormalValue">' + this.localize("nor_val", "Normal values", this.language) + '</div>' +
+                                '<!--<div class="resultsAuthor">' + this.localize("aut", "Author", this.language) + '</div>-->' +
+                                '<div class="resultsDate">' + this.localize("dat", "Date", this.language) + '</div>' +
+                                '</div>' +
+                                '<div class="resultLines">' +
+                                _.map(_.get(this, "_data.content.body"), (it, k) => "" +
+                                    '<div class="singleLineResult p3 pt2 pb2 mb2 borderSolid borderW1px borderColorGrey bt0 br0 bl0 ' + (k % 2 ? "bgColor_f5f5f5" : "") + ' ' + (!!_.get(it, "isOutOfRange", false) ? "outOfRange" : "") + '">' +
+                                    '<div class="resultsLabel">' + _.trim(_.get(it, "label", "")) + '</div>' +
+                                    '<div class="resultsValue">' + _.trim(_.get(it, "value", "")) + '</div>' +
+                                    '<div class="resultsNormalValue">' + _.trim(_.get(it, "normalValue", "")) + '</div>' +
+                                    '<!--<div class="resultsAuthor">' + _.trim(_.get(it, "author", "")) + '</div>-->' +
+                                    '<div class="resultsDate">' + (!!_.trim(_.get(it, "date", "")) ? _.trim(_.get(it, "date", "")) : _.trim(_.get(this, "_data.content.dateHr", ""))) + '</div>' +
+                                    "</div>"
+                                ).join("") +
+                                "</div>" :
 
-              // Can't render
-              ""))
+                                // Can't render
+                                ""))
 
-          ) +
-          this._getPdfFooter();
-  }
+            ) +
+            this._getPdfFooter();
+    }
 
-  _getPdf(content, patient) {
-      return `
+    _getPdf(content, patient) {
+        return `
           <html>
               <head>
       ` + this._getPdfStyle() + `
@@ -934,236 +962,253 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
       ` + this._getPdfScript() + `
               </body>
           </html>`
-  }
+    }
 
-  _getServices(services) {
-      return services.filter(s => s.content && s.content.fr && /^CD-[A-Z]+\|[a-z]+\|[0-9]+$/.test(s.content.fr.stringValue));
-  }
+    _getServices(services) {
+        return services.filter(s => s.content && s.content.fr && /^CD-[A-Z]+\|[a-z]+\|[0-9]+$/.test(s.content.fr.stringValue));
+    }
 
-  _getCodes(contacts) {
-      let services = contacts.flatMap(c => this._getServices(c.services));
-      let codeIds = services.map(s => s.content.fr.stringValue);
-      codeIds = codeIds.filter((v, i, a) => a.indexOf(v) === i);
-      return codeIds.length > 0 ? this.api.code().getCodes(codeIds) : Promise.resolve([]);
-  }
+    _getCodes(contacts) {
+        let services = contacts.flatMap(c => this._getServices(c.services));
+        let codeIds = services.map(s => s.content.fr.stringValue);
+        codeIds = codeIds.filter((v, i, a) => a.indexOf(v) === i);
+        return codeIds.length > 0 ? this.api.code().getCodes(codeIds) : Promise.resolve([]);
+    }
 
-  _getForms(contacts) {
-      let formIds = contacts.flatMap(c => c.subContacts.filter(s => s.formId).map(s => s.formId));
-      formIds = formIds.filter((v, i, a) => a.indexOf(v) === i);
-      return formIds.length > 0 ? this.api.form().getForms({ids: formIds}) : Promise.resolve([]);
-  }
+    _getForms(contacts) {
+        let formIds = contacts.flatMap(c => c.subContacts.filter(s => s.formId).map(s => s.formId));
+        formIds = formIds.filter((v, i, a) => a.indexOf(v) === i);
+        return formIds.length > 0 ? this.api.form().getForms({ids: formIds}) : Promise.resolve([]);
+    }
 
-  _getFormTemplates(forms) {
-      let templateIds = forms.filter(f => f.formTemplateId).map(f => f.formTemplateId);
-      templateIds = templateIds.filter((v, i, a) => a.indexOf(v) === i);
-      return templateIds.map(id => this.api.form().getFormTemplate(id));
-  }
+    _getFormTemplates(forms) {
+        let templateIds = forms.filter(f => f.formTemplateId).map(f => f.formTemplateId);
+        templateIds = templateIds.filter((v, i, a) => a.indexOf(v) === i);
+        return templateIds.map(id => this.api.form().getFormTemplate(id));
+    }
 
-  _getHealthElements(contacts) {
-      let heIds = contacts.flatMap(c => c.healthElements);
-      heIds = heIds.filter((v, i, a) => a.indexOf(v) === i);
-      return heIds.filter(he => he).map(he => this.api.helement().getHealthElement(he.id));
-  }
+    _getHealthElements(contacts) {
+        let heIds = contacts.flatMap(c => c.healthElements);
+        heIds = heIds.filter((v, i, a) => a.indexOf(v) === i);
+        return heIds.filter(he => he).map(he => this.api.helement().getHealthElement(he.id));
+    }
 
-  _getDocuments(contacts) {
-      const docIds = contacts.flatMap(c => c.services
-          .filter(s => this._isDocument(s) && s.content && s.content.fr && s.content.fr.documentId)
-          .map(s => s.content.fr.documentId));
-      return docIds.map(id => this._getDocument(this.user, id));
-  }
+    _getDocuments(contacts) {
+        const docIds = contacts.flatMap(c => c.services
+            .filter(s => this._isDocument(s) && s.content && s.content.fr && s.content.fr.documentId)
+            .map(s => s.content.fr.documentId));
+        return docIds.map(id => this._getDocument(this.user, id));
+    }
 
-  printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById) {
-      return new Promise((resolve) => {
-          this._printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById, null);
-          resolve();
-      });
-  }
+    printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById) {
+        return new Promise((resolve) => {
+            this._printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById, null);
+            resolve();
+        });
+    }
 
-  _printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById, callback = null) {
-      this.documentTypes = documentTypes;
-      this.patientHealthCarePartiesById = patientHealthCarePartiesById;
-      this._getCodes(contacts).then(codes => this._getForms(contacts).then(forms => [codes, forms]))
-          .then(([codes, forms]) => Promise.all(this._getFormTemplates(forms)).then(templates => [codes, forms, templates])
-              .then(([codes, forms, templates]) => Promise.all(this._getHealthElements(contacts)).then(healthElements => [codes, forms, templates, healthElements])
-                  .then(([codes, forms, templates, healthElements]) => Promise.all(this._getDocuments(contacts)).then(documents => [codes, forms, templates, healthElements, documents])
-                      .then(([codes, forms, templates, healthElements, documents]) => {
-                          let html = "";
-                          contacts = contacts.sort((a,b) => {
-                              return this.api.moment(b.openingDate).diff(this.api.moment(a.openingDate));
-                          });
-                          contacts.forEach(contact => {
-                              html += this._generatePdfContact(contact, codes, forms, templates, healthElements, documents);
-                          });
-                          html = this._getPdf(html, patient);
-                          return this.api.pdfReport(html, {type:"unknown", completionEvent:"pdfDoneRenderingEvent"});
-                      }).then(printedPdf => {
-                          const filename = patient.lastName + " " + patient.firstName + ".pdf";
-                          return !printedPdf.printed && this.api.triggerFileDownload(printedPdf.pdf, "application/pdf", filename)
-                      })
-                  )))
-          .finally(() =>  {
-              if (callback) callback();
-          });
-  }
+    _printPatient(patient, contacts, documentTypes, patientHealthCarePartiesById, callback = null) {
+        this.documentTypes = documentTypes;
+        this.patientHealthCarePartiesById = patientHealthCarePartiesById;
+        this._getCodes(contacts).then(codes => this._getForms(contacts).then(forms => [codes, forms]))
+            .then(([codes, forms]) => Promise.all(this._getFormTemplates(forms)).then(templates => [codes, forms, templates])
+                .then(([codes, forms, templates]) => Promise.all(this._getHealthElements(contacts)).then(healthElements => [codes, forms, templates, healthElements])
+                    .then(([codes, forms, templates, healthElements]) => Promise.all(this._getDocuments(contacts)).then(documents => [codes, forms, templates, healthElements, documents])
+                        .then(([codes, forms, templates, healthElements, documents]) => {
+                            let html = "";
+                            contacts = contacts.sort((a, b) => {
+                                return this.api.moment(b.openingDate).diff(this.api.moment(a.openingDate));
+                            });
+                            contacts.forEach(contact => {
+                                html += this._generatePdfContact(contact, codes, forms, templates, healthElements, documents);
+                            });
+                            html = this._getPdf(html, patient);
+                            return this.api.pdfReport(html, {
+                                type: "unknown",
+                                completionEvent: "pdfDoneRenderingEvent"
+                            });
+                        }).then(printedPdf => {
+                            const filename = patient.lastName + " " + patient.firstName + ".pdf";
+                            return !printedPdf.printed && this.api.triggerFileDownload(printedPdf.pdf, "application/pdf", filename)
+                        })
+                    )))
+            .finally(() => {
+                if (callback) callback();
+            });
+    }
 
-  _getContentFromDocument() {
+    _getContentFromDocument() {
 
-      const promResolve = Promise.resolve()
-      const contact = _.get(this,"_data.contact")
-      const document = _.get(this,"_data.document",{})
-      const targetServiceId = _.get(_.find(_.get(contact,"subContacts",[]), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))), "services[0].serviceId","")
-      const targetService = _.find(_.get(contact,"services",[]), {id:targetServiceId})
-      const documentType = !!_.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) ? _.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) : "unknown"
-      const documentInfoServices =  _.compact(_.map(_.get(document,"docInfo.services",{}), svc => svc))
+        const promResolve = Promise.resolve()
+        const contact = _.get(this, "_data.contact")
+        const document = _.get(this, "_data.document", {})
+        const targetServiceId = _.get(_.find(_.get(contact, "subContacts", []), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))), "services[0].serviceId", "")
+        const targetService = _.find(_.get(contact, "services", []), {id: targetServiceId})
+        const documentType = !!_.trim(_.get(_.find(_.get(targetService, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(targetService, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(document, "docInfo.codes", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(document, "docInfo.codes", []), {type: "CD-TRANSACTION"}), "code", "")) : "unknown"
+        const documentInfoServices = _.compact(_.map(_.get(document, "docInfo.services", {}), svc => svc))
 
-      return !_.size(document) ? promResolve : promResolve
-          .then(() => {
-              return {
-                  dateHr: !!_.size(contact) ? _.get(contact, "openingDateHr", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"created"))) : moment().format("DD/MM/YYYY"),
-                  dateYYYYMMDD: !!_.size(contact) ? _.get(contact, "openingDateYYYYMMDD", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"created"))) : moment().format("YYYYMMDD"),
-                  title: !_.size(contact) && !!_.size(_.get(document,"docInfo")) && ( !!_.trim(_.get(document,"docInfo.labo")) || !!_.trim(_.get(document,"docInfo.protocol")) ) ?
-                      (!!_.trim(_.get(document,"docInfo.labo","")) ? _.trim(_.get(document,"docInfo.labo","")) : _.trim(_.get(document,"attachment.filename", this.api.crypto().randomUuid() + ".topaz")) ) + (!!_.trim(_.get(document,"docInfo.protocol","")) ? " (" + this.localize("prot", "Protocol", this.language) + " #" + _.trim(_.get(document,"docInfo.protocol","")) + ")" : "" ) :
-                      !!_.trim(_.get(targetService,"content." + this.language + ".stringValue","")) ? _.trim(_.get(targetService,"content." + this.language + ".stringValue","")) :
-                          _.trim(_.get(document,"attachment.filename", this.api.crypto().randomUuid() + ".topaz")),
-                  type: !!_.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) ? _.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) : this.localize("cd-transaction-unknown","Unknown", this.language),
-                  body: !_.size(contact) && _.size(documentInfoServices) === 1 ? this._prettifyText(this._getServiceShortDescription(_.head(documentInfoServices))) :
-                      !_.size(contact) && _.size(documentInfoServices) > 1 ? _.map(documentInfoServices, svc => { return {
-                              isOutOfRange: !!this._isServiceOutOfRange(svc),
-                              label: _.trim(_.get(svc,"label","")),
-                              date: this._getServiceDate(svc),
-                              value: this._getServiceShortDescription(svc),
-                              normalValue: this._getServiceNormalValues(svc),
-                              author: this._getServiceAuthor(svc),
-                          }}) :
-                          typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
-                              _.get(document, "attachment.content"),
-                  fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
-                  mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
-                  downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
-              }
-          })
+        return !_.size(document) ? promResolve : promResolve
+            .then(() => {
+                return {
+                    dateHr: !!_.size(contact) ? _.get(contact, "openingDateHr", "") : !!(parseInt(_.get(document, "docInfo.demandDate")) || 0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document, "docInfo.demandDate"))) : !!(parseInt(_.get(document, "created")) || 0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document, "created"))) : moment().format("DD/MM/YYYY"),
+                    dateYYYYMMDD: !!_.size(contact) ? _.get(contact, "openingDateYYYYMMDD", "") : !!(parseInt(_.get(document, "docInfo.demandDate")) || 0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document, "docInfo.demandDate"))) : !!(parseInt(_.get(document, "created")) || 0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document, "created"))) : moment().format("YYYYMMDD"),
+                    title: !_.size(contact) && !!_.size(_.get(document, "docInfo")) && (!!_.trim(_.get(document, "docInfo.labo")) || !!_.trim(_.get(document, "docInfo.protocol"))) ?
+                        (!!_.trim(_.get(document, "docInfo.labo", "")) ? _.trim(_.get(document, "docInfo.labo", "")) : _.trim(_.get(document, "attachment.filename", this.api.crypto().randomUuid() + ".topaz"))) + (!!_.trim(_.get(document, "docInfo.protocol", "")) ? " (" + this.localize("prot", "Protocol", this.language) + " #" + _.trim(_.get(document, "docInfo.protocol", "")) + ")" : "") :
+                        !!_.trim(_.get(targetService, "content." + this.language + ".stringValue", "")) ? _.trim(_.get(targetService, "content." + this.language + ".stringValue", "")) :
+                            _.trim(_.get(document, "attachment.filename", this.api.crypto().randomUuid() + ".topaz")),
+                    type: !!_.trim(_.get(_.find(_.get(this, "_data.codes.CD-TRANSACTION", []), {code: documentType}), "labelHr", "")) ? _.trim(_.get(_.find(_.get(this, "_data.codes.CD-TRANSACTION", []), {code: documentType}), "labelHr", "")) : this.localize("cd-transaction-unknown", "Unknown", this.language),
+                    body: !_.size(contact) && _.size(documentInfoServices) === 1 ? this._prettifyText(this._getServiceShortDescription(_.head(documentInfoServices))) :
+                        !_.size(contact) && _.size(documentInfoServices) > 1 ? _.map(documentInfoServices, svc => {
+                                return {
+                                    isOutOfRange: !!this._isServiceOutOfRange(svc),
+                                    label: _.trim(_.get(svc, "label", "")),
+                                    date: this._getServiceDate(svc),
+                                    value: this._getServiceShortDescription(svc),
+                                    normalValue: this._getServiceNormalValues(svc),
+                                    author: this._getServiceAuthor(svc),
+                                }
+                            }) :
+                            typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
+                                _.get(document, "attachment.content"),
+                    fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
+                    mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
+                    downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
+                }
+            })
 
-  }
+    }
 
-  _getContentFromContact() {
+    _getContentFromContact() {
 
-      const promResolve = Promise.resolve()
+        const promResolve = Promise.resolve()
 
-      const user = _.get(this,"user",{})
-      const contact = _.get(this,"_data.contact")
-      const document = _.get(this,"_data.document",{})
-      const patient = _.get(this,"_data.currentPatient")
-      const sourceContactId = _.trim(_.get(contact,"id",""))
-      const sourceContactGroupId = _.trim(_.get(contact,"groupId",""))
+        const user = _.get(this, "user", {})
+        const contact = _.get(this, "_data.contact")
+        const document = _.get(this, "_data.document", {})
+        const patient = _.get(this, "_data.currentPatient")
+        const sourceContactId = _.trim(_.get(contact, "id", ""))
+        const sourceContactGroupId = _.trim(_.get(contact, "groupId", ""))
 
-      return !sourceContactId ? promResolve : promResolve
-          .then(() => (!_.trim(_.get(user, "id")) || !_.size(patient)) ? Promise.resolve([contact]) : this.api.contact().findBy(_.trim(_.get(user,"healthcarePartyId","")), patient)
-              .then(contacts => (!sourceContactGroupId || _.size(contacts) === 1) ? contacts : _
-                  .chain(contacts)
-                  .filter(ctc => !!_.size(_.get(ctc, "services", [])) && _.trim(_.get(ctc,"groupId","")) === sourceContactGroupId)
-                  .orderBy(["modified"], ["asc"])
-                  .value()
-              )
-          )
-          .then(contacts => this._getContentFromDocument().then(contentFromDocument => ([contacts,contentFromDocument])))
-          .then(([contacts,contentFromDocument]) => {
+        return !sourceContactId ? promResolve : promResolve
+            .then(() => (!_.trim(_.get(user, "id")) || !_.size(patient)) ? Promise.resolve([contact]) : this.api.contact().findBy(_.trim(_.get(user, "healthcarePartyId", "")), patient)
+                .then(contacts => (!sourceContactGroupId || _.size(contacts) === 1) ? contacts : _
+                    .chain(contacts)
+                    .filter(ctc => !!_.size(_.get(ctc, "services", [])) && _.trim(_.get(ctc, "groupId", "")) === sourceContactGroupId)
+                    .orderBy(["modified"], ["asc"])
+                    .value()
+                )
+            )
+            .then(contacts => this._getContentFromDocument().then(contentFromDocument => ([contacts, contentFromDocument])))
+            .then(([contacts, contentFromDocument]) => {
 
-              const servicesOfContacts = this._getServicesOfContacts(contacts)
-              const contactType = _.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:_.get(_.find(_.get(contact,"tags",[]),{type:"CD-TRANSACTION"}), "code","")}),"labelHr","")
-              const subContactType = _.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:_.get(_.find(_.flatMap(_.get(contact,"subContacts",[]),sctc => _.get(sctc,"tags",[])),{type:"CD-TRANSACTION"}), "code","")}),"labelHr","")
-              const targetSubContact = _.find(_.get(contact,"subContacts",[]), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 0)) || (parseInt(_.get(sctc, "status", 0)) & (1 << 5))))
+                const servicesOfContacts = this._getServicesOfContacts(contacts)
+                const contactType = _.get(_.find(_.get(this, "_data.codes.CD-TRANSACTION", []), {code: _.get(_.find(_.get(contact, "tags", []), {type: "CD-TRANSACTION"}), "code", "")}), "labelHr", "")
+                const subContactType = _.get(_.find(_.get(this, "_data.codes.CD-TRANSACTION", []), {code: _.get(_.find(_.flatMap(_.get(contact, "subContacts", []), sctc => _.get(sctc, "tags", [])), {type: "CD-TRANSACTION"}), "code", "")}), "labelHr", "")
+                const targetSubContact = _.find(_.get(contact, "subContacts", []), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 0)) || (parseInt(_.get(sctc, "status", 0)) & (1 << 5))))
 
-              const documentServiceId = _.trim(_.get(_.find(_.get(contact,"subContacts",[]), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))),"services[0].serviceId",""))
-              const documentService = _.find(_.get(contact,"services",[]),{id:documentServiceId})
-              const documentType = _.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:_.trim(_.get(_.find(_.get(documentService,"tags",[]),{type:"CD-TRANSACTION"}), "code", ""))}),"labelHr","")
-              const documentTitle = _.trim(_.get(documentService,"content." + this.language + ".stringValue",""))
+                const documentServiceId = _.trim(_.get(_.find(_.get(contact, "subContacts", []), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))), "services[0].serviceId", ""))
+                const documentService = _.find(_.get(contact, "services", []), {id: documentServiceId})
+                const documentType = _.get(_.find(_.get(this, "_data.codes.CD-TRANSACTION", []), {code: _.trim(_.get(_.find(_.get(documentService, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))}), "labelHr", "")
+                const documentTitle = _.trim(_.get(documentService, "content." + this.language + ".stringValue", ""))
 
-              const contactOrDocumentType = !!_.trim(subContactType) ? _.trim(subContactType) : !!_.trim(contactType) ? _.trim(contactType) : _.trim(documentType)
-              const contactOrDocumentTitle = !!_.trim(_.get(contact,"descr","")) && !!_.trim(_.trim(_.get(contact,"descr","")).replace(contactOrDocumentType+":","")) ?
-                  _.trim(_.get(contact,"descr","")).replace(contactOrDocumentType+":","") :
-                  (!!_.trim(_.get(targetSubContact,"descr","")) || !!_.trim(_.get(targetSubContact,"protocol",""))) ? _.trim(_.get(targetSubContact,"descr","")) + (!!_.trim(_.get(targetSubContact,"protocol","")) ? " (" + this.localize("prot", "Protocol", this.language) + " #" + _.trim(_.get(targetSubContact,"protocol","")) + ")" : "" ) :
-                      documentTitle
+                const contactOrDocumentType = !!_.trim(subContactType) ? _.trim(subContactType) : !!_.trim(contactType) ? _.trim(contactType) : _.trim(documentType)
+                const contactOrDocumentTitle = !!_.trim(_.get(contact, "descr", "")) && !!_.trim(_.trim(_.get(contact, "descr", "")).replace(contactOrDocumentType + ":", "")) ?
+                    _.trim(_.get(contact, "descr", "")).replace(contactOrDocumentType + ":", "") :
+                    (!!_.trim(_.get(targetSubContact, "descr", "")) || !!_.trim(_.get(targetSubContact, "protocol", ""))) ? _.trim(_.get(targetSubContact, "descr", "")) + (!!_.trim(_.get(targetSubContact, "protocol", "")) ? " (" + this.localize("prot", "Protocol", this.language) + " #" + _.trim(_.get(targetSubContact, "protocol", "")) + ")" : "") :
+                        documentTitle
 
-              const contentFromContact = {
-                  dateHr: _.get(contact,"openingDateHr",""),
-                  dateYYYYMMDD: _.get(contact,"openingDateYYYYMMDD",""),
-                  title: contactOrDocumentTitle,
-                  type: contactOrDocumentType,
-                  fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
-                  mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
-                  downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
-                  body: !_.size(servicesOfContacts) && typeof _.get(document, "attachment.content") === "string" && !!_.trim(_.get(document, "attachment.content")) ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
-                      !_.size(servicesOfContacts) && _.get(document, "attachment.content") instanceof ArrayBuffer ? _.get(document, "attachment.content") :
-                          _.size(servicesOfContacts) === 1 ? this._prettifyText(this._getServiceShortDescription(_.head(servicesOfContacts))) :
-                              _.map(servicesOfContacts, svc => { return {
-                                  isOutOfRange: !!this._isServiceOutOfRange(svc),
-                                  label: _.trim(_.get(svc,"label","")),
-                                  date: this._getServiceDate(svc),
-                                  value: this._getServiceShortDescription(svc),
-                                  normalValue: this._getServiceNormalValues(svc),
-                                  author: this._getServiceAuthor(svc),
-                              }})
-              }
+                const contentFromContact = {
+                    dateHr: _.get(contact, "openingDateHr", ""),
+                    dateYYYYMMDD: _.get(contact, "openingDateYYYYMMDD", ""),
+                    title: contactOrDocumentTitle,
+                    type: contactOrDocumentType,
+                    fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
+                    mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
+                    downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
+                    body: !_.size(servicesOfContacts) && typeof _.get(document, "attachment.content") === "string" && !!_.trim(_.get(document, "attachment.content")) ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
+                        !_.size(servicesOfContacts) && _.get(document, "attachment.content") instanceof ArrayBuffer ? _.get(document, "attachment.content") :
+                            _.size(servicesOfContacts) === 1 ? this._prettifyText(this._getServiceShortDescription(_.head(servicesOfContacts))) :
+                                _.map(servicesOfContacts, svc => {
+                                    return {
+                                        isOutOfRange: !!this._isServiceOutOfRange(svc),
+                                        label: _.trim(_.get(svc, "label", "")),
+                                        date: this._getServiceDate(svc),
+                                        value: this._getServiceShortDescription(svc),
+                                        normalValue: this._getServiceNormalValues(svc),
+                                        author: this._getServiceAuthor(svc),
+                                    }
+                                })
+                }
 
-              return !_.size(contentFromDocument) ? contentFromContact : _.merge(contentFromContact, contentFromDocument)
+                return !_.size(contentFromDocument) ? contentFromContact : _.merge(contentFromContact, contentFromDocument)
 
-          })
+            })
 
-  }
+    }
 
-  _getServicesOfContacts(contacts) {
+    _getServicesOfContacts(contacts) {
 
-      return _.filter(
-          _.sortBy(
-              _.compact(_.flatMap(contacts, c => {
-                  const labOrProtocolSubContacts = _.filter(_.get(c,"subContacts",[]),sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 0)) || (parseInt(_.get(sctc, "status", 0)) & (1 << 5))))
-                  const labOrProtocolSubContactsServices = _.compact(_.flatMap(labOrProtocolSubContacts, it => _.map(_.get(it,"services",[]), svc => _.trim(_.get(svc,"serviceId","")) )))
-                  return (!!parseInt(_.get(c,"endOfLife",0)) || !!parseInt(_.get(c,"deletionDate",0))) ? false :  _.compact(_.map(_.get(c,"services",{}), svc => !!parseInt(_.get(svc,"endOfLife",0)) || labOrProtocolSubContactsServices.indexOf(_.trim(_.get(svc,"id",""))) === -1 ? false : svc))
-              })),
+        return _.filter(
+            _.sortBy(
+                _.compact(_.flatMap(contacts, c => {
+                    const labOrProtocolSubContacts = _.filter(_.get(c, "subContacts", []), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 0)) || (parseInt(_.get(sctc, "status", 0)) & (1 << 5))))
+                    const labOrProtocolSubContactsServices = _.compact(_.flatMap(labOrProtocolSubContacts, it => _.map(_.get(it, "services", []), svc => _.trim(_.get(svc, "serviceId", "")))))
+                    return (!!parseInt(_.get(c, "endOfLife", 0)) || !!parseInt(_.get(c, "deletionDate", 0))) ? false : _.compact(_.map(_.get(c, "services", {}), svc => !!parseInt(_.get(svc, "endOfLife", 0)) || labOrProtocolSubContactsServices.indexOf(_.trim(_.get(svc, "id", ""))) === -1 ? false : svc))
+                })),
 
-              ["modified","index"],["asc","asc"]
-          ),
-          svc => true /* !!_.trim(this._getServiceShortDescription(svc)) */
-      )
+                ["modified", "index"], ["asc", "asc"]
+            ),
+            svc => true /* !!_.trim(this._getServiceShortDescription(svc)) */
+        )
 
-  }
+    }
 
-  printDocument(inputData) {
+    printDocument(inputData) {
 
-      if(!!_.get(this,"_isBusy",false)) return;
-      this.set("_isBusy", true)
+        if (!!_.get(this, "_isBusy", false)) return;
+        this.set("_isBusy", true)
 
-      const promResolve = Promise.resolve()
-      const patientId = !!_.trim(_.get(inputData,"patientId","")) ? _.trim(_.get(inputData,"patientId","")) : _.trim(_.get(this,"patient.id",""))
-      const contactId = _.trim(_.get(inputData,"contactId",""))
-      const documentId = _.trim(_.get(inputData,"documentId",""))
-      const ehboxMessageId = _.trim(_.get(inputData,"ehboxMessageId",""))
+        const promResolve = Promise.resolve()
+        const patientId = !!_.trim(_.get(inputData, "patientId", "")) ? _.trim(_.get(inputData, "patientId", "")) : _.trim(_.get(this, "patient.id", ""))
+        const contactId = _.trim(_.get(inputData, "contactId", ""))
+        const documentId = _.trim(_.get(inputData, "documentId", ""))
+        const ehboxMessageId = _.trim(_.get(inputData, "ehboxMessageId", ""))
 
-      // Make sure properties of component (that aren't set yet) actually are a variable rather than an object with a value key representing their value.
-      _.map(_.get(this,"_data",{}), (propValue,propKey) => typeof _.get(propValue,"value",null) !== "function" ? null : this.set("_data." + propKey, _.get(propValue,"value",null)()))
+        // Make sure properties of component (that aren't set yet) actually are a variable rather than an object with a value key representing their value.
+        _.map(_.get(this, "_data", {}), (propValue, propKey) => typeof _.get(propValue, "value", null) !== "function" ? null : this.set("_data." + propKey, _.get(propValue, "value", null)()))
 
-      return this._resetComponentProperties()
-          .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
-          .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), patientId).then(patient => _.assign(this._data, {currentPatient:patient})))
-          .then(() => this._getCodesByType("CD-TRANSACTION").then(codes => _.merge(this._data,{codes:codes})))
-          .then(() => this._getContact(_.get(this,"user",{}), contactId, _.get(this,"_data.currentPatient")).then(contact => _.assign(this._data,{contact:contact})))
-          .then(() => this._getDocument(_.get(this,"user",{}), documentId).then(document => _.assign(this._data,{document:document})))
-          .then(() => ((!_.size(_.get(this,"_data.document")) && !_.size(_.get(this,"_data.contact"))) ? promResolve : !!_.size(_.get(this,"_data.contact")) ? this._getContentFromContact() : this._getContentFromDocument()).then(content => _.assign(this._data,{content:content})))
-          .then(() => _.assign(this._data,{pdfHtmlContent:this._getPdfContent()}))
-          .then(() => this.api.pdfReport(this._data.pdfHtmlContent, {type:"rapp-mail",completionEvent:"pdfDoneRenderingEvent"}))
-          .then(printedPdf => !printedPdf.printed && this.api.triggerFileDownload( printedPdf.pdf, "application/pdf", _.kebabCase(_.trim(_.get(this,"_data.content.dateYYYYMMDD",moment().format("YYYYMMDD"))) + "-" + _.trim(_.get(this,"_data.content.title",this.api.crypto().randomUuid()))) + ".pdf" ))
-          .catch(e => { console.log("[ERROR] printDocument", e, inputData); return promResolve;})
-          .finally(() => {
+        return this._resetComponentProperties()
+            .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp: hcp})))
+            .then(() => this._getPrettifiedPatient(_.get(this, "user", {}), patientId).then(patient => _.assign(this._data, {currentPatient: patient})))
+            .then(() => this._getCodesByType("CD-TRANSACTION").then(codes => _.merge(this._data, {codes: codes})))
+            .then(() => this._getContact(_.get(this, "user", {}), contactId, _.get(this, "_data.currentPatient")).then(contact => _.assign(this._data, {contact: contact})))
+            .then(() => this._getDocument(_.get(this, "user", {}), documentId).then(document => _.assign(this._data, {document: document})))
+            .then(() => ((!_.size(_.get(this, "_data.document")) && !_.size(_.get(this, "_data.contact"))) ? promResolve : !!_.size(_.get(this, "_data.contact")) ? this._getContentFromContact() : this._getContentFromDocument()).then(content => _.assign(this._data, {content: content})))
+            .then(() => _.assign(this._data, {pdfHtmlContent: this._getPdfContent()}))
+            .then(() => this.api.pdfReport(this._data.pdfHtmlContent, {
+                type: "rapp-mail",
+                completionEvent: "pdfDoneRenderingEvent"
+            }))
+            .then(printedPdf => !printedPdf.printed && this.api.triggerFileDownload(printedPdf.pdf, "application/pdf", _.kebabCase(_.trim(_.get(this, "_data.content.dateYYYYMMDD", moment().format("YYYYMMDD"))) + "-" + _.trim(_.get(this, "_data.content.title", this.api.crypto().randomUuid()))) + ".pdf"))
+            .catch(e => {
+                console.log("[ERROR] printDocument", e, inputData);
+                return promResolve;
+            })
+            .finally(() => {
 
-              console.log("--- this._data ---",this._data);
-              console.log("inputData",inputData);
+                console.log("--- this._data ---", this._data);
+                console.log("inputData", inputData);
 
-              this.set("_isBusy", false)
-              this.dispatchEvent(new CustomEvent('done-printing-document', {composed:true,bubbles:true,detail:{}}))
-              return promResolve
+                this.set("_isBusy", false)
+                this.dispatchEvent(new CustomEvent('done-printing-document', {
+                    composed: true,
+                    bubbles: true,
+                    detail: {}
+                }))
+                return promResolve
 
-          })
-  }
+            })
+    }
 }
 
 customElements.define(PrintDocument.is, PrintDocument);

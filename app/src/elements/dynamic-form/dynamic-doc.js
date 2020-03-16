@@ -1348,18 +1348,19 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
               if (_.size(doc.encryptionKeys) || _.size(doc.delegations)) {
                   this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
                       .then(({extractedKeys: enckeys}) => {
-                          if(_.trim(_.get(doc,"mainUti","")) === "public.html")
-                              this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
-                          const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
-                          this.set('dataUrl', url)
+                          if(_.trim(_.get(doc,"mainUti","")) === "public.html") {
+                              this.api.document().getAttachment(_.trim(_.get(doc, "id", "")), _.trim(_.get(doc, "attachmentId", "")), enckeys.join(',')).then(attachmentContent => this.set("data", {
+                                  content: [_.trim(attachmentContent)],
+                                  l: null
+                              }))
+                          }
+                          doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys).then(url => this.set('dataUrl', url))
                       })
                       .catch(() => {
-                          const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                          this.set('dataUrl', url)
+                          doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined).then(url => this.set('dataUrl', url))
                       })
               } else {
-                  const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                  this.set('dataUrl', url)
+                  doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined).then(url => this.set('dataUrl', url))
               }
           })
           .then(() => this._getComment())
@@ -1381,15 +1382,16 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
               const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
               const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
               const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
-              const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
-              let a = document.createElement("a");
-              document.body.appendChild(a);
-              this.appendChild(a);
-              a.style = "display: none";
-              a.download = doc.name // optional
-              a.setAttribute('href', url);
-              a.click();
-              window.URL.revokeObjectURL(url);
+              doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, docName).then(url => {
+                  let a = document.createElement("a");
+                  document.body.appendChild(a);
+                  this.appendChild(a);
+                  a.style = "display: none";
+                  a.download = doc.name // optional
+                  a.setAttribute('href', url);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+              })
           })
       } else {
           if(this.data && this.data.value){

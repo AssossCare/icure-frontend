@@ -218,7 +218,7 @@ class HtPatVaccineSelectionDialog extends TkLocalizerMixin(mixinBehaviors([IronR
   }
 
   _onCheckedChanged(e) {
-      if (e.path.length < 5) return;
+      if ((e.path || e.composedPath()).length < 5) return;
       const code = e.currentTarget.id.substring(0, 2);
       const id = e.currentTarget.id.substring(2);
       const vaccine = this.vaccines.find(v => v.id == id);

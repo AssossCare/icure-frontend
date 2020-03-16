@@ -1382,7 +1382,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 
   widgetsChanged(e){
 
-      const path = e.path
+      const path = (e.path || e.composedPath())
 
       const index = parseInt(path.split('.')[1])
 

@@ -1659,9 +1659,6 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
           }
       }, 10000)
 
-
-      this.sessionInterval && clearInterval(this.sessionInterval)
-      this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
   }
 
   _timeCheck(period = 30000) {
@@ -1787,8 +1784,9 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
       this.view = 'view404'
   }
 
+
   doRoute(e) {
-      const routeTo = _.get(_.filter(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.name",""))),"[0].dataset.name","main") + "/"
+      const routeTo = (e.target.dataset.name || _.get(_.filter(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.name",""))),"[0].dataset.name","main")) + "/"
       this.set('routeData.page', routeTo)
       this._triggerMenu()
   }

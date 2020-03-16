@@ -1148,7 +1148,7 @@ class HtAdminReportsListOfAttestations extends TkLocalizerMixin(PolymerElement) 
   }
 
   _itemSelected(e) {
-      if (e.path[0].checked) {
+      if ((e.path || e.composedPath())[0].checked) {
           const checked = JSON.parse(e.target.dataset.item)
           if (this.checkedInvoices.length !== this.invoiceItems.length) this.push('checkedInvoices', checked)
       } else {

@@ -117,7 +117,7 @@ class HtImportMfDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
             <h2 class="modal-title">[[localize('upl_mffil','Upload SMF/PMF files',language)]]<span class="extra-info">[[localize('xml_files', '(XML files)', language)]]</span></h2>
             <div class="content">
                 <div class="subcontent">
-                    <vaadin-upload id="vaadin-upload" no-auto="" files="{{files}}" accept="text/xml,application/xml" target="[[api.host]]/document/{documentId}/attachment/multipart;jsessionid=[[api.sessionId]]" method="PUT" form-data-name="attachment" on-upload-success="_mfFileUploaded">
+                    <vaadin-upload id="vaadin-upload" no-auto="" files="{{files}}" accept="text/xml,application/xml" target="[[api.host]]/document/{documentId}/attachment/multipart" method="PUT" form-data-name="attachment" on-upload-request="_mfAddCredentials" on-upload-success="_mfFileUploaded">
 
                         <!--                        <slot name="file-list">
 
@@ -432,6 +432,10 @@ class HtImportMfDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
       return a === b
   }
 
+  _mfAddCredentials(e) {
+      e.detail.xhr.setRequestHeader('Authorization', this.api.authorizationHeader());
+  }
+
   _mfFileUploaded(e) {
       const vaadinUpload = this.$['vaadin-upload']
       const f = e.detail.file
@@ -455,7 +459,7 @@ class HtImportMfDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
                       name: f.name
                   }).then(d => this.api.document().createDocument(d)).then(d => {
                       f.doc = d
-                      f.uploadTarget = (f.uploadTarget || vaadinUpload.target).replace(/;jsessionid=.*$/, `;jsessionid=${this.api.sessionId}`).replace(/\{documentId\}/, d.id)
+                      f.uploadTarget = (f.uploadTarget || vaadinUpload.target).replace(/\{documentId\}/, d.id)
                       return f
                   })
               })

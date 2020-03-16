@@ -1876,8 +1876,8 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
   _toggleBatchDetails(e) {
 
       // Make sure we have a "legit" click
-      if( _.get(e, "path", false) ) {
-          var paths = _.map( e.path, (pathNode,index)=> { return { index:index, nodeName:_.get( pathNode, "nodeName", "" ), target: _.get( pathNode, "id", "" ).toLowerCase()==="messagesgrid2" } })
+      if( _.get(e, "path", false) || e.composedPath ) {
+          var paths = _.map( e.path || e.composedPath(), (pathNode,index)=> { return { index:index, nodeName:_.get( pathNode, "nodeName", "" ), target: _.get( pathNode, "id", "" ).toLowerCase()==="messagesgrid2" } })
           if( !parseInt(_.size(_.compact(_.map( paths.slice( 0, _.get( _.filter(paths,"target"), "[0].index", 0 ) ), (path, index) => { return ["vaadin-grid-cell-content", "slot", "td", "tr" ].indexOf( _.trim(path.nodeName).toLowerCase() ) > -1 } )))) ) return;
       }
 
