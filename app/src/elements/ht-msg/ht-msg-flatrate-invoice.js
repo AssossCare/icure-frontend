@@ -2322,7 +2322,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         }
 
         // Study mda status / step we're in
-        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_getEInvoicingStep();
+        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_loadDataAndgetStep();
 
     }
 
@@ -6277,7 +6277,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _e_closeMdaRequestsSentDialog() {
         this._closeDialogs()
-        this._e_getEInvoicingStep()
+        this._e_loadDataAndgetStep()
     }
 
     _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
@@ -6727,7 +6727,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 return prom.then(promisesCarrier=>promisesCarrier)
             })
             .catch(()=>{})
-            .finally(() => (this.set("_isLoading",false)||true) && this._e_getEInvoicingStep())
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndgetStep())
 
     }
 
@@ -6830,11 +6830,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             })
             .then(requestMessages=>{})
             .catch(()=>{})
-            .finally(() => (this.set("_isLoading",false)||true) && this._e_getEInvoicingStep())
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndgetStep())
 
     }
 
-    _e_getEInvoicingStep() {
+    _e_loadDataAndgetStep() {
 
         let eInvoicingStep = "placeMdaRequests"
         const promResolve = Promise.resolve()
@@ -6951,7 +6951,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
         const promResolve = Promise.resolve()
 
-        return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_getEInvoicingStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_getEInvoicingStep() : promResolve)
+        return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_loadDataAndgetStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_loadDataAndgetStep() : promResolve)
             .then(() => {
                 this.set("_isLoading",true)
                 this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
@@ -6996,6 +6996,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _e_step4SaveChangesAndGoToStep5() {
+
+        console.log("_e_step4SaveChangesAndGoToStep5");
+        console.log(this.mdaRequestsData);
+
+        modifyMessage
+        setAttachment
 
         // a déjà "totalPats" sur msg request
         // foutre totalPatsWithValidInsurability ==> eval
