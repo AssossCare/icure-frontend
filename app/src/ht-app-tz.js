@@ -1933,7 +1933,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH.nihii.substr(0, 8), this.api.keystoreIdMH, true).then(res => {
+              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH && hcpMH.nihii ? hcpMH.nihii.substr(0, 8) : "", this.api.keystoreIdMH, true).then(res => {
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
                   !_.isEmpty(res) ? this.root.getElementById('eHealthMHStatus') ? this.root.getElementById('eHealthMHStatus').classList.add('connected') : null : this.root.getElementById('eHealthMHStatus').classList.add('disconnected')

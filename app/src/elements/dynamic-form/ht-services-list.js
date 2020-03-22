@@ -295,6 +295,12 @@ class HtServicesList extends TkLocalizerMixin(PolymerElement) {
                     </vaadin-grid-column>
                     <vaadin-grid-column flex-grow="4">
                         <template class="header">
+                            Comment
+                        </template>
+                        <template><span class\$="outofrange-[[_isOutOfRange(item)]]">[[_comment(item)]]</span></template>
+                    </vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="4">
+                        <template class="header">
                             [[localize('nor_val','Normal values',language)]]
                         </template>
                         <template>[[_normalValues(item)]]</template>
@@ -412,6 +418,10 @@ class HtServicesList extends TkLocalizerMixin(PolymerElement) {
   _shortDescription(svc) {
       return this.api.contact().shortServiceDescription(svc, this.language);
   }
+
+    _comment(svc){
+      return svc.comment || ""
+    }
 
   _notifyResize() {
       const grid = this.$['dynamic-list']
