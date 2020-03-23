@@ -7,8 +7,6 @@ import moment from 'moment/src/moment'
 import levenshtein from 'js-levenshtein'
 import { Base64 } from 'js-base64';
 
-
-
 onmessage = e => {
     if(e.data.action === "loadEhboxMessage"){
 
@@ -285,7 +283,7 @@ onmessage = e => {
                     return (_.size(candidates) !== 1) ?
                         {protocolId:_.trim(_.get(docInfo,"protocol","")), documentId:_.trim(_.get(document,"id",""))} :
                         iccContactXApi.newInstance(user, candidates[0], {
-                            groupId: _.trim(_.get(message,"id","")),
+                            groupId: iccCryptoXApi.randomUuid(),
                             created: +new Date,
                             modified: +new Date,
                             author: _.trim(_.get(user,"id","")),
@@ -529,9 +527,9 @@ onmessage = e => {
 
         icureApi.getVersion()
         .then(icureVersion => appVersions.backend = _.trim(icureVersion))
-        .then(() => fetch(`${this.api.electronHost}/ok`, {method:"GET"}).then(() => true).catch(() => false))
+        .then(() => fetch("http://localhost:16042/ok", {method:"GET"}).then(() => true).catch(() => false))
         .then(isElectron => appVersions.isElectron = !!isElectron)
-        .then(() => fetch(`${this.api.electronHost}/getVersion`, {method:"GET"}).then((response) => response.json()).catch(() => false))
+        .then(() => fetch("http://localhost:16042/getVersion", {method:"GET"}).then((response) => response.json()).catch(() => false))
         .then(electronVersion => appVersions.electron = _.trim(_.get(electronVersion,"version","-")))
         .then(() => autoDeleteMessages())
         .finally(()=>{

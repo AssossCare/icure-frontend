@@ -571,7 +571,7 @@ class HtPatHeTreeDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     this._sendPostRequest({
                         action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
                         params: [
-                            _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) ? {type: "hidden", name: "RelayState", value: "https://login.cdlh.be/sts/evidence"+_.toLower(this.language)+".aspx?k=elicd:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null)} : {type: "hidden", name: "RelayState", value: "https://login.cdlh.be/sts/evidence"+_.toLower(this.language)+".aspx?k=elicpc:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null)} ,
+                            _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) ? {type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://loginacc.cdlh.be/sts/evidence" : "https://login.cdlh.be/sts/evidence"+_.toLower(this.language)+".aspx?k=elicd:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null)} : {type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://loginacc.cdlh.be/sts/evidence" : "https://login.cdlh.be/sts/evidence"+_.toLower(this.language)+".aspx?k=elicpc:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null)} ,
                             {type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
                         ]
                     })
@@ -608,7 +608,7 @@ class HtPatHeTreeDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     _shortDateFormat(date, altDate) {
-        return (date || altDate) && this.api.moment(date || altDate).format('MM/YY') || '';
+        return (date || altDate) && this.api.moment(date || altDate).format('MM/YY') ? _.includes((date && date.toString() || altDate && altDate.toString()), '0000') ?  this.api.moment(date || altDate).format('YYYY') :  this.api.moment(date || altDate).format('MM/YY') : '';
     }
 
     _evidenceLinkerPicture(){

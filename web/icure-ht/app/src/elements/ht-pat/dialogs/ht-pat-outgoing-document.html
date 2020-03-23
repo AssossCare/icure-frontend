@@ -81,6 +81,8 @@
 
             .forceLeft {
                 position: absolute;
+                display: flex;
+                flex-flow: row;
                 left: 8px;
             }
 
@@ -697,7 +699,7 @@
                     return [subCtx]
                 })
 
-                const makeSubContextsHes = (ctx) => ((key) => _.map(_.get(ctx,"healthElements." + key), he => _.assign({}, ctx, {dataProvider: {form: () => {return {template: {id: _.trim(_.get(he,"id"))},he: he}}}})))
+                const makeSubContextsHes = (ctx) => ((key) => _.compact(_.map(_.get(ctx,"healthElements." + key), he => !_.trim(_.get(he,"id")) ? null : _.assign({}, ctx, {dataProvider: {form: () => {return {template: {id: _.trim(_.get(he,"id"))},he: he}}}}))))
 
                 const ctx = {
                     formatDate: (date) => this.api.moment(date).format('DD/MM/YYYY'),
@@ -802,7 +804,34 @@
                 return (!prose || !_.get(selectedTemplate,"attachmentFileContent")) ? promResolve : promResolve
                     .then(() => this._flushProseEditorContent())
                     .then(() => this.set("_data.proseEditorSelectedTemplate",selectedTemplate))
-                    .then(() => prose && prose.setJSONContent(this.api.crypto().utils.ua2utf8(_.get(this,"_data.proseEditorSelectedTemplate.attachmentFileContent"))))
+                    .then(() => JSON.parse(this.api.crypto().utils.ua2utf8(_.get(this,"_data.proseEditorSelectedTemplate.attachmentFileContent"))))
+                    .then(jsonTemplate => { jsonTemplate.content[0].content =  _
+                            .chain(_.get(jsonTemplate,"content[0].content",{}))
+                            .map(node => node.type !== "dynamicNodes" ?
+                                node :
+                                _.trim(_.get(node,"templateGuid")) ?
+                                    // Trying to render form, via its templateGuid
+                                    _
+                                        .chain(_.get(this,"_data.proseEditorVariables", []))
+                                        .find({type:"forms"})
+                                        .get("subVars",[])
+                                        .find({templateGuid: _.get(node,"templateGuid")})
+                                        .get("nodes",[])
+                                        .value() :
+                                    // Going for a specific var name
+                                    _
+                                        .chain(_.get(this,"_data.proseEditorVariables", []))
+                                        .find({type:_.get(node,"varName")})
+                                        .get("subVars",[])
+                                        .map("nodes")
+                                        .flatten()
+                                        .value()
+                            )
+                            .flatten()
+                            .value();
+                        return jsonTemplate;
+                    })
+                    .then(jsonTemplate => prose && prose.setJSONContent(JSON.stringify(jsonTemplate)))
                     .then(() => this._refreshProseEditorContext())
 
             }
@@ -870,6 +899,168 @@
 
             }
 
+            _getIncapacityCodes() {
+
+                return this.api.code().findCodes("be", "CD-INCAPACITY")
+                    .then(incapacityCodes => this.api.code().findCodes("be", "CD-INCAPACITYREASON")
+                        .then(incapacityReasons => {
+                            return {
+                                "CD-INCAPACITY":_.map(incapacityCodes, singleCode => _.merge(singleCode, {labelHr:_.trim(_.get(singleCode,"label." + this.language,"")) ? _.trim(_.get(singleCode,"label." + this.language,"")).toLowerCase() : _.trim(_.head(_.flatMap(_.get(singleCode,"label","")))).toLowerCase()})),
+                                "CD-INCAPACITYREASON":_.map(incapacityReasons, singleCode => _.merge(singleCode, {labelHr:_.trim(_.get(singleCode,"label." + this.language,"")) ? _.upperFirst(_.trim(_.get(singleCode,"label." + this.language,"")).toLowerCase()) : _.upperFirst(_.trim(_.head(_.flatMap(_.get(singleCode,"label","")))).toLowerCase())})),
+                            }
+                        }))
+
+            }
+
+            _getEMediattestData() {
+
+                const promResolve = Promise.resolve()
+
+                return promResolve
+                    .then(() => {
+                        const diagnosticSvc = _.get(this,"_data.eMediattestParentFormDp.servicesMap['Diagnostics'][0][0].svc",{})
+                        return {
+                            labelHr: _.get(diagnosticSvc,"content." + this.language + ".stringValue",""),
+                            icpc: _.get(_.find(_.get(diagnosticSvc,"codes",[]), {type:"ICPC"}), "code",""),
+                            icd: _.get(_.find(_.get(diagnosticSvc,"codes",[]), {type:"ICD"}), "code",""),
+                        }
+                    })
+                    .then(diagnosticData => {
+
+                        let incapacityReason = null
+                        let outOfHomeAllowed = null
+                        let occuredOn = null
+                        let incapacityBegin = null
+                        let incapacityEnd = null
+
+                        const extensionData = typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content." + this.language + ".booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content." + this.language + ".booleanValue", false) :
+                            typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.fr.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.fr.booleanValue", false) :
+                                typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.nl.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.nl.booleanValue", false) :
+                                    typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.en.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.en.booleanValue", false) :
+                                        false
+
+                        const incapacityData = _.compact(_.map(_.get(this,"_data.eMediattestSubFormDp.servicesMap",[]), (v,k)=> {
+
+                            const valueObject = !!_.get(v, "[0][0].svc.content." + this.language, null) ? _.get(v, "[0][0].svc.content." + this.language, null) : !!_.get(v, "[0][0].svc.content.fr", "") ? _.get(v, "[0][0].svc.content.fr", "") : !!_.get(v, "[0][0].svc.content.nl", "") ? _.get(v, "[0][0].svc.content.nl", "") : !!_.get(v, "[0][0].svc.content.en", "") ? _.get(v, "[0][0].svc.content.en", "") : null
+                            const isIncapacity = !!_.trim(_.get(valueObject,"stringValue","")) && _.trim(_.get(valueObject,"stringValue","")).startsWith("CD-INCAPACITY|")
+                            const isIncapacityReason = !!_.trim(_.get(valueObject,"stringValue","")) && _.trim(_.get(valueObject,"stringValue","")).startsWith("CD-INCAPACITYREASON|")
+
+                            if(k==="pour cause de") incapacityReason = !!_.trim(_.get(valueObject, "stringValue", "")) ? _.trim(_.get(valueObject, "stringValue", "")) : "CD-INCAPACITYREASON|illness|1"
+                            if(k==="Sortie") outOfHomeAllowed = !!_.trim(_.get(valueObject, "stringValue", "")) ? _.trim(_.get(valueObject, "stringValue", "")) : "interdite"
+
+                            if(k==="du") incapacityBegin = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : moment().format("YYYY-MM-DD")
+                            if(k==="au") incapacityEnd = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : moment().add(1, 'day').format("YYYY-MM-DD")
+                            if(k==="Accident suvenu le") occuredOn = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : ""
+
+                            return !_.size(v) ? false : {
+                                name: k,
+                                valueObject: valueObject,
+                                valueHr: !!_.trim(_.get(valueObject,"stringValue","")) ?
+                                    !!isIncapacity ? _.get(_.find(_.get(this,"_data.codes.CD-INCAPACITY",[]),{id:_.trim(_.get(valueObject,"stringValue",""))}),"labelHr","") :
+                                        !!isIncapacityReason ? _.get(_.find(_.get(this,"_data.codes.CD-INCAPACITYREASON",[]),{id:_.trim(_.get(valueObject,"stringValue",""))}),"labelHr","") :
+                                            _.trim(_.get(valueObject,"stringValue","")) :
+                                    !!_.trim(_.get(valueObject,"fuzzyDateValue","")) ? this._YYYYMMDDToDDMMYYYY(_.trim(_.get(valueObject,"fuzzyDateValue",""))) :
+                                        !!_.size(_.get(valueObject,"measureValue","")) ? _.trim(_.get(valueObject,"measureValue.value","")) + ( !!_.trim(_.get(valueObject,"measureValue.unit","")) ? _.trim(_.get(valueObject,"measureValue.unit","")) : "%" ) :
+                                            typeof _.get(valueObject,"booleanValue","") === "boolean" ? !!_.get(valueObject,"booleanValue","") ? this.localize("yes", "Yes",this.language) : this.localize("no", "No",this.language) :
+                                                ""
+                            }
+                        }))
+
+                        return {
+                            diagnosticData:diagnosticData,
+                            incapacityData:incapacityData,
+                            khmerData: {
+                                incapacityOrIncapacityExtension:!!extensionData ? "incapacityextension" : "incapacity",
+                                certificateDate: !!parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))||0 ? moment(parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'),
+                                certificateTime: !!parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))||0 ? moment(parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))).format('HH:mm:ss') : moment().format('HH:mm:ss'),
+                                incapacityReason: ["illness", "hospitalisation", "sickness", "pregnancy", "workaccident", "traveltofromworkaccident", "occupationaldisease"].indexOf(_.trim(_.get(_.trim(incapacityReason).split("|"),"[1]", "illness"))) > -1 ? _.trim(_.get(_.trim(incapacityReason).split("|"),"[1]", "illness")) : "illness",
+                                outOfHomeAllowed: _.trim(outOfHomeAllowed) === "interdite" ? "false" : "true",
+                                // In xml, the additional <content><date> tag must hold a value but only when workaccident ; occupationaldisease ; traveltofromworkaccident
+                                // In pdf "accident survenu le" msut hold a value but only when workaccident ; traveltofromworkaccident and never for occupationaldisease
+                                // In pdf and when occupationaldisease -> no accident date must be present but a "maladie profesionnelle déclarée le" must be present
+                                occuredOn: ( _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("workaccident") > -1 || _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("occupationaldisease") > -1 || _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("traveltofromworkaccident") > -1 ) ? _.trim(occuredOn) : "",
+                                incapacityBegin: incapacityBegin,
+                                incapacityEnd: incapacityEnd,
+                            }
+                        }
+
+                    })
+
+            }
+
+            _saveMedexIttToPatFile() {
+
+                const messageObject = {
+                    transportGuid: "MEDEX:OUT:PDF",
+                    recipients: [_.trim(_.get(this, "_data.contactHcp.id", ""))],
+                    metas: {
+                        filename : _.trim(_.get(this, "_data.pdf.filename", "")),
+                        hcpId: _.trim(_.get(this, "_data.contactHcp.id", "")),
+                        contactId : _.trim(_.get(this, "_data.currentContact.id", "")),
+                        originalContactId : this._data.eMediattestParentFormDp.form().contactId,
+                        formId : _.trim(_.get(_.get(this, "_data.eMediattestParentFormDp.form")(),"id","")),
+                        subFormId : _.trim(_.get(_.get(this, "_data.eMediattestSubFormDp.form")(),"id","")),
+                    },
+                    toAddresses: [_.trim(_.get(this, "_data.contactHcp.id", ""))],
+                    subject: this.localize("medicalCertificate","Medical certificate",this.language) + " Medex",
+                }
+
+                return this.api.message().newInstanceWithPatient(_.get(this,"user",{}), _.get(this,"_data.currentPatient",{}))
+                    .then(messageInstance => this.api.message().createMessage(_.merge(messageInstance, messageObject)))
+                    .then(createdMessage => this.api.document().newInstance(_.get(this,"user",{}),createdMessage, {
+                        documentType: 'report',
+                        mainUti: this.api.document().uti("application/pdf"),
+                        name: _.get(messageObject,"metas.filename"),
+                        tags: [
+                            {type: "medex", code: "true"},
+                            {type: "formId", code: _.trim(_.get(messageObject, "metas.formId",""))},
+                            {type: "subFormId", code: _.trim(_.get(messageObject, "metas.subFormId",""))}
+                        ]
+                    }).then(documentInstance=>([createdMessage, documentInstance])))
+                    .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument=>([createdMessage, createdDocument])))
+                    .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this,"user",{}), createdDocument, _.get(this, "_data.pdf.data", "")).then(encryptedFileContent => [createdMessage,createdDocument,encryptedFileContent]))
+                    .then(([createdMessage,createdDocument,encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument,"id"), null, encryptedFileContent).then(() => ([createdMessage,createdDocument])))
+                    .then(([createdMessage,createdDocument])=> this._saveDocumentAsService({
+                        documentId: _.trim(_.get(createdDocument, "id", "")),
+                        stringValue: _.trim(_.get(messageObject,"subject","")),
+                        contactId: _.trim(_.get(messageObject, "metas.contactId", "")),
+                        originalContactId: _.trim(_.get(messageObject, "metas.originalContactId", "")),
+                        messageObject: messageObject,
+                        cdTransactionCode: "medical-certificate",
+                        isMedex: true,
+                        forceNoRefreshPatientFile: true, // Don't refresh now, refresh once we got the KHMER generated
+                    }).then(()=>([createdMessage,createdDocument])))
+                    .catch(e => { console.log("[ERROR] _saveMedexIttToPatFile", e); return Promise.resolve(); })
+
+            }
+
+            printMedexPdfItt(dataFromPatDetail) {
+
+                if(!!_.get(this,"_isBusy",false)) return Promise.resolve();
+
+                const patientId = !!_.trim(_.get(dataFromPatDetail,"patient.id","")) ? _.trim(_.get(dataFromPatDetail,"patient.id","")) : _.trim(_.get(this,"patient.id",""))
+
+                return this._resetComponentProperties()
+                    .then(() => _.map(this._data, (propValue,propKey) => typeof _.get(propValue,"value",null) !== "function" ? null : this.set("_data." + propKey, propValue.value())) )
+                    .then(() => this.set("_isBusy", true))
+                    .then(() => this.set("_data.pdf.filename", _.kebabCase(_.compact([ moment().format("YYYY-MM-DD"), "medex", this.localize("medicalCertificate","Medical certificate",this.language), +new Date()]).join(" ")) + ".pdf"))
+                    .then(() => _.assign(this._data, _.cloneDeep(dataFromPatDetail)))
+                    .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
+                    .then(() => this._getPrettifiedMh().then(hcp => _.assign(this._data, {currentMh:hcp})))
+                    .then(() => this._getPrettifiedContactHcp(_.trim(_.get(_.get(dataFromPatDetail,"eMediattestParentFormDp.form")(), "responsible",""))).then(hcp => _.assign(this._data, {contactHcp:hcp})))
+                    .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), patientId).then(patient => _.assign(this._data, {currentPatient:patient})))
+                    .then(() => this._getIncapacityCodes().then(codes => _.assign(this._data, {codes:codes})))
+                    .then(() => this._getEMediattestData().then(data => _.assign(this._data, {eMediattest:data})))
+                    .then(() => this._getPdfContent().then(data => _.merge(this._data.pdf, {content:data})))
+                    .then(() => this.api.pdfReport(_.get(this,"_data.pdf.content",""),_.merge({completionEvent:"pdfDoneRenderingEvent"/*, printBackground:true*/})))
+                    .then(printedPdf => _.merge(this._data.pdf, {data:printedPdf.pdf}))
+                    .then(() => this._saveMedexIttToPatFile())
+                    .then(([createdMessage,createdDocument]) => _.merge(this._data.pdf, {createdMessage:createdMessage,createdDocument:createdDocument}))
+                    .then(() => this._data)
+                    .catch(e => console.log("[ERROR] printMedexPdfItt", e, dataFromPatDetail,this._data))
+                    .finally(() => { console.log("[Outgoing document, printMedexPdfItt, _data]",this._data); this.set("_isBusy", false); return this._data; })
+            }
+
             _getPdfFooter() {
 
                 return `` +
@@ -898,7 +1089,7 @@
 
                             <style>
 
-                                @page {size: A4; width: 210mm; height: 297mm; margin: 0; padding: 0; }
+                                @page {size: A4; width: 210mm; height: 297mm; margin: 10mm; padding: 0; }
                                 body {margin: 0; padding: 0mm; font-family: 'Roboto', Arial, Helvetica, sans-serif; font-size:12px; line-height:1.2em; background:#ffffff; -webkit-font-smoothing: antialiased; font-smooth: always; }
                                 .page { padding:8mm; color:#000000; position:relative; background:#ffffff; }
 
@@ -1091,6 +1282,10 @@
 
             }
 
+            _sleep (time) {
+                return new Promise((resolve) => setTimeout(resolve, time));
+            }
+
             _saveDocumentAsService(inputConfig) {
 
                 const promResolve = Promise.resolve()
@@ -1111,17 +1306,22 @@
                     {type: 'CD-TRANSACTION', code: _.trim(_.get(inputConfig,"cdTransactionCode",""))},
                 ]
 
-                if(false === _.get(this, "_data.currentContact.services", false)) this._data.currentContact.services = []
-                if(false === _.get(this, "_data.currentContact.subContacts", false)) this._data.currentContact.subContacts = []
-
-                this._data.currentContact.services.push(svc)
-                this._data.currentContact.subContacts.push({
-                    status: 64,
-                    services: [{serviceId: svc.id}],
-                    tags: svc.tags,
-                })
-
                 return promResolve
+                    .then(() => this._sleep(2000))
+                    .then(() => this.api.contact().getContactWithUser(_.get(this,"user",{}), _.trim(_.get(this, "_data.currentContact.id", ""))).then(currentContact => this._data.currentContact = currentContact).catch(e=>{}))
+                    .then(() => {
+
+                        if(false === _.get(this, "_data.currentContact.services", false)) this._data.currentContact.services = []
+                        if(false === _.get(this, "_data.currentContact.subContacts", false)) this._data.currentContact.subContacts = []
+
+                        this._data.currentContact.services.push(svc)
+                        this._data.currentContact.subContacts.push({
+                            status: 64,
+                            services: [{serviceId: svc.id}],
+                            tags: svc.tags,
+                        })
+
+                    })
                     .then(() => !!_.trim(_.get(this, "_data.currentContact.rev", "")) ?
                         this.api.contact().modifyContactWithUser(_.get(this,"user",{}), _.get(this, "_data.currentContact", {})) :
                         this.api.contact().createContactWithUser(_.get(this,"user",{}), _.get(this, "_data.currentContact", {}))
@@ -1237,6 +1437,7 @@
                 const coreTemplateGuids = [
                     "new-doc",
                     "lettre-liaison",
+                    "lettre-liaison-avec-es",
                     "msoap",
                     "amu",
                     "coups-blessures",
@@ -1265,6 +1466,10 @@
                     "mm-desinscription",
                     "mm-transfert",
                     "mm-soins-abonnes-en-institution",
+                    "covid19",
+                    "covid19-patient",
+                    "covid19-employer",
+                    "certificat-administration-biens",
                 ]
 
                 return promResolve
@@ -1297,7 +1502,10 @@
 
                         // Have "New document" as last item of list
                         const sortedFoundTemplates = _.concat(
-                            _.filter(foundTemplates, it => _.trim(_.get(it,"guid","")) !== "new-doc" ),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19"), {isBold:true}), // 1st position
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}), // 1st position
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {hrAfter: true, isBold:true}), // 3rd position
+                            _.filter(foundTemplates, it => _.trim(_.get(it,"guid","")) !== "new-doc" && _.trim(_.get(it,"guid","")) !== "covid19" && _.trim(_.get(it,"guid","")) !== "covid19-patient" && _.trim(_.get(it,"guid","")) !== "covid19-employer" ),
                             _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "new-doc" ), {isLast: true})
                         )
 
@@ -1504,23 +1712,23 @@
 
                         const heTypeLabel = heType === "activeHealthElements" ? this.localize("act_hea_pro","Active Health Problems", this.language) :
                             heType === "inactiveHealthElements" ? this.localize("med_ant","Medical antecedents", this.language) :
-                                heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
-                                    heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
-                                        heType === "risks" ? this.localize("ris","Risks", this.language) :
-                                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
-                                                heType === "medications" ? this.localize("med","Medication", this.language) :
-                                                    heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
+                            heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
+                            heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
+                            heType === "risks" ? this.localize("ris","Risks", this.language) :
+                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
+                            heType === "medications" ? this.localize("med","Medication", this.language) :
+                            heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
 
                         return (!_.size(hes) /* || heType==="archivedHealthElements" */) ? null : {
                             name: heTypeLabel,
                             sorting: heType === "activeHealthElements" ? 1 :
                                 heType === "inactiveHealthElements" ? 2 :
-                                    heType === "surgicalHealthElements" ? 3 :
-                                        heType === "familyrisks" ? 4 :
-                                            heType === "risks" ? 5 :
-                                                heType === "allergies" ? 6 :
-                                                    heType === "medications" ? 7 :
-                                                        heType === "archivedHealthElements" ? 8 : 999,
+                                heType === "surgicalHealthElements" ? 3 :
+                                heType === "familyrisks" ? 4 :
+                                heType === "risks" ? 5 :
+                                heType === "allergies" ? 6 :
+                                heType === "medications" ? 7 :
+                                heType === "archivedHealthElements" ? 8 : 999,
                             nodes: [
                                 {type:'template', attrs: {
                                         expr:`subContextsHes("${heType}")`,
@@ -1593,46 +1801,52 @@
 
                         const heTypeLabel = heType === "activeHealthElements" ? this.localize("act_hea_pro","Active Health Problems", this.language) :
                             heType === "inactiveHealthElements" ? this.localize("med_ant","Medical antecedents", this.language) :
-                                heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
-                                    heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
-                                        heType === "risks" ? this.localize("ris","Risks", this.language) :
-                                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
-                                                heType === "medications" ? this.localize("med","Medication", this.language) :
-                                                    heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
+                            heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
+                            heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
+                            heType === "risks" ? this.localize("ris","Risks", this.language) :
+                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
+                            heType === "medications" ? this.localize("med","Medication", this.language) :
+                            heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
 
-                        return (!_.size(hes) /* || heType==="archivedHealthElements" */) ? null : {
+                        return (!_.size(hes) || heType==="archivedHealthElements") ? null : {
                             name: heTypeLabel,
                             sorting: heType === "activeHealthElements" ? 1 :
                                 heType === "inactiveHealthElements" ? 2 :
-                                    heType === "surgicalHealthElements" ? 3 :
-                                        heType === "familyrisks" ? 4 :
-                                            heType === "risks" ? 5 :
-                                                heType === "allergies" ? 6 :
-                                                    heType === "medications" ? 7 :
-                                                        heType === "archivedHealthElements" ? 8 : 999,
-                            nodes: [
-                                {type:'template', attrs: {
-                                        expr:`subContextsHes("${heType}")`,
-                                        template: {'default': heType !== "medications" ?
-                                                [
-                                                    {type:'paragraph',marks:[{type: 'underlined'}], content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.heCodeHr`}}, {type:'text', text: " - "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.descr`}}, {type:'text', text: " "}]},
-                                                    {type:'paragraph', content: _.flatten(_.compact(_.concat(
-                                                        [
-                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("status","Status", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.statusHr`}}, {type:'text', text: " - "},
-                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("st_da","Start date", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " - "},
-                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("en_da","End date", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}},
-                                                        ],
-                                                        ((heType !== "familyrisks" && heType !== "archivedHealthElements") ? [{type:'text', text: " "}] : [{type:'text', text: " - "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("fam-ris","Family risk", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.familyLinkHr`}}, {type:'text', text: " "}] )
-                                                    )))},
-                                                    ((heType !== "allergies" && heType !== "archivedHealthElements") ? {type:'text', text: " "} : {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}]} ),
+                                heType === "surgicalHealthElements" ? 3 :
+                                heType === "familyrisks" ? 4 :
+                                heType === "risks" ? 5 :
+                                heType === "allergies" ? 6 :
+                                heType === "medications" ? 7 :
+                                heType === "archivedHealthElements" ? 8 : 999,
 
-                                                ] : [
-                                                    {type:'paragraph',marks:[{type: 'underlined'}], content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkCode`}}, {type:'text', text: " - "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " "}]},
-                                                    {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("begin","Begin", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " - "},{type:'text', marks: [{type: 'strong'}], text: this.localize("end","End", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " - "} ,{type:'text', marks: [{type: 'strong'}], text: this.localize("substitution","Substitution", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},{type:'text', text: " "}]},
-                                                    {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
-                                                ]
-                                        },
-                                    }},
+                            nodes: [
+                                {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'text', text: " "}]},
+                                {type:'template', attrs: {
+                                    expr:`subContextsHes("${heType}")`,
+                                    template: {'default': heType !== "medications" ?
+                                            _.compact([
+                                                {type:'paragraph', content:_.flatten(_.compact(_.concat(
+                                                    (heType !== "familyrisks" ? [] : [{type:'variable', attrs:{ expr:`dataProvider.form().he.familyLinkHr`}}, {type:'text', text: ": "}]),
+                                                    [
+                                                        {type:'variable', attrs:{ expr:`dataProvider.form().he.descr`}}, {type:'text', text: " "},
+                                                        {type:'text', text: "("}, {type:'variable', attrs:{ expr:`dataProvider.form().he.heCodeHr`}}, {type:'text', text: ") - "},
+                                                        // {type:'variable', attrs:{ expr:`dataProvider.form().he.statusHr`}}, {type:'text', text: " - "},
+                                                        {type:'text', text: this.localize("from2","From", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " "},
+                                                        {type:'text', text: this.localize("till","to", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}}
+                                                    ]
+                                                )))},
+                                                ((heType !== "allergies" && heType !== "archivedHealthElements") ? null :
+                                                    {type:'paragraph',content: [
+                                                        {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
+                                                        {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
+                                                    ]}
+                                                ),
+                                            ]) : [
+                                                {type:'paragraph',content: [{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " (CNK: "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkCode`}}, {type:'text', text: ") - "}, {type:'text', text: this.localize("from2","From", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " "},{type:'text', text: this.localize("till","to", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " - "} ,{type:'text', text: this.localize("substitution","Substitution", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},{type:'text', text: " "}]},
+                                                {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
+                                            ]
+                                    },
+                                }},
                                 {type:'paragraph',content: [{type:'text', text: " "}]},
                             ]
                         }
@@ -1648,12 +1862,6 @@
                     TKMeasure: "getMeasureValue",
                     TKBoolean: "getBooleanValue",
                 }
-
-                // Prose editor will try to have our templates / variables to fit on one page.
-                // If not enough space is available, Prose editor will jump to the next A4 page, trying to make it fit there.
-                // Ie: if we are "too long" => infinite loop seeking for next A4 page hoping to have enough space again and again.
-                // Todo: improve Prose editor and have it to split content over several pages when required
-                const maxVaribalesPerPage = 43;
 
                 const formVariables = {
                     type:'forms',
@@ -1672,6 +1880,7 @@
 
                         return {
                             name: _.get(formObject,"descr","") + (totalFormsForCurrentTemplateGuid === 1 ? "" : " (" + _.trim(parseInt(templateGuidAndIndex[1])) + "/" + totalFormsForCurrentTemplateGuid + ")" ),
+                            templateGuid: _.trim(_.get(templateGuidAndIndex,"[0]","")),
                             nodes: [
                                 {type:'paragraph', content: [
                                         {type:'text', marks: [{type: 'strong'}, {type: 'underlined'}], text: this.localize("form", "Form", this.language).toUpperCase()},
@@ -1686,7 +1895,7 @@
                                                         type:'template',
                                                         attrs: {
                                                             expr: `subContextsForms("${templateGuid}")`,
-                                                            template: {'default': _.slice(_.compact(_.flattenDeep(_.map( this._getFormEditorSortedItemsBasedOnTemplate(form.dataProvider).filter(i => i.type !== 'TKAction'), k => {
+                                                            template: {'default': _.compact(_.flattenDeep(_.map( this._getFormEditorSortedItemsBasedOnTemplate(form.dataProvider).filter(i => i.type !== 'TKAction'), k => {
 
                                                                     const isSubForm = !!_.get(k,"isSubForm", false)
                                                                     const subForms = !!isSubForm && form.dataProvider.getSubForms(_.get(k,"name"))
@@ -1699,7 +1908,12 @@
                                                                         false :
 
                                                                         // Field with no value
-                                                                        /* (!isSubForm && (!_.trim(fieldValue) || _.trim(fieldValue) === "-" || _.trim(fieldValue).toLowerCase() === "ok")) ? false : */
+                                                                        (!isSubForm && (
+                                                                            !_.trim(fieldValue) ||
+                                                                            _.trim(fieldValue) === "-" ||
+                                                                            _.trim(fieldValue).toLowerCase() === "ok" ||
+                                                                            (_.trim(_.get(k,"type")) === "TKMeasure" && !_.trim(form.dataProvider.getMeasureValue(k.name).value))
+                                                                        )) ? false :
 
                                                                         // Not sub form and has field value
                                                                         (!isSubForm) ? {type:'paragraph',content: [
@@ -1759,7 +1973,7 @@
                                                                                 })),
                                                                                 [{type:'paragraph',content: [{type:'text', text: " "}]}]
                                                                             )
-                                                                }))),0,maxVaribalesPerPage)}
+                                                                })))}
                                                         }
                                                     }]},
                                             ]},
@@ -1799,168 +2013,6 @@
 
             }
 
-            _getIncapacityCodes() {
-
-                return this.api.code().findCodes("be", "CD-INCAPACITY")
-                    .then(incapacityCodes => this.api.code().findCodes("be", "CD-INCAPACITYREASON")
-                    .then(incapacityReasons => {
-                        return {
-                            "CD-INCAPACITY":_.map(incapacityCodes, singleCode => _.merge(singleCode, {labelHr:_.trim(_.get(singleCode,"label." + this.language,"")) ? _.trim(_.get(singleCode,"label." + this.language,"")).toLowerCase() : _.trim(_.head(_.flatMap(_.get(singleCode,"label","")))).toLowerCase()})),
-                            "CD-INCAPACITYREASON":_.map(incapacityReasons, singleCode => _.merge(singleCode, {labelHr:_.trim(_.get(singleCode,"label." + this.language,"")) ? _.upperFirst(_.trim(_.get(singleCode,"label." + this.language,"")).toLowerCase()) : _.upperFirst(_.trim(_.head(_.flatMap(_.get(singleCode,"label","")))).toLowerCase())})),
-                        }
-                    }))
-
-            }
-
-            _getEMediattestData() {
-
-                const promResolve = Promise.resolve()
-
-                return promResolve
-                    .then(() => {
-                        const diagnosticSvc = _.get(this,"_data.eMediattestParentFormDp.servicesMap['Diagnostics'][0][0].svc",{})
-                        return {
-                            labelHr: _.get(diagnosticSvc,"content." + this.language + ".stringValue",""),
-                            icpc: _.get(_.find(_.get(diagnosticSvc,"codes",[]), {type:"ICPC"}), "code",""),
-                            icd: _.get(_.find(_.get(diagnosticSvc,"codes",[]), {type:"ICD"}), "code",""),
-                        }
-                    })
-                    .then(diagnosticData => {
-
-                        let incapacityReason = null
-                        let outOfHomeAllowed = null
-                        let occuredOn = null
-                        let incapacityBegin = null
-                        let incapacityEnd = null
-
-                        const extensionData = typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content." + this.language + ".booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content." + this.language + ".booleanValue", false) :
-                            typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.fr.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.fr.booleanValue", false) :
-                            typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.nl.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.nl.booleanValue", false) :
-                            typeof _.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.en.booleanValue", "") === "boolean" ? !!_.get(this, "_data.eMediattestSubFormDp.servicesMap['extension'][0][0].svc.content.en.booleanValue", false) :
-                            false
-
-                        const incapacityData = _.compact(_.map(_.get(this,"_data.eMediattestSubFormDp.servicesMap",[]), (v,k)=> {
-
-                            const valueObject = !!_.get(v, "[0][0].svc.content." + this.language, null) ? _.get(v, "[0][0].svc.content." + this.language, null) : !!_.get(v, "[0][0].svc.content.fr", "") ? _.get(v, "[0][0].svc.content.fr", "") : !!_.get(v, "[0][0].svc.content.nl", "") ? _.get(v, "[0][0].svc.content.nl", "") : !!_.get(v, "[0][0].svc.content.en", "") ? _.get(v, "[0][0].svc.content.en", "") : null
-                            const isIncapacity = !!_.trim(_.get(valueObject,"stringValue","")) && _.trim(_.get(valueObject,"stringValue","")).startsWith("CD-INCAPACITY|")
-                            const isIncapacityReason = !!_.trim(_.get(valueObject,"stringValue","")) && _.trim(_.get(valueObject,"stringValue","")).startsWith("CD-INCAPACITYREASON|")
-
-                            if(k==="pour cause de") incapacityReason = !!_.trim(_.get(valueObject, "stringValue", "")) ? _.trim(_.get(valueObject, "stringValue", "")) : "CD-INCAPACITYREASON|illness|1"
-                            if(k==="Sortie") outOfHomeAllowed = !!_.trim(_.get(valueObject, "stringValue", "")) ? _.trim(_.get(valueObject, "stringValue", "")) : "interdite"
-
-                            if(k==="du") incapacityBegin = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : moment().format("YYYY-MM-DD")
-                            if(k==="au") incapacityEnd = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : moment().add(1, 'day').format("YYYY-MM-DD")
-                            if(k==="Accident suvenu le") occuredOn = !!_.trim(_.get(valueObject, "fuzzyDateValue", "")) ? _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(0,4) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(4,6) + "-" + _.trim(_.get(valueObject, "fuzzyDateValue", "")).substring(6,8) : ""
-
-                            return !_.size(v) ? false : {
-                                name: k,
-                                valueObject: valueObject,
-                                valueHr: !!_.trim(_.get(valueObject,"stringValue","")) ?
-                                        !!isIncapacity ? _.get(_.find(_.get(this,"_data.codes.CD-INCAPACITY",[]),{id:_.trim(_.get(valueObject,"stringValue",""))}),"labelHr","") :
-                                        !!isIncapacityReason ? _.get(_.find(_.get(this,"_data.codes.CD-INCAPACITYREASON",[]),{id:_.trim(_.get(valueObject,"stringValue",""))}),"labelHr","") :
-                                        _.trim(_.get(valueObject,"stringValue","")) :
-                                    !!_.trim(_.get(valueObject,"fuzzyDateValue","")) ? this._YYYYMMDDToDDMMYYYY(_.trim(_.get(valueObject,"fuzzyDateValue",""))) :
-                                    !!_.size(_.get(valueObject,"measureValue","")) ? _.trim(_.get(valueObject,"measureValue.value","")) + ( !!_.trim(_.get(valueObject,"measureValue.unit","")) ? _.trim(_.get(valueObject,"measureValue.unit","")) : "%" ) :
-                                    typeof _.get(valueObject,"booleanValue","") === "boolean" ? !!_.get(valueObject,"booleanValue","") ? this.localize("yes", "Yes",this.language) : this.localize("no", "No",this.language) :
-                                    ""
-                            }
-                        }))
-
-                        return {
-                            diagnosticData:diagnosticData,
-                            incapacityData:incapacityData,
-                            khmerData: {
-                                incapacityOrIncapacityExtension:!!extensionData ? "incapacityextension" : "incapacity",
-                                certificateDate: !!parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))||0 ? moment(parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'),
-                                certificateTime: !!parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))||0 ? moment(parseInt(_.get(_.get(this,"_data.eMediattestSubFormDp.form")(),"created"))).format('HH:mm:ss') : moment().format('HH:mm:ss'),
-                                incapacityReason: ["illness", "hospitalisation", "sickness", "pregnancy", "workaccident", "traveltofromworkaccident", "occupationaldisease"].indexOf(_.trim(_.get(_.trim(incapacityReason).split("|"),"[1]", "illness"))) > -1 ? _.trim(_.get(_.trim(incapacityReason).split("|"),"[1]", "illness")) : "illness",
-                                outOfHomeAllowed: _.trim(outOfHomeAllowed) === "interdite" ? "false" : "true",
-                                // In xml, the additional <content><date> tag must hold a value but only when workaccident ; occupationaldisease ; traveltofromworkaccident
-                                // In pdf "accident survenu le" msut hold a value but only when workaccident ; traveltofromworkaccident and never for occupationaldisease
-                                // In pdf and when occupationaldisease -> no accident date must be present but a "maladie profesionnelle déclarée le" must be present
-                                occuredOn: ( _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("workaccident") > -1 || _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("occupationaldisease") > -1 || _.get(_.find(incapacityData, {name:"pour cause de"}), "valueObject.stringValue","").indexOf("traveltofromworkaccident") > -1 ) ? _.trim(occuredOn) : "",
-                                incapacityBegin: incapacityBegin,
-                                incapacityEnd: incapacityEnd,
-                            }
-                        }
-
-                    })
-
-            }
-
-            _saveMedexIttToPatFile() {
-
-                const messageObject = {
-                    transportGuid: "MEDEX:OUT:PDF",
-                    recipients: [_.trim(_.get(this, "_data.contactHcp.id", ""))],
-                    metas: {
-                        filename : _.trim(_.get(this, "_data.pdf.filename", "")),
-                        hcpId: _.trim(_.get(this, "_data.contactHcp.id", "")),
-                        contactId : _.trim(_.get(this, "_data.currentContact.id", "")),
-                        originalContactId : this._data.eMediattestParentFormDp.form().contactId,
-                        formId : _.trim(_.get(_.get(this, "_data.eMediattestParentFormDp.form")(),"id","")),
-                        subFormId : _.trim(_.get(_.get(this, "_data.eMediattestSubFormDp.form")(),"id","")),
-                    },
-                    toAddresses: [_.trim(_.get(this, "_data.contactHcp.id", ""))],
-                    subject: this.localize("medicalCertificate","Medical certificate",this.language) + " Medex",
-                }
-
-                return this.api.message().newInstanceWithPatient(_.get(this,"user",{}), _.get(this,"_data.currentPatient",{}))
-                    .then(messageInstance => this.api.message().createMessage(_.merge(messageInstance, messageObject)))
-                    .then(createdMessage => this.api.document().newInstance(_.get(this,"user",{}),createdMessage, {
-                        documentType: 'report',
-                        mainUti: this.api.document().uti("application/pdf"),
-                        name: _.get(messageObject,"metas.filename"),
-                        tags: [
-                            {type: "medex", code: "true"},
-                            {type: "formId", code: _.trim(_.get(messageObject, "metas.formId",""))},
-                            {type: "subFormId", code: _.trim(_.get(messageObject, "metas.subFormId",""))}
-                        ]
-                    }).then(documentInstance=>([createdMessage, documentInstance])))
-                    .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument=>([createdMessage, createdDocument])))
-                    .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this,"user",{}), createdDocument, _.get(this, "_data.pdf.data", "")).then(encryptedFileContent => [createdMessage,createdDocument,encryptedFileContent]))
-                    .then(([createdMessage,createdDocument,encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument,"id"), null, encryptedFileContent).then(() => ([createdMessage,createdDocument])))
-                    .then(([createdMessage,createdDocument])=> this._saveDocumentAsService({
-                        documentId: _.trim(_.get(createdDocument, "id", "")),
-                        stringValue: _.trim(_.get(messageObject,"subject","")),
-                        contactId: _.trim(_.get(messageObject, "metas.contactId", "")),
-                        originalContactId: _.trim(_.get(messageObject, "metas.originalContactId", "")),
-                        messageObject: messageObject,
-                        cdTransactionCode: "medical-certificate",
-                        isMedex: true,
-                        forceNoRefreshPatientFile: true, // Don't refresh now, refresh once we got the KHMER generated
-                    }).then(()=>([createdMessage,createdDocument])))
-                    .catch(e => { console.log("[ERROR] _saveMedexIttToPatFile", e); return Promise.resolve(); })
-
-            }
-
-            printMedexPdfItt(dataFromPatDetail) {
-
-                if(!!_.get(this,"_isBusy",false)) return Promise.resolve();
-
-                const patientId = !!_.trim(_.get(dataFromPatDetail,"patient.id","")) ? _.trim(_.get(dataFromPatDetail,"patient.id","")) : _.trim(_.get(this,"patient.id",""))
-
-                return this._resetComponentProperties()
-                    .then(() => _.map(this._data, (propValue,propKey) => typeof _.get(propValue,"value",null) !== "function" ? null : this.set("_data." + propKey, propValue.value())) )
-                    .then(() => this.set("_isBusy", true))
-                    .then(() => this.set("_data.pdf.filename", _.kebabCase(_.compact([ moment().format("YYYY-MM-DD"), "medex", this.localize("medicalCertificate","Medical certificate",this.language), +new Date()]).join(" ")) + ".pdf"))
-                    .then(() => _.assign(this._data, _.cloneDeep(dataFromPatDetail)))
-                    .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
-                    .then(() => this._getPrettifiedMh().then(hcp => _.assign(this._data, {currentMh:hcp})))
-                    .then(() => this._getPrettifiedContactHcp(_.trim(_.get(_.get(dataFromPatDetail,"eMediattestParentFormDp.form")(), "responsible",""))).then(hcp => _.assign(this._data, {contactHcp:hcp})))
-                    .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), patientId).then(patient => _.assign(this._data, {currentPatient:patient})))
-                    .then(() => this._getIncapacityCodes().then(codes => _.assign(this._data, {codes:codes})))
-                    .then(() => this._getEMediattestData().then(data => _.assign(this._data, {eMediattest:data})))
-                    .then(() => this._getPdfContent().then(data => _.merge(this._data.pdf, {content:data})))
-                    .then(() => this.api.pdfReport(_.get(this,"_data.pdf.content",""),_.merge({completionEvent:"pdfDoneRenderingEvent"/*, printBackground:true*/})))
-                    .then(printedPdf => _.merge(this._data.pdf, {data:printedPdf.pdf}))
-                    .then(() => this._saveMedexIttToPatFile())
-                    .then(([createdMessage,createdDocument]) => _.merge(this._data.pdf, {createdMessage:createdMessage,createdDocument:createdDocument}))
-                    .then(() => this._data)
-                    .catch(e => console.log("[ERROR] printMedexPdfItt", e, dataFromPatDetail,this._data))
-                    .finally(() => { console.log("[Outgoing document, printMedexPdfItt, _data]",this._data); this.set("_isBusy", false); return this._data; })
-            }
-
             open(inputData) {
 
                 if(!!_.get(this,"_isBusy",false)) return;
@@ -1986,8 +2038,8 @@
                     .finally(() => (this.set("_isBusy", false)||true) && console.log("[Outgoing document, _data]",this._data))
 
                     // Todo: When using prose template object, can't write in it ? Cusor jumps after one char typed / render issue ?
-                    // Todo: Handle incomplete dates with Julien's new method of icc-api
                     // Todo: With linking letters, create smart component to get recipient details using cobra
+                    // Todo: allow to close editor & open it again (with same template) -> without flushing content again (Muriel Mernier)
 
             }
 

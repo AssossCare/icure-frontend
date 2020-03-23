@@ -299,6 +299,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <div>[[item.sentDate]]</div>
                     </template>
                 </vaadin-grid-column>
+                <vaadin-grid-column>
+                    <template class="header">
+                        <vaadin-grid-sorter path="cancelDateToSort" direction="desc">
+                            [[localize('cancel','annulation',language)]]
+                        </vaadin-grid-sorter>
+                    </template>
+                    <template>
+                        <div id$="tooltip-[[item.cancelIndex]]">[[item.cancelDate]] [[item.cancelReason]]</div>
+                    </template>
+                </vaadin-grid-column>
                 <vaadin-grid-column flex-grow="1" width="200px">
                     <template class="header">
                         <vaadin-grid-sorter path="patientToSort">
@@ -439,14 +449,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </vaadin-grid-column>
                 <vaadin-grid-column>
                     <template class="header">
-                        [[localize('inv_sup','Supplément',language)]]
-                    </template>
-                    <template>
-                        <div>[[item.doctorSupplement]]</div>
-                    </template>
-                </vaadin-grid-column>
-                <vaadin-grid-column>
-                    <template class="header">
                         [[localize('tot_pat','Ticket modérateur',language)]]
                     </template>
                     <template>
@@ -455,10 +457,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </vaadin-grid-column>
                 <vaadin-grid-column>
                     <template class="header">
+                        [[localize('inv_sup','Supplément',language)]]
+                    </template>
+                    <template>
+                        <div>[[item.doctorSupplement]]</div>
+                    </template>
+                </vaadin-grid-column>
+                <vaadin-grid-column>
+                    <template class="header">
                         [[localize('total_patient','Total patient',language)]]
                     </template>
                     <template>
                         <div>[[item.totalPatientAmount]]</div>
+                    </template>
+                </vaadin-grid-column>
+                <vaadin-grid-column>
+                    <template class="header">
+                        [[localize('inv_paid','Somme payé par le patient',language)]]
+                    </template>
+                    <template>
+                        <div>[[item.paid]]</div>
+                    </template>
+                </vaadin-grid-column>
+                <vaadin-grid-column>
+                    <template class="header">
+                        [[localize('inv_round','Arrondi',language)]]
+                    </template>
+                    <template>
+                        <div>[[item.round]]</div>
                     </template>
                 </vaadin-grid-column>
                 <vaadin-grid-column>
@@ -481,6 +507,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <div class="spinnerbox">
                     <ht-spinner active></ht-spinner>
                 </div>
+            </template>
+
+            <template is="dom-repeat" items="[[filteredInvoiceItems]]">
+                <template is="dom-if" if="[[item.cancelDate]]">
+                    <paper-tooltip position="bottom" for$="tooltip-[[item.cancelIndex]]">[[localize(item.cancelReasonDet,item.cancelReasonDet,language)]]</paper-tooltip>
+                </template>
             </template>
 
         </div>
@@ -921,8 +953,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 //console.log("invoice:", invoice)
                                 let invdate = ""
                                 let sentdate = ""
+                                let canceldate = ""
                                 let dateToSort = 0
                                 let sentDateToSort = 0
+                                let cancelDateToSort = 0
                                 if(invoice.invoiceDate !== null && invoice.invoiceDate !== undefined && invoice.invoiceDate !== "" ) {
                                     invdate = this.api.moment(invoice.invoiceDate).format("DD-MM-YYYY")
                                     dateToSort = parseInt(this.api.moment(invoice.invoiceDate).format("YYYYMMDD"))
@@ -931,15 +965,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     sentdate = this.api.moment(invoice.sentDate).format("DD-MM-YYYY")
                                     sentDateToSort = parseInt(this.api.moment(invoice.sentDate).format("YYYYMMDD"))
                                 }
+                                if(invoice.cancelDate !== null && invoice.cancelDate !== undefined && invoice.cancelDate !== "" ) {
+                                    canceldate = this.api.moment(invoice.cancelDate).format("DD-MM-YYYY")
+                                    cancelDateToSort = parseInt(this.api.moment(invoice.cancelDate).format("YYYYMMDD"))
+                                }
                                 const item = {
                                     //author: after,
                                     date: invdate,
                                     sentDate: sentdate,
+                                    cancelDate: canceldate,
+                                    cancelReason: invoice.cancelReason || "",
+                                    cancelReasonDet: "eattest_reason_cancel_"+invoice.cancelReason,
                                     dateToSort: dateToSort,
                                     sentDateToSort: sentDateToSort,
+                                    cancelDateToSort: cancelDateToSort,
+                                    cancelIndex: this.api.crypto().randomUuid(),
                                     //patient: after
                                     invoiceReference: invoice.invoiceReference,
-                                    paymentReference: invoice.paymentReference,
+                                    paymentReference:(invoice.sentMediumType == "eattest" || invoice.invoiceType == "eattest") ? invoice.thirdPartyReference : invoice.paymentReference,
                                     //oa: after
                                     //insurance: after
                                     invoiceType: this.getInvoiceTypeLabel(invoice.invoiceType),
@@ -951,6 +994,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     creditCard: 0,
                                     wired: 0,
                                     totalAmount: 0,
+                                    paid : this.api._powRoundFloatByPrecision(invoice.paid,2),
 
                                     invoice: invoice
                                 }
@@ -967,21 +1011,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         return acc + code[propName]
                                     }, 0) || 0
                                 }
-                                item.totalAmount = computeCodeSum('totalAmount')
-                                item.reimbursementAmount = computeCodeSum('reimbursement')
-                                item.conventionAmount = computeCodeSum('conventionAmount')
-                                item.doctorSupplement = computeCodeSum('doctorSupplement')
-                                item.ticketAmount = computeCodeSum('patientIntervention')
+                                item.totalAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('totalAmount'))
+                                item.reimbursementAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('reimbursement'))
+                                item.conventionAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('conventionAmount'))
+                                item.doctorSupplement =  this.api._powRoundFloatByPrecision(computeCodeSum('doctorSupplement'))
+                                item.ticketAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('patientIntervention'))
                                 if(invoice.sentMediumType == "eattest" || invoice.invoiceType == "eattest") {
-                                    item.totalPatientAmount = item.totalAmount
+                                    item.totalPatientAmount =  this.api._powRoundFloatByPrecision(item.totalAmount,2)
                                 } else {
-                                    item.totalPatientAmount = item.ticketAmount + item.doctorSupplement
+                                    item.totalPatientAmount =  this.api._powRoundFloatByPrecision(item.ticketAmount + item.doctorSupplement,2)
                                 }
 
-                                item.cash = computeSum('cash')
-                                item.debitCard = computeSum('debitcard')
-                                item.creditCard = computeSum('creditcard')
-                                item.wired = computeSum('wired')
+                                item.cash =  this.api._powRoundFloatByPrecision(computeSum('cash'))
+                                item.debitCard = this.api._powRoundFloatByPrecision(computeSum('debitcard'))
+                                item.creditCard = this.api._powRoundFloatByPrecision(computeSum('creditcard'))
+                                item.wired =  this.api._powRoundFloatByPrecision(computeSum('wired'))
+                                item.round=0.00
+                                if(item.cash){
+                                    if(_.round((invoice.paid*100))%5===0 && _.round(invoice.paid-item.totalAmount,2)<=0.02 && _.round(invoice.paid-item.totalAmount,2)>=-0.02)
+                                    item.round=this.api._powRoundFloatByPrecision(invoice.paid-item.totalAmount,2)
+                                }
 
                                 item.insurance = ins ? ins.code + ' ' + (ins.name["fr"] || ins.name["nl"]) : null
                                 item.oa = item.insurance ? item.insurance[0] + '00' : null
@@ -1003,7 +1052,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 })
                             }))
                         }).then(invlist => {
-                            this.set('invoiceItems', invlist)
+                            this.set('invoiceItems', _.flattenDeep(invlist.map(inv =>{
+                                const newList=[]
+                                newList.push(inv)
+                                if(inv.cancelDate){
+                                    const cancel=_.cloneDeep(inv)
+                                    cancel.totalAmount= this.api._powRoundFloatByPrecision(0-cancel.totalAmount,2)
+                                    cancel.reimbursementAmount= this.api._powRoundFloatByPrecision(0-cancel.reimbursementAmount,2)
+                                    cancel.conventionAmount= this.api._powRoundFloatByPrecision(0-cancel.conventionAmount,2)
+                                    cancel.doctorSupplement= this.api._powRoundFloatByPrecision(0-cancel.doctorSupplement,2)
+                                    cancel.ticketAmount= this.api._powRoundFloatByPrecision(0-cancel.ticketAmount,2)
+                                    cancel.cash = this.api._powRoundFloatByPrecision(0-cancel.cash,2)
+                                    cancel.debitCard= this.api._powRoundFloatByPrecision(0-cancel.debitCard,2)
+                                    cancel.creditCard= this.api._powRoundFloatByPrecision(0-cancel.creditCard,2)
+                                    cancel.wired= this.api._powRoundFloatByPrecision(0-cancel.wired,2)
+                                    cancel.round= this.api._powRoundFloatByPrecision(0-cancel.round,2)
+                                    cancel.totalPatientAmount= this.api._powRoundFloatByPrecision(0-cancel.totalPatientAmount,2)
+                                    cancel.paid= this.api._powRoundFloatByPrecision(0-cancel.paid,2)
+                                    cancel.cancelIndex= this.api.crypto().randomUuid()
+                                    newList.push(cancel)
+                                }
+                                return newList;
+                            })))
                             this.set('_isLoadingList', false)
                         })
                 })
@@ -1113,6 +1183,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                     xlinv.date = xlinv.date.replace("-", "/").replace("-", "/")
                     xlinv.invoiceId = xlinv.invoice.id
+                    xlinv.reason = this.localize(xlinv.cancelReasonDet,xlinv.cancelReasonDet)
                     delete xlinv.patientId
                     delete xlinv.invoice
                     delete xlinv.authorHcpId
@@ -1122,6 +1193,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     delete xlinv.authorToSort
                     delete xlinv.dateToSort
                     delete xlinv.sentDateToSort
+                    delete xlinv.cancelDateToSort
+                    delete xlinv.cancelIndex
+                    delete xlinv.cancelReasonDet
                     return xlinv
                 }))
             }

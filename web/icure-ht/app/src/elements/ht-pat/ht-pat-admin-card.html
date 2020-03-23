@@ -568,7 +568,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-tab class="adm-tab"><iron-icon class="smaller" icon="vaadin:family"></iron-icon>[[localize('adm_ctc_per','Contact persons',language)]]</paper-tab>
                     <paper-tab class="adm-tab"><iron-icon class="smaller" icon="vaadin:doctor"></iron-icon>[[localize('adm_h_t','Care team',language)]]</paper-tab>
                     <paper-tab class="adm-tab"><iron-icon class="smaller" icon="vaadin:edit"></iron-icon>[[localize('adm_post_it','Post-it',language)]]</paper-tab>
-<!--                    <paper-tab class="adm-tab"><iron-icon class="smaller" icon="timeline"></iron-icon>[[localize('mh_timeline','Timeline',language)]]</paper-tab>-->
+                    <paper-tab class="adm-tab"><iron-icon class="smaller" icon="timeline"></iron-icon>[[localize('mh_timeline','Timeline',language)]]</paper-tab>
                 </paper-tabs>
                 <div class="buttons">
                     <paper-icon-button class="button--icon-btn" id="print-vignette" icon="av:recent-actors" on-tap="printMutualVignette"></paper-icon-button>
@@ -576,6 +576,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     <paper-icon-button class="button--icon-btn" id="print-vignette-grid" icon="av:library-books" on-tap="printMutualVignetteGrid"></paper-icon-button>
                     <paper-tooltip for="print-vignette-grid" position="left">[[localize('print_mutual_vignette_grid','Print mutual vignette grid',language)]]</paper-tooltip>
+
                     <template is="dom-if" if="[[onElectron]]">
                         <paper-icon-button class="button--icon-btn" id="fill-with-card" icon="vaadin:health-card" on-tap="fillWithCard"></paper-icon-button>
                         <paper-tooltip for="fill-with-card" position="left">[[localize('fill_with_eid','Fill with eid',language)]]</paper-tooltip>
@@ -684,6 +685,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         import moment from 'moment/src/moment';
         import levenshtein from 'js-levenshtein';
+        import _ from 'lodash/lodash';
 
 class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
@@ -1829,7 +1831,7 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     fillWithCard(){
         this.set('cardData', null);
-        fetch(`${this.api.electronHost}/read`)
+        fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/read`)
             .then((response) => {
                 return response.json();
             })
@@ -1882,6 +1884,7 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 return tot;
             })
 
+            this.set("patient.lastTimeEidRead",parseInt(moment().format('YYYYMMDD')))
             this.set("patient.lastName", this.cardData.surname)
             this.set("patient.firstName", this.cardData.firstName)
             this.set("patient.placeOfBirth", this.cardData.locationOfBirth)

@@ -79,7 +79,7 @@
                 --paper-tabs: {
                     color: var(--app-text-color);
                 };
-               
+
             }
 
             @media screen and (max-width: 952px) {
@@ -177,7 +177,7 @@
                 <paper-button class="button button--other" on-tap="_printPrescriptionNoRecipe" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
                 <paper-button class="button button--save" dialog-dismiss autofocus on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('try_again','Réessayer',language)]]</paper-button>
             </div>
-            
+
         </paper-dialog>
 
         <paper-dialog id="tryAgainRevoke" class="presc-dialog">
@@ -193,7 +193,7 @@
                 <paper-button class="button" on-tap="" dialog-dismiss>[[localize('can', "Annuler", language)]]</paper-button>
                 <paper-button class="button button--save" dialog-dismiss autofocus on-tap="_revokeTryAgainCallback">[[localize('try_again','Réessayer',language)]]</paper-button>
             </div>
-        
+
         </paper-dialog>
 
         <paper-dialog id="confirmRevoke" class="presc-dialog">
@@ -493,7 +493,7 @@
                 this.$.dialog.open()
                 this._refreshDrugsToBePrescribed()
                 this.api.isElectronAvailable()
-                    .then(hasElectron => hasElectron ? fetch(`${this.api.electronHost}/getPrinterSetting`, {
+                    .then(hasElectron => hasElectron ? fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json; charset=utf-8"
@@ -793,6 +793,10 @@
                 this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'my-profile', tab:1}}))
             }
 
+            _regCodeIsCustom(r) {
+                return (r.dayPeriod && ["midday", "afterwakingup"].includes(r.dayPeriod.code));
+            }
+
 
             _convertForRecipe(medications) {
                 // @todo: use code api
@@ -802,9 +806,9 @@
                     if (!medicationValue) return;
                     if (medicationValue.regimen && medicationValue.regimen.length) {
                         medicationValue.knownUsage = false;
-                        const customReg = medicationValue.regimen.filter(r => r.dayPeriod && (r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                        const customReg = medicationValue.regimen.filter(r => this._regCodeIsCustom(r));
                         if (customReg && customReg.length) {
-                            medicationValue.regimen = medicationValue.regimen.filter(r => !r.dayPeriod || !(r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                            medicationValue.regimen = medicationValue.regimen.filter(r => !this._regCodeIsCustom(r));
                             customReg.forEach(r => {
                                 if (r.dayPeriod.code === "midday") {
                                     medicationValue.regimen.push({timeOfDay: "120000", administratedQuantity: r.administratedQuantity});

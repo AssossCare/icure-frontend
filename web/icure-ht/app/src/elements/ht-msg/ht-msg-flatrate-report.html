@@ -1019,7 +1019,7 @@
             </style>
         </custom-style>
 
-        <div class="invoice-panel">
+        <div id="mypanel" class="invoice-panel">
 <!--            <template is="dom-if" if="[[_isLoading]]">-->
 <!--                <div id="loadingContainer">-->
 <!--                    <div id="loadingContentContainer">-->
@@ -1048,10 +1048,13 @@
                         <paper-tab class="adm-tab" on-tap="contractPage"><iron-icon class="smaller tabIcon" icon="vaadin:family"></iron-icon>[[localize('fr_par_err_mhc','MH Contract',language)]]</paper-tab>
                         <paper-tab class="adm-tab" on-tap="insurabilityPage"><iron-icon class="smaller tabIcon" icon="vaadin:family"></iron-icon>[[localize('fr_par_err_ins','Insurability',language)]]</paper-tab>
                         <paper-tab class="adm-tab" on-tap="geninsPage"><iron-icon class="smaller tabIcon" icon="vaadin:umbrella"></iron-icon>[[localize('fr_par_err_ins_mcn','Insurability by MyCareNet',language)]]</paper-tab>
+                        <paper-tab class="adm-tab" on-tap="datesPage"><iron-icon class="smaller tabIcon" icon="vaadin:umbrella"></iron-icon>[[localize('fr_pat_dates','Dates',language)]]</paper-tab>
                     </paper-tabs>
                     <div class="buttons">
                         <paper-icon-button class="button--icon-btn" id="refreshFRCheck" on-tap="_runFlatRateCheck" icon="vaadin:refresh"></paper-icon-button>
-                        <paper-tooltip for="print-vignette" position="left">[[localize('flatrate-gen-report','Generate report',language)]]</paper-tooltip>
+                        <paper-tooltip for="refreshFRCheck" position="left">[[localize('flatrate-gen-report','Generate report',language)]]</paper-tooltip>
+                        <paper-icon-button class="button--icon-btn" id="exportXLSX" on-tap="_exportXLSX" icon="icons:cloud-download"></paper-icon-button>
+                        <paper-tooltip for="exportXLSX" position="left">[[localize('export-excel','Export to xlsx',language)]]</paper-tooltip>
                     </div>
                 </div>
                 <div class="searchbox">
@@ -1062,9 +1065,9 @@
                         <div class="page-container">
                             <div class="invoicesGridContainer">
                                 <div class="invoiceContainer">
-                                    <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                    <div class="invoiceSubContainerMiddle">
                                         <div class="scrollBox">
-                                            <vaadin-grid id="messagesGrid2" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                            <vaadin-grid id="main" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
                                                 <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                     <template class="header">
                                                         <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1107,9 +1110,9 @@
                         <div class="page-container">
                             <div class="invoicesGridContainer">
                                 <div class="invoiceContainer">
-                                    <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                    <div class="invoiceSubContainerMiddle">
                                         <div class="scrollBox">
-                                            <vaadin-grid id="messagesGrid2" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                            <vaadin-grid id="gender" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
                                                 <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                     <template class="header">
                                                         <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1152,9 +1155,9 @@
                         <div class="page-container">
                             <div class="invoicesGridContainer">
                                 <div class="invoiceContainer">
-                                    <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                    <div class="invoiceSubContainerMiddle">
                                         <div class="scrollBox">
-                                            <vaadin-grid id="messagesGrid2" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                            <vaadin-grid id="deceased" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
                                                 <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                     <template class="header">
                                                         <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1197,9 +1200,9 @@
                         <div class="page-container">
                             <div class="invoicesGridContainer">
                                 <div class="invoiceContainer">
-                                    <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                    <div class="invoiceSubContainerMiddle">
                                         <div class="scrollBox">
-                                            <vaadin-grid id="messagesGrid2" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                            <vaadin-grid id="contract" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
                                                 <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                     <template class="header">
                                                         <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1242,9 +1245,9 @@
                         <div class="page-container">
                             <div class="invoicesGridContainer">
                                 <div class="invoiceContainer">
-                                    <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                    <div class="invoiceSubContainerMiddle">
                                         <div class="scrollBox">
-                                            <vaadin-grid id="messagesGrid2" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                            <vaadin-grid id="insurability" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
                                                 <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                     <template class="header">
                                                         <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1283,13 +1286,13 @@
                             </div>
                         </div>
                     </page>
-                    <page>
+                    <page><!--genins-mcn-->
 <!--                        <paper-icon-button class="button&#45;&#45;icon-btn" id="refreshFRCheck" on-tap="_checkAssurabilityInformation" icon="vaadin:refresh"></paper-icon-button>-->
                         <div class="invoicesGridContainer">
                             <div class="invoiceContainer">
-                                <div id="errorGridContainer" class="invoiceSubContainerMiddle">
+                                <div class="invoiceSubContainerMiddle">
                                     <div class="scrollBox">
-                                        <vaadin-grid id="messagesGrid2" items="[[geninsResList]]" active-item="{{activeGridItem}}">
+                                        <vaadin-grid id="mcn" items="[[geninsResList]]" active-item="{{activeGridItem}}">
                                             <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
                                                 <template class="header">
                                                     <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
@@ -1327,6 +1330,80 @@
                             </div>
                         </div>
                     </page>
+                    <page><!--dates-->
+                        <div class="page-container">
+                            <div class="invoicesGridContainer">
+                                <div class="invoiceContainer">
+                                    <div class="invoiceSubContainerMiddle">
+                                        <div class="scrollBox">
+                                            <vaadin-grid id="info" items="[[flatRateCheckListView]]" active-item="{{activeGridItem}}">
+                                                <vaadin-grid-column flex-grow="0" width="15%" class="oa-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.pat.lastName]] [[item.pat.firstName]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="ref-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="pat.ssin">[[localize('niss','Niss',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.pat.ssin]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="flatrateInfo.ABON">[[localize('ABON','ABON',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.ABON]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="flatrateInfo.MUT">[[localize('MUT','MUT',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.MUT]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="flatrateInfo.CT12">[[localize('tc1','CT1',language)]]/[[localize('tc2','CT2',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.CT12]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="flatrateInfo.DINS">[[localize('sub_start_date','DINS',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.DINS]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="item.flatrateInfo.DFAC">[[localize('cov_start_date','DFAC',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.DFAC]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="item.flatrateInfo.DDES">[[localize('sub_end_date','DDES',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.DDES]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        <vaadin-grid-sorter path="item.flatrateInfo.DFIN">[[localize('cov_end_date','DFIN',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.DFIN]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
+                                                        [[localize('open_pat','Open',language)]]
+                                                    </template>
+                                                    <template><paper-icon-button class="button--icon-btn" id="openPatient" data-id$="[[item.pat.id]]" on-tap="openPatient" icon="vaadin:edit">Open</paper-icon-button></template>
+                                                </vaadin-grid-column>
+                                            </vaadin-grid>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </page>
                 </iron-pages>
 
             </template>
@@ -1351,7 +1428,9 @@
         import promiseLimit from 'promise-limit';
         import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
 
-        class HtMsgFlatrateReport extends Polymer.TkLocalizerMixin(Polymer.Element) {
+        const XLSX = require('../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
+
+        class HtMsgFlatrateReport extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
 
             static get is() {
                 return 'ht-msg-flatrate-report';
@@ -1402,7 +1481,6 @@
                     },
                     flatrateMenuSection: {
                         type: String,
-                        observer: '_flatRateListingMenuSectionChanged'
                     },
                     activeGridItem:{
                         type: Object,
@@ -1559,38 +1637,6 @@
                 if(!this._isLoading) this._resetLoadingMessage();
             }
 
-            _flatRateListingMenuSectionChanged() {
-
-                this.set('_isLoading', false );
-                this.set('_isLoadingSmall', false );
-
-                this.set('activeGridItem', null );
-                this.set('messageDetailsData', null );
-                this.set('messagesGridData', [] );
-                this.set('messagesGridDataReset', [] );
-
-                if( this.flatrateMenuSection === "archivej3" ) { this._getListingArchives(); return; }
-
-                if( ['j20_process', 'j20_reject', 'j20_accept', 'j20_partiallyAccepted', 'j20_archive', 'j20_toBeCorrected', 'j20_reset'].indexOf(_.trim(this.flatrateMenuSection)) > -1  ) {
-
-                    // Close when opened + unset objects & reset detail grid
-                    this._toggleBatchDetails();
-
-                    if(!!_.size(this.messagesCachedData.dataByStatus)) {
-                        this.set("messagesGridData", this._getBatchDataByMenuSection(this.flatrateMenuSection, 'flatFiles'))
-                        this.set("messagesGridDataReset", _.get(this, "messagesCachedData.dataByStatus.reset.flatFiles", []))
-                        const messagesGrid = this.root.querySelector('#messagesGrid'); messagesGrid && messagesGrid.clearCache();
-                        const messagesGrid2 = this.root.querySelector('#messagesGrid2'); messagesGrid2 && messagesGrid2.clearCache();
-                        const messagesGrid3 = this.root.querySelector('#messagesGrid3'); messagesGrid3 && messagesGrid3.clearCache();
-                        const invGridDetail = this.root.querySelector('#invoiceAndBatchesGridDetail'); invGridDetail && invGridDetail.clearCache();
-                    } else {
-                        this._fetchJ20Messages();
-                    }
-
-                }
-
-            }
-
             formatDate(d,f) {
                 const input = d.toString()
                 const yyyy = input.slice(0,4), mm = input.slice(4,6), dd = input.slice(6,8)
@@ -1646,22 +1692,6 @@
 
             _getBatchStatusByMenuSection(menuSection) {
                 return _.get( _.filter(_.toPairs(this.invoiceMessageStatuses), i=>_.trim(_.get(i, "[1].menuSection")) === _.trim(menuSection) ), "[0][0]", [] )
-            }
-
-            _getInsuranceTitularyInfo(inputPatientsList=false) {
-                return new Promise(resolve =>{
-                    const insuranceTitularyIds = _.compact(_.uniq(_.filter( (inputPatientsList?inputPatientsList:this.flatRateAllPatients), (i)=>{ return _.trim(_.get(i, "titularyId", "")) }).map(i=>i.titularyId) ));
-                    return !_.size(insuranceTitularyIds) ? resolve((inputPatientsList?inputPatientsList:this.flatRateAllPatients)) : this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ ids: insuranceTitularyIds })).then(results => {
-                        return resolve(
-                            _.map((inputPatientsList?inputPatientsList:this.flatRateAllPatients), (i=>{
-                                if(!_.trim(_.get(i,"titularyId", "" ))) return i
-                                let titularyRecord = _.head(_.filter(results,(j=>{ return _.trim(j.id) === _.get(i,"titularyId", "" ) })))
-                                i.titularyLabel = _.upperCase(_.get(titularyRecord, "firstName", "" )) + ' ' + _.upperCase(_.get(titularyRecord, "lastName", "" ))
-                                return i
-                            }))
-                        )
-                    })
-                })
             }
 
             _setLoadingMessage( messageData ) {
@@ -1862,121 +1892,26 @@
                 return this.api.formatSsinNumber(inputData)
             }
 
-            _toggleBatchDetails(e) {
-
-                // Make sure we have a "legit" click
-                if( _.get(e, "path", false) ) {
-                    var paths = _.map( e.path, (pathNode,index)=> { return { index:index, nodeName:_.get( pathNode, "nodeName", "" ), target: _.get( pathNode, "id", "" ).toLowerCase()==="messagesgrid2" } })
-                    if( !parseInt(_.size(_.compact(_.map( paths.slice( 0, _.get( _.filter(paths,"target"), "[0].index", 0 ) ), (path, index) => { return ["vaadin-grid-cell-content", "slot", "td", "tr" ].indexOf( _.trim(path.nodeName).toLowerCase() ) > -1 } )))) ) return;
-                }
-
-                if ( _.size(this.activeGridItem) ) {
-
-                    this.shadowRoot.getElementById("messagesGridContainer").classList.add("half")
-                    this.shadowRoot.getElementById("invoiceDetailContainer").classList.add("open")
-
-                    let dataStatus = _.get(e, "currentTarget.dataset.status", "pending")
-                    let batchExportPdfs = _.filter(this.messagesCachedData.dataByStatus[dataStatus].pdfs, i=>{ return parseInt(_.get(i, "metas.batchExportTstamp", 0)) === parseInt(_.get( this.activeGridItem, "metas.batchExportTstamp", 0 )) && _.get(i, "metas.parentOaId", "") === _.trim(_.get( this.activeGridItem, "metas.parentOaId", "" )) })
-                    let batchExportInvoiceIds = _.uniq(_.flatten( _.map( batchExportPdfs, i=>i.invoiceIds) ) )
-
-                    this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: batchExportInvoiceIds}))
-                        .then(invoices => Promise.all(invoices.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]))))
-                        .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])))
-                        .then(invoicesAndPatient=>_.orderBy(
-                            _.flatMap(
-                                _.map(batchExportPdfs, message => {
-                                    return _.map(_.get(message, "invoiceIds", []), invoiceId => {
-
-                                        let invoiceData = _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} )
-                                        invoiceData = _.merge(invoiceData, {invoiceDate:_.trim(_.get(invoiceData, "invoiceDate","")) || moment(_.get(invoiceData, "created","0")).startOf('month').format("YYYYMMDD") })
-
-                                        const st = message.status
-                                        let invoiceStatus =
-                                            !!(st & (1 << 21)) ? { hrLabel: this.localize('inv_arch','Archived',this.language), finalStatus:"archived" }:
-                                                !!(st & (1 << 17)) ? { hrLabel: this.localize('inv_err','Error',this.language), finalStatus:"error" }:
-                                                    !!(st & (1 << 16)) ? { hrLabel: this.localize('inv_par_acc','Partially accepted',this.language), finalStatus:"partiallyAccepted" }:
-                                                        !!(st & (1 << 15)) ? { hrLabel: this.localize('inv_full_acc','Fully accepted',this.language), finalStatus:"fullyAccepted" }:
-                                                            !!(st & (1 << 12)) ? { hrLabel: this.localize('inv_rej','Rejected',this.language), finalStatus:"rejected" }:
-                                                                !!(st & (1 << 11)) ? { hrLabel: this.localize('inv_tre','Treated',this.language), finalStatus:"treated" }:
-                                                                    !!(st & (1 << 10)) ? { hrLabel: this.localize('inv_acc_tre','Accepted for treatment',this.language), finalStatus:"acceptedForTreatment" }:
-                                                                        !!(st & (1 << 9))  ? { hrLabel: this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language), finalStatus:"successfullySentToOA" }:
-                                                                            !!(st & (1 << 8))  ? { hrLabel: this.localize('inv_pen','Pending',this.language), finalStatus:"pending" }: ""
-
-                                        const acceptedAmount =
-                                            _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
-                                                _.get(invoiceStatus, "finalStatus") === "rejected" ? "0,00" :
-                                                    _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>parseFloat(i.totalAmount) ):
-                                                        _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>( !i.canceled ? parseFloat(i.totalAmount) : 0) ):
-                                                            _.get(invoiceStatus, "finalStatus") === "archived" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>( !i.canceled ? parseFloat(i.totalAmount) : 0) ):
-                                                                "0,00"
-
-                                        const refusedAmount =
-                                            _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
-                                                _.get(invoiceStatus, "finalStatus") === "rejected" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>parseFloat(i.totalAmount) ) :
-                                                    _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? "0,00" :
-                                                        _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>( !!i.canceled ? parseFloat(i.totalAmount) : 0) ):
-                                                            _.get(invoiceStatus, "finalStatus") === "archived" ? _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>( !!i.canceled ? parseFloat(i.totalAmount) : 0) ):
-                                                                "0,00"
-
-                                        const messageOriginalStatus = invoiceStatus
-
-                                        invoiceStatus = _.get(invoiceStatus, "finalStatus")!=="partiallyAccepted" ? invoiceStatus :
-                                            (_.size(_.compact(_.map( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ), i=>!!i.canceled )))) ?
-                                                { hrLabel: this.localize('inv_rej','Rejected',this.language), finalStatus:"rejected" } : { hrLabel: this.localize('inv_full_acc','Fully accepted',this.language), finalStatus:"fullyAccepted" }
-
-                                        return {
-                                            id: _.get(message, "id", ""),
-                                            oaId: _.get(message, "metas.oaId", ""),
-                                            oaCode: _.get(_.filter(this.messagesCachedData.insurancesData, ins => ins.id === _.get(message, "metas.oaId", "")), "[0].code"),
-                                            oaLabel: _.get(_.filter(this.messagesCachedData.insurancesData, ins => ins.id === _.get(message, "metas.oaId", "")), "[0].finalName"),
-                                            parentOaId: _.get(message, "metas.parentOaId", ""),
-                                            parentOaCode: _.get(_.filter(this.messagesCachedData.parentInsurancesData, ins => ins.id === _.get(message, "metas.parentOaId", "")), "[0].code"),
-                                            parentOaLabel: _.get(_.filter(this.messagesCachedData.parentInsurancesData, ins => ins.id === _.get(message, "metas.parentOaId", "")), "[0].finalName"),
-                                            invoiceData: invoiceData,
-                                            patientData: _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][1]", {} ),
-                                            invoicedAmount: this.api.hrFormatNumber( this.api._powRoundFloatByPrecision( _.sumBy( _.get( _.get(_.filter(invoicesAndPatient, i=>_.get(i, "[0].id", "")===invoiceId), "[0][0]", {} ), "invoicingCodes", [] ).filter(it => !it.pending), i=>parseFloat(i.totalAmount) ) ) ),
-                                            acceptedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(acceptedAmount)),
-                                            refusedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(refusedAmount)),
-                                            invoiceStatusHr: _.get(invoiceStatus, "hrLabel"),
-                                            invoiceFinalStatus: _.get(invoiceStatus, "finalStatus"),
-                                            messageOriginalStatus: _.get(messageOriginalStatus, "finalStatus"),
-                                            messageData: message
-                                        }
-                                    })
-                                })
-                            ),
-                            ['oaCode','invoiceData.invoiceReference','patientData.firstName','patientData.lastName'],
-                            ['asc','asc','asc','asc']
-                        ))
-                        .then(messageDetailsData=>{
-                            this.set("messageDetailsData", messageDetailsData)
-                            const invGridDetail = this.root.querySelector('#invoiceAndBatchesGridDetail'); invGridDetail && invGridDetail.clearCache();
-                        })
-
-                } else {
-
-                    this.set("messageDetailsData", null)
-                    const invGridDetail = this.root.querySelector('#invoiceAndBatchesGridDetail'); invGridDetail && invGridDetail.clearCache();
-
-                    this.shadowRoot.getElementById("messagesGridContainer") && this.shadowRoot.getElementById("messagesGridContainer").classList.remove("half")
-                    this.shadowRoot.getElementById("invoiceDetailContainer") && this.shadowRoot.getElementById("invoiceDetailContainer").classList.remove("open")
-
-                }
-
-            }
-
             _runFlatRateCheck(){
                 this.set('_isLoading', true);
                 return this._flatrateCheckOnAllPatients(Number(moment().format('YYYYMM'))).then(resList =>{
                     console.log("resList", resList);
-                    const errList = resList.filter(res => res.flatrateStatus.status !== 'ok-flatrate-patient' && res.flatrateStatus.status !== 'ok-no-flatrate-patient');
-                    this.set("flatRateCheckList", errList);
-                    this.set("flatRateResList", resList);
-                    this.set('_isLoading', false);
-                    if(!this.selectedList) this.set('selectedList', 'main');
-                    this._viewSelection();
-                    this.set("geninsChecked", false);
-                    return errList;
+                    const insIds = resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).map(res => res.mutCheck.insuranceId);
+                    return this._getInsurancesDataByIds(_.uniq(insIds)).then(insList => {
+                       console.log("insList",insList);
+                        resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).forEach(res => {
+                            res.flatrateInfo.MUT = insList.filter(ins => ins.id === res.mutCheck.insuranceId) && insList.filter(ins => ins.id === res.mutCheck.insuranceId).length ?
+                                insList.filter(ins => ins.id === res.mutCheck.insuranceId)[0].code : "---";
+                        });
+                        const errList = resList.filter(res => res.flatrateStatus.status !== 'ok-flatrate-patient' && res.flatrateStatus.status !== 'ok-no-flatrate-patient');
+                        this.set("flatRateCheckList", errList);
+                        this.set("flatRateResList", resList);
+                        this.set('_isLoading', false);
+                        if(!this.selectedList) this.set('selectedList', 'main');
+                        this._viewSelection();
+                        this.set("geninsChecked", false);
+                        return errList;
+                    });
                 });
             }
 
@@ -2031,6 +1966,10 @@
                 this.set('selectedList', 'mcn');
             }
 
+            datesPage(){
+                this.set('selectedList', 'info');
+            }
+
             _viewSelection(){
                 //TODO: implement data selection based on List
                 var resultlist = this.flatRateCheckList;
@@ -2055,6 +1994,9 @@
                         break;
                     case 'mcn':
                         this._checkAssurabilityInformation();
+                        break;
+                    case 'info':
+                        resultlist = this.flatRateResList;
                         break;
                 }
                 resultlist = this.addSearchField(resultlist);
@@ -2279,6 +2221,54 @@
 
             _checkHasMMEhSession(){
                 return !!_.get(this, 'api.tokenIdMH', null)
+            }
+
+            _exportXLSX(){
+                const grd = this.shadowRoot.querySelector('#' + this.selectedList);
+                const data = grd.items.map(itm => itm.flatrateInfo);
+                console.log("grid data", data);
+                this.generateXlsFile(data);
+            }
+
+            generateXlsFile(data) {
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: "Patients list", Author: "TOPAZ"}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'Patients list')
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = "patient-list_" + moment().format("YYYYMMDD-HHmmss") + ".xls"
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+                return
             }
 
         }

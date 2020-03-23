@@ -559,8 +559,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             }
 
+            .mikronoErrorDialog{
+                position: relative;
+                background-color: #fff;
+                height: calc(100% - 45px);
+                width: auto;
+                margin: 0;
+                top: 0;
+                display: flex;
+            }
+
             .errorMikrono{
                 color: var(--app-status-color-nok);
+            }
+
+            .mikronoErrortitle{
+                color: black;
             }
 
             #appointmentsMigrationDialog{
@@ -996,17 +1010,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-item>
 
         <paper-dialog id="mikronoErrorDialog">
-            <h3>Erreur lors de la création de votre compte agenda</h3>
-            <div class="errorMikrono">
-                <template is="dom-if" if="[[!mikronoError.addresses]]"><h5>- Adresse manquante</h5></template>
-                <template is="dom-if" if="[[!mikronoError.workAddresses]]"><h5>- Adresse de type travail manquante</h5></template>
-                <template is="dom-if" if="[[!mikronoError.workMobile]]"><h5>- N° de gsm manquant</h5></template>
-                <template is="dom-if" if="[[!mikronoError.workEmail]]"><h5>- Email manquant</h5></template>
-                <template is="dom-if" if="[[!mikronoError.token]]"><h5>- Token manquant</h5></template>
-                <template is="dom-if" if="[[!mikronoError.error]]"><h5>- Erreur lors de la création du compte</h5></template>
+            <div class="mikronoErrorDialog">
+                <div class="errorMikrono">
+                    <h3 class="mikronoErrortitle">[[localize('mik-err-title', 'Error when creating your diary', language)]]</h3>
+                    <template is="dom-if" if="[[!mikronoError.addresses]]"><h5>- [[localize('mik-err-adr', 'Addresse is invalid', language)]]</h5></template>
+                    <template is="dom-if" if="[[!mikronoError.workAddresses]]"><h5>- [[localize('mik-err-adr-work', 'Work addresse is invalid', language)]]</h5></template>
+                    <template is="dom-if" if="[[!mikronoError.workMobile]]"><h5>- [[localize('mik-err-gsm', 'Gsm number is invalid', language)]]</h5></template>
+                    <template is="dom-if" if="[[!mikronoError.workEmail]]"><h5>- [[localize('mik-err-mail', 'Email is invalid', language)]]</h5></template>
+                    <template is="dom-if" if="[[!mikronoError.token]]"><h5>- [[localize('mik-err-token', 'Token is invalid', language)]]</h5></template>
+                    <template is="dom-if" if="[[!mikronoError.error]]"><h5>- [[localize('mik-err-crea', 'Error when creating your account', language)]]</h5></template>
+                </div>
             </div>
             <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--other" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -1346,7 +1362,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         value : false
                     },
                     electronUrl: {
-                        type: String
+                        type: String,
+                        value: "http://127.0.0.1:16042"
                     },
                     mikronoProxy: {
                         type: String
@@ -1404,12 +1421,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 },2000)
             }
 
+            _getDefaultElectronUrl() {
+
+                return _.trim(_.get(this,"electronUrl")) ? _.trim(_.get(this,"electronUrl")) : "http://127.0.0.1:16042"
+
+            }
+
             setUrls() {
                 const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
                 this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
-                this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhctz.icure.cloud' : 'https://fhctz.icure.cloud'))
-                this.set('electronUrl', params.electronUrl || 'http://localhost:16042');
-                this.set('mikronoProxy', params.mikronoProxy || 'http://localhost:16041');
+                this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhcpr.icure.cloud' : 'https://fhcpr.icure.cloud'))
+                this.set('electronUrl', _.trim(_.get(params,"electronUrl")) ? _.trim(_.get(params,"electronUrl")) : this._getDefaultElectronUrl())
+                this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
                 this.set('defaultIcureUrl', this.icureUrl)
                 this.set('defaultFhcUrl', this.fhcUrl)
@@ -1470,7 +1493,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.api.isElectronAvailable().then(electron => {
                     this.set("isElectron",electron)
                     if (electron) {
-                        this.set("socket",io(this.electronUrl))
+                        this.set("socket",io(this._getDefaultElectronUrl()))
 
                         this.socket.on("connect", () => {
                             console.log("connection avec le socket de electron")
@@ -1493,7 +1516,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         })
 
-                        fetch(`${this.electronUrl}/checkDrugs`,{
+                        fetch(this._getDefaultElectronUrl() + "/checkDrugs",{
                             method: "GET",
                             headers: {
                                 "Content-Type": "application/json; charset=utf-8"
@@ -1504,7 +1527,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
 
                     if(this.isElectron){
-                        fetch(`${this.electronUrl}/getVersion`)
+                        fetch(this._getDefaultElectronUrl() + "/getVersion")
                             .then((response) => {
                                 return response.json()
                             })
@@ -1515,7 +1538,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 }
                             })
 
-                        fetch(`${this.electronUrl}/getConnexionData`)
+                        fetch(this._getDefaultElectronUrl() + "/getConnexionData")
                             .then((response) => {
                                 return response.json()
                             })
@@ -1531,7 +1554,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         this.set('api.tokenId', res.tokenData.tokenId)
                                         this.set('api.token', res.tokenData.token)
                                     }
-                                    if(res.credential){
+                                    if(res.credential && !(_.get(this,"credentials.userId",false) || _.get(this,"credentials.password",false))){
                                         this.set("credentials",res.credential)
                                     }
                                 }
@@ -1702,7 +1725,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
                             this.loginAndRedirect(page)
                         } else {
-                            fetch(`${this.electronUrl}/logout`)
+                            fetch(this._getDefaultElectronUrl() + "/logout")
                             this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
                         }
                     } else {
@@ -1841,7 +1864,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         this.api.isElectronAvailable().then(electron =>{
                             if(electron){
-                                fetch(`${this.electronUrl}/tokenFHC`, {
+                                fetch(this._getDefaultElectronUrl() + "/tokenFHC", {
                                     method: "POST",
                                     headers: {"Content-Type": "application/json"},
                                     body: !isMH ? JSON.stringify({isMH:false,tokenId:this.api.tokenId, token:this.api.token}) : JSON.stringify({isMH:true,keystoreIdMH:this.api.keystoreIdMH, tokenIdMH:this.api.tokenIdMH, tokenMH:this.api.tokenMH, nihiiMH:this.api.nihiiMH})
@@ -1941,7 +1964,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             this.set("isElectron",electron)
                             if (electron === true) {
                                 //request electron tc.
-                                fetch(`${this.electronUrl}/tc`, {
+                                fetch(this._getDefaultElectronUrl() + "/tc", {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json; charset=utf-8"
@@ -2373,9 +2396,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
                             this.api.isElectronAvailable().then(electron =>{
                                 if(electron === false){
-                                    window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
+                                    window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut?id="+this.user.id+"&locale="+this.language, '_blank')
                                 }else{
-                                    fetch(`${this.electronUrl}/mc`, {
+                                    fetch(this._getDefaultElectronUrl() + "/mc", {
                                         method: "POST",
                                         headers: {"Content-Type": "application/json"},
                                         body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
@@ -2395,7 +2418,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             const workMobile = telecoms && telecoms.find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone") || null
                             const workEmail = telecoms && telecoms.find(tel => tel.telecomType === "email") || null
 
-                            if(workMobile && workMobile.telecomNumber !== "" && workEmail && workEmail.telecomNumber !== ""){
+                            if(_.get(workMobile, 'telecomNumber', null) && _.get(workEmail, 'telecomNumber', null) && this.api._isValidMail(_.get(workEmail, 'telecomNumber', null))){
                                 this.api.onlinebemikrono().register(this.user.id, {}).then(user => {
                                     if(user === true){
                                         this.api.user().getUser(this.user.id).then(u => {
@@ -2407,9 +2430,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                             if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
                                                 this.api.isElectronAvailable().then(electron =>{
                                                     if(electron === false){
-                                                        window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
+                                                        window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut?id="+this.user.id+"&locale="+this.language, '_blank')
                                                     }else{
-                                                        fetch(`${this.electronUrl}/mc`, {
+                                                        fetch(this._getDefaultElectronUrl() + "/mc", {
                                                             method: "POST",
                                                             headers: {"Content-Type": "application/json"},
                                                             body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
@@ -2429,18 +2452,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                     workAddresses : false,
                                                     workMobile: false,
                                                     workEmail : false,
-                                                    token: applicationTokens.MIKRONO ? true : false,
+                                                    token: !!_.get(applicationTokens, 'MIKRONO', null),
                                                     error: true
                                                 })
                                             }
                                         })
                                     }else{
                                         this.set("mikronoError", {
-                                            addresses: addresses ? true : false,
-                                            workAddresses : workAddresses ? true : false,
-                                            workMobile: workMobile ? true : false,
-                                            workEmail : workEmail ? true : false,
-                                            token: applicationTokens.MIKRONO ? true : false,
+                                            addresses: !!addresses,
+                                            workAddresses : !!_.trim(_.get(workAddresses, 'street', null)) && _.trim(_.get(workAddresses, 'houseNumber', null)) && _.trim(_.get(workAddresses, 'postalCode', null)) && _.trim(_.get(workAddresses, 'city', null)),
+                                            workMobile: !!_.get(workMobile, 'telecomNumber', null),
+                                            workEmail : this.api._isValidMail(_.get(workEmail, 'telecomNumber', null)),
+                                            token: !!_.get(applicationTokens, 'MIKRONO', null),
                                             error: true
                                         })
                                     }
@@ -2448,11 +2471,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 })
                             }else{
                                 this.set("mikronoError", {
-                                    addresses: addresses ? true : false,
-                                    workAddresses : workAddresses ? true : false,
-                                    workMobile: workMobile ? true : false,
-                                    workEmail : workEmail ? true : false,
-                                    token: applicationTokens.MIKRONO ? true : false,
+                                    addresses: !!addresses,
+                                    workAddresses : !!_.trim(_.get(workAddresses, 'street', null)) && _.trim(_.get(workAddresses, 'houseNumber', null)) && _.trim(_.get(workAddresses, 'postalCode', null)) && _.trim(_.get(workAddresses, 'city', null)),
+                                    workMobile: !!_.get(workMobile, 'telecomNumber', null),
+                                    workEmail : this.api._isValidMail(_.get(workEmail, 'telecomNumber', null)),
+                                    token: !!_.get(applicationTokens, 'MIKRONO', null),
                                     error: false
                                 })
 

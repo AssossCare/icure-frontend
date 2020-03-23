@@ -354,6 +354,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
 
     <script>
+        import _ from 'lodash/lodash';
 
         class HtAdminAccountPrinters extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
@@ -422,7 +423,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.api.printers()
                 .then(prt=>{
                     this.set('printers',prt)
-                    fetch(`${this.api.electronHost}/getPrinterSetting`, {
+                    fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json; charset=utf-8"
@@ -452,7 +453,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         return scanSetting;
                     })
                     .then(scanSetting => {
-                        fetch(`${this.api.electronHost}/scanning`,{
+                        fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/scanning`,{
                             method: "POST",
                             headers: {"Content-Type": "application/json"},
                             body: JSON.stringify({request : "list"})
@@ -480,7 +481,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _savePrinters(){
                 const printerSettingComplete = this.listTypeDocument.filter(type => (type.formatSelected || type.formatSelected===0) && (type.printerSelected || type.printerSelected===0))
                 .map(x => {return{type:x.type,format : x.formatSelected,printer : x.printerSelected, color: x.color, duplex: x.duplex}})
-                fetch(`${this.api.electronHost}/setPrinterSetting`, {
+                fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/setPrinterSetting`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json; charset=utf-8"

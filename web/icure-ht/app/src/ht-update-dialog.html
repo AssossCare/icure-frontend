@@ -139,7 +139,7 @@
                             </div>
                             <div class="newsContent">
                                 <template is="dom-repeat" items="[[news.modules]]" as="module">
-                                    <template is="juicy-html" html="[[_localizeContent(module.description)]]"></template>
+                                    <div inner-h-t-m-l="[[_localizeContent(module.description)]]"></div>
                                 </template>
                             </div>
                         </div>
@@ -179,7 +179,7 @@
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import * as models from 'icc-api/dist/icc-api/model/models'
-        import juicy from 'juicy-html'
+        /*import juicy from 'juicy-html'*/
 
         class HtUpdateDialog extends Polymer.TkLocalizerMixin(Polymer.Element)  {
         static get is() {

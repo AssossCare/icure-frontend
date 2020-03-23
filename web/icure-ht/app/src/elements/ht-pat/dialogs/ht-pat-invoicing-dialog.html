@@ -106,7 +106,7 @@
                 z-index: 3;
                 overflow-y: auto;
                 margin-top: 0px;
-                padding: 24px;
+                padding: 12px;
                 box-sizing: border-box;
             }
 
@@ -329,7 +329,7 @@
             }
 
             .invoice-item {
-                background: var(--app-light-color);
+                background: var(--app-background-color);
                 color: var(--app-text-color);
                 outline: 0;
                 padding: 0;
@@ -345,8 +345,19 @@
 
             .invoice-item.iron-selected {
                 background: var(--app-primary-color);
-                color: var(--app-light-color);
-                @apply --text-shadow;
+                color: var(--app-text-color-light);
+            }
+
+            .invoice-item.iron-selected .invoice-text-row.invoice-text-date {
+                color: var(--app-text-color-light);
+            }
+
+            .invoice-item.iron-selected .invoice-text-row .invoiceDateInfo {
+                border-color: var(--app-primary-color-light);
+            }
+
+            .invoice-item.iron-selected .invoice-text-row  .invoiceDateInfo .item {
+                border-color: var(--app-primary-color-light);
             }
 
             .invoice-item h4 {
@@ -364,21 +375,24 @@
                 /* Rules below not implemented in browsers yet */
                 -o-user-select: none;
                 user-select: none;
+                padding: 0 8px;
             }
 
             .invoice-item .invoice-text-row {
-                width: calc(100% - 32px);
+                width: 100%;
                 display: flex;
                 flex-flow: row wrap;
                 justify-content: flex-start;
                 align-items: center;
                 font-size: 14px;
-                @apply --padding-right-left-16;
+                padding: 0;
                 overflow-x: auto;
+                box-sizing: border-box;
+                flex-grow: 1;
             }
             .invoice-item .invoice-text-row.invoice-text-date {
-                min-height: 24px;
-                height: auto !important;
+                padding: 0 8px;
+                font-size: var(--font-size-small);
             }
 
             .invoice-item:nth-of-type(1) .invoice-text-row p {
@@ -468,7 +482,7 @@
 
             }
 
-            paper-material.iron-selected > .invoice-text > .invoice-text-date {
+            paper-item.iron-selected > .invoice-text > .invoice-text-date {
                 color: var(--app-text-color-light) !important;
             }
 
@@ -480,6 +494,7 @@
                 width: 100%;
                 height: 100%;
                 padding: 0;
+                background: var(--app-background-color);
             }
 
             .invoice-text:focus::before, .invoice-text:focus::after {
@@ -491,6 +506,7 @@
                 text-overflow: ellipsis;
                 overflow-x: hidden;
                 white-space: nowrap;
+                padding: 0 8px;
             }
 
             .invoice-text-date {
@@ -555,7 +571,7 @@
 
             .layout.vertical {
                 display: flex;
-                flex-direction: row;
+                flex-direction: column;
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: nowrap;
@@ -686,21 +702,51 @@
                 font-size: 12px;
                 display: flex;
                 flex-flow: row nowrap;
-                justify-content: flex-start;
+                justify-content: space-between;
                 align-items: center;
+                width: 100%;
+                border-top: 1px solid var(--app-background-color-darker);
             }
 
-            .invoiceDateInfo span{
-                margin-left: 4px;
+            .invoiceDateInfo .item {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 2px 4px;
+                margin: 0;
+                flex-grow: 1;
+                min-height: 0;
+                min-width: 0;
+                font-size: var(--font-size-small);
+                border-radius: 0;
+                border-right: 1px solid var(--app-background-color-darker);
+            }
+
+            .invoiceDateInfo .item:last-child {
+                border-right:none;
+            }
+
+            .invoiceDateInfo .item span {
+                margin-left: 2px;
+                display: block;
+                line-height: var(--font-size-small);
+                align-self: center;
             }
 
             .invoiceDateInfoIcon{
-                height: 14px;
-                width: 14px;
+                min-height: 14px;
+                min-width: 14px;
+                max-height: 14px;
+                max-width: 14px;
+                padding: 2px;
+                box-sizing: border-box;
+                border-radius: 50%;
+                flex-shrink: 0;
             }
 
             #relativeCodeDialog{
-                height: 100px;
+                height: 176px;
                 width: 220px;
             }
 
@@ -809,9 +855,7 @@
             }
 
             paper-item:hover .he-edit-btn-container {
-                position: absolute;
-                right: 5px;
-                bottom: 20px;
+                display:inline-flex;
             }
 
             paper-item.iron-selected .he-edit-btn-container {
@@ -831,6 +875,10 @@
                 overflow: hidden;
                 transition: width .42s cubic-bezier(0.075, 0.82, 0.165, 1);
                 cursor: pointer;
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
             }
 
             .he-edit-btn-container.open{
@@ -934,6 +982,11 @@
 
             #paymentCheckDialog {
                 height: 300px;
+                width: 500px;
+            }
+
+            #noDerogation {
+                height: 200px;
                 width: 500px;
             }
 
@@ -1070,6 +1123,32 @@
                 padding: 5px;
             }
 
+            #errorMessagePayment{
+                color: var(--app-error-color);
+                padding : 5px;
+            }
+
+            .statusInfoIcon{
+                height: 8px;
+                width: 8px;
+            }
+
+            .canceled{
+                color: var(--app-status-color-nok);
+            }
+
+            .pending{
+                color: var(--app-status-color-pending);
+            }
+
+            .ongoing{
+                color: var(--paper-blue-400);
+            }
+
+            .accepted{
+                color: var(--app-status-color-ok);
+            }
+
         </style>
 
         <ht-inami-validator api="[[api]]" validator-name="ht-inami-validator"></ht-inami-validator>
@@ -1079,57 +1158,87 @@
 
         <paper-dialog id="invoiceDialog" opened="{{opened}}">
             <div class="invoice-panel">
-                <paper-listbox id="_invoice_listbox" focused selectable="paper-material" selected="{{selectedInvoiceIndex}}">
+                <paper-listbox id="_invoice_listbox" focused selectable="paper-item" selected="{{selectedInvoiceIndex}}">
                     <template is="dom-repeat" items="[[invoices]]">
-                        <paper-material class="layout vertical invoice-item invoice--big" id="[[item.id]]">
-                            <paper-item class="invoice-text">
+                            <paper-item class="layout vertical invoice-item invoice--big invoice-text" id="[[item.id]]">
                                 <div class="invoice-text-row invoice-text-date">
                                     <label>N° [[item.invoiceReference]]</label>
                                     <label>[[_formatInvoiceDate(item.invoiceDate)]]</label>
                                 </div>
                                 <div class="invoice-text-row grey">
-                                    <h4>[[getInvoiceType(item.invoiceType)]] [[getSentMediumType(item.sentMediumType)]]</h4>
+                                    <h4>[[getInvoiceType(item.invoiceType)]] [[getSentMediumType(item.sentMediumType)]] [[item.creators]]</h4>
                                     <p>
                                         <template is="dom-repeat" items="[[item.invoicingCodes]]">
-                                            [[item.code]],
+                                            [[item.code]]
                                         </template>
                                     </p>
                                     <div class="invoiceDateInfo">
                                         <template is="dom-if" if="[[!_isInvoiceEattest(item,item.*)]]">
                                             <template is="dom-if" if="[[_ifStatusDateExist(item.printedDate,item.*)]]">
-                                                <iron-icon icon="vaadin:print" class="invoiceDateInfoIcon"></iron-icon>
-                                                <span>[[_formatInvoiceDate(item.printedDate)]]</span>
+                                                <paper-button class="item" data-item$="[[item.id]]">
+                                                    <iron-icon icon="icons:print"  class="invoiceDateInfoIcon" style="background-color:var(--app-status-color-ok);"></iron-icon>
+                                                    <span>[[_formatInvoiceDate(item.printedDate)]]</span>
+                                                </paper-button>
                                             </template>
                                         </template>
                                         <template is="dom-if" if="[[_isInvoiceEattest(item,item.*)]]">
                                             <template is="dom-if" if="[[_ifStatusDateExist(item.printedDate,item.*)]]">
-                                                <paper-icon-button icon="vaadin:print" class="he-edit-btn" style="color:green" on-tap="_cancelPrintedDate" data-item$="[[item.id]]"></paper-icon-button>
-                                                <span>[[_formatInvoiceDate(item.printedDate)]]</span>
+                                                <paper-button class="item" data-item$="[[item.id]]" on-tap="_cancelPrintedDate" >
+                                                    <iron-icon icon="icons:print"  class="invoiceDateInfoIcon" style="background-color:var(--app-status-color-ok);"></iron-icon>
+                                                    <span>[[_formatInvoiceDate(item.printedDate)]]</span>
+                                                </paper-button>
                                             </template>
                                             <template is="dom-if" if="[[_ifClosedButNotPrinted(item,item.*)]]">
-                                                <paper-icon-button icon="vaadin:print" class="he-edit-btn" style="color:red" on-tap="_generatePrintedDate" data-item$="[[item.id]]"></paper-icon-button>
+                                                <paper-button class="item" on-tap="_generatePrintedDate" data-item$="[[item.id]]">
+                                                    <iron-icon icon="icons:print" class="invoiceDateInfoIcon" style="background-color:var(--app-status-color-nok);"></iron-icon>
+                                                    <span>N/A</span>
+                                                </paper-button>
                                             </template>
                                         </template>
                                         <template is="dom-if" if="[[_ifStatusDateExist(item.sentDate)]]">
-                                            <iron-icon icon="vaadin:paperplane" class="invoiceDateInfoIcon"></iron-icon> <span>[[_formatInvoiceDate(item.sentDate)]]</span>
+                                            <paper-button class="item">
+                                                <iron-icon icon="icons:send" class="invoiceDateInfoIcon"></iron-icon>
+                                                <span>[[_formatInvoiceDate(item.sentDate)]]</span>
+                                            </paper-button>
                                         </template>
-                                        <template is="dom-if" if="[[_ifEattestSaved(item,item.printedDate)]]">
-                                            <div class="he-edit-btn-container">
-                                                <paper-icon-button id="he-edit-btn-open_[[item.id]]" class="he-edit-btn" icon="vaadin:chevron-left" on-tap="_toggleEditHE"></paper-icon-button>
-                                                <paper-icon-button id="he-edit-btn-xml_[[item.id]]-khmer" class="he-edit-btn" icon="vaadin:file-code" on-tap="downloadKmehr" data-item$="[[item.id]]"></paper-icon-button>
-                                                <paper-icon-button id="he-edit-btn-xml_[[item.id]]-xades" class="he-edit-btn" icon="vaadin:flag-o" on-tap="downloadXades" data-item$="[[item.id]]"></paper-icon-button>
-                                                <paper-icon-button id="he-edit-btn-duplicate_[[item.id]]" class="he-edit-btn" icon="vaadin:copy" on-tap="duplicate" data-item$="[[item.id]]"></paper-icon-button>
-                                            </div>
-                                            <paper-tooltip position="bottom" for="he-edit-btn-open_[[item.id]]">[[localize('ext','Extend',language)]]</paper-tooltip>
-                                            <paper-tooltip position="bottom" for="he-edit-btn-xml_[[item.id]]-khmer">[[localize('gen_kmehr','Download Kmehr',language)]]</paper-tooltip>
-                                            <paper-tooltip position="bottom" for="he-edit-btn-xml_[[item.id]]-xades">[[localize('gen_xades','Download Xades',language)]]</paper-tooltip>
-                                            <paper-tooltip position="bottom" for="he-edit-btn-duplicate_[[item.id]]">[[localize('gen_duplicate','Generate duplicata',language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[_isInvoiceEfact(item,item.*)]]">
+                                            <paper-button class="item">
+                                                <iron-icon icon="vaadin:circle" class$="statusInfoIcon [[_getColorOfStatus(item, item.*)]]"></iron-icon>
+                                                <span>[[_getStatusTxt(item, item.*)]]</span>
+                                            </paper-button>
+                                        </template>
+                                        <template is="dom-if" if="[[_ifStatusDateExist(item.cancelDate)]]">
+                                            <paper-button class="item">
+                                                <iron-icon icon="icons:cancel" class="invoiceDateInfoIcon"></iron-icon>
+                                                <span>[[_formatInvoiceDate(item.cancelDate)]]</span>
+                                            </paper-button>
                                         </template>
                                     </div>
                                 </div>
-                                <div class="invoice-text-row label-container">
-
+                                <div class="invoiceDateInfo">
+                                    <paper-button class="item">
+                                        <iron-icon icon="vaadin:coin-piles" class="invoiceDateInfoIcon"></iron-icon>
+                                        <span>[[_getPaymentType(item.paymentType)]]: [[_formatPatientPaid(item.paid)]]€</span>
+                                    </paper-button>
+                                    <template is="dom-if" if="[[_toBeCorrected(item)]]">
+                                        <paper-button class="item">
+                                            <iron-icon icon="vaadin:pencil" class="invoiceDateInfoIcon"></iron-icon>
+                                            <span>[[_getCorrectiveInvoiceNumber(item.correctiveInvoiceId)]] (<iron-icon icon="icons:send" class="invoiceDateInfoIcon"></iron-icon> [[_getCorrectiveInvoiceDate(item.correctiveInvoiceId)]])</span>
+                                        </paper-button>
+                                    </template>
                                 </div>
+                                <template is="dom-if" if="[[_ifEattestSaved(item,item.printedDate)]]">
+                                    <div class="he-edit-btn-container">
+                                        <paper-icon-button id="he-edit-btn-open_[[item.id]]" class="he-edit-btn" icon="vaadin:chevron-left" on-tap="_toggleEditHE"></paper-icon-button>
+                                        <paper-icon-button id="he-edit-btn-xml_[[item.id]]-khmer" class="he-edit-btn" icon="vaadin:file-code" on-tap="downloadKmehr" data-item$="[[item.id]]"></paper-icon-button>
+                                        <paper-icon-button id="he-edit-btn-xml_[[item.id]]-xades" class="he-edit-btn" icon="vaadin:flag-o" on-tap="downloadXades" data-item$="[[item.id]]"></paper-icon-button>
+                                        <paper-icon-button id="he-edit-btn-duplicate_[[item.id]]" class="he-edit-btn" icon="vaadin:copy" on-tap="duplicate" data-item$="[[item.id]]"></paper-icon-button>
+                                    </div>
+                                    <paper-tooltip position="bottom" for="he-edit-btn-open_[[item.id]]">[[localize('ext','Extend',language)]]</paper-tooltip>
+                                    <paper-tooltip position="bottom" for="he-edit-btn-xml_[[item.id]]-khmer">[[localize('gen_kmehr','Download Kmehr',language)]]</paper-tooltip>
+                                    <paper-tooltip position="bottom" for="he-edit-btn-xml_[[item.id]]-xades">[[localize('gen_xades','Download Xades',language)]]</paper-tooltip>
+                                    <paper-tooltip position="bottom" for="he-edit-btn-duplicate_[[item.id]]">[[localize('gen_duplicate','Generate duplicata',language)]]</paper-tooltip>
+                                </template>
                             </paper-item>
                         </paper-material>
                     </template>
@@ -1140,6 +1249,9 @@
                     <div class="title">
                         <div class="title-txt">
                             [[localize('header','Header',language)]]
+                            <template is="dom-if" if="[[isEattestClosed]]">
+                                - [[localize('num_accuse_reception','Numéro d\'accusé de reception',language)]] [[selectedInvoice.thirdPartyReference]]
+                            </template>
                             <div class="eidReadingBtnContainer">
                                 <iron-icon icon="vaadin:user-card" on-tap="_openEidDialog" style="height: 18px;"></iron-icon>
                             </div>
@@ -1482,20 +1594,22 @@
                 <div class="buttons">
                     <ht-spinner class="validAndTarif" active="[[isLoadingValidation]]"></ht-spinner>
                     <ht-spinner class="validAndTarif" active="[[isLoadingJustif]]"></ht-spinner>
-                    <paper-button class="button" on-tap="_closeDialog">[[localize('clo','close',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_closeDialog">[[localize('clo','close',language)]]</paper-button>
 
                     <template is="dom-if" if="[[isEattestClosed]]">
                         <paper-button disabled="[[isLoadingEattest]]" class="button button--save" on-tap="_cancelDialogOpen">[[localize('can_eattest','Cancel eattest',language)]]</paper-button>
                     </template>
 
                     <template is="dom-if" if="[[!isInvoiceClosed]]">
-                        <template is="dom-if" if="[[hasInsurability]]"><paper-button class="button button--other" on-tap="_verifyTarification" disabled="[[_isETarButtonDisabled(selectedInvoice,isLoadingValidation,isTarificationMcnError,npi,selectedInvoice.sentMediumType)]]">[[localize('eTarif','Validation eTarif',language)]]</paper-button></template>
+                        <template is="dom-if" if="[[!_isSpecialist()]]">
+                            <template is="dom-if" if="[[hasInsurability]]"><paper-button class="button button--other" on-tap="_verifyTarification" disabled="[[_isETarButtonDisabled(selectedInvoice,isLoadingValidation,isTarificationMcnError,npi,selectedInvoice.sentMediumType)]]">[[localize('eTarif','Validation eTarif',language)]]</paper-button></template>
+                        </template>
                         <template is="dom-if" if="[[!hasInsurability]]"><paper-button class="button button--other" on-tap="" disabled="true">[[localize('patient_has_no_insurance','Ce patient n\'est pas assuré',language)]]</paper-button></template>
                         <paper-button on-tap="_switchBetweenMethodForJustifAndCreation" class="button button--save" disabled="[[_isJustifButtonDisabled(selectedInvoice,isNmclVerified,isLoadingJustif,npi,selectedInvoice.sentMediumType)]]">[[localize('val_invoice','Justificatory + create invoice',language)]]</paper-button>
                     </template>
 
                     <template is="dom-if" if="[[isInvoiceClosed]]">
-                        <paper-button on-tap="_switchBetweenMethodForJustif" class="button" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
+                        <paper-button on-tap="_switchBetweenMethodForJustif" class="button button--save" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
                     </template>
                 </div>
         </paper-dialog>
@@ -2367,6 +2481,9 @@
                     return
                 }
 
+                if (_.get(this,"selectedInvoice.invoicingCodes",[]).find(code => code.code.includes("101990") || code.code.includes("101135")) && _.get(this,'selectedInvoice.sentMediumType','')==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                }
 
                 this.api.tarification().getTarifications(new models.ListOfIdsDto({ids: selected.invoicingCodes.map(tar => tar.tarificationId)})).then(nmcls =>
                     nmcls.map(nmcl => {
@@ -2523,6 +2640,9 @@
 
             analyzeMediumType(e) {
                 if(!this.selectedInvoice || !this.selectedMediumCodeType) return;
+                if(_.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  code.code.includes("101990") || code.code.includes("101135")) && e.detail.value==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                }
                 this.set('selectedMediumCodeType', e.detail.value)
                 this.set('selectedInvoice.sentMediumType',e.detail.value)
                 const mediumType = e.detail.value
@@ -2671,6 +2791,12 @@
                                 }
                             }
                         })
+                    }
+                    if ((nmcl.code=="101990" || nmcl.code=="101135") && _.get(this,"selectedInvoice.sentMediumType","").includes("eattest")){
+                        this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                        this.set('nmcl-value','')
+                        this.shadowRoot.querySelector("#nmcl-search").focus()
+                        return;
                     }
 
                     //const lastPatientAssurance = this.patient.insurabilities && this.patient.insurabilities.length && this.patient.insurabilities.find(ass => !ass.endDate && ass.insuranceId != "") || null
@@ -3217,7 +3343,7 @@
 
                     totTotal = Number(totTotal) + Number(code.totalAmount);
                     totOA = Number(totOA) + Number(code.reimbursement);
-                    totPers = Number(totPers) + Number(code.patientIntervention);
+                    totPers = Number(totPers) + Number(code.patientIntervention) + Number(code.doctorSupplement);
                     totSupp = Number(totSupp) + Number(code.doctorSupplement);
 
                     totTotal = this.formatAmount(totTotal)
@@ -3238,12 +3364,12 @@
                 })
                 template.pageOne.tot.totTotal = totTotal
                 template.pageOne.tot.totOa = totOA
-                template.pageOne.tot.totPers = totPers
+                template.pageOne.tot.totPers = this.formatAmount(totPers)
                 template.pageOne.tot.totSupp = totSupp
 
                 template.pageTwo.tot.totTotal = totTotal
                 template.pageTwo.tot.totOa = totOA
-                template.pageTwo.tot.totPers = totPers
+                template.pageTwo.tot.totPers = this.formatAmount(totPers)
                 template.pageTwo.tot.totSupp = totSupp
 
                 const html =
@@ -3685,11 +3811,12 @@
 
             }
 
-
-
-
-
             _transferNmcl(){
+                if ((_.get(this,"activeNmclItem.code","").includes("101990") || _.get(this,"activeNmclItem.code","").includes("101135")) && _.get(this,"bufferTypeCode","")==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                    return;
+                }
+
                 if(this.activeNmclItem && this.activeNmclItem.id && this.bufferTypeCode && this.bufferTypeCode!=this.selectedMediumCodeType){
                     this.api.crypto().extractDelegationsSFKs(this.patient, this.user.healthcarePartyId).then(secretForeignKeys => {
                         const patientKeys = secretForeignKeys.extractedKeys.join(",")
@@ -4615,7 +4742,8 @@
             }
 
             _isJustifButtonDisabled(){
-                return this.isLoadingJustif || !!((this._isSelectedInvoiceEattest() && (!this._invoiceDateIsToday() || !this.npi)) || (!this._isSelectedInvoiceEattest() && !((!this.isNmclVerified && (this.isTarificationError || this.isTarificationMcnError)) || this.isNmclVerified)));
+                if(this._isSelectedInvoiceEattest() && _.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  code.code.includes("101990") || code.code.includes("101135")))return true;
+                return this.isLoadingJustif || !!((this._isSelectedInvoiceEattest() && (!this._invoiceDateIsToday() || !this.npi)) || (!this._isSelectedInvoiceEattest() && !((!this.isNmclVerified && (this.isTarificationError || this.isTarificationMcnError)) || this.isNmclVerified || this._isSpecialist())));
             }
 
             _switchBetweenMethodForJustifAndCreation(){
@@ -4697,6 +4825,10 @@
                 return item && item.sentMediumType==="eattest"
             }
 
+            _isInvoiceEfact(item){
+                return item && item.sentMediumType==="efact"
+            }
+
             getDMG(invoice){
                 if (!this.api.tokenId || this.isLoading) return;
                 this.set('isLoading', true);
@@ -4723,6 +4855,67 @@
                     return this.localize('sup_train_nihii','NIHII supervisor',this.language)
                 }
 
+            }
+
+            _getStatusTxt(item){
+                const statusOfInvoice = this._getStatusOfInvoice(item)
+                console.log(item)
+                return !_.get(item, 'sentDate', null) && !_.get(item, 'printedDate', null) && _.get(item, 'correctedInvoiceId', null) && _.get(statusOfInvoice, 'resent', 0) > 0 ? "A corriger" :
+                       !_.get(item, 'sentDate', null) && !_.get(item, 'printedDate', null) && !_.get(item, 'correctedInvoiceId', null) && _.get(statusOfInvoice, 'resent', 0) === 0 ? "En attente de finalisation" :
+                       !_.get(item, 'sentDate', null) && _.get(item, 'printedDate', null) ? "En attente d'envoi" :
+                        _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'canceled', 0) > 0 ? "Refusée" :
+                        _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'accepted', 0) > 0 && _.get(statusOfInvoice, 'pending', 0) === 0 && _.get(statusOfInvoice, 'resent', 0) === 0 && _.get(statusOfInvoice, 'canceled', 0) === 0 ? "Acceptée" :
+                        _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'canceled', 0) ===  0 && _.get(statusOfInvoice, 'pending', 0) > 0 && _.get(statusOfInvoice, 'resent', 0) === 0 && _.get(statusOfInvoice, 'accepted', 0) === 0 ? "En cours" :
+                        null
+            }
+
+            _getColorOfStatus(item){
+                const statusOfInvoice = this._getStatusOfInvoice(item)
+
+                return  !_.get(item, 'sentDate', null) && !_.get(item, 'printedDate', null) && _.get(item, 'correctedInvoiceId', null) && _.get(statusOfInvoice, 'resent', 0) > 0 ? "canceled" :
+                        !_.get(item, 'sentDate', null) && !_.get(item, 'printedDate', null) && !_.get(item, 'correctedInvoiceId', null) && _.get(statusOfInvoice, 'resent', 0) === 0 ? "pending" :
+                        !_.get(item, 'sentDate', null) && _.get(item, 'printedDate', null) ? "pending" :
+                         _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'canceled', 0) > 0 ? "canceled" :
+                         _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'accepted', 0) > 0 && _.get(statusOfInvoice, 'pending', 0) === 0 && _.get(statusOfInvoice, 'resent', 0) === 0 && _.get(statusOfInvoice, 'canceled', 0) === 0 ? "accepted" :
+                         _.get(item, "sentDate", null) && _.get(item, 'printedDate', null) && _.get(statusOfInvoice, 'canceled', 0) ===  0 && _.get(statusOfInvoice, 'pending', 0) > 0 && _.get(statusOfInvoice, 'resent', 0) === 0 && _.get(statusOfInvoice, 'accepted', 0) === 0 ? "ongoing" :
+                         null
+            }
+
+            _getStatusOfInvoice(item){
+                let statusOfInvoice = { accepted: 0, pending: 0, resent: 0, canceled: 0}
+
+                item.invoicingCodes.map(code => {
+                    _.get(code, 'accepted', null) ? statusOfInvoice.accepted ++ : null
+                    _.get(code, 'pending', null) ? statusOfInvoice.pending ++ : null
+                    _.get(code, 'resent', null) ? statusOfInvoice.resent ++ : null
+                    _.get(code, 'canceled', null) ? statusOfInvoice.canceled ++ : null
+                })
+
+                return statusOfInvoice
+            }
+
+            _formatPatientPaid(amount){
+                return amount && Number(amount).toFixed(2) || Number(0.00).toFixed(2)
+            }
+
+            _getPaymentType(paymentType){
+                return this.localize(paymentType, paymentType, this.language)
+            }
+
+            _toBeCorrected(item){
+                return _.get(item, 'correctiveInvoiceId', null)
+            }
+
+            _getCorrectiveInvoiceNumber(correctiveInvoiceId){
+                return _.get(_.get(this, 'invoices', []).find(inv => _.get(inv, 'id', null) === correctiveInvoiceId), 'invoiceReference', null)
+            }
+
+            _getCorrectiveInvoiceDate(correctiveInvoiceId){
+                return _.get(_.get(this, 'invoices', []).find(inv => _.get(inv, 'id', null) === correctiveInvoiceId), 'sentDate', null) ? this.api.moment(_.get(_.get(this, 'invoices', []).find(inv => _.get(inv, 'id', null) === correctiveInvoiceId), 'sentDate', null)).format('DD/MM/YYYY') : null
+            }
+
+            _isSpecialist(){
+                return !!(_.get(this, 'hcp.nihii', null) && _.startsWith(_.get(this, 'hcp.nihii', null), "1", 0) && _.size(_.get(this, 'hcp.nihii', null)) === 11 && (_.get(this, 'hcp.nihii', null).substr(_.size(_.get(this, 'hcp.nihii', null)) - 3) >= 10))
             }
         }
 

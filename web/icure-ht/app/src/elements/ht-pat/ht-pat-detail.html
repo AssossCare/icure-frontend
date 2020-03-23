@@ -101,9 +101,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../styles/paper-tabs-style.html">
 <link rel="import" href="./dialogs/therlink/ht-pat-therlink-detail.html">
 <link rel="import" href="./dialogs/consent/ht-pat-consent-detail.html">
+<link rel="import" href="./dialogs/mda/ht-pat-member-data-detail.html">
 
 <link rel="import" href="./dialogs/care-path/ht-pat-care-path-detail-dialog.html">
 <link rel="import" href="./dialogs/care-path/ht-pat-care-path-list-dialog.html">
+<link rel="import" href="./dialogs/ht-pat-other-form-dialog.html">
+
 
 
 <dom-module id="ht-pat-detail">
@@ -745,7 +748,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .contact--small .contact-text-row:last-child{
-                display: none;
+                //display: none;
             }
 
             .contact--small .he-dots-container{
@@ -962,20 +965,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 display: block;
             }
 
-            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange{
+            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse{
                 --paper-fab-background: var(--app-status-color-pending);
             }
 
-            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr{
+            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance{
                 --paper-fab-background: var(--app-status-color-nok);
             }
 
-            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr {
+            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk {
                 --paper-fab-background: var(--app-status-color-ok);
             }
 
             .pendingConsent{
                 --paper-fab-background: var(--app-status-color-pending)!important;
+            }
+
+            #mdaStatus{
+                color: black;
             }
 
             #ebmPracticeNet{
@@ -1810,6 +1817,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 text-decoration: line-through;
             }
 
+            .confirmDeleteServiceDialog {
+                height: 200px;
+                width: 400px;
+                z-index: 3000;
+            }
+
         </style>
 
         <template is="dom-if" if="[[_bodyOverlay]]">
@@ -1921,34 +1934,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     <div class="patient-name">[[getGender(patient.gender)]] [[patient.firstName]] [[patient.lastName]] [[orphans]]</div>
                                     <div class="patient-birthdate">°[[_timeFormat(patient.dateOfBirth)]] °[[_ageFormat(patient.dateOfBirth)]] [[patient.profession]]</div>
                                     <div class="statusContainer">
-                                        <paper-fab id="insuranceStatus" mini icon="vaadin:umbrella" on-tap="_openGenInsDialog"></paper-fab>
-                                        <paper-tooltip position="top" for="insuranceStatus">[[localize('gen_ins','assurability',language)]]</paper-tooltip>
-                                        <paper-fab id="consentStatus" mini icon="icons:thumb-up" on-tap="_openConsentDialog"></paper-fab>
-                                        <paper-tooltip position="top" for="consentStatus">[[localize('consent','consent',language)]]</paper-tooltip>
-                                        <paper-fab id="tlStatus" mini icon="vaadin:specialist" on-tap="_openTherLinkDialog"></paper-fab>
-                                        <paper-tooltip position="top" for="tlStatus">[[localize('tl','therapeutic link',language)]]</paper-tooltip>
-                                        <paper-fab id="hubStatus" mini icon="hardware:device-hub" on-tap="_openHubDialog"></paper-fab>
-                                        <paper-tooltip position="top" for="hubStatus">Hub</paper-tooltip>
-                                        <paper-fab id="sumehrStatus" mini icon="editor:format-list-bulleted" on-tap="_openHubDialogDirectToUpload"></paper-fab>
-                                        <paper-tooltip position="top" for="sumehrStatus">[[sumehrStatusDesc]]</paper-tooltip>
-                                        <paper-fab id="edmgStatus" mini icon="vaadin:clipboard-pulse" on-tap="_openEdmgDialog"></paper-fab>
-                                        <paper-tooltip position="top" for="edmgStatus">[[localize('edmg','e-DMG',language)]]
-                                            <template is="dom-if" if="[[refPeriods.length]]">
-                                                <div class="edmg-hcps">
-                                                    <template is="dom-repeat" items="[[_myReferralPeriods(patient.patientHealthCareParties)]]">
-                                                        <p><span class="ul">[[localize('begin','Begin',language)]]: <b>[[_dateFormat(item.startDate)]]</b> - [[localize('end','End',language)]]: <b>[[_dateFormat(item.endDate)]]</b></span>
-                                                            <template is="dom-if" if="[[item.comment.length]]"><br/><small>[[item.comment]]</small></template>
-                                                        </p>
-                                                    </template>
-                                                </div>
-                                            </template>
-                                        </paper-tooltip>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'insurability')]]">
+                                            <paper-fab id="insuranceStatus" mini icon="vaadin:umbrella" on-tap="_openGenInsDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="insuranceStatus">[[localize('gen_ins','assurability',language)]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'mda')]]">
+                                            <paper-fab id="mdaStatus" mini icon="vaadin:male" on-tap="_openMdaDialog"></paper-fab>
+                                            <paper-tooltip for="mdaStatus">[[localize('mda-data','Member data',language)]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'consent')]]">
+                                            <paper-fab id="consentStatus" mini icon="icons:thumb-up" on-tap="_openConsentDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="consentStatus">[[localize('consent','consent',language)]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'therLink')]]">
+                                            <paper-fab id="tlStatus" mini icon="vaadin:specialist" on-tap="_openTherLinkDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="tlStatus">[[localize('tl','therapeutic link',language)]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'hub')]]">
+                                            <paper-fab id="hubStatus" mini icon="hardware:device-hub" on-tap="_openHubDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="hubStatus">Hub</paper-tooltip>
+                                            <paper-fab id="sumehrStatus" mini icon="editor:format-list-bulleted" on-tap="_openHubDialogDirectToUpload"></paper-fab>
+                                            <paper-tooltip position="top" for="sumehrStatus">[[sumehrStatusDesc]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'edmg')]]">
+                                            <paper-fab id="edmgStatus" mini icon="vaadin:clipboard-pulse" on-tap="_openEdmgDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="edmgStatus">[[localize('edmg','e-DMG',language)]]
+                                                <template is="dom-if" if="[[refPeriods.length]]">
+                                                    <div class="edmg-hcps">
+                                                        <template is="dom-repeat" items="[[_myReferralPeriods(patient.patientHealthCareParties)]]">
+                                                            <p><span class="ul">[[localize('begin','Begin',language)]]: <b>[[_dateFormat(item.startDate)]]</b> - [[localize('end','End',language)]]: <b>[[_dateFormat(item.endDate)]]</b></span>
+                                                                <template is="dom-if" if="[[item.comment.length]]"><br/><small>[[item.comment]]</small></template>
+                                                            </p>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </paper-tooltip>
+                                        </template>
                                         <paper-fab id="ebmPracticeNet" mini on-tap="_linkToEbPracticeNet" src="[[_ebmPicture()]]"></paper-fab>
                                         <paper-tooltip position="top" for="ebmPracticeNet">[[localize('adm_ebm','ebmPracticeNet',language)]]</paper-tooltip>
                                         <paper-fab id="cbipLink" mini on-tap="_linkToCBIP" src="[[_cbipPicture()]]"></paper-fab>
                                         <paper-tooltip position="top" for="cbipLink">[[localize('cbip','CBIP',language)]]</paper-tooltip>
-                                        <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
-                                        <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
+                                            <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
+                                            <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
+                                        </template>
                                     </div>
                                 </div>
                             </paper-item>
@@ -2454,6 +2483,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             api="[[api]]"
                             i18n="[[i18n]]"
                             user="[[user]]"
+                            mda-result="[[mdaResult]]"
                             patient="[[patient]]"
                             language="[[language]]"
                             resources="[[resources]]"
@@ -2798,13 +2828,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <paper-button class="button button--save" on-tap="_closeMoreOptions">[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
-        <ht-pat-preventive-acts-dialog id="preventiveActs" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" contacts="[[contacts]]" on-open-action="openActionDialog" on-create-service="_createService" on-update-service="_updateServices" services-refresher="[[servicesRefresher]]"></ht-pat-preventive-acts-dialog>
-        <ht-pat-action-plan-dialog id="planActionForm" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" current-contact="[[currentContact]]" on-create-service="_createService" on-update-service="_updateServices" readonly="false"></ht-pat-action-plan-dialog>
+        <ht-pat-preventive-acts-dialog id="preventiveActs" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" contacts="[[contacts]]" on-open-action="openActionDialog" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" services-refresher="[[servicesRefresher]]"></ht-pat-preventive-acts-dialog>
+        <ht-pat-action-plan-dialog id="planActionForm" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" current-contact="[[currentContact]]" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" readonly="false"></ht-pat-action-plan-dialog>
         <medication-prescription-dialog
                 id="medication-prescription"
                 api="[[api]]" user="[[user]]" patient="[[patient]]"
                 i18n="[[i18n]]" language="[[language]]"
-                medications="[[medications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]"
+                medications="[[existingMedications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]"
                 on-save-medications="_saveMedications" on-new-medications="_createNewMedications">
         </medication-prescription-dialog>
         <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}" on-value-changed="_medicationDetailValueChanged"></medication-details-dialog>
@@ -2830,7 +2860,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             on-hub-download="_hubDownload" on-close-hub-dialog="_closeOverlay"
             on-service-changed="_serviceChanged" on-healthelement-changed="_healthElementChanged"
             on-import-hub-sumehr-item="_importHubSumehrItem"></ht-pat-hub-sumehr-preview>
-        <entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></entity-selector>
+
+        <ht-pat-other-form-dialog id="htPatOtherFormDialog" api="[[api]]" user="[[user]]" language="[[language]]" resources="[[resources]]" patient="[[patient]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></ht-pat-other-form-dialog>
+
+        <!--<entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></entity-selector>-->
+
         <paper-dialog id="upload-dialog">
             <h2 class="modal-title">[[localize('upl_fil','Upload files',language)]]<span class="extra-info">(PDF, images and videos)</span></h2>
             <vaadin-upload id="vaadin-upload" no-auto files="{{files}}" accept="video/*,image/*,application/pdf,text/xml,application/xml,text/plain" target="[[api.host]]/document/{documentId}/attachment/multipart;jsessionid=[[api.sessionId]]" method="PUT" form-data-name="attachment" on-upload-success="_fileUploaded"></vaadin-upload>
@@ -2854,7 +2888,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
-        <ht-pat-rn-consult-dialog id="htPatRnConsultDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-rn-consult-dialog>
+        <ht-pat-rn-consult-dialog id="htPatRnConsultDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" on-patient-updated="_patientUpdated"></ht-pat-rn-consult-dialog>
         <ht-pat-rn-consult-history-dialog id="htPatRnConsultHistoryDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" history-result="[[rnHistoryResult]]"></ht-pat-rn-consult-history-dialog>
         <ht-pat-charts-dialog id="patChartsDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" contacts="[[contacts]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-charts-dialog>
 
@@ -2921,8 +2955,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             on-forward-document="_forwardDocument"
         ></ht-pat-documents-directory-dialog>
 
-
-
         <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title">[[localize('linkingLetter','Lettre de liaison',language)]]</h2>
             <prose-editor class="content"  id="prose-editor-linking-letter" on-refresh-context="_refreshContextLinkingLetter"></prose-editor>
@@ -2933,11 +2965,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
+        <paper-dialog class="confirmDeleteServiceDialog" id="confirmDeleteServiceDialog">
+            <h2 class="modal-title">[[localize('confirmDeleteServiceTitle',"Suppression d'un service",language)]]</h2>
+            <div class="content">
+                <div class="cdc-content">
+                    <div style="margin-top: 20px; margin-left: 20px;">[[localize('confirmDeleteService',"Voulez-vous supprimer le service ?",language)]]</div>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--save" on-tap="_confirmDeleteService">[[localize('yes','Oui',language)]]</paper-button>
+                <paper-button class="button" on-tap="_cancelDeleteService">[[localize('no','Non',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
         <ht-pat-therlink-detail id="htPatTherlinkDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" therlink-list="[[therLinkList]]" hub-end-point="[[hubEndPoint]]" hub-supports-consent="[[hubSupportsConsent]]" eid-card-number="{{eidCardNumber}}" isi-card-number="[[isiCardNumber]]" hub-package-id="[[hubPackageId]]" on-read-eid="_readEid" on-refresh-therlink="showPatientTherLinkState"></ht-pat-therlink-detail>
         <ht-pat-consent-detail id="htPatConsentDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" hub-end-point="[[hubEndPoint]]" hub-supports-consent="[[hubSupportsConsent]]" eid-card-number="{{eidCardNumber}}" isi-card-number="[[isiCardNumber]]" hub-package-id="[[hubPackageId]]" on-read-eid="_readEid" on-refresh-consent="showPatientConsentState"></ht-pat-consent-detail>
         <ht-pat-hub-utils id="htPatHubUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" on-hub-download="_hubDownload" on-close-hub-dialog="_closeOverlay"></ht-pat-hub-utils>
         <ht-pat-care-path-detail-dialog id="htPatCarePathDetailDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" contacts="[[contacts]]" current-contact="[[currentContact]]" resources="[[resources]]" selected-care-path-info="[[selectedCarePathInfo]]" active-health-elements="[[activeHealthElements]]" on-save-care-path="_refreshFromServices" on-closing-care-path="refreshPatient"></ht-pat-care-path-detail-dialog>
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
+        <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
 
     </template>
     <script>
@@ -3371,8 +3417,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     selectedCarePathInfo:{
                         type: Object,
                         value: () => {}
+                    },
+                    mdaResult:{
+                        type: Object,
+                        value: {}
+                    },
+                    hcpType: {
+                        type: String,
+                        value: null
+                    },
+                    sumehrContentOnPatientLoad:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    matrixByHcpType: {
+                        type: Object,
+                        value: {
+                            rnConsult: ["physician", "specialist"],
+                            edmg: ["physician"],
+                            hub: ["physician", "specialist"],
+                            therLink: ["physician", "specialist"],
+                            consent: ["physician", "specialist"],
+                            mda: ["physician", "specialist"],
+                            insurability: ["medicalHouse"]
+                        }
                     }
-
                 };
             }
 
@@ -4050,6 +4119,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 ).then(() => this._saveContactAndNotify(this.currentContact, e))
             }
 
+            _deleteService(e) {
+                this.$['confirmDeleteServiceDialog'].open();
+                this.deleteServiceDetail = e.detail;
+            }
+
+            _confirmDeleteService() {
+                this.deleteServiceDetail.caller.delete();
+                this.$['confirmDeleteServiceDialog'].close();
+            }
+
+            _cancelDeleteService() {
+                this.$['confirmDeleteServiceDialog'].close();
+            }
+
             _updateServices(e) {
                 let services = (e.detail.services || (e.detail.service && [e.detail.service]) || [] )
                 const heIds = e.detail.hes ? e.detail.hes.map(he => he.id) : [];
@@ -4156,6 +4239,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _patientSaved() {
                 setTimeout(() => this.$.savedIndicator.classList.remove("saved"), 2000);
                 this.$.savedIndicator.classList.add("saved");
+            }
+
+            _patientUpdated() {
+                const patient = this.patient;
+                this.set("patient", null);
+                this.set("patient", patient);
+                this._patientSaved();
             }
 
             saveContact(ctc, preSave, postSave, postError, event) {
@@ -4528,7 +4618,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             inactiveHealthElements: this.inactiveHealthElements,
                             archivedHealthElements: this.archivedHealthElements,
                             allergies: this.allergies,
-                            medications: this.medications,
+                            medications: this.existingMedications,
                             risks: this.risks,
                             familyrisks: this.familyrisks,
                             surgicalHealthElements: this.surgicalHealthElements
@@ -4668,6 +4758,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             })
                         }), sorter))
 
+                        this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
+
                         const combinedHes = _.sortBy(_.concat(svcHes, hes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
                         const combinedHesWithHistory = _.sortBy(_.concat(svcHes, allHes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
 
@@ -4701,7 +4793,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 inactiveHealthElements: this.inactiveHealthElements,
                                 archivedHealthElements: this.archivedHealthElements,
                                 allergies: this.allergies,
-                                medications: this.medications,
+                                medications: this.existingMedications,
                                 risks: this.risks,
                                 familyrisks: this.familyrisks,
                                 surgicalHealthElements: this.surgicalHealthElements
@@ -4854,7 +4946,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }).finally(()=>this.set("SpinnerActive",false))
                     })
 
-                        .then(() => this.api.contact().filterServices(ctcs, s => s.tags.find(t => t.type === 'ICURE' && t.code === "PRESC" || t.type === 'CD-ITEM' && t.code === "medication")))
+                        .then(() => this.api.contact().filterServices(ctcs, s => s.tags.find(t => (t.type === 'ICURE' && t.code === "PRESC" || t.type === 'CD-ITEM' && t.code === "medication") && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now)))))
                         .then(svcs => {
                             this.set("treatmentHistory", svcs);
                             this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
@@ -4886,8 +4978,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.hubPackageId = hubConfig.hubPackageId;
                 this.hubApplication = hubConfig.hubApplication;
                 this.set("supportBreakTheGlass", hubConfig.supportBreakTheGlass);
+                this.selectedTherLink = null
 
-                if (patient.ssin && (this.api.tokenId || this.api.tokenIdMH)) {
+
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>{
+                    _.get(hcp, 'type', null).toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
+                        this._isSpecialist(hcp) ? this.set('hcpType', "specialist") :
+                            this.set('hcpType', "physician")
+
+                    if(_.get(this.patient, 'ssin', null) && _.get(hcp, 'nihii', null) && _.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)){
+                        //Physician or specialist access
+                        this._checkEhealthServiceForPhysician(hcp)
+
+                    }else if(_.get(this.patient, 'ssin', null) && _.get(hcp, 'nihii', null) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)){
+                        //MedicalHouse access
+                        this._checkEhealthServiceForMedicalHouse(hcp)
+                    }else{
+                        //No ehealth session or patient SSIN not present
+                        this._resetEhealthTooltip()
+                    }
+                })
+
+                /*
+                if (_.get(this.patient, 'ssin', null) && ((_.get(this.api, 'tokenId', null) || _.get(this.api, 'tokenIdMH', null)))){
 
                     let dlg = this.root.querySelector('#genInsDialog')
                     let dStart = null;
@@ -4898,109 +5011,108 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     //api.MHContactPersonName
                     //api.MHContactPersonSsin
                     console.log("getGeneralInsurabilityUsingGET on date", dStart);
-                    this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
-                        this.cleanNiss(patient.ssin),
-                        this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
-                        this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", dStart, null
-                    ).then(gi => {
-                        const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
-                        const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
+                    this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                        (this._isMedicalHouse(hcp) ? this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(this.cleanNiss(patient.ssin), _.get(this.api, "tokenIdMH", null), _.get(this.api, 'keystoreIdMH', null), _.get(this.api, 'credentials.ehpasswordMH', null), _.get(this.api, 'nihiiMH', null), _.get(this.api, 'MHContactPersonSsin', null), _.get(this.api, 'MHContactPersonName', null), "medicalhouse", dStart, null) : Promise.resolve({}))
+                        .then(gi => {
+                            const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
+                            const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
 
-                        if (!dlg.opened) this.set('curGenInsResp', gi)
+                            if (!dlg.opened) this.set('curGenInsResp', gi)
 
-                        this.$["insuranceStatus"].classList.remove('medicalHouse')
-                        this.$["insuranceStatus"].classList.remove('noInsurance')
-                        this.$["insuranceStatus"].classList.remove('insuranceOk')
+                            this.$["insuranceStatus"].classList.remove('medicalHouse')
+                            this.$["insuranceStatus"].classList.remove('noInsurance')
+                            this.$["insuranceStatus"].classList.remove('insuranceOk')
 
-                        this.$["insuranceStatus"].classList.add(genInsOk ? medicalHouse ? 'medicalHouse' : 'insuranceOk' : 'noInsurance')
-                        //Polymer.updateStyles(this.$.insuranceStatus)
+                            this.$["insuranceStatus"].classList.add(genInsOk ? medicalHouse ? 'medicalHouse' : 'insuranceOk' : 'noInsurance')
+                            //Polymer.updateStyles(this.$.insuranceStatus)
 
-                        if (genInsOk) {
-                            //TODO: expected behaviour:
-                            //1. if same mut and CT1/2 -> do nothing
-                            //2. if different mut or CT1/2 -> close previous insurability and create new insurability
-                            const ins = gi.insurabilities[0];
-                            this.api.insurance().listInsurancesByCode(ins.mutuality).then(out => {
-                                if(out && out.length){
-                                    //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
-                                    let insuFound = false;
-                                    insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
-                                    if(insuFound && insuFound.length){
-                                        insuFound.map(p => {
-                                            //1 if found: check if CT1/2 is changed
-                                            if (
-                                                (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
-                                                || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
-                                                || ins.period.periodStart < p.startDate
-                                            ){
-                                                console.log('Insurability: CT1/2 changed or startdate changed');//1.2 if changed: close the found ins and create new with startdate today
-                                                const newP = {};
-                                                newP.identificationNumber = ins.regNrWithMut;
-                                                newP.insuranceId = out[0].id;
-                                                newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
-                                                newP.parameters = {
-                                                    tc1: ins.ct1,
-                                                    preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
-                                                    tc2: ins.ct2,
-                                                    paymentapproval: !!ins.paymentApproval
-                                                };
-                                                //2.1 close all other
-                                                this.patient.insurabilities.map(p => {
-                                                        if (!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
-                                                    }
-                                                );
-                                                //remove insurabilities with same startdate
-                                                this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
-                                                this.patient.insurabilities.push(newP);
-                                                if (patient === this.patient) {
-                                                    this.api.queue(this.patient, 'patient').then(([pat, defer]) => {
-                                                        return this.api.patient().modifyPatientWithUser(this.user, this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
-                                                            this.dispatchEvent(new CustomEvent("patient-saved", {
-                                                                bubbles: true,
-                                                                composed: true
-                                                            }));
-                                                            Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
+                            if (genInsOk) {
+                                //TODO: expected behaviour:
+                                //1. if same mut and CT1/2 -> do nothing
+                                //2. if different mut or CT1/2 -> close previous insurability and create new insurability
+                                const ins = gi.insurabilities[0];
+                                this.api.insurance().listInsurancesByCode(ins.mutuality).then(out => {
+                                    if(out && out.length){
+                                        //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
+                                        let insuFound = false;
+                                        insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
+                                        if(insuFound && insuFound.length){
+                                            insuFound.map(p => {
+                                                //1 if found: check if CT1/2 is changed
+                                                if (
+                                                    (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
+                                                    || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
+                                                    || ins.period.periodStart < p.startDate
+                                                ){
+                                                    console.log('Insurability: CT1/2 changed or startdate changed');//1.2 if changed: close the found ins and create new with startdate today
+                                                    const newP = {};
+                                                    newP.identificationNumber = ins.regNrWithMut;
+                                                    newP.insuranceId = out[0].id;
+                                                    newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                                    newP.parameters = {
+                                                        tc1: ins.ct1,
+                                                        preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
+                                                        tc2: ins.ct2,
+                                                        paymentapproval: !!ins.paymentApproval
+                                                    };
+                                                    //2.1 close all other
+                                                    this.patient.insurabilities.map(p => {
+                                                            if (!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                                        }
+                                                    );
+                                                    //remove insurabilities with same startdate
+                                                    this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
+                                                    this.patient.insurabilities.push(newP);
+                                                    if (patient === this.patient) {
+                                                        this.api.queue(this.patient, 'patient').then(([pat, defer]) => {
+                                                            return this.api.patient().modifyPatientWithUser(this.user, this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
+                                                                this.dispatchEvent(new CustomEvent("patient-saved", {
+                                                                    bubbles: true,
+                                                                    composed: true
+                                                                }));
+                                                                Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
+                                                            })
                                                         })
-                                                    })
+                                                    }
+                                                }else{
+                                                    //1.1 if not changed: do nothing
+                                                    console.log('Insurability: Nothing changed');
                                                 }
-                                            }else{
-                                                //1.1 if not changed: do nothing
-                                                console.log('Insurability: Nothing changed');
-                                            }
-                                        })
-                                    } else {
-                                        console.log('Insurability: Mutuality changed');//2 if not found: create new with startdate today
-                                        const newP = {};
-                                        newP.identificationNumber = ins.regNrWithMut;
-                                        newP.insuranceId = out[0].id;
-                                        newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
-                                        newP.parameters = {
-                                            tc1: ins.ct1,
-                                            preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
-                                            tc2:ins.ct2,
-                                            paymentapproval: !!ins.paymentApproval};
-                                        //2.1 close all other
-                                        this.patient.insurabilities.map(p =>{
-                                                if(!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
-                                            }
-                                        );
-                                        //remove insurabilities with same startdate
-                                        this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
-                                        this.push("patient.insurabilities",newP);
-                                        if (patient === this.patient) {
-                                            this.api.queue(this.patient, 'patient').then (([pat, defer])  => {
-                                                return this.api.patient().modifyPatientWithUser(this.user,this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
-                                                     this.dispatchEvent(new CustomEvent("patient-saved", {bubbles: true, composed: true}))
-                                                    Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
-                                                })
                                             })
+                                        } else {
+                                            console.log('Insurability: Mutuality changed');//2 if not found: create new with startdate today
+                                            const newP = {};
+                                            newP.identificationNumber = ins.regNrWithMut;
+                                            newP.insuranceId = out[0].id;
+                                            newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                            newP.parameters = {
+                                                tc1: ins.ct1,
+                                                preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
+                                                tc2:ins.ct2,
+                                                paymentapproval: !!ins.paymentApproval};
+                                            //2.1 close all other
+                                            this.patient.insurabilities.map(p =>{
+                                                    if(!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                                }
+                                            );
+                                            //remove insurabilities with same startdate
+                                            this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
+                                            this.push("patient.insurabilities",newP);
+                                            if (patient === this.patient) {
+                                                this.api.queue(this.patient, 'patient').then (([pat, defer])  => {
+                                                    return this.api.patient().modifyPatientWithUser(this.user,this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
+                                                         this.dispatchEvent(new CustomEvent("patient-saved", {bubbles: true, composed: true}))
+                                                        Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
+                                                    })
+                                                })
+                                            }
                                         }
-                                    }
-                                }
-                            })
-                        }
 
-                    }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null}))
+                                    }
+                                })
+                            }
+                        })
+                    .catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null}))
                     this.selectedTherLink = null
                     this.showPatientConsentState()
                     this.showPatientTherLinkState()
@@ -5011,10 +5123,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.getSumehrContent().then(res => this.set('sumehrContentOnPatientRefresh', res));
                     this.updateEdmgStatus()
                     this._consultRnHistory(patient)
+                    this._consultMda()
                 }else{
                     this.$["insuranceStatus"].classList.remove('medicalHouse')
                     this.$["insuranceStatus"].classList.remove('noInsurance')
                     this.$["insuranceStatus"].classList.remove('insuranceOk')
+                    this.$["mdaStatus"].classList.remove('medicalHouse')
+                    this.$["mdaStatus"].classList.remove('noInsurance')
+                    this.$["mdaStatus"].classList.remove('insuranceOk')
                     this.$["consentStatus"].classList.remove('noConsent')
                     this.$["consentStatus"].classList.remove('consentOk')
                     this.$["consentStatus"].classList.remove('pendingConsent')
@@ -5033,20 +5149,174 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.$['rnConsultStatus'].classList.remove('rnConsultNOk')
                     this.$['rnConsultStatus'].classList.remove('rnConsultOk')
                 }
+                */
 
                 this._closeRnConsultChangedNotification()
+            }
+
+            _isAvailableForHcp(hcpType, wsType){
+                return !!_.get(this, "matrixByHcpType."+wsType, []).find(hcp => hcp === hcpType)
+            }
+
+            _checkEhealthServiceForPhysician(hcp){
+                this.showPatientConsentState()
+                this.showPatientTherLinkState()
+                this.checkSumehrPresentOnHub();
+                if(!this.sumehrContentOnPatientLoad){
+                    this.getSumehrContent().then(res => this.set('sumehrContentOnPatientLoad', res));
+                }
+                this.getSumehrContent().then(res => this.set('sumehrContentOnPatientRefresh', res));
+                this.updateEdmgStatus()
+                this._consultRnHistory(_.get(this, 'patient', null))
+                this._consultMda()
+            }
+
+            _checkEhealthServiceForMedicalHouse(hcp){
+                let dlg = this.root.querySelector('#genInsDialog')
+                let dStart = null;
+                const date = new Date(), y = date.getFullYear(), m = date.getMonth();
+                dStart = new Date(y,m,1).getTime();
+
+                if (!dlg.opened) this.set('curGenInsResp', null)
+                console.log("getGeneralInsurabilityUsingGET on date", dStart);
+                this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(this.cleanNiss(patient.ssin), _.get(this.api, "tokenIdMH", null), _.get(this.api, 'keystoreIdMH', null), _.get(this.api, 'credentials.ehpasswordMH', null), _.get(this.api, 'nihiiMH', null), _.get(this.api, 'MHContactPersonSsin', null), _.get(this.api, 'MHContactPersonName', null), "medicalhouse", dStart, null)
+                .then(gi => {
+                    const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
+                    const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
+
+                    if (!dlg.opened) this.set('curGenInsResp', gi)
+
+                    this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('medicalHouse') : null
+                    this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('noInsurance') : null
+                    this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('insuranceOk') : null
+
+                    this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.add(genInsOk ? medicalHouse ? 'medicalHouse' : 'insuranceOk' : 'noInsurance') : null
+                    //Polymer.updateStyles(this.$.insuranceStatus)
+
+                    if (genInsOk) {
+                        //TODO: expected behaviour:
+                        //1. if same mut and CT1/2 -> do nothing
+                        //2. if different mut or CT1/2 -> close previous insurability and create new insurability
+                        const ins = gi.insurabilities[0];
+                        this.api.insurance().listInsurancesByCode(ins.mutuality).then(out => {
+                            if(out && out.length){
+                                //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
+                                let insuFound = false;
+                                insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
+                                if(insuFound && insuFound.length){
+                                    insuFound.map(p => {
+                                        //1 if found: check if CT1/2 is changed
+                                        if (
+                                            (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
+                                            || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
+                                            || ins.period.periodStart < p.startDate
+                                        ){
+                                            console.log('Insurability: CT1/2 changed or startdate changed');//1.2 if changed: close the found ins and create new with startdate today
+                                            const newP = {};
+                                            newP.identificationNumber = ins.regNrWithMut;
+                                            newP.insuranceId = out[0].id;
+                                            newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                            newP.parameters = {
+                                                tc1: ins.ct1,
+                                                preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
+                                                tc2: ins.ct2,
+                                                paymentapproval: !!ins.paymentApproval
+                                            };
+                                            //2.1 close all other
+                                            this.patient.insurabilities.map(p => {
+                                                    if (!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                                }
+                                            );
+                                            //remove insurabilities with same startdate
+                                            this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
+                                            this.patient.insurabilities.push(newP);
+                                            if (patient === this.patient) {
+                                                this.api.queue(this.patient, 'patient').then(([pat, defer]) => {
+                                                    return this.api.patient().modifyPatientWithUser(this.user, this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
+                                                        this.dispatchEvent(new CustomEvent("patient-saved", {
+                                                            bubbles: true,
+                                                            composed: true
+                                                        }));
+                                                        Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
+                                                    })
+                                                })
+                                            }
+                                        }else{
+                                            //1.1 if not changed: do nothing
+                                            console.log('Insurability: Nothing changed');
+                                        }
+                                    })
+                                } else {
+                                    console.log('Insurability: Mutuality changed');//2 if not found: create new with startdate today
+                                    const newP = {};
+                                    newP.identificationNumber = ins.regNrWithMut;
+                                    newP.insuranceId = out[0].id;
+                                    newP.startDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                    newP.parameters = {
+                                        tc1: ins.ct1,
+                                        preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
+                                        tc2:ins.ct2,
+                                        paymentapproval: !!ins.paymentApproval};
+                                    //2.1 close all other
+                                    this.patient.insurabilities.map(p =>{
+                                            if(!p.endDate) p.endDate = ins.period.periodStart;//moment().format('YYYYMMDD');
+                                        }
+                                    );
+                                    //remove insurabilities with same startdate
+                                    this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart);
+                                    this.push("patient.insurabilities",newP);
+                                    if (patient === this.patient) {
+                                        this.api.queue(this.patient, 'patient').then (([pat, defer])  => {
+                                            return this.api.patient().modifyPatientWithUser(this.user,this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
+                                                this.dispatchEvent(new CustomEvent("patient-saved", {bubbles: true, composed: true}))
+                                                Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged();
+                                            })
+                                        })
+                                    }
+                                }
+
+                            }
+                        })
+                    }
+                }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null})
+            }
+
+            _resetEhealthTooltip(){
+                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('medicalHouse'): null
+                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('noInsurance'): null
+                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('insuranceOk'): null
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('medicalHouse'): null
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
+                this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('noConsent'): null
+                this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('consentOk'): null
+                this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('pendingConsent'): null
+                this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.remove('noAccess'): null
+                this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.remove('accessOk'): null
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('noSumehr'): null
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehr'): null
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehrChange'): null
+                this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('noTl'): null
+                this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlOk'): null
+                this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlPending'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgPending'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgOk'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgNOk'): null
+                this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultPending'): null
+                this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultNOk'): null
+                this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultOk'): null
             }
 
             showPatientTherLinkState(){
                 this._getTherLinks().then(therLinks => {
 
-                    this.$['tlStatus'].classList.remove('noTl');
-                    this.$['tlStatus'].classList.remove('tlOk');
-                    this.$['tlStatus'].classList.remove('tlPending')
+                    this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('noTl'): null
+                    this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlOk'): null
+                    this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlPending'): null
 
-                    _.get(therLinks, 'nationalResp.therapeuticLinks', []).length && _.get(therLinks, 'hubResp.therapeuticLinks', []).length ? this.$['tlStatus'].classList.add('tlOk') :
-                        _.get(therLinks, 'nationalResp.therapeuticLinks', []).length || _.get(therLinks, 'hubResp.therapeuticLinks', []).length ? (this.hubSupportsConsent ? this.$['tlStatus'].classList.add('tlPending') : this.$['tlStatus'].classList.add('tlOk')) :
-                            this.$['tlStatus'].classList.add('noTl')
+                    _.get(therLinks, 'nationalResp.therapeuticLinks', []).length && _.get(therLinks, 'hubResp.therapeuticLinks', []).length ? this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.add('tlOk') : null :
+                        _.get(therLinks, 'nationalResp.therapeuticLinks', []).length || _.get(therLinks, 'hubResp.therapeuticLinks', []).length ? (this.hubSupportsConsent ? this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.add('tlPending') : null : this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.add('tlOk') : null) :
+                            this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.add('noTl') : null
 
                 })
             }
@@ -5132,19 +5402,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             showPatientSumehrState(){
                 const changed = this.compareSumehrContent(this.sumehrContentOnPatientLoad, this.sumehrContentOnPatientRefresh);
                 console.log('showPatientSumehrState triggered present:', this.sumehrPresentOnHub, "changed:", changed, this.sumehrContentOnPatientLoad, this.sumehrContentOnPatientRefresh);
-                this.$['sumehrStatus'].classList.remove('noSumehr');
-                this.$['sumehrStatus'].classList.remove('sumehr');
-                this.$['sumehrStatus'].classList.remove('sumehrChange');
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('noSumehr'): null
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehr'): null
+                this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehrChange'): null
                 if(this.sumehrPresentOnHub) {
                     if(changed){
-                        this.$['sumehrStatus'].classList.add('sumehrChange')
+                        this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.add('sumehrChange'): null
                         this.set('sumehrStatusDesc', this.localize('sumehr_data_changed' , 'Patient data for sumehr changed', this.language));
                     } else {
-                        this.$['sumehrStatus'].classList.add('sumehr');
+                        this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.add('sumehr'): null
                         this.set('sumehrStatusDesc', this.localize('sumehr_present' , 'Sumehr present on hub', this.language));
                     }
                 }else{
-                    this.$['sumehrStatus'].classList.add('noSumehr');
+                    this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.add('noSumehr'): null
                     this.set('sumehrStatusDesc', this.localize('sumehr_not_present' , 'Sumehr not present on hub', this.language));
                 }
             }
@@ -5155,28 +5425,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             showPatientConsentState(){
                 this._getConsents().then(patientConsent => {
-                        this.$["consentStatus"].classList.remove('noConsent');
-                        this.$["consentStatus"].classList.remove('consentOk');
-                        this.$["consentStatus"].classList.remove('pendingConsent');
+                    this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('noConsent'): null
+                    this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('consentOk'): null
+                    this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('pendingConsent'): null
 
-                        !_.isEmpty(_.get(patientConsent, "nationalResp.consent", {})) && (!_.isEmpty(_.get(patientConsent, "hubResp", {}))  || !this.hubSupportsConsent) ? this.$['consentStatus'].classList.add("consentOk") :
-                            !_.isEmpty(_.get(patientConsent, "nationalResp.consent", {})) || !_.isEmpty(_.get(patientConsent, "hubResp", {})) ? this.$['consentStatus'].classList.add("pendingConsent") :
-                                this.$['consentStatus'].classList.add("noConsent")
+                        !_.isEmpty(_.get(patientConsent, "nationalResp.consent", {})) && (!_.isEmpty(_.get(patientConsent, "hubResp", {}))  || !this.hubSupportsConsent) ? this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.add("consentOk"): null:
+                            !_.isEmpty(_.get(patientConsent, "nationalResp.consent", {})) || !_.isEmpty(_.get(patientConsent, "hubResp", {})) ? this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.add("pendingConsent") : null :
+                                this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.add("noConsent"): null
 
                     }
                 )
             }
 
             showPatientHubState(){
-                this.$["hubStatus"].classList.remove('accessOk');
-                this.$["hubStatus"].classList.remove('noAccess');
+                this.shadowRoot.querySelector("#hubStatus") ?this.shadowRoot.querySelector("#hubStatus").classList.remove('accessOk'): null
+                this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.remove('noAccess'): null
 
                 this.set("hubReady",!this.hubSupportsConsent ? true :
                     !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? true : false);
 
-                !this.hubSupportsConsent ? this.$["hubStatus"].classList.add('accessOk') :
-                    !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? this.$["hubStatus"].classList.add('accessOk') :
-                        this.$["hubStatus"].classList.add('noAccess')
+                !this.hubSupportsConsent ? this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.add('accessOk'): null :
+                    !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.add('accessOk') : null :
+                        this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.add('noAccess') : null
             }
 
             unselectAdminFile() {
@@ -6050,7 +6320,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             }
 
-
             _normalizedHealthElement(healthElement) {
                 return {
                     descr: healthElement.descr,
@@ -6060,6 +6329,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     plansOfAction: (healthElement.plansOfAction || []).map(poa => _.extend(poa, { id: this.api.crypto().randomUuid(), openingDate: parseInt(moment().format('YYYYMMDDHHmmss')) })),
                     tags: (healthElement.tags || []).map(c => this.api.code().normalize(c)),
                     codes: (healthElement.codes || []).map(c => this.api.code().normalize(c)),
+                    note: healthElement.note,
                     idService: healthElement.idService
                 };
             }
@@ -6268,10 +6538,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             updateEdmgClassList( cssClassToAssign ) {
-                this.$.edmgStatus.classList.remove('edmgPending');
-                this.$.edmgStatus.classList.remove('edmgOk');
-                this.$.edmgStatus.classList.remove('edmgNOk');
-                this.$.edmgStatus.classList.add(cssClassToAssign||'');
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgPending'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgOk'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgNOk'): null
+                this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.add(cssClassToAssign||''): null
             }
 
 
@@ -6432,7 +6702,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _readEid() {
-                fetch(`${this.api.electronHost}/read`)
+                fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/read`)
                     .then((response) => {
                         return response.json()
                     })
@@ -6588,7 +6858,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             addOther() {
-                this.$['add-form-dialog'].open();
+                this.$['htPatOtherFormDialog']._openDialog();
             }
 
             formTemplatesSelectorDataProvider() {
@@ -6988,19 +7258,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.set('rnHistoryResult', resp)
                         if(!_.isEmpty(resp)){
                            if(_.get(resp, 'ssin.value', null) && !_.get(resp, 'ssin.replaces', null) && _.get(resp, 'ssin.canceled', null) !== true){
-                               this.$['rnConsultStatus'].classList.add('rnConsultOk')
+                               this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.add('rnConsultOk'): null
                            }else if(_.get(resp, 'ssin.replaces', null)){
-                               this.$['rnConsultStatus'].classList.add('rnConsultPending')
+                               this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.add('rnConsultPending'): null
                                this._rnConsultChangedNotification()
                            }else if(_.get(resp, 'ssin.canceled', null)){
-                               this.$['rnConsultStatus'].classList.add('rnConsultNOk')
+                               this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.add('rnConsultNOk'): null
                                this._rnConsultErrorNotification()
                            }else{
-                               this.$['rnConsultStatus'].classList.add('rnConsultNOk')
+                               this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.add('rnConsultNOk'): null
                                this._rnConsultErrorNotification()
                            }
                         }else{
-                            this.$['rnConsultStatus'].classList.add('rnConsultNOk')
+                            this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.add('rnConsultNOk'): null
                             this._rnConsultErrorNotification()
                         }
                     })
@@ -7105,6 +7375,71 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.$["htPatRnConsultHistoryDialog"]._openDialog()
             }
 
+            _openMdaDialog(e){
+                e.stopPropagation()
+                if(this._checkForEhealthSession() === true){
+                    this.$["htPatMemberDataDetail"].openDialog()
+                }else{
+                    this._ehealthErrorNotification()
+                }
+            }
+
+            _consultMda(){
+                this.$["htPatMemberDataDetail"].openDialog({open: false})
+            }
+
+            _updateMdaFlags(e){
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('medicalHouse'): null
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
+                this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
+                this.set('mdaResult',  _.get(e, 'detail.mdaResult', {}))
+
+                !_.isEmpty(_.get(e, 'detail', {})) ?
+                    _.get(e, 'detail.medicalHouse', 0) > 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('medicalHouse') : null :
+                        _.get(e, 'detail.generalSituation', 0) === 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('insuranceOk'): null :
+                            this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null :
+                    this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null
+
+                //set insu pat.
+                if(moment(_.get(e,"detail.mdaRequest.startDate","1900-01-01"),"YYYY-MM-DD").isSame(moment(),"month") && _.get(this,"mdaResult.formatedResponse.period",[]).length===1){
+                    const mdaInsu=_.get(this,"mdaResult.formatedResponse.period.0",{})
+                    const patInsu=_.get(this,"patient.insurabilities",[]).find(ins => !_.get(ins,"endDate",false) && _.get(ins,"startDate",false)) || {}
+
+                    if(!(_.get(mdaInsu,"careReceiver.registrationNumber",false) && _.get(mdaInsu,"cb1",false) && _.get(mdaInsu,"cb2",false) && _.get(mdaInsu,"careReceiver.mutuality.code",false))){
+                        return;
+                    }
+
+                    if(_.get(mdaInsu,"careReceiver.registrationNumber",false)!==_.get(patInsu,"identificationNumber",false) || _.get(mdaInsu,"cb1",false)!==_.get(patInsu,"parameters.tc1",false) || _.get(mdaInsu,"cb2",false)!==_.get(patInsu,"parameters.tc2",false)){
+                        (_.get(mdaInsu,"careReceiver.mutuality.code",false) ? this.api.insurance().listInsurancesByCode(_.get(mdaInsu,"careReceiver.mutuality.code",false)) : Promise.resolve({}))
+                            .then(respInsu =>{
+                                if(patInsu.startDate && this.api.moment(patInsu.startDate).isSame(moment(),"month")){
+                                    this.set("patient.insurabilities",_.get(this,"patient.insurabilities",[]).filter(ins => _.get(ins,"endDate",false)))
+                                }
+                                else{
+                                    patInsu.endDate=_.parseInt(moment().subtract(1, 'months').endOf('month').format("YYYYMMDD"))
+                                }
+                                this.push("patient.insurabilities",{
+                                    startDate: _.parseInt(moment().startOf('month').format("YYYYMMDD")),
+                                    insuranceId : _.get(respInsu,"0.id",""),
+                                    identificationNumber: _.get(mdaInsu,"careReceiver.registrationNumber",""),
+                                    parameters : {
+                                        tc1 :  _.get(mdaInsu,"cb1",""),
+                                        tc2 :  _.get(mdaInsu,"cb2",""),
+                                        preferentialstatus : (_.get(this,"mdaResult.formatedResponse.payment",[]).find(pay => Object.keys(pay).find(key => key.includes("paymentByIO"))) || {paymentByIO : (_.get(mdaInsu,"cb1",0)%2)===1}).paymentByIO
+                                    },
+                                    ambulatory : true,
+                                    dental : false
+                                })
+                                return this.api.patient().modifyPatientWithUser(this.user,this.patient)
+                            })
+                            .then(pat => this.api.register(pat,"patient"))
+                            .then(pat => this._patientSaved())
+                    }
+                }
+
+            }
+
+
             _openDocumentsDirectory() {
                 const documentsDirectoryComponent = this.shadowRoot.querySelector("#documentsDirectory")
                 return documentsDirectoryComponent && typeof _.get(documentsDirectoryComponent,"open", false) === "function"  && documentsDirectoryComponent.open()
@@ -7153,7 +7488,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             eMediattestParentFormDp: parentFormDp,
                         }
                     }))
-
             }
 
             _nbMedications(){
@@ -7164,6 +7498,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const yesterday = moment().subtract(1, 'days');
                 const today = moment();
                 return this.medications.filter(s => s.tags.some(c => _.get(c, 'type', null) === 'CD-ITEM' && _.get(c, 'code', null) === 'medication' && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && (_.get(c, 'medicationValue.endMoment', null) && this.api.moment(_.get(c, 'medicationValue.endMoment', null)).isBefore(yesterday)) || (_.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(today)))));
+            }
+
+            _isSpecialist(hcp){
+                return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
+
             }
 
         }

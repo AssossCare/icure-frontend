@@ -374,7 +374,7 @@ class HtAppWelcome extends Polymer.TkLocalizerMixin(Polymer.Element) {
         this.credentials.username = this.user.login;
         this.credentials.password = this.user.passwordHash;
 
-        return fetch(`${this.api.electronHost}/create-first-user`,{
+        return fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/create-first-user`,{
             method: "POST",
             headers: {
                 "Content-Type" : "application/json; charset=utf-8"
@@ -386,7 +386,7 @@ class HtAppWelcome extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     replicate() {
 
-        fetch(`${this.api.electronHost}/replicate`,{
+        fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/replicate`,{
             method: "POST",
             headers: {
                 "Content-Type" : "application/json; charset=utf-8"

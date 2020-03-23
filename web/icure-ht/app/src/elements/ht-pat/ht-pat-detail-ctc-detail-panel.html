@@ -737,7 +737,8 @@
 								<div class="outgoing-docs-container">
 									<template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
                                         <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
-										<paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+										<paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                        <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
 									</template>
 									<paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
 								</div>
@@ -803,7 +804,6 @@
 				<div class="layout-bar" >
 					<paper-icon-button id="list_icn" class$="list [[_activeIconClass(list)]]" icon="icons:view-list" on-tap="_list"></paper-icon-button>
 					<paper-icon-button id="table_icn" class$="table [[_activeIconClass(table)]]" icon="vaadin:table" on-tap="_table"></paper-icon-button>
-					<!--<paper-icon-button id="graph_icn" class$="graph [[_activeIconClass(graph)]]" icon="icons:timeline" on-tap="_graphique"></paper-icon-button>-->
 					<paper-icon-button id="graph_icn" class$="graph [[_activeIconClass(graph)]]" icon="icons:timeline" on-tap="_openChartsDialog"></paper-icon-button>
 					<paper-icon-button id="form_icn" class$="doc [[_activeIconClass(doc)]]" icon="icons:assignment" on-tap="_default"></paper-icon-button>
 
@@ -830,7 +830,7 @@
 				<ht-spinner class="center" active="[[isLoadingDoc]]"></ht-spinner>
 				<template is="dom-if" if="[[list]]">
                     <div class="ctc-header">
-						<span class="contact-title"> [[_selectedContactsHeaderLabel(contacts, currentContact.tags.*)]]
+						<span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]
                         </span>
 						<template is="dom-if" if="[[_canChangeDate()]]">
 							<vaadin-date-picker-light id="dp" on-value-changed="_dateChanged" max="[[_maxDate()]]" value="[[_getOpeningDate()]]" initialPosition="[[_getOpeningDate()]]" i18n="[[i18n]]">
@@ -864,7 +864,7 @@
 				</template>
 				<template is="dom-if" if="[[table]]">
                     <div class="ctc-header">
-						<span class="contact-title"> [[_selectedContactsHeaderLabel(contacts, currentContact.tags.*)]]
+						<span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]
                         </span>
 						<template is="dom-if" if="[[_canChangeDate()]]">
 							<vaadin-date-picker-light id="dp" on-value-changed="_dateChanged" max="[[_maxDate()]]" value="[[_getOpeningDate()]]" initialPosition="[[_getOpeningDate()]]" i18n="[[i18n]]">
@@ -877,14 +877,7 @@
 				</template>
 				<template is="dom-if" if="[[graphique]]">
                     <div class="ctc-header">
-						<span class="contact-title">[[_selectedContactsHeaderLabel(contacts, currentContact.tags.*)]]
-                            <template is="dom-if" if="[[_hasCurrentContact()]]">
-                                <dynamic-subcontact-type-selector id="subctc-type-c" subcontact-type="[[contactTypeList]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_contactTypeChange"></dynamic-subcontact-type-selector>
-								<!--
-								<dynamic-confidentiality-selector id="dynamicConfidentialitySelector" list-of-confidentiality-type="[[listOfConfidentialityType]]" language="[[language]]" resources="[[resources]]" on-confidentiality-tag-changed="_confidentialityChanged"></dynamic-confidentiality-selector>
-								<dynamic-visibility-selector id="dynamicVisibilitySelector" list-of-visibility-type="[[listOfVisibilityType]]" language="[[language]]" resources="[[resources]]" on-visibility-changed="_visibilityChanged"></dynamic-visibility-selector>
-								-->
-                            </template>
+						<span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]
                         </span>
 						<template is="dom-if" if="[[_canChangeDate()]]">
 							<vaadin-date-picker-light id="dp" on-value-changed="_dateChanged" max="[[_maxDate()]]" value="[[_getOpeningDate()]]" initialPosition="[[_getOpeningDate()]]" i18n="[[i18n]]">
@@ -901,13 +894,9 @@
 					<div class="contact-card-frame">
 						<template is="dom-if" if="[[!contactsFormsAndDocuments.length]]">
 							<div class="ctc-header">
-                                <span class="contact-title">[[_contactHeaderLabel(currentContact, currentContact.tags.*)]]
+                                <span class="contact-title">[[_contactHeaderLabel(currentContact, currentContact.*, contactsFormsAndDocuments.*)]]
                                     <template is="dom-if" if="[[_hasCurrentContact(contacts)]]">
-                                        <dynamic-subcontact-type-selector id="subctc-type-b" subcontact-type="[[contactTypeList]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_contactTypeChange"></dynamic-subcontact-type-selector>
-										<!--
-										<dynamic-confidentiality-selector id="dynamicConfidentialitySelector" list-of-confidentiality-type="[[listOfConfidentialityType]]" language="[[language]]" resources="[[resources]]" on-confidentiality-changed="_confidentiality"></dynamic-confidentiality-selector>
-                                    	<dynamic-visibility-selector id="dynamicVisibilitySelector" list-of-visibility-type="[[listOfVisibilityType]]" language="[[language]]" resources="[[resources]]" on-visibility-changed="_visibilityChanged"></dynamic-visibility-selector>
-                                    	-->
+                                        <dynamic-subcontact-type-selector data-item$="[[currentContact.id]]" id="subctc-type-b" subcontact-type="[[contactTypeList]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_contactTypeChange"></dynamic-subcontact-type-selector>
 									</template>
                                 </span>
 								<template is="dom-if" if="[[_canChangeDate()]]">
@@ -923,14 +912,8 @@
 						</template>
 						<template is="dom-repeat" items="[[contactsFormsAndDocuments]]" as="dof">
 							<div class="ctc-header">
-                            <span class="contact-title">[[_contactHeaderLabel(dof.ctc, currentContact.tags.*)]]
-								<template is="dom-if" if="[[_isCurrentContact(dof.ctc)]]">
-                                    <dynamic-subcontact-type-selector id="subctc-type-d" subcontact-type="[[contactTypeList]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_contactTypeChange"></dynamic-subcontact-type-selector>
-									<!--
-                                	<dynamic-confidentiality-selector id="dynamicConfidentialitySelector" list-of-confidentiality-type="[[listOfConfidentialityType]]" language="[[language]]" resources="[[resources]]" on-confidentiality-changed="_confidentiality"></dynamic-confidentiality-selector>
-									<dynamic-visibility-selector id="dynamicVisibilitySelector" list-of-visibility-type="[[listOfVisibilityType]]" language="[[language]]" resources="[[resources]]" on-visibility-changed="_visibilityChanged"></dynamic-visibility-selector>
-									  -->
-								</template>
+                            <span class="contact-title">[[_contactHeaderLabel(dof.ctc, currentContact.*)]]
+								<dynamic-subcontact-type-selector data-item$="[[dof.ctc.id]]" id="subctc-type-d" subcontact-type="[[contactTypeList]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_contactTypeChange"></dynamic-subcontact-type-selector>
 							</span>
 								<template is="dom-if" if="[[_canChangeDate()]]">
 									<vaadin-date-picker-light id="dp" on-value-changed="_dateChanged" max="[[_maxDate()]]" value="[[_getOpeningDate()]]" initialPosition="[[_getOpeningDate()]]" i18n="[[i18n]]">
@@ -1002,7 +985,7 @@
 
         <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]] on-save-document-as-service="[[_handleSaveDocumentAsService]]" on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>
 
-		<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
+		<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" mda-result="[[mdaResult]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
 
 		<template is="dom-if" if="[[busySpinner]]"><div id="busySpinner"><div id="busySpinnerContainer"><ht-spinner class="spinner" active></ht-spinner></div></div></template>
 
@@ -1165,10 +1148,6 @@
 						type: Boolean,
 						value: false
 					},
-					graphique: {
-						type: Boolean,
-						value: false
-					},
 					doc: {
 						type: Boolean,
 						value: true
@@ -1326,6 +1305,10 @@
                         type : Object,
                         value : {}
                     },
+                    mdaResult:{
+                        type: Object,
+                        value: {}
+                    },
                     editLabelAndTransactionData :{
                         type : Object,
                         value : () => { return {
@@ -1383,7 +1366,7 @@
 								value: () => []
 							},
 						}}
-					},
+					}
 				};
 			}
 
@@ -1582,29 +1565,21 @@
 			// }
 
 			_decryptComments(contact) {
-				return Promise.all(contact.subContacts
-					.filter(sc => sc.status === 64)
-					.reduce((scSvcs, sc) => scSvcs.concat(sc.services), [])
+				return !contact ? Promise.resolve() : Promise.all(_.get(contact,"subContacts",[])
+					.filter(sc => _.get(sc,"status") === 64)
+					.reduce((scSvcs, sc) => scSvcs.concat(_.get(sc,"services",[])), [])
 					.map(scSvc => {
-						const service = contact.services.find(svc => svc.id === scSvc.serviceId);
+						const service = contact.services.find(svc => _.get(svc,"id") === _.get(scSvc,"serviceId"));
 						const docId = service && this._documentId(service);
-						if (!docId) Promise.resolve();
-						return this.api.document().getDocument(docId)
-								.then(doc => {
-									const ua = this.api.crypto().utils.text2ua(Base64.decode(service.comment));
-									return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, ua);
-								})
-								.then(ua => {
-									service.clearComment = this.api.crypto().utils.ua2text(ua)
-									console.log("document id:" + docId + " -> comment:" + service.clearComment);
-								})
-								.catch(error => {
-									console.log(error);
-									Promise.resolve();
-								})
+						return !docId ? Promise.resolve() : this.api.document().getDocument(docId)
+							.then(doc => {
+								const ua = this.api.crypto().utils.text2ua(Base64.decode(service.comment));
+								return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, ua);
+							})
+							.then(ua =>  service.clearComment = this.api.crypto().utils.ua2text(ua))
+							.catch(error => Promise.resolve())
 					}))
 			}
-
 
 			// _setComments(contact) {
 			// 	try {
@@ -1784,7 +1759,6 @@
 				this.set('list', false);
 				this.set('table', false);
 				this.set('doc', false);
-				this.set('graphique', false);
 			}
 
 			_list(e) {
@@ -1795,11 +1769,6 @@
 			_table(e) {
 				this.hideAll();
 				this.set('table', true);
-			}
-
-			_graphique(e) {
-				this.hideAll();
-				this.set('graphique', true);
 			}
 
 			_openChartsDialog(e) {
@@ -1915,13 +1884,22 @@
 
             _contactTypeChange(e){
                 if(e.detail){
-                    const idx = this.currentContact.tags.indexOf(this.currentContact.tags.find(t => t.type === "BE-CONTACT-TYPE"))
+					const ctc = this.contacts.find(ctc => ctc.id===e.target.dataset.item)
+                    const idx = ctc.tags.findIndex(t => t.type === "BE-CONTACT-TYPE")
                     if(idx != -1){
-                        this.currentContact.tags.splice(idx, 1);
+                        ctc.tags.splice(idx, 1);
                     }
-                    this.currentContact.tags.push(e.detail.type);
-                    this.notifyPath('currentContact.tags')
-                    this.saveCurrentContact()
+					ctc.tags.push(e.detail.type);
+                    this.notifyPath('contacts')
+					this.notifyPath('currentContact')
+                    this.api.contact().modifyContactWithUser(this.user,ctc)
+							.then(ctc => this.api.register(ctc,"contact"))
+							.then(ctc => {
+								this.set("contacts."+this.contacts.findIndex(c => c.id===ctc.id),ctc)
+								this._isCurrentContact(ctc) && this.set("currentContact",ctc)
+								this._contactsChanged()
+								return ctc;
+							})
 							.then(ctc => this.dispatchEvent(new CustomEvent('contact-saved', { detail: {contact :ctc} , bubbles:true })))
                 }
             }
@@ -1932,7 +1910,7 @@
 
 			_hasCurrentContact() {
                 //console.log("_hasCurrentContact: ", this.contacts.find(c => !c.closingDate) && true);
-				return this.contacts.find(c => !c.closingDate) && true;
+				return this.contacts.find(c => !_.get(c,"closingDate")) && true;
 			}
 
             _isCurrentContact(ctc) {
@@ -1984,9 +1962,9 @@
 
                 const seenForms = {}
                 const formGroups = this.contacts.reduce((contacts, contact) => {
-					const subContacts = contact.subContacts.map(x=>x)
+					const subContacts = _.get(contact,"subContacts",[]).map(x=>x)
 
-					const orphanedServices = contact.services.filter(s => !subContacts.some(sc => sc.services.some(lnk => (lnk.serviceId === s.id))))
+					const orphanedServices = _.get(contact,"services",[]).filter(s => !subContacts.some(sc => _.get(sc,"services",[]).some(lnk => (_.get(lnk,"serviceId") === _.get(s,"id")))))
 					if (orphanedServices.length) {
 					    subContacts.push({services:orphanedServices.map(s=>({serviceId:s.id}))})
 					}
@@ -2004,8 +1982,8 @@
                     const docIds = _.flatMap(forms, f => f.docs.map(d => d.id))
 
                     const unmappedServices = this.serviceFilters && this.serviceFilters.length ?
-                    _.sortBy(contact.services.filter(svc => !docIds.includes(svc.id) && !subContacts.some(sc => sc.formId && sc.services.some(ssc => ssc.serviceId === svc.id)) && this.filteredServiceIds.some(fsId => fsId === svc.id) ), 'created'):
-                    _.sortBy(contact.services.filter(svc => !docIds.includes(svc.id) && !subContacts.some(sc => sc.formId && sc.services.some(ssc => ssc.serviceId === svc.id)) ), 'created')
+                    _.sortBy(_.get(contact,"services",[]).filter(svc => !docIds.includes(_.get(svc,"id")) && !subContacts.some(sc => _.get(sc,"formId") && _.get(sc,"services",[]).some(ssc => _.get(ssc,"serviceId") === _.get(svc,"id"))) && this.filteredServiceIds.some(fsId => fsId === _.get(svc,"id")) ), 'created'):
+                    _.sortBy(_.get(contact,"services",[]).filter(svc => !docIds.includes(_.get(svc,"id")) && !subContacts.some(sc => _.get(sc,"formId") && _.get(sc,"services",[]).some(ssc => _.get(ssc,"serviceId") === _.get(svc,"id"))) ), 'created')
 
                     if((forms && forms.length) || (unmappedServices && unmappedServices.length)) {
                         contacts.push({
@@ -2701,13 +2679,13 @@
                             this.localize("from2",this.language) + ` ` +
                             ( incapacityStart ? this.api.moment(incapacityStart).format("DD/MM/YYYY") : "-" ) + ` ` +
                             this.localize("till",this.language) + ` ` +
-                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : this.api.moment(incapacityStart).format("DD/MM/YYYY") ) + ` ` +
                             includedExcludedLabel + `
                             </p>
                             <p><span class="italic">` + this.localize("csa_txt005",this.language) + `:</span> ` + _.get(_.head(_.filter(subFormServiceNameAndValues, { name:"Sortie" })), "value", "-") + `</p>
                             <p>` +
                             `<span class="italic">` + this.localize("csa_txt006",this.language) + `:</span> ` +
-                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : this.api.moment(_.cloneDeep(incapacityEnd||incapacityStart)).add(1, "days").format("DD/MM/YYYY") ) + ` ` +
                             this.localize("csa_txt007",this.language) + ` ` + precentageValueAndUnit + `
                                     ` + ( incapacityCompletelyFinished ? "<br /><span class='italic'>" + this.localize("csa_txt010",this.language) + ":</span> " + this.api.moment(incapacityCompletelyFinished).format("DD/MM/YYYY") : "" ) + `
                             </p>` +
@@ -2727,7 +2705,7 @@
 
                     })
 					.then(resourcesObject => this.api.isElectronAvailable().then(isElectron => _.assign({isElectron:isElectron}, resourcesObject)))
-					.then(resourcesObject => resourcesObject.isElectron ? fetch(`${this.api.electronHost}/getPrinterSetting`, {method: "POST",headers: {"Content-Type": "application/json; charset=utf-8"},body: JSON.stringify({userId: this.user.id})}).then(response => response && response.status===200 ? response.json() : Promise.resolve({})).then( data => _.assign({printFormat : data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ?JSON.parse(data.data).find(x => x.type==="recipe").format : "A4"}, resourcesObject) ) : resourcesObject)
+					.then(resourcesObject => resourcesObject.isElectron ? fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {method: "POST",headers: {"Content-Type": "application/json; charset=utf-8"},body: JSON.stringify({userId: this.user.id})}).then(response => response && response.status===200 ? response.json() : Promise.resolve({})).then( data => _.assign({printFormat : data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ?JSON.parse(data.data).find(x => x.type==="recipe").format : "A4"}, resourcesObject) ) : resourcesObject)
                     .then(resourcesObject => this.api.pdfReport((resourcesObject.isElectron && resourcesObject.printFormat!=="A4" ? this._getDLPdfHeader() : this._getA5PdfHeader())+ _.trim(resourcesObject.pdfContent) + this._getPdfFooter(), {type:"recipe",completionEvent:"pdfDoneRenderingEvent", option:'a5',paperWidth:148,paperHeight:210,marginLeft: 0,marginRight: 0,marginTop: 0,marginBottom: 0}).then(({pdf:pdfFileContent, printed:printed}) => _.assign({pdfFileContent:pdfFileContent, printed: printed}, resourcesObject)))
                     .then(resourcesObject => this.api.message().newInstanceWithPatient(this.user, this.patient)
                         .then(newMessageInstance=>_.assign({newMessageInstance: newMessageInstance}, resourcesObject))
@@ -3881,51 +3859,45 @@
 			}
 
 			_newDateTime(newDate, oldDate) {
-				return oldDate ? parseInt(newDate.format("YYYYMMDD") + oldDate.toString().substring(8,14)) : null;
+
+				return !_.trim(oldDate) ? null : (_.trim(newDate.format("YYYYMMDD")) + _.trim(oldDate).substring(8,14) + "000000").substring(0,14)
+
 			}
 
 			_valueDate(service, date) {
+
 				const valueDate = service.valueDate.toString();
-				if (valueDate.length == 14)
-					return parseInt(date.format("YYYYMMDD") + valueDate.substring(8));
-				return parseInt(date.format("YYYYMMDD") + "000000");
+				return valueDate.length === 14 ? (_.trim(date.format("YYYYMMDD")) + valueDate.substring(8) + "000000").substring(0,14) : _.trim(date.format("YYYYMMDD")) + "000000";
 			}
 
 			_changeDate(service, date, contact) {
-				//const newDate = this._newDate(date)
-				//service.created = newDate;
-				//service.modified = newDate;
-				if (service.valueDate)
-					service.valueDate = this._valueDate(service, date);
-				if (service.openingDate)
-					service.openingDate = contact.openingDate ? contact.openingDate : this._newDateTime(date, service.openingDate);
-				if (service.closingDate)
-					service.closingDate = contact.closingDate ? contact.closingDate : this._newDateTime(date, service.closingDate);
-			}
 
-			_isVaccineOrMedication(service) {
-				return service.tags.some(t => t.type === "CD-ITEM" && (t.code === "vaccine" || t.code === "medication"));
+				if (service.valueDate) service.valueDate = this._valueDate(service, date);
+				if (service.openingDate) service.openingDate = contact.openingDate ? contact.openingDate : this._newDateTime(date, service.openingDate);
+				if (service.closingDate) service.closingDate = contact.closingDate ? contact.closingDate : this._newDateTime(date, service.closingDate);
+
 			}
 
 			_changeContactDate(date) {
+
 				const contact = this.contacts[0];
 				if (!contact) return;
-				//const newDate = this._newDate(date);
-				//contact.created = newDate;
-				//contact.modified = newDate;
-				if (contact.openingDate)
-					contact.openingDate = this._newDateTime(date, contact.openingDate);
-				if (contact.closingDate)
-					contact.closingDate = this._newDateTime(date, contact.closingDate);
-				const services = contact.services.filter(s => !this._isVaccineOrMedication(s));
-				services.forEach(s => this._changeDate(s, date, contact));
-				return this.api.contact().modifyContactWithUser(this.user, contact).then(contact => {
-					this.api.register(contact, "contact");
-				}).then(() => {
-					setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: contact},bubbles: true,composed: true})), 500);
-				}).then(() => {
-					this._closeDialogs();
-				}).catch((e) => console.log("ERROR with _changeContactDate:", e)) ;
+
+				if (contact.openingDate) contact.openingDate = this._newDateTime(date, contact.openingDate);
+				if (contact.closingDate) contact.closingDate = this._newDateTime(date, contact.closingDate);
+
+				_
+					.chain(contact.services)
+					.filter(svc => !(svc.tags.some(t => t.type === "CD-ITEM" && (t.code === "vaccine" || t.code === "medication"))))
+					.map(svc => this._changeDate(svc, date, contact))
+					.value()
+
+				return this.api.contact().modifyContactWithUser(this.user, contact)
+					.then(contact =>  this.api.register(contact, "contact"))
+					.then(() =>  setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: contact},bubbles: true,composed: true})), 500))
+					.then(() =>  this._closeDialogs())
+					.catch(e => console.log("ERROR with _changeContactDate:", e))
+
 			}
 
 			_maxDate() {
@@ -4297,8 +4269,22 @@
 			        .then(() => this.api.contact().modifyContactWithUser(this.user, ctc))
                     .then(c => this.api.register(c,'contact'))
                     .then(c => ctc.rev = c.rev)
-                    // .then(() => this._contactsChanged())
                     .then(() => setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: ctc},bubbles: true,composed: true})), 500))
+
+			}
+
+			_deleteContactAndRefreshContacts(ctc) {
+
+				const targetCtcAfterDeletion = _
+					.chain(this.allContacts)
+					.filter(c => _.get(c,"id")!==_.get(ctc,"id"))
+					.orderBy(["openingDate"],["desc"])
+					.head()
+					.value()
+
+			    return Promise.resolve()
+			        .then(() => !_.trim(_.get(ctc,"id")) ? null : this.api.contact().deleteContacts(_.trim(_.get(ctc,"id"))))
+					.then(() => setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: targetCtcAfterDeletion},bubbles: true,composed: true})), 500))
 
 			}
 
@@ -4411,7 +4397,7 @@
 			_linkServicesAndEs(e) {
 
 				const ctc = _.find(this.contacts, {id:_.get(e, "detail.contact.id","")})
-				const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
+				const sourceSubContact = _.size(ctc.subContacts) === 1 ? _.head(ctc.subContacts) : _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
 				const sourceServiceIds = _.uniq(_.compact(_.map(_.get(sourceSubContact,"services",[]), x => _.get(x,"serviceId",""))))
 				const heAlreadyLinked = !!_.size(_
 					.chain(_.get(ctc,"subContacts",[]))
@@ -4498,33 +4484,30 @@
 			_deleteServiceDialog(e) {
 
 				const ctc = _.find(this.contacts, {id:_.get(e, "detail.contact.id","")})
-				const isFromServices = !!_.get(e,"detail.isServices", false)
-
-				// For dynamic doc
 				const docId = _.trim(_.get(e, "detail.document.id",""))
-				const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc,"content.fr",{})) && _.get(svc,"content.fr.documentId","") === docId) || (!!_.size(_.get(svc,"content.nl",{})) && _.get(svc,"content.nl.documentId","") === docId) || (!!_.size(_.get(svc,"content.en",{})) && _.get(svc,"content.en.documentId","") === docId))
+				const svcIds = !docId ? _.get(e,"detail.svcIds","") : _.get(_.find(ctc.services, svc => (!!_.size(_.get(svc,"content.fr",{})) && _.get(svc,"content.fr.documentId","") === docId) || (!!_.size(_.get(svc,"content.nl",{})) && _.get(svc,"content.nl.documentId","") === docId) || (!!_.size(_.get(svc,"content.en",{})) && _.get(svc,"content.en.documentId","") === docId)),"id","")
 
-				// For ht-services-list
-				const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
-				const sourceServiceIds = _.uniq(_.compact(_.map(_.get(sourceSubContact,"services",[]), x => _.get(x,"serviceId",""))))
-
-				// For dialog
-				this.set("_deleteServicesData.ctc",ctc)
-				this.set("_deleteServicesData.isFromServices",isFromServices)
-				this.set("_deleteServicesData.docId",docId)
-				this.set("_deleteServicesData.documentSvc",documentSvc)
-				this.set("_deleteServicesData.sourceSubContact",sourceSubContact)
-				this.set("_deleteServicesData.sourceServiceIds",sourceServiceIds)
-
-				return this.$['deleteServiceDialog'] && this.$['deleteServiceDialog'].open();
+				return (this.set("_deleteServicesData",{ctc:ctc, docId:docId, svcIds:svcIds.split(",")})||true) && this.$['deleteServiceDialog'] && this.$['deleteServiceDialog'].open();
 
 			}
 
 			_doDeleteService() {
 
-				console.log("_doDeleteService", this._deleteServicesData)
+				const promResolve = Promise.resolve()
+				const targetCtc = _.get(this,"_deleteServicesData.ctc",{})
 
-				return this.$['deleteServiceDialog'] && this.$['deleteServiceDialog'].close();
+				return !_.size(_.get(this,"_deleteServicesData",{})) || !_.trim(_.get(targetCtc,"id")) || !_.size(this._deleteServicesData.svcIds) ? this.$['deleteServiceDialog'].close() : promResolve
+					.then(() => _.assign(targetCtc, {services: _.filter(_.get(targetCtc,"services",[]), svc => _.get(this,"_deleteServicesData.svcIds",[]).indexOf(svc.id) === -1)}))
+					.then(() => _.assign(targetCtc, {subContacts:_.map(_.get(targetCtc,"subContacts",[]), subCtc => _.assign(subCtc, {services: _.filter(_.get(subCtc,"services",[]), svc => _.get(this,"_deleteServicesData.svcIds",[]).indexOf(svc.serviceId) === -1)}) )}))
+					.then(() => _.assign(targetCtc, {subContacts:_.filter(_.get(targetCtc,"subContacts",[]), subCtc => _.size(_.get(subCtc,"services",[])) )}))
+					.then(() => !_.size(_.get(targetCtc,"services",[])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
+					.finally(() => this.$['deleteServiceDialog'].close())
+
+			}
+
+			_isBold(x) {
+
+				return !!x ? "fw700" : ""
 
 			}
 

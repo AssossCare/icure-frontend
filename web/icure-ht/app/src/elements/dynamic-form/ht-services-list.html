@@ -177,14 +177,14 @@
             <div class$="textContainer [[additionalCssClasses]]">
                 <template is="dom-repeat" items="[[_services(contacts,contacts.*)]]" as="item">
 
-                    <template is="dom-if" if="[[_any(printable,forwardable)]]">
+                    <template is="dom-if" if="[[_any(printable,forwardable,allowEsLink,allowEditLabelAndTransaction,allowDeletion)]]">
                         <div class="documentHeader">
                             <span></span>
                             <div>
+
+                                <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+
                                 <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
-
-                                    <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
-
                                     <template is="dom-if" if="[[_documentId(contacts)]]">
                                         <paper-icon-button icon="file-download" on-tap="_triggerDownload" data-document-id$="[[_documentId(contacts)]]" class="button--icon-btn" id="downloadFile-1"></paper-icon-button>
                                         <paper-tooltip for="downloadFile-1" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
@@ -194,6 +194,7 @@
                                         <paper-tooltip for="printDocument" position="left">[[localize('pri','Print',language)]]</paper-tooltip>
                                     </template>
                                 </template>
+
                                 <template is="dom-if" if="[[forwardable]]">
                                     <template is="dom-if" if="[[_documentId(contacts)]]">
                                         <paper-icon-button on-tap="_forwardDocument" data-document-id$="[[_documentId(contacts)]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
@@ -220,10 +221,9 @@
                                 </template>
 
                                 <template is="dom-if" if="[[allowDeletion]]">
-                                    <paper-icon-button icon="delete" on-tap="_deleteService" class="button--icon-btn" id="deleteService"></paper-icon-button>
+                                    <paper-icon-button icon="delete" on-tap="_deleteService" data-svc-ids$="[[item.id]]" class="button--icon-btn" id="deleteService"></paper-icon-button>
                                     <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
                                 </template>
-
                             </div>
                         </div>
                     </template>
@@ -242,53 +242,57 @@
 
 
             <template is="dom-if" if="[[!_moreThan1Contact(contacts,contacts.*)]]">
-                <template is="dom-if" if="[[_any(printable,forwardable)]]">
+                <template is="dom-if" if="[[_any(printable,forwardable,allowEsLink,allowEditLabelAndTransaction,allowDeletion)]]">
                     <div class$="documentHeader margin032 [[additionalCssClasses]]">
                         <span></span>
                         <div>
-                            <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
 
-                                <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                            <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+
+                            <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
 
                                 <template is="dom-if" if="[[_documentId(contacts)]]">
                                     <paper-icon-button icon="file-download" on-tap="_triggerDownload" data-document-id$="[[_documentId(contacts)]]" class="button--icon-btn" id="downloadFile-2"></paper-icon-button>
                                     <paper-tooltip for="downloadFile-2" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                                 </template>
+
                                 <template is="dom-if" if="[[printable]]">
                                     <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id$="[[_contactId(contacts)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
                                     <paper-tooltip for="printDocument" position="left">[[localize('pri','Print',language)]]</paper-tooltip>
                                 </template>
+
                             </template>
+
                             <template is="dom-if" if="[[forwardable]]">
                                 <template is="dom-if" if="[[_documentId(contacts)]]">
                                     <paper-icon-button on-tap="_forwardDocument" data-document-id$="[[_documentId(contacts)]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
                                 </template>
-
-                                <template is="dom-if" if="[[allowEsLink]]">
-                                    <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
-                                    <paper-menu-button class="" horizontal-align="right" dynamic-align="true" vertical-offset="30">
-                                        <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
-                                        <paper-listbox slot="dropdown-content">
-                                            <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
-                                            </template>
-                                        </paper-listbox>
-                                    </paper-menu-button>
-                                </template>
-
-                                <template is="dom-if" if="[[allowEditLabelAndTransaction]]">
-                                    <paper-icon-button icon="create" on-tap="_editLabelAndTransaction" class="button--icon-btn" id="editLabelAndTransaction"></paper-icon-button>
-                                    <paper-tooltip for="editLabelAndTransaction" position="left">[[localize('editLabelAndTransaction','Edit label and type',language)]]</paper-tooltip>
-                                </template>
-
-                                <template is="dom-if" if="[[allowDeletion]]">
-                                    <paper-icon-button icon="delete" on-tap="_deleteService" class="button--icon-btn" id="deleteService"></paper-icon-button>
-                                    <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
-                                </template>
-
                             </template>
+
+                            <template is="dom-if" if="[[allowEsLink]]">
+                                <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
+                                <paper-menu-button class="" horizontal-align="right" dynamic-align="true" vertical-offset="30">
+                                    <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
+                                    <paper-listbox slot="dropdown-content">
+                                        <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
+                                            <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                            <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                        </template>
+                                    </paper-listbox>
+                                </paper-menu-button>
+                            </template>
+
+                            <template is="dom-if" if="[[allowEditLabelAndTransaction]]">
+                                <paper-icon-button icon="create" on-tap="_editLabelAndTransaction" class="button--icon-btn" id="editLabelAndTransaction"></paper-icon-button>
+                                <paper-tooltip for="editLabelAndTransaction" position="left">[[localize('editLabelAndTransaction','Edit label and type',language)]]</paper-tooltip>
+                            </template>
+
+                            <template is="dom-if" if="[[allowDeletion]]">
+                                <paper-icon-button icon="delete" on-tap="_deleteService" data-svc-ids$="[[_serviceIds(contacts,contacts.*)]]" class="button--icon-btn" id="deleteService"></paper-icon-button>
+                                <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
+                            </template>
+
                         </div>
                     </div>
                 </template>
@@ -565,6 +569,12 @@
 
             }
 
+            _serviceIds(contacts) {
+
+                return _.map(this._services(contacts),"id").join(",");
+
+            }
+
             _isExcluded(he){
                 return _.get(he, 'tags', []).find(t => t.type === "CD-CERTAINTY" && t.code === "excluded") ? "exclude" : null
             }
@@ -603,7 +613,8 @@
             }
 
             _deleteService(e) {
-                this.dispatchEvent(new CustomEvent('delete-service', {detail: {contact: _.get(this,"contacts[0]",{}), isServices: true}, composed: true, bubbles: true}));
+                const svcIds = _.get(_.find(e.path, it => _.get(it,"nodeName") === "PAPER-ICON-BUTTON"),"dataset.svcIds","");
+                this.dispatchEvent(new CustomEvent('delete-service', {detail: {contact: _.get(this,"contacts[0]",{}), svcIds: svcIds}, composed: true, bubbles: true}));
             }
 
         }

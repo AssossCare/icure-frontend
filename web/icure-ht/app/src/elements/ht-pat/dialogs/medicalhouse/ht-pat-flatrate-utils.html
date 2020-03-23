@@ -19,17 +19,24 @@
 <link rel="import" href="../../../../styles/buttons-style.html">
 
 <dom-module id="ht-pat-flatrate-utils">
+
+
+
     <template>
 
     </template>
+
+
+
     <script>
+
         import * as models from 'icc-api/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import promiseLimit from 'promise-limit';
 
-
         class HtPatFlatRateUtils extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+
             static get is() {
                 return 'ht-pat-flatrate-utils';
             }
@@ -200,6 +207,7 @@
                         // oveview
                         res.flatrateStatus = this.checkMHStatus(res);
                         //console.log("res", res, JSON.stringify(res));
+                        res.flatrateInfo = this.getFlatrateInfo(res);
                     } else {
                         // non flatrate
                         res.flatrateStatus = {status: "ok-no-flatrate-mh", errors: []}
@@ -249,11 +257,51 @@
                     // oveview
                     res.flatrateStatus = this.checkMHStatus(res);
                     //console.log("res", res, JSON.stringify(res));
+                    res.flatrateInfo = this.getFlatrateInfo(res);
                 } else {
                     // non flatrate
                     res.flatrateStatus = {status: "ok-no-flatrate-mh", errors: []}
                 }
                 return res;
+            }
+
+            getFlatrateInfo(res){
+                var inf = {};
+                inf.invoicedMonth = res.invoicedMonth;
+                inf.LName = res.pat.lastName;
+                inf.FName = res.pat.firstName;
+                inf.ssin = res.pat.ssin;
+                inf.MUT = "---";
+                inf.CT12 = res.ct12Check.valid ? res.ct12Check.ct12 : "---/---";
+                if(this.getLastMHContract(res.pat)) {
+                    const contract = this.getLastMHContract(res.pat);
+                    inf.ABON = (contract.gp ? "M" : "N") + (contract.kine ? "K" : "N") + (contract.nurse ? "I" : "N");
+                    inf.DINS = contract.startOfContract ? contract.startOfContract : "--/--/----";
+                    inf.DFAC = contract.startOfCoverage ? contract.startOfCoverage : "--/--/----";
+                    inf.DDES = contract.endOfContract ? contract.endOfContract : "--/--/----";
+                    inf.DFIN = contract.endOfCoverage ? contract.endOfCoverage : "--/--/----";
+
+                } else {
+                    inf.ABON = "NNN";
+                    inf.DINS = "--/--/----";
+                    inf.DFAC = "--/--/----";
+                    inf.DDES = "--/--/----";
+                    inf.DFIN = "--/--/----";
+                }
+                return inf;
+            }
+
+            getInsurancesDataByIds(insurancesIds) {
+                return new Promise(resolve => {
+                    this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : insurancesIds}))
+                        .then(insurancesData => resolve(
+                            _
+                                .chain(insurancesData)
+                                .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                                .sortBy((i)=>{ return i.code; })
+                                .value()
+                        ))
+                })
             }
 
             checkMHStatus(res){
@@ -355,6 +403,16 @@
                 }
             }
 
+            getLastMHContract(pat){
+                if(pat.medicalHouseContracts && pat.medicalHouseContracts.length > 0){
+                    const mhcList = _.orderBy(pat.medicalHouseContracts, ['startOfCoverage'], ['desc'])
+                    return mhcList[0]
+                }
+                else {
+                    return null;
+                }
+            }
+
             checkMut(insCheck){
                 return insCheck.valid ?
                     (insCheck.insurability.insuranceId && insCheck.insurability.insuranceId !== '' ?
@@ -442,20 +500,6 @@
                 return niss.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
             }
 
-            // _runTest(){
-            //     let mhcs = this.patient.medicalHouseContracts
-            //     mhcs.map(
-            //         mhc =>{
-            //             let tmp = mhc.suspensionSource;
-            //         }
-            //     )
-            //     const amounts = this.getForfaitAmounts();
-            //     const amount = this.getForfaitAmountOnDate(20161101);
-            //     const amount1 = this.getForfaitAmountOnDate(20171101);
-            //     const amount2 = this.getForfaitAmountOnDate(20181101);
-            // }
-
-
             getForfaitAmountOnDate(date){
                 const amounts = this.getForfaitAmounts();
                 let amount = amounts.find(am => am.startDate <= date && (!am.endDate || am.endDate >= date ));
@@ -476,9 +520,320 @@
                 return amounts.amounts ? amounts.amounts : null;
             }
 
+            //Patient invoices/Messages
+            //
+            getPatientInvoices(pat){
+                return this.api.invoice().findBy(this.user.healthcarePartyId, pat).then(invoices => invoices);
+            }
 
+            _getInsurancesDataByIds(insurancesIds) {
+                return new Promise(resolve => {
+                    this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : insurancesIds}))
+                        .then(insurancesData => resolve(
+                            _
+                                .chain(insurancesData)
+                                .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                                .sortBy((i)=>{ return i.code; })
+                                .value()
+                        ))
+                })
+            }
+
+            getFlatrateInvoiceMessages(){
+                return this.api.getRowsUsingPagination(
+                    (key,docId) =>
+                        this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-BATCH-ZIP', null, key, docId, 1000)
+                            .then(pl => { return {
+                                rows:_.filter(pl.rows, m => {
+                                    return m
+                                        && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
+                                        && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
+                                        && parseInt( _.get(m, "metas.batchExportTstamp", 0) )
+                                        && parseInt( _.size( _.get(m, "invoiceIds", [] ) ) )
+                                }),
+                                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                                done: !pl.nextKeyPair
+                            }})
+                            .catch(()=>{ return Promise.resolve(); })
+                ).then(messages=>messages)
+            }
+
+            createInvoice(pat, date) {
+                return this.getValorisation(date).then(valorisation => this._createMedicalHousePatientInvoice(pat, valorisation, date));
+            }
+
+            _createMedicalHousePatientInvoice(pat, valorisation, date) {
+                pat.finalMedicalHouseContracts = pat.medicalHouseContracts.filter(mhc => mhc.startOfCoverage <= date && (mhc.endOfCoverage >= date || !mhc.endOfCoverage))[0];
+                pat.finalInsurability = pat.insurabilities.filter(ins => ins.startDate <= date && (ins.endDate >= date || !ins.endDate))[0];
+                const codesList = valorisation.valorisations;
+                const originalInvoicingCodes = codesList.filter(code =>
+                    parseFloat(code.price) && (
+                        (code.flatRateType === "physician" && pat.finalMedicalHouseContracts.gp === true ) ||
+                        (code.flatRateType === "nurse" && pat.finalMedicalHouseContracts.nurse === true) ||
+                        (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true)
+                    )
+                );
+                _.assign(pat, {
+                    invoicingCodes: _.compact(originalInvoicingCodes).map(val => ({
+                        code: val.code,
+                        tarificationId: "INAMI-RIZIV|" + val.code + "|1.0",
+                        label: _.get(val, "label."+this.language,""),
+                        totalAmount: Number(_.get(val,"price",0)),
+                        reimbursement: Number(_.get(val,"price",0)),
+                        patientIntervention: Number(0.00).toFixed(2),
+                        doctorSupplement: Number(0.00).toFixed(2),
+                        units: 1,
+                        archived: false,
+                        canceled: false,
+                        accepted: false,
+                        pending: true,
+                        resent: false,
+                        lost: false,
+                        dateCode: parseInt(_.get(val,"valorisationMonth",0))||null,
+                        id: this.api.crypto().randomUuid(),
+                        logicalId: this.api.crypto().randomUuid()
+                    }))
+                });
+                let insParent = {};
+                return this._getInsurancesDataByIds([pat.finalInsurability.insuranceId])
+                    .then(ins => this._getInsurancesDataByIds([_.get(ins,"[0].parent")]))
+                    .then(insP => { insParent = _.get(insP,"[0]"); return this.api.crypto().extractDelegationsSFKs(pat, _.get(this, "user.healthcarePartyId")); })
+                    .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
+                    .then(invoices => this.api.invoice().newInstance(this.user, pat, invoices[0]))
+                    .then(inv => this.api.invoice().createInvoice(inv, 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
+                    .then(inv => this.api.register(inv,'invoice'))
+                    .then(inv => this.api.message().newInstance(this.user).then(newMessageInstance=>([inv,newMessageInstance])))
+                    .then(([inv,newMessageInstance]) => this.api.message().createMessage(_.merge(newMessageInstance,
+                        {
+                            transportGuid: "MH:FLATRATE:INVOICE-TO-ADD",
+                            recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                            recipients: [_.get(this, "user.healthcarePartyId")],
+                            toAddresses: [_.get(this, "user.healthcarePartyId")],
+                            metas: {
+                                invoiceDate: _.get(inv,"invoiceDate"),
+                                exportedDate: _.get(inv,"invoiceDate"),
+                                invoiceRecipientId: _.trim(_.get(inv,"recipientId")),
+                                invoiceReference: _.trim(_.get(inv,"invoiceReference")),
+                            },
+                            subject: "MH: Flatrate invoice to add upon next run",
+                            invoiceIds: [_.get(inv,"id")]
+                        }
+                    )).then(()=>inv))
+            }
+
+            getChangeParentCode306(code){
+                return code === "306" ? "300" : code;
+            }
+
+            getValorisation(valorisationMonth){
+                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+                    return {
+                        month: parseInt(valorisationMonth),
+                        valorisations: _.merge(
+                            [
+                                {code: "109616", price: 0.00, flatRateType: "physician"},           // Doctor
+                                {code: "509611", price: 0.00, flatRateType: "physiotherapist"},     // Kine
+                                {code: "409614", price: 0.00, flatRateType: "nurse"}                // Nurse
+                            ],
+                            _.compact(
+                                _.chain(_.get(hcp, "flatRateTarifications", []))
+                                    .map(singleNomenclature => {
+                                        const valorisationObject = _.head(
+                                            _.orderBy(
+                                                _
+                                                    .chain(singleNomenclature.valorisations)
+                                                    .filter(singleValorisation => {
+                                                        return (
+                                                            !!singleValorisation
+                                                            && parseFloat(_.get(singleValorisation, "reimbursement", 0))
+                                                            && (
+                                                                (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).isBefore(moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month')) ||
+                                                                (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).format("YYYYMMDD") === moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month').format("YYYYMMDD")
+                                                            )
+                                                        )
+
+                                                    })
+                                                    .value(),
+                                                ["startOfValidity"],
+                                                ["desc"]
+                                            )
+                                        )
+                                        return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
+                                            code: _.trim(_.get(singleNomenclature, "code")),
+                                            label: _.get(singleNomenclature, "label"),
+                                            flatRateType: _.trim(_.get(singleNomenclature, "flatRateType")),
+                                            price: parseFloat(_.get(valorisationObject, "reimbursement", 0)),
+                                            valorisationMonth: parseInt(valorisationMonth)
+                                        } : false
+                                    })
+                                    .value()
+                            )
+                        )
+                    }
+                })
+            }
+
+            getNonInvoicedMonths(pat){
+                //const flatRateUtil = this.$.flatrateUtils;
+                let invoices = [];
+                let insurancesData = [];
+                let messages = [];
+                this.getFlatrateInvoiceMessages().then(msgs => {
+                    messages = msgs;
+                    console.log("messageCount", messages.length);
+                    console.log("messages", messages);
+                    return this.getPatientInvoices(pat)
+                }).then(invs => {
+                    invoices = invs.filter(inv => inv.sentMediumType === "cdrom");
+                    if(pat && pat.medicalHouseContracts && pat.medicalHouseContracts.length > 0) {
+                        const mhc = _.orderBy(pat.medicalHouseContracts, ['startOfContract'], ['asc'])[0];
+                        const startOfCoverage = mhc.startOfCoverage;
+                        const endOfCoverage = mhc.endOfCoverage ? mhc.endOfCoverage : parseInt(moment().startOf('month').format("YYYYMMDD"));
+                        const startMoment = this.api.moment(startOfCoverage);
+                        const curMoment = this.api.moment(endOfCoverage);
+                        const endMoment = this.api.moment(endOfCoverage);
+                        let aMonths = [];
+                        while(startMoment <= curMoment){
+                            aMonths.push({date: this.api.moment(parseInt(curMoment.format('YYYYMMDD'))), data: {}});
+                            curMoment.subtract(1, 'month');
+                        }
+
+                        if (invoices) {
+                            aMonths.forEach(m => {
+                                m.medicalHouseContract = mhc;
+                                const dateCode = parseInt(m.date.format("YYYYMMDD"));
+
+                                const invs = invoices.filter(inv => inv.invoicingCodes.filter(ic => ic.dateCode === dateCode).length > 0);
+                                const invsClone = [];
+                                invs.forEach(inv => {
+                                    inv.invoicingCodes.forEach(ic => {
+                                        ic.status =  (ic.canceled ? "canceled " : "") + (ic.accepted ? "accepted " : "") + (ic.pending ? "pending " : "") + (ic.resent ? "resent " : "") + (ic.lost ? "lost " : "");
+                                        ic.group = ic.dateCode + "/" + ic.status;
+                                    })
+                                    const invClone = _.cloneDeep(inv);
+                                    //TODO: get display values
+                                    //Send Date/envoi
+                                    //inv.DateEnvoi = this.api.moment(inv.invoiceDate).format("DD/MM/YYYY");
+                                    //Mut
+
+                                    //get all invoicingcode groups : dateCode-status
+                                    const icGroups = _.uniq(invClone.invoicingCodes.filter(ic => ic.dateCode === dateCode).map(ic => ic.group));
+
+                                    icGroups.forEach(icGroup => {console.log("icGroup", icGroup)
+                                        //m, k, i
+                                        const invCloneBis = _.cloneDeep(invClone);
+                                        // invCloneBis.m = inv.invoicingCodes.find(ic => ic.code === "109616" && ic.group === icGroup);
+                                        // invCloneBis.k = inv.invoicingCodes.find(ic => ic.code === "509611" && ic.group === icGroup);
+                                        // invCloneBis.i = inv.invoicingCodes.find(ic => ic.code === "409614" && ic.group === icGroup);
+                                        // invCloneBis.mki = (invCloneBis.m ? "M" : "N") + (invCloneBis.k ? "K" : "N") + (invCloneBis.i ? "I" : "N");
+                                        // invCloneBis.icCount = inv.invoicingCodes.filter(ic => ic.code === "109616" && ic.dateCode === dateCode).length;
+                                        //
+                                        // //Status
+                                        // const icode = invCloneBis.m ? invCloneBis.m : invCloneBis.k ? invCloneBis.k : invCloneBis.i ? invCloneBis.i : {canceled: false, accepted: false, pending: false, resent: false, lost: false, status: ""};
+                                        // console.log("icode", dateCode, icode);
+                                        // invCloneBis.status = icode.status;//(icode.canceled ? "canceled " : "") + (icode.accepted ? "accepted " : "") + (icode.pending ? "pending " : "") + (icode.resent ? "resent " : "") + (icode.lost ? "lost " : "");
+                                        // invCloneBis.status = invCloneBis.status === "" ? "---" : invCloneBis.status;
+                                        // //reference
+                                        // //reason/error
+                                        // invCloneBis.comment = invCloneBis.error ? invCloneBis.error : "";
+                                        //
+                                        // //link with messages
+                                        // invCloneBis.messages = messages.filter(msg => msg.invoiceIds.includes(invCloneBis.id));
+                                        // invCloneBis.DateEnvoi = invCloneBis.messages && invCloneBis.messages.length > 0 ? this.api.moment(parseInt(invCloneBis.messages[0].metas.exportedDate)).format("MM/YYYY") : "--/----";
+                                        invsClone.push(invCloneBis);
+                                    });
+                                });
+                                m.data.invoices = invsClone;
+                            })
+                        }
+                        aMonths.forEach(m => {
+                            const dateCode = parseInt(m.date.format("YYYYMMDD"));
+                            m.dateCode = dateCode;
+                        });
+                        return aMonths.filter(m => !(m.data.invoices && m.data.invoices.length > 0));
+                        //console.log(JSON.stringify(aMonths));
+                    }
+                    else{
+                        return [];
+                    }
+                });
+            }
+
+            _OLD_flagInvoicesToAddFromTimelineAsAdded(exportDate) {
+
+                // Old method, do NOT use: this one also deletes invoices which is wrong
+
+                let foundMessages = [];
+                let promMessages = Promise.resolve([]);
+                let promInvoices = Promise.resolve([]);
+
+                return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
+                    .then(x => foundMessages = x)
+                    .then(() => _.chain(foundMessages).map("invoiceIds").flatten().compact().uniq().value())
+                    .then(invoiceIds => !_.size(invoiceIds) ? null : invoiceIds.map(invoiceId => { promInvoices = promInvoices.then(promisesCarrier => !_.trim(invoiceId) ? Promise.resolve() : this.api.invoice().deleteInvoice(invoiceId).then(x => _.concat(promisesCarrier, x)).catch(()=>Promise.resolve())) }))
+                    .then(() => foundMessages.map(msg => { promMessages = promMessages.then(promisesCarrier => !_.trim(_.get(msg,"id","")) ? Promise.resolve() : this.api.message().modifyMessage(_.merge(msg, {transportGuid:"MH:FLATRATE:INVOICE-GOT-ADDED"})).then(x => _.concat(promisesCarrier, x)).catch(()=>Promise.resolve())) }))
+                    .catch(()=>Promise.resolve())
+            }
+
+            getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate) {
+
+                const userHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+
+                return this.api.getRowsUsingPagination(
+                    (key,docId) =>
+                        this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICE-TO-ADD', null, key, docId, 1000)
+                            .then(pl => { return {
+                                rows:_.filter(pl.rows, m => {
+                                    const invoiceDate = parseInt(_.get(m, "metas.invoiceDate"))||parseInt(moment().format('YYYYMMDD'))
+                                    return !!m
+                                        && _.trim(_.get(m,'fromHealthcarePartyId',false)) === userHcpId
+                                        && _.get(m, "recipients", []).indexOf(userHcpId) > -1
+                                        && !!_.size(_.get(m, "invoiceIds",[]))
+                                        && invoiceDate && parseInt(invoiceDate) <= (parseInt(exportDate)||0)
+                                }),
+                                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                                done: !pl.nextKeyPair
+                            }})
+                            .catch(()=>Promise.resolve())
+                ).catch(()=>Promise.resolve())
+
+            }
+
+            getInvoicesToAddFromTimelineByMaxExportDate(exportDate) {
+
+                return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
+                    .then(foundMessages => _.chain(foundMessages).map("invoiceIds").flatten().compact().uniq().value())
+                    .then(invoiceIds => !_.size(invoiceIds) ? null : this.api.invoice().getInvoices({ids:invoiceIds}))
+                    .then(invoices => (!_.size(invoices) || !_.trim(_.get(invoices,"[0].id"))) ? [] : _.filter(invoices, it => !_.trim(_.get(it,"sentDate"))))
+                    .catch(()=>Promise.resolve())
+
+            }
+
+            flagInvoicesToAddFromTimelineAsAdded(exportDate) {
+
+                let promMessages = Promise.resolve([]);
+
+                // previous "transportGuid" = MH:FLATRATE:INVOICE-TO-ADD
+                return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
+                    .then(foundMessages => foundMessages.map(msg => {
+                        promMessages = promMessages.then(promisesCarrier => !_.trim(_.get(msg,"id","")) ?
+                            Promise.resolve() :
+                            this.api.message().modifyMessage(_.merge(msg, {transportGuid:"MH:FLATRATE:INVOICE-GOT-ADDED"}))
+                                .then(x => _.concat(promisesCarrier, x))
+                                .catch(()=>_.concat(promisesCarrier, {}))
+                        )
+                    }))
+                    .catch(()=>Promise.resolve())
+            }
 
         }
+
         customElements.define(HtPatFlatRateUtils.is, HtPatFlatRateUtils);
+
     </script>
+
+
+
 </dom-module>

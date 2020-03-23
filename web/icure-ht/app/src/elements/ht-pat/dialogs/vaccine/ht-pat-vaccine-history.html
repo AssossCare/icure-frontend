@@ -131,7 +131,7 @@
             <vaadin-grid id="vaccines" class="material" items="[[getVaccines(refresher)]]" active-item="{{vaccine}}">
                 <vaadin-grid-column flex-grow="0" width="100px">
                     <template class="header">
-                        <vaadin-grid-sorter path="date">[[localize('dat','Date',language)]]
+                        <vaadin-grid-sorter path="time">[[localize('dat','Date',language)]]
                         </vaadin-grid-sorter>
                     </template>
                     <template>
@@ -258,6 +258,7 @@
                     date: svc.valueDate,
                     code: _.get(this._getCode(svc), 'code', null),
                     name: this._getName(svc),
+                    time: this._getTime(svc),
                     color: this._getColor(svc),
                     status: this._getStatus(svc),
                     product: this._getProduct(svc),
@@ -270,7 +271,7 @@
                 console.log("ht-pat-vaccine-history: initialize", this.contacts)
                 this._schemas = schemas;
                 let vaccines = services.map(svc => this._newVaccine(svc));
-                this.set("vaccines", _.orderBy(vaccines, ['date', 'date'], ['code','code']))
+                this.set("vaccines", _.orderBy(vaccines, ['time', 'time'], ['code','code']))
                 this.set("refresher", this.refresher + 1);
             }
 
@@ -279,6 +280,7 @@
                 const vaccine = this.vaccines.find(v => v.id == service.id);
                 if (!vaccine) return;
                 vaccine.date = service.valueDate;
+                vaccine.time = this._getTime(service);
                 vaccine.color = this._getColor(service);
                 vaccine.status = this._getStatus(service);
                 vaccine.product = this._getProduct(service);
@@ -301,6 +303,10 @@
 
             _getDate(svc) {
                 return this._formatDate(svc.valueDate);
+            }
+
+            _getTime(svc) {
+                return svc && svc.valueDate ? this.api.moment(svc.valueDate).format("x") : null;
             }
 
             _getCode(svc) {
@@ -352,7 +358,7 @@
             onActionChanged(detail) {
                 if (detail.clone) {
                     this.push("vaccines", this._newVaccine(detail.clone));
-                    this.set("vaccines", _.orderBy(this.vaccines, ['date', 'date'], ['code','code']))
+                    this.set("vaccines", _.orderBy(this.vaccines, ['time', 'time'], ['code','code']))
                     this.set("refresher", this.refresher + 1);
                 }
                 this.updateService(detail)

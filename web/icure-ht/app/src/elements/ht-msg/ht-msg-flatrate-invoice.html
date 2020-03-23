@@ -1,4 +1,3 @@
-
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
@@ -967,6 +966,11 @@
                     padding:20px 20px 40px 20px
                 }
 
+                .batchNumberInput {
+                    width:50%;
+                    margin:0 auto;
+                }
+
             </style>
         </custom-style>
 
@@ -995,7 +999,7 @@
                 <div id="loadingContainerSmall">
                     <div id="loadingContentContainerSmall">
                         <ht-spinner class="spinner" alt="Loading..." active></ht-spinner>
-<!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
+                        <!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
                     </div>
                 </div>
             </template>
@@ -1175,10 +1179,13 @@
                 <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingDownload()]]"><div class="warningMessage" id="warningMessageInvoicing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingDownloadWarningMessage', 'Please only download invoicing at the end of the month', language)]]</div></div></template>-->
                 <div class="textAlignCenter">
 
-                    <div class="exportMonthPicker">
+                    <div class="exportMonthPicker pb20">
                         <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
                         <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
                         <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+
+                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
                     </div>
 
                     <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
@@ -1730,6 +1737,14 @@
                     tabs: {
                         type: Number,
                         value: 0
+                    },
+                    batchNumber: {
+                        type: String,
+                        value: ""
+                    },
+                    overrideBatchNumber:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -1810,6 +1825,12 @@
                                                                         this.localize('Dec',this.language)
                         return `${monthStr} ${yyyy}`
                 }
+            }
+
+            _overrideBatchNumberGotChanged(e) {
+
+                this.set("overrideBatchNumber", _.get(_.find(e.path, it => _.get(it,"nodeName") === "VAADIN-CHECKBOX"), "checked", false));
+
             }
 
             SEG_getErrSegment_200(zones){
@@ -2282,7 +2303,6 @@
             }
 
             _getInsuranceTitularyInfo(inputPatientsList=false) {
-                //this.api.setPreventLogging()
                 return new Promise(resolve =>{
                     const insuranceTitularyIds = _.compact(_.uniq(_.filter( (inputPatientsList?inputPatientsList:this.flatRateAllPatients), (i)=>{ return _.trim(_.get(i, "titularyId", "")) }).map(i=>i.titularyId) ));
                     return !_.size(insuranceTitularyIds) ? resolve((inputPatientsList?inputPatientsList:this.flatRateAllPatients)) : this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ ids: insuranceTitularyIds })).then(results => {
@@ -2402,8 +2422,8 @@
                         <tbody>
                             <tr class="">
                                 <td width="100%">
-                                    <span class="bold uppercase colorBlue fs12">` + this.localize("flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_header",this.language) + `</span><br />
-                                    <span class="bold uppercase colorBlue fs10">` + this.localize("flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_subheader",this.language) + `</span><br />
+                                    <span class="bold uppercase colorBlue fs12">` + this.localize("flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_header","flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_header",this.language) + `</span><br />
+                                    <span class="bold uppercase colorBlue fs10">` + this.localize("flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_subheader","flatrate_" + ( isInvoicingExport ? "invoicing" : "list") + "_"+listIndex+"_subheader",this.language) + `</span><br />
                                 </td>
                             </tr>
                         </tbody>
@@ -2423,15 +2443,15 @@
                         <table id="contentBodyTable" class="mt10" cellspacing="0" cellpadding="0">
                             <thead>
                                 <tr class="fs10 colorBlue italic bold txt-left pb10">
-                                    <td class="contentBodyHeader" width="5%">` + this.localize("flatrate_column_1",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="30%">` + this.localize("flatrate_column_2",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_3",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_4",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="6%">` + this.localize("flatrate_column_5",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="11%">` + this.localize("flatrate_column_6",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="13%">` + this.localize("flatrate_column_7",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="5%">` + this.localize("flatrate_column_8",this.language) + `</td>
-                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_9",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="5%">` + this.localize("flatrate_column_1","flatrate_column_1",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="30%">` + this.localize("flatrate_column_2","flatrate_column_2",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_3","flatrate_column_3",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_4","flatrate_column_4",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="6%">` + this.localize("flatrate_column_5","flatrate_column_5",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="11%">` + this.localize("flatrate_column_6","flatrate_column_6",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="13%">` + this.localize("flatrate_column_7","flatrate_column_7",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="5%">` + this.localize("flatrate_column_8","flatrate_column_8",this.language) + `</td>
+                                    <td class="contentBodyHeader" width="10%">` + this.localize("flatrate_column_9","flatrate_column_9",this.language) + `</td>
                                 </tr>
                             </thead>
                         <tbody>`
@@ -2605,7 +2625,6 @@
 
             _getExportPdfHeader() {
 
-                // noinspection CssUnusedSymbol
                 return `<html>
                             <head>
                                 <style>
@@ -2778,7 +2797,9 @@
                                         && !!_.get(i,"active", true)
                                         && !!_.trim(_.get(i,"dateOfBirth", ""))
                                         && !!_.trim(_.get(i,"ssin", ""))
-                                        && !!parseInt(_.size(_.get(i,"insurabilities", [])))
+                                        && !!_.size(_.get(i,"insurabilities", []))
+
+                                        // Make sure there is at least one valid insurance versus exported date
                                         && !!_.size(
                                             _.chain(i.insurabilities)
                                                 .filter(i=>{return(
@@ -2801,8 +2822,8 @@
                                                 )})
                                                 .value()
                                         )
-                                        && parseInt( _.size( _.get(i, "medicalHouseContracts", [] ) ) )
-                                        && !!parseInt( _.size( _.filter( _.get(i, "medicalHouseContracts", [] ), (i)=>{return !!i && _.trim(_.get(i,"hcpId", "something")) === _.trim(_.get(this,"user.healthcarePartyId","else"))}) ) )
+                                        && !!_.size(_.get(i, "medicalHouseContracts", []))
+                                        && !!_.size(_.filter(_.get(i, "medicalHouseContracts",[]), i => _.trim(_.get(i,"hcpId", "something")) === _.trim(_.get(this,"user.healthcarePartyId","else"))))
                                     )})
                                     .uniqBy( 'ssin' )
                                     .value()
@@ -2811,13 +2832,15 @@
                                         i.lastName = (_.get(i,"lastName","")).toUpperCase()
                                         i.firstName = (_.get(i,"firstName","")).toUpperCase()
                                         i.dateOfBirth = (!!_.trim(_.get(i,"dateOfBirth",""))?moment(_.trim(_.get(i,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+
+                                        // Eval "finalInsurability" to be the one corresponding to exported date
                                         i.finalInsurability = _.get(
                                             _.filter(
                                                 i.insurabilities,
                                                 (ins) => {
                                                     return ins &&
                                                         _.size(ins) &&
-                                                        !!_.trim(_.get( ins, "insuranceId", "" ) ) &&
+                                                        !!_.trim(_.get( ins, "insuranceId", "" )) &&
                                                         _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
                                                         _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
                                                         ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
@@ -2863,7 +2886,10 @@
                             .value();
                         this._generateJ3FileAndDownload();
                     })
-                    .catch(()=>{this.set('_isLoading', false );});
+                    .catch((e)=>{
+                        console.log('_getInsurancesData',e)
+                        this.set('_isLoading', false );
+                    });
 
             }
 
@@ -2972,17 +2998,27 @@
                             list2 : _.compact(_.map(OaPatients, pat=>{
                                 return parseInt(_.size(_.filter(_.get(pat, "medicalHouseContracts", []), mhc=>{return(
                                     moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') ) &&
-                                    moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isBefore( moment( _.get(mhc, "startOfCoverage", 0), 'YYYYMMDD').subtract(1,"month").startOf('month') )
+                                    moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isBefore( moment( _.get(mhc, "startOfCoverage", 0), 'YYYYMMDD').subtract(2,"month").startOf('month') )
                                 )}))) ? pat : false
                             })),
 
                             // 03 : Unsubscriptions
                             list3 : _.compact(_.map(OaPatients, pat=>{return !!(
-                                    parseInt(_.size(_.filter(_.get(pat, "medicalHouseContracts", []), mhc=>{ return moment( _.get(mhc, "endOfContract", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') ) }))) ||
-                                    // Just died last month
-                                    moment( _.get(pat, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') )
-                                ) ? pat : false
+                                parseInt(_.size(_.filter(_.get(pat, "medicalHouseContracts", []), mhc=>{ return moment( _.get(mhc, "endOfContract", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') ) }))) ||
+                                // Just died last month
+                                moment( _.get(pat, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') )
+                            ) ? pat : false
                             })),
+
+                            //TODO: this is not ready yet !!! filter out the 3 months to be done
+                            // 10 : Subscriptions WITH transfert
+                            // list10 : _.compact(_.map(OaPatients, pat=>{
+                            //     return parseInt(_.size(_.filter(_.get(pat, "medicalHouseContracts", []), mhc=>{return(
+                            //         moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isSame( this.reportCurrentDateMomentObject.startOf('month') ) &&
+                            //         moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isBefore( moment( _.get(mhc, "startOfCoverage", 0), 'YYYYMMDD').subtract(1,"month").startOf('month') )
+                            //         //&& moment( _.get(mhc, "startOfContract", 0), 'YYYYMMDD').startOf('month').isAfter( moment( _.get(mhc, "startOfCoverage", 0), 'YYYYMMDD').subtract(2,"month").startOf('month') )
+                            //     )}))) ? pat : false
+                            // })),
 
                             //  Suspensions
                             suspensions : _.compact(_.map(OaPatients, pat=>{
@@ -3055,8 +3091,8 @@
                 // Close document
                 pdfTemplate += this._getExportPdfFooter();
 
-                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_6',this.language), icon:"arrow-forward"});
+                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5_done', 'mhListing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
+                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_6', 'mhListing.spinner.step_6',this.language), icon:"arrow-forward"});
 
                 this.downloadFileName = _.kebabCase( _.compact([
                     'listing patients',
@@ -3070,8 +3106,8 @@
                 // Generate, archive & download pdf report
                 this.api.pdfReport(mustache.render(pdfTemplate, pdfData))
                     .then(({pdf:pdfFileContent, printed:printed}) =>{
-                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_6_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_7',this.language), icon:"arrow-forward"});
+                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_6_done','mhListing.spinner.step_6_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
+                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_7','mhListing.spinner.step_7',this.language), icon:"arrow-forward"});
 
                         return this.api.message().newInstance(this.user)
                             .then(newMessageInstance => this.api.message().createMessage(
@@ -3094,8 +3130,8 @@
                             .then(() => !printed && this.api.triggerFileDownload( pdfFileContent, "application/pdf", this.downloadFileName ))
                     })
                     .then(() => {
-                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
-                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"})
+                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_7_done','mhListing.spinner.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8','mhListing.spinner.step_8',this.language), icon:"arrow-forward"})
                     })
                     .catch((e)=> console.log(e))
                     .finally(() => {
@@ -3175,63 +3211,60 @@
                 let prom = Promise.resolve([])
                 const allPats = _.flatMap(this.flatRateInvoicingDataObject.listsData)
                 const patsCount = _.size(allPats)
-                // TOP-418
-                // const parentInsuranceIds = allPats.reduce((acc,pat) => { const parentId = this.flatRateInvoicingDataObject.insurancesData.find(ins => ins.id === pat.finalInsurability.insuranceId).parent; if (!acc.includes(parentId)) { acc.push(parentId) }; return acc}, [])
                 const parentInsuranceIds = _.compact(_.uniq(_.map( this.flatRateInvoicingDataObject.insurancesData, i=>_.get(i,"parent", false ))))
+                const childrenInsurancesData = _.compact(_.uniqBy(this.flatRateInvoicingDataObject.insurancesData, 'id'))
 
-                // TOP-435
-                const childrenInsurancesData = _.compact(_.uniqBy(_.map( this.flatRateInvoicingDataObject.insurancesData, i=>i), 'id'))
+                return this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : parentInsuranceIds})).then(parentInsurances => {
+                    allPats.forEach((pat,loopIndex) => {
+                        prom = prom.then(pats =>
+                            this.api.crypto().extractDelegationsSFKs(pat, this.user.healthcarePartyId)
+                                .then(secretForeignKeys => {
 
-                return this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : parentInsuranceIds})).then(
-                    parentInsurances => {
-                        allPats.forEach((pat,loopIndex) => {
-                            prom = prom.then(pats =>
-                                this.api.crypto().extractDelegationsSFKs(pat, this.user.healthcarePartyId)
-                                    .then(secretForeignKeys => {
+                                    // TOP-435
+                                    const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
 
-                                        // TOP-435
-                                        // const insParent = parentInsurances.find(i => i.id === this.flatRateInvoicingDataObject.insurancesData.find(ins => ins.id === pat.finalInsurability.insuranceId).parent)
-                                        const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
-                                        return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
-                                            .then(invoices =>
-                                                !_.trim(_.get(invoices, "[0].id", "")) ? this.api.invoice().newInstance(this.user, pat, invoices[0])
-                                                    .then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))))
-                                                    .then(inv => {/*console.log(inv);*/ return inv}) : Promise.resolve(invoices[0]))
-                                            .then(newInvoice => {
-                                                //console.log("newInvoice", _.cloneDeep(newInvoice));
-                                                if(this.invoiceHasDoubles(newInvoice)){
-                                                    //only remove the doubles
-                                                    pat.invoicingCodes.forEach(pic => {
-                                                      newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode);
-                                                    });
-                                                    newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
-                                                    return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice')).then(newInvoiceMod => {
+                                    return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
+                                        .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
+                                            this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
+                                            Promise.resolve(invoices[0])
+                                        )
+                                        .then(newInvoice => {
+
+                                            if(this.invoiceHasDoubles(newInvoice)){
+
+                                                // Drop duplicated codes
+                                                pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
+                                                newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
+
+                                                // && Update invoice
+                                                return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
+                                                    .then(newInvoiceMod => {
                                                         pat.invoices = [newInvoiceMod]
                                                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                                         return _.concat(pats, [pat])
                                                     });
-                                                } else {
-                                                    pat.invoices = [newInvoice]
-                                                    this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
-                                                    return _.concat(pats, [pat])
-                                                }
-                                            })
-                                        }
-                                    ))
-                        })
-                        return prom
-                    }
-                )
+
+                                            } else {
+
+                                                pat.invoices = [newInvoice]
+                                                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
+                                                return _.concat(pats, [pat])
+
+                                            }
+
+                                        })
+                                })
+                        )
+                    })
+                    return prom
+                })
             }
 
             invoiceHasDoubles(inv){
                 let hasDouble = false;
                 inv.invoicingCodes.forEach(ic => {
                     const ics = inv.invoicingCodes.filter(icf => icf.dateCode === ic.dateCode && icf.code === ic.code);
-                    if(ics && ics.length > 1){
-                        hasDouble = true;
-                        console.log("inv hasDouble !", inv);
-                    }
+                    if(_.size(ics) > 1) hasDouble = true;
                 });
                 return hasDouble;
             }
@@ -3260,10 +3293,8 @@
                     let invoices = []
 
                     //loop patients of OA
-                    //const oaMuts = this.flatRateInvoicingDataObject.insurancesData.filter(i=> _.trim(_.get(i, "parent", "")) === _.trim(_.get(OA, "id", "")));
                     const oaMuts = this.flatRateInvoicingDataObject.insurancesData.filter(insdt => insdt.code.substr(0,1) === OA.code.substr(0,1));
                     const oaMutIds = oaMuts.map(oaMut => oaMut.id);//.join(",");
-                    // const oaInvoicesData = this.flatRateInvoicingDataObject.invoicesData.filter(idt => oaMutIds.includes(idt.insurabilities[0].insuranceId));
                     const oaInvoicesData = this.flatRateInvoicingDataObject.invoicesData.filter(idt => oaMutIds.includes(idt.finalInsurability.insuranceId));
                     oaInvoicesData.map(idt => parseInt(_.size(_.get(idt, "invoicingCodes", false))) ? invoices.push(this.getPatientInvoice(idt, _.trim(_.get(OA, "code", "")))) : false )
                     ib.invoices = _.orderBy(invoices, ["destInsuranceCode", "insuranceCode", "invoiceNumber"], ["asc", "asc","asc"]); //1 per patient
@@ -3330,7 +3361,7 @@
                     this.localize('flatrate_slipfile_17',this.language) + "[mm.contactPerson]\n";
                 //column headers
                 let fileName = "flat-file-oa-" + batch.ioFederationCode + ".txt"
-                fileInfo = fileInfo.replace("[batch.version]","0001999").replace("[batch.nr]",batch.batchRef.substr(0,3)).replace("[batch.fileName]",fileName).replace("[batch.yearMonth]", batch.invoicingMonth + '/' + batch.invoicingYear).replace("[batch.creationDate]", moment().format("DD/MM/YYYY")).replace("[mm.contactPerson]",hcp.contactPerson);
+                fileInfo = fileInfo.replace("[batch.version]","0001999").replace("[batch.nr]",batch.uniqueSendNumber).replace("[batch.fileName]",fileName).replace("[batch.yearMonth]", batch.invoicingMonth + '/' + batch.invoicingYear).replace("[batch.creationDate]", moment().format("DD/MM/YYYY")).replace("[mm.contactPerson]",hcp.contactPerson);
                 let columnHeaders = "---------------------------------------------------------------------------\n" +
                     this.localize('flatrate_slipfile_18',this.language) + "\n" +
                     this.localize('flatrate_slipfile_19',this.language) + "\n" +
@@ -3409,22 +3440,21 @@
             }
 
             getUniqueSendNr(exportedDate){
-                return exportedDate.substr(3,3);
+                return this.overrideBatchNumber ? this.batchNumber : exportedDate.substr(3,3);
             }
 
             getBatchRef(exportedDate, OA){
-                return exportedDate.substr(3,3) + OA;
+                return (this.overrideBatchNumber ? this.batchNumber : exportedDate.substr(3,3)) + OA;
             }
 
             getPatientInvoice(patientData, OA){
                 let inv = new fhcmodels.Invoice('');
-                inv.patient = {}
-                inv.patient.dateOfBirth = this.convertDate(patientData.DateOfBirth);
+                inv.patient = {};
+                inv.patient.dateOfBirth = parseInt(moment(_.trim(patientData.dateOfBirth), "DD/MM/YYYY").format("YYYYMMDD"))||0;
                 inv.patient.ssin = patientData.ssin;
                 inv.patient.insurabilities = [];
                 inv.patient.gender = patientData.gender;
                 let ins = new fhcmodels.Insurability('');
-                // const patIns = patientData.insurabilities[0];
                 const patIns = patientData.finalInsurability;
                 ins.insuranceCode = this.flatRateInvoicingDataObject.insurancesData.filter(idt => idt.id === patIns.insuranceId)[0].code;
                 ins.parameters = {tc1 : patIns.parameters.tc1 , tc2 : patIns.parameters.tc2};
@@ -3450,7 +3480,6 @@
                     })
                 });
 
-                //patientData.invoices[0].patient =
                 return inv;
             }
 
@@ -3464,14 +3493,6 @@
                 {
                     return false;
                 }
-            }
-
-            convertDate(sDate){
-                //Todo: implement
-                //moment(_.get(i, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY")
-                //let d = moment(sDate, "DD/MM/YYYY");
-
-                return sDate;
             }
 
             _renderGridInvoiceNmcl(inputData) {
@@ -3553,7 +3574,7 @@
                                 return retry.retry(() => (this.api.invoice().modifyInvoice(inv).then(inv =>this.api.register(inv,'invoice'))))
                             })
                         }))
-                        .then(()=>[messagesToDelete,invoicesToDelete])
+                            .then(()=>[messagesToDelete,invoicesToDelete])
 
                     })
                     .then(([messagesToDelete,invoicesToDelete]) => this.api.message().deleteMessagesBatch(new models.ListOfIdsDto({ids: _.map(messagesToDelete, i=>i.id)})).then(()=>invoicesToDelete))
@@ -3597,7 +3618,8 @@
                     canceled: false,
                     pending: false,
                     resent: false,
-                    archived: false
+                    archived: false,
+                    lost: false
                 }
 
                 const actionSettings = action === "reject" ? { newStatusKey: "rejected", newInvoicingCodeStatus: "canceled" } :
@@ -3667,6 +3689,7 @@
                             ic.pending = false;
                             ic.resent = false;
                             ic.archived = false;
+                            ic.lost = false;
                             return ic;
                         })
                         return this.api.invoice().modifyInvoice(invoice).then(invoice => this.api.register(invoice,'invoice'))
@@ -3809,7 +3832,7 @@
                                                                 (status === 'force-red') ? "txtcolor--redStatus" :
                                                                     (status === 'force-green') ? "txtcolor--greenStatus" :
                                                                         (status === 'force-blue') ? "txtcolor--blueStatus" :
-                                                                        ""
+                                                                            ""
                 }
             }
 
@@ -4287,7 +4310,17 @@
                                         "deletionDate",
                                         "created",
                                         "modified",
-                                        "sentDate",
+
+                                        // 20200201 - With have an error with appendCode that picks up non-corrected (yet) invoices & lost invoices despite the invoicingCodes statuses
+                                        // When rejecting a batch / invoice
+                                        //      -> original invoice.invoicingCodes are all set to false BUT the "canceled" bool that becomes true
+                                        //      -> original invoice.correctiveInvoiceId = the duplicated invoice
+                                        //      -> original invoice gets duplicated with invoicingCodes pending = true & resent = true (all others are false)
+                                        //      -> duplicated invoices gets as correctedInvoiceId = the original invoice id
+                                        //      -> here is the problem: if duplicated invoice has no sentDate, appendCode is gonna use it upon next run which is wrong (as it should only be picked up when corrected)
+                                        //      -> Work around = keep the original "sentDate" on duplicated invoice so that it won't be picked up and ONLY drop it by the time it's flagged as corrected.
+                                        // "sentDate",
+
                                         "printedDate",
                                         "secretForeignKeys",
                                         "cryptedForeignKeys",
@@ -4364,6 +4397,17 @@
 
                 this.api.invoice().getInvoice(invoiceId)
                     .then(invoice => {
+
+                        // 20200201 - With have an error with appendCode that picks up non-corrected (yet) invoices & lost invoices despite the invoicingCodes statuses
+                        // When rejecting a batch / invoice
+                        //      -> original invoice.invoicingCodes are all set to false BUT the "canceled" bool that becomes true
+                        //      -> original invoice.correctiveInvoiceId = the duplicated invoice
+                        //      -> original invoice gets duplicated with invoicingCodes pending = true & resent = true (all others are false)
+                        //      -> duplicated invoices gets as correctedInvoiceId = the original invoice id
+                        //      -> here is the problem: if duplicated invoice has no sentDate, appendCode is gonna use it upon next ran which is wrong (as it should only be picked up when corrected)
+                        //      -> Work around = keep the original "sentDate" on duplicated invoice so that it won't be picked up and ONLY drop it by the time it's flagged as corrected.
+                        try{ delete(invoice.sentDate); } catch(e){}
+
                         invoice.invoicingCodes.map(ic => {
                             ic.canceled = false;
                             ic.accepted = false;
@@ -4549,9 +4593,26 @@
                                     return _.compact(
                                         _.map(invoicesToBeCorrected, i =>{
                                             return (
-                                                !parseInt(_.get(i,"sentDate",0))
-                                                && _.trim(_.get(i,"error","")).toLowerCase() !== "flagged as lost"
-                                                && _.every(_.get(i,"invoicingCodes",[]), ic=>{ return _.get(ic,"pending",false)===true && _.get(ic,"resent",false)===true && _.get(ic,"lost",false)===false })
+
+                                                // 20200201 - With have an error with appendCode that picks up non-corrected (yet) invoices & lost invoices despite the invoicingCodes statuses
+                                                // When rejecting a batch / invoice
+                                                //      -> original invoice.invoicingCodes are all set to false BUT the "canceled" bool that becomes true
+                                                //      -> original invoice.correctiveInvoiceId = the duplicated invoice
+                                                //      -> original invoice gets duplicated with invoicingCodes pending = true & resent = true (all others are false)
+                                                //      -> duplicated invoices gets as correctedInvoiceId = the original invoice id
+                                                //      -> here is the problem: if duplicated invoice has no sentDate, appendCode is gonna use it upon next ran which is wrong (as it should only be picked up when corrected)
+                                                //      -> Work around = keep the original "sentDate" on duplicated invoice so that it won't be picked up and ONLY drop it by the time it's flagged as corrected.
+                                                // !parseInt(_.get(i,"sentDate",0))
+
+                                                _.trim(_.get(i,"error","")).toLowerCase() !== "flagged as lost"
+                                                && _.every(_.get(i,"invoicingCodes",[]), ic=>{
+                                                    return _.get(ic,"pending",false)===true
+                                                        && _.get(ic,"resent",false)===true
+                                                        && _.get(ic,"accepted",false)===false
+                                                        && _.get(ic,"archived",false)===false
+                                                        && _.get(ic,"canceled",false)===false
+                                                        && _.get(ic,"lost",false)===false
+                                                })
                                             ) ? i : false
                                         })
                                     )
@@ -4631,7 +4692,7 @@
                             return null;
 
                         })
-                        .catch((e)=>console.log(e))
+                            .catch((e)=>console.log(e))
 
                     })
                     .catch((e)=>console.log(e))
@@ -4658,18 +4719,41 @@
 
             }
 
+            _getPatientsWithValidInvoiceForExportedMonth(patients, exportedMonth) {
+
+                let prom = Promise.resolve([])
+
+                _.map(patients, pat => {
+                    prom = prom.then(promisesCarrier => this.api.invoice().findBy(_.get(this,"user.healthcarePartyId"), pat)
+                        .then(invoices => _.filter(invoices, inv => inv &&
+                            inv.sentDate &&
+                            inv.sentMediumType === "cdrom" &&
+                            _.size(_.filter(inv.invoicingCodes, ic => !ic.lost && !ic.canceled && !ic.resent)) &&
+                            _.trim(inv.invoiceDate) === exportedMonth
+                        ))
+                        .then(patValidInvoicesForExportedMonth => !!_.size(patValidInvoicesForExportedMonth) ? _.get(pat,"id",false) : false)
+                        .then(patId => _.concat(promisesCarrier, [patId]))
+                        .catch(()=>_.concat(promisesCarrier, [false]))
+                    )
+                })
+
+                return prom.then(x=>_.compact(x))
+
+            }
+
             _exportFlatRateInvoicing() {
 
                 this.set('_isLoading', true );
                 this.api.setPreventLogging();
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1',this.language), icon:"arrow-forward"});
                 this.reportCurrentDateString = null;
+                const flatRateUtil = this.$.flatrateUtils;
 
                 // Force refresh - could be new "valorisation" / bce / bank account / contact person / ... was just set
                 if(_.size(_.get(this.api.hcparty().cache, _.get(this.user, "healthcarePartyId", "" )))) delete this.api.hcparty().cache[_.get(this.user, "healthcarePartyId", "" )];
 
-                this.api.hcparty().getHealthcareParty(_.get(this.user, "healthcarePartyId", "" ))
-                    .then(hcp => {
+                this.api.hcparty().getHealthcareParty(_.get(this.user, "healthcarePartyId", "" )) //0
+                    .then(hcp => { //1
 
                         this.set("hcp", hcp);
                         if (!_.trim(_.get(this, "hcp.nihii", ""))) throw new Error("no-nihii");
@@ -4684,43 +4768,20 @@
                                 nihiiFormated: this.api.formatInamiNumber(_.trim(_.get(this.hcp, "nihii", ""))),
                                 contactPersonHcpId: _.trim(_.get(this.hcp, "contactPersonHcpId", "")),
                                 contactPerson: "",  // Make it empty at first, done on purpose
-                                financialInfo: _.head(_.filter(_.get(this.hcp, "financialInstitutionInformation", []), i => {
-                                    return !!i && _.trim(_.get(i, "bankAccount", ""))
-                                }))
+                                financialInfo: _.head(_.filter(_.get(this.hcp, "financialInstitutionInformation", []), i => _.trim(_.get(i, "bankAccount", ""))))
                             },
                             patientsData: [],
                             insurancesData: [],
                             iosData: [],
                             listsData: [],
+                            patientIdsWithValidInvoiceForExportedMonth: [],
                             invoicesData: [],
                             oaTotalPrices: [],
                             batchExportTstamp: +new Date(),
-                            exportedDate: _.trim(
-                                parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value", this._getExportCurrentYear())) +
-                                ((_.trim(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth())).length === 1 ? "0" : "") + parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth()))) +
-                                "01"
-                            ),
-                            generatedFiles: {
-                                pdfs: {},
-                                oaPdfs: {},
-                                flatFiles: {},
-                                slips: {}
-                            },
-                            finalArchiveSpeakingName: {
-                                archiveDownloadFileName: _.kebabCase(_.compact([
-                                    moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'),
-                                    "medical house",
-                                    _.trim(_.get(this.hcp, "name", "")) || _.trim(_.trim(_.get(this.hcp, "firstName", "")) + " " + _.trim(_.get(this.hcp, "lastName", ""))) || _.trim(_.get(this.user, "name", "")),
-                                    "invoicing export",
-                                    +new Date()
-                                ]).join(" ")) + ".zip"
-                            },
-                            finalArchive: {
-                                archiveDownloadFileName: _.kebabCase(_.compact([
-                                    moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'),
-                                    "invoicing export",
-                                ]).join(" ")) + ".zip"
-                            },
+                            exportedDate: _.trim( parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value", this._getExportCurrentYear())) + ((_.trim(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth())).length === 1 ? "0" : "") + parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth()))) + "01" ),
+                            generatedFiles: { pdfs: {}, oaPdfs: {}, flatFiles: {}, slips: {} },
+                            finalArchiveSpeakingName: { archiveDownloadFileName: _.kebabCase(_.compact([ moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'), "medical house", _.trim(_.get(this.hcp, "name", "")) || _.trim(_.trim(_.get(this.hcp, "firstName", "")) + " " + _.trim(_.get(this.hcp, "lastName", ""))) || _.trim(_.get(this.user, "name", "")), "invoicing export", +new Date() ]).join(" ")) + ".zip" },
+                            finalArchive: { archiveDownloadFileName: _.kebabCase(_.compact([ moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'), "invoicing export", ]).join(" ")) + ".zip" },
                             pendingInvoicesToResend: [],
                             pendingInvoicesAndPatToResend: [],
                             hcpValorisationsByMonth: []
@@ -4755,16 +4816,12 @@
                                 this.set("contactPerson", contactPerson);
                                 this.flatRateInvoicingDataObject.hcpData.contactPerson = contactPerson
                             })
-                            .catch((e) => {
-                                throw new Error("missing-contact-person");
-                            })
+                            .catch((e) => { throw new Error("missing-contact-person"); })
 
 
-                        // Get valorisations for last 24 months - as of export date
+                        // Get valorisations for last X months - as of export date
                         let valorisationMonths = [];
-                        for (let i = 0; i < 24; i++) {
-                            valorisationMonths.push(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(i, "month").format("YYYYMMDD")))
-                        }
+                        for (let i = 0; i < 240; i++) { valorisationMonths.push(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
                         this.flatRateInvoicingDataObject.hcpValorisationsByMonth = valorisationMonths.map(valorisationMonth => {
                             return {
                                 month: parseInt(valorisationMonth),
@@ -4814,22 +4871,18 @@
 
                         // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
                         const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
-                        const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => {
-                            return !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false
-                        }))
+                        const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ))
 
                         // At least one MH valorisation is missing
                         if (
                             !parseInt(_.size(medicalHouseAvailableValorisationsByNihii))
-                            || _.size(medicalHouseAvailableValorisationsByNihii) !== _.size(_.compact(_.map(medicalHouseAvailableValorisationsByNihii, mhValorisation => !!parseInt(_.size(_.filter(_.get(this, "flatRateInvoicingDataObject.hcpValorisationsByMonth[0].valorisations", {}), i => {
-                                return _.trim(_.get(i, "flatRateType", "")) === _.trim(mhValorisation.flatRateType) && parseFloat(_.get(i, "price", 0))
-                            }))))))
+                            || _.size(medicalHouseAvailableValorisationsByNihii) !== _.size(_.compact(_.map(medicalHouseAvailableValorisationsByNihii, mhValorisation => !!parseInt(_.size(_.filter(_.get(this, "flatRateInvoicingDataObject.hcpValorisationsByMonth[0].valorisations", {}), i =>  _.trim(_.get(i, "flatRateType", "")) === _.trim(mhValorisation.flatRateType) && parseFloat(_.get(i, "price", 0))))))))
                         ) throw new Error("missing-flatrate-tarification");
 
                         return null
 
-                    })
-                    .then(()=>{
+                    }) //1
+                    .then(()=>{ //2
 
                         // Make sure we won't get disconnected if process runs for over an hour
                         this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
@@ -4890,10 +4943,8 @@
                                                 .then(correctiveInvoices => !parseInt(_.size(correctiveInvoices)) ? [] :
                                                     _.compact(
                                                         _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
+                                                            // Make sure I have to take it into account (all false but the pending bool)
                                                             const invoicingCodes = _.get(inv, "invoicingCodes", [])
-                                                            // If I try to resend a corrective invoice for current month, DROP its invoicingCodes (otherwise append code will double the charged amounts).
-                                                            // If not, append codes so that both previous & current month will be charged, which is legit
-                                                            inv.resentMonth = parseInt( _.get(inv, "invoiceDate", 0 ) ) === parseInt(this.flatRateInvoicingDataObject.exportedDate) ? "currentMonth" : "inThePast"
                                                             return !parseInt(_.size(invoicingCodes)) ? false :
                                                                 _.every(invoicingCodes, ic => {
                                                                     return _.get(ic,"accepted",false)===false
@@ -4906,157 +4957,184 @@
                                                         })
                                                     )
                                                 )
-                                                .catch(e => {
-                                                    console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId"))));
-                                                    console.log(e);
-                                                    return false;
-                                                })
+                                                .catch(e => { console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))); console.log(e); return false; })
                                         )
-                                        .catch(e => {
-                                            console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds")))));
-                                            console.log(e);
-                                            return false;
-                                        })
+                                        .catch(e => { console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds"))))); console.log(e); return false; })
                         })
 
-                    })
+                    }) //2
                     .then(pendingInvoicesToResend => {
+
+                        // Go for any invoice(s) to be added in the batch (could be manually created using PAT's timeline (timeline && pat-flatrate-utils)
+                        // For performance purposes, such invoices could be found by scanning for messages with transportGuid "MH:FLATRATE:INVOICE-TO-ADD" (current or previous month allowed, never in the future), then go for the invoiceIds
+                        return flatRateUtil.getInvoicesToAddFromTimelineByMaxExportDate(parseInt(_.get(this,"flatRateInvoicingDataObject.exportedDate")))
+                            .then(invoicesToAdd => _
+                                .chain(invoicesToAdd)
+                                .map(inv => {
+                                    // Make sure I have to take it into account (all false but the pending bool)
+                                    const invoicingCodes = _.get(inv, "invoicingCodes", [])
+                                    return !parseInt(_.size(invoicingCodes)) ? false :
+                                        _.every(invoicingCodes, ic => {
+                                            return _.get(ic,"accepted",false)===false
+                                                && _.get(ic,"archived",false)===false
+                                                && _.get(ic,"canceled",false)===false
+                                                && _.get(ic,"resent",false)===false
+                                                && _.get(ic,"lost",false)===false
+                                                && _.get(ic,"pending",false)===true
+                                        }) ? inv : false
+                                })
+                                .concat((pendingInvoicesToResend||[]))
+                                .value()
+                            )
+                    }) // 2 Bis
+                    .then(pendingInvoicesToResend => { //3
                         if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran")
                         this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend
-                        //("pending invoices to resend", _.cloneDeep(pendingInvoicesToResend));
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_2',this.language), icon:"arrow-forward"});
                         return !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth ? false : this._getPatientsByHcp(_.get(this.hcp, "id")).then(myPatients => _
                             .chain(myPatients)
                             .uniqBy('ssin')
                             .filter(pat => (
+                                // Either pat is alive
                                 !parseInt(_.get(pat, "dateOfDeath", 0)) ||
+                                // Or pat's death occured during exported month -> at which point he should still be taken into account
                                 (!!parseInt(_.get(pat, "dateOfDeath", 0)) && moment( _.get(pat, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(this.reportCurrentDateMomentObject.startOf('month')))
                             ))
                             .orderBy(['lastName', 'firstName'],['asc','asc'])
                             .value()
                         )
-                    })
+                    }) //3
                     .then(myPatients=> {
                         return !parseInt(_.size(this.flatRateInvoicingDataObject.pendingInvoicesToResend)) ?
                             { myPatients: _.compact(myPatients), myPatientsToResend: [] } :
                             Promise.all(this.flatRateInvoicingDataObject.pendingInvoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
                                 .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
                                 .then(invoicesAndPatient=>{
-                                    invoicesAndPatient = _.map(invoicesAndPatient, invAndPat => {
+                                    invoicesAndPatient = _.compact(_.map(invoicesAndPatient, invAndPat => {
                                         let tempPat = _.cloneDeep(invAndPat[1])
-                                        tempPat.patientToBeResent = true
                                         tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{})
                                         tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"")
                                         tempPat.lastName = (tempPat.lastName||"").toUpperCase()
                                         tempPat.firstName = (tempPat.firstName||"").toUpperCase()
                                         tempPat.dateOfBirth = (tempPat.dateOfBirth?moment(tempPat.dateOfBirth+"", "YYYYMMDD").format('DD/MM/YYYY'):"")
-                                        tempPat.finalInsurability = _.get(
-                                            _.filter(
-                                                tempPat.insurabilities,
-                                                (ins) => {
-                                                    return ins &&
-                                                        _.size(ins) &&
-                                                        !!_.trim(_.get( ins, "insuranceId", "" )) &&
-                                                        _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
-                                                        _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
-                                                        ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
-                                                        // !!_.trim(_.get( ins, "identificationNumber", "" ) ) &&
-                                                        (
-                                                            moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore( moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD") ) ||
-                                                            moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
-                                                            !parseInt(_.get(ins, "startDate", 0))
-                                                        ) &&
-                                                        (
-                                                            moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
-                                                            moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
-                                                            !parseInt(_.get(ins, "endDate", 0))
-                                                        ) &&
-                                                        // When resending a corrective invoice, make sure we match PAT's INS to whom original invoice was sent to
-                                                        _.trim(_.get(tempPat,"invoiceToBeResent.recipientId","")) === _.trim(_.get( ins, "insuranceId", "" ))
-                                                }
-                                            ), "[0]", {}
+                                        tempPat.finalInsurability = _.find(
+                                            tempPat.insurabilities,
+                                            (ins) => {
+                                                return ins &&
+                                                    _.size(ins) &&
+                                                    !!_.trim(_.get( ins, "insuranceId", "" )) &&
+                                                    _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                                                    _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                                                    ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                                                    // !!_.trim(_.get( ins, "identificationNumber", "" ) ) &&
+                                                    (
+                                                        moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore( moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD") ) ||
+                                                        moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
+                                                        !parseInt(_.get(ins, "startDate", 0))
+                                                    ) &&
+                                                    (
+                                                        moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
+                                                        moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(moment(_.trim(_.get(tempPat,"invoiceToBeResent.invoiceDate",0)),"YYYYMMDD")) ||
+                                                        !parseInt(_.get(ins, "endDate", 0))
+                                                    )
+
+                                                // 20200203 - Don't do that anymore, it would prevent errors from getting fixed. The correct way to reconcile an INVOICE vs. an INS is based on invoice's date and INS' date
+                                                // When resending a corrective invoice, make sure we match PAT's INS to whom original invoice was sent to
+                                                // _.trim(_.get(tempPat,"invoiceToBeResent.recipientId","")) === _.trim(_.get( ins, "insuranceId", "" ))
+                                            }
                                         )
                                         tempPat.insurancePersonType = !_.trim( _.get( tempPat, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(tempPat, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C"
                                         tempPat.titularyId = _.trim( _.get( tempPat, "finalInsurability.titularyId", "" ))
                                         invAndPat[1] = tempPat
-                                        return invAndPat
-                                    })
+                                        // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
+                                        return !_.size(_.get(tempPat,"finalInsurability",[])) ? false : invAndPat
+                                    }))
                                     this.flatRateInvoicingDataObject.pendingInvoicesAndPatToResend = invoicesAndPatient
                                     return { myPatients: _.compact(myPatients), myPatientsToResend: _.compact(_.map(invoicesAndPatient,x=>x[1])) }
                                 })
-                    })
+                    }) //4
                     .then(patsAndPatsToResend=>{
+
+                        // PATS of mine, to be invoiced this month
                         let myPatients = patsAndPatsToResend.myPatients
-                        let myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend)
-                        let resolvedPatientsToBeResent = []
-                        const commonPatientsBetweenExportsWithSameIns = _.compact(
-                            _.map(myPatients, pat => {
-                                const matchingPat = _.filter(myPatientsToResend, patToResend => { return (
-                                    _.trim(_.get(patToResend,"ssin","something")) === _.trim(_.get(pat,"ssin","else")) &&
-                                    _.trim(_.get(patToResend,"finalInsurability.identificationNumber","something")) === _.trim(_.get(pat,"finalInsurability.identificationNumber","else"))
-                                )})
-                                return _.size(matchingPat) ? matchingPat : false
+
+                        // PATS of previous invoices (either rejected + corrected OR from PAT's timeline)
+                        const myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend)
+
+                        // If same PAT of same INS -> collect all invoicing codes under 1! invoice
+                        // If same PAT with different INS -> duplicate PAT with all invoicing codes of THAT INS (and append invoicing codes when already existing)
+                        // To figure it out (in case of a resent) -> look at invoice's "invoiceDate" and reconcile vs. PAT's INS of that time (*)
+
+                        // At this stage, 1+ the same patient could be present in myPatientsToResend but they'll all have 1! "invoiceToBeResent"
+                        // At this stage and because of previous step, PAT's "finalInsurability" already matches the invoice.sendDate it should be sent to (the correct INS based on date reconciliation)
+                        _.map(myPatientsToResend, patToResend => {
+                            const patWithThatIns = _.find(myPatients, pat => { return pat &&
+                                _.trim(_.get(pat,"ssin","")) === _.trim(_.get(patToResend,"ssin","")) &&
+                                _.trim(_.get(pat,"finalInsurability.insuranceId","")) === _.trim(_.get(patToResend,"finalInsurability.insuranceId",""))
                             })
-                        )
-                        _.map(commonPatientsBetweenExportsWithSameIns, commonPat=>{
-                            myPatients = _.map(myPatients, existingPat => {
-                                return _.trim(_.get(existingPat,"ssin","something"))!== _.trim(_.get(commonPat,"[0].ssin","else")) ?
-                                    existingPat :
-                                    _.merge(existingPat,{
-                                        invoiceToBeResent: _.compact(_.map(commonPat,"invoiceToBeResent")),
-                                        patientToBeResent: true,
-                                        patientIsInCurrentAndPreviousExport: true
-                                    })
-                            })
-                            // _.remove(myPatientsToResend, i=> _.trim(_.get(i,"ssin","something")) === _.trim(_.get(commonPat,"[0].ssin","else")) )
-                            _.remove(myPatientsToResend, i=> _.trim(_.get(i,"ssin","something")) === _.trim(_.get(commonPat,"[0].ssin","else")) )
+                            if(_.size(patWithThatIns)) {
+                                patWithThatIns.invoiceToBeResent = _.concat((patWithThatIns.invoiceToBeResent||[]), patToResend.invoiceToBeResent)
+                            }
+                            else {
+                                patToResend.isResent = true;
+                                patToResend.invoiceToBeResent = [patToResend.invoiceToBeResent];
+                                myPatients.push(patToResend);
+                            }
                         })
 
-                        const nonCommonPatientsToAdded = _.compact( _.map( _.map(myPatientsToResend, "id"), patId => {
-                            if( resolvedPatientsToBeResent.indexOf(patId) > -1 ) { return false; } else { resolvedPatientsToBeResent.push(patId); }
-                            let singlePat = _.find(myPatientsToResend, {id:patId})
-                            singlePat.invoiceToBeResent = _.map(_.filter(myPatientsToResend, {id:patId}), "invoiceToBeResent" )
-                            singlePat.patientToBeResent = true
-                            singlePat.patientIsInCurrentAndPreviousExport = false
-                            return singlePat
-                        }))
-                        if(!!parseInt(_.size(nonCommonPatientsToAdded))) myPatients = _.concat(myPatients,nonCommonPatientsToAdded)
+                        // Todo: refactor this:
+                        // Either is not a resent -> can let go as below
+                        // Or it is, at which point valid MHC should be evaluated vs. ALL 1+ "invoiceToBeResent" date (discard invoiceToBeResent when non-legit)
+                        // Should we not have any "invoiceToBeResent" anymore -> either drop PAT (should it not exist in patsAndPatsToResend.myPatients) OR keep PAT when already existing in patsAndPatsToResend.myPatients
 
                         // Find valid MHContract or drop entry
-                        myPatients = _.compact(
-                            _.map( myPatients, pat => {
-                                pat.finalMedicalHouseContracts = _.get(
-                                    _.orderBy(
-                                        _
-                                            .chain(pat.medicalHouseContracts||[])
-                                            .filter(mhc => {
-                                                // Eval final MHC either based on export date OR based on resent invoice date
-                                                let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
-                                                return (
-                                                    !!mhc &&
-                                                    !!_.size(mhc) &&
-                                                    // Has to begin in the past
-                                                    moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').isBefore(mhcExportDateOrResentDate) &&
-                                                    // Either end of contract is in the future or is not set
-                                                    ( moment(_.trim(_.get(mhc, "endOfContract", "0")), "YYYYMMDD").endOf('month').isAfter(mhcExportDateOrResentDate) || !parseInt(_.get(mhc, "endOfContract", 0)) ) &&
-                                                    (
-                                                        // Either start of coverage is before this month AND set OR
-                                                        // Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
-                                                        ( parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(mhcExportDateOrResentDate) ) ||
-                                                        ( !parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').isBefore(mhcExportDateOrResentDate) )
-                                                    )
+                        myPatients = _.compact(_.map( myPatients, pat => {
+                            pat.finalMedicalHouseContracts = _.get(
+                                _.orderBy(
+                                    _
+                                        .chain(pat.medicalHouseContracts||[])
+                                        .filter(mhc => {
+                                            // Eval final MHC either based on export date OR based on resent invoice date
+                                            let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                                            return (
+                                                !!mhc &&
+                                                !!_.size(mhc) &&
+                                                // Has to begin in the past
+                                                //TODO: I think it should be: startOfCoverage instead of startOfContract
+                                                moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').isBefore(mhcExportDateOrResentDate) &&
+                                                // Either end of contract is in the future or is not set
+                                                //TODO: I think it should be: endOfCoverage instead of endOfContract
+                                                ( moment(_.trim(_.get(mhc, "endOfContract", "0")), "YYYYMMDD").endOf('month').isAfter(mhcExportDateOrResentDate) || !parseInt(_.get(mhc, "endOfContract", 0)) ) &&
+                                                (
+                                                    // Either start of coverage is before this month AND set OR
+                                                    // Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
+                                                    ( parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(mhcExportDateOrResentDate) ) ||
+                                                    ( !parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').isBefore(mhcExportDateOrResentDate) )
                                                 )
-                                            })
-                                            .value(),
-                                        ["startOfContract"],
-                                        ["desc"]
-                                    ),
-                                    "[0]", []
-                                )
-                                return _.size( pat.finalMedicalHouseContracts ) ? pat : false
-                            })
-                        )
+                                                && //remove suspended contracts also during their time of suspension
+                                                (
+                                                    //Allow contracts that:
+                                                    // don't have startOfSuspension (we ignore suspensions that only have endOfSuspension as they are incomplete data)
+                                                    // OR the invoicedate is before startOfSuspension
+                                                    // OR the invoicedate is after endOfSuspension
+                                                    (parseInt(_.get(mhc, "startOfSuspension", -1)) < 0) ||
+                                                    (parseInt(_.get(mhc, "startOfSuspension", 0)) && moment(_.trim(_.get(mhc, "startOfSuspension", "0")), "YYYYMMDD").isAfter(mhcExportDateOrResentDate)) ||
+                                                    (parseInt(_.get(mhc, "endOfSuspension", 0)) && moment(_.trim(_.get(mhc, "endOfSuspension", 0)), "YYYYMMDD").isBefore(mhcExportDateOrResentDate))
+                                                )
+                                            )
+                                        })
+                                        .value(),
+                                    ["startOfContract"],
+                                    ["desc"]
+                                ),
+                                "[0]", []
+                            )
+                            return _.size( pat.finalMedicalHouseContracts ) ? pat : false
+                        }))
+
+
+
 
                         // Assign startOfCoverage if not set yet
                         _.map( myPatients, pat => {
@@ -5071,17 +5149,18 @@
                         this.flatRateInvoicingDataObject.patientsData = myPatients
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3',this.language), icon:"arrow-forward"});
-                        return this._getInsuranceTitularyInfo(myPatients).then(x=>x)
-                    })
+                        return this._getInsuranceTitularyInfo(myPatients)
+
+                    }) //5
                     .then((myPatientsWithInsuranceTitularyInfo)=>{
                         this.flatRateInvoicingDataObject.patientsData = myPatientsWithInsuranceTitularyInfo
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4',this.language), icon:"arrow-forward"});
                         return this._getInsurancesDataByPatientsList(myPatientsWithInsuranceTitularyInfo).then(x=>x)
-                    })
+                    }) //6
                     .then((insurancesData)=>{
                         this.flatRateInvoicingDataObject.insurancesData = insurancesData
-                        return this._getIOsDataByInsurancesList(this.flatRateInvoicingDataObject.insurancesData).then(x=>x);})
+                        return this._getIOsDataByInsurancesList(this.flatRateInvoicingDataObject.insurancesData).then(x=>x);}) //7
                     .then((iosData) => {
                         // Ins 306 has to be seen as a child of 300
                         return this._getInsurancesDataByCode(300)
@@ -5093,106 +5172,135 @@
                                 return null
                             })
                             .then(()=>{
+
                                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5',this.language), icon:"arrow-forward"});
-                                return {
-                                    // "Old" patients
-                                    // Start of month of start cover must be BEFORE (start of export month -1 month)
-                                    // Ie: start of coverage began 2+ month before exported month
-                                    list8: _.filter( this.flatRateInvoicingDataObject.patientsData, pat => {
-                                        let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
-                                        return(
-                                            !!moment(pat.finalMedicalHouseContracts.startOfCoverage, "YYYYMMDD").startOf("month").isBefore( mhcExportDateOrResentDate.startOf("month").subtract(1, 'month') ) &&
-                                            (!!_.get(pat, "finalMedicalHouseContracts.gp", false) || !!_.get(pat, "finalMedicalHouseContracts.kine", false) || !!_.get(pat, "finalMedicalHouseContracts.nurse", false))
-                                        )
-                                    }),
 
-                                    // New patients WITHOUT tryout (double amounts / must appear twice)
-                                    // Start of month of start cover must be EQUAL TO (start of export month -1 month)
-                                    // AND Start of month of cover - 1 month === Start of month of contract
-                                    list5: _.filter( this.flatRateInvoicingDataObject.patientsData, pat => {
-                                        let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
-                                        return(
-                                            !!moment(pat.finalMedicalHouseContracts.startOfCoverage, "YYYYMMDD").startOf("month").isSame( mhcExportDateOrResentDate.startOf("month").subtract(1, 'month') ) &&
-                                            !!(moment(pat.finalMedicalHouseContracts.startOfCoverage, "YYYYMMDD").startOf("month").subtract(1, 'month')).isSame( moment(pat.finalMedicalHouseContracts.startOfContract, "YYYYMMDD").startOf("month") ) &&
-                                            (!!_.get(pat, "finalMedicalHouseContracts.gp", false) || !!_.get(pat, "finalMedicalHouseContracts.kine", false) || !!_.get(pat, "finalMedicalHouseContracts.nurse", false))
-                                        )
-                                    }),
+                                const listsData = { list5: [], list6: [], list8: [] }
 
-                                    // New patients WITH tryout (double amounts / must appear twice)
-                                    // Start of month of start cover must be EQUAL TO (start of export month -1 month)
-                                    // AND Start of month of cover - 1 month > Start of month of contract
-                                    list6: _.filter( this.flatRateInvoicingDataObject.patientsData, pat => {
-                                        let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
-                                        return(
-                                            !!moment(pat.finalMedicalHouseContracts.startOfCoverage, "YYYYMMDD").startOf("month").isSame( mhcExportDateOrResentDate.startOf("month").subtract(1, 'month') ) &&
-                                            !!(moment(pat.finalMedicalHouseContracts.startOfCoverage, "YYYYMMDD").startOf("month").subtract(1, 'month')).isAfter( moment(pat.finalMedicalHouseContracts.startOfContract, "YYYYMMDD").startOf("month") ) &&
-                                            (!!_.get(pat, "finalMedicalHouseContracts.gp", false) || !!_.get(pat, "finalMedicalHouseContracts.kine", false) || !!_.get(pat, "finalMedicalHouseContracts.nurse", false))
-                                        )
-                                    })
-                                }
+                                // Eval pat's list 5/6/8
+                                _.map(this.flatRateInvoicingDataObject.patientsData, pat => {
+
+                                    // None of the contracts -> Drop (Valid INS vs. exported date and valid MHC vs. exported date are already checked against at this stage)
+                                    if(!(_.get(pat, "finalMedicalHouseContracts.gp", false) || _.get(pat, "finalMedicalHouseContracts.kine", false) || _.get(pat, "finalMedicalHouseContracts.nurse", false))) return false
+
+                                    // Can only be a resent if for current exported month THAT PAT with THAT INS doesn't exist (most likely rejected+correct invoice OR invoice create via timeline AND for another INS)
+                                    // Ie: isResent is evaluated on BOTH pat's NISS AND pat's INS (between existing pats and pats to resend -> rejected+correct OR timeline)
+                                    const isResent = _.get(pat, "isResent", false)
+                                    const mhcStartOfCoverage = moment(_.get(pat,"finalMedicalHouseContracts.startOfCoverage"), "YYYYMMDD").startOf("month")
+                                    const mhcStartOfContract = moment(_.get(pat,"finalMedicalHouseContracts.startOfContract"), "YYYYMMDD").startOf("month")
+
+                                    // When is a resent -> Only look at the most recent invoice to define which list pat belongs to (remember: if original invoices of list 5/6 are to be resent: patient is known by now -> list 8).
+                                    // When not a resent = patient IS to be exported for this month (even though may have invoices to resend) -> always look at the month's exported date (at it will be the most recent date, we never re-invoice data of the future)
+                                    const compareDate = moment(_.trim( !isResent ? _.get(this,"flatRateInvoicingDataObject.exportedDate") : _
+                                        .chain(_.get(pat,"invoiceToBeResent",[]))
+                                        .orderBy(["invoiceDate"], ["desc"])
+                                        .head()
+                                        .get("invoiceDate")
+                                        .value()
+                                    ),"YYYYMMDD").startOf("month").subtract(1, "month")
+
+                                    // List 5 = New patients WITHOUT tryout (double amounts / must appear twice): Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month === Start of month of contract
+                                    // List 6 = New patients WITH tryout (double amounts / must appear twice) - Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month > Start of month of contract
+                                    // List 8 = "Old" patients: Start of month of start cover must be BEFORE (start of export month -1 month) - (Ie: start of coverage began 2+ month before exported month)
+                                    const isList5 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isSame(mhcStartOfContract)
+                                    const isList6 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isAfter(mhcStartOfContract)
+                                    const isList8 = mhcStartOfCoverage.isBefore(compareDate)
+
+                                    return isList8 ? listsData.list8 = _.concat(listsData.list8, [pat]) :
+                                        isList5 ? listsData.list5 = _.concat(listsData.list5, [pat]) :
+                                            isList6 ? listsData.list6 = _.concat(listsData.list6, [pat]) :
+                                                false
+
+                                })
+
+                                return listsData;
+
                             })
 
-                    })
-                    .then((listsData)=>{
+                    }) //8
+                    .then((listsData)=> {
+
                         this.flatRateInvoicingDataObject.listsData = listsData
                         this.flatRateInvoicingDataObject.invoicesToBeModified = []
 
                         // Drop patients we couldn't find in list (no valorisation)
-                        const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i=>i.id) ))||[]
-                        this.flatRateInvoicingDataObject.patientsData = _.compact(_.map( this.flatRateInvoicingDataObject.patientsData, i=> !!(patientsInLists.indexOf(_.trim(i.id)) > -1) ? i : false ))
-                        if(!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData)||0)) throw new Error("no-data-to-export")
+                        const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i => i.id))) || []
+                        this.flatRateInvoicingDataObject.patientsData = _.compact(_.map(this.flatRateInvoicingDataObject.patientsData, i => patientsInLists.indexOf(_.trim(i.id)) > -1 ? i : false))
+                        if (!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData) || 0)) throw new Error("no-data-to-export")
 
                         // Drop when not in use
-                        this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map( this.flatRateInvoicingDataObject.insurancesData, i=> !!( (_.uniq(_.compact(_.map( this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) ||[]).indexOf(_.trim(i.id)) > -1 ) ? i : false ))
-                        this.flatRateInvoicingDataObject.iosData = _.compact(_.map( this.flatRateInvoicingDataObject.iosData, i=> !!( (_.uniq(_.compact(_.map( this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ) ? i : false ))
+                        this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) || []).indexOf(_.trim(i.id)) > -1 ? i : false))
+                        this.flatRateInvoicingDataObject.iosData = _.compact(_.map(this.flatRateInvoicingDataObject.iosData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ? i : false))
 
-                        this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                        this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language), icon:"arrow-forward"});
+                        this._setLoadingMessage({message: this.localize('mhListing.spinner.step_5_done', this.language),icon: "check-circle",updateLastMessage: true,done: true});
+                        this._setLoadingMessage({message: this.localize('mhInvoicing.spinner.step_4', this.language),icon: "arrow-forward"});
 
-                        console.log("--- Before generate invoices ---");
-                        console.log(_.cloneDeep(this.flatRateInvoicingDataObject));
-
+                    }) //9
+                    .then(() => this._getPatientsWithValidInvoiceForExportedMonth(_.flatMap(_.cloneDeep(this.flatRateInvoicingDataObject.listsData)), _.trim(this.flatRateInvoicingDataObject.exportedDate)).then(x=>_.assign(this.flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth,x))) //10
+                    .then(() => {
                         return Promise.all(_.toPairs(this.flatRateInvoicingDataObject.listsData).map(list => {
 
                             const typeList = list[0]
                             const patientList = list[1]
                             const codesList = typeList === "list5" || typeList === "list6" ?
+                                // Lists 5 & 6 = NEW patients with respectively no tryout ; tryout
                                 _.concat(
                                     _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations"),
                                     _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(1,"month").format("YYYYMMDD")))}), "valorisations")
                                 ) :
+                                // List 8 = old / regular patients
                                 _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations")
 
-                            return patientList.map(pat => {
-                                const originalInvoicingCodes = codesList.filter(code =>
+                            return _.compact(_.map(patientList, pat => {
+
+                                // If is a resent -> pat already exists for exported month, with another INS.
+                                // Ie: should NOT be charged for current exported month
+                                const originalInvoicingCodes = _.get(pat,"isResent",false) ? [] : codesList.filter(code =>
                                     parseFloat(code.price) && (
                                         (code.flatRateType === "physician" && pat.finalMedicalHouseContracts.gp === true ) ||
                                         (code.flatRateType === "nurse" && pat.finalMedicalHouseContracts.nurse === true) ||
                                         (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true)
                                     )
                                 )
-                                const additionalInvoicingCodes = _.flatMap(_.map(_.get(pat,"invoiceToBeResent",[]), invoiceToBeResent=>{
+
+                                const additionalInvoicingCodes = _.flatMap(_.map(_.get(pat,"invoiceToBeResent",[]), invoiceToBeResent => {
+
+                                    // In case we inherit of an invoice to be resent, make sure we don't invoice month to be resent twice
                                     const invoiceCodesToBeDeleted = _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) > -1 )
+
+                                    // 1+ times the same invoicing codes ? Update IC codes & DB
                                     if( !!parseInt(_.size(invoiceCodesToBeDeleted)) ) {
                                         const newInvoicingCodes = _.compact(_.map(invoiceToBeResent.invoicingCodes, ic => _.compact(_.map(invoiceCodesToBeDeleted,"id")).indexOf(_.trim(_.get(ic,"id",false)))>-1 ? false : ic ))
                                         const invoiceToBeResentWithOmittedDuplicatedInvCodes = _.assign(_.cloneDeep(invoiceToBeResent), {invoicingCodes:newInvoicingCodes})
                                         this.flatRateInvoicingDataObject.invoicesToBeModified.push(invoiceToBeResentWithOmittedDuplicatedInvCodes)
                                     }
-                                    return _.map(_.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) === -1 ), ic => _.merge({},{
-                                        code: _.get(ic,"code",""),
-                                        label: { fr: _.get(ic,"label",""), nl: _.get(ic,"label",""), en: _.get(ic,"label","") },
-                                        price: _.get(ic,"totalAmount",0),
-                                        valorisationMonth: _.get(ic,"dateCode",null)
-                                    }))
+
+                                    return _.map(
+                                        _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) === -1 ),
+                                        ic => _.merge({},{
+                                            code: _.get(ic,"code",""),
+                                            label: { fr: _.get(ic,"label",""), nl: _.get(ic,"label",""), en: _.get(ic,"label","") },
+                                            price: _.get(ic,"totalAmount",0),
+                                            valorisationMonth: _.get(ic,"dateCode",null)
+                                        })
+                                    )
+
                                 })||[])
-                                return _.assign(pat, {
-                                    invoicingCodes: _.compact(_.concat(additionalInvoicingCodes||[],originalInvoicingCodes)).map(val => ({
-                                        code: val.code,
-                                        tarificationId: "INAMI-RIZIV|" + val.code + "|1.0",
-                                        label: _.get(val, "label."+this.language,""),
-                                        totalAmount: Number(_.get(val,"price",0)),
-                                        reimbursement: Number(_.get(val,"price",0)),
+
+                                // Say we generate month 01, then we generate month 02
+                                // Then we flag invoices of month 01 as rejected + corrected
+                                // Then we re-run month 02
+                                // Export should only hold pat X for month 01 but not for month 02
+                                const finalInvoicingCodes = _.compact(_.concat( additionalInvoicingCodes||[], (_.get(this,"flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth",[]).indexOf(_.get(pat,"id")) > -1 ? [] : originalInvoicingCodes) ))
+
+                                return !_.size(finalInvoicingCodes) ? false : _.assign(pat, {
+                                    invoicingCodes: _.orderBy(_.map(finalInvoicingCodes, ic => ({
+                                        code: ic.code,
+                                        tarificationId: "INAMI-RIZIV|" + ic.code + "|1.0",
+                                        label: _.get(ic, "label."+this.language,""),
+                                        totalAmount: Number(_.get(ic,"price",0)),
+                                        reimbursement: Number(_.get(ic,"price",0)),
                                         patientIntervention: Number(0.00).toFixed(2),
                                         doctorSupplement: Number(0.00).toFixed(2),
                                         units: 1,
@@ -5201,14 +5309,19 @@
                                         pending: false,
                                         resent: false,
                                         lost: false,
-                                        dateCode: parseInt(_.get(val,"valorisationMonth",0))||null,
+                                        archived: false,
+                                        dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
                                         id: this.api.crypto().randomUuid(),
                                         logicalId: this.api.crypto().randomUuid()
-                                    }))
+                                    })), ["dateCode"], ["desc"])
                                 })
-                            })
+                            }))
                         }))
                             .then(()=>{
+
+                                console.log("--- Before generate invoices ---");
+                                console.log(_.cloneDeep(this.flatRateInvoicingDataObject));
+
                                 let prom = Promise.resolve([])
                                 let invoicesToBeModified = _.cloneDeep(this.flatRateInvoicingDataObject.invoicesToBeModified);
                                 return !parseInt(_.size(invoicesToBeModified||[])) ?
@@ -5220,14 +5333,15 @@
                                         )
                                     }))
                             })
+                            .then(()=> this._sleep(5000)) /* Cool down */
                             .then(()=>this._createOrUpdateMedicalHousePatientsInvoices())
-                    })
+                    }) //11
                     .then(invoicesData=>{
                         this.flatRateInvoicingDataObject.invoicesData = invoicesData
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_7',this.language), icon:"arrow-forward"});
                         return this._generateJ20FlatFiles().then(x=>x)
-                    })
+                    }) //12
                     .then(flatFileObjects=>{
 
                         this.flatRateInvoicingDataObject.generatedFiles.flatFiles = _.map(flatFileObjects,i=>{
@@ -5351,7 +5465,8 @@
                                         })
                                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                                 })).then(x=>x)
-                            }).then(()=>{
+                            })
+                            .then(()=>{
                                 return this.api.invoice().getInvoices(new models.ListOfIdsDto({ ids: _.uniq( _.compact( _.map( _.get(this.flatRateInvoicingDataObject, "invoicesData", []), i => _.get(i, "invoices[0].id", false )))) }))
                                     .then(invoices => {
                                         let limit = promiseLimit(100);
@@ -5360,18 +5475,19 @@
                                                 inv.sentDate = moment().format("YYYYMMDD")
                                                 return retry.retry(() => (this.api.invoice().modifyInvoice(inv).then(inv =>this.api.register(inv,'invoice'))))
                                             })
-
                                         }))
                                     }).then(x=>x)
-                            }).then(()=>{
+                            })
+                            .then(()=>flatRateUtil.flagInvoicesToAddFromTimelineAsAdded(parseInt(_.get(this,"flatRateInvoicingDataObject.exportedDate"))))
+                            .then(()=>{
                                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_5',this.language), icon:"arrow-forward"});
                                 return this._generateJ20PdfTemplateObjects().then(x=>x)
                             })
-                    })
+                    }) //13
                     .then(pdfTemplateObjects=>{
                         return Promise.all(pdfTemplateObjects.map( singlePdfFileObject => this.api.pdfReport(mustache.render(singlePdfFileObject.template, {})).then(x=>_.merge(singlePdfFileObject, {fileContent:x.pdf})) ))
-                    })
+                    }) //14
                     .then(generatedPdfFiles=>{
 
                         this.flatRateInvoicingDataObject.generatedFiles.pdfs = _.map(generatedPdfFiles,i=>{
@@ -5419,13 +5535,13 @@
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         })).then(x=>x)
-                    })
+                    }) //15
                     .then(()=>{
                         return this._generateJ20PdfTemplateParentOaObjects().then(x=>x)
-                    })
+                    }) //16
                     .then((parentOaPdfTemplateObjects)=>{
                         return Promise.all(parentOaPdfTemplateObjects.map( singlePdfFileObject => this.api.pdfReport(mustache.render(singlePdfFileObject.template, {})).then(x=>_.merge(singlePdfFileObject, {fileContent:x.pdf})) ))
-                    })
+                    }) //17
                     .then(generatedOaPdfFiles=>{
 
                         this.flatRateInvoicingDataObject.generatedFiles.oaPdfs = _.map(generatedOaPdfFiles,i=>{
@@ -5473,12 +5589,12 @@
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         })).then(x=>x)
-                    })
+                    }) //18
                     .then(()=>{
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8',this.language), icon:"arrow-forward"})
                         return this._createMhExportZipArchive().then(x=>x)
-                    })
+                    }) //19
                     .then(batchZipFileBlob=>{
                         this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob = batchZipFileBlob
                         return this.api.message().newInstance(this.user)
@@ -5511,12 +5627,12 @@
                                 return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                             })
                             .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
-                    })
+                    }) //20
                     .then(()=>{
                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"})
                         this.api.triggerFileDownload( this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob, "application/zip", this.flatRateInvoicingDataObject.finalArchive.archiveDownloadFileName )
-                    })
+                    }) //21
                     .catch((e)=>{
                         console.log(e);
                         return (
@@ -5529,7 +5645,7 @@
                                                     ( _.trim(e).indexOf('export-already-ran') > -1 ) ? this._showWarningExportAlreadyRan() && e :
                                                         e
                         )
-                    })
+                    }) //22
                     .finally(()=>{
                         console.log(this.flatRateInvoicingDataObject);
                         this.flatRateInvoicingDataObject = {}
@@ -5544,38 +5660,9 @@
                         const invGridDetail = this.root.querySelector('#invoiceAndBatchesGridDetail'); invGridDetail && invGridDetail.clearCache();
                         this.api.setPreventLogging(false);
                         this._fetchJ20Messages(true).then(()=>{ this.dispatchEvent(new CustomEvent('do-route', { bubbles: true, composed: true, detail: { selection : { item : "e_flatrateinvOut", status: "j20_process" }}})); })
-                    })
+                    }) //23
 
             }
-
-            // _runFlatRateCheck(){
-            //     return this._flatrateCheckOnAllPatients(201909).then(resList =>{
-            //         console.log("resList", resList);
-            //         this.set("flatRateCheckList", resList);
-            //         return resList;
-            //     });
-            // }
-            //
-            // _flatrateCheckOnAllPatients(invoicedMonth) {
-            //     //Number(moment().format('YYYYMM')
-            //     const flatRateUtil = this.$.flatrateUtils;
-            //     // return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then( hcp =>
-            //     //     hcp.parentId ? this.api.hcparty().getHealthcareParty(hcp.parentId) : hcp).then(hcp2 =>);
-            //     //return this._getPatientsByHcp(_.get(this.hcp, "id")).then(myPatients => Promise.all(myPatients.map(pat =>  flatRateUtil.checkFlatrateData(pat, invoicedMonth))));
-            //     return this._getPatientsByHcp(_.get(this.hcp, "id")).then(myPatients => myPatients.map(pat =>  flatRateUtil.checkFlatrateDataWithHcp(this.hcp, pat, invoicedMonth)));
-            // }
-
-
-            //data display methods
-            _patDataSelection(resList, list){
-                //TODO: implement data selection based on List
-                return resList
-            }
-
-            _join(arr){
-                return arr.join();
-            }
-
 
         }
 
