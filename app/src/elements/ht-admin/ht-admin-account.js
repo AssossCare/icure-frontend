@@ -13,6 +13,7 @@ import './account/ht-admin-account-bank.js';
 import './account/ht-admin-account-delegations.js';
 import './account/ht-admin-account-edmg.js';
 import './account/ht-admin-account-informations.js';
+import './account/ht-admin-account-electron.js';
 import './account/ht-admin-account-printers.js';
 import './account/ht-admin-account-agenda.js';
 import './account/ht-admin-account-invoice.js';
@@ -65,6 +66,10 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
 
         <template is="dom-if" if="[[printersInformationLayout]]">
             <ht-admin-account-printers id="admin-account-printers" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" socket="[[socket]]"></ht-admin-account-printers>
+        </template>
+        
+        <template is="dom-if" if="[[configurationElectronLayout]]">
+            <ht-admin-account-electron id="admin-account-electron" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" socket="[[socket]]"></ht-admin-account-electron>
         </template>
 
         <template is="dom-if" if="[[accountInformationsLayout]]">
@@ -119,6 +124,10 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: false
           },
+          configurationElectronLayout:{
+              type: Boolean,
+              value: false
+          },
           accountInformationsLayout:{
               type: Boolean,
               value: false
@@ -162,6 +171,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if(this.selectedSubMenu === "edmgInformationSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', true)
@@ -171,10 +181,22 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if (this.selectedSubMenu === "printersInformationSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', false)
           this.set('printersInformationLayout', true)
+          this.set('accountInformationsLayout', false)
+          this.set('bankInformationsLayout', false)
+          this.set('delegationLayout', false)
+          this.set('agendaLayout', false)
+          this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
+      }else if (this.selectedSubMenu === "configurationElectronSubMenu"){
+          this.set('preferencesLayout', false)
+          this.set('edmgInformationLayout', false)
+          this.set('printersInformationLayout', false)
+          this.set('configurationElectronLayout', true)
           this.set('accountInformationsLayout', false)
           this.set('bankInformationsLayout', false)
           this.set('delegationLayout', false)
@@ -189,6 +211,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if(this.selectedSubMenu === "bankInformationsSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', false)
@@ -198,6 +221,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if(this.selectedSubMenu === "myDelegationsSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', false)
@@ -207,6 +231,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', true)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if(this.selectedSubMenu === "agendaSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', false)
@@ -216,6 +241,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', true)
           this.set('invoiceLayout', false)
+          this.set('configurationElectronLayout', false)
       }else if(this.selectedSubMenu === "invoiceSubMenu"){
           this.set('preferencesLayout', false)
           this.set('edmgInformationLayout', false)
@@ -225,6 +251,7 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           this.set('delegationLayout', false)
           this.set('agendaLayout', false)
           this.set('invoiceLayout', true)
+          this.set('configurationElectronLayout', false)
       }
   }
 }

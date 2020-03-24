@@ -911,7 +911,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                         <ht-spinner class="center" active="[[isLoadingDoc]]"></ht-spinner>
                         <template is="dom-if" if="[[list]]">
                             <div class="ctc-header">
-                <span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]</span>
+                                <span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]</span>
                                 <template is="dom-if" if="[[_canChangeDate()]]">
                                     <vaadin-date-picker-light id="dp" on-value-changed="_dateChanged" max="[[_maxDate()]]"
                                                               value="[[_getOpeningDate()]]" initialPosition="[[_getOpeningDate()]]"

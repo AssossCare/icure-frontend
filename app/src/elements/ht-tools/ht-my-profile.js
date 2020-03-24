@@ -543,8 +543,7 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
 
                                         <vaadin-combo-box id="supervisor-search" filtered-items="[[supervisorListItem]]" item-label-path="hrLabel" item-value-path="id" on-filter-changed="_superVisorSearch" on-keydown="isEnterPressed" label="[[localize('supervisor','Votre médecin référent (uniquement si vous êtes stagiaire)',language)]]" value="{{supervisorId}}">
                                         </vaadin-combo-box>
-                                    </template>
-
+                                    </template>                                    
                                 </div>
 
                                 <div class="col-lg-6 tile">
@@ -1311,12 +1310,12 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
           //     .finally(() => this.$.dialog.close())
           if(!_.isEmpty(this.adr))this.addressProChanged();
           Promise.all([this.api.user().modifyUser(this.user), this.api.hcparty().modifyHealthcareParty(this.hcp)])
-          .then(([user,hcp]) => {
-              this.api.register(hcp,'hcp');
-              this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
-              this.$.dialog.close()
-          })
-          .catch(err => console.error(err))
+              .then(([user,hcp]) => {
+                  this.api.register(hcp,'hcp');
+                  this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
+                  this.$.dialog.close()
+              })
+              .catch(err => console.error(err))
 
       }
   }

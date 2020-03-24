@@ -333,6 +333,10 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                         <paper-item class="one-line-menu menu-item flex-start" id="account" data-submenu="printersInformationSubMenu">
                             <iron-icon class="sub-menu-icon" icon="icons:print"></iron-icon> [[localize('acc_print_info','Printers',language)]]
                         </paper-item>
+                        
+                        <paper-item class="one-line-menu menu-item flex-start" id="account" data-submenu="configurationElectronSubMenu">
+                            <iron-icon class="sub-menu-icon" icon="vaadin:cog"></iron-icon> [[localize('my-electron','my electron',language)]]
+                        </paper-item>
                     </template>
 
 

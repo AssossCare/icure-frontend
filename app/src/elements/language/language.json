@@ -1,5 +1,9 @@
 {
 	"en": {
+		"choose_url" : "Choose your URL",
+		"choose_backend": "Choose your data source",
+		"online": "Online",
+		"online_test": "Online (test)",
 		"eattest_reason_cancel_A": "Patient error",
 		"eattest_reason_cancel_B": "Provider error (doctor B instead of doctor A)",
 		"eattest_reason_cancel_C": "Error in one of the elements of the ASD (ex. : nomenclature code, tooth number, amount of fee / amount to be paid by the patient, …)",
@@ -2662,6 +2666,10 @@
 		"outsideOfCountry": "Outside of country"
 	},
 	"fr": {
+		"choose_url" : "Choix de l'URL",
+		"choose_backend": "Choix de la source de données",
+		"online": "En ligne",
+		"online_test": "En ligne (test)",
 		"createAccessLog" : "création d'un log d'accès",
 		"modifyPatientWithUser": "modification des données administrative du patient",
 		"createPatientWithUser": "création du patient",
@@ -4084,7 +4092,7 @@
 		"orghospital": "Hôpital",
 		"orgprimaryhealthcarecenter": "Maison médicale",
 		"oth_for": "Autre formulaire",
-		"oth_opt": "Autre options",
+		"oth_opt": "Autres options",
 		"oth_orgs": "Autres organismes",
 		"oth_svcs": "Autres services",
 		"page": "Page",
@@ -5453,6 +5461,10 @@
 		"saveChangesAndGoToNextStep": "Enregistrer et passer à l'étape suivante"
 	},
 	"nl": {
+		"choose_url" : "Choose your URL",
+		"choose_backend": "Choose your data source",
+		"online": "Online",
+		"online_test": "Online (test)",
 		"createAccessLog" : "maak een toegangslogboek",
 		"modifyPatientWithUser": "wijziging van de administratieve gegevens van de patiënt",
 		"createPatientWithUser": "patiënt creatie",
