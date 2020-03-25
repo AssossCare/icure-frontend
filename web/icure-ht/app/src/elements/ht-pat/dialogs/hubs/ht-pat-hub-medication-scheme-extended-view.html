@@ -705,6 +705,7 @@
 
             .content{
                 padding: 0;
+                height: calc(100% - 48px);
             }
 
             .chronicIcon{
@@ -903,35 +904,45 @@
                 top: 0px;
                 background: white;
                 z-index: 999;
-                padding: 2px;
+                border-width: 2px 8px;
+                border-color: white;
+                border-style: solid;
             }
             .mdc-data-table__cell {
-                padding: 2px;
+                border-width: 2px 8px;
+                border-color: white;
+                border-style: solid;
             }
             .mdc-data-table__cell-text {
                 text-align: left;
             }
 
-            .ellipsis {
-                overflow: hidden;
-                text-overflow: ellipsis;
+            .mdc-data-table__cell-large {
+                flex: 0 0 40% !important;
+                width: 40% !important;
             }
-
-            .mdc-data-table__cell-size25 {
-                flex: 0 0 25% !important;
-                width: 25% !important;
-            }
-            .mdc-data-table__cell-size5 {
+            .mdc-data-table__cell-small {
                 flex: 0 0 5% !important;
                 width: 5% !important;
             }
-            .mdc-data-table__cell-size15 {
-                flex: 0 0 15% !important;
-                width: 15% !important;
+            .mdc-data-table__cell-medium {
+                flex: 0 0 20% !important;
+                width: 20% !important;
             }
-            .mdc-data-table__cell-size10 {
-                flex: 0 0 10% !important;
-                width: 10% !important;
+            .ellipsis {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 20vw;
+            }
+            .nowrap {
+                display: flex;
+                flex-flow: row nowrap;
+            }
+            .hcp-icon {
+                height: 12px;
+                width: 12px;
+                padding: 3px;
             }
 
         </style>
@@ -952,7 +963,7 @@
                             <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('type','Type',language)]]</th>
                             <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('medication','Médication',language)]]</th>
                             <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('freq', 'Fréquence', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">Posology</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('pos', 'Posologie', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"  role="columnheader" scope="col">[[localize('begin', 'Début', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric" role="columnheader" scope="col">[[localize('end', 'Fin', language)]]</th>
                             <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('com', 'Commentaire', language)]]</th>
@@ -964,7 +975,7 @@
                     <tbody class="mdc-data-table__content">
                         <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology">
                             <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size5">
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small">
                                     <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">
                                         <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>
                                     </template>
@@ -981,307 +992,307 @@
                                         <iron-icon class="substanceIcon" icon="vaadin:pill"></iron-icon>
                                     </template>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-size15">
-                                    <span class="left">
-                                        <iron-icon icon="vaadin:user" class="chronicIcon" title="[[_getResponsibleHcp(medicationsWithPosology.authors)]]"></iron-icon>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-medium">
+                                    <div class="nowrap">
+                                        <iron-icon icon="vaadin:user" class="hcp-icon" title="[[_getResponsibleHcp(medicationsWithPosology.authors)]]"></iron-icon>
                                         <span class="ellipsis" title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>
-                                    </span>
+                                    </div>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size5">
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small">
                                     <span>[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size25">
-                                    <ht-pat-hub-medication-scheme-regimen-day api="[[api]]" regimen="[[medicationsWithPosology.regimen]]"></ht-pat-hub-medication-scheme-regimen-day>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-large">
+                                    <ht-pat-hub-medication-scheme-regimen-day api="[[api]]" regimen="[[medicationsWithPosology.regimen]]" language="[[language]]"></ht-pat-hub-medication-scheme-regimen-day>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size10 mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.beginmoment]]">[[medicationsWithPosology.beginmoment]]</span></td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size10 mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.endmoment]]">[[medicationsWithPosology.endmoment]]</span></td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-size15 ellipsis"><span title="[[medicationsWithPosology.posology]]" class="left">[[medicationsWithPosology.posology]]</span></td>
-                                <td class="mdc-data-table__cell relative mdc-data-table__cell-size5">
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.beginmoment]]">[[medicationsWithPosology.beginmoment]]</span></td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.endmoment]]">[[medicationsWithPosology.endmoment]]</span></td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-large"><div class="ellipsis" title="[[medicationsWithPosology.posology]]" class="left">[[medicationsWithPosology.posology]]</div></td>
+                                <td class="mdc-data-table__cell relative mdc-data-table__cell-small">
                                     <paper-checkbox on-tap="_synchronizeItemToLocal" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]"></paper-checkbox>
                                 </td>
-                                <td class="mdc-data-table__cell relative mdc-data-table__cell-size5">
+                                <td class="mdc-data-table__cell relative mdc-data-table__cell-small">
                                     <paper-checkbox on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-size5"></td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small"></td>
                             </tr>
                         </template>
                     </tbody>
                 </table>
             </div>
-            <div class="present">
-                <div class="table">
-                    <div class="tr th">
-                        <div class="td reimbursed">
+<!--            <div class="present">-->
+<!--                <div class="table">-->
+<!--                    <div class="tr th">-->
+<!--                        <div class="td reimbursed">-->
 
-                        </div>
-                        <div class="td span-5"
-                             style="flex-grow: 5;">
+<!--                        </div>-->
+<!--                        <div class="td span-5"-->
+<!--                             style="flex-grow: 5;">-->
 
-                        </div>
-                        <div class="td span-3" style="flex-grow: 3;">
+<!--                        </div>-->
+<!--                        <div class="td span-3" style="flex-grow: 3;">-->
 
-                        </div>
-                        <div class="td" style="flex-grow: 1;">
+<!--                        </div>-->
+<!--                        <div class="td" style="flex-grow: 1;">-->
 
-                        </div>
-                        <div class="td span-3" style="flex-grow: 3;">
-                            <span>[[localize('mom_break','Breakfast',language)]]</span>
-                        </div>
-                        <div class="td" style="flex-grow: 1;">
+<!--                        </div>-->
+<!--                        <div class="td span-3" style="flex-grow: 3;">-->
+<!--                            <span>[[localize('mom_break','Breakfast',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td" style="flex-grow: 1;">-->
 
-                        </div>
-                        <div class="td span-3" style="flex-grow: 3;">
-                            <span>[[localize('mom_lunch','Lunch',language)]]</span>
-                        </div>
-                        <div class="td" style="flex-grow: 1;">
+<!--                        </div>-->
+<!--                        <div class="td span-3" style="flex-grow: 3;">-->
+<!--                            <span>[[localize('mom_lunch','Lunch',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td" style="flex-grow: 1;">-->
 
-                        </div>
-                        <div class="td span-3" style="flex-grow: 3;">
-                            <span>[[localize('mom_dinner','Dinner',language)]]</span>
-                        </div>
-                        <div class="td" style="flex-grow: 1;">
+<!--                        </div>-->
+<!--                        <div class="td span-3" style="flex-grow: 3;">-->
+<!--                            <span>[[localize('mom_dinner','Dinner',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td" style="flex-grow: 1;">-->
 
-                        </div>
-                        <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">
-                            <div class="td"></div>
-                        </template>
-                        <div class="td span-4" style="flex-grow: 4;">
+<!--                        </div>-->
+<!--                        <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">-->
+<!--                            <div class="td"></div>-->
+<!--                        </template>-->
+<!--                        <div class="td span-4" style="flex-grow: 4;">-->
 
-                        </div>
-                        <div class="td span-4" style="flex-grow: 4;">
+<!--                        </div>-->
+<!--                        <div class="td span-4" style="flex-grow: 4;">-->
 
-                        </div>
-                        <div class="td span-4" style="flex-grow: 3;">
+<!--                        </div>-->
+<!--                        <div class="td span-4" style="flex-grow: 3;">-->
 
-                        </div>
-                    </div>
-                    <div class="tr th">
-                        <div class="td reimbursed">
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="tr th">-->
+<!--                        <div class="td reimbursed">-->
 
-                        </div>
-                        <div class="td td--medicine span-5"
-                             style="flex-grow: 5; justify-content: flex-start">
-                            <span class="left">[[localize('medic','Medicine',language)]]</span>
-                        </div>
-                        <div class="td span-3" style="flex-grow: 3;">
-                            <span>[[localize('freq','Frequency',language)]]</span>
-                        </div>
-                        <div class="td bf-bef">
-                            <span><iron-icon icon="vaadin:morning" class="morningIcon"></iron-icon></span>
-                        </div>
-                        <div class="td bf-bef">
-                            <span>[[localize('mom_before_short','Be',language)]]</span>
-                        </div>
-                        <div class="td bf-dur">
-                            <span>[[localize('mom_during_short','Du',language)]]</span>
-                        </div>
-                        <div class="td bf-aft">
-                            <span>[[localize('mom_after_short','Af',language)]]</span>
-                        </div>
-                        <div class="td bf-bef">
-                            <span>10h</span>
-                        </div>
-                        <div class="td lu-bef">
-                            <span>[[localize('mom_before_short','Be',language)]]</span>
-                        </div>
-                        <div class="td lu-dur">
-                            <span>[[localize('mom_during_short','Du',language)]]</span>
-                        </div>
-                        <div class="td lu-aft">
-                            <span>[[localize('mom_after_short','Af',language)]]</span>
-                        </div>
-                        <div class="td bf-bef">
-                            <span>16h</span>
-                        </div>
-                        <div class="td di-bef">
-                            <span>[[localize('mom_before_short','Be',language)]]</span>
-                        </div>
-                        <div class="td di-dur">
-                            <span>[[localize('mom_during_short','Du',language)]]</span>
-                        </div>
-                        <div class="td di-aft">
-                            <span>[[localize('mom_after_short','Af',language)]]</span>
-                        </div>
-                        <div class="td bf-bef">
-                            <span><iron-icon icon="vaadin:moon-o" class="moonIcon"></iron-icon></span>
-                        </div>
-                        <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">
-                            <div class="td">
-                                <span>[[_getTimeDesc(timeSlot)]]</span>
-                            </div>
-                        </template>
-                        <div class="td span-2" style="flex-grow: 2;">
-                            <span>[[localize('start-date-short','Start',language)]]</span>
-                        </div>
-                        <div class="td span-2" style="flex-grow: 2;">
-                            <span>[[localize('endDate-short','End',language)]]</span>
-                        </div>
-                        <div class="td td-comments span-4" style="flex-grow: 4; justify-content: space-between;">
-                            <span class="left">[[localize('com','Comments',language)]]</span>
-                        </div>
-                        <div class="td di-aft">Topaz</div>
-                        <div class="td di-aft">Hub</div>
-                        <div class="td di-aft">Action</div>
-                    </div>
-                    <!-- END HEADER -->
-                    <!-- START BODY -->
+<!--                        </div>-->
+<!--                        <div class="td td&#45;&#45;medicine span-5"-->
+<!--                             style="flex-grow: 5; justify-content: flex-start">-->
+<!--                            <span class="left">[[localize('medic','Medicine',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td span-3" style="flex-grow: 3;">-->
+<!--                            <span>[[localize('freq','Frequency',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-bef">-->
+<!--                            <span><iron-icon icon="vaadin:morning" class="morningIcon"></iron-icon></span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-bef">-->
+<!--                            <span>[[localize('mom_before_short','Be',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-dur">-->
+<!--                            <span>[[localize('mom_during_short','Du',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-aft">-->
+<!--                            <span>[[localize('mom_after_short','Af',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-bef">-->
+<!--                            <span>10h</span>-->
+<!--                        </div>-->
+<!--                        <div class="td lu-bef">-->
+<!--                            <span>[[localize('mom_before_short','Be',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td lu-dur">-->
+<!--                            <span>[[localize('mom_during_short','Du',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td lu-aft">-->
+<!--                            <span>[[localize('mom_after_short','Af',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-bef">-->
+<!--                            <span>16h</span>-->
+<!--                        </div>-->
+<!--                        <div class="td di-bef">-->
+<!--                            <span>[[localize('mom_before_short','Be',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td di-dur">-->
+<!--                            <span>[[localize('mom_during_short','Du',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td di-aft">-->
+<!--                            <span>[[localize('mom_after_short','Af',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td bf-bef">-->
+<!--                            <span><iron-icon icon="vaadin:moon-o" class="moonIcon"></iron-icon></span>-->
+<!--                        </div>-->
+<!--                        <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">-->
+<!--                            <div class="td">-->
+<!--                                <span>[[_getTimeDesc(timeSlot)]]</span>-->
+<!--                            </div>-->
+<!--                        </template>-->
+<!--                        <div class="td span-2" style="flex-grow: 2;">-->
+<!--                            <span>[[localize('start-date-short','Start',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td span-2" style="flex-grow: 2;">-->
+<!--                            <span>[[localize('endDate-short','End',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td td-comments span-4" style="flex-grow: 4; justify-content: space-between;">-->
+<!--                            <span class="left">[[localize('com','Comments',language)]]</span>-->
+<!--                        </div>-->
+<!--                        <div class="td di-aft">Topaz</div>-->
+<!--                        <div class="td di-aft">Hub</div>-->
+<!--                        <div class="td di-aft">Action</div>-->
+<!--                    </div>-->
+<!--                    &lt;!&ndash; END HEADER &ndash;&gt;-->
+<!--                    &lt;!&ndash; START BODY &ndash;&gt;-->
 
-                    <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology">
-                        <div class$="tr [[_medicationClass(medicationsWithPosology)]] pointer" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">
-                            <div class="td reimbursed">
-                                <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">
-                                    <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>
-                                </template>
-                                <template is="dom-if" if="[[_isOneShot(medicationsWithPosology)]]">
-                                    <iron-icon class="oneShotIcon" icon="vaadin:thumbs-up-o"></iron-icon>
-                                </template>
-                                <template is="dom-if" if="[[_isSuspensions(medicationsWithPosology)]]">
-                                    <iron-icon class="suspensionIcon" title="[[_getReasonOfSuspension(medicationsWithPosology)]]" icon="icons:warning"></iron-icon>
-                                </template>
-                                <template is="dom-if" if="[[_isCompoundPrescription(medicationsWithPosology.compoundprescription)]]">
-                                    <iron-icon class="compoundIcon" icon="vaadin:flask"></iron-icon>
-                                </template>
-                                <template is="dom-if" if="[[_isSubstancePrescription(medicationsWithPosology.substanceproduct)]]">
-                                    <iron-icon class="substanceIcon" icon="vaadin:pill"></iron-icon>
-                                </template>
-                            </div>
-                            <div class="td td--medicine span-5" style="flex-grow: 5;">
-                                <span class="left">
-                                    <iron-icon icon="vaadin:user" class="chronicIcon" title="[[_getResponsibleHcp(medicationsWithPosology.authors)]]"></iron-icon>
-                                    <span title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>
-                                </span>
-                            </div>
-                            <div class="td span-3" style="flex-grow: 3;" title="[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]"><span>[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span></div>
+<!--                    <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology">-->
+<!--                        <div class$="tr [[_medicationClass(medicationsWithPosology)]] pointer" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">-->
+<!--                            <div class="td reimbursed">-->
+<!--                                <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">-->
+<!--                                    <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>-->
+<!--                                </template>-->
+<!--                                <template is="dom-if" if="[[_isOneShot(medicationsWithPosology)]]">-->
+<!--                                    <iron-icon class="oneShotIcon" icon="vaadin:thumbs-up-o"></iron-icon>-->
+<!--                                </template>-->
+<!--                                <template is="dom-if" if="[[_isSuspensions(medicationsWithPosology)]]">-->
+<!--                                    <iron-icon class="suspensionIcon" title="[[_getReasonOfSuspension(medicationsWithPosology)]]" icon="icons:warning"></iron-icon>-->
+<!--                                </template>-->
+<!--                                <template is="dom-if" if="[[_isCompoundPrescription(medicationsWithPosology.compoundprescription)]]">-->
+<!--                                    <iron-icon class="compoundIcon" icon="vaadin:flask"></iron-icon>-->
+<!--                                </template>-->
+<!--                                <template is="dom-if" if="[[_isSubstancePrescription(medicationsWithPosology.substanceproduct)]]">-->
+<!--                                    <iron-icon class="substanceIcon" icon="vaadin:pill"></iron-icon>-->
+<!--                                </template>-->
+<!--                            </div>-->
+<!--                            <div class="td td&#45;&#45;medicine span-5" style="flex-grow: 5;">-->
+<!--                                <span class="left">-->
+<!--                                    <iron-icon icon="vaadin:user" class="chronicIcon" title="[[_getResponsibleHcp(medicationsWithPosology.authors)]]"></iron-icon>-->
+<!--                                    <span title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>-->
+<!--                                </span>-->
+<!--                            </div>-->
+<!--                            <div class="td span-3" style="flex-grow: 3;" title="[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]"><span>[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span></div>-->
 
-                            <ht-pat-hub-medication-scheme-regimen-day class="span-13" style="flex-grow: 13;" api="[[api]]" regimen="[[medicationsWithPosology.regimen]]"></ht-pat-hub-medication-scheme-regimen-day>
+<!--                            <ht-pat-hub-medication-scheme-regimen-day class="span-13" style="flex-grow: 13;" api="[[api]]" regimen="[[medicationsWithPosology.regimen]]"></ht-pat-hub-medication-scheme-regimen-day>-->
 
-<!--                            <template is="dom-repeat" items="" as="regimen">-->
-<!--                                <div class="td td-input bf-bef">-->
-<!--                                    <span></span>-->
+<!--&lt;!&ndash;                            <template is="dom-repeat" items="" as="regimen">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <div class="td td-input bf-bef">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    <span></span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </template>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 0)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input bf-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 1)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input bf-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 2)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input bf-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 3)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <template is="dom-repeat" items="" as="regimen">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <div class="td td-input bf-bef">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    <span></span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </template>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 4)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input lu-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 5)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input lu-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 6)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input lu-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 7)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 8)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <template is="dom-repeat" items="" as="regimen">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <div class="td td-input bf-bef">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    <span></span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </template>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 9)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 10)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 11)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 12)]]</div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <template is="dom-repeat" items="" as="regimen">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <div class="td td-input bf-bef">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    <span></span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </template>&ndash;&gt;-->
+
+
+<!--                            <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">-->
+<!--                                <div class="td td-input">-->
+<!--                                    <span>[[_getRegimen(medicationsWithPosology.regimen.0, timeSlot)]]</span>-->
 <!--                                </div>-->
 <!--                            </template>-->
-<!--                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 0)]]</div>-->
-<!--                            <div class="td td-input bf-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 1)]]</div>-->
-<!--                            <div class="td td-input bf-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 2)]]</div>-->
-<!--                            <div class="td td-input bf-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 3)]]</div>-->
-<!--                            <template is="dom-repeat" items="" as="regimen">-->
-<!--                                <div class="td td-input bf-bef">-->
-<!--                                    <span></span>-->
+<!--                            <div class="td span-2" style="flex-grow: 2;" title="[[medicationsWithPosology.beginmoment]]"><span>[[medicationsWithPosology.beginmoment]]</span></div>-->
+<!--                            <div class="td span-2" style="flex-grow: 2;" title="[[medicationsWithPosology.endmoment]]"><span>[[medicationsWithPosology.endmoment]]</span></div>-->
+<!--                            <div class="td td&#45;&#45;comments span-4" style="flex-grow: 4;" title="[[medicationsWithPosology.posology]]"><span class="left">[[medicationsWithPosology.posology]]</span></div>-->
+
+<!--                            <template is="dom-if" if="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]">-->
+<!--                                <div class="td td-input di-aft" on-tap="_stopPropagation">-->
+<!--                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>-->
 <!--                                </div>-->
 <!--                            </template>-->
-<!--                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 4)]]</div>-->
-<!--                            <div class="td td-input lu-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 5)]]</div>-->
-<!--                            <div class="td td-input lu-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 6)]]</div>-->
-<!--                            <div class="td td-input lu-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 7)]]</div>-->
-<!--                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 8)]]</div>-->
-<!--                            <template is="dom-repeat" items="" as="regimen">-->
-<!--                                <div class="td td-input bf-bef">-->
-<!--                                    <span></span>-->
-<!--                                </div>-->
-<!--                            </template>-->
-<!--                            <div class="td td-input di-bef">[[_getRegimen(medicationsWithPosology.regimen.0, 9)]]</div>-->
-<!--                            <div class="td td-input di-dur">[[_getRegimen(medicationsWithPosology.regimen.0, 10)]]</div>-->
-<!--                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 11)]]</div>-->
-<!--                            <div class="td td-input di-aft">[[_getRegimen(medicationsWithPosology.regimen.0, 12)]]</div>-->
-<!--                            <template is="dom-repeat" items="" as="regimen">-->
-<!--                                <div class="td td-input bf-bef">-->
-<!--                                    <span></span>-->
+<!--                            <template is="dom-if" if="[[!medicationsWithPosology.synchronizationInfo.availableOnLocal]]">-->
+<!--                                <div class="td td-input di-aft">-->
+<!--                                    <vaadin-checkbox data-item="[[medicationsWithPosology]]" on-tap="_synchronizeItemToLocal"></vaadin-checkbox>-->
 <!--                                </div>-->
 <!--                            </template>-->
 
+<!--                            <template is="dom-if" if="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]">-->
+<!--                                <div class="td td-input di-aft" on-tap="_stopPropagation">-->
+<!--                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>-->
+<!--                                </div>-->
+<!--                            </template>-->
+<!--                            <template is="dom-if" if="[[!medicationsWithPosology.synchronizationInfo.availableOnHub]]">-->
+<!--                                <div class="td td-input di-aft">-->
+<!--                                    <vaadin-checkbox data-item="[[medicationsWithPosology]]" on-tap="_synchronizeItemToHub"></vaadin-checkbox>-->
+<!--                                </div>-->
+<!--                            </template>-->
+<!--                            <div class="td td-input di-aft"></div>-->
+<!--                        </div>-->
+<!--                        <template is="dom-repeat" items="[[_getOtherRegimen(medicationsWithPosology.regimen)]]" as="reg">-->
+<!--                            <div class$="tr [[_medicationClass(reg)]] pointer" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">-->
+<!--                                <div class="td reimbursed">-->
 
-                            <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">
-                                <div class="td td-input">
-                                    <span>[[_getRegimen(medicationsWithPosology.regimen.0, timeSlot)]]</span>
-                                </div>
-                            </template>
-                            <div class="td span-2" style="flex-grow: 2;" title="[[medicationsWithPosology.beginmoment]]"><span>[[medicationsWithPosology.beginmoment]]</span></div>
-                            <div class="td span-2" style="flex-grow: 2;" title="[[medicationsWithPosology.endmoment]]"><span>[[medicationsWithPosology.endmoment]]</span></div>
-                            <div class="td td--comments span-4" style="flex-grow: 4;" title="[[medicationsWithPosology.posology]]"><span class="left">[[medicationsWithPosology.posology]]</span></div>
-
-                            <template is="dom-if" if="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]">
-                                <div class="td td-input di-aft" on-tap="_stopPropagation">
-                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>
-                                </div>
-                            </template>
-                            <template is="dom-if" if="[[!medicationsWithPosology.synchronizationInfo.availableOnLocal]]">
-                                <div class="td td-input di-aft">
-                                    <vaadin-checkbox data-item="[[medicationsWithPosology]]" on-tap="_synchronizeItemToLocal"></vaadin-checkbox>
-                                </div>
-                            </template>
-
-                            <template is="dom-if" if="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]">
-                                <div class="td td-input di-aft" on-tap="_stopPropagation">
-                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>
-                                </div>
-                            </template>
-                            <template is="dom-if" if="[[!medicationsWithPosology.synchronizationInfo.availableOnHub]]">
-                                <div class="td td-input di-aft">
-                                    <vaadin-checkbox data-item="[[medicationsWithPosology]]" on-tap="_synchronizeItemToHub"></vaadin-checkbox>
-                                </div>
-                            </template>
-                            <div class="td td-input di-aft"></div>
-                        </div>
-                        <template is="dom-repeat" items="[[_getOtherRegimen(medicationsWithPosology.regimen)]]" as="reg">
-                            <div class$="tr [[_medicationClass(reg)]] pointer" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">
-                                <div class="td reimbursed">
-
-                                </div>
-                                <div class="td td--medicine span-5" style="flex-grow: 5;">
-                                    <span class="left"></span>
-                                </div>
-                                <div class="td span-3" style="flex-grow: 3;" title="[[_getDayInfo(reg)]]"><span>[[_getDayInfo(reg)]]</span></div>
-                                <template is="dom-repeat" items="" as="regimen">
-                                    <div class="td td-input bf-bef">
-                                        <span></span>
-                                    </div>
-                                </template>
-                                <div class="td td-input di-aft">[[_getRegimen(reg, 0)]]</div>
-                                <div class="td td-input bf-bef">[[_getRegimen(reg, 1)]]</div>
-                                <div class="td td-input bf-dur">[[_getRegimen(reg, 2)]]</div>
-                                <div class="td td-input bf-aft">[[_getRegimen(reg, 3)]]</div>
-                                <template is="dom-repeat" items="" as="regimen">
-                                    <div class="td td-input bf-bef">
-                                        <span></span>
-                                    </div>
-                                </template>
-                                <div class="td td-input di-aft">[[_getRegimen(reg, 4)]]</div>
-                                <div class="td td-input lu-bef">[[_getRegimen(reg, 5)]]</div>
-                                <div class="td td-input lu-dur">[[_getRegimen(reg, 6)]]</div>
-                                <div class="td td-input lu-aft">[[_getRegimen(reg, 7)]]</div>
-                                <div class="td td-input di-aft">[[_getRegimen(reg, 8)]]</div>
-                                <template is="dom-repeat" items="" as="regimen">
-                                    <div class="td td-input bf-bef">
-                                        <span></span>
-                                    </div>
-                                </template>
-                                <div class="td td-input di-bef">[[_getRegimen(reg, 9)]]</div>
-                                <div class="td td-input di-dur">[[_getRegimen(reg, 10)]]</div>
-                                <div class="td td-input di-aft">[[_getRegimen(reg, 11)]]</div>
-                                <div class="td td-input di-aft">[[_getRegimen(reg, 12)]]</div>
-                                <template is="dom-repeat" items="" as="regimen">
-                                    <div class="td td-input bf-bef">
-                                        <span></span>
-                                    </div>
-                                </template>
-                                <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">
-                                    <div class="td td-input">
-                                        <span>[[_getRegimen(reg, timeSlot)]]</span>
-                                    </div>
-                                </template>
-                                <div class="td span-2" style="flex-grow: 2;"><span></span></div>
-                                <div class="td span-2" style="flex-grow: 2;"><span></span></div>
-                                <div class="td td--comments span-4" style="flex-grow: 4;"><span class="left"></span></div>
-                                <div class="td td-input di-aft"></div>
-                                <div class="td td-input di-aft"></div>
-                                <div class="td td-input di-aft"></div>
-                            </div>
-                        </template>
-                    </template>
-                </div>
-                <!-- END BODY -->
-                <!-- END TABLE -->
-            </div>
+<!--                                </div>-->
+<!--                                <div class="td td&#45;&#45;medicine span-5" style="flex-grow: 5;">-->
+<!--                                    <span class="left"></span>-->
+<!--                                </div>-->
+<!--                                <div class="td span-3" style="flex-grow: 3;" title="[[_getDayInfo(reg)]]"><span>[[_getDayInfo(reg)]]</span></div>-->
+<!--                                <template is="dom-repeat" items="" as="regimen">-->
+<!--                                    <div class="td td-input bf-bef">-->
+<!--                                        <span></span>-->
+<!--                                    </div>-->
+<!--                                </template>-->
+<!--                                <div class="td td-input di-aft">[[_getRegimen(reg, 0)]]</div>-->
+<!--                                <div class="td td-input bf-bef">[[_getRegimen(reg, 1)]]</div>-->
+<!--                                <div class="td td-input bf-dur">[[_getRegimen(reg, 2)]]</div>-->
+<!--                                <div class="td td-input bf-aft">[[_getRegimen(reg, 3)]]</div>-->
+<!--                                <template is="dom-repeat" items="" as="regimen">-->
+<!--                                    <div class="td td-input bf-bef">-->
+<!--                                        <span></span>-->
+<!--                                    </div>-->
+<!--                                </template>-->
+<!--                                <div class="td td-input di-aft">[[_getRegimen(reg, 4)]]</div>-->
+<!--                                <div class="td td-input lu-bef">[[_getRegimen(reg, 5)]]</div>-->
+<!--                                <div class="td td-input lu-dur">[[_getRegimen(reg, 6)]]</div>-->
+<!--                                <div class="td td-input lu-aft">[[_getRegimen(reg, 7)]]</div>-->
+<!--                                <div class="td td-input di-aft">[[_getRegimen(reg, 8)]]</div>-->
+<!--                                <template is="dom-repeat" items="" as="regimen">-->
+<!--                                    <div class="td td-input bf-bef">-->
+<!--                                        <span></span>-->
+<!--                                    </div>-->
+<!--                                </template>-->
+<!--                                <div class="td td-input di-bef">[[_getRegimen(reg, 9)]]</div>-->
+<!--                                <div class="td td-input di-dur">[[_getRegimen(reg, 10)]]</div>-->
+<!--                                <div class="td td-input di-aft">[[_getRegimen(reg, 11)]]</div>-->
+<!--                                <div class="td td-input di-aft">[[_getRegimen(reg, 12)]]</div>-->
+<!--                                <template is="dom-repeat" items="" as="regimen">-->
+<!--                                    <div class="td td-input bf-bef">-->
+<!--                                        <span></span>-->
+<!--                                    </div>-->
+<!--                                </template>-->
+<!--                                <template is="dom-repeat" items="[[currentMedicationScheme.times]]" as="timeSlot">-->
+<!--                                    <div class="td td-input">-->
+<!--                                        <span>[[_getRegimen(reg, timeSlot)]]</span>-->
+<!--                                    </div>-->
+<!--                                </template>-->
+<!--                                <div class="td span-2" style="flex-grow: 2;"><span></span></div>-->
+<!--                                <div class="td span-2" style="flex-grow: 2;"><span></span></div>-->
+<!--                                <div class="td td&#45;&#45;comments span-4" style="flex-grow: 4;"><span class="left"></span></div>-->
+<!--                                <div class="td td-input di-aft"></div>-->
+<!--                                <div class="td td-input di-aft"></div>-->
+<!--                                <div class="td td-input di-aft"></div>-->
+<!--                            </div>-->
+<!--                        </template>-->
+<!--                    </template>-->
+<!--                </div>-->
+<!--                &lt;!&ndash; END BODY &ndash;&gt;-->
+<!--                &lt;!&ndash; END TABLE &ndash;&gt;-->
+<!--            </div>-->
         </div>
 
         <paper-dialog id="medicationDetailDialog" on-iron-overlay-closed="_closeMedicationDetailDialog">

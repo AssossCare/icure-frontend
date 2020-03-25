@@ -25,10 +25,7 @@
 
             .grid-container {
                 width: 100%;
-                /*width: 600px; !* temp *!*/
-                /*min-width: 0;*/
                 height: 28px;
-                /*min-height: 0;*/
                 margin: 1px;
                 grid-gap: 1px;
                 display: grid;
@@ -58,10 +55,11 @@
             }
             .a_m {
                 grid-area: a_m;
+                border-radius: 0 8px 8px 0;
             }
             .ab_n {
                 grid-area: ab_n;
-                border-radius: 0 8px 8px 8px;
+                border-radius: 8px 8px 8px 8px;
             }
             .b_b {
                 grid-area: b_b;
@@ -104,28 +102,28 @@
             }
 
             .hasQuantity {
-                background: var(--app-secondary-color-dark);
+                background: var(--app-secondary-color);
             }
 
         </style>
         <div class="grid-container">
-            <div class$="a_a [[getColor(quantities.afterwakingup)]]">[[quantities.afterwakingup]]</div>
-            <div class$="a_bcd [[getColor(quantities.morning)]]">[[quantities.morning]]</div>
-            <div class$="a_e [[getColor(quantities.betweenbreakfastandlunch)]]">[[quantities.betweenbreakfastandlunch]]</div>
-            <div class$="a_fgh [[getColor(quantities.midday)]]">[[quantities.midday]]</div>
-            <div class$="a_i [[getColor(quantities.betweenlunchanddinner)]]">[[quantities.betweenlunchanddinner]]</div>
-            <div class$="a_jkl [[getColor(quantities.evening)]]">[[quantities.evening]]</div>
-            <div class$="a_m [[getColor(quantities.thehourofsleep)]]">[[quantities.thehourofsleep]]</div>
-            <div class$="ab_n [[getColor(quantities.other)]]">[[quantities.other]]</div>
-            <div class$="b_b [[getColor(quantities.beforebreakfast)]]">[[quantities.beforebreakfast]]</div>
-            <div class$="b_c [[getColor(quantities.duringbreakfast)]]">[[quantities.duringbreakfast]]</div>
-            <div class$="b_d [[getColor(quantities.afterbreakfast)]]">[[quantities.afterbreakfast]]</div>
-            <div class$="b_f [[getColor(quantities.beforelunch)]]">[[quantities.beforelunch]]</div>
-            <div class$="b_g [[getColor(quantities.duringlunch)]]">[[quantities.duringlunch]]</div>
-            <div class$="b_h [[getColor(quantities.afterlunch)]]">[[quantities.afterlunch]]</div>
-            <div class$="b_j [[getColor(quantities.beforedinner)]]">[[quantities.beforedinner]]</div>
-            <div class$="b_k [[getColor(quantities.duringdinner)]]">[[quantities.duringdinner]]</div>
-            <div class$="b_l [[getColor(quantities.afterdinner)]]">[[quantities.afterdinner]]</div>
+            <div class$="a_a [[getColor(quantities.afterwakingup)]]" title="[[localize('ms_afterwakingup','Au lever',language)]]">[[quantities.afterwakingup]]</div>
+            <div class$="a_bcd [[getColor(quantities.morning)]]" title="[[localize('ms_morning','Matin',language)]]">[[quantities.morning]]</div>
+            <div class$="a_e [[getColor(quantities.betweenbreakfastandlunch)]]" title="[[localize('ms_betweenbreakfastandlunch','Entre le déjeuner et le diner',language)]]">[[quantities.betweenbreakfastandlunch]]</div>
+            <div class$="a_fgh [[getColor(quantities.midday)]]" title="[[localize('mom_midday','Midi',language)]]">[[quantities.midday]]</div>
+            <div class$="a_i [[getColor(quantities.betweenlunchanddinner)]]" title="[[localize('ms_betweenlunchanddinner','Entre le diner et le souper',language)]]">[[quantities.betweenlunchanddinner]]</div>
+            <div class$="a_jkl [[getColor(quantities.evening)]]" title="[[localize('ms_evening','Soir',language)]]">[[quantities.evening]]</div>
+            <div class$="a_m [[getColor(quantities.thehourofsleep)]]" title="[[localize('ms_thehourofsleep','Avant le coucher',language)]]">[[quantities.thehourofsleep]]</div>
+            <div class$="ab_n [[getColor(quantities.other)]]" title="[[localize('other','Autre',language)]]">[[quantities.other]]</div>
+            <div class$="b_b [[getColor(quantities.beforebreakfast)]]" title="[[localize('ms_beforebreakfast','Avant le repas du matin',language)]]">[[quantities.beforebreakfast]]</div>
+            <div class$="b_c [[getColor(quantities.duringbreakfast)]]" title="[[localize('ms_duringbreakfast','Pendant le repas du matin',language)]]">[[quantities.duringbreakfast]]</div>
+            <div class$="b_d [[getColor(quantities.afterbreakfast)]]" title="[[localize('ms_afterbreakfast','Après le repas du matin',language)]]">[[quantities.afterbreakfast]]</div>
+            <div class$="b_f [[getColor(quantities.beforelunch)]]" title="[[localize('ms_beforelunch','Avant le repas de midi',language)]]">[[quantities.beforelunch]]</div>
+            <div class$="b_g [[getColor(quantities.duringlunch)]]" title="[[localize('ms_duringlunch','Pendant le repas de midi',language)]]">[[quantities.duringlunch]]</div>
+            <div class$="b_h [[getColor(quantities.afterlunch)]]" title="[[localize('ms_afterlunch','Après le repas de midi',language)]]">[[quantities.afterlunch]]</div>
+            <div class$="b_j [[getColor(quantities.beforedinner)]]" title="[[localize('ms_beforedinner','Avant le repas du soir',language)]]">[[quantities.beforedinner]]</div>
+            <div class$="b_k [[getColor(quantities.duringdinner)]]" title="[[localize('ms_duringdinner','Pendant le repas du soir',language)]]">[[quantities.duringdinner]]</div>
+            <div class$="b_l [[getColor(quantities.afterdinner)]]" title="[[localize('ms_afterdinner','Après le repas du soir',language)]]">[[quantities.afterdinner]]</div>
         </div>
    </template>
     <script>
@@ -143,6 +141,9 @@
                     regimen: {
                         type: Object,
                         value: () => {}
+                    },
+                    language: {
+                        type: String,
                     },
                     quantities: {
                         type: Object,
