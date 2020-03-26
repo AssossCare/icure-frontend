@@ -4,20 +4,13 @@ RUN mkdir -p /usr/src
 WORKDIR /usr/src
 RUN chown -R node .
 
-RUN npm install bower -g --quiet
-
 # copy env
 COPY --chown=node package* ./
-COPY --chown=node bower.json ./
-COPY --chown=node .bowerrc ./
 
 USER node
 
 # npm
 RUN npm install --quiet
-
-# bower
-RUN bower install
 
 # copy code
 COPY --chown=node tsconfig.json ./

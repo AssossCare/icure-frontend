@@ -427,18 +427,18 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 max-width: 100%;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-				overflow: hidden;
-				align-items: center;
-				display: flex;
-				flex-flow: row nowrap;
-				justify-content: flex-start;
-			}
+                overflow: hidden;
+                align-items: center;
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: flex-start;
+            }
 
-			.one-line-menu.list-title > div {
-				max-width: 100%;
-				overflow: hidden;
-				text-overflow: ellipsis;
-			}
+            .one-line-menu.list-title > div {
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
             #inbox {
                 flex-direction: row;

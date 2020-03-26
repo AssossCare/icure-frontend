@@ -339,6 +339,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                                  user="[[user]]"
                                  select-list="[[selectList]]"
                                  invoices-status="[[invoicesStatus]]"
+                                 route-data="[[routeData]]"
                                  on-selection-messages-change="handleMessageChange"
                                  on-initialize-batch-counter="callInitializeBatchCounter"></ht-msg-invoice>
             </template>
@@ -494,6 +495,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             patientList: {
                 type: Array,
                 value: []
+            },
+            routeData:{
+                type: Object,
+                value: () => {}
             }
         }
     }
