@@ -91,26 +91,21 @@
             .modal-title {
                 justify-content: flex-start;
             }
-
             .content {
                 text-align: center;
             }
-
             .modal-title iron-icon {
                 margin-right: 8px;
             }
-
         </style>
 
         <paper-dialog id="hubMedicationSchemaDetailDialog">
-            <div class="content hubMedicationSchemaDetailDialog">
-                <div id="titleInfo">
-                    [[localize('ms-title', 'Schéma de médication', language)]]
-                </div>
-                <div class="ms-content">
-                    <ht-pat-hub-medication-scheme-extended-view class="p4" id="htPatHubMedicationSchemeExtendedView" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" contacts="[[contacts]]" on-error="_showErrorMessage" on-spinner-busy="_setSpinnerBusy" on-spinner-idle="_setSpinnerIdle"></ht-pat-hub-medication-scheme-extended-view>
-                </div>
-                  </div>
+<!--            <div class="content hubMedicationSchemaDetailDialog">-->
+            <h2 class="modal-title">[[localize('ms-title', 'Schéma de médication', language)]]</h2>
+            <div class="content container">
+                <ht-pat-hub-medication-scheme-extended-view id="htPatHubMedicationSchemeExtendedView" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" contacts="[[contacts]]" on-error="_showErrorMessage" on-spinner-busy="_setSpinnerBusy" on-spinner-idle="_setSpinnerIdle"></ht-pat-hub-medication-scheme-extended-view>
+            </div>
+<!--            </div>-->
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_synchronizeScheme">[[localize('','Synchroniser le schéma',language)]]</paper-button>

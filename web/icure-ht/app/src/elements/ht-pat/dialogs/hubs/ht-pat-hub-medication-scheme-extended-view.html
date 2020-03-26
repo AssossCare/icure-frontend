@@ -702,12 +702,6 @@
                 height: 28px;
                 width: 28px;
             }
-
-            .content{
-                padding: 0;
-                height: calc(100% - 48px);
-            }
-
             .chronicIcon{
                 height: 12px;
                 width: 12px;
@@ -777,7 +771,10 @@
                 padding: 4px;
                 width: 100%;
                 box-sizing: border-box;
-                margin-bottom: 12px;
+                display: flex;
+                justify-content: center;
+                align-content: center;
+                height: 48px;
             }
 
             .bold{
@@ -889,10 +886,34 @@
 
             /*table-style*/
 
+            paper-checkbox {
+                --paper-checkbox-unchecked-color: var(--app-text-color);
+                --paper-checkbox-checked-color: var(--app-secondary-color);
+                --paper-checkbox-checked-ink-color: var(--app-secondary-color-dark);
+                --paper-checkbox-vertical-align: bottom;
+                --paper-checkbox-size: 16px;
+                --paper-checkbox-label: {
+                    display:none
+                };
+            }
+            .small-icon-button {
+                width: 20px;
+                height: 20px;
+                color: var(--app-background-color-dark);
+                background: var(--app-secondary-color);
+                padding: 0;
+                border-radius: 50%;
+            }
+
+
+            paper-icon-button {
+                --paper-icon-button-size: 16px;
+                };
+            }
             .mdc-data-table {
                 overflow-y: auto;
-                height: 600px;
                 width: 100%;
+                height: calc(100% - 48px);
                 font-size: 12px;
             }
             .mdc-data-table__table {
@@ -901,7 +922,7 @@
             }
             .mdc-data-table__header-cell {
                 position: sticky;
-                top: 0px;
+                top: 0;
                 background: white;
                 z-index: 999;
                 border-width: 2px 8px;
@@ -944,10 +965,13 @@
                 width: 12px;
                 padding: 3px;
             }
+            .container {
+                height: 100%;
+            }
 
         </style>
 
-        <div class="content">
+        <div class="container">
             <div id="legend">
                 <span class="legend-line bold">[[localize('legend', 'Legend', language)]]: </span>
                 <span class="legend-line"><iron-icon class="legend-chronicIcon" icon="icons:alarm-on"></iron-icon> [[localize('hub-chron-med', 'Chronic medication', language)]]</span>
@@ -973,8 +997,8 @@
                         </tr>
                     </thead>
                     <tbody class="mdc-data-table__content">
-                        <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology">
-                            <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]] on-tap="_showMedication">
+                        <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology" on-tap="_showMedication">
+                            <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]]>
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
                                     <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">
                                         <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>
@@ -1013,7 +1037,9 @@
                                 <td class="mdc-data-table__cell relative mdc-data-table__cell-small">
                                     <paper-checkbox on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-small"></td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small">
+                                    <paper-icon-button icon="icons:compare-arrows" disabled="[[hasNoConflict]]" class="small-icon-button" id="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -1953,7 +1979,8 @@
                 //if(e.currentTarget.dataset.medication){
                 //    this.set('selectedMedication', JSON.parse(e.currentTarget.dataset.medication))
 
-                const uid = e.currentTarget.dataset.uid
+                // const uid = e.currentTarget.dataset.uid
+                const uid = e.target.id;
                 let medication = this.currentMedicationScheme.msElems.find(m => m.uniqId == uid);
                 if (medication) {
                     this.set('selectedMedication', medication)
