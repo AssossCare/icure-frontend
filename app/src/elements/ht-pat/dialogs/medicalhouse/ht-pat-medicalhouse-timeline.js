@@ -1391,11 +1391,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
 
     apiReady() {
         if (!this.api || !this.user || !this.user.id || !this.opened) return
-
-        try {
-        } catch (e) {
-            console.log(e)
-        }
     }
 
     attached() {
@@ -1404,10 +1399,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
     }
 
     _runForfaitCheck() {
-        this.checkFlatrateData(this.patient, Number(this.invoicedMonth)).then(res => {
-            console.log("res", res)
-            return res
-        })
+        return this.checkFlatrateData(this.patient, Number(this.invoicedMonth))
     }
 
     checkFlatrateData(pat, invoicedMonth) {
@@ -1418,7 +1410,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
             hcp.parentId ? this.api.hcparty().getHealthcareParty(hcp.parentId) : hcp).then(hcp2 => {
             let res = {}
             res.hcp = hcp2
-            console.log("hcp flatrate ?", hcp2)
             if (hcp2.billingType && hcp2.billingType.toLowerCase() === "flatrate") {
                 //PatientData:
                 //  NISS
@@ -1606,7 +1597,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                 //console.log(res);
             })
             this.set("insList", insList)
-            console.log("insList", JSON.stringify(insList))
+            // console.log("insList", JSON.stringify(insList))
             this.set("isLoading", false)
         }).finally(this.set("isLoading", false))
     }
@@ -1709,12 +1700,12 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
         let messages = []
         flatRateUtil.getFlatrateInvoiceMessages().then(msgs => {
             messages = msgs
-            console.log("messageCount", messages.length)
-            console.log("messages", messages)
+            // console.log("messageCount", messages.length)
+            // console.log("messages", messages)
             return flatRateUtil.getPatientInvoices(this.patient)
         }).then(invs => {
             invoices = invs.filter(inv => inv.sentMediumType === "cdrom")
-            console.log("invoices", invoices)
+            // console.log("invoices", invoices)
             const patInsurances = this.patient.insurabilities.map(ins => ins.insuranceId)
             return flatRateUtil._getInsurancesDataByIds(_.compact(_.uniq(_.concat(_.map(invoices, "recipientId", ""), patInsurances))))
         }).then(ins => {
@@ -1726,11 +1717,11 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                 const startMoment = this.api.moment(startOfCoverage)
                 const curMoment = this.api.moment(endOfCoverage).endOf('month').add(1, 'd')
                 const endMoment = this.api.moment(endOfCoverage).endOf('month').add(1, 'd')
-                console.log('start, end', startOfCoverage, endOfCoverage)
+                // console.log('start, end', startOfCoverage, endOfCoverage)
                 this.set('months', [])
                 let aMonths = []
                 while (startMoment <= curMoment) {
-                    console.log('curMoment', curMoment.format('YYYYMMDD'))
+                    // console.log('curMoment', curMoment.format('YYYYMMDD'))
                     aMonths.push({date: this.api.moment(parseInt(curMoment.format('YYYYMMDD'))), data: {mhc: mhc}})
                     curMoment.subtract(1, 'month')
                 }
@@ -1771,7 +1762,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                             //get all invoicingcode groups : dateCode-status
                             const icGroups = _.uniq(invClone.invoicingCodes.filter(ic => ic.dateCode === dateCode).map(ic => ic.group))
                             icGroups.forEach(icGroup => {
-                                console.log("icGroup", icGroup)
+                                // console.log("icGroup", icGroup)
                                 //m, k, i
                                 const invCloneBis = _.cloneDeep(invClone)
                                 invCloneBis.m = inv.invoicingCodes.find(ic => ic.code === "109616" && ic.group === icGroup)
@@ -1793,7 +1784,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                                     lost: false,
                                     status: ""
                                 }
-                                console.log("icode", dateCode, icode)
+                                // console.log("icode", dateCode, icode)
                                 invCloneBis.status = icode.status//(icode.canceled ? "canceled " : "") + (icode.accepted ? "accepted " : "") + (icode.pending ? "pending " : "") + (icode.resent ? "resent " : "") + (icode.lost ? "lost " : "");
                                 invCloneBis.status = invCloneBis.status === "" ? "---" : invCloneBis.status
                                 invCloneBis.statusDetail = {

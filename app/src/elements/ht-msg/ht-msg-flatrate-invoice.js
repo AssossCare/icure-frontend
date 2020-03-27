@@ -10,6 +10,9 @@ import '../ht-pat/dialogs/medicalhouse/ht-pat-flatrate-utils.js';
 import "@polymer/iron-icon/iron-icon"
 import "@polymer/paper-button/paper-button"
 import "@polymer/paper-dialog/paper-dialog"
+import "@polymer/paper-tooltip/paper-tooltip"
+import "@polymer/paper-tabs/paper-tabs"
+import "@polymer/paper-input/paper-input"
 import "@vaadin/vaadin-combo-box/vaadin-combo-box"
 import "@vaadin/vaadin-date-picker/vaadin-date-picker"
 import "@vaadin/vaadin-grid/vaadin-grid"
@@ -28,1081 +31,1494 @@ import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
+
+
 class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
-<custom-style>
-            <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
 
-                :host {
-                    display: block;
-                    z-index:2;
-                }
 
-                :host *:focus {
-                    outline: 0 !important;
-                }
 
-                vaadin-grid {
-                    height: calc(100vh - 145px);
-                    box-shadow: var(--app-shadow-elevation-1);
-                    border: none;
-                    box-sizing: border-box;
-                }
+    static get template() {
 
-                .modal-title {
-                    justify-content: flex-start;
-                }
-
-                .modal-title iron-icon{
-                    margin-right: 8px;
-                }
-
-                vaadin-grid.material {
-                    outline: 0 !important;
-                    font-family: Roboto, sans-serif;
-                    background: rgba(0, 0, 0, 0);
-                    border: none;
-                    --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
-
-                    --vaadin-grid-cell: {
-                        padding: 8px;
-                    };
-
-                    --vaadin-grid-header-cell: {
-                        height: 48px;
-                        padding: 11.2px;
-                        color: rgba(0, 0, 0, var(--dark-secondary-opacity));
-                        font-size: 12px;
+        return html`
+            <custom-style>
+                <style include="shared-styles vaadin-icure-theme spinner-style dialog-style">
+    
+                    :host {
+                        display: block;
+                        z-index:2;
+                    }
+    
+                    :host *:focus {
+                        outline: 0 !important;
+                    }
+    
+                    vaadin-grid {
+                        height: calc(100vh - 145px);
+                        box-shadow: var(--app-shadow-elevation-1);
+                        border: none;
+                        box-sizing: border-box;
+                    }
+    
+                    .modal-title {
+                        justify-content: flex-start;
+                    }
+    
+                    .modal-title iron-icon{
+                        margin-right: 8px;
+                    }
+    
+                    vaadin-grid.material {
+                        outline: 0 !important;
+                        font-family: Roboto, sans-serif;
                         background: rgba(0, 0, 0, 0);
-                        border-top: 0;
-                    };
-
-                    --vaadin-grid-body-cell: {
-                        height: 48px;
+                        border: none;
+                        --divider-color: rgba(0, 0, 0, var(--dark-divider-opacity));
+    
+                        --vaadin-grid-cell: {
+                            padding: 8px;
+                        };
+    
+                        --vaadin-grid-header-cell: {
+                            height: 48px;
+                            padding: 11.2px;
+                            color: rgba(0, 0, 0, var(--dark-secondary-opacity));
+                            font-size: 12px;
+                            background: rgba(0, 0, 0, 0);
+                            border-top: 0;
+                        };
+    
+                        --vaadin-grid-body-cell: {
+                            height: 48px;
+                            color: rgba(0, 0, 0, var(--dark-primary-opacity));
+                            font-size: 13px;
+                        };
+    
+                        --vaadin-grid-body-row-hover-cell: {
+                            background-color: var(--app-background-color-dark);
+                        };
+    
+                        --vaadin-grid-body-row-selected-cell: {
+                            background-color: var(--paper-grey-100);
+                        };
+    
+                        --vaadin-grid-focused-cell: {
+                            box-shadow: none;
+                            font-weight: bold;
+                        };
+    
+                    }
+    
+                    vaadin-grid.material .cell {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        height: 100%;
+                    }
+    
+                    vaadin-grid.material .cell.last {
+                        padding-right: 24px;
+                        text-align: center;
+                    }
+    
+                    vaadin-grid.material .cell.numeric {
+                        text-align: right;
+                    }
+    
+                    vaadin-grid.material paper-checkbox {
+                        --primary-color: var(--paper-indigo-500);
+                        margin: 0 24px;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter {
+                        --vaadin-grid-sorter-arrow: {
+                            display: none !important;
+                        };
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter .cell {
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter iron-icon {
+                        transform: scale(0.8);
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter:not([direction]) iron-icon {
+                        color: rgba(0, 0, 0, var(--dark-disabled-opacity));
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter[direction] {
                         color: rgba(0, 0, 0, var(--dark-primary-opacity));
-                        font-size: 13px;
-                    };
-
-                    --vaadin-grid-body-row-hover-cell: {
-                        background-color: var(--app-background-color-dark);
-                    };
-
-                    --vaadin-grid-body-row-selected-cell: {
-                        background-color: var(--paper-grey-100);
-                    };
-
-                    --vaadin-grid-focused-cell: {
-                        box-shadow: none;
-                        font-weight: bold;
-                    };
-
-                }
-
-                vaadin-grid.material .cell {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    height: 100%;
-                }
-
-                vaadin-grid.material .cell.last {
-                    padding-right: 24px;
-                    text-align: center;
-                }
-
-                vaadin-grid.material .cell.numeric {
-                    text-align: right;
-                }
-
-                vaadin-grid.material paper-checkbox {
-                    --primary-color: var(--paper-indigo-500);
-                    margin: 0 24px;
-                }
-
-                vaadin-grid.material vaadin-grid-sorter {
-                    --vaadin-grid-sorter-arrow: {
-                        display: none !important;
-                    };
-                }
-
-                vaadin-grid.material vaadin-grid-sorter .cell {
-                    flex: 1;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                vaadin-grid.material vaadin-grid-sorter iron-icon {
-                    transform: scale(0.8);
-                }
-
-                vaadin-grid.material vaadin-grid-sorter:not([direction]) iron-icon {
-                    color: rgba(0, 0, 0, var(--dark-disabled-opacity));
-                }
-
-                vaadin-grid.material vaadin-grid-sorter[direction] {
-                    color: rgba(0, 0, 0, var(--dark-primary-opacity));
-                }
-
-                vaadin-grid.material vaadin-grid-sorter[direction=desc] iron-icon {
-                    transform: scale(0.8) rotate(180deg);
-                }
-
-                vaadin-grid.material::slotted(div) {
-                    outline: 0 !important;
-                }
-
-                .invoice-panel{
-                    height: 100%;
-                    width: 100%;
-                    padding: 0 20px;
-                    box-sizing: border-box;
-                    position:relative;
-                }
-
-                .oa-col{
-                    min-width: 25px;
-                }
-
-                .bold {
-                    font-weight: 700!important;
-                }
-
-                .underlined {
-                    text-decoration:underline!important;
-                }
-
-                .textDecorationNone {
-                    text-decoration:none!important;
-                }
-
-                .ref-col{
-                    min-width: 75px;
-                }
-
-                .invoice-col{
-                    min-width: 40px;
-                }
-
-                .month-col{
-                    min-width: 40px;
-                }
-
-                .invoiceDate-col{
-                    min-width: 50px;
-                }
-
-                .invAmount-col{
-                    min-width: 50px;
-                }
-
-                .accAmount-col{
-                    min-width: 50px;
-                }
-
-                .refAmount-col{
-                    min-width: 50px;
-                }
-
-                .stat-col{
-                    min-width: 50px;
-                }
-
-                .reject-col{
-                    min-width: 100px;
-                }
-
-                .payRef-col{
-                    min-width: 50px;
-                }
-
-                .payDate-col{
-                    min-width: 40px;
-                }
-
-                .payTot-col{
-                    min-width: 40px;
-                }
-
-                .payBank-col{
-                    min-width: 50px;
-                }
-
-                .payPaid-col{
-                    min-width: 50px;
-                }
-
-                .facture-title {
-                    padding: 15px;
-                    font-size: 25px;
-                    text-transform: capitalize;
-                    margin: 0;
-                    color: #212121;
-                    height: 25px;
-                    line-height: 25px;
-                }
-
-
-                @media screen and (max-width:1025px){
-                    .invoice-panel {
-                        left: 0;
+                    }
+    
+                    vaadin-grid.material vaadin-grid-sorter[direction=desc] iron-icon {
+                        transform: scale(0.8) rotate(180deg);
+                    }
+    
+                    vaadin-grid.material::slotted(div) {
+                        outline: 0 !important;
+                    }
+    
+                    .invoice-panel{
+                        height: 100%;
+                        width: 100%;
+                        padding: 0 20px;
+                        box-sizing: border-box;
+                        position:relative;
+                    }
+    
+                    .oa-col{
+                        min-width: 25px;
+                    }
+    
+                    .bold {
+                        font-weight: 700!important;
+                    }
+    
+                    .underlined {
+                        text-decoration:underline!important;
+                    }
+    
+                    .textDecorationNone {
+                        text-decoration:none!important;
+                    }
+    
+                    .ref-col{
+                        min-width: 75px;
+                    }
+    
+                    .invoice-col{
+                        min-width: 40px;
+                    }
+    
+                    .month-col{
+                        min-width: 40px;
+                    }
+    
+                    .invoiceDate-col{
+                        min-width: 50px;
+                    }
+    
+                    .invAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .accAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .refAmount-col{
+                        min-width: 50px;
+                    }
+    
+                    .stat-col{
+                        min-width: 50px;
+                    }
+    
+                    .reject-col{
+                        min-width: 100px;
+                    }
+    
+                    .payRef-col{
+                        min-width: 50px;
+                    }
+    
+                    .payDate-col{
+                        min-width: 40px;
+                    }
+    
+                    .payTot-col{
+                        min-width: 40px;
+                    }
+    
+                    .payBank-col{
+                        min-width: 50px;
+                    }
+    
+                    .payPaid-col{
+                        min-width: 50px;
+                    }
+    
+                    .facture-title {
+                        padding: 15px;
+                        font-size: 25px;
+                        text-transform: capitalize;
+                        margin: 0;
+                        color: #212121;
+                        height: 25px;
+                        line-height: 25px;
+                    }
+    
+    
+                    @media screen and (max-width:1025px){
+                        .invoice-panel {
+                            left: 0;
+                            width: 100%;
+                        }
+                    }
+                    .gridContainer{
+                        height: 100%;
+                        overflow-y: hidden;
+                        overflow-x: hidden;
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+    
+                    .invoice-status {
+                        border-radius: 20px;
+                        padding: 1px 12px 1px 8px;
+                        font-size: 12px;
+                        display: block;
+                        width: auto;
+                        max-width: fit-content;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+    
+                    .invoice-status--orangeStatus{
+                        background: #fcdf354d;
+                    }
+    
+                    .invoice-status--greenStatus{
+                        background: #07f8804d;
+                    }
+    
+                    .invoice-status--blueStatus {
+                        background: #84c8ff;
+                    }
+    
+                    .invoice-status--redStatus{
+                        background: #ff4d4d4d;
+                    }
+    
+                    .statusIcon{
+                        height: 8px;
+                        width: 8px;
+                    }
+                    .statusIcon.invoice-status--orangeStatus {
+                        color: var(--app-status-color-pending);
+                    }
+                    .statusIcon.invoice-status--greenStatus {
+                        color: var(--app-status-color-ok);
+                    }
+                    .statusIcon.invoice-status--blueStatus {
+                        color: var(--paper-blue-400);
+                    }
+                    .statusIcon.invoice-status--redStatus {
+                        color: var(--app-status-color-nok);
+                    }
+                    .statusIcon.invoice-status--orangeStatus,
+                    .statusIcon.invoice-status--greenStatus,
+                    .statusIcon.invoice-status--redStatus {
+                        background: transparent !important;
+                    }
+                    .invoice-status--purpleStatus {
+                        background: #e1b6e6;
+                    }
+    
+                    *.txtcolor--orangeStatus {
+                        color: var(--paper-amber-800);
+                    }
+                    *.txtcolor--greenStatus {
+                        color: #36a201;
+                    }
+                    *.txtcolor--blueStatus {
+                        color: var(--paper-blue-400);
+                    }
+                    *.txtcolor--redStatus {
+                        color: var(--app-status-color-nok);
+                    }
+                    *.txtcolor--purpleStatus {
+                        color: var(--paper-purple-300)
+                    }
+                    #pendingDetailDialog{
+                        height: calc(100vh - 40px);
+                        width: calc(85% - 40px);
+                        z-index: 1100;
+                        position: fixed;
+                        top: 64px;
+                    }
+    
+                    #pendingGridDetail{
+                        height: calc(100% - 185px);
+                        padding: 0;
                         width: 100%;
                     }
-                }
-                .gridContainer{
-                    height: 100%;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-
-                .invoice-status {
-                    border-radius: 20px;
-                    padding: 1px 12px 1px 8px;
-                    font-size: 12px;
-                    display: block;
-                    width: auto;
-                    max-width: fit-content;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    overflow: hidden;
-                }
-
-                .invoice-status--orangeStatus{
-                    background: #fcdf354d;
-                }
-
-                .invoice-status--greenStatus{
-                    background: #07f8804d;
-                }
-
-                .invoice-status--blueStatus {
-                    background: #84c8ff;
-                }
-
-                .invoice-status--redStatus{
-                    background: #ff4d4d4d;
-                }
-
-                .statusIcon{
-                    height: 8px;
-                    width: 8px;
-                }
-                .statusIcon.invoice-status--orangeStatus {
-                    color: var(--app-status-color-pending);
-                }
-                .statusIcon.invoice-status--greenStatus {
-                    color: var(--app-status-color-ok);
-                }
-                .statusIcon.invoice-status--blueStatus {
-                    color: var(--paper-blue-400);
-                }
-                .statusIcon.invoice-status--redStatus {
-                    color: var(--app-status-color-nok);
-                }
-                .statusIcon.invoice-status--orangeStatus,
-                .statusIcon.invoice-status--greenStatus,
-                .statusIcon.invoice-status--redStatus {
-                    background: transparent !important;
-                }
-                .invoice-status--purpleStatus {
-                    background: #e1b6e6;
-                }
-
-                *.txtcolor--orangeStatus {
-                    color: var(--paper-amber-800);
-                }
-                *.txtcolor--greenStatus {
-                    color: #36a201;
-                }
-                *.txtcolor--blueStatus {
-                    color: var(--paper-blue-400);
-                }
-                *.txtcolor--redStatus {
-                    color: var(--app-status-color-nok);
-                }
-                *.txtcolor--purpleStatus {
-                    color: var(--paper-purple-300)
-                }
-                #pendingDetailDialog{
-                    height: calc(100vh - 40px);
-                    width: calc(85% - 40px);
-                    z-index: 1100;
-                    position: fixed;
-                    top: 64px;
-                }
-
-                #pendingGridDetail{
-                    height: calc(100% - 185px);
-                    padding: 0;
-                    width: 100%;
-                }
-
-                .batch-status {
-                    font-size: 24px;
-                    text-transform: capitalize;
-                    padding-top: 5px;
-                    display: flex;
-                    flex-flow: row wrap;
-                    align-items: center;
-                    justify-content: flex-start;
-                }
-
-                .unlockBtn {
-                    height: 12px;
-                    width: 12px;
-                }
-
-                .hidden {
-                    display: none;
-                }
-
-                #messagesGridContainer,#messagesGridContainer2, #messagesGridContainer3, #messagesGridContainer4 {
-                    overflow-y: auto;
-                }
-
-                .invoiceContainer{
-                    overflow-x: hidden;
-                    overflow-y: hidden;
-                    height: calc(100vh - 145px);
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-                .invoiceSubContainerBig {
-                    height: 100%;
-                }
-
-                .invoiceSubContainerMiddle {
-                    height: calc(100%);
-                    transition: all .5s ease;
-                }
-                .invoiceSubContainerMiddle vaadin-grid {
-                    /*height: 100%;*/
-                }
-                .invoiceSubContainerMiddle.half {
-                    height: 49%;
-                }
-
-                .invoiceDetailContainer,
-                .toBeCorrectedDetailContainerC{
-                    height: 50%;
-                    opacity: 0;
-                    transition: all .75s ease-out;
-                    overflow-y: auto;
-                }
-                .invoiceDetailContainer.open,
-                .toBeCorrectedDetailContainerC.open {
-                    opacity: 1;
-                    width: 100%;
-                    height: 46%;
-                    margin-top:4%
-                }
-
-                tr.hidden {
-                    display: none !important;
-                }
-
-                .mb0 {
-                    margin-bottom: 0;
-                }
-                .mb30 {
-                    margin-bottom: 30px;
-                }
-
-                #pendingDetailDialog {
-                    max-height: 80vh;
-                }
-
-                .helpdeskIcon {
-                    height: 12px;
-                    width: 12px;
-                    cursor: pointer;
-                    opacity: 0.7;
-                    transition: all .24s cubic-bezier(0.075, 0.82, 0.165, 1);
-                }
-
-                .helpdeskIcon:hover{
-                    transform: scale(1.05);
-                    opacity: 1;
-                }
-
-                iron-collapse-button #trigger{
-                    height: 45px;
-                    background: var(--app-background-color-dark);
-                    display: initial;
-                }
-
-                #invoiceCollapser {
-                    display: block;
-                    background: white;
-                    height: calc(100% - 75px);
-                    overflow-y: auto;
-                }
-
-                h3.header {
-                    margin: 0 auto
-                }
-                #collapse-grid .recipient-col {
-                    background: grey;
-                }
-
-                .rejectionReason-col {
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    max-width: 100%;
-                }
-
-                .containScroll {
-                    overflow: auto;
-                    height: 100%;
-                }
-
-                .scrollBox {
-                    width: 100%;
-                    overflow: hidden;
-                    height: 100%;
-                }
-                .scrollBox > #messagesGrid, .scrollBox > #messagesGrid2, .scrollBox > #messagesGrid3 {
-                    width: 100%;
-                    height: 100%;
-                }
-
-                .flex-header{
-                    width: 100%;
-                    display: flex;
-                    flex-flow: row nowrap;
-                    justify-content: flex-start;
-                    align-items: center;
-                    height: 48px;
-                }
-
-                iron-collapse-button:hover{
-                    background: var(--app-background-color-dark);
-                }
-
-                .flex-header span{
-                    display:block;
-                    font-size: 12px;
-                    font-weight: 400;
-                    padding: 4px 12px;
-                    box-sizing:border-box;
-                    cursor: pointer;
-                    color: rgb(115,115,115);
-                }
-
-                .flex-header span.center{
-                    text-align: center;
-                }
-
-                #invoiceGrid .footer{
-                    background: red;
-                }
-
-                #invoiceAndBatchesGridDetail {
-                    height: calc(100% - 100px);
-                }
-
-                .invoicesToBeCorrectedGrid {
-                    height: 100%;
-                }
-
-                #helpdeskInfoDialog{
-                    position: fixed;
-                    width: 50%;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    max-width: none !important;
-                    max-height: none !important;
-                    overflow-y: auto;
-                }
-
-                /*.modal-title {*/
-                /*    background: var(--app-background-color-dark);*/
-                /*    margin-top: 0;*/
-                /*    padding: 16px 24px;*/
-                /*}*/
-
-                .modal-content{
-                    display: flex;
-                    flex-flow: row wrap;
-                    align-items: center;
-                    justify-content: flex-start;
-                }
-
-                .colorAppSecondaryColorDark {
-                    color:var(--app-secondary-color-dark)
-                }
-
-                .modal-input{
-                    margin: 0 12px;
-                    flex-grow: 1;
-                }
-
-                paper-input{
-                    --paper-input-container-focus-color: var(--app-primary-color);
-                }
-
-                .buttons {
-                    /*position: absolute;*/
-                    /*right: 0;*/
-                    /*bottom: 0;*/
-                    /*margin: 8px 16px;*/
-                }
-
-                .button--accepted {
-                    --paper-button-ink-color: var(--app-status-color-ok);
-                    background-color: var(--app-status-color-ok);
-                    color: var(--app-text-color-light);
-                }
-
-                .button--partially-accepted {
-                    --paper-button-ink-color: var(--app-status-color-pending);
-                    background-color: var(--app-status-color-pending);
-                    color: var(--app-text-color-light);
-                }
-
-                .button--rejected {
-                    --paper-button-ink-color: var(--app-status-color-nok);
-                    background-color: var(--app-status-color-nok);
-                    color: var(--app-text-color-light);
-                }
-
-                .batchNumber{
-                    color: var(--app-text-color-light);
-                    border-radius: 25px;
-                    min-height: 0;
-                    margin-left: 8px;
-                    font-size: .6em;
-                    display: inline-block;
-                    padding: 4px 6px;
-                    line-height: 0.8;
-                    text-align: center;
-                    height: 10px;
-                }
-                .batchPending{background-color: var(--paper-orange-400);}
-                .batchToBeCorrected{background-color: var(--paper-red-400);}
-                .batchProcessed{background-color: var(--paper-blue-400);}
-                .batchRejected, .batchRed{background-color: var(--paper-red-400);}
-                .batchAccepted{background-color: var(--paper-green-400);}
-                .batchArchived{background-color: var(--paper-purple-300);}
-                .batchToBeSend{background-color: var(--paper-orange-400);}
-
-                ht-spinner {
-                    margin-top:10px;
-                    margin-bottom:10px;
-                    height:42px;
-                    width:42px;
-                }
-
-                .tool-btn{
-                    margin: 0;
-                    box-sizing: border-box;
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    display: inline-block;
-                    text-align: center;
-                    --paper-button: {
-                        background: var(--app-secondary-color);
-                        color: var(--app-text-color);
-                        width: auto;
-                        margin: 0 auto;
-                        font-size: 13px;
-                        font-weight: 700;
-                        padding:10px;
-                    };
-                }
-
-                .grid-btn-small {
-                    margin: 0;
-                    padding:2px 10px;
-                    box-sizing: border-box;
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    display: inline-block;
-                    text-align: center;
-                    --paper-button: {
-                        background: var(--app-secondary-color);
-                        color: var(--app-text-color);
-                        width: auto;
-                        margin: 0 auto;
+    
+                    .batch-status {
+                        font-size: 18px;
+                        text-transform: capitalize;
+                        padding-top: 5px;
+                        display: flex;
+                        flex-flow: row wrap;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
+    
+                    .unlockBtn {
+                        height: 12px;
+                        width: 12px;
+                    }
+    
+                    .hidden {
+                        display: none;
+                    }
+    
+                    #messagesGridContainer,#messagesGridContainer2, #messagesGridContainer3, #messagesGridContainer4 {
+                        overflow-y: auto;
+                    }
+    
+                    .invoiceContainer{
+                        overflow-x: hidden;
+                        overflow-y: hidden;
+                        height: calc(100vh - 145px);
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+                    
+                    .invoiceContainer.mdaResults {
+                        height: calc(100vh - 357px);
+                    }
+                    
+                    .invoiceSubContainerBig {
+                        height: 100%;
+                    }
+    
+                    .invoiceSubContainerMiddle {
+                        height: calc(100%);
+                        transition: all .5s ease;
+                    }
+                    .invoiceSubContainerMiddle vaadin-grid {
+                        /*height: 100%;*/
+                    }
+                    .invoiceSubContainerMiddle.half {
+                        height: 49%;
+                    }
+    
+                    .invoiceDetailContainer,
+                    .toBeCorrectedDetailContainerC{
+                        height: 50%;
+                        opacity: 0;
+                        transition: all .75s ease-out;
+                        overflow-y: auto;
+                    }
+                    .invoiceDetailContainer.open,
+                    .toBeCorrectedDetailContainerC.open {
+                        opacity: 1;
+                        width: 100%;
+                        height: 46%;
+                        margin-top:4%
+                    }
+    
+                    tr.hidden {
+                        display: none !important;
+                    }
+    
+                    .mb0 {
+                        margin-bottom: 0;
+                    }
+                    .mb30 {
+                        margin-bottom: 30px;
+                    }
+    
+                    #pendingDetailDialog {
+                        max-height: 80vh;
+                    }
+    
+                    .helpdeskIcon {
+                        height: 12px;
+                        width: 12px;
+                        cursor: pointer;
+                        opacity: 0.7;
+                        transition: all .24s cubic-bezier(0.075, 0.82, 0.165, 1);
+                    }
+    
+                    .helpdeskIcon:hover{
+                        transform: scale(1.05);
+                        opacity: 1;
+                    }
+    
+                    iron-collapse-button #trigger{
+                        height: 45px;
+                        background: var(--app-background-color-dark);
+                        display: initial;
+                    }
+    
+                    #invoiceCollapser {
+                        display: block;
+                        background: white;
+                        height: calc(100% - 75px);
+                        overflow-y: auto;
+                    }
+    
+                    h3.header {
+                        margin: 0 auto
+                    }
+                    #collapse-grid .recipient-col {
+                        background: grey;
+                    }
+    
+                    .rejectionReason-col {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        max-width: 100%;
+                    }
+    
+                    .containScroll {
+                        overflow: auto;
+                        height: 100%;
+                    }
+    
+                    .scrollBox {
+                        width: 100%;
+                        overflow: hidden;
+                        height: 100%;
+                    }
+                    .scrollBox > #messagesGrid, .scrollBox > #messagesGrid2, .scrollBox > #messagesGrid3 {
+                        width: 100%;
+                        height: 100%;
+                    }
+    
+                    .flex-header{
+                        width: 100%;
+                        display: flex;
+                        flex-flow: row nowrap;
+                        justify-content: flex-start;
+                        align-items: center;
+                        height: 48px;
+                    }
+    
+                    iron-collapse-button:hover{
+                        background: var(--app-background-color-dark);
+                    }
+    
+                    .flex-header span{
+                        display:block;
                         font-size: 12px;
                         font-weight: 400;
+                        padding: 4px 12px;
+                        box-sizing:border-box;
+                        cursor: pointer;
+                        color: rgb(115,115,115);
+                    }
+    
+                    .flex-header span.center{
+                        text-align: center;
+                    }
+    
+                    #invoiceGrid .footer{
+                        background: red;
+                    }
+    
+                    #invoiceAndBatchesGridDetail {
+                        height: calc(100% - 100px);
+                    }
+    
+                    .invoicesToBeCorrectedGrid {
+                        height: 100%;
+                    }
+    
+                    #helpdeskInfoDialog{
+                        position: fixed;
+                        width: 50%;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        max-width: none !important;
+                        max-height: none !important;
+                        overflow-y: auto;
+                    }
+    
+                    /*.modal-title {*/
+                    /*    background: var(--app-background-color-dark);*/
+                    /*    margin-top: 0;*/
+                    /*    padding: 16px 24px;*/
+                    /*}*/
+    
+                    .modal-content{
+                        display: flex;
+                        flex-flow: row wrap;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
+    
+                    .colorAppSecondaryColorDark {
+                        color:var(--app-secondary-color-dark)
+                    }
+    
+                    .modal-input{
+                        margin: 0 12px;
+                        flex-grow: 1;
+                    }
+    
+                    paper-input{
+                        --paper-input-container-focus-color: var(--app-primary-color);
+                    }
+    
+                    .buttons {
+                        /*position: absolute;*/
+                        /*right: 0;*/
+                        /*bottom: 0;*/
+                        /*margin: 8px 16px;*/
+                    }
+    
+                    .button--accepted {
+                        --paper-button-ink-color: var(--app-status-color-ok);
+                        background-color: var(--app-status-color-ok);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .button--partially-accepted {
+                        --paper-button-ink-color: var(--app-status-color-pending);
+                        background-color: var(--app-status-color-pending);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .button--rejected {
+                        --paper-button-ink-color: var(--app-status-color-nok);
+                        background-color: var(--app-status-color-nok);
+                        color: var(--app-text-color-light);
+                    }
+    
+                    .batchNumber{
+                        color: var(--app-text-color-light);
+                        border-radius: 25px;
+                        min-height: 0;
+                        margin-left: 8px;
+                        font-size: .6em;
+                        display: inline-block;
+                        padding: 4px 6px;
+                        line-height: 0.8;
+                        text-align: center;
+                        height: 10px;
+                        margin-right: 5px;
+                    }
+                    .batchPending{background-color: var(--paper-orange-400);}
+                    .batchToBeCorrected{background-color: var(--paper-red-400);}
+                    .batchProcessed{background-color: var(--paper-blue-400);}
+                    .batchRejected, .batchRed{background-color: var(--paper-red-400);}
+                    .batchAccepted{background-color: var(--paper-green-400);}
+                    .batchArchived{background-color: var(--paper-purple-300);}
+                    .batchToBeSend{background-color: var(--paper-orange-400);}
+                    .batchGreen {background-color: var(--paper-green-400);}
+    
+                    ht-spinner {
+                        margin-top:10px;
+                        margin-bottom:10px;
+                        height:42px;
+                        width:42px;
+                    }
+    
+                    .tool-btn{
+                        margin: 0;
+                        box-sizing: border-box;
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        display: inline-block;
+                        text-align: center;
+                        --paper-button: {
+                            background: var(--app-secondary-color);
+                            color: var(--app-text-color);
+                            width: auto;
+                            margin: 0 auto;
+                            font-size: 13px;
+                            font-weight: 700;
+                            padding:10px;
+                        };
+                    }
+    
+                    .grid-btn-small {
+                        margin: 0;
+                        padding:2px 10px;
+                        box-sizing: border-box;
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        display: inline-block;
+                        text-align: center;
+                        --paper-button: {
+                            background: var(--app-secondary-color);
+                            color: var(--app-text-color);
+                            width: auto;
+                            margin: 0 auto;
+                            font-size: 12px;
+                            font-weight: 400;
+                            padding:10px;
+                        };
+                    }
+    
+                    .grid-btn-small.noBg {
+                        --paper-button-ink-color: var(--app-secondary-color-dark);
+                        --paper-button: {
+                            background: none;
+                        };
+                    }
+    
+                    .noPad {
+                        padding:0
+                    }
+    
+                    .grid-btn-small iron-icon {
+                        max-width:20px;
+                    }
+    
+                    .tool-btn-previous-month {
+                        color:#ffffff;
+                        --paper-button: {
+                            background: var(--app-text-color);
+                            font-weight: 400;
+                        };
+                    }
+    
+                    #rightPanel {
+                        position: absolute;
+                        right: -350px;
+                        width:300px;
+                        top: 0px;
+                        background: rgba(255,255,255,1);
+                        border-left:1px solid #dddddd;
+                        box-shadow:0px 0px 3px 0px #dddddd;
+                        height: 100%;
+                        z-index: 5;
+                        transition: all 400ms ease;
+                        -moz-transition: all 400ms ease;
+                        -webkit-transition: all 400ms ease;
+                        -o-transition: all 400ms ease;
+                        -ms-transition: all 400ms ease;
+                    }
+    
+                    #rightPanel.opened {
+                        right:0;
+                    }
+    
+                    .header {
+                        padding: 10px;
+                        color: #ffffff;
+                        text-transform: uppercase;
+                        margin: 0;
+                        font-weight: 700;
+                        background-color: #777777;
+                        cursor: pointer;
+                    }
+    
+                    #rightPanel label {
+                        margin:0;
+                        padding:0;
+                    }
+    
+                    #rightPanel .pullRightIcon {
+                        margin:0;
+                        padding:0;
+                        min-width:1px;
+                        float:right;
+                    }
+    
+                    #rightPanel .body {
+                        padding: 10px;
+                    }
+    
+                    #rightPanel .body h4 {
+                        text-transform: uppercase;
+                        margin-bottom: 20px;
+                        border-bottom: 1px solid #000000;
+                        font-weight: 700;
+                        margin-top:12px;
+                        padding-bottom:2px;
+                    }
+    
+                    #rightPanelToggleContainer {
+                        position:absolute;
+                        right:20px;
+                        top:10px;
+                    }
+    
+                    #rightPanelToggleContainer .header {
+                        margin:0;
+                        color:#000000;
+                        background-color: initial;
+                        padding:0;
+                    }
+    
+                    .w30px {
+                        width:30px
+                    }
+    
+                    .h30px {
+                        height:30px
+                    }
+    
+                    .w20px {
+                        width:20px
+                    }
+    
+                    .h20px {
+                        height:20px
+                    }
+    
+                    .p-35px {
+                        padding:35px;
+                    }
+    
+                    .p-10px {
                         padding:10px;
-                    };
-                }
-
-                .grid-btn-small.noBg {
-                    --paper-button-ink-color: var(--app-secondary-color-dark);
-                    --paper-button: {
-                        background: none;
-                    };
-                }
-
-                .noPad {
-                    padding:0
-                }
-
-                .grid-btn-small iron-icon {
-                    max-width:20px;
-                }
-
-                .tool-btn-previous-month {
-                    color:#ffffff;
-                    --paper-button: {
-                        background: var(--app-text-color);
+                    }
+    
+                    .p-15px {
+                        padding:15px;
+                    }
+    
+                    .p-r-15px {
+                        padding-right:15px;
+                    }
+    
+                    .p-l-15px {
+                        padding-left:15px;
+                    }
+    
+                    .datePicker {
+                        width:95%;
+                    }
+    
+                    .m-t-40 {
+                        margin-top:40px;
+                    }
+    
+                    .m-t-50 {
+                        margin-top:50px!important;
+                    }
+    
+                    .m-t-20 {
+                        margin-top:20px!important;
+                    }
+    
+                    .m-t-25 {
+                        margin-top:25px!important;
+                    }
+    
+                    .w-100-pc {
+                        width:100%;
+                    }
+    
+                    .fr {
+                        float:right
+                    }
+    
+                    .m-t-20 {
+                        margin-top:20px;
+                    }
+    
+                    @media screen and (max-width: 1024px) {
+                        .hideOnMobile {display: none;opacity: 0;}
+                    }
+    
+                    .warningMessage {
+                        margin-top: 20px;
+                        margin-bottom: 30px;
+                    }
+    
+                    .warningMessageBody {
+                        padding:20px 35px;
+                        color:#7E0000;
+                        background-color: rgba(255, 0, 0, 0.15);
+                        font-weight: 700;
+                        border:1px dashed #7e0000;
+                        text-transform: uppercase;
+                        text-align: center;
+                    }
+    
+                    #loadingContainer, #loadingContainerSmall {
+                        position:absolute;
+                        width: 100%;
+                        height: 100%;
+                        top: 0;left: 0;
+                        background-color: rgba(0,0,0,.3);
+                        z-index: 10;
+                        text-align: center;
+                    }
+    
+                    #loadingContentContainer, #loadingContentContainerSmall {
+                        position:relative;
+                        width: 400px;
+                        min-height: 200px;
+                        background-color: #ffffff;
+                        padding:20px;
+                        border:3px solid var(--app-secondary-color);
+                        margin:40px auto 0 auto;
+                        text-align: center;
+                    }
+    
+                    #loadingContentContainerSmall {
+                        width: 80px;
+                        padding:10px;
+                        border:1px solid var(--app-secondary-color);
+                        min-height: 1px;
+                    }
+    
+                    #loadingContent {
+                        text-align: left;
+                    }
+    
+                    .loadingIcon {
+                        margin-right:5px;
+                    }
+    
+                    .loadingIcon.done {
+                        color: var(--paper-green-400);
+                    }
+    
+                    .f-s-1em {
+                        font-size:1em;
+                    }
+    
+                    .f-s-08em {
+                        font-size:.8em;
+                    }
+    
+                    #exportRangeNotification {
+                        font-style:italic;
+                        margin-top:10px;
+                        color:#555555;
+                    }
+    
+                    #exportRangeNotification span {
+                        font-weight: 700;
+                    }
+    
+                    .centerCenter {
+                        text-align:center;
+                        text-align:center;
+                    }
+    
+                    .bordered {
+                        border:1px solid #888888;
+                    }
+    
+                    .textRed {
+                        color:#A80000;
+                    }
+    
+                    .textAlignCenter {
+                        text-align: center;
+                    }
+    
+                    .onlyIfRejectRate {
                         font-weight: 400;
-                    };
-                }
-
-                #rightPanel {
-                    position: absolute;
-                    right: -350px;
-                    width:300px;
-                    top: 0px;
-                    background: rgba(255,255,255,1);
-                    border-left:1px solid #dddddd;
-                    box-shadow:0px 0px 3px 0px #dddddd;
-                    height: 100%;
-                    z-index: 5;
-                    transition: all 400ms ease;
-                    -moz-transition: all 400ms ease;
-                    -webkit-transition: all 400ms ease;
-                    -o-transition: all 400ms ease;
-                    -ms-transition: all 400ms ease;
-                }
-
-                #rightPanel.opened {
-                    right:0;
-                }
-
-                .header {
-                    padding: 10px;
-                    color: #ffffff;
-                    text-transform: uppercase;
-                    margin: 0;
-                    font-weight: 700;
-                    background-color: #777777;
-                    cursor: pointer;
-                }
-
-                #rightPanel label {
-                    margin:0;
-                    padding:0;
-                }
-
-                #rightPanel .pullRightIcon {
-                    margin:0;
-                    padding:0;
-                    min-width:1px;
-                    float:right;
-                }
-
-                #rightPanel .body {
-                    padding: 10px;
-                }
-
-                #rightPanel .body h4 {
-                    text-transform: uppercase;
-                    margin-bottom: 20px;
-                    border-bottom: 1px solid #000000;
-                    font-weight: 700;
-                    margin-top:12px;
-                    padding-bottom:2px;
-                }
-
-                #rightPanelToggleContainer {
-                    position:absolute;
-                    right:20px;
-                    top:10px;
-                }
-
-                #rightPanelToggleContainer .header {
-                    margin:0;
-                    color:#000000;
-                    background-color: initial;
-                    padding:0;
-                }
-
-                .w30px {
-                    width:30px
-                }
-
-                .h30px {
-                    height:30px
-                }
-
-                .w20px {
-                    width:20px
-                }
-
-                .h20px {
-                    height:20px
-                }
-
-                .p-35px {
-                    padding:35px;
-                }
-
-                .p-10px {
-                    padding:10px;
-                }
-
-                .p-15px {
-                    padding:15px;
-                }
-
-                .p-r-15px {
-                    padding-right:15px;
-                }
-
-                .p-l-15px {
-                    padding-left:15px;
-                }
-
-                .datePicker {
-                    width:95%;
-                }
-
-                .m-t-40 {
-                    margin-top:40px;
-                }
-
-                .m-t-50 {
-                    margin-top:50px!important;
-                }
-
-                .m-t-20 {
-                    margin-top:20px!important;
-                }
-
-                .m-t-25 {
-                    margin-top:25px!important;
-                }
-
-                .w-100-pc {
-                    width:100%;
-                }
-
-                .fr {
-                    float:right
-                }
-
-                .m-t-20 {
-                    margin-top:20px;
-                }
-
-                @media screen and (max-width: 1024px) {
-                    .hideOnMobile {display: none;opacity: 0;}
-                }
-
-                .warningMessage {
-                    margin-top: 20px;
-                    margin-bottom: 30px;
-                }
-
-                .warningMessageBody {
-                    padding:20px 35px;
-                    color:#7E0000;
-                    background-color: rgba(255, 0, 0, 0.15);
-                    font-weight: 700;
-                    border:1px dashed #7e0000;
-                    text-transform: uppercase;
-                    text-align: center;
-                }
-
-                #loadingContainer, #loadingContainerSmall {
-                    position:absolute;
-                    width: 100%;
-                    height: 100%;
-                    top: 0;left: 0;
-                    background-color: rgba(0,0,0,.3);
-                    z-index: 10;
-                    text-align: center;
-                }
-
-                #loadingContentContainer, #loadingContentContainerSmall {
-                    position:relative;
-                    width: 400px;
-                    min-height: 200px;
-                    background-color: #ffffff;
-                    padding:20px;
-                    border:3px solid var(--app-secondary-color);
-                    margin:40px auto 0 auto;
-                    text-align: center;
-                }
-
-                #loadingContentContainerSmall {
-                    width: 80px;
-                    padding:10px;
-                    border:1px solid var(--app-secondary-color);
-                    min-height: 1px;
-                }
-
-                #loadingContent {
-                    text-align: left;
-                }
-
-                .loadingIcon {
-                    margin-right:5px;
-                }
-
-                .loadingIcon.done {
-                    color: var(--app-secondary-color);
-                }
-
-                .f-s-1em {
-                    font-size:1em;
-                }
-
-                .f-s-08em {
-                    font-size:.8em;
-                }
-
-                #exportRangeNotification {
-                    font-style:italic;
-                    margin-top:10px;
-                    color:#555555;
-                }
-
-                #exportRangeNotification span {
-                    font-weight: 700;
-                }
-
-                .centerCenter {
-                    text-align:center;
-                    text-align:center;
-                }
-
-                .bordered {
-                    border:1px solid #888888;
-                }
-
-                .textRed {
-                    color:#A80000;
-                }
-
-                .textAlignCenter {
-                    text-align: center;
-                }
-
-                .onlyIfRejectRate {
-                    font-weight: 400;
-                    color: #ffb7b7;
-                    display:block;
-                }
-
-                .exportMonthPicker {
-                    border:1px solid var(--app-secondary-color);
-                    padding:0px 0 10px 0;
-                    margin:40px auto;
-                    max-width:520px;
-                    -webkit-box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
-                    box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
-                }
-
-                vaadin-combo-box {
-                    margin:10px 30px 0 30px;
-                    width:130px;
-                }
-
-                .exportMonthPickerTitle {
-                    text-transform: uppercase;
-                    margin-bottom:20px;
-                    padding:10px 0 13px 0;
-                    border-bottom:1px solid var(--app-secondary-color);
-                    background-color:rgba(255, 80, 0, .2);
-                    font-weight: 700;
-                }
-
-                .invoicesGridContainer{
-                    margin-top:20px;
-                    height: auto;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                    box-shadow: var(--app-shadow-elevation-1);
-                }
-
-                .alignRight{
-                    float: right;
-                    margin-right: 1%;
-                }
-
-                #invoiceDetailHeader {
-                    padding:0 10px;
-                    min-height:40px;
-                }
-
-                #invoiceDetailHeader h4 {
-                    margin:0;
-                    padding-top:20px;
-                }
-
-                .actionButtonsRight {
-                    float:right;
-                }
-
-                .actionButtonsRight iron-icon {
-                    max-width:20px;
-                    margin-right: 10px;
-                }
-
-                .modalDialog{
-                    /*height: 350px;*/
-                    /*width: 600px;*/
-                }
-
-                .modalDialogContent{
-                    height: 250px;
-                    width: auto;
-                    margin: 10px;
-                }
-
-                .mr5 {margin-right:5px}
-                .smallIcon { width:16px; height:16px; }
-                .displayNone {
-                    display:none!important
-                }
-
-                #largeButton {
-                    padding:20px 20px 40px 20px
-                }
-
-                .batchNumberInput {
-                    width:50%;
-                    margin:0 auto;
-                }
-
-                .batchNumberInput {
-                    width:50%;
-                    margin:0 auto;
-                }
-
-            </style>
-        </custom-style>
-
-        
-        
-        <div class="invoice-panel">
-
-
-
-            <div style="display:none" id="_DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices_container">
-                <paper-button class="tool-btn" on-tap="_DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices"><iron-icon icon="icons:error" class="w30px h30px"></iron-icon> &nbsp; DELETE ALL INVOICES - NOT FOR PROD !!!</paper-button>
-            </div>
-
-
-
-            <template is="dom-if" if="[[_bodyOverlay]]">
-                <div id="loadingContainer"></div>
-            </template>
-            <template is="dom-if" if="[[_isLoading]]">
-                <div id="loadingContainer">
-                    <div id="loadingContentContainer">
-                        <div style="max-width:80px; margin:0 auto"><ht-spinner class="spinner" alt="Loading..." active></ht-spinner></div>
-                        <div id="loadingContent"><p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("mhListing.spinner.step_1", language)]]</p></div>
+                        color: #ffb7b7;
+                        display:block;
+                    }
+    
+                    .exportMonthPicker {
+                        border:1px solid var(--app-secondary-color);
+                        padding:0px 0 10px 0;
+                        margin:40px auto;
+                        max-width:520px;
+                        -webkit-box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
+                        box-shadow: 2px 2px 5px 0 rgba(0,0,0,0.2);
+                    }
+    
+                    vaadin-combo-box {
+                        margin:10px 30px 0 30px;
+                        width:130px;
+                    }
+    
+                    .exportMonthPickerTitle {
+                        text-transform: uppercase;
+                        margin-bottom:20px;
+                        padding:10px 0 13px 0;
+                        border-bottom:1px solid var(--app-secondary-color);
+                        background-color:rgba(255, 80, 0, .2);
+                        font-weight: 700;
+                    }
+    
+                    .invoicesGridContainer{
+                        margin-top:20px;
+                        height: auto;
+                        overflow-y: hidden;
+                        overflow-x: hidden;
+                        box-shadow: var(--app-shadow-elevation-1);
+                    }
+    
+                    .alignRight{
+                        float: right;
+                        margin-right: 1%;
+                    }
+    
+                    #invoiceDetailHeader {
+                        padding:0 10px;
+                        min-height:40px;
+                    }
+    
+                    #invoiceDetailHeader h4 {
+                        margin:0;
+                        padding-top:20px;
+                    }
+    
+                    .actionButtonsRight {
+                        float:right;
+                        display:flex;
+                    }
+    
+                    .actionButtonsRight iron-icon {
+                        max-width:20px;
+                        margin-right: 10px;
+                    }
+    
+                    .modalDialog{
+                        /*height: 350px;*/
+                        /*width: 600px;*/
+                    }
+    
+                    .modalDialogContent{
+                        height: 250px;
+                        width: auto;
+                        margin: 10px;
+                    }
+    
+                    .mr5 {margin-right:5px}
+                    .smallIcon { width:16px; height:16px; }
+                    .displayNone {
+                        display:none!important
+                    }
+    
+                    #largeButton {
+                        padding:20px 20px 40px 20px
+                    }
+    
+                    .batchNumberInput {
+                        width:50%;
+                        margin:0 auto;
+                    }
+                    
+                    #mdaOasContainer {}
+                    
+                    #mdaOaHeaders {
+                        display:flex;
+                        justify-content: space-around;
+                        background-color: #dddddd;
+                        border: 1px solid #666;
+                        border-left: 0;
+                        border-right: 0;
+                        font-weight: 500;
+                    }
+                                    
+                    #mdaOaHeaders > div {
+                        padding: 5px 0 5px 0;
+                        border-right: 1px solid #666;
+                        text-align:center;
+                    }
+                    
+                    .mdaOaContainer {
+                        display:flex;
+                        justify-content: space-around;
+                    }
+                    
+                    .mdaOaContainer:nth-child(odd) {
+                        background-color:#f5f5f5;
+                    }                
+                    
+                    .mdaOaContainer > div {
+                        text-align:center;
+                        font-size:.9em;
+                        border-bottom:1px solid #ddd;
+                        padding:5px 0;
+                    }
+                    
+                    .mdaOaContainerCol1 { width:80px; text-transform: uppercase; font-weight:500; }
+                    .mdaOaContainerCol2 { width:140px; }
+                    .mdaOaContainerCol3 { width:190px; }
+                    .mdaOaContainerCol4 { width:210px; }
+                    .mdaOaContainerCol5 { flex-grow:1; }
+                    .mdaOaContainerCol6 { width:100px; border-right:0!important; }
+                    
+                    .statusBullet {
+                        display:inline-block;
+                        width:14px;
+                        height:14px;
+                        border-radius: 8px;
+                        margin-top:3px;
+                    }
+                    
+                    .statusBullet.green {background-color:#66bb6a;/*var(--paper-green-400)*/}
+                    .statusBullet.orange {background-color: var(--paper-orange-400);}
+                    .statusBullet.red {background-color:#ef5350; /*var(--paper-red-400)*/}
+                    
+                    #mdaResponseCheckCtas {
+                        display:flex;
+                        justify-content: space-evenly;
+                    }
+                    
+                    #mdaResponseCheckCtaCountdown {
+                        display:flex;
+                        flex-direction:column-reverse;
+                    }
+                    
+                    #mdaResponseCheckCtaCountdownText {
+                        margin-top:-10px;
+                        margin-bottom:10px;
+                        font-size:.9em;
+                        font-style:italic;
+                    }
+                    
+                    .buttonCompact {
+                        max-width: 45px;
+                        min-width: 0;
+                        margin: 0 auto;
+                    }
+                    
+                    #mdaProgressRootLine {
+                        display:flex;
+                        justify-content: space-evenly;
+                        margin: 10px auto 0 auto;
+                        max-width: 90%;
+                        width:940px;
+                        position:relative;
+                    }
+                    
+                    .rootLineItem {
+                        text-align:center;
+                        color:var(--app-background-color-darker);
+                        width:20%;
+                        z-index:2;
+                    }
+                    
+                    .rootLineItem span {
+                        display:inline-block;
+                        text-align:center;
+                        height:30px; 
+                        width:30px;
+                        border-radius:30px;
+                        background-color:#eeeeee;
+                        font-size:1.1em;
+                        font-weight:500;
+                        line-height:30px;
+                        border:1px solid #ccc;
+                    }
+                    
+                    .rootLineItem.active {
+                        color:var(--app-primary-color-dark);
+                    }
+                    
+                    .rootLineItem.active.done {
+                        color:var(--app-primary-color-light);
+                    }
+                    
+                    .rootLineItem.active span {
+                        background-color:var(--paper-green-400);
+                        color:var(--app-primary-color-dark);
+                        border:1px solid #0d3c0f;
+                    }  
+                      
+                    .rootLineItem.active.done span {
+                        color:#ffffff;
+                        border:1px solid #ccc;
+                    }
+                    
+                    .rootLineItem p {
+                        margin:5px 0 0 0;
+                        font-size:.9em;
+                        font-style:italic;
+                    }
+                    
+                    #mdaProgressRootLineBg {
+                        position: absolute;
+                        background: #e6e5e5;
+                        height: 3px;
+                        width: 80%;
+                        left: 10%;
+                        top: 16px;
+                        z-index: 1;
+                        background: -moz-linear-gradient(left,  #66bb6a 0%, #e6e5e5 25%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 0%,#e6e5e5 25%);
+                        background: linear-gradient(to right,  #66bb6a 0%,#e6e5e5 25%);
+                    }
+                    
+                    #mdaProgressRootLineBg.step2 {
+                        background: -moz-linear-gradient(left,  #66bb6a 25%, #e6e5e5 50%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 25%,#e6e5e5 50%);
+                        background: linear-gradient(to right,  #66bb6a 25%,#e6e5e5 50%);
+                    }
+                                        
+                    #mdaProgressRootLineBg.step3 {
+                        background: -moz-linear-gradient(left,  #66bb6a 50%, #e6e5e5 75%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 50%,#e6e5e5 75%);
+                        background: linear-gradient(to right,  #66bb6a 50%,#e6e5e5 75%);
+                    }
+                                                            
+                    #mdaProgressRootLineBg.step4 {
+                        background: -moz-linear-gradient(left,  #66bb6a 75%, #e6e5e5 100%);
+                        background: -webkit-linear-gradient(left,  #66bb6a 75%,#e6e5e5 100%);
+                        background: linear-gradient(to right,  #66bb6a 75%,#e6e5e5 100%);
+                    }
+                                                                                
+                    #mdaProgressRootLineBg.step5 {
+                        background: #e6e5e5;
+                    }
+                    
+                    .pageTitle {
+                        font-size: 18px;
+                        padding-top: 5px;
+                        display: flex;
+                        flex-flow: row wrap;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
+                    
+                    .mdaGridContainer {
+                        overflow-y:auto;
+                        height:100%;
+                    }
+                    
+                    .mdaBatchNumber {
+                        min-width: 40px;
+                        height: 26px;
+                        line-height: 26px;
+                        font-size: 1em;
+                        border-radius: 15px;
+                        padding: 0 10px;                    
+                    }
+                    
+                    .mdaTabs {
+                        box-shadow:var(--app-shadow-elevation-1);
+                        background-color:#f5f5f5;
+                        margin-top:30px;                    
+                    }
+                    
+                    paper-tab {
+                        font-size:1.1em;
+                    }
+                    
+                    paper-tab.dialogTab.iron-selected {
+                        background-color:#dddddd;
+                    }
+                    
+                    #mdaSearchEngine {
+                        box-shadow:var(--app-shadow-elevation-1);
+                        padding:0 10px 10px 10px;                                        
+                    }
+                    
+                    #mdaStep4BottomButtons {
+                        position: fixed;
+                        bottom: 30px;
+                        width:calc(100% - 342px);
+                        display: flex;
+                        justify-content: flex-end;
+                    }
+                    
+                </style>
+            </custom-style>
+
+    
+    
+            
+            <div class="invoice-panel">
+    
+    
+    
+                <template is="dom-if" if="[[_bodyOverlay]]">
+                    <div id="loadingContainer"></div>
+                </template>
+                <template is="dom-if" if="[[_isLoading]]">
+                    <div id="loadingContainer">
+                        <div id="loadingContentContainer">
+                            <div style="max-width:80px; margin:0 auto"><ht-spinner class="spinner" alt="Loading..." active></ht-spinner></div>
+                            <div id="loadingContent"><p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("mhListing.spinner.step_1", language)]]</p></div>
+                        </div>
                     </div>
+                </template>
+                <template is="dom-if" if="[[_isLoadingSmall]]">
+                    <div id="loadingContainerSmall">
+                        <div id="loadingContentContainerSmall">
+                            <ht-spinner class="spinner" alt="Loading..." active></ht-spinner>
+                            <!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
+                        </div>
+                    </div>
+                </template>
+    
+    
+    
+                <div id="batchStatus" class="batch-status">
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span> [[localize('j20_toBeCorrected','Factures à corriger',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span> [[localize('j20_toBeSend','Factures à envoyer',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span> [[localize('j20_process','Envois en cours',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span> [[localize('j20_reject','Envois rejetés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span> [[localize('j20_partiallyAccepted','Envois partiellement acceptés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span> [[localize('j20_accept','Envois acceptés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span> [[localize('j20_archive','Envois archivés',language)]]</template>
+                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span> [[localize('j20_reset','Supprimer un envoi',language)]]</template>
                 </div>
-            </template>
-            <template is="dom-if" if="[[_isLoadingSmall]]">
-                <div id="loadingContainerSmall">
-                    <div id="loadingContentContainerSmall">
-                        <ht-spinner class="spinner" alt="Loading..." active></ht-spinner>
-                        <!--                        <p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("pleaseWait", language)]]</p>-->
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j3')]]">
+                    <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingListing()]]"><div class="warningMessage" id="warningMessageListing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingWarningMessage', 'Attention\\, veuillez ne procéder à la facturation qu\\'entre le premier et le cinquième jour du mois.', language)]]</div></div></template>-->
+                    <div class="centerCenter">
+                        <div class="exportMonthPicker pb20">
+                            <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                            <vaadin-combo-box id="listingExportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                            <vaadin-combo-box id="listingExportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+                            <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                            <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                        </div>
+                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListing','Téléchargement listing',language)]]</paper-button>
+                        <!--<div id="exportRangeNotification">(*) [[localize('exportedPeriod', language)]]: [[localize('from2', language)]] <span>[[_startOfPreviousMonth()]]</span> [[localize('till', language)]] <span>[[_endOfPreviousMonth()]]</span></div>-->
+                        <!--<paper-button class="tool-btn tool-btn-previous-month p-10px m-t-50 f-s-08em bordered" id="getListingJ3PreviousMonth" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListingPreviousMonth','Téléchargement listing du mois précédent',language)]]<span class="onlyIfRejectRate">[[localize('downloadListingPreviousMonthRemark','Only when rejection rate > 5%',language)]]</span></paper-button>-->
                     </div>
-                </div>
-            </template>
-
-
-
-            <div id="batchStatus" class="batch-status">
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeCorrected')]]"><span class="batchNumber j20_batchNumber batchToBeCorrected">[[messagesCachedData.countByStatus.error]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_toBeSend')]]"><span class="batchNumber j20_batchNumber batchToBeSend">+<!--[[messagesCachedData.countByStatus.xxx]]]--></span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_process')]]"><span class="batchNumber j20_batchNumber batchProcessed">[[messagesCachedData.countByStatus.pending]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_partiallyAccepted')]]"><span class="batchNumber j20_batchNumber batchToBeSend">[[messagesCachedData.countByStatus.partiallyAccepted]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_accept')]]"><span class="batchNumber j20_batchNumber batchAccepted">[[messagesCachedData.countByStatus.fullyAccepted]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reject')]]"><span class="batchNumber j20_batchNumber batchRejected">[[messagesCachedData.countByStatus.rejected]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_archive')]]"><span class="batchNumber j20_batchNumber batchArchived">[[messagesCachedData.countByStatus.archived]]</span></template>
-                <template is="dom-if" if="[[_isEqual(flatrateMenuSection,'j20_reset')]]"><span class="batchNumber j20_batchNumber batchRed">[[messagesCachedData.countByStatus.reset]]</span></template>
-            </div>
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j3')]]">
-                <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingListing()]]"><div class="warningMessage" id="warningMessageListing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingWarningMessage', 'Attention\\, veuillez ne procéder à la facturation qu\\'entre le premier et le cinquième jour du mois.', language)]]</div></div></template>-->
-                <div class="centerCenter">
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
-                        <vaadin-combo-box id="listingExportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
-                        <vaadin-combo-box id="listingExportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
-                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'archivej3')]]">
+    
+                    <div id="rightPanelToggleContainer" class=""><div class="header"><paper-button class="button button--other" on-tap="_toggleRightPanel"><iron-icon icon="icons:build" class=""></iron-icon> &nbsp; [[localize('tools', language)]]</paper-button></div></div>
+    
+                    <div id="rightPanel" class="">
+                        <div class="header"  on-tap="_toggleRightPanel">
+                            <label><iron-icon icon="icons:build"  class="w20px h20px"></iron-icon> &nbsp;[[localize('tools', language)]]</label>
+                            <paper-button class="pullRightIcon"><iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+                        </div>
+                        <div class="body">
+                            <h4 class="m-t-50"><iron-icon icon="date-range"></iron-icon> &nbsp; [[localize('filterByDate','Filtrer par date',language)]]</h4>
+                            <vaadin-date-picker label="[[localize('begin','Début',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeStart" always-float-label></vaadin-date-picker>
+                            <vaadin-date-picker label="[[localize('end','Fin',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeEnd" always-float-label></vaadin-date-picker>
+                            <paper-button class="button button--save w-100-pc" on-tap="_getListingArchives" ><iron-icon icon="icons:update" class="force-left"></iron-icon> &nbsp; [[localize('filterResults','Filtrer les résultats',language)]]</paper-button>
+                        </div>
                     </div>
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListing','Téléchargement listing',language)]]</paper-button>
-                    <!--<div id="exportRangeNotification">(*) [[localize('exportedPeriod', language)]]: [[localize('from2', language)]] <span>[[_startOfPreviousMonth()]]</span> [[localize('till', language)]] <span>[[_endOfPreviousMonth()]]</span></div>-->
-                    <!--<paper-button class="tool-btn tool-btn-previous-month p-10px m-t-50 f-s-08em bordered" id="getListingJ3PreviousMonth" on-tap="_getListingJ3"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('downloadListingPreviousMonth','Téléchargement listing du mois précédent',language)]]<span class="onlyIfRejectRate">[[localize('downloadListingPreviousMonthRemark','Only when rejection rate > 5%',language)]]</span></paper-button>-->
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'archivej3')]]">
-
-                <div id="rightPanelToggleContainer" class=""><div class="header"><paper-button class="button button--other" on-tap="_toggleRightPanel"><iron-icon icon="icons:build" class=""></iron-icon> &nbsp; [[localize('tools', language)]]</paper-button></div></div>
-
-                <div id="rightPanel" class="">
-                    <div class="header"  on-tap="_toggleRightPanel">
-                        <label><iron-icon icon="icons:build"  class="w20px h20px"></iron-icon> &nbsp;[[localize('tools', language)]]</label>
-                        <paper-button class="pullRightIcon"><iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+    
+                    <div class="gridContainer m-t-25">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer3" class="invoiceSubContainerMiddle">
+                                <div class="gridContainer grid-archives-listing">
+                                    <div class="containScroll">
+                                        <vaadin-grid id="noscroll" items="[[archiveListingMessages]]">
+                                            <vaadin-grid-column flex-grow="0" width="10%" class="" >
+                                                <template class="header"><vaadin-grid-sorter path="created">[[localize('date','Date',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.hrDate]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="9%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="created">[[localize('time','Heure',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.hrTime]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="1" class="">
+                                                <template class="header"><vaadin-grid-sorter path="filename">[[localize('filename','Fichier',language)]]</vaadin-grid-sorter></template>
+                                                <template><iron-icon icon="image:picture-as-pdf" class="force-left textRed"></iron-icon> &nbsp; [[item.filename]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="10%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="totalPages">[[localize('totalPages','Nombre de pages',language)]]</vaadin-grid-sorter></template>
+                                                <template class="textAlignCenter">[[item.totalPages]]</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="20%" class="">
+                                                <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
+                                                <template><paper-button class="button button--other downloadListingArchive" on-tap="_downloadListingArchive" messageId="[[item.id]]" ><iron-icon icon="icons:cloud-download" class="force-left"></iron-icon> &nbsp; [[localize('download','Télécharger',language)]]</paper-button></vaadin-grid-sorter></template>
+                                            </vaadin-grid-column>
+                                        </vaadin-grid>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="body">
-                        <h4 class="m-t-50"><iron-icon icon="date-range"></iron-icon> &nbsp; [[localize('filterByDate','Filtrer par date',language)]]</h4>
-                        <vaadin-date-picker label="[[localize('begin','Début',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeStart" always-float-label></vaadin-date-picker>
-                        <vaadin-date-picker label="[[localize('end','Fin',language)]]" i18n="[[i18n]]" class="datePicker" value="" id="dateRangeEnd" always-float-label></vaadin-date-picker>
-                        <paper-button class="button button--save w-100-pc" on-tap="_getListingArchives" ><iron-icon icon="icons:update" class="force-left"></iron-icon> &nbsp; [[localize('filterResults','Filtrer les résultats',language)]]</paper-button>
-                    </div>
-                </div>
-
-                <div class="gridContainer m-t-25">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer3" class="invoiceSubContainerMiddle">
-                            <div class="gridContainer grid-archives-listing">
-                                <div class="containScroll">
-                                    <vaadin-grid id="noscroll" items="[[archiveListingMessages]]">
-                                        <vaadin-grid-column flex-grow="0" width="10%" class="" >
-                                            <template class="header"><vaadin-grid-sorter path="created">[[localize('date','Date',language)]]</vaadin-grid-sorter></template>
-                                            <template>[[item.hrDate]]</template>
+    
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeCorrected')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer2" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                                        <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.oaCode]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="9%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="created">[[localize('time','Heure',language)]]</vaadin-grid-sorter></template>
-                                            <template>[[item.hrTime]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="15%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="oaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.oaLabel]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="1" class="">
-                                            <template class="header"><vaadin-grid-sorter path="filename">[[localize('filename','Fichier',language)]]</vaadin-grid-sorter></template>
-                                            <template><iron-icon icon="image:picture-as-pdf" class="force-left textRed"></iron-icon> &nbsp; [[item.filename]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoiceReference">N° fact.</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.invoiceData.invoiceReference]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="10%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="totalPages">[[localize('totalPages','Nombre de pages',language)]]</vaadin-grid-sorter></template>
-                                            <template class="textAlignCenter">[[item.totalPages]]</template>
+                                        <vaadin-grid-column flex-grow="0" width="17%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="patientData.firstName">[[localize('inv_pat','Patient',language)]] </vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.patientData.firstName]] [[item.patientData.lastName]]</template>
                                         </vaadin-grid-column>
-                                        <vaadin-grid-column flex-grow="0" width="20%" class="">
-                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
-                                            <template><paper-button class="button button--other downloadListingArchive" on-tap="_downloadListingArchive" messageId="[[item.id]]" ><iron-icon icon="icons:cloud-download" class="force-left"></iron-icon> &nbsp; [[localize('download','Télécharger',language)]]</paper-button></vaadin-grid-sorter></template>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="patientData.ssin">[[localize('inv_niss','Niss',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[_formatSsinNumber(item.patientData.ssin)]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoicingCodes">Nmcl</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[_renderGridInvoiceNmcl(item.invoiceData.invoicingCodes)]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="7%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceData.invoiceDate">Date presta.</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[formatDate(item.invoiceData.invoiceDate,'date')]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column-group>
+                                            <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                                <template class="header">
+                                                    <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                                </template>
+                                                <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
+                                                <template class="footer">[[_invoicesToBeCorrectedInvoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                            </vaadin-grid-column>
+                                            <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                                <template class="header">
+                                                    <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                                </template>
+                                                <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
+                                                <template class="footer">[[_invoicesToBeCorrectedRefusedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                            </vaadin-grid-column>
+                                        </vaadin-grid-column-group>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>
+                                                <span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[localize('inv_rej','Rejected',language)]]</span>
+                                            </template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template><paper-button class="button button--save" on-tap="_flagInvoiceAsCorrected" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="check-circle" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('corrected',"Corrected",language)]]</paper-button></template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template><paper-button class="button button--other" on-tap="_flagInvoiceAsLostConfirmationDialog" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="error" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('lost',"Lost",language)]]</paper-button></template>
                                         </vaadin-grid-column>
                                     </vaadin-grid>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeCorrected')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer2" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeSend')]]">
+                    <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingDownload()]]"><div class="warningMessage" id="warningMessageInvoicing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingDownloadWarningMessage', 'Please only download invoicing at the end of the month', language)]]</div></div></template>-->
+                    <div class="textAlignCenter">
+    
+                        <div class="exportMonthPicker pb20">
+                            <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                            <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                            <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+    
+                            <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
+                            <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
+                        </div>
+    
+                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                    </div>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_process\\,j20_accept\\,j20_partiallyAccepted\\,j20_reject\\,j20_archive')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+    
+                            <div id="messagesGridContainer" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid2" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" active-item="{{activeGridItem}}" on-tap="_toggleBatchDetails">
+                                        <vaadin-grid-column flex-grow="0" width="4%" class="oa-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.parentOaCode">[[localize('inv_oa','Oa',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.parentOaCode]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="24%" class="ref-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.parentOaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.parentOaLabel]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="invoice-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.batchReference]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="8%" class="month-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.invoicedMonth]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="10%" class="invoiceDate-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.generationDate]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="invAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor(item.messageInfo.invoiceStatusHr,item.messageInfo.invoicedAmount)]]">[[item.messageInfo.invoicedAmount]]€</span></template>
+                                            <template class="footer">[[_invoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="accAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-green',item.messageInfo.acceptedAmount)]]">[[item.messageInfo.acceptedAmount]]€</span></template>
+                                            <template class="footer">[[_acceptedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="refAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-red',item.messageInfo.refusedAmount)]]">[[item.messageInfo.refusedAmount]]€</span></template>
+                                            <template class="footer">[[_rejectedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="9%" class="stat-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"></iron-icon> [[item.messageInfo.invoiceStatusHr]]</span></template>
+                                        </vaadin-grid-column>
+                                        <!--
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
+                                            <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadParentOaPdf" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
+                                        </vaadin-grid-column>
+                                        -->
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> &nbsp; ZIP</paper-button></template>
+                                        </vaadin-grid-column>
+                                    </vaadin-grid>
+                                </div>
+                            </div>
+    
+                            <div id="invoiceDetailContainer" class="invoiceDetailContainer">
+                                <div id="invoiceDetailHeader" class="mb30">
+                                    <div class="actionButtonsRight">
+                                        <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_process')]]">
+                                            <paper-button class="button button--save" on-tap="_acceptBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('j20_accept','Accepted batches',language)]]</paper-button>
+                                            <paper-button class="button button button--other" on-tap="_partiallyAcceptBatch"><iron-icon icon="settings-backup-restore"></iron-icon> [[localize('inv_par_acc','Partially accepted',language)]]</paper-button>
+                                            <paper-button class="button button button--other" on-tap="_rejectBatch"><iron-icon icon="cancel"></iron-icon> [[localize('j20_reject','Refused batches',language)]]</paper-button>
+                                        </template>
+                                        <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_accept\\,j20_partiallyAccepted\\,j20_reject')]]">
+                                            <paper-button class="button button--other" on-tap="_openArchiveDialogForBatch"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</paper-button>
+                                        </template>
+                                    </div>
+                                    <h4>[[localize('batchDetails',"Batch details",language)]]<span class="txtcolor--redStatus">[[activeGridItem.messageInfo.batchReference]]</span> [[localize('ofOa',"of OA",language)]] <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]] - [[activeGridItem.messageInfo.parentOaLabel]]</span></h4>
+                                </div>
+                                <vaadin-grid id="invoiceAndBatchesGridDetail" items="[[messageDetailsData]]">
                                     <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
                                         <template class="header">
                                             <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
@@ -1151,434 +1567,511 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
                                             </template>
                                             <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
-                                            <template class="footer">[[_invoicesToBeCorrectedInvoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor('force-green',item.acceptedAmount)]]">[[item.acceptedAmount]]€</span></template>
                                         </vaadin-grid-column>
                                         <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
                                             <template class="header">
                                                 <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
                                             </template>
                                             <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
-                                            <template class="footer">[[_invoicesToBeCorrectedRefusedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
                                         </vaadin-grid-column>
                                     </vaadin-grid-column-group>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
+                                    <vaadin-grid-column flex-grow="1" class="recipient-col">
                                         <template class="header">
                                             <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
                                         </template>
                                         <template>
-                                            <span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[localize('inv_rej','Rejected',language)]]</span>
+                                            <span class$="invoice-status [[_getIconStatusClass(item.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.invoiceStatusHr)]]"></iron-icon> [[item.invoiceStatusHr]]</span>
                                         </template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template><paper-button class="button button--save" on-tap="_flagInvoiceAsCorrected" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="check-circle" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('corrected',"Corrected",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template><paper-button class="button button--other" on-tap="_flagInvoiceAsLostConfirmationDialog" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="error" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> &nbsp; [[localize('lost',"Lost",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_toBeSend')]]">
-                <!--<template is="dom-if" if="[[_showWarningMessageEarlyInvoicingDownload()]]"><div class="warningMessage" id="warningMessageInvoicing"><div class="warningMessageBody"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> &nbsp; [[localize('earlyInvoicingDownloadWarningMessage', 'Please only download invoicing at the end of the month', language)]]</div></div></template>-->
-                <div class="textAlignCenter">
-
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
-                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
-                        <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-
-                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>
-                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>
-                    </div>
-
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_process\\,j20_accept\\,j20_partiallyAccepted\\,j20_reject\\,j20_archive')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-
-                        <div id="messagesGridContainer" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid2" items="[[messagesGridData]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" active-item="{{activeGridItem}}" on-tap="_toggleBatchDetails">
-                                    <vaadin-grid-column flex-grow="0" width="4%" class="oa-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.parentOaCode">[[localize('inv_oa','Oa',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.parentOaCode]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="24%" class="ref-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.parentOaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.parentOaLabel]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="8%" class="invoice-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.batchReference]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="8%" class="month-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.invoicedMonth]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="10%" class="invoiceDate-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.generationDate]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="invAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor(item.messageInfo.invoiceStatusHr,item.messageInfo.invoicedAmount)]]">[[item.messageInfo.invoicedAmount]]€</span></template>
-                                        <template class="footer">[[_invoicedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="accAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-green',item.messageInfo.acceptedAmount)]]">[[item.messageInfo.acceptedAmount]]€</span></template>
-                                        <template class="footer">[[_acceptedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="refAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-red',item.messageInfo.refusedAmount)]]">[[item.messageInfo.refusedAmount]]€</span></template>
-                                        <template class="footer">[[_rejectedAmount(flatrateMenuSection, 'flatFiles')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="9%" class="stat-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.messageInfo.invoiceStatusHr)]]"></iron-icon> [[item.messageInfo.invoiceStatusHr]]</span></template>
                                     </vaadin-grid-column>
                                     <!--
                                     <vaadin-grid-column flex-grow="1" class="stat-col">
                                         <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
-                                        <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadParentOaPdf" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
+                                        <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadOaPdfByMessageId" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
                                     </vaadin-grid-column>
                                     -->
                                     <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('downloadArchive',"Télécharger l'archive",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> &nbsp; ZIP</paper-button></template>
+                                        <template><paper-button class$="button button button--other [[_showRejectInvoiceButton(item.messageOriginalStatus, item.invoiceFinalStatus)]]" on-tap="_rejectInvoice" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="cancel" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> [[localize('rejectVerb',"Reject",language)]]</paper-button></template>
                                     </vaadin-grid-column>
                                 </vaadin-grid>
                             </div>
+    
                         </div>
-
-                        <div id="invoiceDetailContainer" class="invoiceDetailContainer">
-                            <div id="invoiceDetailHeader" class="mb30">
-                                <div class="actionButtonsRight">
-                                    <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_process')]]">
-                                        <paper-button class="button button--save" on-tap="_acceptBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('j20_accept','Accepted batches',language)]]</paper-button>
-                                        <paper-button class="button button button--other" on-tap="_partiallyAcceptBatch"><iron-icon icon="settings-backup-restore"></iron-icon> [[localize('inv_par_acc','Partially accepted',language)]]</paper-button>
-                                        <paper-button class="button button button--other" on-tap="_rejectBatch"><iron-icon icon="cancel"></iron-icon> [[localize('j20_reject','Refused batches',language)]]</paper-button>
-                                    </template>
-                                    <template is="dom-if" if="[[_isIn(flatrateMenuSection, 'j20_accept\\,j20_partiallyAccepted\\,j20_reject')]]">
-                                        <paper-button class="button button--other" on-tap="_openArchiveDialogForBatch"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</paper-button>
+                    </div>
+                </template>
+    
+    
+    
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_reset')]]">
+                    <div class="invoicesGridContainer">
+                        <div class="invoiceContainer">
+                            <div id="messagesGridContainer4" class="invoiceSubContainerMiddle">
+                                <div class="scrollBox">
+                                    <vaadin-grid id="messagesGrid3" items="[[messagesGridDataReset]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="invoice-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.batchReference]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="month-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.invoicedMonth]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="13%" class="invoiceDate-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template>[[item.messageInfo.generationDate]]</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="invAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="invoice-status [[_getTxtStatusColor('force-blue', item.totalInvoicedAmount)]]">[[item.totalInvoicedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalInvoicedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="accAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-green',item.totalAcceptedAmount)]]">[[item.totalAcceptedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalAcceptedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="0" width="11%" class="refAmount-col">
+                                            <template class="header">
+                                                <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
+                                            </template>
+                                            <template><span class$="[[_getTxtStatusColor('force-red',item.totalRefusedAmount)]]">[[item.totalRefusedAmount]]€</span></template>
+                                            <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalRefusedAmount')]]€</template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Download",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> ZIP</paper-button></template>
+                                        </vaadin-grid-column>
+                                        <vaadin-grid-column flex-grow="1" class="stat-col">
+                                            <template class="header"><vaadin-grid-sorter path="id">[[localize('del',"Delete",language)]]</vaadin-grid-sorter></template>
+                                            <template><paper-button class="button button--other" on-tap="_confirmDeleteBatch" data-batch-export-tstamp="[[item.metas.batchExportTstamp]]"><iron-icon icon="icons:error" class="force-left"></iron-icon> [[localize('del',"Delete",language)]]</paper-button></template>
+                                        </vaadin-grid-column>
+                                    </vaadin-grid>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                <!-- Medical Houses - Flatrate E-Invoicing -->
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda')]]">
+                
+                
+                
+                    <!-- MDA rootline -->
+                    <template is="dom-if" if="[[_isIn(eInvoicingStep, 'placeMdaRequests\\,mdaCheckForResponses\\,mdaLastCallResults\\,mdaLastCallResultsDetails\\,mdaDoInvoicing')]]">
+                        <div id="mdaProgressRootLine">
+                            <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'placeMdaRequests')]] [[_e_returnValueIfEquals(eInvoicingStep, 'placeMdaRequests', 'active')]]" id="mdaRootLineStep1"><span>1</span><p>[[localize("memberDataRequests","Appels Member Data",language)]]</p></div>
+                            <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaCheckForResponses')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaCheckForResponses', 'active')]]" id="mdaRootLineStep2"><span>2</span><p>[[localize("memberDataResponses","Réponses Member Data",language)]]</p></div>
+                            <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaLastCallResults')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaLastCallResults', 'active')]]" id="mdaRootLineStep3"><span>3</span><p>[[localize("memberDataResults","Résultats Member Data",language)]]</p></div>
+                            <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaLastCallResultsDetails')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaLastCallResultsDetails', 'active')]]" id="mdaRootLineStep4"><span>4</span><p>[[localize("patientCorrections","Corrections des patients",language)]]</p></div>
+                            <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'mdaDoInvoicing')]] [[_e_returnValueIfEquals(eInvoicingStep, 'mdaDoInvoicing', 'active')]]" id="mdaRootLineStep5"><span>5</span><p>[[localize("_e_flatrateinv_invoicing","Facturation",language)]]</p></div>
+                            <div id="mdaProgressRootLineBg" class$="step[[_e_getRootLineStep(eInvoicingStep)]]"></div>
+                        </div>
+                    </template>
+    
+    
+    
+                    <!-- MDA place request -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'placeMdaRequests')]]">
+                        <div class="textAlignCenter">
+                            <div class="exportMonthPicker pb20">
+                                <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                                <p class="mt30 mb10">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]]<br /><b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                                <paper-button class="button button--save tool-btn f-s-1em bordered mt20 pt15 pb40" id="largeButton" on-tap="_e_placeMdaRequests"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData2','Vérifier les données',language)]]</paper-button>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    
+                    
+                    <!-- MDA pending requests -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponses')]]">
+                        <div class="textAlignCenter">
+                            <div class="exportMonthPicker pb20" style="width:90%;max-width:940px;">
+                            
+                                <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
+                                <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                                
+                                <div id="mdaOasContainer">
+                                    <div id="mdaOaHeaders">
+                                        <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
+                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]] ([[_e_getTotalPatsInAllMessages(mdaRequestsData.messages)]])</div>
+                                        <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
+                                        <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
+                                        <div class="mdaOaContainerCol5">[[localize("answeredOn","Répondu le", language)]]</div>
+                                        <div class="mdaOaContainerCol6">[[localize("inv_stat","Status", language)]]</div>
+                                    </div>                            
+                                    <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="item" id="domRepeatMdaRequests">
+                                        <div class="mdaOaContainer">
+                                            <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
+                                            <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
+                                            <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
+                                            <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
+                                            <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                            <div class="mdaOaContainerCol6">
+                                                <template is="dom-if" if="[[item.metas.responseMessageId]]"><span class="statusBullet green"></span></template>
+                                                <template is="dom-if" if="[[!item.metas.responseMessageId]]"><span class="statusBullet red"></span></template>
+                                            </div>
+                                        </div>
                                     </template>
                                 </div>
-                                <h4>[[localize('batchDetails',"Batch details",language)]]<span class="txtcolor--redStatus">[[activeGridItem.messageInfo.batchReference]]</span> [[localize('ofOa',"of OA",language)]] <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]] - [[activeGridItem.messageInfo.parentOaLabel]]</span></h4>
-                            </div>
-                            <vaadin-grid id="invoiceAndBatchesGridDetail" items="[[messageDetailsData]]">
-                                <vaadin-grid-column flex-grow="0" width="4%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="oaCode">Oa</vaadin-grid-sorter>
+                                
+                                <div id="mdaResponseCheckCtas">
+                                    
+                                    <!-- Last call for responses > X hours ago, allow to call again -->
+                                    <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh1">
+                                        <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
                                     </template>
-                                    <template>[[item.oaCode]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="15%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="oaLabel">[[localize('name','Name',language)]]</vaadin-grid-sorter>
+                                    
+                                    <!-- Last call for responses < X hours ago, do not let call again -->
+                                    <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh2">
+                                        <div id="mdaResponseCheckCtaCountdown">
+                                            <div id="mdaResponseCheckCtaCountdownText">[[localize('checkMdaData5','Délai avant la prochaine vérification',language)]]: [[mdaRequestsData.timeToWaitBeforeNextCallHr]]</div>
+                                            <paper-button class="button button--other tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap=""><iron-icon icon="icons:block" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
+                                        </div>
                                     </template>
-                                    <template>[[item.oaLabel]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoiceReference">N° fact.</vaadin-grid-sorter>
+                                    
+                                    <!-- Bypass response (only if got checked 1+ times && waiting for next check -->
+                                    <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
+                                        <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedHoursAgo)]]" id="domIfTriggerRefresh3">
+                                            <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt15 pb40" id="largeButton" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
+                                        </template>                            
                                     </template>
-                                    <template>[[item.invoiceData.invoiceReference]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="17%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="patientData.firstName">[[localize('inv_pat','Patient',language)]] </vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[item.patientData.firstName]] [[item.patientData.lastName]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="8%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="patientData.ssin">[[localize('inv_niss','Niss',language)]]</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[_formatSsinNumber(item.patientData.ssin)]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="9%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoicingCodes">Nmcl</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[_renderGridInvoiceNmcl(item.invoiceData.invoicingCodes)]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column flex-grow="0" width="7%" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceData.invoiceDate">Date presta.</vaadin-grid-sorter>
-                                    </template>
-                                    <template>[[formatDate(item.invoiceData.invoiceDate,'date')]]</template>
-                                </vaadin-grid-column>
-                                <vaadin-grid-column-group>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="invoicedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor(item.invoiceStatusHr,item.invoicedAmount)]]">[[item.invoicedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-green',item.acceptedAmount)]]">[[item.acceptedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="5%" class="recipient-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-red',item.refusedAmount)]]">[[item.refusedAmount]]€</span></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid-column-group>
-                                <vaadin-grid-column flex-grow="1" class="recipient-col">
-                                    <template class="header">
-                                        <vaadin-grid-sorter path="invoiceStatusHr">[[localize('inv_stat','Status',language)]]</vaadin-grid-sorter>
-                                    </template>
-                                    <template>
-                                        <span class$="invoice-status [[_getIconStatusClass(item.invoiceStatusHr)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(item.invoiceStatusHr)]]"></iron-icon> [[item.invoiceStatusHr]]</span>
-                                    </template>
-                                </vaadin-grid-column>
-                                <!--
-                                <vaadin-grid-column flex-grow="1" class="stat-col">
-                                    <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Télécharger",language)]] PDF</vaadin-grid-sorter></template>
-                                    <template><paper-button class="grid-btn-small noBg noPad" on-tap="_downloadOaPdfByMessageId" data-message-id$="[[item.id]]"><iron-icon icon="image:picture-as-pdf" class="force-left textRed" data-message-id$="[[item.id]]"></iron-icon> &nbsp; PDF</paper-button></template>
-                                </vaadin-grid-column>
-                                -->
-                                <vaadin-grid-column flex-grow="1" class="stat-col">
-                                    <template><paper-button class$="button button button--other [[_showRejectInvoiceButton(item.messageOriginalStatus, item.invoiceFinalStatus)]]" on-tap="_rejectInvoice" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]" ><iron-icon icon="cancel" data-message-id$="[[item.id]]" data-invoice-id$="[[item.invoiceData.id]]"></iron-icon> [[localize('rejectVerb',"Reject",language)]]</paper-button></template>
-                                </vaadin-grid-column>
-                            </vaadin-grid>
-                        </div>
-
-                    </div>
-                </div>
-            </template>
-
-
-
-            <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'j20_reset')]]">
-                <div class="invoicesGridContainer">
-                    <div class="invoiceContainer">
-                        <div id="messagesGridContainer4" class="invoiceSubContainerMiddle">
-                            <div class="scrollBox">
-                                <vaadin-grid id="messagesGrid3" items="[[messagesGridDataReset]]" data-status$="[[_getBatchStatusByMenuSection(flatrateMenuSection)]]" class="invoicesToBeCorrectedGrid">
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="invoice-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.batchReference">[[localize('inv_batch_num','Batch reference',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.batchReference]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="month-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedMonth">[[localize('inv_batch_month','Billed month',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.invoicedMonth]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="13%" class="invoiceDate-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.generationDate">[[localize('inv_date_fact','Invoice date',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template>[[item.messageInfo.generationDate]]</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="invAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.invoicedAmount"> [[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="invoice-status [[_getTxtStatusColor('force-blue', item.totalInvoicedAmount)]]">[[item.totalInvoicedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalInvoicedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="accAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.acceptedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-green',item.totalAcceptedAmount)]]">[[item.totalAcceptedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalAcceptedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="0" width="11%" class="refAmount-col">
-                                        <template class="header">
-                                            <vaadin-grid-sorter path="messageInfo.refusedAmount">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</vaadin-grid-sorter>
-                                        </template>
-                                        <template><span class$="[[_getTxtStatusColor('force-red',item.totalRefusedAmount)]]">[[item.totalRefusedAmount]]€</span></template>
-                                        <template class="footer">[[_getSumByDataKey(messagesGridDataReset, 'totalRefusedAmount')]]€</template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('download',"Download",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_downloadParentOaArchive" data-message-id$="[[item.id]]"><iron-icon icon="icons:folder" class="force-left" data-message-id$="[[item.id]]"></iron-icon> ZIP</paper-button></template>
-                                    </vaadin-grid-column>
-                                    <vaadin-grid-column flex-grow="1" class="stat-col">
-                                        <template class="header"><vaadin-grid-sorter path="id">[[localize('del',"Delete",language)]]</vaadin-grid-sorter></template>
-                                        <template><paper-button class="button button--other" on-tap="_confirmDeleteBatch" data-batch-export-tstamp="[[item.metas.batchExportTstamp]]"><iron-icon icon="icons:error" class="force-left"></iron-icon> [[localize('del',"Delete",language)]]</paper-button></template>
-                                    </vaadin-grid-column>
-                                </vaadin-grid>
+                                    
+                                </div>                            
+                                
                             </div>
                         </div>
+                    </template>
+                    
+                    
+                    
+                    <!-- MDA responses = last call's results -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResults')]]">
+                        <div class="textAlignCenter">
+                            <div class="exportMonthPicker pb20" style="width:90%;max-width:940px;">
+                                <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> Member Data: [[localize('checkMdaData7','Résultat des vérifications auprès des OA',language)]]</div>
+                                <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
+                                <div id="mdaOasContainer">
+                                    <div id="mdaOaHeaders">
+                                        <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
+                                        <div class="mdaOaContainerCol5">[[localize("answeredOn","Réponse obtenue le", language)]]</div>
+                                        <div class="mdaOaContainerCol2">[[localize("pat","Patients", language)]] ([[_e_getTotalPatsInAllMessages(mdaResponsesData.messages)]])</div>
+                                        <div class="mdaOaContainerCol3">[[localize("validPats","Patients en ordre", language)]] ([[_e_getTotalPatsWithValidInsurabilityInAllMessages(mdaResponsesData.messages)]])</div>
+                                        <div class="mdaOaContainerCol6">[[localize("details","Détails", language)]]</div>
+                                    </div>                            
+                                    <template is="dom-repeat" items="[[mdaResponsesData.messages]]" as="item" id="domRepeatMdaRequestsResults">
+                                        <div class="mdaOaContainer">
+                                            <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
+                                            <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                            <div class="mdaOaContainerCol2 fw500 darkGreen">[[item.metas.totalPats]]</div>
+                                            <div class$="mdaOaContainerCol3 fw500 [[_e_redOrGreenIfEquals(item.metas.totalPats,item.metas.totalPatsWithValidInsurability)]]">[[item.metas.totalPatsWithValidInsurability]]</div>
+                                            <div class="mdaOaContainerCol6"><paper-button class="button button--other buttonCompact"on-tap="_e_gotoMdaLastCallResultsDetails"><iron-icon icon="icons:zoom-in" class="w30px h30px"></iron-icon></paper-button></div>
+                                        </div>
+                                    </template>
+                                </div>                          
+                            </div>
+                        </div>
+                    </template>
+                    
+                    
+                    
+                    <!-- MDA responses = last call's results details -->
+                    <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResultsDetails')]]">
+                        
+                        <paper-tabs selected="[[mdaActiveTab]]" attr-for-selected="name" on-selected-changed="_e_mdaActiveTabChanged" class="mdaTabs">
+                            <paper-tab class="dialogTab" name="invalidPatients"><span class="batchNumber mdaBatchNumber batchRed">[[mdaTotalInvalidPatients]]</span>[[localize('invalidPats','Patients pas en ordre',language)]]</paper-tab>
+                            <paper-tab class="dialogTab" name="validPatients"><span class="batchNumber mdaBatchNumber batchGreen">[[mdaTotalValidPatients]]</span>[[localize('validPats','Patients en ordre',language)]]</paper-tab>
+                        </paper-tabs>
+                        
+                        <div id="mdaSearchEngine"><paper-input label="[[localize('searchPatients','Search for a patient',language)]]" autofocus on-value-changed="_e_mdaSearchForPat" id="mdaSearchEngineInput"><iron-icon icon="accessibility" slot="prefix" style="margin-right:5px"></iron-icon></paper-input></div>
+                        
+                        <div class="invoicesGridContainer mt0">
+                            <div class="invoiceContainer mdaResults">
+                                <div class="mdaGridContainer">
+                                    <div class="scrollBox">
+                                        <vaadin-grid id="mdaResultsDetailsGrid" items="[[mdaResultsGridData]]" class="invoicesToBeCorrectedGrid">
+                                            
+                                            <vaadin-grid-column flex-grow="0" width="90px">
+                                                <template class="header"><vaadin-grid-sorter path="oa">[[localize('OA','OA',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.oa]]</template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="0" width="140px">
+                                                <template class="header"><vaadin-grid-sorter path="verifiedMonthHr">[[localize('verifiedMonth','Verified month',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.verifiedMonthHr]]</template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="1">
+                                                <template class="header"><vaadin-grid-sorter path="nameHr">[[localize('name','Name',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.nameHr]]</template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="0" width="150px">
+                                                <template class="header"><vaadin-grid-sorter path="ssinHr">[[localize('ssin','SSIN',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.ssinHr]]</template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="0" width="130px">
+                                                <template class="header"><vaadin-grid-sorter path="patientInsurabilityStatusHr">[[localize('insured','Insured',language)]]</vaadin-grid-sorter></template>
+                                                <template>
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'yes')]]"><span class="statusBullet green"></span></template>
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'notVerified')]]"><span class="statusBullet orange"></span></template>
+                                                    <template is="dom-if" if="[[_isEqual(item.patientInsurabilityStatus,'no')]]"><span class="statusBullet red"></span></template>
+                                                    &nbsp; [[item.patientInsurabilityStatusHr]]
+                                                </template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="1">
+                                                <template class="header"><vaadin-grid-sorter path="message">[[localize('msg','Message',language)]]</vaadin-grid-sorter></template>
+                                                <template>[[item.message]]</template>
+                                            </vaadin-grid-column>
+                                            
+                                            <vaadin-grid-column flex-grow="0" width="230px">
+                                                <template>
+                                                    
+                                                    <template is="dom-if" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'false')]]">
+                                                        <template is="dom-if" if="[[_isEqual(item.patientMatchedWithMdaResponse,'true')]]">
+                                                            <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="valid"><iron-icon icon="check-circle"></iron-icon> [[localize("flagAsValid","Flag as valid",language)]]</paper-button>
+                                                        </template>
+                                                    </template>
+                                                    
+                                                    <template is="dom-if" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'true')]]">
+                                                        <template is="dom-if" if="[[_isEqual(item.patientForcedAsValid,'true')]]">
+                                                            <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="invalid"><iron-icon icon="highlight-off"></iron-icon> [[localize("flagAsInValid","Flag as invalid",language)]]</paper-button>
+                                                        </template>
+                                                    </template>
+                                                    
+                                                </template>
+                                            </vaadin-grid-column>
+                                        </vaadin-grid>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="mdaStep4BottomButtons"><paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button></div>
+                        
+                    </template>
+                  
+                  
+                    
+                </template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_mda_history')]]">ej20_mda_history</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeCorrected')]]">ej20_toBeCorrected</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_toBeSend')]]">ej20_toBeSend</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_process')]]">ej20_process</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reject')]]">ej20_reject</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_partiallyAccepted')]]">ej20_partiallyAccepted</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_accept')]]">ej20_accept</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_archive')]]">ej20_archive</template>
+                
+                
+                
+                <template is="dom-if" if="[[_isEqual(flatrateMenuSection, 'ej20_reset')]]">ej20_reset</template>
+                <!-- /Medical Houses - Flatrate E-Invoicing -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+                <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
+    
+                <paper-dialog class="modalDialog" id="archiveDialog">
+                    <h2 class="modal-title"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p>[[localize('archiveBatchConfirmation',"Voulez-vous vraiment archiver l'envoi",language)]] <b>[[activeGridItem.messageInfo.batchReference]]</b></p>
+                        <p>OA <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]]</span> [[activeGridItem.messageInfo.parentOaLabel]] ?</p>
                     </div>
-                </div>
-            </template>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('provideNihiiNumber','Please provide your number',language)]] <b>[[localize('inami','INAMI',language)]]</b>.</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
+                        <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
+                        <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="fw700">[[localize('areYouSureFlagInvoiceAsLost','Are you sure you wish to flag invoice as permanently lost?',language)]]</p>
+                        <p class="">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_flagInvoiceAsLost">[[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                <paper-dialog class="modalDialog" id="deleteBatchDialog">
+                    <h2 class="modal-title"><iron-icon icon="error"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p>[[localize('mhFlatRateConfirmDeleteBatch','Are you sure you wish to delete this batch?',language)]]</p>
+                        <p class="uppercase bold">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_doDeleteBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>
+                
+                <!-- Medical Houses - Flatrate E-Invoicing -->
+                <paper-dialog class="modalDialog" id="mdaRequestsSent" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
+                    <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                        <p class="">[[localize('mh_eInvoicing.mda.text1','We could not find any data to export',language)]]</p>
+                        <p class="fw700">[[localize('mh_eInvoicing.mda.text2','We could not find any data to export',language)]]</p>
+                    </div>
+                    <div class="buttons">
+                        <paper-button class="button button--other " on-tap="_e_closeMdaRequestsSentDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
+                </paper-dialog>            
+    
+    
+    
+    
+    
+    
+            </div>
+        `;
 
+    }
 
-
-
-
-
-
-
-            <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
-
-            <paper-dialog class="modalDialog" id="archiveDialog">
-                <h2 class="modal-title"><iron-icon icon="markunread-mailbox"></iron-icon> [[localize('j20_archive_batch','Archive batch',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p>[[localize('archiveBatchConfirmation',"Voulez-vous vraiment archiver l'envoi",language)]] <b>[[activeGridItem.messageInfo.batchReference]]</b></p>
-                    <p>OA <span class="txtcolor--blueStatus">[[activeGridItem.messageInfo.parentOaCode]]</span> [[activeGridItem.messageInfo.parentOaLabel]] ?</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('provideNihiiNumber','Please provide your number',language)]] <b>[[localize('inami','INAMI',language)]]</b>.</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('areYouSureFlagInvoiceAsLost','Are you sure you wish to flag invoice as permanently lost?',language)]]</p>
-                    <p class="">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_flagInvoiceAsLost">[[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="deleteBatchDialog">
-                <h2 class="modal-title"><iron-icon icon="error"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p>[[localize('mhFlatRateConfirmDeleteBatch','Are you sure you wish to delete this batch?',language)]]</p>
-                    <p class="uppercase bold">[[localize('unrecoverableAction','This action is unrecoverable',language)]].</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('can','Cancel',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_doDeleteBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-
-
-
-
-
-
-        </div>
-
-`;
-  }
-
-  static get is() {
+    static get is() {
       return 'ht-msg-flatrate-invoice';
   }
 
@@ -1740,6 +2233,38 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             overrideBatchNumber:{
                 type: Boolean,
                 value: false
+            },
+            eInvoicingStep: {
+                type: String,
+                value: ""
+            },
+            mdaRequestsData: {
+                type: Object,
+                value:()=>{}
+            },
+            minimumHoursBetweenMdaResponseChecks: {
+                type: Number,
+                value: 24
+            },
+            mdaResultsGridData: {
+                type: Array,
+                value:()=>[]
+            },
+            rawMdaResultsGridData: {
+                type: Array,
+                value:()=>[]
+            },
+            mdaActiveTab: {
+                type: String,
+                value:"invalidPatients"
+            },
+            mdaTotalValidPatients: {
+                type:Number,
+                value:0
+            },
+            mdaTotalInvalidPatients: {
+                type:Number,
+                value:0
             }
         };
     }
@@ -1795,6 +2320,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }
 
         }
+
+        // Study mda status / step we're in
+        if(["ej20_mda"].indexOf(_.trim(this.flatrateMenuSection)) > -1) this._e_loadDataAndgetStep();
 
     }
 
@@ -2277,10 +2805,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _isEqual(a,b) {
+        b = typeof a !== "boolean" ? b : b === "true"
         return a === b
     }
 
     _isNotEqual(a,b) {
+        b = typeof a !== "boolean" ? b : b === "true"
         return a !== b
     }
 
@@ -3194,7 +3724,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         return parseInt(moment().format('YYYY'))
     }
 
-    _sleep (time) {
+    _sleep(time) {
         return new Promise((resolve) => setTimeout(resolve, time));
     }
 
@@ -3829,31 +4359,6 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                                 (status === 'force-blue') ? "txtcolor--blueStatus" :
                                                                     ""
         }
-    }
-
-    _DEVELOPERS_ONLY_deleteFlatrateMessagesAndInvoices() {
-
-        this.api.getRowsUsingPagination(
-            (key,docId) =>
-                this.api.message().findMessagesByTransportGuid('MH:FLATRATE:*', null, key, docId, 1000)
-                    .then(pl => { return {
-                        rows:_.filter(pl.rows, m => _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId ),
-                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                        done: !pl.nextKeyPair
-                    }})
-                    .catch(()=>{ return Promise.resolve(); })
-        ).then(messages=>{
-            const invoiceIdsFromMessage = _.compact(_.uniq( _.flatten(_.map(messages, i=>i.invoiceIds))))
-            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: invoiceIdsFromMessage }))
-                .then(invoices=>{
-                    const correctiveInvoiceIds = _.compact(_.uniq(_.map( _.filter(invoices, i=>!!_.trim(i.correctiveInvoiceId)), "id" )))
-                    Promise.all( _.compact(_.uniq(_.concat(invoiceIdsFromMessage,correctiveInvoiceIds))).map(i => this.api.invoice().deleteInvoice(i).catch(()=>{}) ))
-                        .then(()=> !!_.size(messages) && this.api.message().deleteMessagesBatch(new models.ListOfIdsDto({ids: _.map(messages, i=>i.id)})).catch(()=>{}) );
-                })
-        })
-            .catch((e)=>console.log(e))
-
     }
 
     _generateJ20PdfTemplateObjects() {
@@ -4510,7 +5015,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     insurancesData: dataObject.insurancesData,
                     parentInsurancesData: dataObject.parentInsurancesData,
                     roughData: _.chain(messages).uniqBy('id').value().map(message=> {
-                        const st = message.status
+                        const st = message.status;
                         const invoiceStatus =
                             !!(st & (1 << 21)) ? { hrLabel: this.localize('inv_arch','Archived',this.language), finalStatus:"archived" }:
                                 !!(st & (1 << 17)) ? { hrLabel: this.localize('inv_err','Error',this.language), finalStatus:"error" }:
@@ -4520,7 +5025,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 !!(st & (1 << 11)) ? { hrLabel: this.localize('inv_tre','Treated',this.language), finalStatus:"treated" }:
                                                     !!(st & (1 << 10)) ? { hrLabel: this.localize('inv_acc_tre','Accepted for treatment',this.language), finalStatus:"acceptedForTreatment" }:
                                                         !!(st & (1 << 9))  ? { hrLabel: this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language), finalStatus:"successfullySentToOA" }:
-                                                            !!(st & (1 << 8))  ? { hrLabel: this.localize('inv_pen','Pending',this.language), finalStatus:"pending" }: ""
+                                                            !!(st & (1 << 8))  ? { hrLabel: this.localize('inv_pen','Pending',this.language), finalStatus:"pending" }: "";
 
                         const acceptedAmount =
                             _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
@@ -4528,7 +5033,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.totalAmount", "0.00")))):
                                         _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.acceptedAmount", _.get(message, "metas.totalAmount", "0.00"))))):
                                             _.get(invoiceStatus, "finalStatus") === "archived" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.acceptedAmount", _.get(message, "metas.totalAmount", "0.00"))))):
-                                                "0,00"
+                                                "0,00";
 
                         const refusedAmount =
                             _.get(invoiceStatus, "finalStatus") === "pending" ? "0,00" :
@@ -4536,7 +5041,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     _.get(invoiceStatus, "finalStatus") === "fullyAccepted" ? "0,00":
                                         _.get(invoiceStatus, "finalStatus") === "partiallyAccepted" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.refusedAmount", "0.00")))):
                                             _.get(invoiceStatus, "finalStatus") === "archived" ? this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(parseFloat(_.get(message, "metas.refusedAmount", "0.00")))):
-                                                "0,00"
+                                                "0,00";
 
                         return _.merge(message, {
                             messageInfo: {
@@ -4573,15 +5078,15 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         slips : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:INVOICING-SLIP" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc']),
                         pdfs : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:INVOICING-PDF" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc']),
                         oaPdfs : _.orderBy( _.filter(this.messagesCachedData.roughData, i=> i.messageInfo.invoiceFinalStatus===statusKey && i.transportGuid === "MH:FLATRATE:PARENT-OA-INVOICING-PDF" ), ['metas.exportedDate','metas.parentOaId'],['desc','asc'])
-                    }
+                    };
                     countByStatus[statusKey] = parseInt(_.size(dataByStatus[statusKey].flatFiles))
-                })
+                });
 
-                this.api.setPreventLogging()
+                this.api.setPreventLogging();
                 // Eval error invoices based on fully rejected or partially accepted
                 return Promise.all( _.map( _.concat(dataByStatus.partiallyAccepted.flatFiles, dataByStatus.rejected.flatFiles), msg => {
-                    const originalMessage = msg
-                    const invoiceIds = _.compact(_.uniq(msg.invoiceIds))
+                    const originalMessage = msg;
+                    const invoiceIds = _.compact(_.uniq(msg.invoiceIds));
                     return this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: invoiceIds}))
                         .then(allInvoices=>this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.map(allInvoices,"correctiveInvoiceId")})))
                         .then(invoicesToBeCorrected =>{
@@ -4616,9 +5121,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .then(invAndPatIds => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndPatIds.map(x => x[1]))})).then(pats => invAndPatIds.map(it => [it[0], pats.find(p => p.id === it[1])])))
                         .then(invoicesAndPatient=>_.orderBy(
                             _.map(invoicesAndPatient, invAndPat => {
-                                let invoiceData = invAndPat[0]
-                                const patientData = invAndPat[1]
-                                invoiceData = _.merge(invoiceData, {invoiceDate:_.trim(_.get(invoiceData, "invoiceDate","")) || moment(_.get(invoiceData, "created","0")).startOf('month').format("YYYYMMDD") })
+                                let invoiceData = invAndPat[0];
+                                const patientData = invAndPat[1];
+                                invoiceData = _.merge(invoiceData, {invoiceDate:_.trim(_.get(invoiceData, "invoiceDate","")) || moment(_.get(invoiceData, "created","0")).startOf('month').format("YYYYMMDD") });
                                 return {
                                     id: _.get(invoiceData, "id", ""),
                                     oaId: _.get(invoiceData, "recipientId", ""),
@@ -4642,30 +5147,30 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .catch((e)=>console.log(e))
                 })).then(x=>{
 
-                    dataByStatus.error = _.orderBy( _.flatMap(x), ['oaCode','invoiceData.invoiceReference','patientData.firstName','patientData.lastName'], ['asc','asc','asc','asc'] )
-                    countByStatus.error = parseInt(_.size(dataByStatus.error))
+                    dataByStatus.error = _.orderBy( _.flatMap(x), ['oaCode','invoiceData.invoiceReference','patientData.firstName','patientData.lastName'], ['asc','asc','asc','asc'] );
+                    countByStatus.error = parseInt(_.size(dataByStatus.error));
 
                     // "Reset" data = ONE batch per month and by batchExportTstamp - to be cancelled / reset / deleted
-                    dataByStatus.reset.flatFiles = _.orderBy(_.uniqBy(this.messagesCachedData.roughData, it => _.trim(_.get(it,"metas.batchExportTstamp",""))), ['metas.exportedDate','metas.batchExportTstamp'], ['desc', 'desc'])
-                    countByStatus.reset = parseInt(_.size(dataByStatus.reset.flatFiles))
+                    dataByStatus.reset.flatFiles = _.orderBy(_.uniqBy(this.messagesCachedData.roughData, it => _.trim(_.get(it,"metas.batchExportTstamp",""))), ['metas.exportedDate','metas.batchExportTstamp'], ['desc', 'desc']);
+                    countByStatus.reset = parseInt(_.size(dataByStatus.reset.flatFiles));
 
 
 
-                    const batchExportTstamps = _.compact(_.map(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp",false)))
+                    const batchExportTstamps = _.compact(_.map(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp",false)));
 
                     _.map( batchExportTstamps, batchExportTstamp => {
 
-                        let invoicedAmount = 0
-                        let acceptedAmount = 0
-                        let refusedAmount = 0
-                        const targetMessage = _.find(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp )
-                        const batchExportTstampFileMessages = _.filter(_.get(this,"messagesCachedData.roughData",[]), it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp && _.get(it,"transportGuid","") === "MH:FLATRATE:INVOICING-FLATFILE"  )
+                        let invoicedAmount = 0;
+                        let acceptedAmount = 0;
+                        let refusedAmount = 0;
+                        const targetMessage = _.find(dataByStatus.reset.flatFiles, it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp );
+                        const batchExportTstampFileMessages = _.filter(_.get(this,"messagesCachedData.roughData",[]), it => _.get(it,"metas.batchExportTstamp","") === batchExportTstamp && _.get(it,"transportGuid","") === "MH:FLATRATE:INVOICING-FLATFILE"  );
 
                         _.map(batchExportTstampFileMessages, it => {
-                            invoicedAmount += parseFloat(_.trim(_.get(it,"messageInfo.invoicedAmount","")).replace(".","").replace(",",".")) * 10000
-                            acceptedAmount += parseFloat(_.trim(_.get(it,"messageInfo.acceptedAmount","")).replace(".","").replace(",",".")) * 10000
+                            invoicedAmount += parseFloat(_.trim(_.get(it,"messageInfo.invoicedAmount","")).replace(".","").replace(",",".")) * 10000;
+                            acceptedAmount += parseFloat(_.trim(_.get(it,"messageInfo.acceptedAmount","")).replace(".","").replace(",",".")) * 10000;
                             refusedAmount += parseFloat(_.trim(_.get(it,"messageInfo.refusedAmount","")).replace(".","").replace(",",".")) * 10000
-                        })
+                        });
 
                         _.assign(targetMessage, {
                             totalInvoicedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(invoicedAmount/10000)),
@@ -4673,13 +5178,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             totalRefusedAmount: this.api.hrFormatNumber(this.api._powRoundFloatByPrecision(refusedAmount/10000)),
                         })
 
-                    })
+                    });
 
 
 
                     // For us (has to be assigned at once)
-                    this.set("messagesCachedData.dataByStatus", dataByStatus)
-                    this.set("messagesCachedData.countByStatus", countByStatus)
+                    this.set("messagesCachedData.dataByStatus", dataByStatus);
+                    this.set("messagesCachedData.countByStatus", countByStatus);
 
                     // For msg-menu
                     this.dispatchEvent(new CustomEvent('initialize-batch-counter-j20', { bubbles: true, composed: true, detail: this.messagesCachedData.countByStatus }));
@@ -4693,21 +5198,21 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .catch((e)=>console.log(e))
             .finally(()=>{
 
-                this.set("messagesGridData", [])
-                this.set("messagesGridDataReset", [])
+                this.set("messagesGridData", []);
+                this.set("messagesGridDataReset", []);
                 const messagesGrid = this.root.querySelector('#messagesGrid'); messagesGrid && messagesGrid.clearCache();
                 const messagesGrid2 = this.root.querySelector('#messagesGrid2'); messagesGrid2 && messagesGrid2.clearCache();
                 const messagesGrid3 = this.root.querySelector('#messagesGrid3'); messagesGrid3 && messagesGrid3.clearCache();
 
-                this.set("messagesGridData", this._getBatchDataByMenuSection(this.flatrateMenuSection, 'flatFiles'))
-                this.set("messagesGridDataReset", _.get(this, "messagesCachedData.dataByStatus.reset.flatFiles", []))
+                this.set("messagesGridData", this._getBatchDataByMenuSection(this.flatrateMenuSection, 'flatFiles'));
+                this.set("messagesGridDataReset", _.get(this, "messagesCachedData.dataByStatus.reset.flatFiles", []));
 
                 messagesGrid && messagesGrid.clearCache();
                 messagesGrid2 && messagesGrid2.clearCache();
                 messagesGrid3 && messagesGrid3.clearCache();
 
-                this.set('_isLoadingSmall', false )
-                this.api.setPreventLogging(false)
+                this.set('_isLoadingSmall', false );
+                this.api.setPreventLogging(false);
                 return prom
 
             })
@@ -4716,7 +5221,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _getPatientsWithValidInvoiceForExportedMonth(patients, exportedMonth) {
 
-        let prom = Promise.resolve([])
+        let prom = Promise.resolve([]);
 
         _.map(patients, pat => {
             prom = prom.then(promisesCarrier => this.api.invoice().findBy(_.get(this,"user.healthcarePartyId"), pat)
@@ -4730,9 +5235,123 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 .then(patId => _.concat(promisesCarrier, [patId]))
                 .catch(()=>_.concat(promisesCarrier, [false]))
             )
-        })
+        });
 
         return prom.then(x=>_.compact(x))
+
+    }
+
+    _isBeforeEInvoicingDate() {
+        return moment().isBefore(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
+    }
+
+    _isAfterEInvoicingDate() {
+        return moment().isAfter(moment(this.api.flatRateEInvoicingDate,"YYYYMM")) || moment().isSame(moment(this.api.flatRateEInvoicingDate,"YYYYMM"));
+    }
+
+    _getStatusHr(status) {
+
+        return !!(status & (1 << 22)) ? "errorsInPreliminaryControl" :
+            !!(status & (1 << 21)) ? "archived" :
+            !!(status & (1 << 18)) ? "analyzed" :
+            !!(status & (1 << 17)) ? "error" :
+            !!(status & (1 << 16)) ? "partiallyAccepted" :
+            !!(status & (1 << 15)) ? "fullyAccepted" :
+            !!(status & (1 << 12)) ? "rejected" :
+            !!(status & (1 << 11)) ? "treated" :
+            !!(status & (1 << 10)) ? "acceptedForTreatment" :
+            !!(status & (1 << 9))  ? "successfullySentToOA" :
+            !!(status & (1 << 8))  ? "pending" :
+            !!(status & (1 << 7))  ? "sent" :
+            !!(status & (1 << 6))  ? "efact" :
+            ""
+
+    }
+
+    _getInvoicesToResendFromPreviousExports(exportedDate) {
+
+        // Check for existing exports - did it run already? - do we have anything to run again for this month?
+        //     1. Get existing messages of month we're trying to export
+        //     2. No message found -> allow to run. Only of status fullyAccepted / pending -> don't allow to run again. If some of status archived / error / partiallyAccepted / rejected -> allow to run again (after checking invoicingCode booleans).
+        //     3. Take & resolve invoiceIds
+        //     4. Only keep (old) invoices with a correctiveInvoiceId
+        //     5. Resolve corrective invoices & drop already sent ones
+        //     6. Filter inv.invoicingCodes based on all bool false but "pending" === true (when BOTH pending & resent are true -> invoice will appear under "Invoices to be corrected" / customer has to flag as being corrected)
+        //     7. One+ record found? Export may run again
+        return this.api.getRowsUsingPagination(
+            (key,docId) =>
+                this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-FLATFILE', null, key, docId, 1000)
+                    .then(pl => { return {
+                        rows:_.filter(pl.rows, it => {
+                            it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
+                            return it &&
+                                _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                                _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                                parseInt(_.get(it,"metas.batchExportTstamp",0)) &&
+                                parseInt(_.size(_.get(it,"invoiceIds",[]))) &&
+                                (parseInt(_.get(it,"metas.exportedDate","")) === parseInt(exportedDate) || parseInt(_.get(it,"metas.exportedDate","")) < parseInt(exportedDate)) // Either current month Or before, NEVER take resent invoices "in the future"
+                        }),
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }})
+                    .catch(()=>{ return Promise.resolve(); })
+        ).then(foundMessages=> {
+
+            // Export already ran this month - any message at all?
+            if(_.size(_.get(this,"flatRateInvoicingDataObject",{}))) this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt(_.size(_.filter(foundMessages, m => _.trim(_.get(m,"metas.exportedDate",0)) === _.trim(exportedDate))));
+
+            // Invoices / no invoices to resend
+            return !parseInt(_.size(foundMessages)) ? [] :
+
+                // All are pending or fully accepted, nothing to resend
+                !parseInt( _.size(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }))) ? [] :
+
+                    this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.flatMap(_.map(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }), "invoiceIds"))))}))
+                        .then(invoicesToBeCorrected => !parseInt(_.size(invoicesToBeCorrected)) ? [] :
+                            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))}))
+                                .then(correctiveInvoices => !parseInt(_.size(correctiveInvoices)) ? [] :
+                                    _.compact(
+                                        _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
+                                            // Make sure I have to take it into account (all false but the pending bool)
+                                            const invoicingCodes = _.get(inv, "invoicingCodes", []);
+                                            return !parseInt(_.size(invoicingCodes)) ? false :
+                                                _.every(invoicingCodes, ic => {
+                                                    return _.get(ic,"accepted",false)===false
+                                                        && _.get(ic,"archived",false)===false
+                                                        && _.get(ic,"canceled",false)===false
+                                                        && _.get(ic,"resent",false)===false
+                                                        && _.get(ic,"lost",false)===false
+                                                        && _.get(ic,"pending",false)===true
+                                                }) ? inv : false
+                                        })
+                                    )
+                                ).catch(e => { console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))); console.log(e); return false; })
+                        ).catch(e => { console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds"))))); console.log(e); return false; })
+        })
+
+    }
+
+    _getInvoicesToAddFromTimeline(exportedDate) {
+
+        const flatRateUtil = this.$.flatrateUtils;
+
+        // Go for any invoice(s) to be added in the batch (could be manually created using PAT's timeline (timeline && pat-flatrate-utils)
+        // For performance purposes, such invoices could be found by scanning for messages with transportGuid "MH:FLATRATE:INVOICE-TO-ADD" (current or previous month allowed, never in the future), then go for the invoiceIds
+        return flatRateUtil.getInvoicesToAddFromTimelineByMaxExportDate(parseInt(exportedDate))
+            .then(invoicesToAdd => _.map(invoicesToAdd, inv => {
+                // Make sure I have to take it into account (all false but the pending bool)
+                const invoicingCodes = _.get(inv, "invoicingCodes", []);
+                return !parseInt(_.size(invoicingCodes)) ? false :
+                    _.every(invoicingCodes, ic => {
+                        return _.get(ic,"accepted",false)===false
+                            && _.get(ic,"archived",false)===false
+                            && _.get(ic,"canceled",false)===false
+                            && _.get(ic,"resent",false)===false
+                            && _.get(ic,"lost",false)===false
+                            && _.get(ic,"pending",false)===true
+                    }) ? inv : false
+            }))
 
     }
 
@@ -4746,6 +5365,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
         // Force refresh - could be new "valorisation" / bce / bank account / contact person / ... was just set
         if(_.size(_.get(this.api.hcparty().cache, _.get(this.user, "healthcarePartyId", "" )))) delete this.api.hcparty().cache[_.get(this.user, "healthcarePartyId", "" )];
+
+        // Make sure we won't get disconnected if process runs for over an hour
+        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}));
 
         this.api.hcparty().getHealthcareParty(_.get(this.user, "healthcarePartyId", "" )) //0
             .then(hcp => { //1
@@ -4780,8 +5402,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     pendingInvoicesToResend: [],
                     pendingInvoicesAndPatToResend: [],
                     hcpValorisationsByMonth: []
-                }
-                this.reportCurrentDateMomentObject = moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                };
+                this.reportCurrentDateMomentObject = moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD");
                 this.flatRateInvoicingDataObject.hcpData = _.merge(this.flatRateInvoicingDataObject.hcpData, {
                     phone: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "phone"}), "[0].telecomNumber", "")) || _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "mobile"}), "[0].telecomNumber", "")),
                     email: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "email"}), "[0].telecomNumber", "")),
@@ -4791,7 +5413,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         bic: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bic", "")) || this.api.getBicByIban(_.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bankAccount", ""))),
                         name: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.name", "")),
                     }
-                })
+                });
 
 
                 // Make sure - refuse to proceed if missing
@@ -4807,11 +5429,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 this.api.hcparty().getHealthcareParty(_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.contactPersonHcpId")))
                     .then(hcpContactPerson => {
                         if (!_.size(hcpContactPerson) || !_.trim(_.get(hcpContactPerson, "id", "")) || !_.trim(_.get(hcpContactPerson, "lastName", "")) || !_.trim(_.get(hcpContactPerson, "firstName", ""))) throw new Error("missing-contact-person");
-                        const contactPerson = _.trim(_.trim(_.get(hcpContactPerson, "lastName", "")) + " " + _.trim(_.get(hcpContactPerson, "firstName", "")))
+                        const contactPerson = _.trim(_.trim(_.get(hcpContactPerson, "lastName", "")) + " " + _.trim(_.get(hcpContactPerson, "firstName", "")));
                         this.set("contactPerson", contactPerson);
                         this.flatRateInvoicingDataObject.hcpData.contactPerson = contactPerson
                     })
-                    .catch((e) => { throw new Error("missing-contact-person"); })
+                    .catch((e) => { throw new Error("missing-contact-person"); });
 
 
                 // Get valorisations for last X months - as of export date
@@ -4848,7 +5470,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                 ["startOfValidity"],
                                                 ["desc"]
                                             )
-                                        )
+                                        );
                                         return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
                                             code: _.trim(_.get(singleNomenclature, "code")),
                                             label: _.get(singleNomenclature, "label"),
@@ -4861,12 +5483,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             )
                         )
                     }
-                })
+                });
 
 
                 // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
-                const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
-                const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ))
+                const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("");
+                const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ));
 
                 // At least one MH valorisation is missing
                 if (
@@ -4877,114 +5499,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                 return null
 
             }) //1
-            .then(()=>{ //2
-
-                // Make sure we won't get disconnected if process runs for over an hour
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
-
-                // Check for existing exports - did it run already? - do we have anything to run again for this month?
-                //     1. Get existing messages of month we're trying to export
-                //     2. No message found -> allow to run. Only of status fullyAccepted / pending -> don't allow to run again. If some of status archived / error / partiallyAccepted / rejected -> allow to run again (after checking invoicingCode booleans).
-                //     3. Take & resolve invoiceIds
-                //     4. Only keep (old) invoices with a correctiveInvoiceId
-                //     5. Resolve corrective invoices & drop already sent ones
-                //     6. Filter inv.invoicingCodes based on all bool false but "pending" === true (when BOTH pending & resent are true -> invoice will appear under "Invoices to be corrected" / customer has to flag as being corrected)
-                //     7. One+ record found? Export may run again
-                return this.api.getRowsUsingPagination(
-                    (key,docId) =>
-                        this.api.message().findMessagesByTransportGuid('MH:FLATRATE:INVOICING-FLATFILE', null, key, docId, 1000)
-                            .then(pl => { return {
-                                rows:_.filter(pl.rows, m => {
-                                    m.evaluatedStatus =
-                                        !!(m.status & (1 << 21)) ? "archived" :
-                                            !!(m.status & (1 << 17)) ? "error" :
-                                                !!(m.status & (1 << 16)) ? "partiallyAccepted" :
-                                                    !!(m.status & (1 << 15)) ? "fullyAccepted" :
-                                                        !!(m.status & (1 << 12)) ? "rejected" :
-                                                            !!(m.status & (1 << 11)) ? "treated" :
-                                                                !!(m.status & (1 << 10)) ? "acceptedForTreatment" :
-                                                                    !!(m.status & (1 << 9))  ? "successfullySentToOA" :
-                                                                        !!(m.status & (1 << 8))  ? "pending" :
-                                                                            ""
-                                    return m
-                                        && _.get(m,'fromHealthcarePartyId',false)===this.user.healthcarePartyId
-                                        && _.get(m, "recipients", []).indexOf(this.user.healthcarePartyId) > -1
-                                        && parseInt( _.get(m, "metas.batchExportTstamp", 0) )
-                                        && parseInt( _.size( _.get(m, "invoiceIds", [] ) ) )
-                                        && (
-                                            parseInt( _.get(m, "metas.exportedDate", "" ) ) === parseInt(this.flatRateInvoicingDataObject.exportedDate)     // Either current month
-                                            || parseInt( _.get(m, "metas.exportedDate", "" ) ) < parseInt(this.flatRateInvoicingDataObject.exportedDate)    // Or before, NEVER take resent invoices "in the future"
-                                        )
-                                }),
-                                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                                done: !pl.nextKeyPair
-                            }})
-                            .catch(()=>{ return Promise.resolve(); })
-                ).then(foundMessages=> {
-
-                    // Export already ran this month - any message at all?
-                    this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth = !!parseInt( _.size(_.filter(foundMessages, m=>{return _.trim(_.get(m,"metas.exportedDate",0))=== _.trim(this.flatRateInvoicingDataObject.exportedDate) })) )
-
-                    // Invoices / no invoices to resend
-                    return !parseInt(_.size(foundMessages)) ? [] :
-
-                        // All are pending or fully accepted, nothing to resend
-                        !parseInt( _.size(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }))) ? [] :
-
-                            this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.flatMap(_.map(_.filter(foundMessages, msg => { return ["archived","error","partiallyAccepted","rejected"].indexOf(msg.evaluatedStatus) > -1 }), "invoiceIds"))))}))
-                                .then(invoicesToBeCorrected => !parseInt(_.size(invoicesToBeCorrected)) ? [] :
-                                    this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))}))
-                                        .then(correctiveInvoices => !parseInt(_.size(correctiveInvoices)) ? [] :
-                                            _.compact(
-                                                _.filter(correctiveInvoices, i => !_.trim(_.get(i, "sentDate", ""))).map(inv => {
-                                                    // Make sure I have to take it into account (all false but the pending bool)
-                                                    const invoicingCodes = _.get(inv, "invoicingCodes", [])
-                                                    return !parseInt(_.size(invoicingCodes)) ? false :
-                                                        _.every(invoicingCodes, ic => {
-                                                            return _.get(ic,"accepted",false)===false
-                                                                && _.get(ic,"archived",false)===false
-                                                                && _.get(ic,"canceled",false)===false
-                                                                && _.get(ic,"resent",false)===false
-                                                                && _.get(ic,"lost",false)===false
-                                                                && _.get(ic,"pending",false)===true
-                                                        }) ? inv : false
-                                                })
-                                            )
-                                        )
-                                        .catch(e => { console.log("Could not getInvoices (corrective ones) by ", _.compact(_.uniq(_.map(_.filter(invoicesToBeCorrected, _.trim("correctiveInvoiceId")), "correctiveInvoiceId")))); console.log(e); return false; })
-                                )
-                                .catch(e => { console.log("Could not getInvoices (to be corrected) by ", _.compact(_.uniq(_.flatMap(_.map(foundMessages, "invoiceIds"))))); console.log(e); return false; })
-                })
-
-            }) //2
-            .then(pendingInvoicesToResend => {
-
-                // Go for any invoice(s) to be added in the batch (could be manually created using PAT's timeline (timeline && pat-flatrate-utils)
-                // For performance purposes, such invoices could be found by scanning for messages with transportGuid "MH:FLATRATE:INVOICE-TO-ADD" (current or previous month allowed, never in the future), then go for the invoiceIds
-                return flatRateUtil.getInvoicesToAddFromTimelineByMaxExportDate(parseInt(_.get(this,"flatRateInvoicingDataObject.exportedDate")))
-                    .then(invoicesToAdd => _
-                        .chain(invoicesToAdd)
-                        .map(inv => {
-                            // Make sure I have to take it into account (all false but the pending bool)
-                            const invoicingCodes = _.get(inv, "invoicingCodes", [])
-                            return !parseInt(_.size(invoicingCodes)) ? false :
-                                _.every(invoicingCodes, ic => {
-                                    return _.get(ic,"accepted",false)===false
-                                        && _.get(ic,"archived",false)===false
-                                        && _.get(ic,"canceled",false)===false
-                                        && _.get(ic,"resent",false)===false
-                                        && _.get(ic,"lost",false)===false
-                                        && _.get(ic,"pending",false)===true
-                                }) ? inv : false
-                        })
-                        .concat((pendingInvoicesToResend||[]))
-                        .value()
-                    )
-            }) // 2 Bis
+            .then(() => this._getInvoicesToResendFromPreviousExports(this.flatRateInvoicingDataObject.exportedDate)) //2
+            .then(pendingInvoicesToResend => this._getInvoicesToAddFromTimeline(_.get(this,"flatRateInvoicingDataObject.exportedDate")).then(invoicesToAddFromTimeline => _.concat(invoicesToAddFromTimeline, (pendingInvoicesToResend||[])) )) // 2 Bis
             .then(pendingInvoicesToResend => { //3
-                if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran")
-                this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend
+                if(!parseInt(_.size(pendingInvoicesToResend)) && !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth) throw new Error("export-already-ran");
+                this.flatRateInvoicingDataObject.pendingInvoicesToResend = pendingInvoicesToResend;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_2',this.language), icon:"arrow-forward"});
                 return !!this.flatRateInvoicingDataObject.exportAlreadyRanThisMonth ? false : this._getPatientsByHcp(_.get(this.hcp, "id")).then(myPatients => _
@@ -5007,12 +5526,12 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
                         .then(invoicesAndPatient=>{
                             invoicesAndPatient = _.compact(_.map(invoicesAndPatient, invAndPat => {
-                                let tempPat = _.cloneDeep(invAndPat[1])
-                                tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{})
-                                tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"")
-                                tempPat.lastName = (tempPat.lastName||"").toUpperCase()
-                                tempPat.firstName = (tempPat.firstName||"").toUpperCase()
-                                tempPat.dateOfBirth = (tempPat.dateOfBirth?moment(tempPat.dateOfBirth+"", "YYYYMMDD").format('DD/MM/YYYY'):"")
+                                let tempPat = _.cloneDeep(invAndPat[1]);
+                                tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{});
+                                tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"");
+                                tempPat.lastName = (tempPat.lastName||"").toUpperCase();
+                                tempPat.firstName = (tempPat.firstName||"").toUpperCase();
+                                tempPat.dateOfBirth = (tempPat.dateOfBirth?moment(tempPat.dateOfBirth+"", "YYYYMMDD").format('DD/MM/YYYY'):"");
                                 tempPat.finalInsurability = _.find(
                                     tempPat.insurabilities,
                                     (ins) => {
@@ -5038,24 +5557,24 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                         // When resending a corrective invoice, make sure we match PAT's INS to whom original invoice was sent to
                                         // _.trim(_.get(tempPat,"invoiceToBeResent.recipientId","")) === _.trim(_.get( ins, "insuranceId", "" ))
                                     }
-                                )
-                                tempPat.insurancePersonType = !_.trim( _.get( tempPat, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(tempPat, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C"
-                                tempPat.titularyId = _.trim( _.get( tempPat, "finalInsurability.titularyId", "" ))
-                                invAndPat[1] = tempPat
+                                );
+                                tempPat.insurancePersonType = !_.trim( _.get( tempPat, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(tempPat, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C";
+                                tempPat.titularyId = _.trim( _.get( tempPat, "finalInsurability.titularyId", "" ));
+                                invAndPat[1] = tempPat;
                                 // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
                                 return !_.size(_.get(tempPat,"finalInsurability",[])) ? false : invAndPat
-                            }))
-                            this.flatRateInvoicingDataObject.pendingInvoicesAndPatToResend = invoicesAndPatient
+                            }));
+                            this.flatRateInvoicingDataObject.pendingInvoicesAndPatToResend = invoicesAndPatient;
                             return { myPatients: _.compact(myPatients), myPatientsToResend: _.compact(_.map(invoicesAndPatient,x=>x[1])) }
                         })
             }) //4
             .then(patsAndPatsToResend=>{
 
                 // PATS of mine, to be invoiced this month
-                let myPatients = patsAndPatsToResend.myPatients
+                let myPatients = patsAndPatsToResend.myPatients;
 
                 // PATS of previous invoices (either rejected + corrected OR from PAT's timeline)
-                const myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend)
+                const myPatientsToResend = _.cloneDeep(patsAndPatsToResend.myPatientsToResend);
 
                 // If same PAT of same INS -> collect all invoicing codes under 1! invoice
                 // If same PAT with different INS -> duplicate PAT with all invoicing codes of THAT INS (and append invoicing codes when already existing)
@@ -5067,7 +5586,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     const patWithThatIns = _.find(myPatients, pat => { return pat &&
                         _.trim(_.get(pat,"ssin","")) === _.trim(_.get(patToResend,"ssin","")) &&
                         _.trim(_.get(pat,"finalInsurability.insuranceId","")) === _.trim(_.get(patToResend,"finalInsurability.insuranceId",""))
-                    })
+                    });
                     if(_.size(patWithThatIns)) {
                         patWithThatIns.invoiceToBeResent = _.concat((patWithThatIns.invoiceToBeResent||[]), patToResend.invoiceToBeResent)
                     }
@@ -5076,7 +5595,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         patToResend.invoiceToBeResent = [patToResend.invoiceToBeResent];
                         myPatients.push(patToResend);
                     }
-                })
+                });
 
                 // Todo: refactor this:
                 // Either is not a resent -> can let go as below
@@ -5091,7 +5610,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 .chain(pat.medicalHouseContracts||[])
                                 .filter(mhc => {
                                     // Eval final MHC either based on export date OR based on resent invoice date
-                                    let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                                    let mhcExportDateOrResentDate = !!parseInt(_.size(_.get(pat,"invoiceToBeResent[0]",[]))) ? moment(_.trim(_.get(pat,"invoiceToBeResent[0].invoiceDate",0)),"YYYYMMDD") : moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD");
                                     return (
                                         !!mhc &&
                                         !!_.size(mhc) &&
@@ -5124,9 +5643,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             ["desc"]
                         ),
                         "[0]", []
-                    )
+                    );
                     return _.size( pat.finalMedicalHouseContracts ) ? pat : false
-                }))
+                }));
 
 
 
@@ -5139,31 +5658,31 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             pat.finalMedicalHouseContracts,
                             {startOfCoverage: parseInt(moment(_.trim(_.get(pat.finalMedicalHouseContracts, "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').format("YYYYMMDD"))}
                         )
-                })
+                });
 
-                this.flatRateInvoicingDataObject.patientsData = myPatients
+                this.flatRateInvoicingDataObject.patientsData = myPatients;
                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3',this.language), icon:"arrow-forward"});
                 return this._getInsuranceTitularyInfo(myPatients)
 
             }) //5
             .then((myPatientsWithInsuranceTitularyInfo)=>{
-                this.flatRateInvoicingDataObject.patientsData = myPatientsWithInsuranceTitularyInfo
+                this.flatRateInvoicingDataObject.patientsData = myPatientsWithInsuranceTitularyInfo;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4',this.language), icon:"arrow-forward"});
                 return this._getInsurancesDataByPatientsList(myPatientsWithInsuranceTitularyInfo).then(x=>x)
             }) //6
             .then((insurancesData)=>{
-                this.flatRateInvoicingDataObject.insurancesData = insurancesData
+                this.flatRateInvoicingDataObject.insurancesData = insurancesData;
                 return this._getIOsDataByInsurancesList(this.flatRateInvoicingDataObject.insurancesData).then(x=>x);}) //7
             .then((iosData) => {
                 // Ins 306 has to be seen as a child of 300
                 return this._getInsurancesDataByCode(300)
                     .then(ins300=>{
-                        iosData = parseInt(_.size(_.filter(iosData, {code:"300"}))) ? iosData : _.size(_.filter(iosData, {code:"306"})) ? _.sortBy(_.concat(iosData, _.head(ins300)), "code") : iosData
-                        _.remove(iosData, i=>_.trim(_.get(i,"code",""))==="306")
-                        this.flatRateInvoicingDataObject.iosData = iosData
-                        this.flatRateInvoicingDataObject.insurancesData = _.map(this.flatRateInvoicingDataObject.insurancesData, ins => { if(_.trim(_.get(ins, "code", "")) === "306") ins.parent = _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {code:"300"}), "[0].id", "")); return ins })
+                        iosData = parseInt(_.size(_.filter(iosData, {code:"300"}))) ? iosData : _.size(_.filter(iosData, {code:"306"})) ? _.sortBy(_.concat(iosData, _.head(ins300)), "code") : iosData;
+                        _.remove(iosData, i=>_.trim(_.get(i,"code",""))==="306");
+                        this.flatRateInvoicingDataObject.iosData = iosData;
+                        this.flatRateInvoicingDataObject.insurancesData = _.map(this.flatRateInvoicingDataObject.insurancesData, ins => { if(_.trim(_.get(ins, "code", "")) === "306") ins.parent = _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {code:"300"}), "[0].id", "")); return ins });
                         return null
                     })
                     .then(()=>{
@@ -5171,19 +5690,19 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                         this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_5',this.language), icon:"arrow-forward"});
 
-                        const listsData = { list5: [], list6: [], list8: [] }
+                        const listsData = { list5: [], list6: [], list8: [] };
 
                         // Eval pat's list 5/6/8
                         _.map(this.flatRateInvoicingDataObject.patientsData, pat => {
 
                             // None of the contracts -> Drop (Valid INS vs. exported date and valid MHC vs. exported date are already checked against at this stage)
-                            if(!(_.get(pat, "finalMedicalHouseContracts.gp", false) || _.get(pat, "finalMedicalHouseContracts.kine", false) || _.get(pat, "finalMedicalHouseContracts.nurse", false))) return false
+                            if(!(_.get(pat, "finalMedicalHouseContracts.gp", false) || _.get(pat, "finalMedicalHouseContracts.kine", false) || _.get(pat, "finalMedicalHouseContracts.nurse", false))) return false;
 
                             // Can only be a resent if for current exported month THAT PAT with THAT INS doesn't exist (most likely rejected+correct invoice OR invoice create via timeline AND for another INS)
                             // Ie: isResent is evaluated on BOTH pat's NISS AND pat's INS (between existing pats and pats to resend -> rejected+correct OR timeline)
-                            const isResent = _.get(pat, "isResent", false)
-                            const mhcStartOfCoverage = moment(_.get(pat,"finalMedicalHouseContracts.startOfCoverage"), "YYYYMMDD").startOf("month")
-                            const mhcStartOfContract = moment(_.get(pat,"finalMedicalHouseContracts.startOfContract"), "YYYYMMDD").startOf("month")
+                            const isResent = _.get(pat, "isResent", false);
+                            const mhcStartOfCoverage = moment(_.get(pat,"finalMedicalHouseContracts.startOfCoverage"), "YYYYMMDD").startOf("month");
+                            const mhcStartOfContract = moment(_.get(pat,"finalMedicalHouseContracts.startOfContract"), "YYYYMMDD").startOf("month");
 
                             // When is a resent -> Only look at the most recent invoice to define which list pat belongs to (remember: if original invoices of list 5/6 are to be resent: patient is known by now -> list 8).
                             // When not a resent = patient IS to be exported for this month (even though may have invoices to resend) -> always look at the month's exported date (at it will be the most recent date, we never re-invoice data of the future)
@@ -5193,21 +5712,21 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 .head()
                                 .get("invoiceDate")
                                 .value()
-                            ),"YYYYMMDD").startOf("month").subtract(1, "month")
+                            ),"YYYYMMDD").startOf("month").subtract(1, "month");
 
                             // List 5 = New patients WITHOUT tryout (double amounts / must appear twice): Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month === Start of month of contract
                             // List 6 = New patients WITH tryout (double amounts / must appear twice) - Start of month of start cover must be EQUAL TO (start of export month -1 month) - AND Start of month of cover - 1 month > Start of month of contract
                             // List 8 = "Old" patients: Start of month of start cover must be BEFORE (start of export month -1 month) - (Ie: start of coverage began 2+ month before exported month)
-                            const isList5 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isSame(mhcStartOfContract)
-                            const isList6 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isAfter(mhcStartOfContract)
-                            const isList8 = mhcStartOfCoverage.isBefore(compareDate)
+                            const isList5 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isSame(mhcStartOfContract);
+                            const isList6 = mhcStartOfCoverage.isSame(compareDate) && (_.cloneDeep(mhcStartOfCoverage).subtract(1, 'month')).isAfter(mhcStartOfContract);
+                            const isList8 = mhcStartOfCoverage.isBefore(compareDate);
 
                             return isList8 ? listsData.list8 = _.concat(listsData.list8, [pat]) :
                                 isList5 ? listsData.list5 = _.concat(listsData.list5, [pat]) :
                                     isList6 ? listsData.list6 = _.concat(listsData.list6, [pat]) :
                                         false
 
-                        })
+                        });
 
                         return listsData;
 
@@ -5216,17 +5735,17 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //8
             .then((listsData)=> {
 
-                this.flatRateInvoicingDataObject.listsData = listsData
-                this.flatRateInvoicingDataObject.invoicesToBeModified = []
+                this.flatRateInvoicingDataObject.listsData = listsData;
+                this.flatRateInvoicingDataObject.invoicesToBeModified = [];
 
                 // Drop patients we couldn't find in list (no valorisation)
-                const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i => i.id))) || []
-                this.flatRateInvoicingDataObject.patientsData = _.compact(_.map(this.flatRateInvoicingDataObject.patientsData, i => patientsInLists.indexOf(_.trim(i.id)) > -1 ? i : false))
-                if (!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData) || 0)) throw new Error("no-data-to-export")
+                const patientsInLists = _.uniq(_.compact(_.flatMap(_.get(this, "flatRateInvoicingDataObject.listsData", {})).map(i => i.id))) || [];
+                this.flatRateInvoicingDataObject.patientsData = _.compact(_.map(this.flatRateInvoicingDataObject.patientsData, i => patientsInLists.indexOf(_.trim(i.id)) > -1 ? i : false));
+                if (!parseInt(_.size(this.flatRateInvoicingDataObject.patientsData) || 0)) throw new Error("no-data-to-export");
 
                 // Drop when not in use
-                this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) || []).indexOf(_.trim(i.id)) > -1 ? i : false))
-                this.flatRateInvoicingDataObject.iosData = _.compact(_.map(this.flatRateInvoicingDataObject.iosData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ? i : false))
+                this.flatRateInvoicingDataObject.insurancesData = _.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.patientsData, pat => _.get(pat, "finalInsurability.insuranceId", "")))) || []).indexOf(_.trim(i.id)) > -1 ? i : false));
+                this.flatRateInvoicingDataObject.iosData = _.compact(_.map(this.flatRateInvoicingDataObject.iosData, i => !!(_.uniq(_.compact(_.map(this.flatRateInvoicingDataObject.insurancesData, oa => _.get(oa, "parent", ""))))).indexOf(_.trim(i.id)) > -1 ? i : false));
 
                 this._setLoadingMessage({message: this.localize('mhListing.spinner.step_5_done', this.language),icon: "check-circle",updateLastMessage: true,done: true});
                 this._setLoadingMessage({message: this.localize('mhInvoicing.spinner.step_4', this.language),icon: "arrow-forward"});
@@ -5236,8 +5755,8 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             .then(() => {
                 return Promise.all(_.toPairs(this.flatRateInvoicingDataObject.listsData).map(list => {
 
-                    const typeList = list[0]
-                    const patientList = list[1]
+                    const typeList = list[0];
+                    const patientList = list[1];
                     const codesList = typeList === "list5" || typeList === "list6" ?
                         // Lists 5 & 6 = NEW patients with respectively no tryout ; tryout
                         _.concat(
@@ -5245,7 +5764,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(1,"month").format("YYYYMMDD")))}), "valorisations")
                         ) :
                         // List 8 = old / regular patients
-                        _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations")
+                        _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations");
 
                     return _.compact(_.map(patientList, pat => {
 
@@ -5257,17 +5776,17 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 (code.flatRateType === "nurse" && pat.finalMedicalHouseContracts.nurse === true) ||
                                 (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true)
                             )
-                        )
+                        );
 
                         const additionalInvoicingCodes = _.flatMap(_.map(_.get(pat,"invoiceToBeResent",[]), invoiceToBeResent => {
 
                             // In case we inherit of an invoice to be resent, make sure we don't invoice month to be resent twice
-                            const invoiceCodesToBeDeleted = _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) > -1 )
+                            const invoiceCodesToBeDeleted = _.get(invoiceToBeResent,"invoicingCodes",[]).filter(ic=>_.compact(_.uniq(_.map(originalInvoicingCodes,oic=>_.trim(_.get(oic,"valorisationMonth",0))))).indexOf(_.trim(_.get(ic,"dateCode",0))) > -1 );
 
                             // 1+ times the same invoicing codes ? Update IC codes & DB
                             if( !!parseInt(_.size(invoiceCodesToBeDeleted)) ) {
-                                const newInvoicingCodes = _.compact(_.map(invoiceToBeResent.invoicingCodes, ic => _.compact(_.map(invoiceCodesToBeDeleted,"id")).indexOf(_.trim(_.get(ic,"id",false)))>-1 ? false : ic ))
-                                const invoiceToBeResentWithOmittedDuplicatedInvCodes = _.assign(_.cloneDeep(invoiceToBeResent), {invoicingCodes:newInvoicingCodes})
+                                const newInvoicingCodes = _.compact(_.map(invoiceToBeResent.invoicingCodes, ic => _.compact(_.map(invoiceCodesToBeDeleted,"id")).indexOf(_.trim(_.get(ic,"id",false)))>-1 ? false : ic ));
+                                const invoiceToBeResentWithOmittedDuplicatedInvCodes = _.assign(_.cloneDeep(invoiceToBeResent), {invoicingCodes:newInvoicingCodes});
                                 this.flatRateInvoicingDataObject.invoicesToBeModified.push(invoiceToBeResentWithOmittedDuplicatedInvCodes)
                             }
 
@@ -5281,13 +5800,13 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 })
                             )
 
-                        })||[])
+                        })||[]);
 
                         // Say we generate month 01, then we generate month 02
                         // Then we flag invoices of month 01 as rejected + corrected
                         // Then we re-run month 02
                         // Export should only hold pat X for month 01 but not for month 02
-                        const finalInvoicingCodes = _.compact(_.concat( additionalInvoicingCodes||[], (_.get(this,"flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth",[]).indexOf(_.get(pat,"id")) > -1 ? [] : originalInvoicingCodes) ))
+                        const finalInvoicingCodes = _.compact(_.concat( additionalInvoicingCodes||[], (_.get(this,"flatRateInvoicingDataObject.patientIdsWithValidInvoiceForExportedMonth",[]).indexOf(_.get(pat,"id")) > -1 ? [] : originalInvoicingCodes) ));
 
                         return !_.size(finalInvoicingCodes) ? false : _.assign(pat, {
                             invoicingCodes: _.orderBy(_.map(finalInvoicingCodes, ic => ({
@@ -5317,7 +5836,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         console.log("--- Before generate invoices ---");
                         console.log(_.cloneDeep(this.flatRateInvoicingDataObject));
 
-                        let prom = Promise.resolve([])
+                        let prom = Promise.resolve([]);
                         let invoicesToBeModified = _.cloneDeep(this.flatRateInvoicingDataObject.invoicesToBeModified);
                         return !parseInt(_.size(invoicesToBeModified||[])) ?
                             prom :
@@ -5332,7 +5851,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     .then(()=>this._createOrUpdateMedicalHousePatientsInvoices())
             }) //11
             .then(invoicesData=>{
-                this.flatRateInvoicingDataObject.invoicesData = invoicesData
+                this.flatRateInvoicingDataObject.invoicesData = invoicesData;
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_7',this.language), icon:"arrow-forward"});
                 return this._generateJ20FlatFiles().then(x=>x)
@@ -5352,7 +5871,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         parentOaId: i.io,
                         oaInvoiceIds: i.oaInvoiceIds,
                     }
-                })
+                });
 
                 this.flatRateInvoicingDataObject.generatedFiles.slips = _.map(flatFileObjects,i=>{
                     return {
@@ -5367,7 +5886,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         parentOaId: i.io,
                         oaInvoiceIds: i.oaInvoiceIds,
                     }
-                })
+                });
 
                 this.flatRateInvoicingDataObject = _.merge(this.flatRateInvoicingDataObject,{
                     totalByParentOa: _.map(
@@ -5395,7 +5914,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
                         }
                     )
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.flatFiles.map( singleFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5419,11 +5938,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singleFileObject, {messageId:createdMessage.id})
+                            _.merge(singleFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("text/plain"), name: _.trim(singleFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singleFileObject, {documentId:createdDocument.id})
+                            _.merge(singleFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment flatfile---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5451,11 +5970,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     }))
                                 )
                                 .then(createdMessage => {
-                                    _.merge(singleFileObject, {messageId:createdMessage.id})
+                                    _.merge(singleFileObject, {messageId:createdMessage.id});
                                     return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("text/plain"), name: _.trim(singleFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                                 })
                                 .then(createdDocument => {
-                                    _.merge(singleFileObject, {documentId:createdDocument.id})
+                                    _.merge(singleFileObject, {documentId:createdDocument.id});
                                     return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5467,7 +5986,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 let limit = promiseLimit(100);
                                 return Promise.all(invoices.map(inv => {
                                     return limit(() => {
-                                        inv.sentDate = moment().format("YYYYMMDD")
+                                        inv.sentDate = moment().format("YYYYMMDD");
                                         return retry.retry(() => (this.api.invoice().modifyInvoice(inv).then(inv =>this.api.register(inv,'invoice'))))
                                     })
                                 }))
@@ -5493,9 +6012,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.insurancesData, {id:i.oaId}), "[0].code" )),
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.insurancesData, {id:i.oaId}), "[0].finalName" )),
                         +new Date()
-                    ]).join(" ")) + ".pdf"
+                    ]).join(" ")) + ".pdf";
                     return i;
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.pdfs.map( singlePdfFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5521,11 +6040,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singlePdfFileObject, {messageId:createdMessage.id})
+                            _.merge(singlePdfFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/pdf"), name: _.trim(singlePdfFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singlePdfFileObject, {documentId:createdDocument.id})
+                            _.merge(singlePdfFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5547,9 +6066,9 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {id:i.oaId}), "[0].code" )),
                         _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.iosData, {id:i.oaId}), "[0].finalName" )),
                         +new Date()
-                    ]).join(" ")) + ".pdf"
+                    ]).join(" ")) + ".pdf";
                     return i;
-                })
+                });
 
                 return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.oaPdfs.map( singlePdfFileObject =>  {
                     return this.api.message().newInstance(this.user)
@@ -5575,11 +6094,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             }))
                         )
                         .then(createdMessage => {
-                            _.merge(singlePdfFileObject, {messageId:createdMessage.id})
+                            _.merge(singlePdfFileObject, {messageId:createdMessage.id});
                             return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/pdf"), name: _.trim(singlePdfFileObject.downloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                         })
                         .then(createdDocument => {
-                            _.merge(singlePdfFileObject, {documentId:createdDocument.id})
+                            _.merge(singlePdfFileObject, {documentId:createdDocument.id});
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
@@ -5587,11 +6106,11 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //18
             .then(()=>{
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_5_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8',this.language), icon:"arrow-forward"})
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8',this.language), icon:"arrow-forward"});
                 return this._createMhExportZipArchive().then(x=>x)
             }) //19
             .then(batchZipFileBlob=>{
-                this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob = batchZipFileBlob
+                this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob = batchZipFileBlob;
                 return this.api.message().newInstance(this.user)
                     .then(newMessageInstance => this.api.message().createMessage(
                         _.merge(newMessageInstance, {
@@ -5614,18 +6133,18 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         }))
                     )
                     .then(createdMessage => {
-                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {messageId:createdMessage.id})
+                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {messageId:createdMessage.id});
                         return this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/zip"), name: _.trim(this.flatRateInvoicingDataObject.finalArchive.archiveDownloadFileName)}).then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                     })
                     .then(createdDocument => {
-                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id})
+                        _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id});
                         return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                     })
                     .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
             }) //20
             .then(()=>{
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
-                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"})
+                this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_8',this.language), icon:"arrow-forward"});
                 this.api.triggerFileDownload( this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob, "application/zip", this.flatRateInvoicingDataObject.finalArchive.archiveDownloadFileName )
             }) //21
             .catch((e)=>{
@@ -5643,7 +6162,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             }) //22
             .finally(()=>{
                 console.log(this.flatRateInvoicingDataObject);
-                this.flatRateInvoicingDataObject = {}
+                this.flatRateInvoicingDataObject = {};
                 this.set('_isLoading', false );
                 this.set('activeGridItem', null );
                 this.set('messagesCachedData', null );
@@ -5659,6 +6178,858 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+
+
+
+
+
+
+    // ---------------------------- e-Invoicing ----------------------------
+
+    _e_getCurrentMonthHr() {
+
+      return this.localize('month_' + moment().format('M'),this.language)
+
+    }
+
+    _e_getCurrentYear() {
+
+      return moment().format('YYYY');
+
+    }
+
+    _e_redOrGreenIfEquals(a,b) {
+
+        return a===b ? "darkGreen" : "darkRed"
+
+    }
+
+    _e_returnValueIfEquals(a,b,c) {
+
+        return a===b ? c : ""
+
+    }
+
+    _e_isDone(a,b) {
+
+        // Steps:
+        //     placeMdaRequests
+        //     mdaCheckForResponses
+        //     mdaLastCallResults
+        //     mdaLastCallResultsDetails
+        //     mdaDoInvoicing
+
+        return b==="placeMdaRequests" && b!==a ? "active done" :
+            b==="mdaCheckForResponses" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 && a===b ? "active" :
+            b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            b==="mdaLastCallResultsDetails" && ["mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            ""
+
+    }
+
+    _e_getRootLineStep(a) {
+
+        // Steps:
+        //     placeMdaRequests
+        //     mdaCheckForResponses
+        //     mdaLastCallResults
+        //     mdaLastCallResultsDetails
+        //     mdaDoInvoicing
+
+        return a==="placeMdaRequests" ? 1 :
+            a==="mdaCheckForResponses" ? 2 :
+            a==="mdaLastCallResults" ? 3 :
+            a==="mdaLastCallResultsDetails" ? 4 :
+            a==="mdaDoInvoicing" ? 5 :
+            ""
+
+    }
+
+    _e_mdaCheckForResponsesCountDown() {
+
+        const secondsToWaitBeforeNextCall = parseInt(_.get(this,"mdaRequestsData.nextRequesDate").diff(moment(),"seconds"))||0
+        const hmsDurationsToWait = [
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").hours())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").minutes())),
+            _.trim(parseInt(moment.duration(secondsToWaitBeforeNextCall,"seconds").seconds()))
+        ]
+
+        // Stop calling us back when reached zero && trigger interface updates
+        if(!parseInt(secondsToWaitBeforeNextCall)||parseInt(secondsToWaitBeforeNextCall)<0) {
+
+            this.set("mdaRequestsData.timeToWaitBeforeNextCallHr","00:00:00")
+            this.set("mdaRequestsData.lastCheckedHoursAgo",(parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24) + 1)
+
+            this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
+            this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
+
+            return
+
+        }
+
+        this.set("mdaRequestsData.timeToWaitBeforeNextCallHr",(hmsDurationsToWait[0].length===1?"0":"") + hmsDurationsToWait[0]  + ":" + (hmsDurationsToWait[1].length===1?"0":"") + hmsDurationsToWait[1] + ":" + (hmsDurationsToWait[2].length===1?"0":"") + hmsDurationsToWait[2])
+
+        setTimeout(()=>this._e_mdaCheckForResponsesCountDown(),1000)
+
+    }
+
+    _e_closeMdaRequestsSentDialog() {
+        this._closeDialogs()
+        this._e_loadDataAndgetStep()
+    }
+
+    _e_allowForMdaResponsesCheck(elapsedHoursSinceLastCall) {
+
+        return (parseFloat(elapsedHoursSinceLastCall)||0) > (parseFloat(this.minimumHoursBetweenMdaResponseChecks)||24)
+
+    }
+
+    _e_mdaActiveTabChanged(e) {
+
+        return this._e_gotoMdaTabAndRefreshGrid(_.trim(_.get(e,"detail.value","invalidPatients")))
+
+    }
+
+    _e_missingMdaRequestsResponses() {
+
+        const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
+
+        return !_.size(requestsOriginalMessages) ||
+            _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
+            (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
+
+    }
+
+    _e_gotoMdaTabAndRefreshGrid(tabToGoFor="") {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => {
+                this.set("_isLoading",true)
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => ({
+                patientsWithValidIns: _.filter(_.get(this,"rawMdaResultsGridData",[]), it => _.get(it,"patientHasValidInsurabilityBoolean",false)),
+                patientsWithInvalidIns: _.filter(_.get(this,"rawMdaResultsGridData",[]), it => !_.get(it,"patientHasValidInsurabilityBoolean",false))
+            }))
+            .then(({patientsWithValidIns,patientsWithInvalidIns}) => {
+                this.set("mdaTotalValidPatients", _.size(patientsWithValidIns))
+                this.set("mdaTotalInvalidPatients", _.size(patientsWithInvalidIns))
+                this.set("mdaActiveTab", _.trim(tabToGoFor) ? _.trim(tabToGoFor) : !_.size(patientsWithInvalidIns) ? "validPatients" : "invalidPatients")
+                this.set("mdaResultsGridData", this.mdaActiveTab==="validPatients" ? patientsWithValidIns : patientsWithInvalidIns)
+                this.shadowRoot.querySelector('#mdaResultsDetailsGrid') && this.shadowRoot.querySelector('#mdaResultsDetailsGrid').clearCache()
+            })
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_mdaSearchForPat(e) {
+
+        const promResolve = Promise.resolve()
+        const normalizedKeyword = _.trim(_.get(e,"detail.value","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,"")
+        const dataToSearchOn = _.filter(_.get(this,"rawMdaResultsGridData",[]), it => _.trim(_.get(this,"mdaActiveTab","invalidPatients")) === "invalidPatients" ? !_.get(it,"patientHasValidInsurabilityBoolean",false) : _.get(it,"patientHasValidInsurabilityBoolean",false))
+
+        return !_.size(dataToSearchOn) ? promResolve : promResolve
+            .then(() => {
+                this.set("_isLoading",true)
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => {
+                this.set("mdaResultsGridData", _.filter(dataToSearchOn, it => !_.trim(normalizedKeyword) || _.trim(_.get(it,"normalizedSearchTerms")).indexOf(normalizedKeyword) > -1))
+                this.shadowRoot.querySelector('#mdaResultsDetailsGrid') && this.shadowRoot.querySelector('#mdaResultsDetailsGrid').clearCache()
+            })
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_mdaFlagPatAs(e) {
+
+        const promResolve = Promise.resolve()
+        const dataset = _.get(_.find(_.get(e,"path",[]), it => _.trim(_.get(it,"nodeName"))==="PAPER-BUTTON"),"dataset",{})
+        const oa = _.trim(_.get(dataset,"oa"))
+        const action = _.trim(_.get(dataset,"action"))
+        const reconcileKey = _.trim(_.get(dataset,"reconcileKey"))
+
+        return !oa || !action || !reconcileKey ? promResolve : promResolve
+            .then(() => this.set('_isLoading', true ))
+            .then(() => this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true}))
+            .then(() => {
+                const targetOaPatients = _.get(_.find(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.oa")) === _.trim(oa)), "attachment",[])
+                const targetPatient = _.find(targetOaPatients, {reconcileKey:reconcileKey})
+                _.assign(targetPatient, {patientForcedAsValid:action==="valid"})
+            })
+            .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_getTotalPatsInAllMessages(messages) {
+
+        return _
+            .chain(messages)
+            .map(it => parseInt(_.get(it,"metas.totalPats",0))||0)
+            .compact()
+            .sum()
+            .value()
+
+    }
+
+    _e_getTotalPatsWithValidInsurabilityInAllMessages(messages) {
+
+        return _
+            .chain(messages)
+            .map(it => parseInt(_.get(it,"metas.totalPatsWithValidInsurability",0))||0)
+            .compact()
+            .sum()
+            .value()
+
+    }
+
+    // ---------------------------- e-Invoicing - qry methods ----------------------------
+
+    _e_getPatAndInsOutOfInvoicesToResend(invoicesToResend) {
+
+        return Promise.all(invoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
+            .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
+            .then(invoicesAndPatient => _
+                .chain(invoicesAndPatient)
+                .map(invAndPat => {
+                    let tempPat = _.cloneDeep(invAndPat[1]);
+                    const momentInvoiceDate = moment(_.trim(_.get(invAndPat,"[0].invoiceDate",0)),"YYYYMMDD")
+                    tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{});
+                    tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"");
+                    tempPat.lastName = (_.get(tempPat,"lastName","")).toUpperCase()
+                    tempPat.firstName = (_.get(tempPat,"firstName","")).toUpperCase()
+                    tempPat.dateOfBirth = (!!_.trim(_.get(tempPat,"dateOfBirth",""))?moment(_.trim(_.get(tempPat,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+                    tempPat.finalInsurability = _.find(tempPat.insurabilities,ins =>_.size(ins) &&
+                        _.trim(_.get( ins, "insuranceId", "" )) &&
+                        _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                        _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                        ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                        (moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore(momentInvoiceDate) || moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(momentInvoiceDate) || !parseInt(_.get(ins, "startDate", 0))) &&
+                        (moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(momentInvoiceDate) || moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(momentInvoiceDate) || !parseInt(_.get(ins, "endDate", 0)))
+                    )
+                    // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
+                    return !_.trim(_.get(tempPat,"finalInsurability.insuranceId")) ? false : tempPat
+                })
+                .compact()
+                .value()
+            )
+
+    }
+
+    _e_getPatients(exportedDate) {
+
+        const momentExportedDate = moment(_.trim(exportedDate),"YYYYMMDD")
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, this.user.healthcarePartyId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => _.get(it,"active", true) &&
+                            _.trim(_.get(it,"dateOfBirth", "")) &&
+                            _.size(_.get(it,"insurabilities", [])) &&
+                            _.some(_.get(it, "medicalHouseContracts",[]), mhc => _.trim(_.get(mhc,"hcpId")) === _.trim(this.user.healthcarePartyId)) &&
+                            // Either alive or died "this" month -> still take into account if so
+                            (!parseInt(_.get(it, "dateOfDeath", 0)) || (parseInt(_.get(it, "dateOfDeath", 0)) && moment( _.get(it, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(momentExportedDate.startOf('month')))) &&
+                            _.size(_.get(it, "medicalHouseContracts", []))
+                        )
+                        .map(it => {
+                            it.ssin = _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,"")
+                            it.lastName = (_.get(it,"lastName",""))
+                            it.firstName = (_.get(it,"firstName",""))
+                            it.dateOfBirth = (!!_.trim(_.get(it,"dateOfBirth",""))?moment(_.trim(_.get(it,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+                            it.finalInsurability = _.find(it.insurabilities, ins => _.size(ins) &&
+                                _.trim(_.get( ins, "insuranceId", "" )) &&
+                                _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                                _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                                ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                                (moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore(momentExportedDate, 'date') ||  moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(momentExportedDate, 'date') || !parseInt(_.get(ins, "startDate", 0))) &&
+                                (moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(momentExportedDate, 'date') || moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(momentExportedDate, 'date') || !parseInt(_.get(ins, "endDate", 0)))
+                            )
+                            it.insurancePersonType = !_.trim(_.get(it,"finalInsurability.titularyId","")) ? "T" : (momentExportedDate.diff(moment(_.get(it,"dateOfBirth"+"","0")+"", "DD/MM/YYYY"), 'years') < 18) ? "E" : "C"
+                            it.titularyId = _.trim(_.get(it,"finalInsurability.titularyId",""))
+                            it.finalMedicalHouseContracts = _
+                                .chain(_.get(it, "medicalHouseContracts", []))
+                                .filter(mhc => mhc &&
+                                    (mhc.kine || mhc.gp || mhc.nurse) &&
+                                    _.trim(_.get(mhc,"hcpId", null)) === _.trim(this.user.healthcarePartyId) &&
+                                    _.get(mhc,"startOfContract") &&
+                                    !_.get(mhc,"forcedSuspension", false) &&
+
+                                    // Has to begin in the past
+                                    moment(_.trim(_.get(mhc,"startOfContract")), "YYYYMMDD").startOf('month').isBefore(momentExportedDate) &&
+
+                                    // Either end of contract is in the future or is not set
+                                    (moment(_.trim(_.get(mhc,"endOfContract","0")), "YYYYMMDD").endOf('month').isAfter(momentExportedDate) || !parseInt(_.get(mhc,"endOfContract",0))) &&
+
+                                    // Either start of coverage is before this month AND set OR Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
+                                    (
+                                        (parseInt(_.get(mhc,"startOfCoverage",0)) && moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(momentExportedDate)) ||
+                                        (!parseInt(_.get(mhc,"startOfCoverage",0)) && moment(_.trim(_.get(_.cloneDeep(mhc), "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').isBefore(momentExportedDate))
+                                    ) &&
+
+                                    // Either no startOfSuspension (we ignore suspensions that only have endOfSuspension as they are incomplete data)
+                                    // OR the exportDate is before startOfSuspension
+                                    // OR the exportDate is after endOfSuspension
+                                    (
+                                        (parseInt(_.get(mhc,"startOfSuspension",-1)) < 0) ||
+                                        (parseInt(_.get(mhc,"startOfSuspension",0)) && moment(_.trim(_.get(mhc, "startOfSuspension", "0")), "YYYYMMDD").isAfter(momentExportedDate)) ||
+                                        (parseInt(_.get(mhc,"endOfSuspension",0)) && moment(_.trim(_.get(mhc, "endOfSuspension", 0)), "YYYYMMDD").isBefore(momentExportedDate))
+                                    )
+                                )
+                                .orderBy(["startOfContract"],["desc"])
+                                .head()
+                                .value()
+
+                            // Make sure it exists or set to default = startOfContract + 1 month
+                            _.assign(it.finalMedicalHouseContracts, {startOfCoverage: (parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage")))||0) ? parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage"))) : parseInt(moment(_.trim(_.get(_.cloneDeep(it), "finalMedicalHouseContracts.startOfContract")), "YYYYMMDD").startOf('month').add(1, 'months').format("YYYYMMDD")) })
+
+                            return !_.trim(_.get(it,"finalInsurability.insuranceId")) || !_.trim(_.get(it,"finalMedicalHouseContracts.hcpId",null)) ? false : it
+                        })
+                        .compact()
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(pats => _.orderBy(pats,["lastName","firstName"],["asc","asc"]))
+            .catch(() => Promise.resolve([]))
+
+    }
+
+    _e_getPatientsEligibleForExport(exportedDate) {
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+
+            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
+            .then(() => this._getInvoicesToResendFromPreviousExports(exportedDate))
+
+            // 2 - Get invoices to add from timeline
+            .then(invoicesToResendFromPreviousExports => this._getInvoicesToAddFromTimeline(exportedDate).then(invoicesToAddFromTimeline => _.concat((invoicesToAddFromTimeline||[]),(invoicesToResendFromPreviousExports||[]))))
+
+            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
+            .then(invoicesToResend => !_.size(invoicesToResend) ? Promise.resolve([]) : this._e_getPatAndInsOutOfInvoicesToResend(invoicesToResend))
+
+            // 4 - Get all patients
+            .then(patsToResend => {
+                return this._e_getPatients(exportedDate).then(myPatients => _
+                    .chain(_.concat((myPatients||[]),(patsToResend||[])))
+                    .map(it => { return {
+                        patientId: _.trim(_.get(it,"id")),
+                        patientSsin: _.trim(_.get(it,"ssin")),
+                        nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
+                        insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
+                        patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
+                        startDate: parseInt(moment(_.trim((parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)),"YYYYMMDD").subtract(1, 'months').format("YYYYMMDD")), // Always one month before
+                        reconcileKey: this.api.crypto().randomUuid()
+                    }})
+                    .map(it => _.assign(it, {endDate: parseInt(moment(_.get(_.cloneDeep(it),"startDate"),"YYYYMMDD").add(1, 'months').format("YYYYMMDD"))}))
+                    .filter(it => _.trim(it.insuranceId) && (_.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber)))
+                    .orderBy(["patientSsin","patientId", "startDate"], ["asc","asc","desc"])
+                    .value()
+                )
+            })
+
+    }
+
+    _e_getAsyncMemberDataRequest(oa, requestedData, requestId) {
+
+        // Todo
+        // Should be something like: this.api.fhc().MemberDataController().getAsyncMemberData()
+        // OR wait for Max's input on async MDA batch call
+
+        // Todo
+        // Call oa (100/200/300/...), with requestedData (=list of pats) and pass our own requestId (as reference)
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(()=>this._sleep(500)) // Pretend call happened for the moment
+            .then(()=>_.assign({},{
+                message: "MDA fake answer",
+                oa: oa,
+                requestId: requestId,
+                mdaInputReference: this.api.crypto().randomUuid(), // This should come from OA = the REQUEST inputReference
+            }))
+            .catch(()=>null)
+
+    }
+
+    _e_getAsyncMemberDataResponse(oa, mdaInputReference) {
+
+        // Todo
+        // Should be something like: this.api.fhc().MemberDataController().getAsyncMemberData()
+        // OR wait for Max's input on async MDA batch call
+
+        // Todo
+        // Call oa (100/200/300/...), with mdaInputReference (= the oa's reference to our REQUEST original call)
+        // The "mdaInputReference" below is the answer of OA/Mda when getting the RESPONSE back
+
+        // Todo
+        // If successfull response -> confirm back to WS
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(()=>this._sleep(500)) // Pretend call happened for the moment
+            .then(() => _
+                .chain(this.mdaRequestsData.messages)
+                .cloneDeep()
+                .map(it => {return {
+                    oa:_.get(it,"metas.oa"),
+                    mdaInputReference: this.api.crypto().randomUuid(), // This should come from OA = the RESPONSE inputReference
+                    patients: _.map(_.get(it,"attachment"), pats => _.omit(pats,["patientId","insuranceCode","nameHr"])).map(pat => {pat.mdaResponsePatientHasValidInsurability=!!(Math.floor(Math.random() * 10)%2); return pat;})
+                }})
+                .find(it => it.oa === _.trim(oa))
+                .value()
+            )
+            .catch(()=>null)
+
+    }
+
+    _e_placeMdaRequests() {
+
+        const promResolve = Promise.resolve();
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
+            })
+
+            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
+            // 2 - Get invoices to add from timeline
+            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
+            // 4 - Get all patients of mine
+            .then(() => this._e_getPatientsEligibleForExport(exportedDate))
+
+            // 5 - Resolve insurances
+            .then(pats => {
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3',this.language), icon:"arrow-forward"})
+                return this._getInsurancesDataByIds(_.uniq(_.map(pats, "insuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceId:_.trim(_.get(_.find(insurances, {id:it.insuranceId}),"parent")), insuranceCode:_.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code"))})))
+            })
+
+            // 6 - Resolve OAs
+            .then(pats => this._getInsurancesDataByIds(_.uniq(_.map(pats, "parentInsuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceCode:_.trim(_.get(_.find(insurances, {id:it.parentInsuranceId}),"code"))}))))
+
+            // 7 - Save MDA requests
+            .then(pats => !_.size(pats) ? promResolve : promResolve.then(() => {
+
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language), icon:"arrow-forward"})
+
+                let prom = Promise.resolve([]);
+                const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
+
+                _.map(mdaRequestedDataByOa, (v,oa) => {
+                    v = _.map((v||[]),it=>_.omit(it,["insuranceId","parentInsuranceId","parentInsuranceCode"]))
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                        .then(promisesCarrier => this.api.message().newInstance(this.user)
+                            .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+                                transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
+                                recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                                recipients: [this.user.healthcarePartyId],
+                                toAddresses: [this.user.healthcarePartyId],
+                                metas: {
+                                    oa: _.trim(oa),
+                                    requestId: "oa-" + _.trim(oa) + "-" + exportedDate + "-" + this.api.crypto().randomUuid(),
+                                    requestDate: moment().format("YYYYMMDDHHmmss"),
+                                    requestedDate: exportedDate,
+                                    mdaInputReference: "",
+                                    responseMessageId: "",
+                                    responseDate: "",
+                                    responseLastCheckDate: "",
+                                    totalPats: _.size(v),
+                                    overriddenByUserDate: 0
+                                },
+                                status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
+                                subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa)
+                            }))), 4, 1000, 1.5))
+                            .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
+                            .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
+                            .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
+                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(v)))).then(()=>createdMessage)), 4, 1000, 1.5))
+                            .then(createdMessage => this._sleep(200).then(()=>createdMessage)) // Cool down
+                            .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
+                });
+
+                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
+
+            }))
+
+            // 8 - Make MDA requests
+            .then(([mdaRequestedDataByOa,createdMessages]) => {
+
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language), icon:"arrow-forward"})
+
+                let prom = Promise.resolve([]);
+                _.map(mdaRequestedDataByOa, (v,oa) => {
+                    const targetMessage = _.find(createdMessages,m=>_.trim(_.get(m,"metas.oa"))===_.trim(oa))
+                    const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                        .then(promisesCarrier => this._e_getAsyncMemberDataRequest(oa,v,_.get(targetMessage,"metas.requestId"))
+                            .then(mdaResponse => !_.get(mdaResponse,"mdaInputReference") ? promResolve : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}}))), 4, 1000, 1.5))
+                            .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                            .then(modifiedMessage => this._sleep(200).then(()=>modifiedMessage)) // Cool down
+                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
+                });
+
+                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
+
+            })
+
+            // Confirm & goto mda responses
+            .then(([mdaRequestedDataByOa,modifiedMessage]) => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_bypassMdaResponses() {
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", done:true})
+            })
+            .then(() => {
+                let prom = Promise.resolve([]);
+                _.map(_.filter(_.get(this,"mdaRequestsData.originalMessages",[]), it=>!(parseInt(_.get(it,"metas.overriddenByUserDate",0))||0)), messageToModify => {
+                    prom = prom
+                        .then(promisesCarrier => retry.retry(() => (this.api.message().modifyMessage(_.merge(messageToModify, {metas:{overriddenByUserDate:moment().format("YYYYMMDDHHmmss")}}))), 4, 1000, 1.5)
+                            .then(modifiedMessage => this.api.register(modifiedMessage, 'message'))
+                            .then(modifiedMessage => this._sleep(200).then(()=>modifiedMessage)) // Cool down
+                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                            .catch(()=>_.concat(promisesCarrier, [false]))
+                        )
+                });
+                return prom.then(promisesCarrier=>promisesCarrier)
+            })
+            .catch(()=>{})
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndgetStep())
+
+    }
+
+    _e_checkForMdaResponses() {
+
+        const promResolve = Promise.resolve();
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+            })
+            .then(() => {
+
+                let prom = Promise.resolve([]);
+
+                _.map(_.filter(_.get(this,"mdaRequestsData.originalMessages",[]), it=>!(parseInt(_.get(it,"metas.overriddenByUserDate",0))||0) && _.trim(_.get(it,"metas.mdaInputReference"))), requestMessage => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_6",this.language) + " " + _.trim(_.get(requestMessage,"metas.oa")) + "...", icon:"arrow-forward"})||true) && promisesCarrier)
+                        .then(promisesCarrier => retry.retry(() => (this._e_getAsyncMemberDataResponse(_.trim(_.get(requestMessage,"metas.oa")), _.trim(_.get(requestMessage,"metas.mdaInputReference")))), 4, 1000, 1.5)
+                            .then(mdaResponse => (!_.trim(_.get(mdaResponse,"mdaInputReference"))||!_.size(_.get(mdaResponse,"patients",[]))) ?
+
+                                // No / invalid answer from mda / OA -> simply update meta "responseLastCheckDate" of request message
+                                retry.retry(() => (this.api.message().modifyMessage(_.merge(requestMessage, {metas:{responseLastCheckDate: moment().format("YYYYMMDDHHmmss")}}))), 4, 1000, 1.5)
+                                    .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                                    .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                                    .catch(()=>_.concat(promisesCarrier, [false]))
+                                    .finally(()=> (this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_6",this.language) + " " + _.trim(_.get(requestMessage,"metas.oa")), icon:"check-circle", updateLastMessage: true, done:true})||true) && promisesCarrier) :
+
+                                // Valid answer from mda / oa : match patients between request and response && save
+                                promResolve
+                                    .then(() => _.assign({}, mdaResponse, {patients: _.map(_.get(_.cloneDeep(_.find(_.get(this,"mdaRequestsData.messages",[]),{id:_.get(requestMessage,"id")})),"attachment",[]), requestedPat => {
+
+                                        const reqPatSsin = _.trim(_.get(requestedPat,"patientSsin")).replace(/[^\d]/gmi,"")
+                                        const reqPatStartDate = parseInt(_.trim(_.get(requestedPat,"startDate")))
+                                        const reqPatEndDate = parseInt(_.trim(_.get(requestedPat,"endDate")))
+                                        const reqPatInsuranceIdentificationNumber = _.trim(_.get(requestedPat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
+
+                                        const responseMatchingPat = _.find(_.get(mdaResponse,"patients"), responsePat => {
+                                            const respPatSsin = _.trim(_.get(responsePat,"patientSsin")).replace(/[^\d]/gmi,"")
+                                            const respPatStartDate = parseInt(_.trim(_.get(responsePat,"startDate")))
+                                            const respPatEndDate = parseInt(_.trim(_.get(responsePat,"endDate")))
+                                            const respPatInsuranceIdentificationNumber = _.trim(_.get(responsePat,"patientIdentificationNumber")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/gmi, "").replace(/\s+/gmi,'')
+                                            return responsePat &&
+                                                (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatSsin === reqPatSsin && reqPatSsin) ||
+                                                (respPatStartDate === reqPatStartDate && respPatEndDate === reqPatEndDate && respPatInsuranceIdentificationNumber === reqPatInsuranceIdentificationNumber && reqPatInsuranceIdentificationNumber)
+                                        })
+
+                                        return !_.size(responseMatchingPat) ? _.omit(requestedPat,["nameHr"]) : _.assign(_.omit(requestedPat,["patientId","nameHr","startDate","endDate","insuranceCode"]), {
+                                            patientMatchedWithMdaResponse: true,
+                                            mdaResponsePatientHasValidInsurability: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
+                                            patientSsin: _.trim(_.get(requestedPat,"patientSsin")) ? requestedPat.patientSsin : _.trim(_.get(responseMatchingPat,"patientSsin")),
+                                            patientIdentificationNumber: _.trim(_.get(requestedPat,"patientIdentificationNumber")) ? requestedPat.patientIdentificationNumber : _.trim(_.get(responseMatchingPat,"patientIdentificationNumber"))
+                                        })
+
+                                    })}))
+                                    .then(reconciledMdaResponse => this.api.message().newInstance(this.user).then(newMessageInstance=>([reconciledMdaResponse,newMessageInstance])))
+                                    .then(([reconciledMdaResponse,newMessageInstance]) => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+                                        transportGuid: "MH:FLATRATE-MDA-RESPONSE:" + _.trim(_.get(requestMessage,"metas.oa")),
+                                        recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                                        recipients: [this.user.healthcarePartyId],
+                                        toAddresses: [this.user.healthcarePartyId],
+                                        metas: {
+                                            oa: _.trim(_.get(requestMessage,"metas.oa")),
+                                            responseDate: moment().format("YYYYMMDDHHmmss"),
+                                            requestedDate: _.get(requestMessage,"metas.requestedDate"),
+                                            requestMessageId:  _.get(requestMessage,"id"),
+                                            mdaInputReference:_.get(reconciledMdaResponse,"mdaInputReference"),
+                                            totalPats: _.size(_.get(reconciledMdaResponse,"patients",[])),
+                                            totalPatsWithValidInsurability: _.size(_.filter(_.get(reconciledMdaResponse,"patients",[]),"mdaResponsePatientHasValidInsurability"))
+                                        },
+                                        status: _.get(this,"invoiceMessageStatuses.treated.status",(1 << 11)),
+                                        subject: "MH:FLATRATE-MDA-RESPONSE:" + _.trim(_.get(requestMessage,"metas.oa"))
+                                    }))), 4, 1000, 1.5).then(responseMessage=>([reconciledMdaResponse,responseMessage])))
+                                    .then(([reconciledMdaResponse,responseMessage]) => this.api.document().newInstance(this.user, responseMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(responseMessage,"subject"))+".json"}).then(newDocumentInstance=>([reconciledMdaResponse,responseMessage,newDocumentInstance])))
+                                    .then(([reconciledMdaResponse,responseMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([reconciledMdaResponse,responseMessage,createdDocument]))), 4, 1000, 1.5))
+                                    .then(([reconciledMdaResponse,responseMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([reconciledMdaResponse,responseMessage,createdDocument,extractedKeys])))
+                                    .then(([reconciledMdaResponse,responseMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(reconciledMdaResponse)))).then(()=>responseMessage)), 4, 1000, 1.5))
+                                    .then(responseMessage => this._sleep(200).then(()=>responseMessage)) // Cool down
+                                    .then(responseMessage => retry.retry(() => (this.api.message().modifyMessage(_.merge(requestMessage, {
+                                        status:parseInt(parseInt(requestMessage.status||_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))) | parseInt(_.get(this,"invoiceMessageStatuses.treated.status",(1 << 11)))),
+                                        metas:{
+                                            responseMessageId: _.get(responseMessage,"id"),
+                                            responseDate: _.get(responseMessage,"metas.responseDate"),
+                                            responseLastCheckDate: _.get(responseMessage,"metas.responseDate")
+                                        }
+                                    }))), 4, 1000, 1.5))
+                                    .then(modifiedMessage => modifiedMessage && this.api.register(modifiedMessage, 'message'))
+                                    .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                                    .catch(()=>_.concat(promisesCarrier, [false]))
+                                    .finally(()=> (this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_6",this.language) + " " + _.trim(_.get(requestMessage,"metas.oa")), icon:"check-circle", updateLastMessage: true, done:true})||true) && promisesCarrier)
+
+                            )
+                        )
+                });
+
+                return prom.then(promisesCarrier=>promisesCarrier)
+
+            })
+            .then(requestMessages=>{})
+            .catch(()=>{})
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndgetStep())
+
+    }
+
+    _e_loadDataAndgetStep() {
+
+        let eInvoicingStep = "placeMdaRequests"
+        const promResolve = Promise.resolve()
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000)
+                .then(pl => { return {
+                    rows:_.filter(pl.rows, it => {
+                        it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
+                        return it &&
+                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
+                    }),
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }})
+                .catch(()=>promResolve)
+            ))
+            .then(mdaRequestMessages => _.orderBy(mdaRequestMessages,["metas.oa"],["asc"]))
+            .then(mdaRequestMessages => !_.size(mdaRequestMessages) ? promResolve : promResolve.then(() => {
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language), icon:"arrow-forward"})
+                let prom = Promise.resolve([])
+                _.map(mdaRequestMessages, mdaRequestMessage => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language) + " " + _.get(mdaRequestMessage,"metas.oa"), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
+                        .then(promisesCarrier =>
+                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document=>_.head(document))), 4, 1000, 1.5)
+                            .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                            .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
+                            .then(([document,edKeys,attachment]) => _.merge(mdaRequestMessage,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
+                            // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                            .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
+                            .catch(()=>_.concat(promisesCarrier, [mdaRequestMessage]))
+                        )
+                });
+                return prom.then(promisesCarrier=>promisesCarrier)
+            }))
+            .then(mdaRequestMessages => {
+
+                // 001 - Did not invoke "MDA request" yet (this month)
+                if(!_.size(mdaRequestMessages)) throw new Error("dontGoAnyFurther");
+
+                const originalMessages = _.chain((mdaRequestMessages||[])).cloneDeep().map(it => _.omit(it,["evaluatedStatus","document","edKeys","attachment"])).value()
+                const missingAtLeastOneAnswer = _.some((mdaRequestMessages||[]), it=>!_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate")))
+                const mostRecentCheck = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.responseLastCheckDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentRequestDate = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.requestDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentCheckOrRequesDate = moment(_.trim(mostRecentCheck ? mostRecentCheck : mostRecentRequestDate),"YYYYMMDDHHmmss")
+                const nextRequesDate = _.cloneDeep(mostRecentCheckOrRequesDate).add((parseInt(_.get(this,"minimumHoursBetweenMdaResponseChecks",24))||24), 'hours')
+
+                this.set("mdaRequestsData",{
+                    originalMessages: originalMessages,
+                    messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
+                        requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                        responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                        responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
+                    }})),
+                    nextRequesDate: nextRequesDate,
+                    everGotChecked: !!mostRecentCheck,
+                    lastCheckedHoursAgo: moment().diff(mostRecentCheckOrRequesDate,"hours",true),
+                })
+
+                // 002 - Do we have any pending responses to wait for ? (Either no metas.responseMessageId yet OR user overrid / bypassed the response checks)
+                eInvoicingStep = missingAtLeastOneAnswer ? "mdaCheckForResponses" : "mdaLastCallResults"
+                eInvoicingStep==="mdaCheckForResponses" && this._e_mdaCheckForResponsesCountDown()
+                if(eInvoicingStep==="mdaCheckForResponses") throw new Error("dontGoAnyFurther");
+
+                // 003 - We got this far, ie -> we should show last call's results
+                return (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language), icon:"arrow-forward"})
+
+            })
+            .then(() => Promise.all(_.map(_.filter(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.responseMessageId"))), it =>this.api.message().getMessage(_.get(it,"metas.responseMessageId")))))
+            .then(mdaResponseMessages => _.orderBy(mdaResponseMessages,["metas.oa"],["asc"]))
+            .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
+                let prom = Promise.resolve([])
+                _.map(mdaResponseMessages, mdaResponseMessages => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language) + " " + _.get(mdaResponseMessages,"metas.oa"), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
+                        .then(promisesCarrier =>
+                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessages).then(document=>_.head(document))), 4, 1000, 1.5)
+                                .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                                .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
+                                .then(([document,edKeys,attachment]) => _.merge(mdaResponseMessages,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
+                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
+                                .catch(()=>_.concat(promisesCarrier, [mdaResponseMessages]))
+                        )
+                });
+                return prom.then(promisesCarrier=>promisesCarrier)
+            }))
+            .then(mdaResponseMessages => (this.set("mdaResponsesData",{
+                    originalMessages: _.chain((mdaResponseMessages||[])).cloneDeep().map(it => _.omit(it,["document","edKeys","attachment"])).value(),
+                    messages: _.map(mdaResponseMessages||[], it=>_.merge(it,{metas:{responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
+                })||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+            )
+            .catch(()=>{})
+            .finally(()=>{
+                this.set("_isLoading",false)
+                this.set("eInvoicingStep",eInvoicingStep)
+                this.shadowRoot.getElementById("domRepeatMdaRequests") && this.shadowRoot.getElementById("domRepeatMdaRequests").render()
+            })
+
+    }
+
+    _e_gotoMdaLastCallResultsDetails(e, tabToGoFor="invalidPatients") {
+
+        const promResolve = Promise.resolve()
+
+        return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_loadDataAndgetStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_loadDataAndgetStep() : promResolve)
+            .then(() => {
+                this.set("_isLoading",true)
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() =>  this.set("rawMdaResultsGridData", _
+                .chain(_.get(this,"mdaRequestsData.messages",[]))
+                .map(requestMessage => _.map(_.get(requestMessage,"attachment"), pat => {
+                    const responseMessagePatients = _.get(_.find(_.get(this,"mdaResponsesData.messages"), it => _.trim(_.get(it,"metas.requestMessageId")) === _.trim(requestMessage.id)), "attachment.patients", [])
+                    const responseMatchingPat = _.find(responseMessagePatients, {reconcileKey:_.trim(_.get(pat,"reconcileKey"))})
+                    return _.merge({},pat,{
+                        oa: _.trim(_.get(requestMessage,"metas.oa")),
+                        verifiedMonthHr: moment(_.trim(_.get(pat,"startDate")),"YYYYMMDD").format("MM/YYYY"),
+                        ssinHr: this.api.formatSsinNumber(_.trim(_.get(pat,"patientSsin"))),
+                        message: "OA Reponse message...",
+                        patientMatchedWithMdaResponse: _.get(responseMatchingPat,"patientMatchedWithMdaResponse",false),
+                        mdaResponsePatientHasValidInsurability: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
+                        patientInsurabilityStatus: !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false) ? "yes" : "no",
+                        patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? true : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsurability",false),
+                        patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
+                    })
+                }).map(pat => _.assign(pat, {
+                    patientInsurabilityStatusHr: _.upperFirst(this.localize(pat.patientInsurabilityStatus,this.language).toLowerCase()),
+                    normalizedSearchTerms: _
+                        .chain(pat)
+                        .pick(["patientId","patientSsin","ssinHr","nameHr","patientIdentificationNumber","insuranceCode","oa","message"])
+                        .flatMap()
+                        .compact()
+                        .map(it => it.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,""))
+                        .value()
+                        .join(" ")
+                })))
+                .flatten()
+                .orderBy(["patientForcedAsValid","nameHr", "startDate"],["desc","asc", "desc"]) // Inside lodash, "true" gets a higher order than / comes after "false"
+                .value()
+            ))
+            .then(()=>this._e_gotoMdaTabAndRefreshGrid(e instanceof Event ? "invalidPatients" : tabToGoFor||"invalidPatients"))
+            .finally(() => {
+                this.set("eInvoicingStep","mdaLastCallResultsDetails")
+                this.set("_isLoading",false)
+            })
+
+    }
+
+    _e_step4SaveChangesAndGoToStep5() {
+
+        console.log("_e_step4SaveChangesAndGoToStep5");
+        console.log(this.mdaRequestsData);
+
+        modifyMessage
+        setAttachment
+
+        // a déjà "totalPats" sur msg request
+        // foutre totalPatsWithValidInsurability ==> eval
+
+        // lors save :> on se base sur mda requests messages (et non pas original messages)
+        // omit document, edkeys (réutiliser :)), attachment
+        // omit metas.
+        //     requestDateHr
+        //     responseDateHr
+        //     responseLastCheckDateHr
+
+    }
+
 }
 
 customElements.define(HtMsgFlatrateInvoice.is, HtMsgFlatrateInvoice);
+
+
+
+// Todo: Ajouter btn (juste le crayon ?) "Editer le patient" -> cfr cuisine sam (timeline): (se passer data-patient-id) && on-tap => if (target.dataset.patientId!= '0') location.replace(location.href.replace(/(.+?)#.*/, `$1#/pat/${target.dataset.patientId}`)); ==> juste l'icone devant le nom du pat ?
+// Todo: Re-tester en bypassant certaines réponses oa (pour avoir le status orange)
+// Todo: Repasser sur tout le flux navigation user / bien vérouiller % status / avoir msg clair si clique sur onglet "notExpected" / guider dans interface
+
+
+
+/*
+    // MODIFY requestDate
+    ___exportedDate = "20200301"
+    ___requestDate = "20200227091011"
+    this.api.getRowsUsingPagination((key,docId)=>this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*',null,key,docId,1000).then(pl=>{return{rows:_.filter(pl.rows,it=>_.trim(_.get(it,"metas.requestedDate"))===___exportedDate),nextKey:pl.nextKeyPair&&pl.nextKeyPair.startKey,nextDocId:pl.nextKeyPair&&pl.nextKeyPair.startKeyDocId,done:!pl.nextKeyPair}})).then(mdaRequestMessages=>Promise.all(_.map(mdaRequestMessages,it=>this.api.message().modifyMessage(_.merge(it,{metas:{requestDate:___requestDate}})))))
+ */

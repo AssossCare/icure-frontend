@@ -2081,7 +2081,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption || this.preventionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       if(this.activeItem) {
           this.set('isLoadingPatient', true)
           const selected = this.activeItem
@@ -3252,7 +3252,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       console.log(e.target.dataset.item)
       fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPatient`, {
           method: "POST",

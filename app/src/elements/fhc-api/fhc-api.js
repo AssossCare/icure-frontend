@@ -17,7 +17,7 @@ class FhcApi extends PolymerElement {
       return {
           headers: {
               type: Object,
-              value: { "Content-Type": "application/json" }
+              value: { "Content-Type": "application/json",  "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm" }
           },
           host: {
               type: String

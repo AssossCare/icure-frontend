@@ -111,6 +111,10 @@ class IccApi extends PolymerElement {
           electronHost: {
               type: String,
               value: "http://127.0.0.1:16042"
+          },
+          flatRateEInvoicingDate: {
+              type: Number,
+              value: 202006
           }
       }
   }
@@ -166,13 +170,13 @@ class IccApi extends PolymerElement {
 
       this.receipticc = new IccReceiptXApi(this.host, this.headers, this.cryptoicc)
       this.contacticc = new IccContactXApi(this.host, this.headers, this.cryptoicc)
-      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc)
+      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc, this.authicc)
       this.formicc = new IccFormXApi(this.host, this.headers, this.cryptoicc)
       this.helementicc = new IccHelementXApi(this.host, this.headers, this.cryptoicc)
       this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
       this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc)
       this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
-      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
+      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.authicc,this.contacticc, this.helementicc)
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
 
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
@@ -381,6 +385,10 @@ class IccApi extends PolymerElement {
 
   calendaritemtype(){
       return this.calendaritemtypeicc
+  }
+
+  authorizationHeader() {
+      return this.headers.Authorization
   }
 
   localize(e, lng) {
