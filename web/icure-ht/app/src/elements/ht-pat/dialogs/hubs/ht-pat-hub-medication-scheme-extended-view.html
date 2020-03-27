@@ -17,12 +17,13 @@
 <link rel="import" href="../../../ht-spinner/ht-spinner.html">
 <link rel="import" href="../../../../styles/dialog-style.html">
 <link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/table-style.html">
 <link rel="import" href="ht-pat-hub-utils.html">
 <link rel="import" href="ht-pat-hub-medication-scheme-regimen-day.html">
 
 <dom-module id="ht-pat-hub-medication-scheme-extended-view">
     <template>
-        <style include="dialog-style atc-styles scrollbar-style">
+        <style include="dialog-style atc-styles scrollbar-style table-style">
             paper-dialog {
                 width: 90%;
                 height: 80%;
@@ -773,7 +774,7 @@
                 box-sizing: border-box;
                 display: flex;
                 justify-content: center;
-                align-content: center;
+                align-items: center;
                 height: 48px;
             }
 
@@ -908,7 +909,6 @@
 
             paper-icon-button {
                 --paper-icon-button-size: 16px;
-                };
             }
             .mdc-data-table {
                 overflow-y: auto;
@@ -924,18 +924,11 @@
                 position: sticky;
                 top: 0;
                 background: white;
-                z-index: 999;
-                border-width: 2px 8px;
-                border-color: white;
-                border-style: solid;
-            }
-            .mdc-data-table__cell {
-                border-width: 2px 8px;
-                border-color: white;
-                border-style: solid;
+                z-index: 1;
             }
             .mdc-data-table__cell-text {
                 text-align: left;
+                justify-content: left;
             }
 
             .mdc-data-table__cell-large {
@@ -957,16 +950,21 @@
                 max-width: 20vw;
             }
             .nowrap {
-                display: flex;
-                flex-flow: row nowrap;
+                display: inline;
+                vertical-align: middle;
             }
             .hcp-icon {
                 height: 12px;
-                width: 12px;
-                padding: 3px;
+                padding-right: 4px;
             }
             .container {
                 height: 100%;
+            }
+            .mdc-data-table__cell--numeric {
+                text-overflow: initial;
+            }
+            .mdc-data-table__header-cell {
+                text-overflow: initial;
             }
 
         </style>
@@ -984,16 +982,16 @@
                 <table class="mdc-data-table__table" aria-label="aria-label">
                     <thead>
                         <tr class="mdc-data-table__header-row">
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('type','Type',language)]]</th>
-                            <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('medication','Médication',language)]]</th>
-                            <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('freq', 'Fréquence', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('pos', 'Posologie', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"  role="columnheader" scope="col">[[localize('begin', 'Début', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric" role="columnheader" scope="col">[[localize('end', 'Fin', language)]]</th>
-                            <th class="mdc-data-table__header-cell" role="columnheader" scope="col">[[localize('com', 'Commentaire', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('local', 'Local', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('hub', 'Hub', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('action', 'Action', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('type','Type',language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-medium" role="columnheader" scope="col">[[localize('medication','Médication',language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col">[[localize('freq', 'Fréquence', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">[[localize('pos', 'Posologie', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small"  role="columnheader" scope="col">[[localize('begin', 'Début', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col">[[localize('end', 'Fin', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">[[localize('com', 'Commentaire', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('local', 'Local', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('hub', 'Hub', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('action', 'Action', language)]]</th>
                         </tr>
                     </thead>
                     <tbody class="mdc-data-table__content">
@@ -1016,29 +1014,27 @@
                                         <iron-icon class="substanceIcon" icon="vaadin:pill"></iron-icon>
                                     </template>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-medium">
+                                <td class="mdc-data-table__cell mdc-data-table__cell-medium mdc-data-table__cell-text">
                                     <div class="nowrap">
                                         <iron-icon icon="vaadin:user" class="hcp-icon" title="[[_getResponsibleHcp(medicationsWithPosology.authors)]]"></iron-icon>
-                                        <span class="ellipsis" title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>
+                                        <span title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>
                                     </div>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-small">
-                                    <span>[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span>
-                                </td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small">[[_getFrequency(medicationsWithPosology)]]</td>
                                 <td class="mdc-data-table__cell mdc-data-table__cell-large">
                                     <ht-pat-hub-medication-scheme-regimen-day api="[[api]]" regimen="[[medicationsWithPosology.regimen]]" language="[[language]]"></ht-pat-hub-medication-scheme-regimen-day>
                                 </td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.beginmoment]]">[[medicationsWithPosology.beginmoment]]</span></td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric"><span title="[[medicationsWithPosology.endmoment]]">[[medicationsWithPosology.endmoment]]</span></td>
-                                <td class="mdc-data-table__cell mdc-data-table__cell-text mdc-data-table__cell-large"><div class="ellipsis" title="[[medicationsWithPosology.posology]]" class="left">[[medicationsWithPosology.posology]]</div></td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric">[[medicationsWithPosology.beginmoment]]</td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-small mdc-data-table__cell--numeric">[[medicationsWithPosology.endmoment]]</td>
+                                <td class="mdc-data-table__cell mdc-data-table__cell-large mdc-data-table__cell-text" title="[[medicationsWithPosology.posology]]">[[medicationsWithPosology.posology]]</td>
                                 <td class="mdc-data-table__cell relative mdc-data-table__cell-small">
-                                    <paper-checkbox on-tap="_synchronizeItemToLocal" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]"></paper-checkbox>
+                                    <paper-checkbox uid="[[medicationsWithPosology.uniqId]]" on-tap="_synchronizeItemToLocal" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnLocal]]"></paper-checkbox>
                                 </td>
                                 <td class="mdc-data-table__cell relative mdc-data-table__cell-small">
-                                    <paper-checkbox on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
+                                    <paper-checkbox uid="[[medicationsWithPosology.uniqId]]" on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
                                 </td>
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
-                                    <paper-icon-button icon="icons:compare-arrows" disabled="[[hasNoConflict]]" class="small-icon-button" id="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
+                                    <paper-icon-button icon="icons:compare-arrows" disabled="[[hasNoConflict]]" class="small-icon-button" uid="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
                                 </td>
                             </tr>
                         </template>
@@ -1188,7 +1184,7 @@
 <!--                                    <span title="[[_getMedicationName(medicationsWithPosology)]]">[[_getMedicationName(medicationsWithPosology)]]</span>-->
 <!--                                </span>-->
 <!--                            </div>-->
-<!--                            <div class="td span-3" style="flex-grow: 3;" title="[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]"><span>[[_getPosology(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span></div>-->
+<!--                            <div class="td span-3" style="flex-grow: 3;" title="[[_getFrequency(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]"><span>[[_getFrequency(medicationsWithPosology)]] [[_getDayInfo(medicationsWithPosology.regimen.0)]]</span></div>-->
 
 <!--                            <ht-pat-hub-medication-scheme-regimen-day class="span-13" style="flex-grow: 13;" api="[[api]]" regimen="[[medicationsWithPosology.regimen]]"></ht-pat-hub-medication-scheme-regimen-day>-->
 
@@ -1502,42 +1498,51 @@
         const md5 = require('md5');
 
         const all_fields = [
-            { label: 'medicationName', getter: '_getMedicationName', score: 82, hidden: true },
-            { label: 'begin', name: 'beginmoment', score: 1 },
-            { label: 'end', name: 'endmoment', score: 1 },
-            { label: 'temp', name: 'temporality', score: 1 },
-            { label: 'freq', name: 'frequency', score: 1, format: '_formatFrequency' },
-            { label: 'pos', name: 'posology', score: 1, format: '_formatPosology' },
-            { label: 'ms_morning', name: 'regimen.0', score: 1, filter: '_filterRegimen', argument: 0, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_beforebreakfast', name: 'regimen.0', score: 1, filter: '_filterRegimen', argument: 1, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_duringbreakfast', name: 'regimen.0', score: 1, filter: '_filterRegimen', argument: 2, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_afterbreakfast', name: 'regimen.0', score: 1, filter: '_filterRegimen', argument: 3, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_betweenbreakfastandlunch', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 4, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_beforelunch', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 5, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_duringlunch', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 6, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_afterlunch', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 7, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_betweenlunchanddinner', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 8, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_beforedinner', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 9, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_duringdinner', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 10, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_afterdinner', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 11, path: 'quantity', defaultValue: 0 },
-            { label: 'ms_evening', name: 'regimen.0', score: 1,  filter: '_filterRegimen', argument: 12, path: 'quantity', defaultValue: 0 },
-        ]
+            { label: 'medicationName', getter: '_getMedicationName', score: 50, hidden: true },
+            { label: 'begin', name: 'beginmoment', score: 5 },
+            { label: 'end', name: 'endmoment', score: 5 },
+            // { label: 'temp', name: 'temporality', score: 1 },
+            // { label: 'freq', name: 'frequency', score: 1, format: '_formatFrequency' },
+            // @todo: solve issue with pharmaceutical code vs administration unit
+            // { label: 'pos', name: 'posology', score: 5, format: '_formatPosology' },
+            { label: 'ms_afterwakingup', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 0, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_morning', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 1, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_beforebreakfast', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 2, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_duringbreakfast', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 3, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_afterbreakfast', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 4, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_betweenbreakfastandlunch', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 5, path: 'quantity', defaultValue: 0 },
+            { label: 'mom_midday', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 6, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_beforelunch', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 7, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_duringlunch', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 8, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_afterlunch', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 9, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_betweenlunchanddinner', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 10, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_evening', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 11, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_beforedinner', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 12, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_duringdinner', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 13, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_afterdinner', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 14, path: 'quantity', defaultValue: 0 },
+            { label: 'ms_thehourofsleep', name: 'regimen', score: 1,  filter: '_filterRegimen', argument: 15, path: 'quantity', defaultValue: 0 }
+        ];
 
         const all_periods = [
-            { id: 0, keywords: ['morning'] },
-            { id: 1, keywords: ['beforebreakfast'] },
-            { id: 2, keywords: ['duringbreakfast'] },
-            { id: 3, keywords: ['afterbreakfast'] },
-            { id: 4, keywords: ['betweenbreakfastandlunch'] },
-            { id: 5, keywords: ['beforelunch'] },
-            { id: 6, keywords: ['duringlunch'] },
-            { id: 7, keywords: ['afterlunch'] },
-            { id: 8, keywords: ['betweenlunchanddinner'] },
-            { id: 9, keywords: ['beforedinner'] },
-            { id: 10, keywords: ['duringdinner'] },
-            { id: 11, keywords: ['afterdinner'] },
-            { id: 12, keywords: ['evening', 'night', 'thehourofsleep'] },
-        ]
+            { id: 0, keywords: ['afterwakingup'] },
+            { id: 1, keywords: ['morning'] },
+            { id: 2, keywords: ['beforebreakfast'] },
+            { id: 3, keywords: ['duringbreakfast'] },
+            { id: 4, keywords: ['afterbreakfast'] },
+            { id: 5, keywords: ['betweenbreakfastandlunch'] },
+            { id: 6, keywords: ['midday'] },
+            { id: 7, keywords: ['beforelunch'] },
+            { id: 8, keywords: ['duringlunch'] },
+            { id: 9, keywords: ['afterlunch'] },
+            { id: 10, keywords: ['betweenlunchanddinner'] },
+            { id: 11, keywords: ['evening']},
+            { id: 12, keywords: ['beforedinner'] },
+            { id: 13, keywords: ['duringdinner'] },
+            { id: 14, keywords: ['afterdinner'] },
+            { id: 15, keywords: ['thehourofsleep'] },
+        ];
+
+        const max_score = all_fields.reduce((total, field) => total += field.score, 0);
 
         class HtPatHubMedicationSchemeExtendedView extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
@@ -1737,6 +1742,10 @@
                             {time: 120000, period: "midday"},
                             {time: 63000, period: "afterwakingup"}
                         ]
+                    },
+                    totalScore: {
+                        type: Number,
+                        value: 0
                     }
                 }
             }
@@ -1784,10 +1793,10 @@
                         medication && medication.compoundprescription !== null ? "Magistrale" : null
             }
 
-            _getPosology(medication){
-                const period = medication && medication.frequency && medication.frequency.periodicity && medication.frequency.periodicity.cd && medication.frequency.periodicity.cd.value || null
-                const periodicity = this.periodicity.find(p => p.code === period) || null
-                return periodicity && periodicity.label && periodicity.label[this.language] ? periodicity.label[this.language] : null
+            _getFrequency(medication){
+                const period = _.get(medication, "frequency.periodicity.cd.value", null);
+                const periodicity = this.periodicity.find(p => p.code === period) || null;
+                return _.get(periodicity, `label.${this.language}`, null);
             }
 
             _convertHubDateAsString(timestamp){
@@ -1901,7 +1910,7 @@
 
             _filterRegimen(regimen, id) {
                 let period = all_periods.find(p => p.id == id)
-                return period && period.keywords.some(k => k == _.toLower(regimen.dayTime))
+                return period && period.keywords.some(k => k == _.toLower(regimen.dayPeriod))
             }
 
             _formatPosology(posology) {
@@ -1950,16 +1959,12 @@
             }
 
             _getScore(source, target) {
-                let score = 0
-                let total = 0
-                all_fields.forEach(field => {
-                    let source_value = this._getField(source, field, '')
-                    let target_value = this._getField(target, field, '')
-                    if (source_value == target_value)
-                        score += field.score
-                    total += field.score
-                })
-                return score
+                const score = all_fields.reduce((score, field) => {
+                    if (this._getField(source, field, '') === this._getField(target, field, ''))
+                        score += field.score;
+                    return score;
+                }, 0);
+                return Math.round(score * 100 / max_score);
             }
 
             _getCandidates(medication, flag) {
@@ -1980,7 +1985,7 @@
                 //    this.set('selectedMedication', JSON.parse(e.currentTarget.dataset.medication))
 
                 // const uid = e.currentTarget.dataset.uid
-                const uid = e.target.id;
+                const uid = e.target.uid;
                 let medication = this.currentMedicationScheme.msElems.find(m => m.uniqId == uid);
                 if (medication) {
                     this.set('selectedMedication', medication)
@@ -2094,6 +2099,7 @@
                     const medicationValue = this.api.contact().medicationValue(med, this.language) || {};
                     const beginMoment = _.get(medicationValue, "beginMoment", null);
                     const endMoment = _.get(medicationValue, "endMoment", null);
+                    const frequency = {periodicity: {cd: {value: "D"}}};
                     return {
                         idKmehr: null,
                         medicationHubId: null,
@@ -2105,7 +2111,7 @@
                         beginmoment: beginMoment ? moment(beginMoment, "YYYYMMDD").format('DD/MM/YYYY'): null,
                         endmoment: endMoment ? moment(endMoment, "YYYYMMDD").format('DD/MM/YYYY'): null,
                         temporality: null,
-                        frequency: null,
+                        frequency: frequency,
                         regimen: this._composeRegimen(_.get(medicationValue, "regimen", [])),
                         regimenDayNumber: null,
                         regimenWeekDay: null,
@@ -2367,15 +2373,16 @@
 
                 const medicationValue = medicationContent.medicationValue;
 
-                data.regimen && data.regimen.length && data.regimen.forEach(subReg => subReg && subReg.length && subReg.forEach(dataReg => {
+                data.regimen && data.regimen.length && data.regimen.forEach(dataReg =>
                     medicationValue.regimen.push(Object.assign({
-                        administratedQuantity: {
-                            quantity: dataReg.quantity,
-                            administrationUnit: this.api.code().normalize(`CD-ADMINISTRATIONUNIT|${dataReg.administrationUnit}|1`)
-                        }},
-                        dataReg && dataReg.dayTime ? ( dataReg.dayTime.millisOfDay || dataReg.dayTime.millisOfDay === 0 ? {timeOfDay: +moment(dataReg.dayTime.millisOfDay).format('HHmmss')} : {dayPeriod: this.api.code().normalize(`CD-DAYPERIOD|${dataReg.dayTime.toLowerCase()}|1`)} ) : {})
-                    );
-                }));
+                            administratedQuantity: {
+                                quantity: dataReg.quantity,
+                                administrationUnit: this.api.code().normalize(`CD-ADMINISTRATIONUNIT|${dataReg.administrationUnit}|1`)
+                            }
+                        },
+                        dataReg && dataReg.dayTime ? {timeOfDay: dataReg.dayTime} : (dataReg && dataReg.dayPeriod ? {dayPeriod: this.api.code().normalize(`CD-DAYPERIOD|${dataReg.dayPeriod.toLowerCase()}|1`)} : {})
+                    ))
+                );
 
                 const isMedication = !data.endmoment;
 
@@ -2509,10 +2516,10 @@
             }
 
             _synchronizeItemToHub(e){
-                e.stopPropagation()
-                if(_.get(e, 'currentTarget.dataItem', null)){
-                    let info  =_.get(_.get(this, 'currentMedicationScheme.msElems', []).find(el => _.get(el, 'uniqId', null) === _.get(e, 'currentTarget.dataItem.uniqId', null)), 'synchronizationInfo', null)
-                    _.get(info, 'localToHub', false) ? info.localToHub = false : info.localToHub = true
+                e.stopPropagation();
+                const info  =_.get(_.get(this, 'currentMedicationScheme.msElems', []).find(el => _.get(el, 'uniqId', null) === _.get(e, 'target.uid', null)), 'synchronizationInfo', null);
+                if (info) {
+                    info.localToHub = !info.localToHub;
                 }
             }
 

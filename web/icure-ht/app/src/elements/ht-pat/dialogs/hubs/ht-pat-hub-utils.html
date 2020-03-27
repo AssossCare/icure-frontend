@@ -484,14 +484,24 @@
             }
 
             handleResponse(response, services){
-                return this.hasError(response) ? Promise.reject(response): Promise.resolve(this.mergeResponse(response, services));
+                return this.hasError(response) ? Promise.reject(this.getError(response)): Promise.resolve(this.mergeResponse(response, services));
             }
 
-            hasError(putResponse){
+            hasError(putResponse) {
                 //TODO: implement
                 const ack = putResponse.acknowledge;
                 if(!ack.iscomplete) console.log("response with error", putResponse);
                 return !ack.iscomplete;
+            }
+
+            getError(putResponse) {
+                const errors = _.get(putResponse, "acknowledge.errors", []);
+                return errors.reduce((descriptions, error) => {
+                    const description = _.get(error, "description.value", null);
+                    if (description)
+                        descriptions.push(description);
+                    return descriptions;
+                }, []).join("; ");
             }
 
             // private String medicationSchemeIdOnSafe;
