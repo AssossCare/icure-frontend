@@ -166,19 +166,31 @@
             }
 
             getColor(period) {
-                return (period && period > 0) ? "hasQuantity" : "";
+                return period && "hasQuantity" || "";
+            }
+
+            // todo: use icc-api.quantityToString when available
+            quantityToString(quantity) {
+                const mod = (quantity * 100) % 100;
+                if (mod === 50)
+                    return ((Math.floor(quantity) * 2) + (mod / 50)) + "/2";
+                else if ((mod === 33) || (mod === 66))
+                    return ((Math.floor(quantity) * 3) + (mod / 33)) + "/3";
+                else if ((mod === 25) || (mod === 75))
+                    return ((Math.floor(quantity) * 4) + (mod / 25)) + "/4";
+                return quantity;
             }
 
             _init() {
                 if (!this.regimen) return;
-                this.set("quantities", this.regimen.reduce((quantities, reg) => {
+                this.set("quantities", _.mapValues(this.regimen.reduce((quantities, reg) => {
                     if (reg.dayPeriod) {
                         quantities[reg.dayPeriod] = _.get(quantities, reg.dayPeriod, 0) + reg.quantity;
                     } else if (reg.dayTime) {
                         quantities['other'] = _.get(quantities, 'other', 0) + reg.quantity;
                     }
                     return quantities;
-                }, {}));
+                }, {}), quantity => this.quantityToString(quantity)));
             }
         }
 

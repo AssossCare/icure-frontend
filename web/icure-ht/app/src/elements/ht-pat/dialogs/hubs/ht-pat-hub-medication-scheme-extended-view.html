@@ -891,21 +891,21 @@
                 --paper-checkbox-unchecked-color: var(--app-text-color);
                 --paper-checkbox-checked-color: var(--app-secondary-color);
                 --paper-checkbox-checked-ink-color: var(--app-secondary-color-dark);
-                --paper-checkbox-vertical-align: bottom;
+                /*--paper-checkbox-vertical-align: bottom;*/
                 --paper-checkbox-size: 16px;
                 --paper-checkbox-label: {
                     display:none
                 };
             }
             .small-icon-button {
-                width: 20px;
-                height: 20px;
                 color: var(--app-background-color-dark);
                 background: var(--app-secondary-color);
-                padding: 0;
-                border-radius: 50%;
+                border-radius: 2px;
+                width: 20px;
+                height: 20px;
+                padding: 4px;
+                display: flex;
             }
-
 
             paper-icon-button {
                 --paper-icon-button-size: 16px;
@@ -966,8 +966,12 @@
             .mdc-data-table__header-cell {
                 text-overflow: initial;
             }
+            .sync {
+                background: #deffde;
+            }
 
-        </style>
+
+</style>
 
         <div class="container">
             <div id="legend">
@@ -996,7 +1000,8 @@
                     </thead>
                     <tbody class="mdc-data-table__content">
                         <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology" on-tap="_showMedication">
-                            <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]]>
+<!--                            <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]]>-->
+                            <tr class$="mdc-data-table__row [[_isSync(medicationsWithPosology)]]">
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
                                     <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">
                                         <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>
@@ -1034,7 +1039,7 @@
                                     <paper-checkbox uid="[[medicationsWithPosology.uniqId]]" on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
                                 </td>
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
-                                    <paper-icon-button icon="icons:compare-arrows" disabled="[[hasNoConflict]]" class="small-icon-button" uid="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
+                                    <paper-icon-button icon="vaadin:ellipsis-dots-v" disabled="[[hasNoConflict]]" class="small-icon-button" uid="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
                                 </td>
                             </tr>
                         </template>
@@ -1495,6 +1500,7 @@
         import * as models from 'icc-api/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
         import hu from "../../../../../bower_components/moment/src/locale/hu";
+        import {configFromObject} from "../../../../../bower_components/moment/src/lib/create/from-object";
         const md5 = require('md5');
 
         const all_fields = [
@@ -1772,7 +1778,8 @@
                     times:  _.get(ms, 'times', [])
                 })
                 const currentMsElems = this.get('currentMedicationScheme.msElems');
-                const updatedMsElems = _.concat(_.get(ms, 'msElems', []), this._getElementsFromMedications());
+                const updatedMsElems = this._consolidate(_.get(ms, 'msElems', []), this._getElementsFromMedications());
+                // const updatedMsElems = _.concat(_.get(ms, 'msElems', []), this._getElementsFromMedications());
                 if (!currentMsElems) {
                     this.set('currentMedicationScheme.msElems', updatedMsElems);
                 } else if (currentMsElems.length) {
@@ -1784,6 +1791,33 @@
                 } else if (updatedMsElems.length) {
                     this.push('currentMedicationScheme.msElems', ...updatedMsElems);
                     console.log(this.currentMedicationScheme);
+                }
+            }
+
+            _consolidate(remoteElements, localElements) {
+                if (remoteElements.length) {
+                    if (localElements.length) {
+                        const consolidation = remoteElements.reduce((consolidation, remoteElement) => {
+                            if (consolidation.local.filter(localElement => this._getScore(localElement, remoteElement) === 100)) {
+                                const syncInfo = _.get(remoteElement, "synchronizationInfo");
+                                if (syncInfo) {
+                                    syncInfo.availableOnLocal = true;
+                                }
+                                consolidation.local = consolidation.local.filter(localElement => this._getScore(localElement, remoteElement) < 100);
+                            }
+                            consolidation.remote.push(remoteElement);
+                            return consolidation;
+                        }, {remote: [], local: localElements});
+                        return _.concat(consolidation.remote, consolidation.local);
+                    } else {
+                        return remoteElements;
+                    }
+                } else {
+                    if (localElements.length) {
+                        return localElements;
+                    } else {
+                        return [];
+                    }
                 }
             }
 
@@ -1823,6 +1857,11 @@
 
             _getRegimenQuantity(regimen, period) {
 
+            }
+
+            _isSync(medication) {
+                const info = _.get(medication, "synchronizationInfo", null);
+                return info && info.availableOnLocal && info.availableOnHub && "sync" || "";
             }
 
             _getRegimen(regimen, period){
