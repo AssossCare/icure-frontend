@@ -311,8 +311,9 @@
                         .then(transactions => {
                             const transaction = transactions.find(transaction => _.get(transaction, 'cds', []).find(cd => _.get(cd, 's', null) === "CD-TRANSACTION" && _.get(cd, 'value', null) === "medicationscheme"))
                             const tsInfo = transaction.ids.find(id => id.s ==='LOCAL');
-                            if (!tsInfo) return Promise.reject("No local transaction found");
-                            return !_.isEmpty(transaction) ? this.getTransactionSet(tsInfo.sv, tsInfo.sl, tsInfo.value) : Promise.resolve({})
+                            // @todo: retrieve version when there is no LOCAL transactions (because all medication scheme elements were previously removed eg)
+                            if (!tsInfo) return Promise.resolve({});
+                            return !_.isEmpty(transaction) ? this.getTransactionSet(tsInfo.sv, tsInfo.sl, tsInfo.value) : Promise.resolve({});
                         })
                         .then(transactionSet => {
                             console.log(transactionSet);
@@ -435,24 +436,42 @@
                 return Promise.resolve(services);
             }
 
-            generateMedicationScheme(services, serviceAuthors, version){
+            generateMedicationScheme(services, serviceAuthors, version) {
                 let enc = new TextDecoder("utf-8");
-                return this._getHcp()
-                    .then(hcp => this.api.patient().getPatientWithUser(this.user,this.patient.id)
-                    .then(patientDto => this.api.bekmehr().generateMedicationSchemeExport(patientDto.id, this.language, this.hubConfig.name, version, {
-                            recipient: hcp,
-                            services : services,
-                            serviceAuthors : serviceAuthors,
-                            comment: "medicationscheme",
-                            recipientSafe: this.hubConfig.name,
-                            version: version
-                        }).then(output => {
-                            return Promise.resolve(enc.decode(output));
-                        }).catch(error=> {
-                            return Promise.reject(error);
-                        })
-                    ))
+                return Promise.all([this._getHcp(), this.api.patient().getPatientWithUser(this.user, this.patient.id)])
+                    .then(([hcp, patientDto]) => Promise.all([hcp, patientDto, this.api.crypto().extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)]))
+                    .then(([hcp, patientDto, sfks]) => this.api.bekmehr().generateMedicationSchemeExport(patientDto.id, this.language, this.hubConfig.name, version, {
+                        secretForeignKeys: sfks.extractedKeys,
+                        recipient: hcp,
+                        services : services,
+                        serviceAuthors : serviceAuthors,
+                        comment: "medicationscheme",
+                        recipientSafe: this.hubConfig.name,
+                        version: version
+                    }))
+                    .then(output => Promise.resolve(enc.decode(output)))
+                    .catch(error=> Promise.reject(error))
             }
+
+            // generateMedicationScheme1(services, serviceAuthors, version){
+            //     let enc = new TextDecoder("utf-8");
+            //     return this._getHcp()
+            //         .then(hcp => this.api.patient().getPatientWithUser(this.user,this.patient.id)
+            //             .then(patientDto => this.api.crypto().extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)
+            //                 .then(sfks => this.api.bekmehr().generateMedicationSchemeExport(patientDto.id, this.language, this.hubConfig.name, version, {
+            //                     recipient: hcp,
+            //                     services : services,
+            //                     serviceAuthors : serviceAuthors,
+            //                     comment: "medicationscheme",
+            //                     recipientSafe: this.hubConfig.name,
+            //                     version: version
+            //             }).then(output => {
+            //                 return Promise.resolve(enc.decode(output));
+            //             }).catch(error=> {
+            //                 return Promise.reject(error);
+            //             })
+            //         ))
+            // }
 
             putTransactionSet(tsXML, isTest){
                 const myblob = new Blob([tsXML]);
@@ -523,9 +542,11 @@
                 //1. get transactionset id
                 //2. get transactionset from hub
                 //3. updated the servicesreject
-                const serviceContents = services.map(service => this.api.contact().preferredContent(service, this.language));
                 const tsInfo = putResponse.transactions && putResponse.transactions.length > 0 ? putResponse.transactions[0].ids.find(id => id.s==="LOCAL") : null;
-                if (!tsInfo) return Promise.reject("No local transaction found");
+                if (!tsInfo) {
+                    return Promise.resolve(services);
+                    // return Promise.reject("No local transaction found");
+                }
                 return this.getTransactionSet(tsInfo.sv, tsInfo.sl, tsInfo.value).then(getTransaction => {
                     putResponse.transactions.forEach(putTransaction  => {
                         const idKmehr = putTransaction.ids.find(id => id.s === "ID_KMEHR").value;

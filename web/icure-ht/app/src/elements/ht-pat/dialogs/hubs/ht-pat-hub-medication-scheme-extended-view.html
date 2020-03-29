@@ -903,7 +903,7 @@
                 border-radius: 2px;
                 width: 20px;
                 height: 20px;
-                padding: 4px;
+                padding: 0px;
                 display: flex;
             }
 
@@ -969,10 +969,13 @@
             .sync {
                 background: #deffde;
             }
-
-
-</style>
-
+            .related-local {
+                background-color: rgba(255, 0, 0, 0.06);
+            }
+            .related-remote {
+                background-color: rgba(255, 0, 0, 0.12);
+            }
+        </style>
         <div class="container">
             <div id="legend">
                 <span class="legend-line bold">[[localize('legend', 'Legend', language)]]: </span>
@@ -1001,7 +1004,7 @@
                     <tbody class="mdc-data-table__content">
                         <template is="dom-repeat" id="medicationScheme" items="[[_getMedElems(currentMedicationScheme, currentMedicationScheme.*, currentMedicationScheme.msElems.synchronizationInfo.*, refresher)]]" as="medicationsWithPosology" on-tap="_showMedication">
 <!--                            <tr class="mdc-data-table__row" data-uid$="[[medicationsWithPosology.uniqId]]" data-medication$=[[medicationsWithPosology]]>-->
-                            <tr class$="mdc-data-table__row [[_isSync(medicationsWithPosology)]]">
+                            <tr class$="mdc-data-table__row [[_getSyncStyle(medicationsWithPosology)]]">
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
                                     <template is="dom-if" if="[[_isChronic(medicationsWithPosology)]]">
                                         <iron-icon class="chronicIcon" icon="icons:alarm-on"></iron-icon>
@@ -1039,7 +1042,9 @@
                                     <paper-checkbox uid="[[medicationsWithPosology.uniqId]]" on-tap="_synchronizeItemToHub" disabled="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]" checked="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]"></paper-checkbox>
                                 </td>
                                 <td class="mdc-data-table__cell mdc-data-table__cell-small">
-                                    <paper-icon-button icon="vaadin:ellipsis-dots-v" disabled="[[hasNoConflict]]" class="small-icon-button" uid="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
+                                    <template is="dom-if" if="[[_hasGroupIndex(medicationsWithPosology)]]">
+                                        <paper-icon-button icon="icons:compare-arrows" class="small-icon-button" uid="[[medicationsWithPosology.uniqId]]" on-tap="_showMedication"></paper-icon-button>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
@@ -1744,12 +1749,16 @@
                         value: () => [
                             {time: 160000, period: "afternoon"},
                             {time: 190000, period: "evening"},
-                            {time: 220000, period: "night"},
+                            {time: 220000, period: "thehourofsleep"},
                             {time: 120000, period: "midday"},
                             {time: 63000, period: "afterwakingup"}
                         ]
                     },
                     totalScore: {
+                        type: Number,
+                        value: 0
+                    },
+                    groupCount: {
                         type: Number,
                         value: 0
                     }
@@ -1778,7 +1787,13 @@
                     times:  _.get(ms, 'times', [])
                 })
                 const currentMsElems = this.get('currentMedicationScheme.msElems');
-                const updatedMsElems = this._consolidate(_.get(ms, 'msElems', []), this._getElementsFromMedications());
+                const updatedMsElems = this._consolidate(_.get(ms, 'msElems', []), this._getElementsFromMedications())
+                    .sort((a, b) => (this._getMedicationName(a) > this._getMedicationName(b) ? 1 :
+                        this._getMedicationName(a) < this._getMedicationName(b) ? -1 :
+                            !this._isSync(a) && this._isSync(b) ? 1 :
+                                this._isSync(a) && !this._isSync(b)  ? -1 :
+                                    !this._isSync(a) && !this._isSync(b) && !this._hasGroupIndex(a) && this._hasGroupIndex(b) ? 1 :
+                                        !this._isSync(a) && !this._isSync(b) && this._hasGroupIndex(a) && !this._hasGroupIndex(b) ? -1 : 0));
                 // const updatedMsElems = _.concat(_.get(ms, 'msElems', []), this._getElementsFromMedications());
                 if (!currentMsElems) {
                     this.set('currentMedicationScheme.msElems', updatedMsElems);
@@ -1794,32 +1809,87 @@
                 }
             }
 
-            _consolidate(remoteElements, localElements) {
-                if (remoteElements.length) {
-                    if (localElements.length) {
-                        const consolidation = remoteElements.reduce((consolidation, remoteElement) => {
-                            if (consolidation.local.filter(localElement => this._getScore(localElement, remoteElement) === 100)) {
-                                const syncInfo = _.get(remoteElement, "synchronizationInfo");
-                                if (syncInfo) {
-                                    syncInfo.availableOnLocal = true;
-                                }
-                                consolidation.local = consolidation.local.filter(localElement => this._getScore(localElement, remoteElement) < 100);
+            _consolidate(remotes, locals) {
+                if (remotes.length) {
+                    if (locals.length) {
+                        const consolidated = remotes.reduce((consolidating, remote) => {
+                            if (consolidating.locals.filter(localElement => this._getScore(localElement, remote) === 100).length) {
+                                this._setSync(remote);
+                                consolidating.locals = consolidating.locals.filter(localElement => this._getScore(localElement, remote) < 100);
                             }
-                            consolidation.remote.push(remoteElement);
-                            return consolidation;
-                        }, {remote: [], local: localElements});
-                        return _.concat(consolidation.remote, consolidation.local);
+                            consolidating.remotes.push(remote);
+                            return consolidating;
+                        }, {remotes: [], locals: locals});
+                        let index = 0;
+                        const grouped = consolidated.remotes.reduce((grouping, remote) => {
+                            if (!this._isSync(remote)) {
+                                const locals = grouping.locals.filter(local => (!this._hasGroupIndex(local)) && (this._getScore(local, remote) > 90));
+                                if (locals.length) {
+                                    locals.map(local => this._setGroupIndex(local, index));
+                                    this._setGroupIndex(remote, index);
+                                    index++;
+                                }
+                            }
+                            grouping.remotes.push(remote);
+                            return grouping;
+                        }, {remotes: [], locals: consolidated.locals});
+                        this.groupCount = index;
+                        return _.concat(grouped.remotes, grouped.locals);
                     } else {
-                        return remoteElements;
+                        return remotes;
                     }
                 } else {
-                    if (localElements.length) {
-                        return localElements;
+                    if (locals.length) {
+                        return locals;
                     } else {
                         return [];
                     }
                 }
             }
+
+            _getGroupIndex(element) {
+                return _.get(element, "synchronizationInfo.groupIndex", null);
+            }
+            _hasGroupIndex(element) {
+                const index = this._getGroupIndex(element);
+                return !!(index || index === 0);
+            }
+            _setGroupIndex(element, index) {
+                const info = _.get(element, "synchronizationInfo", null);
+                if (!info) return;
+                info.groupIndex = index;
+            }
+            _isSync(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                return !!(info && info.availableOnLocal && info.availableOnHub);
+            }
+            _isRemote(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                return !!(info && !info.availableOnLocal && info.availableOnHub);
+            }
+            _setSync(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                if (info) {
+                    info.availableOnLocal = true;
+                    info.availableOnHub = true;
+                }
+            }
+            // _groupByScore(elements) {
+            //     if (elements.length) {
+            //         const sortedElements = elements.sort((a, b) => (this._getMedicationName(a) > this._getMedicationName(b) ? 1 : this._getMedicationName(b) > this._getMedicationName(a) ? -1 : 0));
+            //         let index = 0;
+            //         return sortedElements.map(element => {
+            //             if (this._isSync(element) || this._hasGroupIndex(element)) return element;
+            //             const group = sortedElements.filter(sortedElement => (!this._hasGroupIndex(sortedElement)) && (this._getScore(sortedElement, element) > 60));
+            //             if (group.length) {
+            //                 group.map(e => this._setGroupIndex(e, index++));
+            //             } else {
+            //                 this._setGroupIndex(element, index++);
+            //             }
+            //             return element;
+            //         }).sort((a, b) => (this._getGroupIndex(a) > this._getGroupIndex(b) ? 1 : this._getGroupIndex(b) > this._getGroupIndex(a) ? -1 : 0));
+            //     }
+            // }
 
             _getMedicationName(medication){
                 return medication && medication.medicinalproduct && medication.medicinalproduct.intendedname ? medication && medication.medicinalproduct && medication.medicinalproduct.intendedname :
@@ -1859,11 +1929,17 @@
 
             }
 
-            _isSync(medication) {
-                const info = _.get(medication, "synchronizationInfo", null);
-                return info && info.availableOnLocal && info.availableOnHub && "sync" || "";
+            _getGroupIndexColor(medication) {
+                const index  = this._getGroupIndex(medication);
+                if (index || index === 0) return `hsl(${Math.round(360 * index / this.groupCount)}, 100%, 95%)`;
+                else return "none";
             }
-
+            _getSyncStyle(medication) {
+                if (this._isSync(medication)) return "sync";
+                else if (this._hasGroupIndex(medication)) {
+                    return this._isRemote(medication) ? "related-remote" : "related-local";
+                } else return "";
+            }
             _getRegimen(regimen, period){
 
                 const concernPeriod = period === 0 ? "morning" :
@@ -2313,7 +2389,8 @@
             }
 
             _formatTime(dayTime) {
-                return _.get(dayTime, 'hourOfDay', 0) * 10000 + _.get(dayTime, 'minuteOfHour', 0) * 100 + _.get(dayTime, 'secondOfMinute', 0);
+                const millis = _.get(dayTime, 'millis', 0);
+                return Math.trunc(millis / 3600000) * 10000 + Math.trunc((millis % 3600000) / 60000) * 100 + Math.trunc((millis % 60000) / 1000);
             }
 
             _getDayPeriod(dayTime) {
@@ -2595,7 +2672,6 @@
                         const hcp = this._createAuthor(item);
                         const med = this._createMedication(item);
                         med.author = this.user.id;
-                        // med.author = hcp.id;
                         if (med) {
                             servicesToUpload.push(med)
                         } else{
@@ -2611,9 +2687,7 @@
                 console.log("servicesToUpload", JSON.stringify(servicesToUpload));
 
                 this._setSpinnerBusy();
-                // this.$["htPatHubUtils"].initHubConfig();
                 this.$["htPatHubUtils"].putMedicationScheme(servicesToUpload, serviceAuthors, this.currentMedicationScheme.version, false)
-                    // .then(() => this.updateMedicationScheme())
                     .catch(error => this.dispatchEvent(new CustomEvent("error", {detail: {title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"), message:"Erreur  à l'émission du schéma", detail: error}, bubbles: true, composed: true})))
                     .then(() => this.updateMedicationScheme())
                     .catch(error => this.dispatchEvent(new CustomEvent("error", {detail: {title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"), message:"Erreur  à la mise à jour du schéma", detail: error}, bubbles: true, composed: true})))

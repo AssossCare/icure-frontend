@@ -110,7 +110,7 @@
                 <paper-button class="button button--other" on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_synchronizeScheme">[[localize('','Synchroniser le schéma',language)]]</paper-button>
             </div>
-            <ht-spinner active="[[busySpinner]]"></ht-spinner>
+            <ht-spinner class="spinner" active="[[busySpinner]]"></ht-spinner>
         </paper-dialog>
         <paper-dialog id="error-message-box" class="modalDialog" no-cancel-on-outside-click no-cancel-on-esc-key always-on-top>
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
