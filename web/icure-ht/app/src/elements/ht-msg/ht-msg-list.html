@@ -1914,6 +1914,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const patientId = _.trim(_.get(additionalParameters,"patientId",""))
                 const documentType = _.trim(_.get(additionalParameters,"documentType",""))
                 const documentTypeLabel = _.trim(_.get(additionalParameters,"documentTypeLabel","Analyse"))
+                const documentTitle = _.trim(_.get(additionalParameters,"documentTitle","Analyse", documentTypeLabel))
                 const documentToAssign = _.find(_.get(additionalParameters,"documentsOfMessage",[]), {id:documentId})
                 const isLabResult = !!_.size(_.get(documentToAssign,"docInfo",[]))
                 const annexesInfosAlreadyExist = !!_.size(_.get(givenMessage,"annexesInfos",[]))
@@ -1943,7 +1944,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             openingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
                             closingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
                             encounterType: { type: "CD-TRANSACTION", version: "1", code: documentType },
-                            descr: importDescription,
+                            descr: _.trim(documentTitle) ? documentTitle : importDescription,
                             tags: [
                                 { type: 'CD-TRANSACTION', code: documentType },
                                 { type: "originalEhBoxDocumentId", id: documentId },
@@ -1951,7 +1952,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             ],
                             subContacts: []
                         }
-                        if(!isLabResult) contactObjectForInstance.descr = /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name",""))
+                        // if(!isLabResult) contactObjectForInstance.descr = /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name",""))
+                        if(!isLabResult) contactObjectForInstance.descr = _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name",""))
                         return this.api.contact().newInstance(this.user, patientObject, contactObjectForInstance).then(contactInstance => [contactInstance,patientObject])
                     })
                     .then(([contactInstance,patientObject]) => {
@@ -1966,8 +1968,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         } else {
                             const svc = this.api.contact().service().newInstance( this.user, {
                                 content: _.fromPairs([[this.language, {documentId: documentId,
-                                stringValue: _.trim(_.get(documentToAssign,"name",""))}]]),
-                                label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
+                                stringValue: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name",""))}]]),
+                                // label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
+                                label: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name","")),
                                 tags: [
                                     { type: 'CD-TRANSACTION', code: documentType },
                                     { type: "originalEhBoxDocumentId", id: documentId },
@@ -1991,7 +1994,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     })
                     .then(([createdContact,patientObject]) => !isLabResult ? createdContact :
-                        this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription})
+                        this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: (_.trim(documentTitle) ? documentTitle : importDescription)})
                             .then(formInstance => this.api.form().createForm(formInstance))
                             .then(createdForm => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy( _.trim(_.get(this,"user.healthcarePartyId","")), _.trim(_.get(documentToAssign,"id","")), _.size(_.get(documentToAssign,"encryptionKeys",{})) ? _.get(documentToAssign,"encryptionKeys",{}) : _.get(documentToAssign,"delegations",{}))
                                 .then(({extractedKeys: enckeys}) => this.api.beresultimport().doImport( _.trim(_.get(documentToAssign,"id","")), _.trim(_.get(this,"user.healthcarePartyId","")), this.language, _.trim(_.get(documentToAssign,"docInfo[0].protocol","")), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
@@ -2003,7 +2006,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     { type: "originalEhBoxDocumentId", id: documentId },
                                     { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                                 ],
-                                descr: (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject")))
+                                descr: _.trim(documentTitle) ? documentTitle : (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject"))),
+                                subContacts: [{descr:_.trim(documentTitle) ? documentTitle : (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject")))}]
                             }]})))
                             .catch(e =>{ console.log("ERROR with createForm: ", e); return Promise.resolve(createdContact); })
                     )

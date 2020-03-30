@@ -234,6 +234,26 @@
 					<span>[[displayedTitle]]</span>
 					<slot name="titlebar"></slot>
 					<div>
+                        <paper-tooltip position="bottom" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
+                        <paper-menu-button class="" horizontal-align="right" dynamic-align="true" vertical-offset="26">
+                            <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                            <paper-listbox slot="dropdown-content">
+                                <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
+                                    <template is="dom-if" if="[[he.id]]">
+                                        <paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkForm">
+                                            <label class$="colour-code [[he.colour]]">
+                                                <span></span>
+                                            </label>[[he.descr]]</paper-item>
+                                    </template>
+                                    <template is="dom-if" if="[[!he.id]]">
+                                        <paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkForm">
+                                            <label class="colour-code">
+                                                <span></span>
+                                            </label>[[he.descr]]</paper-item>
+                                    </template>
+                                </template>
+                            </paper-listbox>
+                        </paper-menu-button>
                         <template is="dom-if" if="[[!readOnly]]">
                             <!--
                             <dynamic-subcontact-type-selector id="linktosub" subcontact-type="[[subcontactType]]" language="[[language]]" resources="[[resources]]" on-link-to-subcontact-type="_linkToSubcontactType"></dynamic-subcontact-type-selector>
@@ -257,26 +277,6 @@
 									<paper-tooltip position="bottom" for="printSubForm">[[localize('print','Print',language)]]</paper-tooltip>
 								</template>
 							</template>
-                            <paper-tooltip position="bottom" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
-                            <paper-menu-button class="" horizontal-align="right" dynamic-align="true" vertical-offset="26">
-                                <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger" alt="menu"></paper-icon-button>
-                                <paper-listbox slot="dropdown-content">
-                                    <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                        <template is="dom-if" if="[[he.id]]">
-                                            <paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkForm">
-                                                <label class$="colour-code [[he.colour]]">
-                                                    <span></span>
-                                                </label>[[he.descr]]</paper-item>
-                                        </template>
-                                        <template is="dom-if" if="[[!he.id]]">
-                                            <paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkForm">
-                                                <label class="colour-code">
-                                                    <span></span>
-                                                </label>[[he.descr]]</paper-item>
-                                        </template>
-                                    </template>
-                                </paper-listbox>
-							</paper-menu-button>
 							<paper-icon-button id="delform" class="button--icon-btn" icon="icons:delete" on-tap="_deleteConfirmation"></paper-icon-button>
                             <paper-tooltip position="bottom" for="delform">[[localize('del_form','Delete form',language)]]</paper-tooltip>
                         </template>
@@ -548,7 +548,7 @@
 
 			_linkForm(e) {
                 const he = this.healthElements.find(he => he.id === e.target.id || he.idService === e.target.id);
-                this.dispatchEvent(new CustomEvent('link-form', {detail: {healthElement: he}, composed: true, bubbles: true}));
+                this.dispatchEvent(new CustomEvent('link-form', {detail: {healthElement: he, ctc: _.get(this.dataProvider.getServiceInContact(), "ctc")}, composed: true, bubbles: true}));
             }
 
             _deleteForm() {

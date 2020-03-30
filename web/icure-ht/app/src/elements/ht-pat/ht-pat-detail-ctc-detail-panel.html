@@ -2679,13 +2679,13 @@
                             this.localize("from2",this.language) + ` ` +
                             ( incapacityStart ? this.api.moment(incapacityStart).format("DD/MM/YYYY") : "-" ) + ` ` +
                             this.localize("till",this.language) + ` ` +
-                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : this.api.moment(incapacityStart).format("DD/MM/YYYY") ) + ` ` +
                             includedExcludedLabel + `
                             </p>
                             <p><span class="italic">` + this.localize("csa_txt005",this.language) + `:</span> ` + _.get(_.head(_.filter(subFormServiceNameAndValues, { name:"Sortie" })), "value", "-") + `</p>
                             <p>` +
                             `<span class="italic">` + this.localize("csa_txt006",this.language) + `:</span> ` +
-                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : this.api.moment(_.cloneDeep(incapacityEnd||incapacityStart)).add(1, "days").format("DD/MM/YYYY") ) + ` ` +
                             this.localize("csa_txt007",this.language) + ` ` + precentageValueAndUnit + `
                                     ` + ( incapacityCompletelyFinished ? "<br /><span class='italic'>" + this.localize("csa_txt010",this.language) + ":</span> " + this.api.moment(incapacityCompletelyFinished).format("DD/MM/YYYY") : "" ) + `
                             </p>` +

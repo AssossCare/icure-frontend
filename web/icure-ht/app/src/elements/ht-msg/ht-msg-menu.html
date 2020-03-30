@@ -891,7 +891,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _flatRateInvoivingBox2Tapped(e){
                 e.stopPropagation()
                 e.preventDefault()
-                console.log('_flatRateInvoivingBox2Tapped')
                 this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'e_flatraterptOut', status: 'rpt'} } }));
                 this.set('inboxSelectionIndex', null)
                 this.set('documentBoxSelectionIndex', null)
@@ -906,7 +905,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _flatRateInvoivingBoxTapped(e){
                 e.stopPropagation()
                 e.preventDefault()
-                console.log('_flatRateInvoivingBoxTapped')
                 this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'e_flatrateinvOut', status: 'j3'} } }));
                 this.set('inboxSelectionIndex', null)
                 this.set('documentBoxSelectionIndex', null)

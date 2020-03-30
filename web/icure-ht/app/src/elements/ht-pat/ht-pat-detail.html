@@ -3508,7 +3508,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this._updateGlobalHcp();
 
                 this.api.code().findPaginatedCodes('be', 'BE-CONTACT-TYPE', '')
-                    .then(ct =>this.set("contactTypeList", _.orderBy(ct.rows, ['code'], ['asc'])))
+                    .then(ct =>this.set("contactTypeList", _.orderBy(ct.rows, ['label.'+this.language], ['asc'])))
 
                 this._setColsWidth()
 
