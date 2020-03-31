@@ -579,7 +579,10 @@
                     console.log("updated services", services);
                     return services;
                 })
-                .catch(error => Promise.reject(error));
+                    .then(services => {
+
+                    })
+                    .catch(error => Promise.reject(error));
             }
 
             transactionDateTime(tr){
