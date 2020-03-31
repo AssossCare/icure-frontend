@@ -1516,6 +1516,9 @@
             // { label: 'freq', name: 'frequency', score: 1, format: '_formatFrequency' },
             // @todo: solve issue with pharmaceutical code vs administration unit
             // { label: 'pos', name: 'posology', score: 5, format: '_formatPosology' },
+
+            { label: 'other', name: 'regimen', score: 1, getter: '_getRegimenHours', setter: '_setRegimenHours', defaultValue: '' },
+
             { label: 'ms_afterwakingup', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 0, path: 'quantity', defaultValue: 0 },
             { label: 'ms_morning', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 1, path: 'quantity', defaultValue: 0 },
             { label: 'ms_beforebreakfast', name: 'regimen', score: 1, filter: '_filterRegimen', argument: 2, path: 'quantity', defaultValue: 0 },
@@ -2016,7 +2019,11 @@
             }
 
             _getTimeDesc(time){
-                return  time && time.toString().length >= 14 ? time.toString().substr(8,2) + ":" + time.toString().substr(10,2) : "";
+                if (!time) return "";
+                let str = time.toString();
+                if (str.length == 6)
+                    return str.substr(0,2) + ":" + str.substr(2,2) + ":" + str.substr(4,2);
+                return  str.length >= 14 ? str.substr(8,2) + ":" + str.substr(10,2) : "";
             }
 
             _getValue(value) {
@@ -2043,12 +2050,29 @@
                 return field.format ? this[field.format](value) : value
             }
 
+            _getRegimenHours(regimen) {
+                let result = '';
+                regimen.filter(r => r.dayTime).forEach(r => {
+                    if (result.length > 0)
+                        result = result + ', ';
+                    result = result + this._getDayTimeDesc(r.dayTime) + ' (' + r.quantity + ')';
+                })
+                return result;
+            }
+
+            _setRegimenHours() {
+                this.source.regimen = this.source.regimen.filter(r => !r.dayTime);
+                this.target.regimen.filter(r => r.dayTime).forEach(r => {
+                    this.source.regimen.push(r)
+                })
+            }
+
             _getField(medication, field) {
                 let defaultValue = field.defaultValue ? field.defaultValue : ''
                 if (field.getter) {
                     if (field.name)
-                        return this[field.getter](medication[field.name])
-                    return this[field.getter](medication)
+                        return this[field.getter](medication[field.name], field.argument)
+                    return this[field.getter](medication, field.argument)
                 }
                 if (field.filter) {
                     let items = _.get(medication, field.name, [])
@@ -2090,7 +2114,7 @@
                             score: this._getScore(medication, med)
                         }
                     })
-                return candidates
+                return candidates.sort((a,b) => b.score - a.score);
             }
 
             _showMedication(e) {
@@ -2136,6 +2160,7 @@
                             source: this._format(source, field),
                             target: this._format(target, field),
                             hidden: field.hidden,
+                            setter: field.setter,
                             checked: true
                         })
                     }
@@ -2147,6 +2172,15 @@
                 this.$['medicationMergeDialog'].open()
                 this.shadowRoot.querySelector('#fields').render()
                 this.set('refresher', this.refresher + 1)
+            }
+
+            _mergeField(field) {
+                if (field.setter) {
+                    this[field.setter](this.source, this.target);
+                    return;
+                }
+                let value = this._getField(this.target, field)
+                this._setField(this.source, field, value)
             }
 
             _merge(e) {
@@ -2161,15 +2195,14 @@
                                     source: this._format(this.source, _field),
                                     target: this._format(this.target, _field),
                                     hidden: field.hidden,
+                                    setter: field.setter,
                                     checked: true
                                 }
-                                let value = this._getField(this.target, field)
-                                this._setField(this.source, field, value)
+                                this._mergeField(field);
                             }
                         }
                         else {
-                            let value = this._getField(this.target, field)
-                            this._setField(this.source, field, value)
+                            this._mergeField(field);
                         }
                     }
                 })
