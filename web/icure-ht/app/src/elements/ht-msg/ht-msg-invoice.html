@@ -1979,13 +1979,8 @@
                 return ['_invoicesChange(invoices.*)', '_detailsChanged(invoicesFromBatch.*)','activeGridItemChanged(activeGridItem)'];
             }
 
-            activeGridItemChanged(item){
-                if(!item || item.length===0)return;
-                console.log("selected:",item)
-                // this.set("sumReimb", _.reduce(item.invoice.invoicingCodes,(sum, n)=>{return sum + n.reimbursement;}, 0))
-                // this.set("sumPatInter",_.reduce(item.invoice.invoicingCodes,(sum, n)=>{return sum + n.patientIntervention;}, 0))
-                // this.set("sumDoctorSup", _.reduce(item.invoice.invoicingCodes,(sum, n)=>{return sum + n.doctorSupplement;}, 0))
-                // this.set("sumTot",_.reduce(item.invoice.invoicingCodes,(sum, n)=>{return sum + n.reimbursement + n.doctorSupplement + n.patientIntervention;}, 0))
+            activeGridItemChanged(item) {
+                return !item || item.length===0
             }
 
             ready() {
@@ -2176,7 +2171,6 @@
 
                                 return this.api.document().findByMessage(this.user.healthcarePartyId, msg)
                                     .then(docs => {
-                                        console.log(docs)
                                         const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
                                         return jsonDoc && jsonDoc.attachmentId ? this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, jsonDoc.secretForeignKeys).then(a => {
 
@@ -2313,10 +2307,8 @@
                 mutGroups.sort((a, b)=>{return a.code-b.code})
                 this.set('toggledDatas', mutGroups ) // this.set
                 for (let grp of mutGroups) {
-                    console.log("grp",grp)
                     let totPat = 0
                     for (let pat of grp.pat){
-                        console.log(">pat",pat)
                         grp.sum.oa += Number(pat.reimbursement)
                         grp.sum.pat += Number(pat.patientIntervention)
                         grp.sum.sup += Number(pat.doctorSupplement)
@@ -2410,7 +2402,6 @@
                 return this.findAndReplace(((Number(amount).toFixed(2)).toString()),'.',',')
             }
             _forceZeroNum(num) {
-                console.log('num',num)
                 return (!num) ? '0' : num.toString()
             }
 
@@ -2421,7 +2412,6 @@
 
             refreshFilter(e){
                 const param = e.target.getAttribute('param')
-                console.log("refresh, param",param)
                 const where = this.invoicesStatus // toBeSend, toBeCorrected, process, reject, accept, archive
                 const str =
                     (param === "invoiceGrid") ? this.filterInput:
@@ -2434,7 +2424,6 @@
                         (param === "selectedInputDetail") ? this.shadowRoot.querySelectorAll("#invoiceDetailContainer #invoiceGridDetail") :
                         // (param == "toBeCorrected") ? this.shadowRoot.querySelector("#"+param+" .containScroll") :
                         this.shadowRoot.querySelectorAll(".scrollBox")
-                    console.log("arrList a",param,arrList)
                     if ((param === "messagesGrid") || (param === "toBeCorrected")) {
                         let temp
                         const selected =
@@ -2442,30 +2431,22 @@
                             (where === "reject") ? "rejectedTable" :
                             (where === "toBeCorrected") ? "pendingTable" :
                             "archiveAndAccepted"
-                        console.log('selected',selected)
                         Array.prototype.slice.call(arrList).map(list=> {
-                            console.log("list", list)
                             if (list.querySelector("."+selected) ) {
                                 temp = list.querySelectorAll("."+selected)
                             }
                         })
                         arrList = temp
                     }
-                    console.log("arrList b",param,arrList)
-                    Array.prototype.slice.call(arrList).map(table=>{
-                        console.log("before exec",str,table)
-                        this.executeSearch(str,table)
-                    })
+                    Array.prototype.slice.call(arrList).map(table=> this.executeSearch(str,table))
 
                 }.bind(this), 500)
             }
 
             executeSearch(str,param) {
-                console.log("exec",str,param)
                 const grid = param
                 const tbody = grid.shadowRoot.querySelector("#scroller #table tbody")
                 const trs = tbody.querySelectorAll("tr")
-                console.log("tbody trs",tbody,trs)
                 let input = (str.includes(":") ) ? this.treatQuery(str) : str
                 input = (this.checkFilters(input)).toString().toLowerCase()
                 if (trs.length){
@@ -3165,7 +3146,6 @@
                         this._setLoadingMessage({ message: "Traitement des messages efacts", icon:"arrow-forward"});
 
                         response.forEach(message => {
-                            // console.log(message)
                             prom = prom.then(messages =>
                                 new Promise((resolve) => {
                                     if (message.detail) {
@@ -3177,19 +3157,13 @@
                                         ).then(msg => {
                                             msg ? resolve(_.concat(messages, message)) : resolve(messages)
                                         })
-                                            .catch(e => {
-                                                console.log('Erreur lors de la reception des messages efact',e)
-                                                resolve(messages)
-                                            })
+                                            .catch(e => resolve(messages))
                                     } else if (message.tack) {
                                         this.api.message().processTack(this.user, this.hcp, message)
                                             .then(rcpt => {
                                                 rcpt ? resolve(_.concat(messages, message)) : resolve(messages)
                                             })
-                                            .catch(e => {
-                                                console.log('Erreur lors de la reception des tacks efact',e)
-                                                resolve(messages)
-                                            })
+                                            .catch(e => resolve(messages))
                                     }
                                 })
                             )
@@ -3197,8 +3171,6 @@
                         })
 
                         prom = prom.then(treatedMessages => {
-                            console.log(treatedMessages)
-
                             let sprom = Promise.resolve()
                             _.chunk(treatedMessages, 20).forEach(chunk => {
                                 const tacks = chunk.filter(x => x && x.tack)
@@ -3254,7 +3226,6 @@
             }
 
             _getIconStatusClass(status) {
-                console.log("geticonstatus",status)
                 return (status === this.localize('inv_acc_tre','Accepted for treatment',this.language)) ? "invoice-status--blueStatus" :
                     (status === this.localize('inv_to_be_send','To be send',this.language)) ? (!this.statusToBeSend)  ? "invoice-status--blueStatus" : "invoice-status--orangeStatus" :
                     (status === this.localize('inv_to_be_corrected','To be corrected',this.language))  ? "invoice-status--redStatus" :
@@ -3271,7 +3242,6 @@
                     ""
             }
             _getTxtStatusColor(status,amount) {
-                console.log("gettxtstatus",status,amount)
                 if (amount > 0) {
                     return (status === this.localize('inv_par_acc','Partially accepted',this.language)) ? "txtcolor--orangeStatus" :
                     (status === this.localize('inv_full_acc','Fully accepted',this.language)) ? "txtcolor--greenStatus" :
@@ -3290,7 +3260,7 @@
                 }
             }
 
-            _isEqual(a,b) {console.log('a',a);return (a === b)}
+            _isEqual(a,b) {return a === b}
             _isPartiallyAccepted(test) { return (test === this.localize('inv_par_acc','Partially accepted',this.language))}
             _isMoreThen(a,b,so) {return (a>b)? so : 'false'}
 
@@ -3396,7 +3366,6 @@
                                   this.api.message().modifyMessage(msg)
                                       .then(msg => this.api.register(msg, 'message'))
                                       .then(msg => {
-                                          console.log(msg)
                                           this.fetchMessageToBeSendOrToBeCorrected()
                                           this.set('_isLoading', false );
                                       })

@@ -1861,14 +1861,7 @@
 
             alreadyExists(items, item){
                 const exist = items.filter(itm => itm.dateCode === item.dateCode && itm.codeNomenclature === item.codeNomenclature);
-                if (exist && exist.length > 0){
-                    console.log("item already exists", item, exist);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return exist && exist.length > 0
             }
 
             convertDate(sDate){
@@ -1895,10 +1888,8 @@
             _runFlatRateCheck(){
                 this.set('_isLoading', true);
                 return this._flatrateCheckOnAllPatients(Number(moment().format('YYYYMM'))).then(resList =>{
-                    console.log("resList", resList);
                     const insIds = resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).map(res => res.mutCheck.insuranceId);
                     return this._getInsurancesDataByIds(_.uniq(insIds)).then(insList => {
-                       console.log("insList",insList);
                         resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).forEach(res => {
                             res.flatrateInfo.MUT = insList.filter(ins => ins.id === res.mutCheck.insuranceId) && insList.filter(ins => ins.id === res.mutCheck.insuranceId).length ?
                                 insList.filter(ins => ins.id === res.mutCheck.insuranceId)[0].code : "---";
@@ -1973,7 +1964,6 @@
             _viewSelection(){
                 //TODO: implement data selection based on List
                 var resultlist = this.flatRateCheckList;
-                console.log("selectedList", this.selectedList);
                 switch(this.selectedList){
                     case 'main':
                         break;
@@ -2192,7 +2182,6 @@
                             resList.forEach(res => {
                                 res.geninsErrors = this.getGeninsErrors(res);
                             })
-                            console.log("check result", resList);
                             this.set("geninsResList", resList.filter(res => res.geninsErrors && res.geninsErrors.length && res.geninsErrors.length > 0));
                             this.set('_isLoading', false);
                             this.set('_loadingDetail', true);
@@ -2226,7 +2215,6 @@
             _exportXLSX(){
                 const grd = this.shadowRoot.querySelector('#' + this.selectedList);
                 const data = grd.items.map(itm => itm.flatrateInfo);
-                console.log("grid data", data);
                 this.generateXlsFile(data);
             }
 

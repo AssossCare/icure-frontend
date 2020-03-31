@@ -103,7 +103,7 @@
 <!--            <div class="content hubMedicationSchemaDetailDialog">-->
             <h2 class="modal-title">[[localize('ms-title', 'Schéma de médication', language)]]</h2>
             <div class="content container">
-                <ht-pat-hub-medication-scheme-extended-view id="htPatHubMedicationSchemeExtendedView" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" contacts="[[contacts]]" on-error="_showErrorMessage" on-spinner-busy="_setSpinnerBusy" on-spinner-idle="_setSpinnerIdle"></ht-pat-hub-medication-scheme-extended-view>
+                <ht-pat-hub-medication-scheme-extended-view id="htPatHubMedicationSchemeExtendedView" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" contacts="[[contacts]]" current-contact="[[currentContact]]" on-error="_showErrorMessage" on-spinner-busy="_setSpinnerBusy" on-spinner-idle="_setSpinnerIdle"></ht-pat-hub-medication-scheme-extended-view>
             </div>
 <!--            </div>-->
             <div class="buttons">
@@ -234,7 +234,6 @@
                 }
                 console.log("decreasing spinner counter: ", this.busySpinnerCounter);
             }
-
         }
         customElements.define(htPatHubMedicationSchemeDialog.is, htPatHubMedicationSchemeDialog);
     </script>

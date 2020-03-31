@@ -229,15 +229,19 @@
             unlinkService(e){
                 const he = e.detail.healthElement
                 if (!he) return;
-                const heIndex = _.findIndex(this.currentContact.subContacts,subC => subC.healthElementId === he.id);
-                this.splice("currentContact.subContacts", heIndex , 1)
-                this.scanServicesAndScheduleSave(this.currentContact)
+
+                let formContact = _.get(this.dataProvider.getServiceInContact(), "ctc")
+                let ctc = formContact || this.currentContact
+                const heIndex = _.findIndex(ctc.subContacts,subC => subC.healthElementId === he.id);
+                if(formContact) {_.get(formContact,"subContacts",[]).splice(heIndex , 1); } else { this.splice("currentContact.subContacts", heIndex , 1); }
+                this.scanServicesAndScheduleSave(ctc,1000)
+                setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: ctc},bubbles: true,composed: true})), 3000)
 			}
 
             linkForm(e) {
                 const he = e.detail.healthElement
                 if (!he) return;
-                const ctc = this.currentContact
+                const ctc = e.detail.ctc || this.currentContact
                 if (!he.id) {
                     this.promoteServiceToHealthElement(he).then(he => {
                         _.assign(e.detail.healthElement, he) //Prevent subsequent promotions
@@ -253,7 +257,8 @@
 					this.push('contact.subContacts', {formId: this.formId, healthElementId: he.id, services: []})
 				else
 					ctc.subContacts.push({formId: this.formId, healthElementId: he.id, services: []})
-				this.scanServicesAndScheduleSave(ctc);
+				this.scanServicesAndScheduleSave(ctc,1000);
+				setTimeout(() => this.dispatchEvent(new CustomEvent("refresh-contacts", {detail:{contact: ctc},bubbles: true,composed: true})), 3000)
 			}
 
             _openActionDialog(e, detail) {
@@ -350,7 +355,7 @@
                 }
             }
 
-            scanServicesAndScheduleSave(ctc) {
+            scanServicesAndScheduleSave(ctc,saveTimeout=10000) {
                 if (!ctc) {
                     return;
                 }
@@ -405,7 +410,7 @@
                             return new Promise((resolve,reject) =>
                                 this.dispatchEvent(new CustomEvent('must-save-contact', {detail: {contact: ctc, preSave: () => this.dataProvider.computeFormulas(['OnSave']), postSave:(ctc) => resolve(ctc), postError: (e) => reject(e)}, bubbles: true, composed: true})))//Must be fired before the end of the save otherwise the element won't exist anymore and the event will not bubble up
                         };
-                        this.saveTimeout = setTimeout(saveAction, 10000); //Make sure the save is done with the right saveAction by using a const
+                        this.saveTimeout = setTimeout(saveAction, saveTimeout); //Make sure the save is done with the right saveAction by using a const
                     })
 				})
 

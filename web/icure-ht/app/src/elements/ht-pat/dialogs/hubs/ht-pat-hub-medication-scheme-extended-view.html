@@ -1866,10 +1866,6 @@
                 const info = _.get(element, "synchronizationInfo", null);
                 return !!(info && info.availableOnLocal && info.availableOnHub);
             }
-            _isRemote(element) {
-                const info = _.get(element, "synchronizationInfo", null);
-                return !!(info && !info.availableOnLocal && info.availableOnHub);
-            }
             _setSync(element) {
                 const info = _.get(element, "synchronizationInfo", null);
                 if (info) {
@@ -1877,22 +1873,23 @@
                     info.availableOnHub = true;
                 }
             }
-            // _groupByScore(elements) {
-            //     if (elements.length) {
-            //         const sortedElements = elements.sort((a, b) => (this._getMedicationName(a) > this._getMedicationName(b) ? 1 : this._getMedicationName(b) > this._getMedicationName(a) ? -1 : 0));
-            //         let index = 0;
-            //         return sortedElements.map(element => {
-            //             if (this._isSync(element) || this._hasGroupIndex(element)) return element;
-            //             const group = sortedElements.filter(sortedElement => (!this._hasGroupIndex(sortedElement)) && (this._getScore(sortedElement, element) > 60));
-            //             if (group.length) {
-            //                 group.map(e => this._setGroupIndex(e, index++));
-            //             } else {
-            //                 this._setGroupIndex(element, index++);
-            //             }
-            //             return element;
-            //         }).sort((a, b) => (this._getGroupIndex(a) > this._getGroupIndex(b) ? 1 : this._getGroupIndex(b) > this._getGroupIndex(a) ? -1 : 0));
-            //     }
-            // }
+            _isRemote(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                return !!(info && !info.availableOnLocal && info.availableOnHub);
+            }
+            _isLocal(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                return !!(info && info.availableOnLocal && !info.availableOnHub);
+            }
+            _setMerging(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                if (!info) return;
+                info.merging = true;
+            }
+            _isMerging(element) {
+                const info = _.get(element, "synchronizationInfo", null);
+                return !!(info && info.merging);
+            }
 
             _getMedicationName(medication){
                 return medication && medication.medicinalproduct && medication.medicinalproduct.intendedname ? medication && medication.medicinalproduct && medication.medicinalproduct.intendedname :
@@ -2107,14 +2104,15 @@
             }
 
             _getCandidates(medication, flag) {
-                let candidates = this.currentMedicationScheme.msElems
-                    .filter(med => med.uniqId != medication.uniqId && !med.synchronizationInfo[flag]).map(med => {
+                return this.currentMedicationScheme.msElems
+                    .filter(med => med.uniqId !== medication.uniqId && !med.synchronizationInfo[flag])
+                    .map(med => {
                         return {
                             medication: med,
                             score: this._getScore(medication, med)
                         }
                     })
-                return candidates.sort((a,b) => b.score - a.score);
+                return candidates.sort((a, b) => a.score < b.score ? 1 : a.score > b.score ? -1 : 0);
             }
 
             _showMedication(e) {
@@ -2125,7 +2123,7 @@
 
                 // const uid = e.currentTarget.dataset.uid
                 const uid = e.target.uid;
-                let medication = this.currentMedicationScheme.msElems.find(m => m.uniqId == uid);
+                let medication = this.currentMedicationScheme.msElems.find(m => m.uniqId === uid);
                 if (medication) {
                     this.set('selectedMedication', medication)
                     let si = this.selectedMedication.synchronizationInfo
@@ -2146,14 +2144,11 @@
             }
 
             _compare(e) {
-                const uid = e.target.dataset.uid
-                let source = this.selectedMedication
-                let target = this.candidates.find(candidate => candidate.medication.uniqId == uid).medication
-                let fields = []
-                all_fields.forEach(field => {
-                    let source_value = this._getField(source, field)
-                    let target_value = this._getField(target, field)
-                    if (source_value != target_value) {
+                const uid = e.target.dataset.uid;
+                const source = this.selectedMedication;
+                const target = this.candidates.find(candidate => candidate.medication.uniqId === uid).medication;
+                const fields = all_fields.reduce((fields, field) => {
+                    if (this._getField(source, field) !== this._getField(target, field)) {
                         fields.push({
                             name: field.name,
                             label: field.label,
@@ -2164,14 +2159,16 @@
                             checked: true
                         })
                     }
-                })
-                this.set('source', source)
-                this.set('target', target)
-                this.set('fields', fields)
-                this.$['medicationDetailDialog'].close()
-                this.$['medicationMergeDialog'].open()
-                this.shadowRoot.querySelector('#fields').render()
-                this.set('refresher', this.refresher + 1)
+                    return fields;
+                }, []);
+                this.set('source', source);
+                this.set('target', target);
+                this.splice('fields', 0, this.fields.length, ...fields);
+                // this.set('fields', fields);
+                this.$['medicationDetailDialog'].close();
+                this.$['medicationMergeDialog'].open();
+                // this.shadowRoot.querySelector('#fields').render();
+                this.set('refresher', this.refresher + 1);
             }
 
             _mergeField(field) {
@@ -2187,7 +2184,7 @@
                 this.fields.forEach(field => {
                     if (!field.checked) {
                         if (field.sibling) {
-                            let _field = all_fields.find(f => f.name == field.sibling)
+                            const _field = all_fields.find(f => f.name === field.sibling)
                             if (_field) {
                                 field = {
                                     name: _field.name,
@@ -2205,13 +2202,18 @@
                             this._mergeField(field);
                         }
                     }
-                })
-                let medications = this.currentMedicationScheme.msElems
-                Object.assign(medications.find(m => m.uniqId == this.source.uniqId), this.source)
-                this.currentMedicationScheme.msElems = medications.filter(m => m.uniqId != this.target.uniqId)
-                this.$['medicationMergeDialog'].close()
-                this.shadowRoot.querySelector('#medicationScheme').render()
-                this.set('refresher', this.refresher + 1)
+                });
+                // let medications = this.currentMedicationScheme.msElems;
+                // Object.assign(medications.find(m => m.uniqId === this.source.uniqId), this.source);
+                // this.currentMedicationScheme.msElems = medications.filter(m => m.uniqId !== this.target.uniqId);
+
+                const local = this._isLocal(this.source) ? this.source : this.target;
+                this._setMerging(local);
+                this.$['medicationMergeDialog'].close();
+                this._synchronizeScheme();
+
+                // this.shadowRoot.querySelector('#medicationScheme').render()
+                // this.set('refresher', this.refresher + 1);
             }
 
             _isChecked(field) {
@@ -2247,6 +2249,7 @@
                     const medicationValue = this.api.contact().medicationValue(med, this.language) || {};
                     const beginMoment = _.get(medicationValue, "beginMoment", null);
                     const endMoment = _.get(medicationValue, "endMoment", null);
+                    // @todo: weekly posology
                     const frequency = {periodicity: {cd: {value: "D"}}};
                     return {
                         idKmehr: null,
@@ -2272,11 +2275,13 @@
                         beginTimeStamp: beginMoment,
                         authors: [],
                         uniqId: this.api.crypto().randomUuid(),
+                        source: med,
                         synchronizationInfo: {
                             availableOnHub: false,
                             availableOnLocal: true,
                             localToHub: false,
-                            hubToLocal: false
+                            hubToLocal: false,
+                            merging: false
                         }
                     }
                 })
@@ -2313,7 +2318,7 @@
                     const reg = this._decomposeRegimen(_.get(med, 'regimen', null));
                     const posology = this.$["htPatHubUtils"].regimenToPosology(reg);
                     const dateFromHub = this._getDateFromHub(_.get(med, 'beginmoment', null));
-                    let el = {
+                    const el = {
                         idKmehr: _.get(_.get(msElement, 'ids', []).find(id => _.get(id, 's', null) === "ID_KMEHR"), 'value', null),
                         medicationHubId: _.get(_.get(msElement, 'ids', []).find(id => _.get(id, 's', null) === "LOCAL"), 'value', null),
                         adaptationflag: !!_.size(_.get(hce.find(itm => _.get(itm, 'contents', []).find(it => _.get(it, 'cds', []).find(cd => _.get(cd, 's', null) ==="CD_MS_ADAPTATION"))), 'contents', []).filter(it => _.get(it, 'cds', []).find(cd => _.get(cd, 'value', null) === "adaptationflag"))) > 0,
@@ -2341,11 +2346,13 @@
                         beginTimeStamp: dateFromHub ? moment(dateFromHub, 'DD/MM/YYYY').format('YYYYMMDD') : null,
                         authors: _.get(msElement, 'author.hcparties', []),
                         uniqId: this.api.crypto().randomUuid(),
+                        sourceId: med.id,
                         synchronizationInfo: {
                             availableOnHub: true,
                             availableOnLocal: false,
                             localToHub: false,
-                            hubToLocal: false
+                            hubToLocal: false,
+                            merging: false
                         }
                     };
 
@@ -2509,7 +2516,7 @@
                 }
             }
 
-            _createMedication(data) {
+            _createMedication(data, isLocal) {
                 const medicationContent = {
                     medicationValue: {regimen: [], substitutionAllowed: true},
                     // stringValue: data.medicationHubId
@@ -2522,18 +2529,22 @@
 
                 const medicationValue = medicationContent.medicationValue;
 
-                data.regimen && data.regimen.length && data.regimen.forEach(dataReg =>
-                    medicationValue.regimen.push(Object.assign({
-                            administratedQuantity: {
-                                quantity: dataReg.quantity,
-                                administrationUnit: this.api.code().normalize(`CD-ADMINISTRATIONUNIT|${dataReg.administrationUnit}|1`)
-                            }
-                        },
-                        dataReg && dataReg.dayTime ? {timeOfDay: dataReg.dayTime} : (dataReg && dataReg.dayPeriod ? {dayPeriod: this.api.code().normalize(`CD-DAYPERIOD|${dataReg.dayPeriod.toLowerCase()}|1`)} : {})
-                    ))
-                );
-
-                const isMedication = !data.endmoment;
+                data.regimen && data.regimen.length && data.regimen.forEach(dataReg => {
+                    const administratedQuantity = {quantity: dataReg.quantity};
+                    Object.assign(administratedQuantity, isLocal ? {
+                        unit: _.get(this.administrationUnit.find(adm => adm.code === dataReg.administrationUnit) || {}, `label.${this.language}`, this.localize("uni", "Unités"))
+                    } : {
+                        administrationUnit: this.api.code().normalize(`CD-ADMINISTRATIONUNIT|${dataReg.administrationUnit}|1`)
+                    });
+                    const regimen = Object.assign({administratedQuantity: administratedQuantity}, dataReg && dataReg.dayTime ? {
+                            timeOfDay: dataReg.dayTime
+                        } : (dataReg && dataReg.dayPeriod ? {
+                                dayPeriod: this.api.code().normalize(`CD-DAYPERIOD|${dataReg.dayPeriod.toLowerCase()}|1`)
+                            } : {}
+                        )
+                    )
+                    medicationValue.regimen.push(regimen);
+                });
 
                 if (data.compoundPrescription) {
                     medicationValue.compoundPrescription = data.compoundPrescription;
@@ -2568,7 +2579,8 @@
                 }
 
                 medication.label = data.endmoment ? "Prescription" : "Medication";
-                medication.id = this.api.crypto().randomUuid();
+                const id = this.api.crypto().randomUuid();
+                medication.id = this._isRemote(data) ? _.get(data, "source.id", id) : id;
                 medication.author = this.user.id;
                 return this.api.contact().service().newInstance(this.user, medication);
             }
@@ -2695,35 +2707,90 @@
                     .finally(() => this._setSpinnerIdle())
             }
 
+            _refresh() {
+                this.dispatchEvent(new CustomEvent('refresh', {
+                    detail: {},
+                    bubbles: true,
+                    composed: true
+                }));
+            }
+
+            _saveService(service) {
+                service.modified = +new Date();
+                if (!service.id) {
+                    service.id = this.api.crypto().randomUuid();
+                }
+                if (!service.valueDate) {
+                    service.valueDate = parseInt(moment().format('YYYYMMDDHHmmss'));
+                }
+                if (!service.openingDate) {
+                    service.openingDate = service.valueDate;
+                }
+                if (!service.created) {
+                    service.created = service.modified;
+                }
+                const ctc = this.api.contact().contactOfService(this.get('contacts'), service.id) || this.currentContact;
+                let sc = this.currentContact.subContacts.find(sc => sc.services.find(sId => service.id));
+                if (!sc) {
+                    sc = ctc.subContacts.find(sc => sc.services.find(sId => service.id)) || {};
+                    this.currentContact.subContacts.push(sc = { formId: sc.formId, planOfActionId: sc.planOfActionId, healthElementId: sc.healthElementId, services: [] });
+                    sc.services.push({ serviceId: service.id });
+                }
+                const oldSvcIdx = this.currentContact.services.findIndex(s => s.id === service.id);
+                if (oldSvcIdx > -1) {
+                    this.currentContact.services.splice(oldSvcIdx, 1);
+                }
+                this.currentContact.services.push(service);
+                return service;
+            }
 
             _synchronizeScheme(){
                 console.log("currentMedicationScheme", JSON.stringify(this.currentMedicationScheme));
-                const servicesToUpload = [];
+                const uploads = [];
+                const downloads = [];
                 const serviceAuthors = [];
                 _.get(this.currentMedicationScheme, "msElems", []).map(item => {
                     if(_.get(item, 'synchronizationInfo.localToHub', false) || _.get(item, 'synchronizationInfo.availableOnHub', false)) {
-                        const hcp = this._createAuthor(item);
-                        const med = this._createMedication(item);
-                        med.author = this.user.id;
-                        if (med) {
-                            servicesToUpload.push(med)
-                        } else{
-                            console.log("_createMedication Failed for ", item)
-                        }
-                        serviceAuthors.push(hcp);
-                    } else if(_.get(item, 'synchronizationInfo.hubToLocal', false)) {
-                        const drugType = !_.isEmpty(_.get(item, 'medicinalproduct', {})) ? "CD-DRUG-CNK" : !_.isEmpty(_.get(item, 'substanceproduct', {})) ? "CD-VMPGROUP" : "compoundPrescription"
-
-                        //these are to be stored local
+                        serviceAuthors.push(this._createAuthor(item));
+                        uploads.push(this._createMedication(item, false));
+                    } else if(_.get(item, 'synchronizationInfo.hubToLocal', false) || _.get(item, 'synchronizationInfo.availableOnLocal', false)) {
+                        if (this._isRemote(item) || this._isMerging(item))
+                            downloads.push(this._createMedication(item, true));
                     }
                 });
-                console.log("servicesToUpload", JSON.stringify(servicesToUpload));
+                console.log("services to upload", JSON.stringify(uploads));
+                console.log("services to download", JSON.stringify(downloads));
 
                 this._setSpinnerBusy();
-                this.$["htPatHubUtils"].putMedicationScheme(servicesToUpload, serviceAuthors, this.currentMedicationScheme.version, false)
-                    .catch(error => this.dispatchEvent(new CustomEvent("error", {detail: {title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"), message:"Erreur  à l'émission du schéma", detail: error}, bubbles: true, composed: true})))
+                return new Promise((resolve) => {
+                    if (downloads.length) {
+                        const services = downloads.map(download => this._saveService(download));
+                        const prescriptions = services.filter(svc => svc.label === "Prescription");
+                        this.prescriptions = this.prescriptions.filter(prescription => !prescriptions.some(svc => svc.id === prescription.id)).concat(prescriptions);
+                        const medications = services.filter(svc => svc.label === "Medication");
+                        this.medications = this.medications.filter(medication => !medications.some(svc => svc.id === medication.id)).concat(medications);
+                        return this.api.contact().modifyContactWithUser(this.user, this.currentContact).then(() => resolve());
+                    } else {
+                        return resolve();
+                    }
+                })
+                    .then(() => this.$["htPatHubUtils"].putMedicationScheme(uploads, serviceAuthors, this.currentMedicationScheme.version, false))
+                    .catch(error => this.dispatchEvent(new CustomEvent("error", {
+                        detail: {
+                            title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
+                            message: "Erreur  à l'émission du schéma",
+                            detail: error
+                        }, bubbles: true, composed: true
+                    })))
                     .then(() => this.updateMedicationScheme())
-                    .catch(error => this.dispatchEvent(new CustomEvent("error", {detail: {title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"), message:"Erreur  à la mise à jour du schéma", detail: error}, bubbles: true, composed: true})))
+                    .catch(error => this.dispatchEvent(new CustomEvent("error", {
+                        detail: {
+                            title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
+                            message: "Erreur  à la mise à jour du schéma",
+                            detail: error
+                        }, bubbles: true, composed: true
+                    })))
+                    .then(() => this.dispatchEvent(new CustomEvent("refresh", {detail: {}, bubbles: true, composed: true})))
                     .finally(() => this._setSpinnerIdle())
             }
 

@@ -608,7 +608,7 @@ class HtPatHeTreeDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     _shortDateFormat(date, altDate) {
-        return (date || altDate) && this.api.moment(date || altDate).format('MM/YY') || '';
+        return (date || altDate) && this.api.moment(date || altDate).format('MM/YY') ? _.includes((date && date.toString() || altDate && altDate.toString()), '0000') ?  this.api.moment(date || altDate).format('YYYY') :  this.api.moment(date || altDate).format('MM/YY') : '';
     }
 
     _evidenceLinkerPicture(){

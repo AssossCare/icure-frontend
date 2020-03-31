@@ -1156,8 +1156,8 @@
                                     <div class="invoiceDateInfo">
                                         <template is="dom-if" if="[[!_isInvoiceEattest(item,item.*)]]">
                                             <template is="dom-if" if="[[_ifStatusDateExist(item.printedDate,item.*)]]">
-                                                <paper-button class="item">
-                                                    <iron-icon icon="icons:print" class="invoiceDateInfoIcon"></iron-icon>
+                                                <paper-button class="item" data-item$="[[item.id]]">
+                                                    <iron-icon icon="icons:print"  class="invoiceDateInfoIcon" style="background-color:var(--app-status-color-ok);"></iron-icon>
                                                     <span>[[_formatInvoiceDate(item.printedDate)]]</span>
                                                 </paper-button>
                                             </template>
@@ -1454,7 +1454,7 @@
                                         </iron-icon>
                                         <div id="favcodesScroller" class="favcodes-box">
                                             <template is="dom-repeat" items="[[favoriteCode]]">
-                                                <paper-button style$="transform:translateX([[favcodesScrollX]]px)" on-tap="_addNmclButtonTigger" data-item$="[[item]]" class="nmclFavoriteCode">
+                                                <paper-button style$="transform:translateX([[favcodesScrollX]]px)" on-tap="_addNmcl" data-item$="[[item]]" class="nmclFavoriteCode">
                                                     [[item.code]]
                                                     <iron-icon icon="clear" class="clearBtn" data-item$="[[item.id]]"
                                                                on-tap="_deleteFavoriteCode"></iron-icon>
@@ -1474,7 +1474,7 @@
                                                       item-label-path="label.[[language]]" item-value-path="id" on-filter-changed=""
                                                       label="[[localize('code_type','Code type',language)]]"
                                                       value="{{selectedMediumCodeType}}" always-float-label="true"></vaadin-combo-box>
-                                    <paper-icon-button id="add-nmcl" icon="icons:add-circle-outline" on-tap="_addNmclButtonTigger"></paper-icon-button>
+                                    <paper-icon-button id="add-nmcl" icon="icons:add-circle-outline" on-tap="_addNmcl"></paper-icon-button>
                                     <paper-tooltip position="left" for="add-nmcl">[[localize('add_nmcl','Add nomenclature',language)]]</paper-tooltip>
                                     <paper-icon-button id="add-fav" icon="icons:star" on-tap="_addFavoriteCode"></paper-icon-button>
                                     <paper-tooltip position="left" for="add-fav">[[localize('add_to_fav','Add to favorites',language)]]</paper-tooltip>
@@ -1626,7 +1626,7 @@
                                 <paper-button disabled="[[isLoadingJustif]]" class="button button--save" on-tap="_cancelDialogOpen">[[localize('can_eattest','Cancel eattest',language)]]</paper-button>
                             </template>
                         </template>
-                        <paper-button on-tap="_switchBetweenMethodForJustif" class="button" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
+                        <paper-button on-tap="_switchBetweenMethodForJustif" class="button button--save" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
                     </template>
                 </div>
         </paper-dialog>
@@ -1773,21 +1773,6 @@
                 <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_destroyInvoice">[[localize('inv_cancel_eattest','Annuler l\'eattest',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_confirmDerog">[[localize('valid','Validate',language)]]</paper-button>
-            </div>
-        </paper-dialog>
-
-
-        <paper-dialog id="chooseTarifDialog" style="width: 600px">
-            <h2 class="modal-title">[[localize('invoicing_choose_tarif_title','invoicing_choose_tarif_title',language)]]</h2>
-            <div class="content" style="height: 100px">
-                <vaadin-combo-box id="invoice-montant" items="[[tarifPossible]]"
-                                  item-label-path="label.[[language]]" item-value-path="id"
-                                  label="[[localize('montant','montant',language)]]"
-                                  value="{{chooseTarif}}" style="width: 600px"></vaadin-combo-box>
-            </div>
-            <div class="buttons">
-                <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
-                <paper-button class="button button--save" on-tap="_chooseTarifButtonTigger" dialog-confirm>[[localize('valid','Validate',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -2607,18 +2592,6 @@
                     hasErrorPayment:{
                         type:String,
                         value:""
-                    },
-                    tarifPossible:{
-                        type: Array,
-                        value: []
-                    },
-                    chooseTarif:{
-                        type: String,
-                        value : ""
-                    },
-                    tempAddNmcl:{
-                        type: Object,
-                        value: null
                     }
                 }
             }
@@ -2685,6 +2658,9 @@
                     return
                 }
 
+                if (_.get(this,"selectedInvoice.invoicingCodes",[]).find(code => code.code.includes("101990") || code.code.includes("101135")) && _.get(this,'selectedInvoice.sentMediumType','')==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                }
 
                 this.api.tarification().getTarifications(new models.ListOfIdsDto({ids: selected.invoicingCodes.map(tar => tar.tarificationId)})).then(nmcls =>
                     nmcls.map(nmcl => {
@@ -2714,6 +2690,8 @@
                     invoiceId !== "" ? this.calculateTotalOfInvoice() : null
                     this.selectedInvoice.invoicingCodes.length > 0 ? this.set('npi', true) : this.set('npi', false)
                     this.set('isInvoiceClosed', !!this.selectedInvoice.sentDate)
+
+                    this.set("manualEncoding.typeInput",0)
 
                     this.$['nmclGrid'].clearCache()
                 })
@@ -2840,6 +2818,9 @@
 
             analyzeMediumType(e) {
                 if(!this.selectedInvoice || !this.selectedMediumCodeType) return;
+                if(_.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  code.code.includes("101990") || code.code.includes("101135")) && e.detail.value==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                }
                 this.set('selectedMediumCodeType', e.detail.value)
                 this.set('selectedInvoice.sentMediumType',e.detail.value)
                 const mediumType = e.detail.value
@@ -2904,56 +2885,41 @@
                 return label && label[this.language]
             }
 
-            _addNmclButtonTigger(e){
-                this.set("chooseTarif","")
-                this.set("tarifPossible",[])
+            _addNmcl(e) {
                 this.set("isTarificationMcnError", false)
                 this.set("isTarificationError", false)
                 this.set('isDetailNmcl', false)
                 this.set('isNmclVerified', false)
                 this.set('npi', false)
+
                 if (this.shadowRoot.querySelector("#nmcl-search").selectedItem || e.target.dataset.item) {
-                    this._addNmcl((e.target.dataset.item) ? JSON.parse(e.target.dataset.item) : this.shadowRoot.querySelector("#nmcl-search").selectedItem)
-                }
-                this.calculateTotalOfInvoice()
-                this.set('nmcl-value','')
-                this.shadowRoot.querySelector("#nmcl-search").focus()
-            }
 
-            _chooseTarifButtonTigger(e){
-                this._addNmcl(this.tempAddNmcl);
-                this.set("tempAddNmcl",null);
-            }
-
-            _addNmcl(nmcl) {
-                this.set("tempAddNmcl",nmcl)
-                const newNmcl = {
-                    code: nmcl.code,
-                    tarificationId: nmcl.id,
-                    label: nmcl.label[this.language],
-                    totalAmount: Number(0.00).toFixed(2),
-                    reimbursement: Number(0.00).toFixed(2),
-                    patientIntervention: Number(0.00).toFixed(2),
-                    doctorSupplement: Number(0.00).toFixed(2),
-                    units: 1,
-                    canceled: false,
-                    accepted: false,
-                    pending: false,
-                    resent: false,
-                    dateCode: this.selectedInvoice.invoiceDate,
-                    prescriberNeeded: nmcl.needsPrescriber,
-                    isRelativePrestation: nmcl.hasRelatedCode,
-                    valid: false,
-                    id: this.api.crypto().randomUuid(),
-                    logicalId: this.api.crypto().randomUuid(),
-                    prescriberNihii: null,
-                    prescriberNorm: 0,
-                    derogationMaxNumber: 0,
-                    side : 0,
-                    transplantationCode : 0
-                }
-
-                if(!this.tarifPossible.length){
+                    const nmcl = (e.target.dataset.item) ? JSON.parse(e.target.dataset.item) : this.shadowRoot.querySelector("#nmcl-search").selectedItem
+                    const newNmcl = {
+                        code: nmcl.code,
+                        tarificationId: nmcl.id,
+                        label: nmcl.label[this.language],
+                        totalAmount: Number(0.00).toFixed(2),
+                        reimbursement: Number(0.00).toFixed(2),
+                        patientIntervention: Number(0.00).toFixed(2),
+                        doctorSupplement: Number(0.00).toFixed(2),
+                        units: 1,
+                        canceled: false,
+                        accepted: false,
+                        pending: false,
+                        resent: false,
+                        dateCode: this.selectedInvoice.invoiceDate,
+                        prescriberNeeded: nmcl.needsPrescriber,
+                        isRelativePrestation: nmcl.hasRelatedCode,
+                        valid: false,
+                        id: this.api.crypto().randomUuid(),
+                        logicalId: this.api.crypto().randomUuid(),
+                        prescriberNihii: null,
+                        prescriberNorm: 0,
+                        derogationMaxNumber: 0,
+                        side : 0,
+                        transplantationCode : 0
+                    }
                     const ins = this.patient.insurabilities.find(i => !i.endDate) || null;
                     const age = moment().diff(this.api.moment(this.patient.dateOfBirth), 'years', true)
                     const dmg = this.patient.patientHealthCareParties.find(hcp => !hcp.referral)
@@ -2994,32 +2960,25 @@
 
                             if (status.value && moment().isBetween(this.api.moment(val.startOfValidity), this.api.moment(val.endOfValidity))) {
 
-                                this.push("tarifPossible",{
-                                    totalAmount : val.totalAmount,
-                                    reimbursement : val.reimbursement,
-                                    patientIntervention : val.patientIntervention,
-                                    doctorSupplement :val.doctorSupplement,
-                                    id: this.api.crypto().randomUuid(),
-                                    label : val.label
-                                })
+                                newNmcl.totalAmount = Number(Number(newNmcl.totalAmount) + Number(val.totalAmount)).toFixed(2);
+                                newNmcl.reimbursement = Number(Number(newNmcl.reimbursement) + Number(val.reimbursement)).toFixed(2);
+                                newNmcl.patientIntervention = Number(Number(newNmcl.patientIntervention) + Number(val.patientIntervention)).toFixed(2);
+
+                                // Patient has NO ins, charge it with all due fees
+                                if (!this._hasInsurability()) {
+                                    newNmcl.patientIntervention = Number(newNmcl.reimbursement).toFixed(2);
+                                    newNmcl.reimbursement = Number('0').toFixed(2);
+                                }
                             }
                         })
                     }
-                }
 
-                if(this.tarifPossible.length===1 || this.chooseTarif!==""){
-                    const val = this.tarifPossible.length===1 ? this.tarifPossible[0] : this.tarifPossible.find(tarif => tarif.id===this.chooseTarif)
-                    newNmcl.totalAmount = Number(val.totalAmount).toFixed(2);
-                    newNmcl.reimbursement = Number(val.reimbursement).toFixed(2);
-                    newNmcl.patientIntervention = Number(val.patientIntervention).toFixed(2);
-
-                    // Patient has NO ins, charge it with all due fees
-                    if (!this._hasInsurability()) {
-                        newNmcl.patientIntervention = Number(newNmcl.reimbursement).toFixed(2);
-                        newNmcl.reimbursement = Number('0').toFixed(2);
+                    if ((nmcl.code=="101990" || nmcl.code=="101135") && _.get(this,"selectedInvoice.sentMediumType","").includes("eattest")){
+                        this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                        this.set('nmcl-value','')
+                        this.shadowRoot.querySelector("#nmcl-search").focus()
+                        return;
                     }
-
-
 
                     //const lastPatientAssurance = this.patient.insurabilities && this.patient.insurabilities.length && this.patient.insurabilities.find(ass => !ass.endDate && ass.insuranceId != "") || null
                     const patientInssurance = _.sortBy(_.get(this, 'patient.insurabilities', []), ['startDate']).find(ass => _.get(this, 'selectedInvoice.invoiceDate', null) && _.get(ass, 'startDate', null) && _.get(ass, 'endDate', null) && this.api.moment(_.get(this, 'selectedInvoice.invoiceDate', null)).isBetween(this.api.moment(_.get(ass, 'startDate', null)), this.api.moment(_.get(ass, 'endDate', null)))) || _.sortBy(_.get(this, 'patient.insurabilities', []), ['startDate']).find(ass => !ass.endDate && ass.insuranceId != "")
@@ -3100,15 +3059,10 @@
                             })
                     })
                 }
-                else{
-                    if(this.tarifPossible.length){
-                        this.$["chooseTarifDialog"].open();
-                    }
-                    else{
-                        this.set("errorMessage","pas de tarif possible")
-                    }
-                    return;
-                }
+
+                this.calculateTotalOfInvoice()
+                this.set('nmcl-value','')
+                this.shadowRoot.querySelector("#nmcl-search").focus()
             }
 
             _addFavoriteCode() {
@@ -4097,6 +4051,11 @@
 
 
             _transferNmcl(){
+                if ((_.get(this,"activeNmclItem.code","").includes("101990") || _.get(this,"activeNmclItem.code","").includes("101135")) && _.get(this,"bufferTypeCode","")==="eattest"){
+                    this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
+                    return;
+                }
+
                 if(this.activeNmclItem && this.activeNmclItem.id && this.bufferTypeCode && this.bufferTypeCode!=this.selectedMediumCodeType){
                     this.api.crypto().extractDelegationsSFKs(this.patient, this.user.healthcarePartyId).then(secretForeignKeys => {
                         const patientKeys = secretForeignKeys.extractedKeys.join(",")
@@ -4274,7 +4233,7 @@
 
             isEnterPressed(e){
                 if(e.keyCode==13){
-                    this._addNmclButtonTigger(e);
+                    this._addNmcl(e);
                 }
             }
 
@@ -5141,6 +5100,7 @@
             }
 
             _isJustifButtonDisabled(){
+                if(this._isSelectedInvoiceEattest() && _.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  code.code.includes("101990") || code.code.includes("101135")))return true;
                 return this.isLoadingJustif || !!((this._isSelectedInvoiceEattest() && (!this._invoiceDateIsToday() || !this.npi)) || (!this._isSelectedInvoiceEattest() && !((!this.isNmclVerified && (this.isTarificationError || this.isTarificationMcnError)) || this.isNmclVerified || this._isSpecialist())));
             }
 
