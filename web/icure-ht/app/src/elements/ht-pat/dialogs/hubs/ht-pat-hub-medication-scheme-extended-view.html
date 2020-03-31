@@ -10,23 +10,32 @@
 <link rel="import" href="../../../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
 <link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../../../../bower_components/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../../../../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../../../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../../dynamic-form/dynamic-link.html">
 <link rel="import" href="../../../dynamic-form/dynamic-pills.html">
 <link rel="import" href="../../../ht-spinner/ht-spinner.html">
 <link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
 <link rel="import" href="../../../../styles/scrollbar-style.html">
-<link rel="import" href="../../../../styles/table-style.html">
+<link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../../styles/shared-styles.html">
 <link rel="import" href="ht-pat-hub-utils.html">
 <link rel="import" href="ht-pat-hub-medication-scheme-regimen-day.html">
 
 <dom-module id="ht-pat-hub-medication-scheme-extended-view">
     <template>
-        <style include="dialog-style atc-styles scrollbar-style table-style">
+        <style include="dialog-style buttons-style atc-styles scrollbar-style table-style shared-styles">
             paper-dialog {
                 width: 90%;
                 height: 80%;
+            }
+
+            paper-dialog.small {
+                width: 50%;
+                height: 40%;
             }
 
             paper-tabs {
@@ -897,6 +906,15 @@
                     display:none
                 };
             }
+            paper-radio-group{
+                /*padding-left: 16px;*/
+            }
+
+            paper-radio-button{
+                --paper-radio-button-unchecked-ink-color: var(--app-secondary-color-dark);
+                --paper-radio-button-checked-color: var(--app-secondary-color);
+                --paper-radio-button-checked-ink-color: var(--app-secondary-color);
+            }
             .small-icon-button {
                 color: var(--app-background-color-dark);
                 background: var(--app-secondary-color);
@@ -931,6 +949,10 @@
                 justify-content: left;
             }
 
+            .mdc-data-table__cell-xlarge {
+                flex: 0 0 95% !important;
+                width: 95% !important;
+            }
             .mdc-data-table__cell-large {
                 flex: 0 0 40% !important;
                 width: 40% !important;
@@ -975,6 +997,18 @@
             .related-remote {
                 background-color: rgba(255, 0, 0, 0.12);
             }
+            .merge-line {
+                display: flex;
+            }
+            .merge-line-item {
+                flex: 0 0 50%;
+            }
+            .merge-line-item-title {
+                font-weight: 500;
+                text-align: left;
+                padding: 12px;
+            }
+
         </style>
         <div class="container">
             <div id="legend">
@@ -986,14 +1020,14 @@
                 <span class="legend-line"><iron-icon class="legend-substanceIcon" icon="vaadin:pill"></iron-icon> [[localize('hub-med-dci', 'DCI prescription', language)]]</span>
             </div>
             <div class="mdc-data-table">
-                <table class="mdc-data-table__table" aria-label="aria-label">
+                <table class="mdc-data-table__table">
                     <thead>
                         <tr class="mdc-data-table__header-row">
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('type','Type',language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-medium" role="columnheader" scope="col">[[localize('medication','Médication',language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col">[[localize('freq', 'Fréquence', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">[[localize('pos', 'Posologie', language)]]</th>
-                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small"  role="columnheader" scope="col">[[localize('begin', 'Début', language)]]</th>
+                            <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col">[[localize('begin', 'Début', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col">[[localize('end', 'Fin', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">[[localize('com', 'Commentaire', language)]]</th>
                             <th class="mdc-data-table__header-cell mdc-data-table__cell-small mdc-data-table__header-cell--center" role="columnheader" scope="col">[[localize('local', 'Local', language)]]</th>
@@ -1447,7 +1481,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="medicationMergeDialog" on-iron-overlay-closed="_closeMedicationMergeDialog">
+        <paper-dialog class="small" id="medicationMergeDialog" on-iron-overlay-closed="_closeMedicationMergeDialog">
             <h2 class="modal-title">
                 [[_getMedicationName(source)]]
                 <template is="dom-if" if="[[_isChronic(source)]]">
@@ -1476,22 +1510,58 @@
                     </div>
                 </template>
             </h2>
-            <div class="content">
-                <div class="table">
-                    <template id="fields" is="dom-repeat" items="[[fields]]" as="field">
-                        <template is="dom-if" if="[[!field.hidden]]">
-                            <div class="tr"><div class="td mergeLabel">[[localize(field.label,field.label,language)]]</div></div>
-                            <div class="tr">
-                                <div class="td mergeButtons"><vaadin-checkbox id="{{field.name}}" checked="[[_isChecked(field, refresher)]]" on-tap="_check"></vaadin-checkbox></div>
-                                <div class="td mergeValue">[[_getValue(field.source, refresher)]]</div>
-                            </div>
-                            <div class="tr">
-                                <div class="td mergeButtons"><vaadin-checkbox id="{{field.name}}" checked="[[!_isChecked(field, refresher)]]" on-tap="_uncheck"></vaadin-checkbox></div>
-                                <div class="td mergeValue">[[_getValue(field.target, refresher)]]</div>
-                            </div>
-                        </template>
-                    </template>
+            <div class="content container">
+                <div class="mdc-data-table">
+                    <table class="mdc-data-table__table">
+                        <thead>
+                            <tr class="mdc-data-table__header-row">
+                                <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col"></th>
+                                <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">
+                                    <div class="merge-line">
+                                        <div class="merge-line-item merge-line-item-title">[[localize('original_value', 'Valeur d\'Origine', language)]]</div>
+                                        <div class="merge-line-item merge-line-item-title">[[localize('new_value', 'Nouvelle valeur', language)]]</div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="mdc-data-table__content">
+                            <template is="dom-repeat" items="[[fields]]" as="field">
+                                <template is="dom-if" if="[[!field.hidden]]">
+                                    <tr class$="mdc-data-table__row">
+                                        <td class="mdc-data-table__cell mdc-data-table__cell-small merge-line-item-title">[[localize(field.label,field.label,language)]]</td>
+                                        <td class="mdc-data-table__cell mdc-data-table__cell-large mdc-data-table__cell-text">
+                                            <paper-radio-group class="merge-line" selected="{{field.checked}}">
+                                                <paper-radio-button class="merge-line-item" name="no">[[_getValue(field.source)]]</paper-radio-button>
+                                                <paper-radio-button class="merge-line-item" name="yes">[[_getValue(field.target)]]</paper-radio-button>
+                                            </paper-radio-group>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
+
+
+
+
+
+
+<!--                <div class="table">-->
+<!--                    <template id="fields" is="dom-repeat" items="[[fields]]" as="field">-->
+<!--                        <template is="dom-if" if="[[!field.hidden]]">-->
+<!--                            <div class="tr"><div class="td mergeLabel">[[localize(field.label,field.label,language)]]</div></div>-->
+<!--                            <div class="tr">-->
+<!--                                <div class="td mergeButtons"><vaadin-checkbox id="[[field.name]]" checked="[[_isChecked(field, refresher)]]" on-tap="_check"></vaadin-checkbox></div>-->
+<!--                                <div class="td mergeValue">[[_getValue(field.source, refresher)]]</div>-->
+<!--                            </div>-->
+<!--                            <div class="tr">-->
+<!--                                <div class="td mergeButtons"><vaadin-checkbox id="[[field.name]]" checked="[[!_isChecked(field, refresher)]]" on-tap="_uncheck"></vaadin-checkbox></div>-->
+<!--                                <div class="td mergeValue">[[_getValue(field.target, refresher)]]</div>-->
+<!--                            </div>-->
+<!--                        </template>-->
+<!--                    </template>-->
+<!--                </div>-->
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_merge">[[localize('Merge','Merge',language)]]</paper-button>
@@ -1826,7 +1896,7 @@
                         let index = 0;
                         const grouped = consolidated.remotes.reduce((grouping, remote) => {
                             if (!this._isSync(remote)) {
-                                const locals = grouping.locals.filter(local => (!this._hasGroupIndex(local)) && (this._getScore(local, remote) > 90));
+                                const locals = grouping.locals.filter(local => (!this._hasGroupIndex(local)) && (this._getScore(local, remote) > 80));
                                 if (locals.length) {
                                     locals.map(local => this._setGroupIndex(local, index));
                                     this._setGroupIndex(remote, index);
@@ -1892,9 +1962,10 @@
             }
 
             _getMedicationName(medication){
-                return medication && medication.medicinalproduct && medication.medicinalproduct.intendedname ? medication && medication.medicinalproduct && medication.medicinalproduct.intendedname :
-                    medication && medication.substanceproduct && medication.substanceproduct.intendedname ? medication.substanceproduct.intendedname  :
-                        medication && medication.compoundprescription !== null ? "Magistrale" : null
+                return _.get(medication, "medicinalproduct.intendedname", _.get(medication, "substanceproduct.intendedname", _.get(medication, "compoundprescription", null)));
+                // return medication && medication.medicinalproduct && medication.medicinalproduct.intendedname ? medication && medication.medicinalproduct && medication.medicinalproduct.intendedname :
+                //     medication && medication.substanceproduct && medication.substanceproduct.intendedname ? medication.substanceproduct.intendedname  :
+                //         medication && medication.compoundprescription !== null ? "Magistrale" : null
             }
 
             _getFrequency(medication){
@@ -2156,7 +2227,7 @@
                             target: this._format(target, field),
                             hidden: field.hidden,
                             setter: field.setter,
-                            checked: true
+                            checked: "no"
                         })
                     }
                     return fields;
@@ -2182,26 +2253,34 @@
 
             _merge(e) {
                 this.fields.forEach(field => {
-                    if (!field.checked) {
-                        if (field.sibling) {
-                            const _field = all_fields.find(f => f.name === field.sibling)
-                            if (_field) {
-                                field = {
-                                    name: _field.name,
-                                    label: _field.label,
-                                    source: this._format(this.source, _field),
-                                    target: this._format(this.target, _field),
-                                    hidden: field.hidden,
-                                    setter: field.setter,
-                                    checked: true
-                                }
-                                this._mergeField(field);
-                            }
-                        }
-                        else {
-                            this._mergeField(field);
-                        }
+                    if (field.checked === "yes") {
+                        this._setField(this.source, field, this._getField(this.target, field))
+                    } else {
+                        this._setField(this.target, field, this._getField(this.source, field))
                     }
+
+                    //
+                    // if (!field.checked === "yes") {
+                    //     if (field.sibling) {
+                    //         const _field = all_fields.find(f => f.name === field.sibling)
+                    //         if (_field) {
+                    //             field = {
+                    //                 name: _field.name,
+                    //                 label: _field.label,
+                    //                 source: this._format(this.source, _field),
+                    //                 target: this._format(this.target, _field),
+                    //                 hidden: field.hidden,
+                    //                 checked: true
+                    //             };
+                    //             let value = this._getField(this.target, field)
+                    //             this._setField(this.source, field, value)
+                    //         }
+                    //     }
+                    //     else {
+                    //         let value = this._getField(this.target, field)
+                    //         this._setField(this.source, field, value)
+                    //     }
+                    // }
                 });
                 // let medications = this.currentMedicationScheme.msElems;
                 // Object.assign(medications.find(m => m.uniqId === this.source.uniqId), this.source);
@@ -2216,25 +2295,25 @@
                 // this.set('refresher', this.refresher + 1);
             }
 
-            _isChecked(field) {
-                return field.checked
-            }
-
-            _setChecked(name, checked) {
-                let field = this.fields.find(field => field.name == name)
-                field.checked = checked
-                this.set('refresher', this.refresher + 1)
-            }
-
-            _check(e) {
-                e.target.checked = true
-                this._setChecked(e.target.id, true)
-            }
-
-            _uncheck(e) {
-                e.target.checked = true
-                this._setChecked(e.target.id, false)
-            }
+            // _isChecked(field) {
+            //     return field.checked
+            // }
+            //
+            // _setChecked(name, checked) {
+            //     let field = this.fields.find(field => field.name == name)
+            //     field.checked = checked
+            //     this.set('refresher', this.refresher + 1)
+            // }
+            //
+            // _check(e) {
+            //     e.target.checked = true
+            //     this._setChecked(e.target.id, true)
+            // }
+            //
+            // _uncheck(e) {
+            //     e.target.checked = true
+            //     this._setChecked(e.target.id, false)
+            // }
 
             _medicationClass(m) {
                 return (m.idKmehr%2 == 0) ? 'even' : 'odd'
@@ -2256,9 +2335,9 @@
                         medicationHubId: null,
                         adaptationflag: null,
                         adaptationtype: null,
-                        compoundprescription: _.get(medicationValue, "compoundprescription", null),
+                        compoundprescription: _.get(medicationValue, "compoundPrescription", null),
                         medicinalproduct: _.get(medicationValue, "medicinalProduct", null),
-                        substanceproduct: _.get(medicationValue, "substanceproduct", null),
+                        substanceproduct: _.get(medicationValue, "substanceProduct", null),
                         beginmoment: beginMoment ? moment(beginMoment, "YYYYMMDD").format('DD/MM/YYYY'): null,
                         endmoment: endMoment ? moment(endMoment, "YYYYMMDD").format('DD/MM/YYYY'): null,
                         temporality: null,
@@ -2578,9 +2657,15 @@
                     }
                 }
 
-                medication.label = data.endmoment ? "Prescription" : "Medication";
-                const id = this.api.crypto().randomUuid();
-                medication.id = this._isRemote(data) ? _.get(data, "source.id", id) : id;
+                medication.label = data.endmoment ? this.localize('medication', 'medication', this.language) : this.localize('prescription', 'prescription', this.language);
+                medication.id = _.get(data, "source.id", this.api.crypto().randomUuid());
+                const atcCode = _.get(data, "source.codes", []).find(code => code.type === "CD-ATC");
+                if (atcCode) {
+                    ((medicationValue.codes || (medicationValue.codes = [])).find(code => code.type === "CD-ATC") || (medicationValue.codes[medicationValue.codes.length] = {
+                        type: "CD-ATC",
+                        version: "1"
+                    })).code = atcCode.code;
+                }
                 medication.author = this.user.id;
                 return this.api.contact().service().newInstance(this.user, medication);
             }
@@ -2693,6 +2778,7 @@
             }
 
             init() {
+                this._setSpinnerInit();
                 this.$["htPatHubUtils"].init().then(() => this.updateMedicationScheme());
             }
 
@@ -2705,14 +2791,6 @@
                     })
                     .catch(error => this.dispatchEvent(new CustomEvent("error", {detail: {title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"), message:"Erreur à la récupération du schéma", detail: error}, bubbles: true, composed: true})))
                     .finally(() => this._setSpinnerIdle())
-            }
-
-            _refresh() {
-                this.dispatchEvent(new CustomEvent('refresh', {
-                    detail: {},
-                    bubbles: true,
-                    composed: true
-                }));
             }
 
             _saveService(service) {
@@ -2762,36 +2840,33 @@
                 console.log("services to download", JSON.stringify(downloads));
 
                 this._setSpinnerBusy();
-                return new Promise((resolve) => {
-                    if (downloads.length) {
-                        const services = downloads.map(download => this._saveService(download));
-                        const prescriptions = services.filter(svc => svc.label === "Prescription");
-                        this.prescriptions = this.prescriptions.filter(prescription => !prescriptions.some(svc => svc.id === prescription.id)).concat(prescriptions);
-                        const medications = services.filter(svc => svc.label === "Medication");
-                        this.medications = this.medications.filter(medication => !medications.some(svc => svc.id === medication.id)).concat(medications);
-                        return this.api.contact().modifyContactWithUser(this.user, this.currentContact).then(() => resolve());
-                    } else {
-                        return resolve();
-                    }
-                })
-                    .then(() => this.$["htPatHubUtils"].putMedicationScheme(uploads, serviceAuthors, this.currentMedicationScheme.version, false))
-                    .catch(error => this.dispatchEvent(new CustomEvent("error", {
-                        detail: {
-                            title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
-                            message: "Erreur  à l'émission du schéma",
-                            detail: error
-                        }, bubbles: true, composed: true
-                    })))
-                    .then(() => this.updateMedicationScheme())
-                    .catch(error => this.dispatchEvent(new CustomEvent("error", {
-                        detail: {
-                            title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
-                            message: "Erreur  à la mise à jour du schéma",
-                            detail: error
-                        }, bubbles: true, composed: true
-                    })))
-                    .then(() => this.dispatchEvent(new CustomEvent("refresh", {detail: {}, bubbles: true, composed: true})))
-                    .finally(() => this._setSpinnerIdle())
+                if (downloads.length) {
+                    const services = downloads.map(download => this._saveService(download));
+
+                    const prescriptions = services.filter(svc => svc.codes.some(c => c.type === "ICURE" && c.code === "PRESC"));
+                    this.set("prescriptions", this.prescriptions.filter(prescription => !prescriptions.some(svc => svc.id === prescription.id)).concat(prescriptions));
+
+                    const medications = services.filter(svc => svc.codes.some(c => c.type === "CD-ITEM" && c.code === "medication"));
+                    this.set("medications", this.medications.filter(medication => !medications.some(svc => svc.id === medication.id)).concat(medications));
+                }
+                this.$["htPatHubUtils"].putMedicationScheme(uploads, serviceAuthors, this.currentMedicationScheme.version, false)
+                .catch(error => this.dispatchEvent(new CustomEvent("error", {
+                    detail: {
+                        title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
+                        message: "Erreur  à l'émission du schéma",
+                        detail: error
+                    }, bubbles: true, composed: true
+                })))
+                .then(() => this.updateMedicationScheme())
+                .catch(error => this.dispatchEvent(new CustomEvent("error", {
+                    detail: {
+                        title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),
+                        message: "Erreur  à la mise à jour du schéma",
+                        detail: error
+                    }, bubbles: true, composed: true
+                })))
+                .then(() => this.dispatchEvent(new CustomEvent("save-current-contact", {detail: {}, bubbles: true, composed: true})))
+                .finally(() => this._setSpinnerIdle())
             }
 
             _getResponsibleHcp(authors){
@@ -2810,6 +2885,11 @@
                 }));
             }
 
+            _setSpinnerInit() {
+                this.dispatchEvent(new CustomEvent('spinner-init', {
+                    detail: {}, bubbles: true, composed: true
+                }));
+            }
 
 
         }
