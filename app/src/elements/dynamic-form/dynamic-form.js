@@ -889,8 +889,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
             (!readOnly && !compact
                 || (this._isSubForm(layoutItem) && this.dataProvider.hasSubForms(layoutItem.name))
                 || (this._isMedicationField(layoutItem) || this._isTokenField(layoutItem)) && this.dataProvider.getValueContainers(layoutItem.name).length
-                || this._isMeasureField(layoutItem) && this.dataProvider.getMeasureValue(layoutItem.name).value
-                || this._rawValue(layoutItem)):
+                || this._isMeasureField(layoutItem) ? this.dataProvider.getMeasureValue(layoutItem.name).value : this._rawValue(layoutItem)):
             ( !readOnly && !compact
                 || this._isSubForm(layoutItem)
                 || this._rawValue(layoutItem) )
