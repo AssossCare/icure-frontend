@@ -1759,8 +1759,8 @@
                                     //inv.DateEnvoi = this.api.moment(inv.invoiceDate).format("DD/MM/YYYY");
                                     //Mut
                                     invClone.Insurance = insurancesData.find(ins => ins.id === inv.recipientId);
-                                    invClone.InsuranceCode = invClone.Insurance.code;
-                                    invClone.InsuranceName = invClone.Insurance.finalName;
+                                    invClone.InsuranceCode = invClone.Insurance ? invClone.Insurance.code : "???";
+                                    invClone.InsuranceName = invClone.Insurance ? invClone.Insurance.finalName : "???";
                                     invClone.warnings = {};
                                     invClone.warnings.mutDif = !!(monthInsCode && monthInsCode !== invClone.InsuranceCode);
                                     //get all invoicingcode groups : dateCode-status

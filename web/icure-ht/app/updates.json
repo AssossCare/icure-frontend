@@ -1,6 +1,134 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.431",
+		  "updateDate": "2020-03-30",
+		  "startDate" : "2020-03-30",
+		  "endDate" : "2020-04-30",
+		  "mainType" : "News",
+		  "mainTitle" : "MDA & eAttest V2",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "MDA & eAttest V2"
+				  },
+				  "description": {
+					  "fr": "Dans cette période difficile pour tout un chacun, notre équipe continue à améliorer votre logiciel.<br/>Aujourd’hui deux nouvelles modifications substantielles ont été mises en ligne.<br/><br/><b>1) Service MDA – Membrer Data – Données du membre</b><br/>Ce nouveau service remplace le système de vérification de l’assurabilité d’un patient et vous permet également d’avoir accès à bien d’autres informations. En résumé, MDA vous permet d’obtenir pour un patient  :<ul><li>sa situation en matière d’assurabilité ;</li><li>son éventuelle inscription dans une Maison médicale (Nom et N° Inami de la MM) ;</li><li>son éventuelle hospitalisation (Nom et N° Inami de l’hôpital, n° du service, type de service) ;</li><li>son statut affection chronique ;</li><li>son trajet de soins (diabète + insuffisance rénale chronique) ;</li><li>son pharmacien de référence (Nom et N° Inami) ;</li></ul>Attention, ce service est un peu plus lent que le service précédent.<br/><br/><b>2) eAttest V2 (deuxième version service eAttest)</b><br/>Cette nouvelle version vous permet :<ul><li>d’annuler électroniquement une attestation de soins réalisée avec eAttest (plus besoin de remplir un formulaire Google) ;</li><li>d’améliorer les contrôles avant l’envoi de la facture et ainsi éviter des erreurs ;</li><li>d’assurer la gestion des arrondis ;</li><li>d’améliorer l’attestation patient.</li></ul>Nous vous souhaitons beaucoup de courage et restons à vos côtés dans ces moments difficiles."
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
+		  "version": "0.0.424",
+		  "updateDate": "2020-03-25",
+		  "startDate" : "2020-03-25",
+		  "endDate" : "2020-03-30",
+		  "mainType" : "News",
+		  "mainTitle" : "Baromètre Sciensano COVID-19",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Baromètre Sciensano COVID-19"
+				  },
+				  "description": {
+					  "fr": "Comme annoncé le 19 mars dernier, un recueil de données soutenu par Sciensano, Domus Medica, la KULeuven, l’Ugent, l’UAntwerpen, le Collège de médecine générale Francophone de Belgique et sa cellule universitaire, a été mis en place. Son objectif est de <b>suivre et de soutenir la première ligne</b> en prévoyant du matériel et/ou du personnel supplémentaire si nécessaire. Vous pouvez prendre connaissance de tous les détails du projet sur les pages d’accueil.<br/><br/>Ce baromètre est <b>destiné aux médecins généralistes, aux médecins coordinateurs et conseillers de maisons de repos, aux postes de triage, aux pharmaciens et bientôt aux infirmiers.</b> Il est prévu pour être complété une fois par jour et par lieu de soins. Cela ne prend que 5 minutes par jour.<br/><br/>Pour y participer, veuillez compléter le baromètre qui vous concerne chaque soir entre 18h et 22h sur la page <a href='https://covid19.healthdata.be/fr/' target='_blank'>https://covid19.healthdata.be/fr/</a><br/><b><br/>Un feedback personnalisé</b> et un rappel (vers 18h) vous seront envoyés quotidiennement via l’adresse e-mail renseignée dans le formulaire. Le plus important est de <b>compléter ce baromètre quotidiennement</b> afin de pouvoir <b>apprécier l’évolution de votre situation locale</b> au fil du temps"
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
+		  "version": "0.0.423",
+		  "updateDate": "2020-03-23",
+		  "startDate" : "2020-03-22",
+		  "endDate" : "2020-03-24",
+		  "mainType" : "News",
+		  "mainTitle" : "Nouveaux documents disponibles",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Nouveaux documents disponibles"
+
+				  },
+				  "description": {
+					  "fr": "Bonjours à tous,<br/><br/>3 nouveaux documents sortants sont disponibles: <ul><li>Certificat 'Covid19 - ITT Patient' (version officielle)</li><li>Certificat 'Covid19 - ITT Employeur' (version officielle)</li><li>Certificat Circonstancié administration des biens</li></ul><br/><br/><b>Pourquoi un nouveau certificat médical ?</b><br/>Sur proposition du Comité de l’assurance de l’INAMI, la ministre des Affaires sociales et de la Santé publique va publier un arrêté royal qui permet de financer de façon adéquate les prestations des médecins pendant la période de crise du COVID-19 et garantir la continuité des soins.<br/>Ces prestations sont effectuées par téléphone. Afin de simplifier la délivrance des certificats médicaux dans le cadre de ces prestations, il est proposé d’utiliser un certificat simplifié qui déroge au certificat actuel.<br/><br/><b>A qui le nouveau certificat est délivré ? </b><br/>Il s’agit du certificat à délivrer au patient. Celui-ci le transmet par voie postale ou par mail à sa mutualité (le patient forwarde alors votre mail à sa mutualité). Il ne s’agit donc pas du certificat employeur.<br/><br/><b>Comment et quand le médecin délivre le certificat ? </b><br/>Le certificat est utilisé pour les patients à la suite d’un avis téléphonique (codes 101990 et 101135) :<ul><li>Patients potentiellement affectés par le COVID-19 </li><li>Patients souffrants d’une maladie chronique qui ne peuvent se rendre chez le médecin en raison des directives données dans le cadre du COVID-19 (immunodépression, …).</li></ul>Ce certificat peut être envoyé au patient par voie postale ou par mail, sous format PDF, afin que le patient puisse transmettre ce certificat au médecin-conseil de sa mutualité.<br/><br/><a href='https://epidemio.wiv-isp.be/ID/Documents/Covid19/COVID-19_procedure_GP_FR.pdf' target='_blank'>PROCÉDURE POUR LES MÉDECINS GÉNÉRALISTES EN CAS DE SUSPICION DE MALADIE COVID-19</a> version du 20/03/2020"
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
+		  "version": "0.0.419",
+		  "updateDate": "2020-03-18",
+		  "startDate" : "2020-03-18",
+		  "endDate" : "2020-03-22",
+		  "mainType" : "News",
+		  "mainTitle" : "Informations importantes de l'INAMI ",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Informations importantes de l'INAMI "
+
+				  },
+				  "description": {
+					  "fr": "Bonjours à tous,<br/><br/> MyInami permet aujourd’hui à un dispensateur de soins de donner ou recevoir un ou plusieurs mandats pour gérer ses données administratives.<br/></br/>Plus d’infos via <a href='https://www.riziv.fgov.be/fr/programmes-web/Pages/mandat-myinami-dispensateur.aspx?utm_source=alert&utm_medium=email&utm_campaign=FR20200318' target='_blank'>Self-service système de mandats</a>de l’INAMI ou via notre site <a href='https://www.topaz.care/fr/' target='_blank'>www.topaz.care</a> Rubrique : Support."
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
+		  "version": "0.0.417",
+		  "updateDate": "2020-03-01",
+		  "startDate" : "2020-03-01",
+		  "endDate" : "2020-03-22",
+		  "mainType" : "News",
+		  "mainTitle" : "COVID-19",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "COVID-19"
+
+				  },
+				  "description": {
+					  "fr": "Chers utilisateurs,<br/>Nous vous proposons d'utiliser une manière uniforme d'encoder les éléments de soins et procédures dans le cadre de l'épidémie actuelle, en accord avec les recommandations du WICC (WONCA International Classification Committee).<br/><br/><u>Contacts:</u><ul><li>« avis téléphonique » ou « consultation électronique » le cas échéant.</li></ul><u>Éléments de soins:</u><ul><li><b>ES covid-19 prouvé ou très probable (contact étroit avec personne testée positive): </b> Introduire « infection à coronavirus » (codes ICPC/ICD A77/B34.2)</li><li><b>Syndrôme grippal :</b> Introduire « syndrome grippal » (codes ICPC/ICD R80/J11.1)</li><li><b>Autre diagnostic respiratoire (rhinopharyngite...): </b>utiliser les termes habituels de la liste</li></ul><u>Procédures</u><ul><li>Pour une demande de test => test de microbiologie, immunologie pour un problème respiratoire.</li><li>Pour une mise en quarantaine => Procédure préventive pour un problème respiratoire (Description : Quarantaine)</li></ul><u>Document sortant:</u><ul><li>COVID 19</li></ul><u>Codes de prestations (bouton facturation) :</u><ul><li>101135  Avis en vue de la continuité des soins …. N 10</li><li>101990  Avis en vue du triage COVID-19………....N 10</li></ul><u>Ces deux nouveaux codes peuvent être utilisé dans les cas suivants:</u><ul><li>Prestataires Solo et MM à l’acte.</li><li>Prestataires en <b>MM au forfait</b> pour <b>un patient non inscrit</b> dans la Maison médicale.</li></ul><u>Ne peuvent pas utiliser ces codes:</u><ul><li>Prestataires en MM au forfait pour un <b>patient inscrit au forfait</b></li></ul><h3><b>Attention ces codes sont uniquement valable via efact (la justification tiers payant doit obligatoirement être 0 pour ces 2 codes) ou attestation papier.</b></h3><u>Vérification etarif</u><br/>Les codes de tarification n’ayant pas encore été introduits par toutes les mutuelles, vous ne pourrez pas toujours vérifier le e-tarif pour les codes prestations spécifiques (101135 – 101990).<br/>Si ceux-ci ne passent pas veuillez les retirer de votre liste de prestation et ce pour ne pas devoir ultérieurement gérer des retours de facturations.<br/>Les mutuelles pour lesquelles nous avons un retour de validation positif sont :<ul><li>OA200</li><li>OA300</li><li>OA500</li></ul><br/>Nous vous informerons lorsque les autres mutuelles permettrons la vérification du E-tarif pour ces 2 codes.<br/><br/>Pour avoir une vue compète sur ces recommandations une vidéo est à votre disposition via :<a href='https://www.youtube.com/watch?v=XOr-rrKW99A&feature=youtu.be' target='_blank'>ce lien</a><br/><br/>Bon travail à toutes et à tous !<br/>L’équipe médicale de Topaz."
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.372",
 		  "updateDate": "2020-01-21",
 		  "startDate" : "2020-01-21",

@@ -422,7 +422,6 @@
                     //this.set('selectedData',"");
                     return;
                 }
-                console.log("selected doc changed =",this.selectedDoc)
 
                 if(!this.listHcp.find(hcp => this.selectedDoc.hcp===hcp.id)){
                     this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(tempHcp => {
@@ -750,7 +749,6 @@
             showErrorMessage(e) {
                 if (e.detail && e.detail.title && e.detail.message) {
                     return setTimeout(()=>{
-                        console.log(e.detail.error);
                         this.set('errorTitle', e.detail.title);
                         this.set('errorMessage', this.localize(e.detail.message, e.detail.message, this.language));
                         e.detail.detail && this.set('errorDetail', e.detail.detail);

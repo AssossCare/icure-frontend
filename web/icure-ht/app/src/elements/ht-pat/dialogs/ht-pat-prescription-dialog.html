@@ -793,6 +793,10 @@
                 this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'my-profile', tab:1}}))
             }
 
+            _regCodeIsCustom(r) {
+                return (r.dayPeriod && ["midday", "afterwakingup"].includes(r.dayPeriod.code));
+            }
+
 
             _convertForRecipe(medications) {
                 // @todo: use code api
@@ -802,9 +806,9 @@
                     if (!medicationValue) return;
                     if (medicationValue.regimen && medicationValue.regimen.length) {
                         medicationValue.knownUsage = false;
-                        const customReg = medicationValue.regimen.filter(r => r.dayPeriod && (r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                        const customReg = medicationValue.regimen.filter(r => this._regCodeIsCustom(r));
                         if (customReg && customReg.length) {
-                            medicationValue.regimen = medicationValue.regimen.filter(r => !r.dayPeriod || !(r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                            medicationValue.regimen = medicationValue.regimen.filter(r => !this._regCodeIsCustom(r));
                             customReg.forEach(r => {
                                 if (r.dayPeriod.code === "midday") {
                                     medicationValue.regimen.push({timeOfDay: "120000", administratedQuantity: r.administratedQuantity});

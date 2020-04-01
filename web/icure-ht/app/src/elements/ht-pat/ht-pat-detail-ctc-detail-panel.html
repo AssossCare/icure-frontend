@@ -737,7 +737,8 @@
 								<div class="outgoing-docs-container">
 									<template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
                                         <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
-										<paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+										<paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                        <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
 									</template>
 									<paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
 								</div>
@@ -984,7 +985,7 @@
 
         <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]] on-save-document-as-service="[[_handleSaveDocumentAsService]]" on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>
 
-		<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
+		<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" mda-result="[[mdaResult]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
 
 		<template is="dom-if" if="[[busySpinner]]"><div id="busySpinner"><div id="busySpinnerContainer"><ht-spinner class="spinner" active></ht-spinner></div></div></template>
 
@@ -1304,6 +1305,10 @@
                         type : Object,
                         value : {}
                     },
+                    mdaResult:{
+                        type: Object,
+                        value: {}
+                    },
                     editLabelAndTransactionData :{
                         type : Object,
                         value : () => { return {
@@ -1361,7 +1366,7 @@
 								value: () => []
 							},
 						}}
-					},
+					}
 				};
 			}
 
@@ -2674,13 +2679,13 @@
                             this.localize("from2",this.language) + ` ` +
                             ( incapacityStart ? this.api.moment(incapacityStart).format("DD/MM/YYYY") : "-" ) + ` ` +
                             this.localize("till",this.language) + ` ` +
-                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityEnd ? this.api.moment(incapacityEnd).format("DD/MM/YYYY") : this.api.moment(incapacityStart).format("DD/MM/YYYY") ) + ` ` +
                             includedExcludedLabel + `
                             </p>
                             <p><span class="italic">` + this.localize("csa_txt005",this.language) + `:</span> ` + _.get(_.head(_.filter(subFormServiceNameAndValues, { name:"Sortie" })), "value", "-") + `</p>
                             <p>` +
                             `<span class="italic">` + this.localize("csa_txt006",this.language) + `:</span> ` +
-                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : "-" ) + ` ` +
+                            ( incapacityPartiallyFinished ? this.api.moment(incapacityPartiallyFinished).format("DD/MM/YYYY") : this.api.moment(_.cloneDeep(incapacityEnd||incapacityStart)).add(1, "days").format("DD/MM/YYYY") ) + ` ` +
                             this.localize("csa_txt007",this.language) + ` ` + precentageValueAndUnit + `
                                     ` + ( incapacityCompletelyFinished ? "<br /><span class='italic'>" + this.localize("csa_txt010",this.language) + ":</span> " + this.api.moment(incapacityCompletelyFinished).format("DD/MM/YYYY") : "" ) + `
                             </p>` +
@@ -4497,6 +4502,12 @@
 					.then(() => _.assign(targetCtc, {subContacts:_.filter(_.get(targetCtc,"subContacts",[]), subCtc => _.size(_.get(subCtc,"services",[])) )}))
 					.then(() => !_.size(_.get(targetCtc,"services",[])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
 					.finally(() => this.$['deleteServiceDialog'].close())
+
+			}
+
+			_isBold(x) {
+
+				return !!x ? "fw700" : ""
 
 			}
 

@@ -576,6 +576,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     <paper-icon-button class="button--icon-btn" id="print-vignette-grid" icon="av:library-books" on-tap="printMutualVignetteGrid"></paper-icon-button>
                     <paper-tooltip for="print-vignette-grid" position="left">[[localize('print_mutual_vignette_grid','Print mutual vignette grid',language)]]</paper-tooltip>
+
                     <template is="dom-if" if="[[onElectron]]">
                         <paper-icon-button class="button--icon-btn" id="fill-with-card" icon="vaadin:health-card" on-tap="fillWithCard"></paper-icon-button>
                         <paper-tooltip for="fill-with-card" position="left">[[localize('fill_with_eid','Fill with eid',language)]]</paper-tooltip>

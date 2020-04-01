@@ -2409,24 +2409,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
 
 
-                            if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
-                                this.api.isElectronAvailable().then(electron => {
-                                    if (electron === false) {
-                                        console.log("mikrono open agenda url", "https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
-                                        window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
-                                    } else {
-                                        fetch(this._getDefaultElectronUrl() + "/mc", {
-                                            method: "POST",
-                                            headers: {"Content-Type": "application/json"},
-                                            body: JSON.stringify({username: mikronoUser, password: mikronoPassword})
-                                        }).then(response => response.json()).then(rep => {
-                                            if (rep.ok) {
-                                                this.set('routeData.page', "diary")
-                                                setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
-                                            }
-                                        })
-                                    }
-                                })
+                        if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
+                            this.api.isElectronAvailable().then(electron =>{
+                                if(electron === false){
+                                    window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
+                                }else{
+                                    fetch(this._getDefaultElectronUrl() + "/mc", {
+                                        method: "POST",
+                                        headers: {"Content-Type": "application/json"},
+                                        body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
+                                    }).then(response => response.json()).then(rep => {
+                                        if(rep.ok){
+                                            this.set('routeData.page', "diary")
+                                            setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
+                                        }
+                                    })
+                                }
+                            })
 
                             } else {
                                 const addresses = hcp && hcp.addresses || null
@@ -2444,24 +2443,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                 const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
                                                 const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
 
-                                                if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
-                                                    this.api.isElectronAvailable().then(electron => {
-                                                        if (electron === false) {
-                                                            window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
-                                                        } else {
-                                                            fetch(this._getDefaultElectronUrl() + "/mc", {
-                                                                method: "POST",
-                                                                headers: {"Content-Type": "application/json"},
-                                                                body: JSON.stringify({
-                                                                    username: mikronoUser,
-                                                                    password: mikronoPassword
-                                                                })
-                                                            }).then(response => response.json()).then(rep => {
-                                                                if (rep.ok) {
-                                                                    this.set('routeData.page', "diary")
-                                                                    setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
-                                                                }
-                                                            })
+                                            if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
+                                                this.api.isElectronAvailable().then(electron =>{
+                                                    if(electron === false){
+                                                        window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
+                                                    }else{
+                                                        fetch(this._getDefaultElectronUrl() + "/mc", {
+                                                            method: "POST",
+                                                            headers: {"Content-Type": "application/json"},
+                                                            body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
+                                                        }).then(response => response.json()).then(rep => {
+                                                            if(rep.ok){
+                                                                this.set('routeData.page', "diary")
+                                                                setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
+                                                            }
+                                                        })
 
 
                                                         }

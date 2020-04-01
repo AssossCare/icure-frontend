@@ -1282,6 +1282,10 @@
 
             }
 
+            _sleep (time) {
+                return new Promise((resolve) => setTimeout(resolve, time));
+            }
+
             _saveDocumentAsService(inputConfig) {
 
                 const promResolve = Promise.resolve()
@@ -1302,17 +1306,22 @@
                     {type: 'CD-TRANSACTION', code: _.trim(_.get(inputConfig,"cdTransactionCode",""))},
                 ]
 
-                if(false === _.get(this, "_data.currentContact.services", false)) this._data.currentContact.services = []
-                if(false === _.get(this, "_data.currentContact.subContacts", false)) this._data.currentContact.subContacts = []
-
-                this._data.currentContact.services.push(svc)
-                this._data.currentContact.subContacts.push({
-                    status: 64,
-                    services: [{serviceId: svc.id}],
-                    tags: svc.tags,
-                })
-
                 return promResolve
+                    .then(() => this._sleep(2000))
+                    .then(() => this.api.contact().getContactWithUser(_.get(this,"user",{}), _.trim(_.get(this, "_data.currentContact.id", ""))).then(currentContact => this._data.currentContact = currentContact).catch(e=>{}))
+                    .then(() => {
+
+                        if(false === _.get(this, "_data.currentContact.services", false)) this._data.currentContact.services = []
+                        if(false === _.get(this, "_data.currentContact.subContacts", false)) this._data.currentContact.subContacts = []
+
+                        this._data.currentContact.services.push(svc)
+                        this._data.currentContact.subContacts.push({
+                            status: 64,
+                            services: [{serviceId: svc.id}],
+                            tags: svc.tags,
+                        })
+
+                    })
                     .then(() => !!_.trim(_.get(this, "_data.currentContact.rev", "")) ?
                         this.api.contact().modifyContactWithUser(_.get(this,"user",{}), _.get(this, "_data.currentContact", {})) :
                         this.api.contact().createContactWithUser(_.get(this,"user",{}), _.get(this, "_data.currentContact", {}))
@@ -1457,6 +1466,10 @@
                     "mm-desinscription",
                     "mm-transfert",
                     "mm-soins-abonnes-en-institution",
+                    "covid19",
+                    "covid19-patient",
+                    "covid19-employer",
+                    "certificat-administration-biens",
                 ]
 
                 return promResolve
@@ -1489,7 +1502,10 @@
 
                         // Have "New document" as last item of list
                         const sortedFoundTemplates = _.concat(
-                            _.filter(foundTemplates, it => _.trim(_.get(it,"guid","")) !== "new-doc" ),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19"), {isBold:true}), // 1st position
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}), // 1st position
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {hrAfter: true, isBold:true}), // 3rd position
+                            _.filter(foundTemplates, it => _.trim(_.get(it,"guid","")) !== "new-doc" && _.trim(_.get(it,"guid","")) !== "covid19" && _.trim(_.get(it,"guid","")) !== "covid19-patient" && _.trim(_.get(it,"guid","")) !== "covid19-employer" ),
                             _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "new-doc" ), {isLast: true})
                         )
 
@@ -2023,6 +2039,7 @@
 
                     // Todo: When using prose template object, can't write in it ? Cusor jumps after one char typed / render issue ?
                     // Todo: With linking letters, create smart component to get recipient details using cobra
+                    // Todo: allow to close editor & open it again (with same template) -> without flushing content again (Muriel Mernier)
 
             }
 
