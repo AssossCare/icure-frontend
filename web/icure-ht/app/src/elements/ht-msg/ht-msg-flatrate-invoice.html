@@ -5011,6 +5011,7 @@
                             Promise.all(this.flatRateInvoicingDataObject.pendingInvoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
                                 .then(invAndIdsPat => this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))})).then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])])).catch(e=>{console.log(e); console.log("Could not get getPatientsWithUser for invoices to resend");}))
                                 .then(invoicesAndPatient=>{
+                                    invoicesAndPatient = invoicesAndPatient.filter(ip => !!ip[0] && !!ip[1])
                                     invoicesAndPatient = _.compact(_.map(invoicesAndPatient, invAndPat => {
                                         let tempPat = _.cloneDeep(invAndPat[1])
                                         tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{})
