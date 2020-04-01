@@ -434,7 +434,11 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     constructor() {
-        super()
+        super();
+    }
+
+    ready() {
+        super.ready();
     }
 
     static get observers() {

@@ -332,6 +332,10 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
         super();
     }
 
+    ready() {
+        super.ready();
+    }
+
     static get observers() {
         return ['_initialize(api, user, listOfInvoice)', '_filterValueChanged(filter)'];
     }

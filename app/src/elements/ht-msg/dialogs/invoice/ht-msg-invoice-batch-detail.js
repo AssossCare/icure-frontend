@@ -464,6 +464,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         super();
     }
 
+    ready() {
+        super.ready();
+    }
+
     static get observers() {
         return ['_initializeDataProvider(api, user, selectedInvoiceForDetail, selectedInvoiceForDetail.*)', '_filterValueChanged(filter)'];
     }
