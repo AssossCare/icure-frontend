@@ -713,6 +713,24 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   return require('./rsrc/PatientPartnershipsContainerForm.json');
               }
           },
+          conventionForm: {
+              type: Object,
+              value: function () {
+                  return require('./rsrc/PatientConventionForm.json');
+              }
+          },
+          workForm: {
+              type: Object,
+              value: function () {
+                  return require('./rsrc/PatientWorkInfosForm.json');
+              }
+          },
+          schoolForm: {
+              type: Object,
+              value: function () {
+                  return require('./rsrc/PatientSchoolInfosForm.json');
+              }
+          },
           user: {
               type: Object
           },
@@ -1039,7 +1057,6 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
 
       if (this.patient) {
-
           this.set('administrativePostit', this.patient.administrativeNote || "")
           this.set('medicalPostit', this.patient.note || '')
           this.listValidSsin[this.patient.id]=this.patient.ssin
@@ -1049,6 +1066,26 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           this.initCurrentCareTeam();
 
           this.api.code().getCodes((this.patient.languages || []).map(l=>'ISO-639-1|'+l+'|1').join(',') || "ISO-639-1|en|1").then( codes => {
+              if(!Object.keys(this.patient).find(key => key.includes("conventions"))){
+                  this.set("patient",_.merge(this.patient,{
+                      "conventions" : _.compact(this.patient.properties.filter(p => p.type.identifier.includes("convention")).map(prop =>{
+                          const c = JSON.parse(prop.typedValue.stringValue)
+                          if(!_.get(c,"conv",false))return false;
+                          return {
+                              type : _.get(c,"convType",""),
+                              content: {
+                                  fr : _.get(c,"convDes_FR",""),
+                                  nl : _.get(c,"convDes_NL","")
+                              },
+                              startDate: moment(_.get(c,"convDate","")).format("YYYYMMDD"),
+                              endDate: moment(_.get(c,"convValid","")).format("YYYYMMDD"),
+                              codes: [],
+                              tags: []
+                          }
+                      }))
+                  }))
+              }
+
               if (this.patient.partnerships && this.patient.partnerships.length) {
                   ;(this.patient.partnerships.length ? this.api.patient().getPatientsWithUser(this.user,{ids:this.patient.partnerships.map(ps => ps.partnerId)}) : Promise.resolve([]))
                       .then(ppss => ppss.map(p => this.api.register(p, 'patient')))
@@ -1062,7 +1099,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       })
 
                       this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
-                      this.set('patientMap', _.cloneDeep(this.patient));
+                      this.set('patientMap',_.cloneDeep(this.patient));
 
                       if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
                           this.$['dynamic-form-administrative'].loadDataMap();
@@ -1072,7 +1109,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   })
               } else {
                   this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
-                  this.set('patientMap', _.cloneDeep(this.patient));
+                  this.set('patientMap',_.cloneDeep(this.patient))
 
                   if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
                       this.$['dynamic-form-administrative'].loadDataMap();
@@ -1227,7 +1264,22 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           let resolvedRoot = root();
 
           if (resolvedRoot && !_.isEqual( _.get(resolvedRoot, key) , value)) {
+              if(key.includes("code")){
+                  const withoutCode= key.split(".").filter(part => !part.includes("code")).join(".")
+                  if(!_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode,false)){
+                      this.set("patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode,{})
+                  }
+                  if(!_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".type",false)){
+                      this.set("patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".type",withoutCode.includes("socialStatus") ? "BE-SOCIAL-STATUS" : withoutCode.includes("mainSourceOfIncome") ? "BE-PRIMARY-INCOME-SOURCE" :"CD-FED-COUNTRY")
+                  }
+                  this.set("patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".version","1")
+
+                  this.set("patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".id",_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".type","")+"|"+value+"|"+_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode+".version","1"))
+              }
+
               this.set("patient."+(rootPath.length ? (rootPath+".") : "")+key,value)
+
+
 
               if(key.includes("ssin") && (!value || this.api.patient().isValidSsin(value))){
                   if(value && this.$["noSave"].classList.contains("notification")){
@@ -1300,13 +1352,19 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       template:
                           key === 'telecoms' ?
                               this.telecomForm :
-                              (key === 'addresses' || key === 'partnerInfo.addresses') ?
+                              (key === 'addresses' || key === 'partnerInfo.addresses' || key === 'employer.addresse') ?
                                   this.addressForm :
                                   key === 'partnerships' ?
                                       this.partnershipsForm :
                                       key === 'medicalHouseContracts' ?
                                           this.medicalHouseContractsForm :
-                                          this.insuranceForm
+                                            key === 'conventions' ?
+                                                this.conventionForm :
+                                                key === 'schoolingInfos' ?
+                                                    this.schoolForm :
+                                                        key === 'employementInfos' ?
+                                                            this.workForm :
+                                                                this.insuranceForm
                   };
               }))
           },
@@ -1319,6 +1377,9 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           addSubForm: (key, guid) => {
               this.flushSave(); //Important
+
+              if(key.includes("employer.addresse") && _.get(root(),'employer.addresse',[]).length)return;
+
               if(key.includes("partnerInfo.addresses") && (!root().partnerInfo || (!root().partnerInfo.lastName && !root().partnerInfo.name)))return;
               (_.get(root(), key) || _.get(_.set(root(), key, []), key)).push(key==='partnerships'?{partnerId: this.api.crypto().randomUuid(), partnerInfo:{}, type:""}:{});
 
@@ -1344,7 +1405,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   return Promise.resolve(s ? Object.values(this.api.users).filter(u => (u.login && u.login.toLowerCase().includes(s.toLowerCase())) ||
                       (u.name && u.name.toLowerCase().includes(s.toLowerCase())) || (u.email && u.email.toLowerCase().includes(s.toLowerCase())))
                       .map(u => ({id: u.id, name: u.name || u.login || u.email})) : [])
-              } else if (data.source === "codes" && data.types.length && (id || (text && text.length > 1))) {
+              } else if (data.source === "codes" && data.types.length && (id || (text && text.length > 0))) {
                   return id ?
                       Promise.all(data.types.map(ct => this.api.code().getCodeWithParts(ct.type, id, '1')))
                           .then(x => _.compact(x)[0])
@@ -1357,10 +1418,10 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                           const words = text.toLowerCase().split(/\s+/)
                           const sorter = x => [x.name && x.name.toLowerCase().startsWith(words[0]) ? 0 : 1, x.name]
 
-                          return this.api.code().findPaginatedCodesByLabel('be', ct.type, typeLng, words[0], null, null, 200).then(results => _.sortBy(results.rows.filter(c => c.label[typeLng] && words.every(w => c.label[typeLng].toLowerCase().includes(w))).map(code => ({
+                          return this.api.code().findPaginatedCodesByLabel('be', ct.type, typeLng, words[0] || " ", null, null, 200).then(results => _.sortBy(results.rows.filter(c => c.label[typeLng] && words.every(w => c.label[typeLng].toLowerCase().includes(w))).map(code => ({
                               id: code.code, name: code.label[typeLng], stringValue: code.label[typeLng], codes: [code]
                           })), sorter))
-                      })).then(responses => _.flatMap(responses))
+                      })).then(responses => _.uniqBy(_.flatMap(responses),"id"))
               } else if (data.source === "mh") {
                   return (id||'').length >= 1 ?
                       this.api.hcparty().getHealthcareParty( id ).then(results => { return { 'id': results.id, 'name':_.upperFirst(_.lowerCase(results.name)) + ' ' +(typeof results.nihii === 'undefined' || !results.nihii ? '' : ' - ' + this.localize('nihii', 'INAMI', language) + ': ' + results.nihii) }}) :

@@ -71,65 +71,66 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             }
 
             .assurability--greenStatus{
-                 color: var(--app-status-color-ok);
-                 height: 8px;
-                 width: 8px;
+                color: var(--app-status-color-ok);
+                height: 8px;
+                width: 8px;
             }
             
             .invoice-status {
-                 border-radius: 20px;
-                 padding: 1px 12px 1px 8px;
-                 font-size: 12px;
-                 display: block;
-                 width: auto;
-                 max-width: fit-content;
-                 white-space: nowrap;
-                 text-overflow: ellipsis;
-                 overflow: hidden;
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
             }
 
-                .invoice-status--orangeStatus{
-                    background: #fcdf354d;
-                }
-                
-                .statusIcon{
-                    height: 8px;
-                    width: 8px;
-                }
-                .statusIcon.invoice-status--orangeStatus {
-                    color: var(--app-status-color-pending);
-                }
-                
-                .statusIcon.invoice-status--orangeStatus,
-                .statusIcon.invoice-status--greenStatus,
-                .statusIcon.invoice-status--redStatus,
-                .statusIcon.invoice-status--purpleStatus {
-                    background: transparent !important;
-                }
-                
-                *.txtcolor--orangeStatus {
-                    color: var(--app-status-color-pending);
-                }
+            .invoice-status--orangeStatus{
+                background: #fcdf354d;
+            }
+            
+            .statusIcon{
+                height: 8px;
+                width: 8px;
+            }
+            .statusIcon.invoice-status--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            
+            .statusIcon.invoice-status--orangeStatus,
+            .statusIcon.invoice-status--greenStatus,
+            .statusIcon.invoice-status--redStatus,
+            .statusIcon.invoice-status--purpleStatus {
+                background: transparent !important;
+            }
+            
+            *.txtcolor--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
             
             .batchNumber{
-                    color: var(--app-text-color-light);
-                    border-radius: 25px;
-                    min-height: 0;
-                    margin-left: 8px;
-                    font-size: .6em;
-                    display: inline-block;
-                    line-height: 0.8;
-                    text-align: center;
-                    height: 10px;
-                    padding: 5px;
-                    margin-top: 2px;
-                }
-                .batchPending{background-color: var(--paper-orange-400);}
-                .batchToBeCorrected{background-color: var(--paper-red-400);}
-                .batchProcessed{background-color: var(--paper-blue-400);}
-                .batchRejected{background-color: var(--paper-red-400);}
-                .batchAccepted{background-color: var(--paper-green-400);}
-                .batchArchived{background-color: var(--paper-purple-300);}
+                color: var(--app-text-color-light);
+                border-radius: 25px;
+                min-height: 0;
+                margin-left: 8px;
+                font-size: .6em;
+                display: inline-block;
+                line-height: 0.8;
+                text-align: center;
+                height: 10px;
+                padding: 5px;
+                margin-top: 2px;
+            }
+            
+            .batchPending{background-color: var(--paper-orange-400);}
+            .batchToBeCorrected{background-color: var(--paper-red-400);}
+            .batchProcessed{background-color: var(--paper-blue-400);}
+            .batchRejected{background-color: var(--paper-red-400);}
+            .batchAccepted{background-color: var(--paper-green-400);}
+            .batchArchived{background-color: var(--paper-purple-300);}
                       
             .table{         
                 width: auto;
@@ -147,12 +148,12 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             .tr{
                 display: flex;
                 height: 22px;
-                border-bottom: 1px solid lightgray;   
+                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             
             .td{
-               position: relative;
+                position: relative;
                 display: flex;
                 flex-flow: row nowrap;
                 align-items: center;
@@ -169,7 +170,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             }
 
             .fg0{
-                flex-grow: 0.2;
+                flex-grow: 0;
             }
             
             .fg02{
@@ -189,9 +190,9 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             }  
                        
             .status{
-              display: block;
-              margin-left: auto;
-              margin-right: auto;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
             }
             
             .info-icon{
@@ -204,8 +205,8 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             }
             
             .button{
-               display: inline-flex!important;
-               align-items: center!important;
+                display: inline-flex!important;
+                align-items: center!important;
             }
             
             .title{
@@ -213,7 +214,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 padding: 5px;
             }
             
-             .tr-item{
+            .tr-item{
                 cursor: pointer;
             }
             
@@ -243,7 +244,6 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_supp','Extra',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_tot','Total',language)]]</div>
                         <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>
-                        <div class="td fg1"></div>                    
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">

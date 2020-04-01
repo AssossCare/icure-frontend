@@ -75,14 +75,6 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                 .invoice-status--orangeStatus{
                     background: #fcdf354d;
                 }
-                
-                .statusIcon{
-                    height: 8px;
-                    width: 8px;
-                }
-                .invoice-status--orangeStatus{
-                    background: #fcdf354d;
-                }
                 .invoice-status--greenStatus{
                     background: #07f8804d;
                 }
@@ -180,7 +172,7 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
             .tr{
                 display: flex;
                 height: 22px;            
-                border-bottom: 1px solid lightgray;   
+                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             
@@ -279,7 +271,7 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                                 <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.refusedAmount)]]€</span></div>
+                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_getRefusedAmount(inv.messageInfo.invoicedAmount, inv.messageInfo.acceptedAmount)]]€</span></div>
                                 <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>
                                 <div class="td fg2">[[inv.messageInfo.paymentReference]]</div>
                                 <div class="td fg1">[[_formatAmount(inv.messageInfo.amountPaid)]]€</div>
@@ -352,18 +344,43 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
         return _.sortBy(listOfInvoice, ['invoiceReference'], ['asc'])
     }
 
+    _getIconStatusClass(status) {
+        console.log("geticonstatus",status)
+        return (status === this.localize('inv_acc_tre','Accepted for treatment',this.language)) ? "invoice-status--blueStatus" :
+            (status === this.localize('inv_to_be_send','To be send',this.language)) ? (!this.statusToBeSend)  ? "invoice-status--blueStatus" : "invoice-status--orangeStatus" :
+                (status === this.localize('inv_to_be_corrected','To be corrected',this.language))  ? "invoice-status--redStatus" :
+                    (status === this.localize('inv_par_acc','Partially accepted',this.language)) ? "invoice-status--orangeStatus" :
+                        (status === this.localize('inv_full_acc','Fully accepted',this.language)) ? "invoice-status--greenStatus" :
+                            (status === this.localize('inv_tre','Treated',this.language)) ? "invoice-status--greenStatus" :
+                                (status === this.localize('inv_acc_tre','Accepted for treatment',this.language)) ? "invoice-status--blueStatus" :
+                                    (status === this.localize('inv_pen','Pending',this.language)) ? (!this.statusToBeSend) ? "invoice-status--blueStatus" : "" :
+                                        (status === this.localize('inv_err','Error',this.language)) ? "invoice-status--redStatus" :
+                                            (status === this.localize('inv_arch','Archived',this.language)) ? "invoice-status--purpleStatus" :
+                                                (status === this.localize('nmcl-rejected','Rejected',this.language)) ? "invoice-status--redStatus" :
+                                                    (status === this.localize('nmcl-accepted','Accepted',this.language)) ? "invoice-status--greenStatus" :
+                                                        (status === this.localize('inv_send_err', 'Send error', this.language)) ? "invoice-status--redStatus" :
+                                                            ""
+    }
     _getTxtStatusColor(status,amount) {
+        console.log("gettxtstatus",status,amount)
         if (amount > 0) {
-            return (status === this.localize('inv_full_acc','Fully accepted',this.language)) ? "txtcolor--greenStatus" :
-                    ""
+            return (status === this.localize('inv_par_acc','Partially accepted',this.language)) ? "txtcolor--orangeStatus" :
+                (status === this.localize('inv_full_acc','Fully accepted',this.language)) ? "txtcolor--greenStatus" :
+                    (status === this.localize('inv_to_be_corrected','To be corrected',this.language))  ? "txtcolor-status--redStatus" :
+                        (status === this.localize('inv_acc_tre','Accepted for treatment',this.language)) ? "txtcolor--blueStatus" :
+                            (status === this.localize('inv_pen','Pending',this.language)) ? "txtcolor--blueStatus" :
+                                (status === this.localize('inv_tre','Treated',this.language)) ? "txtcolor--greenStatus" :
+                                    (status === this.localize('inv_err','Error',this.language)) ? "txtcolor--redStatus" :
+                                        (status === this.localize('inv_arch','Archived',this.language)) ? "txtcolor--purpleStatus" :
+                                            (status === this.localize('nmcl-rejected','Rejected',this.language)) ? "txtcolor--redStatus" :
+                                                (status === this.localize('nmcl-accepted','Accepted',this.language)) ? "txtcolor--greenStatus" :
+                                                    (status === 'force-red') ? "txtcolor--redStatus" :
+                                                        (status === 'force-green') ? "txtcolor--greenStatus" :
+                                                            (status === this.localize('inv_send_err', 'Send error', this.language)) ? "invoice-status--redStatus" :
+                                                                ""
         }
     }
 
-    _getIconStatusClass(status) {
-        return (status === this.localize('inv_par_acc','Partially accepted',this.language)) ? "invoice-status--orangeStatus" :
-                (status === this.localize('inv_full_acc','Fully accepted',this.language)) ? "invoice-status--greenStatus" :
-                    ""
-    }
 
     formatDate(d,f) {
         const input = d && d.toString() || _.trim(d)
@@ -432,6 +449,10 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                 }
             }, 100)
         }
+    }
+
+    _getRefusedAmount(totalAmount, acceptedAmount){
+        return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
     }
 
 }

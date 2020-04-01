@@ -164,7 +164,7 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             .tr{
                 display: flex;
                 height: 22px;               
-                border-bottom: 1px solid lightgray;   
+                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             
@@ -546,6 +546,10 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
 
     getMessage(){
         this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+    }
+
+    _getRefusedAmount(totalAmount, acceptedAmount){
+        return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
     }
 
     /*

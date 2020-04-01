@@ -798,9 +798,18 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
           _.get(s, "content.fr." + name, _.get(s, "content.measure." + name, null)));
   }
 
+    _hasTag(s, code) {
+        return _.get(s, 'tags', []).some(t => t.type === "CD-PARAMETER" && t.code === code);
+    }
+
   _hasValue(s) {
       return !!this._getValue(s);
   }
+
+    _getValue(s) {
+        const value = this._getContentValue(s, "measureValue.value");
+        return value ? value : this._getContentValue(s, "numberValue");
+    }
 
   _getLabel(s) {
       return this.api.moment(_.get(s, 'valueDate', null)).format('DD/MM/YYYY');
@@ -819,10 +828,6 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
 
   _inMonths(self, s, dateOfBirth) {
       return self.api.moment(s.valueDate).diff(dateOfBirth, 'months') < 60;
-  }
-
-  _getValues(code) {
-      return _.compact(_.flatten(this.contacts.map(ctc => _.get(ctc, 'services', []).filter(s => _.get(s, 'tags', [])))).map(s => s.tags.find(t => t.type === "CD-PARAMETER" && t.code === code) ? this._getValue(s) : null)) || [];
   }
 
   _compareValueDates(a, b) {

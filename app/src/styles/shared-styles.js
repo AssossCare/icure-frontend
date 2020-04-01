@@ -48,6 +48,55 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
 				--text-shadow: {
 					text-shadow:0 1px 1px rgba(0,0,0,0.4);
 				};
+				
+				--flex-rw-c-sa: {
+                    display: flex;
+                    flex-flow: row wrap;
+                    align-items: center;
+                    justify-content: space-around;
+                };
+
+                --flex-rnw-c-sa: {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: center;
+                    justify-content: space-around;
+                };
+
+                --flex-rw-s-sa: {
+                    display: flex;
+                    flex-flow: row wrap;
+                    align-items: stretch;
+                    justify-content: space-around;
+                };
+
+                --flex-rnw-s-sa: {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: stretch;
+                    justify-content: space-around;
+                };
+
+                --flex-rw-c-fs: {
+                    display: flex;
+                    flex-flow: row wrap;
+                    align-items: center;
+                    justify-content: flex-start;
+                };
+
+                --flex-rnw-c-fs: {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: center;
+                    justify-content: flex-start;
+                };
+                
+                --flex-rrnw-c-fs: {
+                    display: flex;
+                    flex-flow: row-reverse nowrap;
+                    align-items: center;
+                    justify-content: flex-start;
+                };
 
 				--form-font-size: 14px;
                 --font-size-normal: 13px;

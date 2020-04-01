@@ -107,7 +107,7 @@ $_documentContainer.innerHTML = `<dom-module id="invoincing-style">
                 display: flex;
                 height: 22px;
                 cursor: pointer;
-                border-bottom: 1px solid lightgray;   
+                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             

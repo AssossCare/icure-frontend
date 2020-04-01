@@ -58,7 +58,6 @@ class DynamicMeasureField extends TkLocalizerMixin(PolymerElement) {
 
 			input{
 				border: none;
-				width: 0;
 				min-width: 0;
 				outline: 0;
 				padding: 0;
@@ -96,8 +95,8 @@ class DynamicMeasureField extends TkLocalizerMixin(PolymerElement) {
 					</template>
 				</label>
 				<iron-input slot="input" bind-value="{{inputValue}}">
-					<input value="{{inputValue::input}}" readonly="">
-					[[unit]]
+					<input value="{{inputValue::input}}" readonly>
+					<div id="unit">[[unit]]</div>
 				</iron-input>
 			</paper-input-container>
 		</template>
@@ -229,6 +228,17 @@ class DynamicMeasureField extends TkLocalizerMixin(PolymerElement) {
           //const match = /^ *([+-]?[0-9]+(?:[.,][0-9]*)?)(?: *([a-zA-Z°].*?))?(?: +([1-9].*?))? *$/.exec(this.inputValue);
           //if (!this.inputValue.match(/^ *([+-]?[0-9]+(?:[.,]0*))(?: *([a-zA-Z°].*?))?(?: +([1-9].*?))? *$/) /*intermediate situation*//*) {
 	}
+
+    _valueWithUnitChanged(value){
+        if(!value)return;
+        if(value.value !== undefined || value.value!==this.value){
+            this.set("value",value.value)
+        }
+        if(value.unit !== undefined || value.unit!==this.unit){
+            this.set("unit",value.unit)
+        }
+
+    }
 }
 
 customElements.define(DynamicMeasureField.is, DynamicMeasureField);

@@ -359,8 +359,8 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _closeAllPanel(){
-        this.shadowRoot.querySelector('#htMsgInvoiceInvoiceDetail')._closeDetailPanel()
-        this.shadowRoot.querySelector('#htMsgInvoiceBatchDetail')._closeDetailPanel()
+        this.shadowRoot.querySelector('#htMsgInvoiceInvoiceDetail') ? this.shadowRoot.querySelector('#htMsgInvoiceInvoiceDetail')._closeDetailPanel() : null
+        this.shadowRoot.querySelector('#htMsgInvoiceBatchDetail') ? this.shadowRoot.querySelector('#htMsgInvoiceBatchDetail')._closeDetailPanel(): null
     }
 
     getMessage(){
@@ -499,14 +499,14 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                                             messageInfo: {
                                                 messageType:        zone200.zones && zone200.zones.find(z => z.zone === "200") ? zone200.zones.find(z => z.zone === "200").value : "",
                                                 hcp:                this.hcp.firstName + " " + this.hcp.lastName,
-                                                oa:                 zone500.zones && zone500.zones.find(z => z.zone === "501") ? (zone500.zones.find(z => z.zone === "501").value).charAt(0) + "00" : "",
+                                                oa:                 _.get(msg, 'metas.ioFederationCode', ""),
                                                 hcpReference:       enr10.zones && enr10.zones.find(z => z.zone === "28") ? enr10.zones.find(z => z.zone === "28").value : "",
                                                 invoiceNumber:      zone300.zones && zone300.zones.find(z => z.zone === "301") ? zone300.zones.find(z => z.zone === "301").value : "",
                                                 invoiceMonth:       zone300.zones &&zone300.zones.find(z => z.zone === "300") ? zone300.zones.find(z => z.zone === "300").value : "",
                                                 invoiceDate:        zone300.zones && zone300.zones.find(z => z.zone === "302") ? zone300.zones.find(z => z.zone === "302").value : "",
                                                 invoicedAmount:     Number(_.get(msg, 'metas.totalAmount', '0.00')),
                                                 acceptedAmount:     Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')),
-                                                refusedAmount:      (!!(st & (1 << 17)) || !!(st & (1 << 12))) ? Number(msg.metas.totalAmount) : (msg.metas && msg.metas.totalRejectedAmount) ? Number(msg.metas.totalRejectedAmount) : "0.00",
+                                                refusedAmount:      Number(_.get(msg, 'metas.totalRejectedAmount', '0.00')),
                                                 invoiceStatus:      invoiceStatus,
                                                 rejectionReason:    rejectionReason,
                                                 paymentReference:   _.get(msg, 'metas.paymentReferenceAccount1', ""),

@@ -150,9 +150,16 @@ class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
 						<span class="modified-after-out">[[localize('obs_val','obsolete value',language)]]<iron-icon class="modified-icon" icon="report-problem"></iron-icon></span>
 					</template>
 				</label>
-				<iron-input slot="input" bind-value="{{traductValue}}">
-                    <input type="text" value="{{traductValue::input}}" readonly="">
-				</iron-input>
+				<template is="dom-if" if="[[!dataSource]]">
+                    <iron-input slot="input" bind-value="{{traductValue}}">
+                        <input type="text" value="{{traductValue::input}}" readonly>
+                    </iron-input>
+                </template>
+                <template is="dom-if" if="[[dataSource]]">
+                    <iron-input slot="input" bind-value="[[_getItem(comboxBoxValue,items,items.*)]]">
+                        <input type="text" readonly>
+                    </iron-input>
+                </template>
             </paper-input-container>
 		</template>
 		<template is="dom-if" if="[[!readOnly]]">
@@ -401,5 +408,9 @@ class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
                   );
       }
 	}
+
+    _getItem(){
+        return this.items.length && this.comboBoxValue && (this.items.find(item => item.id===this.comboBoxValue)|| {name : ""}).name
+    }
 }
 customElements.define(DynamicPopupMenu.is, DynamicPopupMenu);

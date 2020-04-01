@@ -1,0 +1,103 @@
+{
+  "sections": [
+    {
+      "formColumns": [
+        {
+          "formDataList": [
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 415,
+                "top" : 1,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "start_date",
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "startDate",
+              "irrelevant" : true
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 620,
+                "top" : 1,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "end_date",
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "endDate",
+              "irrelevant" : true
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 5,
+                "top" : 1,
+                "key" : "StringEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "school",
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "school"
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 26,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 210,
+                "top" : 1,
+                "key" : "PopupMenuEditor",
+                "menuOptions" : [
+                  "ens_fond",
+                  "ens_sec_inf",
+                  "ens_sec_sup",
+                  "ens_uni",
+                  "ens_sup_lg",
+                  "ens_sup_crt",
+                  "ens_prom_soc"
+                ]
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+              ],
+              "label" : "typeOfEducation",
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "typeOfEducation"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

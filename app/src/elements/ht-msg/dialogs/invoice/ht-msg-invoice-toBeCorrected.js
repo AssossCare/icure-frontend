@@ -151,7 +151,7 @@ class HtMsgInvoiceToBeCorrected extends TkLocalizerMixin(PolymerElement) {
             .tr{
                 display: flex;
                 height: 22px;
-                border-bottom: 1px solid lightgray;   
+                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             
@@ -240,7 +240,6 @@ class HtMsgInvoiceToBeCorrected extends TkLocalizerMixin(PolymerElement) {
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_supp','Extra',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_tot','Total',language)]]</div>
                         <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>
-                        <div class="td fg1"></div>                    
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">

@@ -1012,16 +1012,16 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
       return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), patientObject )
           .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.concat(
               // Target documentId in svc
-              _.map(singleContact.services, singleService => !_.trim(_.get(singleService,"content." + this.language + ".documentId")) ? false : {
+              _.map(singleContact.services, singleService => !( _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")) )? false : {
                   contact: singleContact,
                   service: singleService,
                   serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
                   date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
                   dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
-                  documentId: _.trim(_.get(singleService,"content." + this.language + ".documentId")),
+                  documentId: _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")),
               }),
               // Target ehealthbox message
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(singleContact,"services[0].content." + this.language + ".documentId")) ? false : {
+              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
                   contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
@@ -1031,7 +1031,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                   isLabResultOrProtocol: true,
               }),
               // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(singleContact,"services[0].content." + this.language + ".documentId")) ? false : {
+              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
                   contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
@@ -1044,7 +1044,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
           .then(foundServicesWithDocumentId => !_.size(foundServicesWithDocumentId) ? Promise.resolve([foundServicesWithDocumentId, []]) : this.api.document().getDocuments({ids:_.uniq(_.compact(_.map(foundServicesWithDocumentId,s=>_.trim(_.get(s,"documentId","")))))}).then(foundDocuments=>[foundServicesWithDocumentId,foundDocuments]))
           .then(([foundServicesWithDocumentId,foundDocuments]) => _.compact(_.map(foundServicesWithDocumentId, fswd => {
               const serviceDocument = _.find(foundDocuments, {id: _.trim(_.get(fswd, "documentId"))})
-              return !!_.get(fswd,"isFromMigration",false) ? fswd : (!_.trim(_.get(serviceDocument,"id","")) || !_.trim(_.get(serviceDocument,"attachmentId","")) || !_.trim(_.get(serviceDocument,"secretForeignKeys","")) ) ? false : _.merge({}, fswd, {document: serviceDocument})
+              return !!_.get(fswd,"isFromMigration",false) ? fswd : (!_.trim(_.get(serviceDocument,"id","")) || !_.trim(_.get(serviceDocument,"attachmentId","")) ) ? false : _.merge({}, fswd, {document: serviceDocument})
           })))
           .then(contactsAndDocuments => _.chain(contactsAndDocuments).filter(i => !!_.get(i,"isFromMigration",false) || !!_.trim(_.get(i,"document.id"))).orderBy(['date'], ['desc']).value())
           .then(contactsAndDocuments => Promise.all(_.compact(_.map(contactsAndDocuments, cad => !_.trim(_.get(cad,"document.id")) ? false : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"_data.currentHcp.id",""), _.get(cad,"document.id"), _.get(cad,"document.cryptedForeignKeys")).then(x=>({documentId:_.get(cad,"document.id"), messageId:_.trim(_.head(_.get(x, "extractedKeys")))})).catch(()=>null)))).then(documentsIdsAndMessagesIds => ([contactsAndDocuments,documentsIdsAndMessagesIds])))

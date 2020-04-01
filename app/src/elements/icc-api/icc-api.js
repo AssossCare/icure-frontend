@@ -447,7 +447,7 @@ class IccApi extends PolymerElement {
   }
 
   template(template, args) {
-      const nargs = /\{([0-9a-zA-Z_ ]+)\}/g;
+      const nargs = /\{([0-9a-zA-Z_\- ]+)\}/g;
       return template.replace(nargs, function replaceArg(match, i, index) {
           var result;
 

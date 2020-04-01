@@ -50,8 +50,20 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 width: auto;
             }
             
+            .panel-detail{
+                height: 80px;
+                width: auto;
+                font-size: var(--font-size-normal);
+            }
+            
+            .panel-error{
+                height: 40px;
+                width: auto;
+                font-size: var(--font-size-normal);
+            }
+            
             .panel-content{
-                height: calc(100% - 120px);
+                height: calc(100% - 200px);
                 width: auto;
             }
             
@@ -150,11 +162,14 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             
             .tr{
                 display: flex;
-                height: auto;               
-                border-bottom: 1px solid lightgray;   
-                padding: 4px;                
+                height: auto;
+                padding: 2px;
             }
-            
+        
+            .bb{
+                border-bottom: 1px solid lightgray;
+            }
+        
             .th{
                 height: auto!important;
                 font-weight: bold;
@@ -239,18 +254,76 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                   padding: 10px;
              }
             
+            .bold{
+                font-weight: bold;
+            }
+            
+            .error-line{
+                padding: 2px;
+                width: auto;
+                margin-left: 5px;
+                color: var(--app-status-color-nok);
+            }
+            
+            .tr-info{
+                display: flex;
+                height: auto;              
+            }
+            
+            .td-info{
+                 position: relative;
+                 display: flex;
+                 flex-flow: row nowrap;
+                 align-items: center;
+                 flex-basis: 0;
+                 padding-left: 6px;
+                 overflow: hidden;
+                 min-width: 0px;
+                 z-index: 2;
+                 word-break: break-word;
+                 white-space: nowrap;
+                 font-size: 13px;
+                 text-overflow: ellipsis;
+            }
+            
         </style>
         
         <div class="panel">
            <div class="panel-title">
-                [[localize('inv-num-detail', 'Detail of batch number', language)]] [[_getInvoiceReference(selectedInvoiceForDetail)]] [[invoicesErrorMsg]]          
+                [[localize('inv-num-detail', 'Detail of batch number', language)]] [[_getInvoiceReference(selectedInvoiceForDetail)]]          
             </div>
-            <div class="panel-search">
+            <div class="panel-detail">
+                <div class="table">
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_prest','Physician',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.hcp]]</div>                        
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_invoiced','Invoiced',language)]]:</span>&nbsp; [[_formatAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount)]]€</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_bank_account','Bank account',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentAccount]]</div>   
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_month','Billed month',language)]]:</span>&nbsp; [[formatDate(selectedInvoiceForDetail.messageInfo.invoiceMonth,'month')]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_acc','Accepted',language)]]:</span>&nbsp; <span class="txtcolor--greenStatus">[[_formatAmount(selectedInvoiceForDetail.messageInfo.acceptedAmount)]]€</span></div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv-ref-pai','Paiement reference',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentReference]]</div>
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_date_fact','Invoice date',language)]]:</span>&nbsp; [[formatDate(selectedInvoiceForDetail.messageInfo.invoiceDate,'date')]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_rej','Rejected',language)]]:</span>&nbsp; <span class="txtcolor--redStatus">[[_getRefusedAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount, selectedInvoiceForDetail.messageInfo.acceptedAmount)]]€</span></div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount_paid','Paid',language)]]:</span>&nbsp; [[_formatAmount(selectedInvoiceForDetail.messageInfo.amountPaid)]]€</div>
+                    </div>
+                </div>            
+            </div>         
+            <div class="panel-error">
+                <template is="dom-repeat" items="[[invoicesErrorMsg]]" as="err">
+                    <div class="error-line">
+                        [[err]]
+                    </div>
+                </template>
+            </div>
+             <div class="panel-search">
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
             </div>
             <div class="panel-content">
                 <div class="table">
-                    <div class="tr th">                     
+                    <div class="tr bb th">                     
                         <div class="td fg1">[[localize('inv_num_fac','Invoice number',language)]]</div>
                         <div class="td fg2">[[localize('inv_pat','Patient',language)]]</div>
                         <div class="td fg1">[[localize('inv_niss','Niss',language)]]</div>
@@ -272,6 +345,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                                 <div class="td fg2">[[inv.patient]]</div>
                                 <div class="td fg1">[[inv.ssin]]</div>
                                 <div class="td fg1"></div>
+                                <div class="td fg1">[[formatDate(inv.invoiceMonth,'month')]]</div>
                                 <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(inv.invoicedAmount)]]€</span></div>
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(inv.acceptedAmount)]]€</span></div>
@@ -281,11 +355,12 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                                 <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.status))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.status)]]"></iron-icon> [[inv.status]]</span></div>           
                             </div>
                             <template is="dom-repeat" items="[[inv.invoicingCodes]]" as="invco">
-                                <div class="tr">
+                                <div class="tr bb">
                                     <div class="td fg1"></div>
                                     <div class="td fg2"></div>
                                     <div class="td fg1"></div>
                                     <div class="td fg1 center">[[invco.invoicingCode]]</div>
+                                    <div class="td fg1"></div>
                                     <div class="td fg1">[[formatDate(invco.invoiceDate,'date')]]</div>
                                     <div class="td fg1"><span class\$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(invco.invoicedAmount)]]€</span></div>
                                     <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(invco.acceptedAmount)]]€</span></div>
@@ -301,10 +376,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[batchCanBeArchived]]">
-                   <paper-button class="button button--other" on-tap="_openArchiveDialog">[[localize('btn-arch', 'Archive', language)]]</paper-button>
+                   <paper-button class="button button--other" on-tap="_openArchiveDialog" restamp="true">[[localize('btn-arch', 'Archive', language)]]</paper-button>
                 </template>
                 <template is="dom-if" if="[[batchCanBeResent]]">
-                   <paper-button class="button button--other" on-tap="_openResendDialog">[[localize('btn-trans-for-res', 'Transfer for resending', language)]]</paper-button>
+                   <paper-button class="button button--other" on-tap="_openResendDialog" restamp="true">[[localize('btn-trans-for-res', 'Transfer for resending', language)]]</paper-button>
                 </template>
                 <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>              
             </div>
@@ -406,7 +481,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         this.set('batchCanBeResent', false)
         this.set('isSendError', false)
         this.set('isLoading', false)
-        this.set('invoicesErrorMsg', null)
+        this.set('invoicesErrorMsg', [])
 
         this.dispatchEvent(new CustomEvent('close-detail-panel', {bubbles: true, composed: true}))
     }
@@ -415,7 +490,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             this.set('batchCanBeArchived', false)
             this.set('batchCanBeResent', false)
             this.set('isLoading', true)
-            this.set('invoicesErrorMsg', null);
+            this.set('invoicesErrorMsg', []);
 
             this.api.setPreventLogging()
 
@@ -475,7 +550,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                             return false
                         })
 
-                        this.set('invoicesErrorMsg',errorString);
+                        this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, errorString)));
 
                         const zone200 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "200"))
                         const zone300 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "300"))
@@ -487,7 +562,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                             zone400 && this.SEG_getErrSegment_400(zone400.zones || []),
                             zone500 && this.SEG_getErrSegment_500(zone500.zones || [])]))
 
-                        this.set('invoicesErrorMsg',this.invoicesErrorMsg+" "+globalError);
+                        this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, globalError)));
 
                     })
                 }).finally(()=>{
@@ -596,72 +671,72 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur le nom du message
         if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value !== '00'){
             if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value === '10'){
-                erreur += 'Nom du message => Zone obligatoire non complétée<br>';
+                erreur += 'Nom du message => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value === '11'){
-                erreur += 'Nom du message => Erreur de format<br>';
+                erreur += 'Nom du message => Erreur de format';
             }else if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value === '20'){
-                erreur += 'Nom du message => Codification inconnue<br>';
+                erreur += 'Nom du message => Codification inconnue';
             }else if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value === '21'){
-                erreur += 'Nom du message => Message non autorisé pour cet émetteur<br>';
+                erreur += 'Nom du message => Message non autorisé pour cet émetteur';
             }else if(zones.find(z => z.zone === "2001") && zones.find(z => z.zone === "2001").value === '22'){
-                erreur += 'Nom du message => # de 920000<br>';
+                erreur += 'Nom du message => # de 920000';
             }
         }
 
         //Erreur sur le n° de version du message
         if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value !== '00'){
             if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value === '10'){
-                erreur += 'N° version mess => Zone obligatoire non complétée<br>';
+                erreur += 'N° version mess => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value === '11'){
-                erreur += 'N° version mess => Erreur format<br>';
+                erreur += 'N° version mess => Erreur format';
             }else if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value === '20'){
-                erreur += 'N° version mess => N° de version n\'est plus d\'application<br>';
+                erreur += 'N° version mess => N° de version n\'est plus d\'application';
             }else if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value === '21'){
-                erreur += 'N° version mess => N° de version pas encore d\'application<br>';
+                erreur += 'N° version mess => N° de version pas encore d\'application';
             }else if(zones.find(z => z.zone === "2011") && zones.find(z => z.zone === "2011").value === '30'){
-                erreur += 'N° version mess => N° de version non autorisé pour ce flux<br>';
+                erreur += 'N° version mess => N° de version non autorisé pour ce flux';
             }
         }
 
         //Erreur sur le type de message
         if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value !== '00'){
             if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value === '10'){
-                erreur += 'Type de mess => Zone obligatoire non complétée<br>';
+                erreur += 'Type de mess => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value === '11'){
-                erreur += 'Type de mess => Erreur format<br>';
+                erreur += 'Type de mess => Erreur format';
             }else if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value === '20'){
-                erreur += 'Type de mess => Valeur non permise<br>';
+                erreur += 'Type de mess => Valeur non permise';
             }else if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value === '30'){
-                erreur += 'Type de mess => Message test dans un buffer de production (1er car zone 107 = P)<br>';
+                erreur += 'Type de mess => Message test dans un buffer de production (1er car zone 107 = P)';
             }else if(zones.find(z => z.zone === "2021") && zones.find(z => z.zone === "2021").value === '31'){
-                erreur += 'Type de mess => Message de production dans un buffer de test (1er car zone 107 = T)<br>';
+                erreur += 'Type de mess => Message de production dans un buffer de test (1er car zone 107 = T)';
             }
         }
 
         //Erreur sur le statut du message
         if(zones.find(z => z.zone === "2031") && zones.find(z => z.zone === "2031").value !== '00'){
             if(zones.find(z => z.zone === "2031") && zones.find(z => z.zone === "2031").value === '10'){
-                erreur += 'Statut mess => Erreur format<br>';
+                erreur += 'Statut mess => Erreur format';
             }else if(zones.find(z => z.zone === "2031") && zones.find(z => z.zone === "2031").value === '20'){
-                erreur += 'Statut mess => Valeur non permise<br>';
+                erreur += 'Statut mess => Valeur non permise';
             }
         }
 
         //Erreur sur la référence message institution ou prestataire de soins
         if(zones.find(z => z.zone === "2041") && zones.find(z => z.zone === "2041").value !== '00'){
             if(zones.find(z => z.zone === "2041") && zones.find(z => z.zone === "2041").value === '10'){
-                erreur += 'Réf mess => Zone obligatoire non complétée<br>';
+                erreur += 'Réf mess => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "2041") && zones.find(z => z.zone === "2041").value === '11'){
-                erreur += 'Réf mess => Erreur format<br>';
+                erreur += 'Réf mess => Erreur format';
             }
         }
 
         //Erreur sur la référence message O.A
         if(zones.find(z => z.zone === "2051") && zones.find(z => z.zone === "2051").value !== '00'){
             if(zones.find(z => z.zone === "2051") && zones.find(z => z.zone === "2051").value === '10'){
-                erreur += 'Réf mess OA => Zone obligatoire non complétée<br>';
+                erreur += 'Réf mess OA => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "2051") && zones.find(z => z.zone === "2051").value === '11'){
-                erreur += 'Réf mess OA => Erreur format<br>';
+                erreur += 'Réf mess OA => Erreur format';
             }
         }
 
@@ -674,35 +749,35 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur l'année et le mois de facturation
         if(zones.find(z => z.zone === "3001") && zones.find(z => z.zone === "3001").value !== '00'){
             if(zones.find(z => z.zone === "3001") && zones.find(z => z.zone === "3001").value === '10'){
-                erreur += 'Année mois fact => Zone obligatoire non complétée<br>';
+                erreur += 'Année mois fact => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3001") && zones.find(z => z.zone === "3001").value === '11'){
-                erreur += 'Année mois fact => Erreur format<br>';
+                erreur += 'Année mois fact => Erreur format';
             }else if(zones.find(z => z.zone === "3001") && zones.find(z => z.zone === "3001").value === '20'){
-                erreur += 'Année mois fact => Valeur non permise<br>';
+                erreur += 'Année mois fact => Valeur non permise';
             }
         }
 
         //Erreur sur le n° d'envoi
         if(zones.find(z => z.zone === "3011") && zones.find(z => z.zone === "3011").value !== '00'){
             if(zones.find(z => z.zone === "3011") && zones.find(z => z.zone === "3011").value === '10'){
-                erreur += 'N° envoi => Zone obligatoire non complétée<br>';
+                erreur += 'N° envoi => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3011") && zones.find(z => z.zone === "3011").value === '11'){
-                erreur += 'N° envoi => Erreur format<br>';
+                erreur += 'N° envoi => Erreur format';
             }else if(zones.find(z => z.zone === "3011") && zones.find(z => z.zone === "3011").value === '40'){
-                erreur += 'N° envoi => Signalisation de double fichier de facturation transmis<br>';
+                erreur += 'N° envoi => Signalisation de double fichier de facturation transmis';
             }
         }
 
         //Erreur sur la date de création de la facture
         if(zones.find(z => z.zone === "3021")  && zones.find(z => z.zone === "3021").value !== '00'){
             if(zones.find(z => z.zone === "3021") && zones.find(z => z.zone === "3021").value === '10'){
-                erreur += 'Date création facture => Zone obligatoire non complétée<br>';
+                erreur += 'Date création facture => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3021") && zones.find(z => z.zone === "3021").value === '11'){
-                erreur += 'Date création facture => Erreur format<br>';
+                erreur += 'Date création facture => Erreur format';
             }else if(zones.find(z => z.zone === "3021") && zones.find(z => z.zone === "3021").value === '20'){
-                erreur += 'Date création facture => Date > date du jour<br>';
+                erreur += 'Date création facture => Date > date du jour';
             }else if(zones.find(z => z.zone === "3021") && zones.find(z => z.zone === "3021").value === '21'){
-                erreur += 'Date création facture => Date invraisemblable ( date < 01/01/2002)<br>';
+                erreur += 'Date création facture => Date invraisemblable ( date < 01/01/2002)';
             }
         }
 
@@ -710,49 +785,49 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur le n° de version des instruction
         if(zones.find(z => z.zone === "3041") && zones.find(z => z.zone === "3041").value !== '00'){
             if(zones.find(z => z.zone === "3041") && zones.find(z => z.zone === "3041").value === '10'){
-                erreur += 'N° version instruction => Zone obligatoire non complétée<br>';
+                erreur += 'N° version instruction => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3041") && zones.find(z => z.zone === "3041").value === '11'){
-                erreur += 'N° version instruction => Erreur format<br>';
+                erreur += 'N° version instruction => Erreur format';
             }else if(zones.find(z => z.zone === "3041") && zones.find(z => z.zone === "3041").value === '20'){
-                erreur += 'N° version instruction => Valeur non permise<br>';
+                erreur += 'N° version instruction => Valeur non permise';
             }else if(zones.find(z => z.zone === "3041") && zones.find(z => z.zone === "3041").value === '21'){
-                erreur += 'N° version instruction => Incompatibilité avec valeur reprise en zone 202<br>';
+                erreur += 'N° version instruction => Incompatibilité avec valeur reprise en zone 202';
             }
         }
 
         //Erreur sur le nom de la personne de contact
         if(zones.find(z => z.zone === "3051") && zones.find(z => z.zone === "3051").value !== '00'){
             if(zones.find(z => z.zone === "3051") && zones.find(z => z.zone === "3051").value === '10'){
-                erreur += 'Nom personne de contact => Zone obligatoire non complétée<br>';
+                erreur += 'Nom personne de contact => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3051") && zones.find(z => z.zone === "3051").value === '11'){
-                erreur += 'Nom personne de contact => Erreur format<br>';
+                erreur += 'Nom personne de contact => Erreur format';
             }
         }
 
         //Erreur sur le prenom de la personne de contact
         if(zones.find(z => z.zone === "3061") && zones.find(z => z.zone === "3061").value !== '00'){
             if(zones.find(z => z.zone === "3061") && zones.find(z => z.zone === "3061").value === '10'){
-                erreur += 'Prénom personne de contact => Zone obligatoire non complétée<br>';
+                erreur += 'Prénom personne de contact => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3061") && zones.find(z => z.zone === "3061").value === '11'){
-                erreur += 'Prénom personne de contact => Erreur format<br>';
+                erreur += 'Prénom personne de contact => Erreur format';
             }
         }
 
         //Erreru sur le n° de tel de contact
         if(zones.find(z => z.zone === "3071") && zones.find(z => z.zone === "3071").value !== '00'){
             if(zones.find(z => z.zone === "3071") && zones.find(z => z.zone === "3071").value === '10'){
-                erreur += 'N° téléphone => Zone obligatoire non complétée<br>';
+                erreur += 'N° téléphone => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3071") && zones.find(z => z.zone === "3071").value === '11'){
-                erreur += 'N° téléphone => Erreur format<br>';
+                erreur += 'N° téléphone => Erreur format';
             }
         }
 
         //Erreur sur le type de la facture
         if(zones.find(z => z.zone === "3081") && zones.find(z => z.zone === "3081").value !== '00'){
             if(zones.find(z => z.zone === "3081") && zones.find(z => z.zone === "3081").value === '10'){
-                erreur += 'Type de la facture => Zone obligatoire non complétée<br>';
+                erreur += 'Type de la facture => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3081") && zones.find(z => z.zone === "3081").value  === '11'){
-                erreur += 'Type de la facture => Erreur format<br>';
+                erreur += 'Type de la facture => Erreur format';
             }else if(zones.find(z => z.zone === "3081") && zones.find(z => z.zone === "3081").value  === '20'){
                 erreur += 'Type de la facture => Valeur non permise en fonction du secteur qui émet la facturation';
             }
@@ -761,9 +836,9 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur le type de facturation
         if(zones.find(z => z.zone === "3091") && zones.find(z => z.zone === "3091").value !== '00'){
             if(zones.find(z => z.zone === "3091") && zones.find(z => z.zone === "3091").value === '10'){
-                erreur += 'Type de facturation => Zone obligatoire non complétée<br>';
+                erreur += 'Type de facturation => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "3091") && zones.find(z => z.zone === "3091").value === '11'){
-                erreur += 'Type de facturation => Erreur format<br>';
+                erreur += 'Type de facturation => Erreur format';
             }else if(zones.find(z => z.zone === "3091") && zones.find(z => z.zone === "3091").value === '20'){
                 erreur += 'Type de facturation => Valeur non permise en fonction du secteur qui émet la facturation';
             }else if(zones.find(z => z.zone === "3091") && zones.find(z => z.zone === "3091").value === '30'){
@@ -781,83 +856,83 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur le type de record
         if(zones.find(z => z.zone === "4001")  && zones.find(z => z.zone === "4001").value  !== '00'){
             if(zones.find(z => z.zone === "4001") && zones.find(z => z.zone === "4001").value === '10'){
-                erreur +='Type de record => Zone obligatoire<br>';
+                erreur +='Type de record => Zone obligatoire';
             }else if(zones.find(z => z.zone === "4001") && zones.find(z => z.zone === "4001").value === '11'){
-                erreur += 'Type de record => Erreur de format<br>';
+                erreur += 'Type de record => Erreur de format';
             }else if(zones.find(z => z.zone === "4001") && zones.find(z => z.zone === "4001").value === '20'){
-                erreur += 'Type de record => Valeur non permise<br>';
+                erreur += 'Type de record => Valeur non permise';
             }
         }
 
         //Erreur sur le num de mut
         if(zones.find(z => z.zone === "4011") && zones.find(z => z.zone === "4011").value  !== '00'){
             if(zones.find(z => z.zone === "4011") && zones.find(z => z.zone === "4011").value === '10'){
-                erreur += 'N° de mutualité => Zone obligatoire non complétée<br>';
+                erreur += 'N° de mutualité => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "4011") && zones.find(z => z.zone === "4011").value === '11'){
-                erreur +='N° de mutualité => Erreur de format<br>';
+                erreur +='N° de mutualité => Erreur de format';
             }else if(zones.find(z => z.zone === "4011") && zones.find(z => z.zone === "4011").value === '20'){
-                erreur +='N° de mutualité => Numéro inconnu ou codification erronée<br>';
+                erreur +='N° de mutualité => Numéro inconnu ou codification erronée';
             }else if(zones.find(z => z.zone === "4011") && zones.find(z => z.zone === "4011").value === '21'){
-                erreur += 'N° de mutualité => N° de mutualité non retrouvé dans le détail de la facturation<br>';
+                erreur += 'N° de mutualité => N° de mutualité non retrouvé dans le détail de la facturation';
             }
         }
 
         //Erreur sur le num fact
         if(zones.find(z => z.zone === "4021") && zones.find(z => z.zone === "4021").value  !== '00'){
             if(zones.find(z => z.zone === "4021") && zones.find(z => z.zone === "4021").value === '10'){
-                erreur +='N° de facture récapitulative => Zone obligatoire non complétée<br>';
+                erreur +='N° de facture récapitulative => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "4021") && zones.find(z => z.zone === "4021").value === '11'){
-                erreur += 'N° de facture récapitulative => Erreur de format<br>';
+                erreur += 'N° de facture récapitulative => Erreur de format';
             }
         }
 
         //Erreur sur le signe montant a ou montant demande a
         if(zones.find(z => z.zone === "4041") && zones.find(z => z.zone === "4041").value !== '00'){
             if(zones.find(z => z.zone === "4041") && zones.find(z => z.zone === "4041").value === '11'){
-                erreur += 'Montant demandé cpt a => Erreur de format<br>';
+                erreur += 'Montant demandé cpt a => Erreur de format';
             }else if(zones.find(z => z.zone === "4041") && zones.find(z => z.zone === "4041").value === '40'){
-                erreur += 'Montant demandé cpt a => Erreur code signe (# de + ou -)<br>';
+                erreur += 'Montant demandé cpt a => Erreur code signe (# de + ou -)';
             }else if(zones.find(z => z.zone === "4041") && zones.find(z => z.zone === "4041").value === '41'){
-                erreur +='Montant demandé cpt a => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité<br>';
+                erreur +='Montant demandé cpt a => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité';
             }else if(zones.find(z => z.zone === "4041") && zones.find(z => z.zone === "4041").value === '20'){
-                erreur += 'Montant demandé cpt a => Somme erronée<br>';
+                erreur += 'Montant demandé cpt a => Somme erronée';
             }
         }
 
         //Erreur sur le signe montant b ou montant demande b
         if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value !== '00'){
             if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value === '11'){
-                erreur += 'Montant demandé cpt b => Erreur de format<br>';
+                erreur += 'Montant demandé cpt b => Erreur de format';
             }else if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value === '15'){
-                erreur +='Montant demandé cpt b => Zone # de 0 si l\'émetteur n\est pas une institution hospitalière - Zone signe # de «blanc» et émetteur de la facturation # d’une institution hospitalière<br>';
+                erreur +='Montant demandé cpt b => Zone # de 0 si l\'émetteur n\est pas une institution hospitalière - Zone signe # de «blanc» et émetteur de la facturation # d’une institution hospitalière';
             }else if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value === '40'){
                 erreur +='Montant demandé cpt b => Erreur code signe (# de + ou -)';
             }else if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value === '41'){
-                erreur +='Montant demandé cpt b => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité<br>';
+                erreur +='Montant demandé cpt b => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité';
             }else if(zones.find(z => z.zone === "4061") && zones.find(z => z.zone === "4061").value === '20'){
-                erreur +='Montant demandé cpt b => Somme erronée<br>';
+                erreur +='Montant demandé cpt b => Somme erronée';
             }
         }
 
         //Erreur sur le signe montant a + b ou montant demande a + b
         if(zones.find(z => z.zone === "4081") && zones.find(z => z.zone === "4081").value !== '00'){
             if(zones.find(z => z.zone === "4081") && zones.find(z => z.zone === "4081").value === '11'){
-                erreur +='Total montant demandés cpt a + cpt b => Erreur de format<br>';
+                erreur +='Total montant demandés cpt a + cpt b => Erreur de format';
             }else if(zones.find(z => z.zone === "4081") && zones.find(z => z.zone === "4081").value === '20'){
-                erreur +='Total montant demandé cpt a + cpt b => Montant # somme des montants cpt a et cpt b<br>';
+                erreur +='Total montant demandé cpt a + cpt b => Montant # somme des montants cpt a et cpt b';
             }else if(zones.find(z => z.zone === "4081") && zones.find(z => z.zone === "4081").value === '40'){
-                erreur +='Total montant demandé cpt a + cpt b => Erreur code signe (# de + ou -)<br>';
+                erreur +='Total montant demandé cpt a + cpt b => Erreur code signe (# de + ou -)';
             }
         }
 
         //Erreur sur le nb d'enreg
         if(zones.find(z => z.zone === "4091") && zones.find(z => z.zone === "4091").value !== '00'){
             if(zones.find(z => z.zone === "4091") && zones.find(z => z.zone === "4091").value === '10'){
-                erreur += 'Nb de records détail => Zone obligatoire non complétée<br>';
+                erreur += 'Nb de records détail => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "4091") && zones.find(z => z.zone === "4091").value === '11'){
-                erreur +='Nb de records détail => Erreur de format<br>';
+                erreur +='Nb de records détail => Erreur de format';
             }else if(zones.find(z => z.zone === "4091") && zones.find(z => z.zone === "4091").value === '20'){
-                erreur += 'Nb de records détail => Somme erronée<br>';
+                erreur += 'Nb de records détail => Somme erronée';
             }
         }
 
@@ -865,15 +940,15 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         if(zones.find(z => z.zone === "4101") && zones.find(z => z.zone === "400").value !== '00'){
             if(zones.find(z => z.zone === "400") && zones.find(z => z.zone === "400").value === '95'){
                 if(zones.find(z => z.zone === "4101") && zones.find(z => z.zone === "4101").value === '10'){
-                    erreur += 'N° de contrôle par mutualité => zone obligaoire non complétée<br>';
+                    erreur += 'N° de contrôle par mutualité => zone obligaoire non complétée';
                 }else if(zones.find(z => z.zone === "4101") && zones.find(z => z.zone === "4101").value === '11'){
-                    erreur +='N° de contrôle par mutualité => Erreur de format<br>';
+                    erreur +='N° de contrôle par mutualité => Erreur de format';
                 }
             }else if(zones.find(z => z.zone === "400") && zones.find(z => z.zone === "4101").value  === '96'){
                 if(zones.find(z => z.zone === "4101") && zones.find(z => z.zone === "4101").value === '10'){
-                    erreur += 'N° de contrôle de l\'envoi => zone obligaoire non complétée<br>';
+                    erreur += 'N° de contrôle de l\'envoi => zone obligaoire non complétée';
                 }else if(zones.find(z => z.zone === "4101") && zones.find(z => z.zone === "4101").value === '11'){
-                    erreur +='N° de contrôle de l\'envoi => Erreur de format<br>';
+                    erreur +='N° de contrôle de l\'envoi => Erreur de format';
                 }
             }
         }
@@ -887,83 +962,83 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         //Erreur sur le type de record
         if(zones.find(z => z.zone === "5001") && zones.find(z => z.zone === "5001").value  !== '00'){
             if(zones.find(z => z.zone === "5001") && zones.find(z => z.zone === "5001").value === '10'){
-                erreur +='Type de record => Zone obligatoire<br>';
+                erreur +='Type de record => Zone obligatoire';
             }else if(zones.find(z => z.zone === "5001") && zones.find(z => z.zone === "5001").value === '11'){
-                erreur += 'Type de record => Erreur de format<br>';
+                erreur += 'Type de record => Erreur de format';
             }else if(zones.find(z => z.zone === "5001") && zones.find(z => z.zone === "5001").value === '20'){
-                erreur += 'Type de record => Valeur non permise<br>';
+                erreur += 'Type de record => Valeur non permise';
             }
         }
 
         //Erreur sur le num de mut
         if(zones.find(z => z.zone === "5011") && zones.find(z => z.zone === "5011").value !== '00'){
             if(zones.find(z => z.zone === "5011") && zones.find(z => z.zone === "5011").value === '10'){
-                erreur += 'N° de mutualité => Zone obligatoire non complétée<br>';
+                erreur += 'N° de mutualité => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "5011") && zones.find(z => z.zone === "5011").value === '11'){
-                erreur +='N° de mutualité => Erreur de format<br>';
+                erreur +='N° de mutualité => Erreur de format';
             }else if(zones.find(z => z.zone === "5011") && zones.find(z => z.zone === "5011").value === '20'){
-                erreur +='N° de mutualité => Numéro inconnu ou codification erronée<br>';
+                erreur +='N° de mutualité => Numéro inconnu ou codification erronée';
             }else if(zones.find(z => z.zone === "5011") && zones.find(z => z.zone === "5011").value === '21'){
-                erreur += 'N° de mutualité => N° de mutualité non retrouvé dans le détail de la facturation<br>';
+                erreur += 'N° de mutualité => N° de mutualité non retrouvé dans le détail de la facturation';
             }
         }
 
         //Erreur sur le num fact
         if(zones.find(z => z.zone === "5021") && zones.find(z => z.zone === "5021").value !== '00'){
             if(zones.find(z => z.zone === "5021") && zones.find(z => z.zone === "5021").value === '10'){
-                erreur +='N° de facture récapitulative => Zone obligatoire non complétée<br>';
+                erreur +='N° de facture récapitulative => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "5021") && zones.find(z => z.zone === "5021").value === '11'){
-                erreur += 'N° de facture récapitulative => Erreur de format<br>';
+                erreur += 'N° de facture récapitulative => Erreur de format';
             }
         }
 
         //Erreur sur le signe montant a ou montant demande a
         if(zones.find(z => z.zone === "5041") && zones.find(z => z.zone === "5041").value !== '00'){
             if(zones.find(z => z.zone === "5041") && zones.find(z => z.zone === "5041").value === '11'){
-                erreur += 'Montant demandé cpt a => Erreur de format<br>';
+                erreur += 'Montant demandé cpt a => Erreur de format';
             }else if(zones.find(z => z.zone === "5041") && zones.find(z => z.zone === "5041").value === '40'){
-                erreur += 'Montant demandé cpt a => Erreur code signe (# de + ou -)<br>';
+                erreur += 'Montant demandé cpt a => Erreur code signe (# de + ou -)';
             }else if(zones.find(z => z.zone === "5041") && zones.find(z => z.zone === "5041").value === '41'){
-                erreur +='Montant demandé cpt a => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité<br>';
+                erreur +='Montant demandé cpt a => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité';
             }else if(zones.find(z => z.zone === "5041") && zones.find(z => z.zone === "5041").value === '20'){
-                erreur += 'Montant demandé cpt a => Somme erronée<br>';
+                erreur += 'Montant demandé cpt a => Somme erronée';
             }
         }
 
         //Erreur sur le signe montant b ou montant demande b
         if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value !== '00'){
             if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value === '11'){
-                erreur += 'Montant demandé cpt b => Erreur de format<br>';
+                erreur += 'Montant demandé cpt b => Erreur de format';
             }else if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value === '15'){
-                erreur +='Montant demandé cpt b => Zone # de 0 si l\'émetteur n\est pas une institution hospitalière - Zone signe # de «blanc» et émetteur de la facturation # d’une institution hospitalière<br>';
+                erreur +='Montant demandé cpt b => Zone # de 0 si l\'émetteur n\est pas une institution hospitalière - Zone signe # de «blanc» et émetteur de la facturation # d’une institution hospitalière';
             }else if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value === '40'){
                 erreur +='Montant demandé cpt b => Erreur code signe (# de + ou -)';
             }else if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value === '41'){
-                erreur +='Montant demandé cpt b => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité<br>';
+                erreur +='Montant demandé cpt b => Discordance entre montant ci-mentionné et total du fichier facturation pour la mutualité';
             }else if(zones.find(z => z.zone === "5061") && zones.find(z => z.zone === "5061").value === '20'){
-                erreur +='Montant demandé cpt b => Somme erronée<br>';
+                erreur +='Montant demandé cpt b => Somme erronée';
             }
         }
 
         //Erreur sur le signe montant a + b ou montant demande a + b
         if(zones.find(z => z.zone === "5081") && zones.find(z => z.zone === "5081").value !== '00'){
             if(zones.find(z => z.zone === "5081") && zones.find(z => z.zone === "5081").value === '11'){
-                erreur +='Total montant demandés cpt a + cpt b => Erreur de format<br>';
+                erreur +='Total montant demandés cpt a + cpt b => Erreur de format';
             }else if(zones.find(z => z.zone === "5081") && zones.find(z => z.zone === "5081").value === '20'){
-                erreur +='Total montant demandé cpt a + cpt b => Montant # somme des montants cpt a et cpt b<br>';
+                erreur +='Total montant demandé cpt a + cpt b => Montant # somme des montants cpt a et cpt b';
             }else if(zones.find(z => z.zone === "5081") && zones.find(z => z.zone === "5081").value === '40'){
-                erreur +='Total montant demandé cpt a + cpt b => Erreur code signe (# de + ou -)<br>';
+                erreur +='Total montant demandé cpt a + cpt b => Erreur code signe (# de + ou -)';
             }
         }
 
         //Erreur sur le nb d'enreg
         if(zones.find(z => z.zone === "5091") && zones.find(z => z.zone === "5091").value !== '00'){
             if(zones.find(z => z.zone === "5091") && zones.find(z => z.zone === "5091").value === '10'){
-                erreur += 'Nb de records détail => Zone obligatoire non complétée<br>';
+                erreur += 'Nb de records détail => Zone obligatoire non complétée';
             }else if(zones.find(z => z.zone === "5091") && zones.find(z => z.zone === "5091").value === '11'){
-                erreur +='Nb de records détail => Erreur de format<br>';
+                erreur +='Nb de records détail => Erreur de format';
             }else if(zones.find(z => z.zone === "5091") && zones.find(z => z.zone === "5091").value === '20'){
-                erreur += 'Nb de records détail => Somme erronée<br>';
+                erreur += 'Nb de records détail => Somme erronée';
             }
         }
 
@@ -971,15 +1046,15 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         if(zones.find(z => z.zone === "5101") && zones.find(z => z.zone === "5101").value !== '00'){
             if(zones.find(z => z.zone === "500") && zones.find(z => z.zone === "500").value === '95'){
                 if(zones.find(z => z.zone === "5101") && zones.find(z => z.zone === "5101").value === '10'){
-                    erreur += 'N° de contrôle par mutualité => zone obligaoire non complétée<br>';
+                    erreur += 'N° de contrôle par mutualité => zone obligaoire non complétée';
                 }else if(zones.find(z => z.zone === "5101") && zones.find(z => z.zone === "5101").value === '11'){
-                    erreur +='N° de contrôle par mutualité => Erreur de format<br>';
+                    erreur +='N° de contrôle par mutualité => Erreur de format';
                 }
             }else if(zones.find(z => z.zone === "500") && zones.find(z => z.zone === "500").value === '96'){
                 if(zones.find(z => z.zone === "5101") && zones.find(z => z.zone === "5101").value === '10'){
-                    erreur += 'N° de contrôle de l\'envoi => zone obligatoire non complétée<br>';
+                    erreur += 'N° de contrôle de l\'envoi => zone obligatoire non complétée';
                 }else if(zones.find(z => z.zone === "5101") && zones.find(z => z.zone === "5101").value === '11'){
-                    erreur +='N° de contrôle de l\'envoi => Erreur de format<br>';
+                    erreur +='N° de contrôle de l\'envoi => Erreur de format';
                 }
             }
         }
@@ -1085,6 +1160,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
 
     _closeResendDialog(){
         this.shadowRoot.querySelector("#resendingBatchDialog").close()
+    }
+
+    _getRefusedAmount(totalAmount, acceptedAmount){
+        return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
     }
 
 }

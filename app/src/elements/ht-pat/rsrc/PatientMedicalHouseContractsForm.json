@@ -173,20 +173,23 @@
                 "readOnly" : false,
                 "height" : 50,
                 "labelPosition" : "Left",
-                "width" : 200,
+                "width" : 400,
                 "multiline" : false,
+                "displayAllAlways" : true,
                 "left" : 15,
                 "top" : 135,
-                "key" : "StringEditor"
+                "key" : "PopupMenuEditor"
               },
               "sortOrder" : 9,
               "codeTypes" : [
-
+                {
+                  "type" : "care.topaz.customMmUnsubscribe"
+                }
               ],
               "label" : "unsub_reason",
               "irrelevant" : true,
               "subForm" : false,
-              "type" : "TKNumber",
+              "type" : "TKString",
               "name" : "alias"
             },
             {
@@ -194,9 +197,9 @@
                 "readOnly" : false,
                 "height" : 50,
                 "labelPosition" : "Left",
-                "width" : 200,
+                "width" : 100,
                 "multiline" : false,
-                "left" : 225,
+                "left" : 425,
 				  "top" : 135,
                 "key" : "DateTimeEditor"
               },
@@ -215,9 +218,9 @@
                 "readOnly" : false,
                 "height" : 50,
                 "labelPosition" : "Left",
-                "width" : 200,
+                "width" : 100,
                 "multiline" : false,
-                "left" : 435,
+                "left" : 635,
 				"top" : 135,
                 "key" : "DateTimeEditor"
               },
@@ -241,7 +244,7 @@
                 "labelPosition" : "Left",
                 "width" : 200,
                 "multiline" : false,
-                "left" : 645,
+                "left" : 845,
                 "top" : 135,
                 "key" : "PopupMenuEditor"
               },

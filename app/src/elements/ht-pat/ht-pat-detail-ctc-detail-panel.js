@@ -1704,6 +1704,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     _refreshFromServices() {
         this.set('_drugsRefresher', this._drugsRefresher + 1)
+        this.dispatchEvent(new CustomEvent("contact-saved", {composed: true, bubbles: true}))//name of event pure daube! ca fait que set la variable refresh
     }
 
     _actionIcon(showAddFormsContainer) {
@@ -1855,9 +1856,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     formTemplateId: activeFormTemplates[0].id,
                     descr: activeFormTemplates[0].name
                 }).then(f => this.api.form().createForm(f)).then(f => {
-                    this.currentContact.subContacts.push({formId: f.id, services: []})
+                    this.currentContact.subContacts.push({formId: f.id,services: [],tags:[{type:"TZ-FORM-TITLE",code:f.descr,version:"1"}]});
                     return this.saveCurrentContact()
-                }).then(c => this._contactsChanged())
+                }).then(c => this._contactsChanged()).finally(()=>this.dispatchEvent(new CustomEvent("contact-saved", {composed: true, bubbles: true})));
             }
         }).catch(e => console.log("FTs: error " + e))
     }

@@ -515,13 +515,203 @@
 								]
 							},
 							"sortOrder" : 1616336695,
-							"codeTypes" : [
-
-							],
+							"codeTypes" : [],
 							"label" : "medical_house_contract",
 							"type" : "TKSubConsult",
 							"subForm" : true,
 							"name" : "medicalHouseContracts"
+						},
+						{
+							"editor" : {
+								"readOnly" : true,
+								"height" : 48,
+								"compulsoryFormGuids" : [
+
+								],
+								"labelPosition" : "Left",
+								"width" : 1162,
+								"multiline" : false,
+								"left" : 5,
+								"top" : 325,
+								"key" : "SubFormEditor",
+								"optionalFormGuids" : [
+									"9df8c952-f619-4705-a0a7-a4b522fa6318"
+								]
+							},
+							"sortOrder" : 1616336696,
+							"codeTypes" : [
+
+							],
+							"label" : "convention_sub_form",
+							"type" : "TKSubConsult",
+							"subForm" : true,
+							"name" : "conventions"
+						},
+						{
+							"editor" : {
+								"readOnly" : true,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 1162,
+								"multiline" : false,
+								"left" : 5,
+								"top" : 375,
+								"key" : "Label"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+
+							],
+							"label" : "socio-eco",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "socio-eco-label"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 150,
+								"multiline" : false,
+								"left" : 315,
+								"top" : 425,
+								"key" : "PopupMenuEditor"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+								{"type" :  "CD-FED-COUNTRY"}
+							],
+							"label" : "fatherBirthCountry",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "fatherBirthCountry.code"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 150,
+								"multiline" : false,
+								"left" : 5,
+								"top" : 425,
+								"key" : "PopupMenuEditor"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+								{"type": "CD-FED-COUNTRY"}
+							],
+							"label" : "birthCountry",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "birthCountry.code"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 150,
+								"multiline" : false,
+								"left" : 160,
+								"top" : 425,
+								"key" : "PopupMenuEditor"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+								{"type" :  "CD-FED-COUNTRY"}
+							],
+							"label" : "nativeCountry",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "nativeCountry.code"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 150,
+								"multiline" : false,
+								"left" : 470,
+								"top" : 425,
+								"key" : "PopupMenuEditor"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+								{"type" :  "BE-SOCIAL-STATUS"}
+							],
+							"label" : "socialStatus",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "socialStatus.code"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 150,
+								"multiline" : false,
+								"left" : 625,
+								"top" : 425,
+								"key" : "PopupMenuEditor"
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+								{"type": "BE-PRIMARY-INCOME-SOURCE"}
+							],
+							"label" : "mainSourceOfIncome",
+							"type" : "TKString",
+							"subForm" : false,
+							"name" : "mainSourceOfIncome.code"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 1162,
+								"multiline" : false,
+								"left" : 5,
+								"top" : 475,
+								"key" : "SubFormEditor",
+								"optionalFormGuids" : [
+									"953dfe3d-dacf-4377-a65a-bce7dd9c78b9"
+								]
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+
+							],
+							"label" : "schoolingInfos",
+							"type" : "TKConsult",
+							"subForm" : true,
+							"name" : "schoolingInfos"
+						},
+						{
+							"editor" : {
+								"readOnly" : false,
+								"height" : 48,
+								"labelPosition" : "Left",
+								"width" : 1162,
+								"multiline" : false,
+								"left" : 5,
+								"top" : 525,
+								"key" : "SubFormEditor",
+								"optionalFormGuids" : [
+									"a79e14bb-7020-4728-9a99-54fe875a2e1c"
+								]
+							},
+							"sortOrder" : 1616336697,
+							"codeTypes" : [
+
+							],
+							"label" : "employementInfos",
+							"type" : "TKConsult",
+							"subForm" : true,
+							"name" : "employementInfos"
 						}
                       ]
 				}
