@@ -22,12 +22,13 @@
 <link rel="import" href="../../../../styles/scrollbar-style.html">
 <link rel="import" href="../../../../styles/paper-tabs-style.html">
 <link rel="import" href="../../../../styles/shared-styles.html">
+<link rel="import" href="../../../../styles/paper-input-style.html">
 <link rel="import" href="ht-pat-hub-utils.html">
 <link rel="import" href="ht-pat-hub-medication-scheme-regimen-day.html">
 
 <dom-module id="ht-pat-hub-medication-scheme-extended-view">
     <template>
-        <style include="dialog-style buttons-style atc-styles scrollbar-style table-style shared-styles">
+        <style include="dialog-style buttons-style atc-styles scrollbar-style table-style shared-styles paper-input-style">
             paper-dialog {
                 width: 90%;
                 height: 80%;
@@ -736,14 +737,16 @@
             }
 
             .legend-chronicIcon{
-                height: 18px;
-                width: 18px;
+                height: 16px;
+                width: 16px;
+                padding-right: 4px;
             }
 
             .legend-suspensionIcon{
-                height: 18px;
-                width: 18px;
-                color: var(--app-status-color-pending)
+                height: 16px;
+                width: 16px;
+                color: var(--app-status-color-pending);
+                padding-right: 4px;
             }
 
             .oneShotIcon{
@@ -753,21 +756,24 @@
             }
 
             .legend-oneShotIcon{
-                height: 18px;
-                width: 18px;
+                height: 16px;
+                width: 16px;
                 color: #c60b44;
+                padding-right: 4px;
             }
 
             .legend-compoundIcon{
-                height: 14px;
-                width: 14px;
+                height: 16px;
+                width: 16px;
                 color: #2882ff;
+                padding-right: 4px;
             }
 
             .legend-substanceIcon{
-                height: 14px;
-                width: 14px;
+                height: 16px;
+                width: 16px;
                 color: #c62ac4;
+                padding-right: 4px;
             }
 
             .legend-line{
@@ -776,10 +782,8 @@
             }
 
             #legend {
-                background: var(--app-background-color);
                 border-radius: 4px;
                 padding: 4px;
-                width: 100%;
                 box-sizing: border-box;
                 display: flex;
                 justify-content: center;
@@ -981,6 +985,7 @@
             }
             .container {
                 height: 100%;
+                background-color: var(--app-background-color);
             }
             .mdc-data-table__cell--numeric {
                 text-overflow: initial;
@@ -1008,9 +1013,22 @@
                 text-align: left;
                 padding: 12px;
             }
+            .sub-title {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding-left: 12px;
+            }
+            .minimum-score {
+                position: relative;
+                top: -12px;
+                padding: 0 12px;
+            }
 
         </style>
         <div class="container">
+            <div class="sub-title">
             <div id="legend">
                 <span class="legend-line bold">[[localize('legend', 'Legend', language)]]: </span>
                 <span class="legend-line"><iron-icon class="legend-chronicIcon" icon="icons:alarm-on"></iron-icon> [[localize('hub-chron-med', 'Chronic medication', language)]]</span>
@@ -1018,6 +1036,10 @@
                 <span class="legend-line"><iron-icon class="legend-suspensionIcon" icon="icons:warning"></iron-icon> [[localize('hub-sus-med', 'Suspended medication', language)]]</span>
                 <span class="legend-line"><iron-icon class="legend-compoundIcon" icon="vaadin:flask"></iron-icon> [[localize('hub-med-mag', 'Compound prescription', language)]]</span>
                 <span class="legend-line"><iron-icon class="legend-substanceIcon" icon="vaadin:pill"></iron-icon> [[localize('hub-med-dci', 'DCI prescription', language)]]</span>
+            </div>
+            <div class="minimum-score">
+                <paper-input type="number" min="0" max="100" step="5" label="[[localize('minimum_score','Score minimum',language)]]" value="[[minimumScore]]" autovalidate pattern="^\d*$" on-value-changed="_minimumScoreChanged"></paper-input>
+            </div>
             </div>
             <div class="mdc-data-table">
                 <table class="mdc-data-table__table">
@@ -1518,8 +1540,8 @@
                                 <th class="mdc-data-table__header-cell mdc-data-table__cell-small" role="columnheader" scope="col"></th>
                                 <th class="mdc-data-table__header-cell mdc-data-table__cell-large" role="columnheader" scope="col">
                                     <div class="merge-line">
-                                        <div class="merge-line-item merge-line-item-title">[[localize('original_value', 'Valeur d\'Origine', language)]]</div>
-                                        <div class="merge-line-item merge-line-item-title">[[localize('new_value', 'Nouvelle valeur', language)]]</div>
+                                        <div class="merge-line-item merge-line-item-title">[[localize('selection', 'Sélection', language)]]</div>
+                                        <div class="merge-line-item merge-line-item-title">[[localize('candidate', 'Candidat', language)]]</div>
                                     </div>
                                 </th>
                             </tr>
@@ -1531,8 +1553,8 @@
                                         <td class="mdc-data-table__cell mdc-data-table__cell-small merge-line-item-title">[[localize(field.label,field.label,language)]]</td>
                                         <td class="mdc-data-table__cell mdc-data-table__cell-large mdc-data-table__cell-text">
                                             <paper-radio-group class="merge-line" selected="{{field.checked}}">
-                                                <paper-radio-button class="merge-line-item" name="no">[[_getValue(field.source)]]</paper-radio-button>
-                                                <paper-radio-button class="merge-line-item" name="yes">[[_getValue(field.target)]]</paper-radio-button>
+                                                <paper-radio-button class="merge-line-item" name="source">[[_getValue(field.source)]]</paper-radio-button>
+                                                <paper-radio-button class="merge-line-item" name="target">[[_getValue(field.target)]]</paper-radio-button>
                                             </paper-radio-group>
                                         </td>
                                     </tr>
@@ -1834,12 +1856,16 @@
                     groupCount: {
                         type: Number,
                         value: 0
+                    },
+                    minimumScore: {
+                        type: Number,
+                        value: 90
                     }
                 }
             }
 
             static get observers() {
-                return ['dataProvider(medicationSchemeTransactions.*)'];
+                return ['dataProvider(medicationSchemeTransactions.*, minimumScore)'];
             }
 
             ready() {
@@ -1855,7 +1881,6 @@
                     date: _.get(ms, 'date', null),
                     authors: _.get(ms, 'authors', []),
                     version: _.get(ms, 'version', null),
-                    // msElems: _.concat(_.get(ms, 'msElems', []), this._getElementsFromMedications()),
                     msSusps: _.get(ms, 'msSusps', []),
                     times:  _.get(ms, 'times', [])
                 })
@@ -1867,7 +1892,6 @@
                                 this._isSync(a) && !this._isSync(b)  ? -1 :
                                     !this._isSync(a) && !this._isSync(b) && !this._hasGroupIndex(a) && this._hasGroupIndex(b) ? 1 :
                                         !this._isSync(a) && !this._isSync(b) && this._hasGroupIndex(a) && !this._hasGroupIndex(b) ? -1 : 0));
-                // const updatedMsElems = _.concat(_.get(ms, 'msElems', []), this._getElementsFromMedications());
                 if (!currentMsElems) {
                     this.set('currentMedicationScheme.msElems', updatedMsElems);
                 } else if (currentMsElems.length) {
@@ -1880,6 +1904,10 @@
                     this.push('currentMedicationScheme.msElems', ...updatedMsElems);
                     console.log(this.currentMedicationScheme);
                 }
+            }
+
+            _minimumScoreChanged(e) {
+                this.set("minimumScore", e.currentTarget.value);
             }
 
             _consolidate(remotes, locals) {
@@ -1896,7 +1924,7 @@
                         let index = 0;
                         const grouped = consolidated.remotes.reduce((grouping, remote) => {
                             if (!this._isSync(remote)) {
-                                const locals = grouping.locals.filter(local => (!this._hasGroupIndex(local)) && (this._getScore(local, remote) > 80));
+                                const locals = grouping.locals.filter(local => (!this._hasGroupIndex(local)) && (this._getScore(local, remote) >= this.minimumScore));
                                 if (locals.length) {
                                     locals.map(local => this._setGroupIndex(local, index));
                                     this._setGroupIndex(remote, index);
@@ -1963,9 +1991,6 @@
 
             _getMedicationName(medication){
                 return _.get(medication, "medicinalproduct.intendedname", _.get(medication, "substanceproduct.intendedname", _.get(medication, "compoundprescription", null)));
-                // return medication && medication.medicinalproduct && medication.medicinalproduct.intendedname ? medication && medication.medicinalproduct && medication.medicinalproduct.intendedname :
-                //     medication && medication.substanceproduct && medication.substanceproduct.intendedname ? medication.substanceproduct.intendedname  :
-                //         medication && medication.compoundprescription !== null ? "Magistrale" : null
             }
 
             _getFrequency(medication){
@@ -1988,12 +2013,10 @@
 
             _isChronic(medication) {
                 return !!(medication && !medication.endmoment);
-                // return medication && medication.temporality && medication.temporality.cd && medication.temporality.cd.value === "CHRONIC" ? true : false
             }
 
             _isOneShot(medication){
                 return !!(medication && medication.endmoment);
-                // return medication && medication.temporality && medication.temporality.cd && medication.temporality.cd.value === "ONESHOT" ? true : false
             }
 
             _getRegimenQuantity(regimen, period) {
@@ -2049,7 +2072,6 @@
             }
 
             _getDayTimeDesc(dayTime){
-
                 return !isNaN(dayTime) ? this._getTimeDesc(dayTime) : this.localize('ms_'+_.toLower(dayTime), _.toLower(dayTime), this.language);
             }
 
@@ -2078,9 +2100,6 @@
             }
 
             _getDayInfo(regimen){
-                //return regimen.dayNumber ? (this.localize("daynr", "Day #", this.language) + regimen.dayNumber + ":") :
-                //    (regimen.weekday ? ((regimen.weekNumber ? (this.localize("weeknr", "Week #", this.language) + regimen.weekNumber + ":") : "") + this.localize(regimen.weekday, regimen.weekday, this.language) + ":") : (""));
-
                 return Array.isArray(regimen) && (regimen || []).find(r => _.get(r, 'dayNumber', null)) && _.get(regimen.find(r => _.get(r, 'dayNumber', null)), 'dayNumber', null) ? (this.localize("daynr", "Day # ", this.language) + _.get(regimen.find(r => _.get(r, 'dayNumber', null)), 'dayNumber', null)) :
                     Array.isArray(regimen) && (regimen || []).find(r => _.get(r, 'weekNumber', null)) && _.get(regimen.find(r => _.get(r, 'weekNumber', null)), 'weekNumber', null) ? (this.localize("weeknr", "Week # ", this.language) + _.get(regimen.find(r => _.get(r, 'weekNumber', null)), 'weekNumber', null)) :
                         Array.isArray(regimen) && (regimen || []).find(r => _.get(r, 'weekDay', null)) && _.get(regimen.find(r => _.get(r, 'weekDay', null)), 'weekDay', null) ? (this.localize(_.get(regimen.find(r => _.get(r, 'weekDay', null)), 'weekDay', null), _.get(regimen.find(r => _.get(r, 'weekDay', null)), 'weekDay', null), this.language)): ""
@@ -2095,7 +2114,7 @@
             }
 
             _getValue(value) {
-                return value ? value : "<empty>"
+                return value ? value : `<${this.localize("empty", "Vide")}>`;
             }
 
             _filterRegimen(regimen, id) {
@@ -2104,13 +2123,13 @@
             }
 
             _formatPosology(posology) {
-                return posology ? posology.text.value : '<empty>'
+                return posology ? posology.text.value : `<${this.localize("empty", "Vide")}>`;
             }
 
             _formatFrequency(frequency) {
                 let code = _.get(frequency, 'periodicity.cd.value', '')
                 let periodicity = this.periodicity.find(p => p.code == code)
-                return periodicity ? periodicity.label.fr : '<empty>'
+                return periodicity ? periodicity.label.fr : `<${this.localize("empty", "Vide")}>`;
             }
 
             _format(medication, field) {
@@ -2183,7 +2202,8 @@
                             score: this._getScore(medication, med)
                         }
                     })
-                return candidates.sort((a, b) => a.score < b.score ? 1 : a.score > b.score ? -1 : 0);
+                    .filter(med => med.score >= this.minimumScore)
+                    .sort((a, b) => a.score < b.score ? 1 : a.score > b.score ? -1 : 0);
             }
 
             _showMedication(e) {
@@ -2227,7 +2247,7 @@
                             target: this._format(target, field),
                             hidden: field.hidden,
                             setter: field.setter,
-                            checked: "no"
+                            checked: "source"
                         })
                     }
                     return fields;
@@ -2253,7 +2273,7 @@
 
             _merge(e) {
                 this.fields.forEach(field => {
-                    if (field.checked === "yes") {
+                    if (field.checked === "target") {
                         this._setField(this.source, field, this._getField(this.target, field))
                     } else {
                         this._setField(this.target, field, this._getField(this.source, field))
@@ -2328,6 +2348,7 @@
                     const medicationValue = this.api.contact().medicationValue(med, this.language) || {};
                     const beginMoment = _.get(medicationValue, "beginMoment", null);
                     const endMoment = _.get(medicationValue, "endMoment", null);
+                    const posology = this.api.contact().medication().posologyToString(_.get(medicationValue, "regimen", []), this.language);
                     // @todo: weekly posology
                     const frequency = {periodicity: {cd: {value: "D"}}};
                     return {
@@ -2346,7 +2367,7 @@
                         regimenDayNumber: null,
                         regimenWeekDay: null,
                         regimenWeekNumber: null,
-                        posology: _.get(medicationValue, "instructionForPatient", null),
+                        posology: _.get(medicationValue, "instructionForPatient", posology),
                         suspensions: null,
                         usePresent: null,
                         useTexts: [],
@@ -2628,7 +2649,7 @@
                 if (data.compoundPrescription) {
                     medicationValue.compoundPrescription = data.compoundPrescription;
                 } else {
-                    const dataProduct = _.get(data, "medicinalproduct",  _.get(data, "substanceproduct"));
+                    const dataProduct = data.medicinalproduct || data.substanceproduct;
                     if (!dataProduct) return null;
 
                     const code =  _.get(dataProduct, "intendedcds", []).length > 0 && _.get(dataProduct, "intendedcds", [])[0].code ? {value: _.get(dataProduct, "intendedcds", [])[0].code} : _.get(dataProduct, "intendedcds", []).find(cd => cd.s === "CD_VMPGROUP" || cd.s === "CD_INNCLUSTER" || cd.s === "CD_DRUG_CNK");
@@ -2642,8 +2663,8 @@
                         intendedcds: [{type: drugType, code: code.value}]
                     };
 
-                    medication.codes.push(this.api.code().normalize(data.endmoment ? "CD-ITEM|medication|1" : "ICURE|PRESC|1"));
-                    medication.tags.push(this.api.code().normalize(`${drugType}|${code.value}|1`));
+                    medication.tags.push(this.api.code().normalize(data.endmoment ? "ICURE|PRESC|1" : "CD-ITEM|medication|1"));
+                    medication.codes.push(this.api.code().normalize(`${drugType}|${code.value}|1`));
 
                     Object.assign(medicationValue, data.medicinalproduct ? {medicinalProduct: product} : {substanceProduct: product});
                     Object.assign(medicationValue, {
@@ -2657,7 +2678,7 @@
                     }
                 }
 
-                medication.label = data.endmoment ? this.localize('medication', 'medication', this.language) : this.localize('prescription', 'prescription', this.language);
+                medication.label = data.endmoment ? this.localize('prescription', 'prescription', this.language) : this.localize('medication', 'medication', this.language);
                 medication.id = _.get(data, "source.id", this.api.crypto().randomUuid());
                 const atcCode = _.get(data, "source.codes", []).find(code => code.type === "CD-ATC");
                 if (atcCode) {
@@ -2666,6 +2687,12 @@
                         version: "1"
                     })).code = atcCode.code;
                 }
+                const confType = "org.taktik.icure.entities.embed.Confidentiality";
+                ((medication.tags || (medication.tags = [])).find(tag => tag.type === confType) || (medication.tags[medication.tags.length] = {
+                    type: confType,
+                    version: "1"
+                })).code = "notsecret";
+
                 medication.author = this.user.id;
                 return this.api.contact().service().newInstance(this.user, medication);
             }
@@ -2736,36 +2763,18 @@
                 }
             }
 
-
-            _synchronizeItemToLocal(e){
-                e.stopPropagation()
-                if(_.get(e, 'currentTarget.dataItem', null)){
-                    let data = _.get(this, 'currentMedicationScheme.msElems', []).find(el => _.get(el, 'uniqId', null) === _.get(e, 'currentTarget.dataItem.uniqId', null));
-                    let info  =_.get(data, 'synchronizationInfo', null)
-                    _.get(info, 'hubToLocal', false) ? info.hubToLocal = false : info.hubToLocal = true;
-
-                    const hubSvc = this._createMedication(data);
-                    if (this._compareMedication(hubSvc) !== 0) {
-                        // @todo: ask user which one to keep
-                        // for example, user wants to update local medication
-                        this._overrideLocalMedication(hubSvc);
-                    }
-
-                }
-
-                // const newMedication = _.cloneDeep(m.newMedication);
-                // ((newMedication.tags || (newMedication.tags = [])).find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {type: "CD-ITEM", version: "1"})).code = "medication";
-                // newMedication.label = this.localize('medication', 'medication', this.language);
-                // newMedication.id = this.api.crypto().randomUuid();
-                // return this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication));
-
-            }
-
             _synchronizeItemToHub(e){
                 e.stopPropagation();
                 const info  =_.get(_.get(this, 'currentMedicationScheme.msElems', []).find(el => _.get(el, 'uniqId', null) === _.get(e, 'target.uid', null)), 'synchronizationInfo', null);
                 if (info) {
                     info.localToHub = !info.localToHub;
+                }
+            }
+            _synchronizeItemToLocal(e){
+                e.stopPropagation();
+                const info  =_.get(_.get(this, 'currentMedicationScheme.msElems', []).find(el => _.get(el, 'uniqId', null) === _.get(e, 'target.uid', null)), 'synchronizationInfo', null);
+                if (info) {
+                    info.hubToLocal = !info.hubToLocal;
                 }
             }
 
@@ -2824,24 +2833,27 @@
 
             _synchronizeScheme(){
                 console.log("currentMedicationScheme", JSON.stringify(this.currentMedicationScheme));
-                const uploads = [];
-                const downloads = [];
+                const remoteUpdates = [];
+                const localUpdates = [];
                 const serviceAuthors = [];
                 _.get(this.currentMedicationScheme, "msElems", []).map(item => {
                     if(_.get(item, 'synchronizationInfo.localToHub', false) || _.get(item, 'synchronizationInfo.availableOnHub', false)) {
                         serviceAuthors.push(this._createAuthor(item));
-                        uploads.push(this._createMedication(item, false));
-                    } else if(_.get(item, 'synchronizationInfo.hubToLocal', false) || _.get(item, 'synchronizationInfo.availableOnLocal', false)) {
-                        if (this._isRemote(item) || this._isMerging(item))
-                            downloads.push(this._createMedication(item, true));
+                        remoteUpdates.push(this._createMedication(item, false));
+                    }
+                    if (this._isRemote(item) && _.get(item,'synchronizationInfo.hubToLocal', false)) {
+                        localUpdates.push(this._createMedication(item, true));
+                    }
+                    if (this._isLocal(item) && this._isMerging(item)) {
+                        localUpdates.push(this._createMedication(item, true));
                     }
                 });
-                console.log("services to upload", JSON.stringify(uploads));
-                console.log("services to download", JSON.stringify(downloads));
+                console.log("services to upload", JSON.stringify(remoteUpdates));
+                console.log("services to download", JSON.stringify(localUpdates));
 
                 this._setSpinnerBusy();
-                if (downloads.length) {
-                    const services = downloads.map(download => this._saveService(download));
+                if (localUpdates.length) {
+                    const services = localUpdates.map(update => this._saveService(update));
 
                     const prescriptions = services.filter(svc => svc.codes.some(c => c.type === "ICURE" && c.code === "PRESC"));
                     this.set("prescriptions", this.prescriptions.filter(prescription => !prescriptions.some(svc => svc.id === prescription.id)).concat(prescriptions));
@@ -2849,7 +2861,7 @@
                     const medications = services.filter(svc => svc.codes.some(c => c.type === "CD-ITEM" && c.code === "medication"));
                     this.set("medications", this.medications.filter(medication => !medications.some(svc => svc.id === medication.id)).concat(medications));
                 }
-                this.$["htPatHubUtils"].putMedicationScheme(uploads, serviceAuthors, this.currentMedicationScheme.version, false)
+                this.$["htPatHubUtils"].putMedicationScheme(remoteUpdates, serviceAuthors, this.currentMedicationScheme.version, false)
                 .catch(error => this.dispatchEvent(new CustomEvent("error", {
                     detail: {
                         title: this.localize("cd-transaction-medicationscheme", "Schéma de médication"),

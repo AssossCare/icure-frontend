@@ -378,6 +378,7 @@
 
             normalizeMedications(medications) {
                 return medications.map(medication => {
+                    console.log("Normalizing ", medication);
                     const medicationValue = this.api.contact().medicationValue(medication, this.language);
                     const content = this.api.contact().preferredContent(medication, this.language);
                     delete content.stringValue;
@@ -452,26 +453,6 @@
                     .then(output => Promise.resolve(enc.decode(output)))
                     .catch(error=> Promise.reject(error))
             }
-
-            // generateMedicationScheme1(services, serviceAuthors, version){
-            //     let enc = new TextDecoder("utf-8");
-            //     return this._getHcp()
-            //         .then(hcp => this.api.patient().getPatientWithUser(this.user,this.patient.id)
-            //             .then(patientDto => this.api.crypto().extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)
-            //                 .then(sfks => this.api.bekmehr().generateMedicationSchemeExport(patientDto.id, this.language, this.hubConfig.name, version, {
-            //                     recipient: hcp,
-            //                     services : services,
-            //                     serviceAuthors : serviceAuthors,
-            //                     comment: "medicationscheme",
-            //                     recipientSafe: this.hubConfig.name,
-            //                     version: version
-            //             }).then(output => {
-            //                 return Promise.resolve(enc.decode(output));
-            //             }).catch(error=> {
-            //                 return Promise.reject(error);
-            //             })
-            //         ))
-            // }
 
             putTransactionSet(tsXML, isTest){
                 const myblob = new Blob([tsXML]);

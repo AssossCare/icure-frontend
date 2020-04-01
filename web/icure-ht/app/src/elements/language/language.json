@@ -2657,7 +2657,10 @@
 		"notInsured": "Not insured",
 		"noReasonGiven": "No reason given",
 		"isHospitalized": "Hospitalized",
-		"outsideOfCountry": "Outside of country"
+		"outsideOfCountry": "Outside of country",
+		"selection": "Selection",
+		"candidate": "Candidate",
+		"merge": "Merge"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5403,7 +5406,10 @@
 		"notInsured": "Pas d'assurabilité",
 		"noReasonGiven": "Pas de raison donné",
 		"isHospitalized": "Hospitalisé",
-		"outsideOfCountry": "à l'étranger"
+		"outsideOfCountry": "à l'étranger",
+		"selection": "Sélection",
+		"candidate": "Candidat",
+		"merge": "Fusionner"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8107,6 +8113,9 @@
 		"notInsured": "Niet verzekerd",
 		"noReasonGiven": "Geen reden gegeven",
 		"isHospitalized": "Gehospitaliseerd",
-		"outsideOfCountry": "In het buitenland"
+		"outsideOfCountry": "In het buitenland",
+		"selection": "Selectie",
+		"candidate": "Kandidaat",
+		"merge": "Samenvoegen"
 	}
 }
