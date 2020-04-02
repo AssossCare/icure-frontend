@@ -1470,6 +1470,7 @@
                     "covid19-patient",
                     "covid19-employer",
                     "certificat-administration-biens",
+                    "covid19-mutuelle",
                 ]
 
                 return promResolve
@@ -1502,10 +1503,17 @@
 
                         // Have "New document" as last item of list
                         const sortedFoundTemplates = _.concat(
-                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19"), {isBold:true}), // 1st position
-                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}), // 1st position
-                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {hrAfter: true, isBold:true}), // 3rd position
-                            _.filter(foundTemplates, it => _.trim(_.get(it,"guid","")) !== "new-doc" && _.trim(_.get(it,"guid","")) !== "covid19" && _.trim(_.get(it,"guid","")) !== "covid19-patient" && _.trim(_.get(it,"guid","")) !== "covid19-employer" ),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-mutuelle"), {isBold:true, hrAfter: true}),
+                            _.filter(foundTemplates, it => (
+                                _.trim(_.get(it,"guid","")) !== "new-doc" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-patient" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-employer" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-mutuelle"
+                            )),
                             _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "new-doc" ), {isLast: true})
                         )
 
