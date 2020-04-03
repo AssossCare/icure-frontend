@@ -871,9 +871,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserPricareAgendaToMikrono">[[localize('import_single_pricare_agenda_debug','Import Single Pricare Agenda',language)]]</paper-item>-->
 
                                     <paper-item class="extra-menu-item" on-tap="agendaMigrationDialog">0.[[localize('agenda_import_dialog','Agenda import dialog',language)]]</paper-item>    
-                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserToMikrono">1.[[localize('import_single_pricare_agenda_debug','create user',language)]]</paper-item>
-                                    <paper-item class="extra-menu-item" on-tap="migrateAppointmentTypesToMikrono">2.[[localize('import_single_pricare_agenda_debug','create types',language)]]</paper-item>
-                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserAppointmentsToMikrono">3.[[localize('import_single_pricare_agenda_debug','create appointments',language)]]</paper-item>
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserToMikrono">1.[[localize('import_single_pricare_agenda_debug','create user',language)]]</paper-item>-->
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateAppointmentTypesToMikrono">2.[[localize('import_single_pricare_agenda_debug','create types',language)]]</paper-item>-->
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserAppointmentsToMikrono">3.[[localize('import_single_pricare_agenda_debug','create appointments',language)]]</paper-item>-->
 
                                     
                                     <paper-item class="extra-menu-item" on-tap="_myProfile">

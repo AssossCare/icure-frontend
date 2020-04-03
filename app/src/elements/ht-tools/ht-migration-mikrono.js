@@ -10,6 +10,7 @@ import '../../styles/dialog-style.js';
 import '../../styles/scrollbar-style.js';
 import '../../styles/paper-tabs-style.js';
 import '../../styles/shared-styles.js';
+import '../../styles/app-theme-tz.js';
 
 class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement))  {
     static get template() {
@@ -449,11 +450,23 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     </div>
                     <div class="hub-submenu-container">
                         <ht-spinner active="[[isLoading]]"></ht-spinner>
+                       <paper-button on-tap="migrateUsersToMikrono" class="button" >Users</paper-button>
+                       <paper-button on-tap="migrateTypesToMikrono" class="button" >Types</paper-button>
+                       <paper-button on-tap="migrateFieldsToMikrono" class="button" >Appointments</paper-button>
                         <!-- content here -->
                     </div>
                 </div>
                 <div class="mig-menu-view">
-                    <ht-pat-hub-transaction-view id="htPatHubTransactionViewer" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" diary-note="[[diaryNote]]" transaction-of-diary-note="[[transactionOfDiaryNote]]"  resources="[[resources]]" on-hub-download="_hubDownload"></ht-pat-hub-transaction-view>
+                    <!-- content here -->
+                    <template is="dom-if" if="[[userMigration]]">
+                      users
+                    </template>
+                    <template is="dom-if" if="[[typeMigration]]">
+                      types          
+                    </template>
+                    <template is="dom-if" if="[[fieldMigration]]">
+                      patients
+                    </template>                    
                 </div>
             </div>
             <div class="buttons">
@@ -486,6 +499,18 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 type: Object,
                 noReset: true
             },
+            userMigration:{
+                type: Boolean,
+                value: false
+            },
+            typeMigration:{
+                type: Boolean,
+                value: false
+            },
+            fieldMigration:{
+                type: Boolean,
+                value: false
+            }
         };
     }
 
@@ -524,6 +549,24 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
+    migrateUsersToMikrono(){
+        this.set('userMigration', true);
+        this.set('typeMigration', false);
+        this.set('fieldMigration', false);
+    }
+
+    migrateTypesToMikrono(){
+        this.set('userMigration', false);
+        this.set('typeMigration', true);
+        this.set('fieldMigration', false);
+    }
+
+    migrateFieldsToMikrono(){
+        this.set('userMigration', false);
+        this.set('typeMigration', false);
+        this.set('fieldMigration', true);
+    }
+
     migrateCurrentUserToMikrono() {
         //let userlist = [this.user];
         this.api.user().listUsers().then(users => {
@@ -538,6 +581,11 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 this.api.user().getUser(this.user.id).then(user => console.log("user after load", user));
             })
         })
+    }
+
+    setAlltoAllUsers(){
+        //TODO: implement
+        //display all agenda's to all users
     }
 
     migrateAppointmentTypesToMikrono() {
