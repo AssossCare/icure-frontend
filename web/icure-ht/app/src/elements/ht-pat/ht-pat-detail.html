@@ -7497,6 +7497,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     //Standard behaviour: create from medication button in left panel
                     this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
                 }
+            }
 
             _isSpecialist(hcp){
                 return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
