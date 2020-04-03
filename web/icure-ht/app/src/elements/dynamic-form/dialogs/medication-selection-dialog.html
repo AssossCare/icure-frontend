@@ -357,13 +357,13 @@
                     let latestSearchValue = this.filterValue
                     this.latestSearchValue = latestSearchValue
                     if (!latestSearchValue || latestSearchValue.length < 2) {
-                        console.log("Cancelling empty search")
+                        //console.log("Cancelling empty search")
                         this.setGridSize(grid, 0)
                         callback([])
                         return
                     }
 
-                    console.log("Starting search for " + thisParams)
+                    //console.log("Starting search for " + thisParams)
 
                     const limit = endIndex || grid.pageSize
                     const offset = params.index
@@ -372,7 +372,7 @@
                             return {totalSize: packs.length, rows: (desc ? _.reverse(_.sortBy(packs, sort)) : _.sortBy(packs, sort)).slice(offset, limit)}
                         }).then(function (res) {
                             if (this.filterValue !== latestSearchValue) {
-                                console.log("Cancelling obsolete search")
+                                //console.log("Cancelling obsolete search")
                                 return
                             }
                             this.setGridSize(grid, res.totalSize)
@@ -430,7 +430,7 @@
             }
 
             setGridSize(grid, size) {
-                console.log('setSize', size)
+                //console.log('setSize', size)
                 grid.set('size', size)
                 this.set('isLoadingEntities',false)
             }
@@ -450,7 +450,7 @@
             }
 
             selectMedicationFromList(med) {
-                console.log("selectMedicationFromList",med)
+                //console.log("selectMedicationFromList",med)
                 if (med.id) {
                     //by productName
                     this.api.bedrugs().getMppInfos(med.id.id, this.language === 'en' ? 'fr' : this.language || 'fr').then(mppInfos => {
@@ -500,7 +500,7 @@
             selectChronicalMedication(e){
                 if(this.selectedChronicalMedicationFromList){
                     const selected = this.selectedChronicalMedicationFromList
-                    console.log('selected ',selected);
+                    //console.log('selected ',selected);
                     this.$['medication-selection'].close();
                     this.dispatchEvent(new CustomEvent('new-medication', {detail:{medication:_.cloneDeep(_.omit(selected, ['id'])), isPrescription:this.selectedMedicationContentWithId.isPrescription}, bubbles: true, composed: true}))
                 }
@@ -509,7 +509,7 @@
             click(e) {
                 const selected = this.selectedMedicationFromList;
 
-                console.log('selected ',selected,' - ',this.latestSelected);
+                //console.log('selected ',selected,' - ',this.latestSelected);
                 if (this.inDoubleClick && (this.latestSelected === selected || this.latestSelected && !selected || !this.latestSelected && selected)) {
                     this.select(this.latestSelected);
                 } else {
@@ -557,7 +557,7 @@
                     setTimeout(function () {
                         if (currentValue === this.filterValue) {
                             this.set('isLoadingEntities',true)
-                            console.log("Triggering search for " + this.filterValue);
+                            //console.log("Triggering search for " + this.filterValue);
 
                             this.selectedMedicationFromList = null
                             this.cheapAlternativeSearchSeed = null
@@ -567,7 +567,7 @@
                             grid.drugsCacheUpperSearchIndex = 0;
                             grid.clearCache();
                         } else {
-                            console.log("Skipping search for " + this.filterValue + " != " + currentValue);
+                            //console.log("Skipping search for " + this.filterValue + " != " + currentValue);
                             this.set('isLoadingEntities',false)
                         }
                     }.bind(this), 500); //Wait for the user to stop typing
@@ -707,14 +707,14 @@
 
                 this.compoundSearchString = searchString;
                 if (!searchString || searchString.length < 2) {
-                    console.log("Cancelling empty search");
+                    //console.log("Cancelling empty search");
                     this.set('compoundListItems', []);
                     return;
                 }
 
                 this.api.entitytemplate().findAllEntityTemplates('org.taktik.icure.entities.embed.Medication',searchString,true).then(res => {
                     if (searchString !== this.compoundSearchString) {
-                        console.log("Cancelling obsolete search");
+                        //console.log("Cancelling obsolete search");
                         this.set('compoundListItems', []);
                     }
                     this.set('compoundListItems', res);

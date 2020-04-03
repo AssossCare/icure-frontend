@@ -1499,11 +1499,11 @@
                                 samDate: samDate,
                             });
                             if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
-                                console.log("CNK ok");
+                                // console.log("CNK ok");
                             } else {
                                 const updatedCnk = updatedAmpp.publicDmpp.code;
                                 const oldCnk = medication.id;
-                                console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
+                                // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
                                 Object.assign(medication, {
                                     oldCnk: oldCnk,
                                     id: updatedCnk
@@ -1842,7 +1842,7 @@
 
             test() {
                 const regs = this._register();
-                console.log(regs);
+                //console.log(regs);
             }
 
             // _changeReimbursementItem(item) {

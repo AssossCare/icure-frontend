@@ -2333,7 +2333,7 @@
                             return this._buildListItem(mppInfos);
                         })))
                         .catch(err => {
-                            console.log("error:", err);
+                            // console.log("error:", err);
                             return [];
                         });
                 } else {
@@ -2433,7 +2433,7 @@
                             "type": result.type,
                             "serviceType": this._getServiceType(result.service)
                         };
-                        console.log("service item: ", item);
+                        // console.log("service item: ", item);
                         return item;
                     }));
                 } else {
@@ -2474,10 +2474,6 @@
                 if (!searchValue || searchValue.length < 2) return Promise.resolve([]);
                 return this.api.besamv2().findPaginatedVmpGroupsByLabel(language, searchValue, null, null, count)
                     .then(results => (results && results.rows || []))
-                    .then (rows => {
-                        rows.map(row => console.log("vmpgroup - ", row));
-                        return rows;
-                    })
                     .then(vmpGroups => Promise.all(vmpGroups.map(vmpGroup => {
                         return this.api.besamv2().findPaginatedAmpsByGroupCode(vmpGroup.code, null, null, 1)
                             .then(results => (results && results.rows || []))
@@ -2515,7 +2511,7 @@
                             "noSwitchReason": vmpGroup.noSwitchReason,
                             "type": "substance"
                         };
-                        console.log("ingredient item: ", item);
+                        // console.log("ingredient item: ", item);
                         return item;
                     }));
                 } else {
@@ -2613,10 +2609,6 @@
                             }
 
                             return finalList
-                                .map(ampp => {
-                                    console.log("ampp - ", ampp);
-                                    return ampp;
-                                })
                         });
             }
 
@@ -2678,7 +2670,7 @@
                             "intendedName": result.intendedName,
                             "type": result.type
                         };
-                        console.log("compound item: ", item);
+                        //console.log("compound item: ", item);
                         return item;
                     }));
                 } else {
@@ -2716,7 +2708,7 @@
                     let latestSearchValue = this.filterValue && this.filterValue.trim();
                     this.latestSearchValue = latestSearchValue;
 
-                    console.log("Starting search for " + this.filterValue + "|" + sort + "|" + search.toString() + "|" + (desc ? "<|" : ">|") + startIndex + ":" + pageSize + ":");
+                    //console.log("Starting search for " + this.filterValue + "|" + sort + "|" + search.toString() + "|" + (desc ? "<|" : ">|") + startIndex + ":" + pageSize + ":");
 
                     this._setSpinnerBusy();
                     const limit = endIndex || grid.pageSize;
@@ -2730,12 +2722,12 @@
                         })
                         .then(function (res) {
                             if (this.filterValue !== latestSearchValue) {
-                                console.log("Cancelling obsolete search");
+                                // console.log("Cancelling obsolete search");
                                 return;
                             }
 
                             if (res.size === 0) {
-                                console.log("Empty search");
+                                // console.log("Empty search");
                                 this.setGridSize(grid, 0);
                                 callback([], 0);
                                 return;
@@ -2798,7 +2790,7 @@
             }
 
             setGridSize(grid, size) {
-                console.log('setSize', size)
+                // console.log('setSize', size)
                 grid.set('size', size)
                 // this.set('busySpinner', false)
             }
@@ -2889,7 +2881,7 @@
                         this.set(`medicationAccumulator.${currentMedIdx}.boxes`, (this.medicationAccumulator[currentMedIdx].boxes || 1) + 1)
                     }
                 } else {
-                    console.log(med.type);
+                    // console.log(med.type);
                     const drugType = med.type === "medicine" ? "CD-DRUG-CNK" :
                         med.type === "substance" ? "CD-VMPGROUP" : "compoundPrescription";
 
@@ -2979,7 +2971,7 @@
             click(e) {
                 const selected = this.selectedMedicationFromList;
 
-                console.log('selected ', selected, ' - ', this.latestSelected);
+                // console.log('selected ', selected, ' - ', this.latestSelected);
                 if (this.inDoubleClick && (this._id(this.latestSelected) === this._id(selected) || this.latestSelected && !selected || !this.latestSelected && selected)) {
                     this._addCnkDci({target: {id: this._id(this.latestSelected)}})
                 } else {
@@ -3001,7 +2993,7 @@
             clickChron(e) {
                 const selected = this.selectedChronicalMedicationFromList;
 
-                console.log('selected ', selected, ' - ', this.latestSelected);
+                // console.log('selected ', selected, ' - ', this.latestSelected);
                 if (this.inDoubleClick && (this.latestSelected === selected || this.latestSelected && !selected || !this.latestSelected && selected)) {
                     this._addChron({target: {id: this._id(this.latestSelected)}})
                 } else {
@@ -3066,14 +3058,14 @@
                     setTimeout(function () {
                         if (currentValue === this.filterValue) {
                             // this.set('busySpinner', true)
-                            console.log("Triggering search for " + this.filterValue);
+                            // console.log("Triggering search for " + this.filterValue);
 
                             this.selectedMedicationFromList = null
                             this.cheapAlternativeSearchSeed = null
                             this._forceSpinnerIdle();
                             this._clearAll();
                         } else {
-                            console.log("Skipping search for " + this.filterValue + " != " + currentValue);
+                            // console.log("Skipping search for " + this.filterValue + " != " + currentValue);
                             // this.set('busySpinner', false)
                         }
                     }.bind(this), 500); //Wait for the user to stop typing
@@ -3223,14 +3215,14 @@
 
                 this.compoundSearchString = searchString;
                 if (!searchString || searchString.length < 2) {
-                    console.log("Cancelling empty search");
+                    // console.log("Cancelling empty search");
                     this.set('compoundListItems', []);
                     return;
                 }
 
                 this.api.entitytemplate().findAllEntityTemplates('org.taktik.icure.entities.embed.Medication', searchString, true).then(res => {
                     if (searchString !== this.compoundSearchString) {
-                        console.log("Cancelling obsolete search");
+                        // console.log("Cancelling obsolete search");
                         this.set('compoundListItems', []);
                     }
                     this.set('compoundListItems', res);
@@ -3257,7 +3249,7 @@
                 // check if patient have adverse drug reaction to this drug
 
                 if (!this.user || !this.patient) {
-                    console.log("no user or patient, abort")
+                    // console.log("no user or patient, abort")
                     return
                 }
                 if (!med) {
@@ -3265,7 +3257,7 @@
                 }
                 this.set('continueAddMedication', thenfun)
                 this.api.helement().findBy(this.user.healthcarePartyId, this.patient).then(hes => {
-                    console.log(hes)
+                    // console.log(hes)
                     this._fillMedecineCodes(med).then(() => {
 
                         const intols = hes
@@ -3293,7 +3285,7 @@
                             }
                             this.$['checkintol'].open()
                         } else {
-                            console.log("no intol")
+                            // console.log("no intol")
                             return thenfun()
                         }
                     })
@@ -3423,7 +3415,7 @@
                 if (this.busySpinnerCounter > 0) {
                     this.set("busySpinner", true);
                 }
-                console.log("increasing spinner counter: ", this.busySpinnerCounter);
+                // console.log("increasing spinner counter: ", this.busySpinnerCounter);
             }
 
             _setSpinnerIdle() {
@@ -3432,13 +3424,13 @@
                     this.set("busySpinner", false);
                     this.busySpinnerCounter = 0;
                 }
-                console.log("decreasing spinner counter: ", this.busySpinnerCounter);
+                // console.log("decreasing spinner counter: ", this.busySpinnerCounter);
             }
 
             _forceSpinnerIdle() {
                 this.busySpinnerCounter = 0;
                 this.set("busySpinner", false);
-                console.log("resetting spinner counter: ", this.busySpinnerCounter);
+                // console.log("resetting spinner counter: ", this.busySpinnerCounter);
             }
         }
 

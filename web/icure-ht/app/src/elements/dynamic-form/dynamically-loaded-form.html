@@ -701,7 +701,7 @@
                             }
                         });
                         if (isModified || currentValueContainers.length) {
-                            this.scanServicesAndScheduleSave(this.currentContact);
+                            this.scanServicesAndScheduleSave(this.currentContact,1000);
                         }
                     },
                     getStringValue: (label, original) => {

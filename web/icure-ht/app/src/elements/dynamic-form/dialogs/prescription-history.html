@@ -310,6 +310,7 @@
         const STATUS_REVOKED = 16;
 
         class PrescriptionHistory extends Polymer.TkLocalizerMixin(Polymer.Element) {
+
             static get is() {
                 return 'prescription-history'
             }
@@ -358,6 +359,10 @@
                         type: Array,
                         value: () => []
                     },
+                    _prescriptions: {
+                        type: Array,
+                        value: () => []
+                    },
                     isLoading:{
                         type: Boolean,
                         value: false
@@ -382,83 +387,12 @@
                 this.async(this.notifyResize, 1);
             }
 
-            setPrescriptions(prescriptions) {
-                this._prescriptions = prescriptions;
-                this.set("prescriptions", prescriptions);
-                this.set("refresher", this.refresher + 1)
-                const min = this.api.moment(Date.now()).subtract(1, 'Y');
-                const max = this._tomorrow();
-                this.set("dateMin", min.format("YYYY-MM-DD"));
-                this.set("dateMax", max.format("YYYY-MM-DD"));
-                this.set("allStatus", [
-                    {
-                        value: STATUS_SENT,
-                        label: this.localize("pr_status_sent", "Envoyée")
-                    },
-                    {
-                        value: STATUS_NOT_SENT,
-                        label: this.localize("pr_status_not_sent", "Non envoyée")
-                    },
-                    {
-                        value: STATUS_PENDING,
-                        label: this.localize("pr_status_pending", "En attente")
-                    },
-                    {
-                        value: STATUS_DELIVERED,
-                        label: this.localize("pr_status_delivered", "Délivrée")
-                    },
-                    {
-                        value: STATUS_REVOKED,
-                        label: this.localize("pr_status_revoked", "Révoquée")
-                    },
-                ]);
-                this._filter();
-            }
-
             _isRevoked(service) {
                 return service.status & STATUS_REVOKED;
             }
 
             _tomorrow() {
                 return this.api.moment(Date.now()).add(1, 'd');
-            }
-
-            _between(date, min, max) {
-                if (min && max) return this._compareDate(date, min) >= 0 && this._compareDate(date, max) <= 0;
-                if (min) return this._compareDate(date, min) >= 0;
-                if (max) return this._compareDate(date, max) <= 0;
-                return true;
-            }
-
-            _compareDate(a, b) {
-                return this.api.moment(a).diff(this.api.moment(b));
-            }
-
-            _filter() {
-                if (!this._prescriptions) return;
-                this.$["dateMin"].max = this.$["dateMax"].value;
-                this.$["dateMax"].min = this.$["dateMin"].value;
-                this.$["dateMax"].max = this._tomorrow().format("YYYY-MM-DD");
-                const min = this.dateMin ? parseInt(this.api.moment(this.dateMin).format('YYYYMMDDHHmmss')) : null;
-                const max = this.dateMax ? parseInt(this.api.moment(this.dateMax).format('YYYYMMDDHHmmss')) : null;
-                let prescriptions = this._prescriptions.filter(p => this._between(p.service.valueDate, min, max));
-                if (this.filterRID && this.filterRID.length > 0)
-                    prescriptions = prescriptions.filter(p => p.rid && p.rid.includes(this.filterRID));
-                if (this.filterStatus > 0)
-                    prescriptions = prescriptions.filter(p => this._getStatus(p.service) & this.filterStatus);
-                prescriptions = prescriptions.sort((a, b) => this._compareDate(b.service.valueDate, a.service.valueDate));
-                this.set("prescriptions", prescriptions);
-            }
-
-            _onValueChanged(e) {
-                console.log("change");
-                this.dateMin = this.$["dateMin"].value;
-                this.dateMax = this.$["dateMax"].value;
-                if (e.currentTarget.id === "filterRID")
-                    this.filterRID = e.detail.value;
-                if (e.currentTarget.id === "filterStatus")
-                    this.filterStatus = !!e.detail.value ? e.detail.value : 0;
-                this._filter();
             }
 
             _frequency(item){
@@ -474,12 +408,13 @@
             }
 
             _getStatusClass(item) {
+
                 const status = this._getStatus(item.service);
-                if (status & STATUS_DELIVERED )
-                    return "Green";
-                if (status & STATUS_REVOKED )
-                    return "Red";
-                return "Orange";
+
+                return (status & STATUS_DELIVERED ) ? "Green" :
+                    (status & STATUS_REVOKED ) ? "Red" :
+                    "Orange";
+
             }
 
             _formatStatus(item) {
@@ -492,77 +427,108 @@
             }
 
             _updateFeedback(e) {
-                const rid = e.currentTarget.dataset.rid;
-                console.log("_update " + rid);
-                if (!this.hcp) return;
-                this.api.fhc().Recipecontroller().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
-                .then(result => {
-                    console.log("updated: ", result)
-                })
-                .catch(error => {
-                    console.log("error:", error)
-                })
+
+                return !this.hcp ? null : this.api.fhc().Recipecontroller().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
+
             }
 
             _notify(e) {
-                const rid = e.currentTarget.dataset.rid;
-                console.log("_notify " + rid);
-                if (!this.hcp) return;
-                this.api.fhc().Recipecontroller().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
-                .then(result => {
-                    console.log("notified: ", result)
-                })
-                .catch(error => {
-                    console.log("error:", error)
-                })
+
+                return !this.hcp ? null : this.api.fhc().Recipecontroller().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
+
             }
 
             _revoke(e) {
-                const rid = e.currentTarget.dataset.rid;
-                console.log("_revoke " + rid);
-                if (!this.hcp) return;
-                const prescription = this.prescriptions.find(p => p.rid === rid);
-                const contact = prescription && prescription.contact || null;
-                if (!contact) {
-                    console.log("no contact for the prescription with rid ", rid);
-                    return;
-                }
-                this.prescriptions.filter(p => p.rid === rid).forEach(prescription => {
-                    const content = this._getContent(prescription.service);
-                    content && (content.medicationValue.status = STATUS_SENT | STATUS_REVOKED);
-                });
-                this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
-                    .then(isDeleted => {
-                        console.log("revoke1", isDeleted)
-                        return isDeleted ? this.api.contact().modifyContactWithUser(this.user, contact)
-                            .then(() => {
-                                console.log("revoke2")
-                                this._refresh();
-                            }) : Promise.resolve();
-                    })
-                    .catch(error => {
-                        console.log("error:", error)
-                    })
-            }
 
-            _refresh() {
-                console.log("_refresh")
-                this.set("refresher", this.refresher + 1);
+                const promResolve = Promise.resolve()
+                const rid = _.get(e,"currentTarget.dataset.rid")
+                const prescription = this.prescriptions.find(p => p.rid === rid)
+                const contact = prescription && prescription.contact || null
+
+                return !this.hcp || !contact ? null : promResolve
+                    .then(() => this.prescriptions.filter(p => p.rid === rid).forEach(prescription => { const content = this._getContent(prescription.service); content && (content.medicationValue.status = STATUS_SENT | STATUS_REVOKED);}))
+                    .then(() => this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified"))
+                    .then(isDeleted => !isDeleted ? promResolve : this.api.contact().modifyContactWithUser(this.user, contact).then(() => this.set("refresher", this.refresher + 1)))
+
             }
 
             _print(e) {
-                const id = e.currentTarget.dataset.id;
-                console.log("_print " + id);
-                if (!this.hcp) return;
-                const prescription = this.prescriptions.find(p => p.service.id === id);
-                this.dispatchEvent(new CustomEvent('print-prescription', {
-                    detail: {
-                        service: prescription.service
-                    },
-                    bubbles:true,
-                    composed:true
-                }))
+
+                return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { service: _.get(_.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id")), "service") }, bubbles:true, composed:true }))
+
             }
+
+            _onValueChanged(e) {
+
+                this.dateMin = this.$["dateMin"].value;
+                this.dateMax = this.$["dateMax"].value;
+
+                if (e.currentTarget.id === "filterRID") this.filterRID = e.detail.value;
+                if (e.currentTarget.id === "filterStatus") this.filterStatus = !!e.detail.value ? e.detail.value : 0;
+
+                this._filter();
+            }
+
+            _between(date, min, max) {
+
+                return (min && max) ? this._compareDate(date, min) >= 0 && this._compareDate(date, max) <= 0 :
+                    min ? this._compareDate(date, min) >= 0 :
+                    max ? this._compareDate(date, max) <= 0 :
+                    true
+
+            }
+
+            _compareDate(a, b) {
+
+                return this.api.moment(a).diff(this.api.moment(b));
+
+            }
+
+            setPrescriptions(prescriptions) {
+
+                this.set("_prescriptions", prescriptions)
+                this.set("prescriptions", prescriptions)
+                this.set("refresher", this.refresher + 1)
+
+                const max = this._tomorrow();
+                const min = this.api.moment(Date.now()).subtract(1, 'Y')
+
+                this.set("dateMin", min.format("YYYY-MM-DD"))
+                this.set("dateMax", max.format("YYYY-MM-DD"))
+                this.set("allStatus", [
+                    { value: STATUS_SENT, label: this.localize("pr_status_sent", "Envoyée") },
+                    { value: STATUS_NOT_SENT, label: this.localize("pr_status_not_sent", "Non envoyée") },
+                    { value: STATUS_PENDING, label: this.localize("pr_status_pending", "En attente") },
+                    { value: STATUS_DELIVERED, label: this.localize("pr_status_delivered", "Délivrée") },
+                    { value: STATUS_REVOKED, label: this.localize("pr_status_revoked", "Révoquée") },
+                ])
+
+                this._filter()
+
+            }
+
+            _filter() {
+
+                if (!this._prescriptions) return;
+
+                this.$["dateMin"].max = this.$["dateMax"].value;
+                this.$["dateMax"].min = this.$["dateMin"].value;
+                this.$["dateMax"].max = this._tomorrow().format("YYYY-MM-DD");
+
+                const min = this.dateMin ? parseInt(this.api.moment(this.dateMin).format('YYYYMMDDHHmmss')) : null;
+                const max = this.dateMax ? parseInt(this.api.moment(this.dateMax).format('YYYYMMDDHHmmss')) : null;
+
+                this.set("prescriptions", _
+                    .chain(_.get(this,"_prescriptions",[]))
+                    .filter(it => this._between(_.get(it,"service.valueDate"), min, max))
+                    .filter(it => !_.size(this.filterRID) || (it.rid && it.rid.includes(this.filterRID)))
+                    .filter(it => !this.filterStatus || (this._getStatus(it.service) & this.filterStatus) || (this.filterStatus === 1 && !this._getStatus(it.service)))
+                    .value()
+                    .sort((a, b) => this._compareDate(_.get(b,"service.valueDate"), _.get(a,"service.valueDate")))
+                )
+
+            }
+
         }
 
         customElements.define(PrescriptionHistory.is, PrescriptionHistory)

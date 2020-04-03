@@ -569,13 +569,13 @@
                     let latestSearchValue = this.filterValue
                     this.latestSearchValue = latestSearchValue
                     if (!latestSearchValue || latestSearchValue.length < 2) {
-                        console.log("Cancelling empty search")
+                        // console.log("Cancelling empty search")
                         this.setGridSize(grid, 0)
                         callback([])
                         return
                     }
 
-                    console.log("Starting search for " + thisParams)
+                    // console.log("Starting search for " + thisParams)
 
                     const limit = endIndex || grid.pageSize
                     const offset = params.index
@@ -584,7 +584,7 @@
                             return {totalSize: packs.length, rows: (desc ? _.reverse(_.sortBy(packs, sort)) : _.sortBy(packs, sort)).slice(offset, limit)}
                         }).then(function (res) {
                             if (this.filterValue !== latestSearchValue) {
-                                console.log("Cancelling obsolete search")
+                                // console.log("Cancelling obsolete search")
                                 return
                             }
                             this.setGridSize(grid, res.totalSize)
@@ -648,7 +648,7 @@
             }
 
             setGridSize(grid, size) {
-                console.log('setSize', size)
+                // console.log('setSize', size)
                 grid.set('size', size)
                 this.set('isLoadingEntities',false)
             }
@@ -707,7 +707,7 @@
             }
 
             selectMedicationFromList(med) {
-                console.log("selectMedicationFromList",med)
+                // console.log("selectMedicationFromList",med)
 
                 const unit = this.localize('generic_unit','unit',this.language)
                 const newMedicationContent = { medicationValue: {}, medicationUnit: unit, regimen: [{administratedQuantity: {time:'',quantity: 1, unit: unit}}]}
@@ -781,7 +781,7 @@
             click(e) {
                 const selected = this.selectedMedicationFromList;
 
-                console.log('selected ',selected,' - ',this.latestSelected);
+                // console.log('selected ',selected,' - ',this.latestSelected);
                 if (this.inDoubleClick && (this._id(this.latestSelected) === this._id(selected) || this.latestSelected && !selected || !this.latestSelected && selected)) {
                     this._addCnkDci({target: {id: this._id(this.latestSelected)}})
                 } else {
@@ -803,7 +803,7 @@
             clickChron(e) {
                 const selected = this.selectedChronicalMedicationFromList;
 
-                console.log('selected ',selected,' - ',this.latestSelected);
+                // console.log('selected ',selected,' - ',this.latestSelected);
                 if (this.inDoubleClick && (this.latestSelected === selected || this.latestSelected && !selected || !this.latestSelected && selected)) {
                     this._addChron({target: {id: this._id(this.latestSelected)}})
                 } else {
@@ -846,7 +846,7 @@
                     setTimeout(function () {
                         if (currentValue === this.filterValue) {
                             this.set('isLoadingEntities',true)
-                            console.log("Triggering search for " + this.filterValue);
+                            // console.log("Triggering search for " + this.filterValue);
 
                             this.selectedMedicationFromList = null
                             this.cheapAlternativeSearchSeed = null
@@ -856,7 +856,7 @@
                             grid.drugsCacheUpperSearchIndex = 0;
                             grid.clearCache();
                         } else {
-                            console.log("Skipping search for " + this.filterValue + " != " + currentValue);
+                            // console.log("Skipping search for " + this.filterValue + " != " + currentValue);
                             this.set('isLoadingEntities',false)
                         }
                     }.bind(this), 500); //Wait for the user to stop typing
@@ -1002,14 +1002,14 @@
 
                 this.compoundSearchString = searchString;
                 if (!searchString || searchString.length < 2) {
-                    console.log("Cancelling empty search");
+                    // console.log("Cancelling empty search");
                     this.set('compoundListItems', []);
                     return;
                 }
 
                 this.api.entitytemplate().findAllEntityTemplates('org.taktik.icure.entities.embed.Medication',searchString,true).then(res => {
                     if (searchString !== this.compoundSearchString) {
-                        console.log("Cancelling obsolete search");
+                        // console.log("Cancelling obsolete search");
                         this.set('compoundListItems', []);
                     }
                     this.set('compoundListItems', res);
@@ -1036,7 +1036,7 @@
                 // check if patient have adverse drug reaction to this drug
 
                 if(!this.user || !this.patient) {
-                    console.log("no user or patient, abort")
+                    // console.log("no user or patient, abort")
                     return
                 }
                 if(!med) {
@@ -1044,7 +1044,7 @@
                 }
                 this.set('continueAddMedication', thenfun)
                 this.api.helement().findBy(this.user.healthcarePartyId, this.patient).then(hes => {
-                    console.log(hes)
+                    // console.log(hes)
                     this._fillMedecineCodes(med).then(() => {
 
                         const intols = hes
@@ -1072,7 +1072,7 @@
                             }
                             this.$['checkintol'].open()
                         } else {
-                            console.log("no intol")
+                            // console.log("no intol")
                             return thenfun()
                         }
                     })

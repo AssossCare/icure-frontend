@@ -6151,35 +6151,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             //     }
             // }
 
-            _createNewMedications(e) {
-                const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
-                Promise.all(medicationArray.map(m => {
-                    if(m.options && (m.options.createMedication || !m.options.isPrescription)) {
-                        const newMedication = _.cloneDeep(_.omit(m.newMedication, ["id"]));
-                        (this.api.contact().medicationValue(newMedication, this.language) || {endMoment: ""}).endMoment = null;
-                        newMedication.tags = newMedication.tags && newMedication.tags.filter(tag => !(tag.type === "ICURE" && tag.code === "PRESC")) || [];
-                        (newMedication.tags.find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {type: "CD-ITEM", version: "1"})).code = "medication";
-                        newMedication.label = this.localize('medication', 'medication', this.language);
-                        newMedication.id = this.api.crypto().randomUuid();
-                        return this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication));
-                    }
-                    return null
-                }))
-                    .then((results) => results.find(r => r) && this.refreshPatient())
-            }
-
-            _medicationDetailValueChanged(e) {
-                //In case we get here coming from the prescription dialog by checking the checkbox
-                if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onValueChanged) {
-                    this.currentMedicationDetailEventDetail.onValueChanged(e)
-                    this._createNewMedications(e);
-                } else {
-                    //Standard behaviour: create from medication button in left panel
-                    this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
-                }
-            }
-
-
             // _displayMedicationDetails(e) {
             //     if (this.currentSelectMedicationEventDetail && this.currentSelectMedicationEventDetail.onShowDetails) {
             //         this.currentSelectMedicationEventDetail.onShowDetails(e)
@@ -7499,6 +7470,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const today = moment();
                 return this.medications.filter(s => s.tags.some(c => _.get(c, 'type', null) === 'CD-ITEM' && _.get(c, 'code', null) === 'medication' && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && (_.get(c, 'medicationValue.endMoment', null) && this.api.moment(_.get(c, 'medicationValue.endMoment', null)).isBefore(yesterday)) || (_.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(today)))));
             }
+
+            _createNewMedications(e) {
+                const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
+                Promise.all(medicationArray.map(m => {
+                    if(m.options && (m.options.createMedication || !m.options.isPrescription)) {
+                        const newMedication = _.cloneDeep(_.omit(m.newMedication, ["id"]));
+                        (this.api.contact().medicationValue(newMedication, this.language) || {endMoment: ""}).endMoment = null;
+                        newMedication.tags = newMedication.tags && newMedication.tags.filter(tag => !(tag.type === "ICURE" && tag.code === "PRESC")) || [];
+                        (newMedication.tags.find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {type: "CD-ITEM", version: "1"})).code = "medication";
+                        newMedication.label = this.localize('medication', 'medication', this.language);
+                        newMedication.id = this.api.crypto().randomUuid();
+                        return this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication));
+                    }
+                    return null
+                }))
+                    .then((results) => /* results.find(r => r) && */ this.refreshPatient())
+            }
+
+            _medicationDetailValueChanged(e) {
+                //In case we get here coming from the prescription dialog by checking the checkbox
+                if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onValueChanged) {
+                    this.currentMedicationDetailEventDetail.onValueChanged(e)
+                    this._createNewMedications(e);
+                } else {
+                    //Standard behaviour: create from medication button in left panel
+                    this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
+                }
 
             _isSpecialist(hcp){
                 return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
