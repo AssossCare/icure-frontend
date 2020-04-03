@@ -8,13 +8,15 @@ import {PolymerElement, html} from '@polymer/polymer';
 import '../ht-spinner/ht-spinner.js';
 import '../../styles/dialog-style.js';
 import '../../styles/scrollbar-style.js';
+import '../../styles/paper-tabs-style.js';
+import '../../styles/shared-styles.js';
 
 class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement))  {
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style">
 
-            #hubDetailDialog{
+            #mikronoMigrationDialog{
                 height: calc(98% - 12vh);
                 width: 98%;
                 max-height: calc(100% - 64px - 48px - 20px); /* 100% - header - margin - footer*/
@@ -158,7 +160,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 padding-left:0;
             }
 
-            .hubDetailDialog{
+            .mikronoMigrationDialog{
                 display: flex;
                 height: calc(100% - 45px);;
                 width: auto;
@@ -166,7 +168,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 padding: 0;
             }
 
-            .hub-menu-list{
+            .mig-menu-list{
                 height: 100%;
                 width: 30%;
                 background-color: var(--app-background-color-dark);
@@ -175,14 +177,14 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 position: relative;
             }
 
-            .hub-menu-view{
+            .mig-menu-view{
                 height: 100%;
                 width: 70%;
                 position: relative;
                 background: white;
             }
 
-            .hub-menu-list-header{
+            .mig-menu-list-header{
                 height: 48px;
                 width: 100%;
                 border-bottom: 1px solid var(--app-background-color-darker);
@@ -195,7 +197,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 box-sizing: border-box;
             }
 
-            .hub-menu-list-header-img{
+            .mig-menu-list-header-img{
                 height: 40px;
                 width: 40px;
                 background-color: transparent;
@@ -203,18 +205,18 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 float: left;
             }
 
-            .hub-menu-list-header-info{
+            .mig-menu-list-header-info{
                 margin-left: 12px;
                 display: flex;
                 /*align-items: center;*/
             }
 
-            .hub-menu-list-header-img img{
+            .mig-menu-list-header-img img{
                 width: 100%;
                 height: 100%;
             }
 
-            .hub-name{
+            .mig-name{
                 font-size: var(--font-size-large);
                 font-weight: 700;
             }
@@ -431,6 +433,42 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             }
 
         </style>
+        
+        <paper-dialog id="mikronoMigrationDialog" opened="{{opened}}">
+            <div class="content mikronoMigrationDialog">
+                <div class="mig-menu-list">
+                    <div class="mig-menu-list-header">
+                        <div class="mig-menu-list-header-img">
+                            <!-- icon here -->
+                        </div>
+                        <div class="mig-menu-list-header-info">
+                            <div class="mig-name">
+                                <span class="hub">Pricare Agenda to Mikrono</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hub-submenu-container">
+                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                        <!-- content here -->
+                    </div>
+                </div>
+                <div class="mig-menu-view">
+                    <ht-pat-hub-transaction-view id="htPatHubTransactionViewer" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" diary-note="[[diaryNote]]" transaction-of-diary-note="[[transactionOfDiaryNote]]"  resources="[[resources]]" on-hub-download="_hubDownload"></ht-pat-hub-transaction-view>
+                </div>
+            </div>
+            <div class="buttons">
+				<paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
+<!--                <template is="dom-if" if="[[_isEdmgRegitrationAvailable(allEDmgregistered, tabs)]]">-->
+<!--                   <paper-button on-tap="_registerToEDMG" class="button button&#45;&#45;other">[[localize('reg_dmg','Register to eDmg',language)]]</paper-button>-->
+<!--                </template>-->
+<!--				<template is="dom-if" if="[[_canSaveInfo(emailProVerification, loginVerification)]]">-->
+<!--                     <paper-button class="button button&#45;&#45;save" autofocus on-tap="confirm">[[localize('save','Save',language)]]</paper-button>-->
+<!--                 </template>-->
+<!--                 <template is="dom-if" if="[[!_canSaveInfo(emailProVerification, loginVerification)]]">-->
+<!--                     <paper-button class="button button&#45;&#45;save" disabled>[[localize('save','Save',language)]]</paper-button>-->
+<!--                 </template>-->
+			</div>
+        </paper-dialog>
         `;
     }
 
@@ -466,6 +504,10 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     ready() {
         super.ready()
+    }
+
+    open(){
+        this.$.mikronoMigrationDialog.open();
     }
 
     migrateCurrentUserPricareAgendaToMikrono() {
