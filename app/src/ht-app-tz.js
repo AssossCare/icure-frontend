@@ -108,6 +108,7 @@ const runtime = require('offline-plugin/runtime');
 import io from 'socket.io-client';
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
+import './elements/ht-tools/ht-migration-mikrono';
 
 class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   static get template() {
@@ -764,6 +765,8 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         <ht-access-log id="ht-access-log" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-access-log>
         <ht-my-profile id="ht-my-profile" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-user-saved="_userSaved"></ht-my-profile>
 
+        <ht-migration-mikrono id="htMigrationMikrono" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-migration-mikrono>   
+        
         <ht-update-dialog id="htUpdateDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-update-dialog>
 
         <template is="dom-if" if="[[updateMessage]]">
@@ -862,6 +865,16 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                     <paper-item class="extra-menu-item" on-tap="_logList">[[localize('acc_log','Access Log',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_tuto">[[localize('tutorial','Tutorial',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>
+                                    
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateAllPricareAgendasToMikrono">[[localize('import_all_pricare_agenda','Import Pricare Agendas',language)]]</paper-item>-->
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateAllPricareAgendasToMikronoDEBUG">[[localize('import_all_pricare_agenda_debug','Import DEBUG Pricare Agendas',language)]]</paper-item>-->
+<!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserPricareAgendaToMikrono">[[localize('import_single_pricare_agenda_debug','Import Single Pricare Agenda',language)]]</paper-item>-->
+
+                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserToMikrono">1.[[localize('import_single_pricare_agenda_debug','create user',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="migrateAppointmentTypesToMikrono">2.[[localize('import_single_pricare_agenda_debug','create types',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserAppointmentsToMikrono">3.[[localize('import_single_pricare_agenda_debug','create appointments',language)]]</paper-item>
+
+                                    
                                     <paper-item class="extra-menu-item" on-tap="_myProfile">
                                         <iron-icon icon="icons:account-circle"></iron-icon>
                                         [[localize('my_pro','My profile',language)]]
@@ -2572,6 +2585,18 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       }
 
   }
+
+    migrateCurrentUserToMikrono() {
+        this.$['htMigrationMikrono'].migrateCurrentUserToMikrono()
+    }
+
+    migrateAppointmentTypesToMikrono() {
+        this.$['htMigrationMikrono'].migrateAppointmentTypesToMikrono()
+    }
+
+    migrateCurrentUserAppointmentsToMikrono() {
+        this.$['htMigrationMikrono'].migrateCurrentUserAppointmentsToMikrono()
+    }
 
   _triggerOpenMyProfile(e) {
       this._myProfile(parseInt(_.get(e,"detail.tabIndex",1)));
