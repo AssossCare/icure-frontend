@@ -286,12 +286,12 @@
                                 <div class="td fg1">[[selectedInvoiceForDetail.patientSsin]]</div>
                                 <div class="td fg1 center">[[invco.code]]</div>
                                 <div class="td fg1">[[formatDate(selectedInvoiceForDetail.invoiceDate,'date')]]</div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(invco.reimbursement)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(invco.patientIntervention)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(invco.doctorSupplement)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-red',inv.refusedAmount)]]">[[_formatAmount(invco.totalAmount)]]€</span></div>
+                                <div class="td fg1"><span class$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(invco.reimbursement)]]€</span></div>
+                                <div class="td fg1"><span class$="[[_getTxtStatusColor(inv.statut,inv.totalAmount)]]">[[_formatAmount(invco.patientIntervention)]]€</span></div>
+                                <div class="td fg1"><span class$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(invco.doctorSupplement)]]€</span></div>
+                                <div class="td fg1"><span class$="[[_getTxtStatusColor('force-red',inv.refusedAmount)]]">[[_formatAmount(invco.totalAmount)]]€</span></div>
                                 <div class="td fg3 rejectionInfo">[[invco.error]]</div>
-                                <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(selectedInvoiceForDetail.statut))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(selectedInvoiceForDetail.statut)]]"></iron-icon>[[selectedInvoiceForDetail.statut]]</span></div>
+                                <div class="td fg1"><span class$="invoice-status [[_getIconStatusClass(selectedInvoiceForDetail.statut))]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(selectedInvoiceForDetail.statut)]]"></iron-icon>[[selectedInvoiceForDetail.statut]]</span></div>
                             </div>
                         </template>
                     </template>
