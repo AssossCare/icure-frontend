@@ -470,7 +470,7 @@
             }
 
             listingAccessByUser(filter,date){
-                if(filter!==this.filterValue || date!==this.searchDate ||!this.user)return;
+                if(filter!==this.filterValue || date!==this.searchDate ||!this.user)return Promise.resolve([]);
 
                 if(this.usersList.length){
                     return Promise.all(this.usersList.filter(user => !_.get(this.listMoreAccess,user.id,false) || _.get(this.listMoreAccess,user.id+'.needMoreLogs',false)).map(user => {
