@@ -6324,6 +6324,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     const svc = this.editedHealthElementModel.he.svc;
                     return this.api.helement().serviceToHealthElement(this.user, this.patient, svc,
                         this.api.contact().shortServiceDescription(svc, language)).then(he => {
+
+
+                        // 20200406 - Muriel Mernier: don't create a new ctc anymore, refer to the original one
+                        this.set("currentContact",_.find(this.contacts, {id:svc.contactId}) || this.currentContact)
+
                         if (this.currentContact) {
                             this.api.contact().promoteServiceInContact(this.currentContact, this.user, this.contacts, svc, undefined, null, [he.id], null);
                             this.saveCurrentContact().then(c => this.refreshPatient());
