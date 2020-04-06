@@ -182,7 +182,9 @@
                             <span></span>
                             <div>
 
-                                <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                                <template is="dom-if" if="[[allowEsLink]]" restamp="true">
+                                    <dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc" id$="he-pills-1-[[contact.id]]"></dynamic-pills>
+                                </template>
 
                                 <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
                                     <template is="dom-if" if="[[_documentId(contacts)]]">
@@ -247,7 +249,7 @@
                         <span></span>
                         <div>
 
-                            <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                            <template is="dom-if" if="[[allowEsLink]]" restamp="true"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc" id$="he-pills-2-[[contact.id]]"></dynamic-pills></template>
 
                             <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
 
