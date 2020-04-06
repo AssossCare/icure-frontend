@@ -391,7 +391,9 @@
                 </div>
             </div>
             <div class="panel-button">
-                <paper-button class="button button--other" on-tap="_createInvoiceToBeCorrectedFromBatch">[[localize('btn-crea-fro-bat', 'Create invoice from batch', language)]]</paper-button>
+                <template is="dom-if" if="[[correctiveInvoiceCanBeCreated]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_createInvoiceToBeCorrectedFromBatch">[[localize('btn-crea-fro-bat', 'Create invoice from batch', language)]]</paper-button>
+                </template>
                 <template is="dom-if" if="[[batchCanBeArchived]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_openArchiveDialog">[[localize('btn-arch', 'Archive', language)]]</paper-button>
                 </template>
@@ -483,6 +485,10 @@
                         value: false
                     },
                     batchCanBeResent:{
+                        type: Boolean,
+                        value: false
+                    },
+                    correctiveInvoiceCanBeCreated:{
                         type: Boolean,
                         value: false
                     }
@@ -601,6 +607,7 @@
                         })
                     }).finally(()=>{
                     this._batchCanBeArchived()
+                    this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(this.selectedInvoiceForDetail.message.status & (1 << 16))) || (!!(this.selectedInvoiceForDetail.message.status & (1 << 12)))))
                     this.set('filteredInvoicesFormBatch', _.get(this, 'invoicesFromBatch', []))
                     this.set('batchCanBeResent', _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) ? _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) : false)
                     this.set('isLoading', false)
