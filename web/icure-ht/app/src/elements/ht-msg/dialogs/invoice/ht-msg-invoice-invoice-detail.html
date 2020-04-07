@@ -497,7 +497,7 @@
 
             _closeInvoicingDialog(){
                 this._closeDetailPanel()
-                this._getMessage()
+                this._getMessage(false)
             }
 
             _flagInvoiceAsLostConfirmationDialog() {
@@ -526,7 +526,7 @@
                             this.set('flagInvoiceAsLostId', null)
                             this._closeDetailPanel()
                             this._closeLostDialog()
-                            this._getMessage()
+                            this._getMessage(false)
                         })
                 }
             }
@@ -535,8 +535,8 @@
                 this.shadowRoot.querySelector("#flagInvoiceAsLostConfirmationDialog").close()
             }
 
-            _getMessage(){
-                this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+            _getMessage(refreshAll){
+                this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: refreshAll}}))
             }
 
             _openCancelConfirmationDialog(){
@@ -553,7 +553,7 @@
                         .then(inv => this.api.invoice().modifyInvoice( _.omit(inv, ['printedDate'])))
                         .then(inv => this.api.register(inv, 'invoice'))
                         .finally(() => {
-                            this._getMessage()
+                            this._getMessage(false)
                             this._closeDetailPanel()
                         })
                 }

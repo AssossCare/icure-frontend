@@ -363,7 +363,7 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <paper-button class="button button--other" on-tap="getMessage">[[localize('refresh','Refresh',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[api.tokenId]]">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
@@ -692,13 +692,17 @@
                     return prom.then(() => {
                         this.set('isSending',false)
                         this.shadowRoot.querySelector('#sendingDialog').close()
-                        this.getMessage()
+                        this.getMessage(true)
                     })
                 }
             }
 
-            getMessage(){
-                this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+            getMessage(refreshAll){
+                this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: refreshAll}}))
+            }
+
+            _refreshInvoiceList(){
+                this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
             }
 
             _displayInfoInvoicePanel(e){
