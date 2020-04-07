@@ -314,7 +314,7 @@
             </div>
         </div>
 
-        <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[selectedInvoiceForDetail.patient]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
+        <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[selectedInvoiceForDetail.patient]]" i18n="[[i18n]]" resources="[[resources]]" on-close-invoicing-dialog="_closeInvoicingDialog"></ht-pat-invoicing-dialog>
 
         <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
@@ -493,6 +493,11 @@
                 if(_.get(this, 'selectedInvoiceForDetail.invoice.id', null)){
                     this.shadowRoot.querySelector("#invoicingForm").open({invoicingCodeId: _.get(this, 'selectedInvoiceForDetail.invoice.id', null)})
                 }
+            }
+
+            _closeInvoicingDialog(){
+                this._closeDetailPanel()
+                this._getMessage()
             }
 
             _flagInvoiceAsLostConfirmationDialog() {
