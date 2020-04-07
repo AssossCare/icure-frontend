@@ -43,10 +43,11 @@
             }
         </style>
 
-        <template is="dom-repeat" items="[[healthElements]]" as="he">
-            <template is="dom-if" if="[[he.descr]]">
-                <span id="pill-[[he.id]]" class$="form-title-bar-btn he-pill [[_heColourStyle(he, highlightedHes.*)]] [[_isExcluded(he)]]" on-tap="_highlight">[[he.descr]]<iron-icon id="pill-[[he.id]]" class="closePillsBtn" icon="vaadin:close" on-tap="_deletePills"></iron-icon></span>
-
+        <template is="dom-if" if="[[healthElements]]" restamp="true">
+            <template is="dom-repeat" items="[[healthElements]]" as="he" id="heElementsDomRepeat">
+                <template is="dom-if" if="[[he.descr]]" restamp="true">
+                    <span id="pill-[[he.id]]" class$="form-title-bar-btn he-pill [[_heColourStyle(he, highlightedHes.*)]] [[_isExcluded(he)]]" on-tap="_highlight">[[he.descr]]<iron-icon id="pill-[[he.id]]" class="closePillsBtn" icon="vaadin:close" on-tap="_deletePills"></iron-icon></span>
+                </template>
             </template>
         </template>
     </template>
@@ -72,7 +73,7 @@ class DynamicPill extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     static get observers() {
-        return [];
+        return ["_healthElementsChanged(healthElements)"];
     }
 
     ready() {
@@ -106,6 +107,11 @@ class DynamicPill extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     _isExcluded(he){
         return _.get(he, 'tags', []).find(t => t.type === "CD-CERTAINTY" && t.code === "excluded") ? "exclude" : null
+    }
+
+    _healthElementsChanged(){
+        const domRepeat = this.shadowRoot.querySelector("#heElementsDomRepeat")
+        return domRepeat && domRepeat.render();
     }
 
 }

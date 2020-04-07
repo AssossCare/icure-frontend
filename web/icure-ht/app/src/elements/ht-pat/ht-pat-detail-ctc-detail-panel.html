@@ -828,7 +828,7 @@
 			<div class="contact-card-container">
 
 				<ht-spinner class="center" active="[[isLoadingDoc]]"></ht-spinner>
-				<template is="dom-if" if="[[list]]">
+				<template is="dom-if" if="[[list]]" restamp="true">
                     <div class="ctc-header">
 						<span class="contact-title">[[_selectedContactsHeaderLabel(contacts.*, currentContact.*)]]
                         </span>
@@ -839,7 +839,7 @@
 						</template>
                     </div>
 					<ht-services-list
-						id="dynamicallyListForm"
+						id$="dynamicallyListForm-[[currentContact.id]]"
 						api="[[api]]"
 						user="[[user]]"
 						patient="[[patient]]"

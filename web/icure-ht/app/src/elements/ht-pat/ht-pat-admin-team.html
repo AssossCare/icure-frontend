@@ -746,7 +746,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     .then(([patient, listOfInternalHcp]) => Promise.all([listOfInternalHcp, patient.patientHealthCareParties.length > 0 ? this.api.hcparty().getHealthcareParties(patient.patientHealthCareParties.map(hcp => hcp.healthcarePartyId).join(',')) : Promise.resolve([])]))
                     .then(([listOfInternalHcp, listOfExternalHcp]) => {
                         this.patient.patientHealthCareParties.map(patientHcp => _.assign(_.compact(listOfExternalHcp).find(externHcp => externHcp.id === patientHcp.healthcarePartyId), {referral: patientHcp.referral, referralPeriods: patientHcp.referralPeriods}))
-                        _.compact(listOfInternalHcp.map(int => listOfExternalHcp.find(ext => ext.id === int.id))).map(h => _.remove(listOfExternalHcp, {id: h.id}))
+                        _.compact(listOfInternalHcp.map(int => listOfExternalHcp.find(ext => _.get(ext, 'id', null) === _.get(int, 'id', '')))).map(h => _.remove(listOfExternalHcp, {id: h.id}))
                         this.set('patientTeam', _.assign({internal: listOfInternalHcp}, {external: listOfExternalHcp}))
                     })
                     .finally(() => {

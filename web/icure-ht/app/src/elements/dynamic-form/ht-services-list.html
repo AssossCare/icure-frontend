@@ -182,7 +182,11 @@
                             <span></span>
                             <div>
 
-                                <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                                <template is="dom-if" if="[[allowEsLink]]" restamp="true">
+                                    <template is="dom-if" if="[[_hasLinkedHes(healthElements.*, contact.subContacts.*)]]" restamp="true">
+                                        <dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc" id$="he-pills-1-[[_contactId(contacts)]]"></dynamic-pills>
+                                    </template>
+                                </template>
 
                                 <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
                                     <template is="dom-if" if="[[_documentId(contacts)]]">
@@ -247,7 +251,11 @@
                         <span></span>
                         <div>
 
-                            <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                            <template is="dom-if" if="[[allowEsLink]]" restamp="true">
+                                <template is="dom-if" if="[[_hasLinkedHes(healthElements.*, contact.subContacts.*)]]" restamp="true">
+                                    <dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc" id$="he-pills-2-[[_contactId(contacts)]]"></dynamic-pills>
+                                </template>
+                            </template>
 
                             <template is="dom-if" if="[[_isContactLabResultOrProtocol(contacts)]]">
 
@@ -591,6 +599,12 @@
 
             _editLabelAndTransaction(e) {
                 this.dispatchEvent(new CustomEvent('edit-label-and-transaction', {detail: {contact: _.get(this,"contacts[0]",{})}, composed: true, bubbles: true}));
+            }
+
+            _hasLinkedHes() {
+
+                return !(!_.size(_.get(this,"contacts[0].services")) || !_.size(_.get(this,"contacts[0].subContacts")) || !_.size(_.get(this,"healthElements",[])))
+
             }
 
             _selectedHes() {
