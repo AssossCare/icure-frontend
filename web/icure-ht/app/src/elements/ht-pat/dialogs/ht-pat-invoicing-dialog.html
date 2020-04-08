@@ -390,7 +390,6 @@
                 flex-grow: 1;
             }
             .invoice-item .invoice-text-row.invoice-text-date {
-                height: 14px;
                 padding: 0 8px;
                 font-size: var(--font-size-small);
             }
@@ -962,6 +961,11 @@
             }
 
             #paymentCheckDialog {
+                height: 300px;
+                width: 500px;
+            }
+
+            #changePaymentTypeDialog {
                 height: 300px;
                 width: 500px;
             }
@@ -1626,6 +1630,7 @@
                                 <paper-button disabled="[[isLoadingJustif]]" class="button button--save" on-tap="_cancelDialogOpen">[[localize('can_eattest','Cancel eattest',language)]]</paper-button>
                             </template>
                         </template>
+                        <paper-button on-tap="_changePaymentType" class="button button--other">[[localize('btn-chg-pai-met','Change payment method',language)]]</paper-button>
                         <paper-button on-tap="_switchBetweenMethodForJustif" class="button button--save" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
                     </template>
                 </div>
@@ -1773,6 +1778,25 @@
                 <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_destroyInvoice">[[localize('inv_cancel_eattest','Annuler l\'eattest',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_confirmDerog">[[localize('valid','Validate',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="changePaymentTypeDialog">
+            <h2 class="modal-title">Type de paiement</h2>
+            <div class="content">
+                <div class="p5">
+                    <p>Veuillez introduire le type de paiement</p>
+                    <div class="inputs-line">
+                        <vaadin-combo-box id="paymentType" filtered-items="[[paymentTypes]]"
+                                          item-label-path="label.[[language]]" item-value-path="id"
+                                          label="Type de paiement"
+                                          value="{{selectedInvoice.paymentType}}" class="manualEncodingContainerChild"></vaadin-combo-box>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_confirmPaymentChanged">[[localize('valid','Validate',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -5341,7 +5365,7 @@
             }
 
             _getPaymentType(paymentType){
-                return this.localize(paymentType, paymentType, this.language)
+                return this.localize('pai-type-'+paymentType, paymentType, this.language)
             }
 
             _toBeCorrected(item){
@@ -5358,6 +5382,21 @@
 
             _isSpecialist(){
                 return !!(_.get(this, 'hcp.nihii', null) && _.startsWith(_.get(this, 'hcp.nihii', null), "1", 0) && _.size(_.get(this, 'hcp.nihii', null)) === 11 && (_.get(this, 'hcp.nihii', null).substr(_.size(_.get(this, 'hcp.nihii', null)) - 3) >= 10))
+            }
+
+            _changePaymentType(){
+               this.shadowRoot.querySelector('#changePaymentTypeDialog').open()
+            }
+
+            _confirmPaymentChanged(){
+                console.log(this.selectedInvoice)
+                this.api.invoice().modifyInvoice(this.selectedInvoice)
+                    .then(inv => this.api.register(inv,"invoice"))
+                    .then(inv => {
+                        this.set("selectedInvoice",inv)
+                        this.shadowRoot.querySelector('#changePaymentTypeDialog').close()
+                        this.updateGui(inv, true)
+                    })
             }
         }
 
