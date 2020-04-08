@@ -408,6 +408,28 @@
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
             <div class="modalDialogContent m-t-50">
                 <h3 class="textAlignCenter">[[localize('confirm-arch-batch','Are you sure you wish to archive this batch?',language)]]</h3>
+                <div class="table">
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('batchnr','Batch number',language)]]:</span>&nbsp; [[_getInvoiceReference(selectedInvoiceForDetail)]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('oa','Oa',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.oa]]</div>
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_prest','Physician',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.hcp]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_invoiced','Invoiced',language)]]:</span>&nbsp; [[_formatAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount)]]€</div>
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_month','Billed month',language)]]:</span>&nbsp; [[formatDate(selectedInvoiceForDetail.messageInfo.invoiceMonth,'month')]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_acc','Accepted',language)]]:</span>&nbsp; <span class="txtcolor--greenStatus">[[_formatAmount(selectedInvoiceForDetail.messageInfo.acceptedAmount)]]€</span></div>
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_date_fact','Invoice date',language)]]:</span>&nbsp; [[formatDate(selectedInvoiceForDetail.messageInfo.invoiceDate,'date')]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_rej','Rejected',language)]]:</span>&nbsp; <span class="txtcolor--redStatus">[[_getRefusedAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount, selectedInvoiceForDetail.messageInfo.acceptedAmount)]]€</span></div>
+                    </div>
+                    <div class="tr-info">
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_bank_account','Bank account',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentAccount]]</div>
+                        <div class="td-info fg1"><span class="bold">[[localize('inv-ref-pai','Paiement reference',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentReference]]</div>
+                    </div>
+                </div>
                 <p class="textAlignCenter m-t-50 bold"></p>
             </div>
             <div class="buttons">
