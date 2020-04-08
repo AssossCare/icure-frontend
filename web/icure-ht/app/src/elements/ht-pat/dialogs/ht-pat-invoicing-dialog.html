@@ -1134,6 +1134,53 @@
                 color: var(--app-status-color-ok);
             }
 
+            .invoice-panel-header{
+                height: 50px;
+                margin-bottom: 10px;
+                display: flex;
+            }
+
+            .invoice-panel-list{
+                height: calc(100% - 60px);
+                overflow: auto;
+            }
+
+            .patient-picture-container {
+                height: 40px;
+                width: 40px;
+                min-width: 40px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 5px;
+            }
+
+            .patient-picture-container img{
+                width:100%;
+                margin:50%;
+                transform: translate(-50%,-50%);
+            }
+
+            .patient-info{
+                padding-left: 12px;
+                display:flex;
+                flex-direction:column;
+                align-items: flex-start;
+                justify-content: center;
+            }
+            .patient-name{
+                font-weight:700;
+                line-height:14px;
+                font-size: var(--font-size-small);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .patient-birthdate{
+                font-size: var(--font-size-small);
+                line-height: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
         </style>
 
         <ht-inami-validator api="[[api]]" validator-name="ht-inami-validator"></ht-inami-validator>
@@ -1143,8 +1190,16 @@
 
         <paper-dialog id="invoiceDialog" opened="{{opened}}">
             <div class="invoice-panel">
-                <paper-listbox id="_invoice_listbox" focused selectable="paper-item" selected="{{selectedInvoiceIndex}}">
-                    <template is="dom-repeat" items="[[invoices]]">
+                <div class="invoice-panel-header">
+                    <div class="patient-picture-container"><img src$="[[picture(patient,patient.picture)]]"></div>
+                    <div class="patient-info">
+                        <div class="patient-name">[[getGender(patient.gender)]] [[patient.firstName]] [[patient.lastName]]</div>
+                        <div class="patient-birthdate">°[[_timeFormat(patient.dateOfBirth)]] °[[_ageFormat(patient.dateOfBirth)]] [[patient.ssin]]</div>
+                    </div>
+                </div>
+                <div class="invoice-panel-list">
+                    <paper-listbox id="_invoice_listbox" focused selectable="paper-item" selected="{{selectedInvoiceIndex}}">
+                        <template is="dom-repeat" items="[[invoices]]">
                             <paper-item class="layout vertical invoice-item invoice--big invoice-text" id="[[item.id]]">
                                 <div class="invoice-text-row invoice-text-date">
                                     <label>N° [[item.invoiceReference]]</label>
@@ -1225,8 +1280,9 @@
                                     <paper-tooltip position="bottom" for="he-edit-btn-duplicate_[[item.id]]">[[localize('gen_duplicate','Generate duplicata',language)]]</paper-tooltip>
                                 </template>
                             </paper-item>
-                    </template>
-                </paper-listbox>
+                        </template>
+                    </paper-listbox>
+                </div>
             </div>
             <div class="detail-panel">
                 <div class="invoice-header">
@@ -5397,6 +5453,21 @@
                         this.shadowRoot.querySelector('#changePaymentTypeDialog').close()
                         this.updateGui(inv, true)
                     })
+            }
+
+            _timeFormat(date) {
+                return date ? this.api.formatedMoment(date) : '';
+            }
+
+            _ageFormat(date) {
+                return date ? this.api.getCurrentAgeFromBirthDate(date,( e , s ) => this.localize(e, s, this.language)) : '';
+            }
+
+            picture(pat) {
+                if (!pat) {
+                    return require('../../../../images/male-placeholder.png');
+                }
+                return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0,1).toLowerCase() === 'f') ? require('../../../../images/female-placeholder.png') : require('../../../../images/male-placeholder.png');
             }
         }
 

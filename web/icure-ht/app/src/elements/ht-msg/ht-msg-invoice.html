@@ -434,6 +434,7 @@
                             return this.fetchMessages()
                         }else{
                             this.set("isLoading",false)
+                            this.initializeBatchCounter(this.selectedInvoicesToBeSend.length ? this.selectedInvoicesToBeSend.length : 0, this.messagesToBeCorrected.length ? this.messagesToBeCorrected.length : 0 , this.allMessages.filter(m => m.message && m.message.status && (m.message.status & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(m.message.status & (1<<21))).length, this.allMessages.filter( m => m.message && m.message.status && (m.message.status & (1 << 15 | 1 << 16 )) !== 0 && !(m.message.status & (1<<21))).length, this.allMessages.filter( m => m.message && m.message.status && (m.message.status & (1 << 17)) !== 0 && !(m.message.status & (1<<21))).length, this.allMessages.filter( m => m.message && m.message.status && (m.message.status & (1 << 21)) !== 0).length)
                             return Promise.resolve({})
                         }
                     })
