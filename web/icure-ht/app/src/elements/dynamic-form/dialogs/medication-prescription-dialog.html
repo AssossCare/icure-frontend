@@ -372,7 +372,7 @@
 
             .filters-bar--small-icon {
                 height: 32px;
-                width: 32px;      
+                width: 32px;
             }
 
             paper-icon-button.list-item-icon--add {
@@ -1845,6 +1845,10 @@
                     refreshDescription: {
                         type: String,
                         value: ""
+                    },
+                    saveAction: {
+                        type: Object,
+                        value: () =>{console.log("no save Action")}
                     }
                 }
             }
@@ -2064,7 +2068,8 @@
                 this._updateAccumulatorSelection(idx);
             }
 
-            open(medication, options = {}) {
+            open(medication, options = {}, saveAction) {
+                this.set("saveAction",saveAction)
                 // @todo: spinner
                 this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
                     .then(hes => {
@@ -2286,7 +2291,7 @@
                 if (id) return '';
                 return "NO_ENTRY";
             }
-            
+
             _getPriceIndexStyle(index) {
                 return index > 1 ? "" : "PRICE_INDEX--" + (index > 0 ? "CHEAP" : "CHEAPEST");
             }
@@ -2961,11 +2966,13 @@
             }
 
             saveMedications() {
-                this.dispatchEvent(new CustomEvent(this.isPrescription ? 'save-medications' : 'new-medications', {
+                //@todo changed here call this.saveAction
+                this.saveAction(this.medicationAccumulator)
+                /*this.dispatchEvent(new CustomEvent(this.isPrescription ? 'save-medications' : 'new-medications', {
                     detail: {medications: this.medicationAccumulator},
                     bubbles: true,
                     composed: true
-                }))
+                })*/
             }
 
             click(e) {
