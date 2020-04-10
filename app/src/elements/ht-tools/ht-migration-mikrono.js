@@ -465,7 +465,10 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         </template>
                     </template>
                     <template is="dom-if" if="[[typeMigration]]">
-                      types          
+                        <paper-button on-tap="startMigrateTypesToMikrono" class="button" >Types</paper-button>
+                        <template is="dom-repeat" items="[[migratedTypes]]">
+                            <div>[[item.name]]: migrated</div>
+                        </template>          
                     </template>
                     <template is="dom-if" if="[[fieldMigration]]">
                       fields
@@ -597,7 +600,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             //return listOfActivesUsersWithAgenda
             return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
         }).then(userlist => {
-            //userlist = [this.user]
+            userlist = [this.user]
             let arTmp = []
             userlist.forEach(usr => {
                 arTmp.push({Name : usr.name, Status:"---"})
@@ -633,9 +636,18 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         //display all agenda's to all users
     }
 
+    startMigrateTypesToMikrono(){
+        this.set("migratedTypes", [])
+        return this.migrateAllAppointmentTypesToMikrono().catch((e) => console.log(e)).then(resList => {
+            Promise.all(resList).then(res => {
+                this.set("migratedTypes", res)
+            })
+        })
+    }
+
     migrateAppointmentTypesToMikrono() {
         console.log("start migrateAllAppointmentTypesToMikrono");
-        return this.migrateAllAppointmentTypesToMikrono().catch(err => console.log(err)).then(() => {
+        return this.migrateAllAppointmentTypesToMikrono().catch((e) => console.log(e)).then(() => {
         })
     }
 
@@ -750,6 +762,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     })
                 })
             }).then(apps => {
+                apps = apps.slice(0,3);
                 console.log("appointmentTypes to be send to mikrono: ", apps);
                 if(apps && apps.length !== 0){
                     let prom = Promise.resolve([])
@@ -777,23 +790,23 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     })
                     prom = prom.then(results => {
                         console.log("created AppointmentTypes", results)
-                        return results
+                        return Promise.resolve(results)
                     }).catch((e)=>{
                         console.log("error when creating AppointmentTypes", e)
-                        return [{Name: "", Status:"created AppointmentTypes: nothing to create!"}]
+                        return Promise.resolve([{Name: "", Status:"created AppointmentTypes: nothing to create!"}])
                     })
                     return prom
                 }else{
                     console.log("created AppointmentTypes: nothing to create!")
-                    return [{Name: "", Status:"created AppointmentTypes: nothing to create!"}]
+                    return Promise.resolve([{Name: "", Status:"created AppointmentTypes: nothing to create!"}])
                 }
             }).catch((e)=>{
                 console.log("error when creating AppointmentTypes", e)
-                return [{Name: "", Status:"error when creating AppointmentTypes"}]
+                return Promise.resolve([{Name: "", Status:"error when creating AppointmentTypes"}])
             })
         } else {
             console.log("Can't create AppointmentTypes: not a mikrono user", this.user)
-            return [{Name: "", Status:"Can't create AppointmentTypes: not a mikrono user"}]
+            return Promise.resolve([{Name: "", Status:"Can't create AppointmentTypes: not a mikrono user"}])
         }
     }
 
