@@ -459,13 +459,16 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 <div class="mig-menu-view">
                     <!-- content here -->
                     <template is="dom-if" if="[[userMigration]]">
-                      users
+                        <paper-button on-tap="startMigrateUsersToMikrono" class="button" >Users</paper-button>
+                        <template is="dom-repeat" items="[[migratedUsers]]">
+                            <div>[[item.Name]]: [[item.Status]]</div>
+                        </template>
                     </template>
                     <template is="dom-if" if="[[typeMigration]]">
                       types          
                     </template>
                     <template is="dom-if" if="[[fieldMigration]]">
-                      patients
+                      fields
                     </template>                    
                 </div>
             </div>
@@ -510,6 +513,24 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             fieldMigration:{
                 type: Boolean,
                 value: false
+            },
+            migratedUsers:{
+                type: Array,
+                value: function () {
+                    return [];
+                }
+            },
+            migratedTypes:{
+                type: Array,
+                value: function () {
+                    return [];
+                }
+            },
+            migratedFields:{
+                type: Array,
+                value: function () {
+                    return [];
+                }
             }
         };
     }
@@ -535,19 +556,19 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         this.$.mikronoMigrationDialog.open();
     }
 
-    migrateCurrentUserPricareAgendaToMikrono() {
-        let userlist = [this.user];
-
-        console.log("start createMikronoAgendaForEachUser", userlist)
-        return this.createMikronoAgendaForEachUser(userlist).then(() => {
-            console.log("start migrateAllAppointmentTypesToMikrono");
-            return this.migrateAllAppointmentTypesToMikrono().catch(err => console.log(err)).then(() => {
-                console.log("start migrateAppointmentsForEachUser", userlist);
-                return this.migrateAppointmentsForEachUser(userlist)
-            })
-        })
-
-    }
+    // migrateCurrentUserPricareAgendaToMikrono() {
+    //     let userlist = [this.user];
+    //
+    //     console.log("start createMikronoAgendaForEachUser", userlist)
+    //     return this.createMikronoAgendaForEachUser(userlist).then(() => {
+    //         console.log("start migrateAllAppointmentTypesToMikrono");
+    //         return this.migrateAllAppointmentTypesToMikrono().catch(err => console.log(err)).then(() => {
+    //             console.log("start migrateAppointmentsForEachUser", userlist);
+    //             return this.migrateAppointmentsForEachUser(userlist)
+    //         })
+    //     })
+    //
+    // }
 
     migrateUsersToMikrono(){
         this.set('userMigration', true);
@@ -567,21 +588,45 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         this.set('fieldMigration', true);
     }
 
-    migrateCurrentUserToMikrono() {
+    startMigrateUsersToMikrono() {
         //let userlist = [this.user];
+        this.set("migratedUsers", [])
         this.api.user().listUsers().then(users => {
             const listOfUsers = users.rows
             //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
             //return listOfActivesUsersWithAgenda
             return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
         }).then(userlist => {
-            console.log("start migrateCurrentUserToMikrono", userlist)
-            return this.createMikronoAgendaForEachUser(userlist).then(() => {
-                console.log("user after creation", this.user);
+            //userlist = [this.user]
+            let arTmp = []
+            userlist.forEach(usr => {
+                arTmp.push({Name : usr.name, Status:"---"})
+            })
+            this.set("migratedUsers", arTmp)
+            console.log("startMigrateUsersToMikrono", userlist)
+            return this.createMikronoAgendaForEachUser(userlist).then(resList => {
+                this.set("migratedUsers", resList)
+                console.log("user after creation", resList);
                 this.api.user().getUser(this.user.id).then(user => console.log("user after load", user));
             })
         })
     }
+
+    // migrateCurrentUserToMikrono() {
+    //     //let userlist = [this.user];
+    //     this.api.user().listUsers().then(users => {
+    //         const listOfUsers = users.rows
+    //         //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
+    //         //return listOfActivesUsersWithAgenda
+    //         return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
+    //     }).then(userlist => {
+    //         console.log("start migrateCurrentUserToMikrono", userlist)
+    //         return this.createMikronoAgendaForEachUser(userlist).then(() => {
+    //             console.log("user after creation", this.user);
+    //             this.api.user().getUser(this.user.id).then(user => console.log("user after load", user));
+    //         })
+    //     })
+    // }
 
     setAlltoAllUsers(){
         //TODO: implement
@@ -599,59 +644,19 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         this.migrateAppointmentsForEachUser(userlist);
     }
 
-    migrateAllPricareAgendasToMikrono() {
-        this.api.user().listUsers().then(users => {
-            const listOfUsers = users.rows
-            //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
-            //return listOfActivesUsersWithAgenda
-            return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
-        }).then(userlist => {
-            console.log("start createMikronoAgendaForEachUser", userlist)
-            return this.createMikronoAgendaForEachUser(userlist).then(() => {
-                console.log("start migrateAllAppointmentTypesToMikrono");
-                return this.migrateAllAppointmentTypesToMikrono().then(() => {
-                    console.log("start migrateAppointmentsForEachUser", userlist);
-                    return this.migrateAppointmentsForEachUser(userlist)
-                })
-            })
-        })
-    }
-
-    migrateAllPricareAgendasToMikronoDEBUG() {
-        this.api.user().listUsers().then(users => {
-            const listOfUsers = users.rows
-            //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
-            //return listOfActivesUsersWithAgenda
-            return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
-        }).then(userlist => {
-            console.log("start createMikronoAgendaForEachUser", userlist)
-            //return this.createMikronoAgendaForEachUser(userlist).then(() => {
-            console.log("start migrateAllAppointmentTypesToMikrono");
-            return this.migrateAllAppointmentTypesToMikrono().then(() => {
-                console.log("DONEEE")
-                //console.log("start migrateAppointmentsForEachUser", userlist);
-                //return this.migrateAppointmentsForEachUser(userlist)
-            })
-            //})
-        })
-    }
-
     createMikronoAgendaForEachUser(userlist) {
         console.log("userlist: ", userlist)
         return Promise.all(userlist.map(user => {
             console.log("start creating mikrono agenda for user", user)
-
             return this.api.hcparty().getHealthcareParty(user.healthcarePartyId).then(hcp => {
-
                 const applicationTokens = user.applicationTokens
                 const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
                 const mikronoUser = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
                 const mikronoPassword = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
 
-
                 if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
                     console.log("Agenda already exists", user, hcp)
-                    return true
+                    return {Name: user.name, Status: "Agenda already exists"}
                 } else {
                     const addresses = hcp && hcp.addresses || null
                     const workAddresses = addresses.find(adr => adr.addressType === "work") || null
@@ -672,7 +677,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                                     if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
                                         console.log("Agenda created successfully", u, hcp)
-                                        return true;
+                                        return {Name: user.name, Status: "Agenda created successfully"};
                                     } else {
                                         console.log("mikronoError", {
                                             user: u,
@@ -684,7 +689,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                             token: applicationTokens.MIKRONO ? true : false,
                                             error: true
                                         })
-                                        return Promise.reject()
+                                        return {Name: user.name, Status: "no token found despite having registered user"}
                                     }
                                 });
                             } else {
@@ -698,7 +703,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                     token: applicationTokens.MIKRONO ? true : false,
                                     error: true
                                 });
-                                return Promise.reject()
+                                return {Name: user.name, Status: "error when registering user"}
                             }
 
                         })
@@ -713,23 +718,20 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                             token: applicationTokens.MIKRONO ? true : false,
                             error: true
                         });
-                        return Promise.reject()
+                        return {Name: user.name, Status: "no telecom"}
                     }
                 }
-
             })
         }))
     }
 
     migrateAllAppointmentTypesToMikrono() {
-
         const applicationTokens = _.get(this.user, "applicationTokens", "" )
         const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
         const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
         const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
 
         if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-
             return this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
                 return this.api.calendaritemtype().getCalendarItemTypes().then(types => {
                     //filter out the types that already have a mikronoId
@@ -748,9 +750,79 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     })
                 })
             }).then(apps => {
-
                 console.log("appointmentTypes to be send to mikrono: ", apps);
+                if(apps && apps.length !== 0){
+                    let prom = Promise.resolve([])
+                    //apps = [apps[0]] //TODO remove
+                    _.chunk(apps, 100).forEach(chunkOfAppointments => {
+                        console.log("send chunk of appointmentTypes: ", chunkOfAppointments);
+                        prom = prom.then(prevResults => this.api.bemikrono().createAppointmentTypes(chunkOfAppointments).then(appsResult => {
+                            console.log("received appointmentTypes from mikrono: ", appsResult);
+                            return appsResult.map(res => {
+                                const appTyp = chunkOfAppointments.find(app => app.externalRef === res.externalRef);
+                                let oobj = _.get(appTyp, "originalObject")
+                                oobj.mikronoId = res.mikronoId;
+                                console.log("modifying CalendarItemType:", oobj)
+                                return this.api.calendaritemtype().modifyCalendarItemType( oobj )
+                                    .then(itemType => {
+                                        console.log("migrated itemType", itemType)
+                                        /*this.push("migrationItems", { status: "", item: "Migration terminée"})*/
+                                        return itemType;
+                                    })
+                            })
+                        }).then(res => {
+                            console.log("created 100 AppointmentTypes", res)
+                            return prevResults.concat(res)
+                        }))
+                    })
+                    prom = prom.then(results => {
+                        console.log("created AppointmentTypes", results)
+                        return results
+                    }).catch((e)=>{
+                        console.log("error when creating AppointmentTypes", e)
+                        return [{Name: "", Status:"created AppointmentTypes: nothing to create!"}]
+                    })
+                    return prom
+                }else{
+                    console.log("created AppointmentTypes: nothing to create!")
+                    return [{Name: "", Status:"created AppointmentTypes: nothing to create!"}]
+                }
+            }).catch((e)=>{
+                console.log("error when creating AppointmentTypes", e)
+                return [{Name: "", Status:"error when creating AppointmentTypes"}]
+            })
+        } else {
+            console.log("Can't create AppointmentTypes: not a mikrono user", this.user)
+            return [{Name: "", Status:"Can't create AppointmentTypes: not a mikrono user"}]
+        }
+    }
 
+    migrateAllAppointmentTypesToMikrono_old() {
+        const applicationTokens = _.get(this.user, "applicationTokens", "" )
+        const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+        const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+        const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+
+        if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
+            return this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
+                return this.api.calendaritemtype().getCalendarItemTypes().then(types => {
+                    //filter out the types that already have a mikronoId
+                    types = types.filter(type => !type.mikronoId);
+                    return types.map(item => {
+                        return {
+                            name: item.name,
+                            color: item.color,
+                            durationInMinutes: item.duration,
+                            externalRef: item.id, // l'id topaz du CalendarItemType
+                            //mikronoId; // renvoyé par mikrono
+                            otherInfos: item.otherInfos,
+                            subjectByLanguage: item.subjectByLanguage, // nom des types de rdv en plusieurs langues (fr, nl, ..)
+                            originalObject: _.merge(item, {wasMigrated: true})
+                        }
+                    })
+                })
+            }).then(apps => {
+                console.log("appointmentTypes to be send to mikrono: ", apps);
                 if(apps && apps.length !== 0){
                     let prom = Promise.resolve([])
                     //apps = [apps[0]] //TODO remove
@@ -871,84 +943,120 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         }))
     }
 
-    migrateAppointmentsForEachUser_OLD(userlist) {
-        let promiseChain = Promise.resolve()
+    // migrateAllPricareAgendasToMikrono() {
+    //     this.api.user().listUsers().then(users => {
+    //         const listOfUsers = users.rows
+    //         //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
+    //         //return listOfActivesUsersWithAgenda
+    //         return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
+    //     }).then(userlist => {
+    //         console.log("start createMikronoAgendaForEachUser", userlist)
+    //         return this.createMikronoAgendaForEachUser(userlist).then(() => {
+    //             console.log("start migrateAllAppointmentTypesToMikrono");
+    //             return this.migrateAllAppointmentTypesToMikrono().then(() => {
+    //                 console.log("start migrateAppointmentsForEachUser", userlist);
+    //                 return this.migrateAppointmentsForEachUser(userlist)
+    //             })
+    //         })
+    //     })
+    // }
 
-        userlist.forEach(user => {
-            promiseChain = promiseChain.then(() => {
+    // migrateAllPricareAgendasToMikronoDEBUG() {
+    //     this.api.user().listUsers().then(users => {
+    //         const listOfUsers = users.rows
+    //         //const listOfActivesUsersWithAgenda = listOfUsers && listOfUsers.filter(u => u && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && u.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && u.status && u.status === "ACTIVE" && u.id !== this.user.id) || []
+    //         //return listOfActivesUsersWithAgenda
+    //         return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
+    //     }).then(userlist => {
+    //         console.log("start createMikronoAgendaForEachUser", userlist)
+    //         //return this.createMikronoAgendaForEachUser(userlist).then(() => {
+    //         console.log("start migrateAllAppointmentTypesToMikrono");
+    //         return this.migrateAllAppointmentTypesToMikrono().then(() => {
+    //             console.log("DONEEE")
+    //             //console.log("start migrateAppointmentsForEachUser", userlist);
+    //             //return this.migrateAppointmentsForEachUser(userlist)
+    //         })
+    //         //})
+    //     })
+    // }
 
-                const applicationTokens = _.get(user, "applicationTokens", "" )
-                const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
-                const mikronoUser = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
-                const mikronoPassword = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
-
-                if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-                    console.log("migrationItems", {status: "", item: "Récupération de vos rendez-vous en cours..."})
-
-                    this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
-                        return this.api.calendaritemtype().getCalendarItemTypes().then(apptypes => {
-                            let mikronoTypeIdByTopazTypeId = apptypes.reduce((dict, apptype) => {
-                                dict[apptype.id] = apptype.mikronoId
-                                return dict
-                            }, {})
-                            console.log("mikronoTypeIdByTopazTypeId", mikronoTypeIdByTopazTypeId);
-                            return Promise.all([this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(90, 'days').format('YYYYMMDDHHmmss'), moment().add(12, 'months').format('YYYYMMDDHHmmss'), user.healthcarePartyId)].concat(
-                                hcp.parentId ? [this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(90, 'days').format('YYYYMMDDHHmmss'), moment().add(12, 'months').format('YYYYMMDDHHmmss'), hcp.parentId)] : []
-                            )).then(([a, b]) => {
-                                const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
-                                //this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
-                                return items.filter(item => parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
-                                    ownerRef: user.id,
-                                    externalId: item.id,
-                                    comments: _.trim(_.get(item, "details", "")) || null,
-                                    customerId: item.patientId,
-                                    title: _.trim(_.get(item, "title", "")) || null,
-                                    startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
-                                    endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
-                                    type: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
-                                    appointmentTypeId: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
-                                    status: item.meetingTags.map(mt => mt.code).slice(-1)[0], // get last code to mark canceled appointments
-                                    originalObject: _.merge(item, {wasMigrated: true})
-                                }))
-                            })
-                        })
-                    }).then(apps => {
-
-                        console.log("migrationItems", apps, {status: "", item: "Migration de vos rendez-vous en cours..."})
-                        if(apps && apps.length !== 0){
-                            let prom = Promise.resolve([])
-                            _.chunk(apps, 100).forEach(chunkOfAppointments => {
-                                prom = prom.then(prevResults => this.api.bemikrono().createAppointments(chunkOfAppointments).then(appRes => {
-                                    console.log("appRes", appRes);
-                                    _.forEach( chunkOfAppointments, (i=>{
-                                        this.api.calendaritem().modifyCalendarItem(_.get(i, "originalObject")).then(() => { /*this.push("migrationItems", { status: "", item: "Migration terminée"})*/
-                                        })
-                                    }))
-
-                                }).then(res => {
-                                    console.log("migrationItems", {status: "", item: "100 rendez-vous (de plus) migrés..."})
-                                    return prevResults.concat(res)
-                                }))
-                            })
-                            prom = prom.then(results => {
-                                console.log("Appointment migration done for user", user)
-                            }).catch((e)=>{
-                                console.log("error migrating appointments for user", e, user)
-                                return Promise.reject(e)
-                            })
-                        }else{
-                            console.log("Appointment migration done for user: nothing to migrate", user)
-                        }
-                    }).catch((e)=>{
-                        console.log("error migrating appointments for user", e, user)
-                        return Promise.reject(e)
-                    })
-                }
-            })
-        })
-        return promiseChain
-    }
-
+    // migrateAppointmentsForEachUser_OLD(userlist) {
+    //     let promiseChain = Promise.resolve()
+    //
+    //     userlist.forEach(user => {
+    //         promiseChain = promiseChain.then(() => {
+    //
+    //             const applicationTokens = _.get(user, "applicationTokens", "" )
+    //             const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+    //             const mikronoUser = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+    //             const mikronoPassword = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+    //
+    //             if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
+    //                 console.log("migrationItems", {status: "", item: "Récupération de vos rendez-vous en cours..."})
+    //
+    //                 this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
+    //                     return this.api.calendaritemtype().getCalendarItemTypes().then(apptypes => {
+    //                         let mikronoTypeIdByTopazTypeId = apptypes.reduce((dict, apptype) => {
+    //                             dict[apptype.id] = apptype.mikronoId
+    //                             return dict
+    //                         }, {})
+    //                         console.log("mikronoTypeIdByTopazTypeId", mikronoTypeIdByTopazTypeId);
+    //                         return Promise.all([this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(90, 'days').format('YYYYMMDDHHmmss'), moment().add(12, 'months').format('YYYYMMDDHHmmss'), user.healthcarePartyId)].concat(
+    //                             hcp.parentId ? [this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(90, 'days').format('YYYYMMDDHHmmss'), moment().add(12, 'months').format('YYYYMMDDHHmmss'), hcp.parentId)] : []
+    //                         )).then(([a, b]) => {
+    //                             const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
+    //                             //this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
+    //                             return items.filter(item => parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
+    //                                 ownerRef: user.id,
+    //                                 externalId: item.id,
+    //                                 comments: _.trim(_.get(item, "details", "")) || null,
+    //                                 customerId: item.patientId,
+    //                                 title: _.trim(_.get(item, "title", "")) || null,
+    //                                 startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+    //                                 endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+    //                                 type: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+    //                                 appointmentTypeId: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+    //                                 status: item.meetingTags.map(mt => mt.code).slice(-1)[0], // get last code to mark canceled appointments
+    //                                 originalObject: _.merge(item, {wasMigrated: true})
+    //                             }))
+    //                         })
+    //                     })
+    //                 }).then(apps => {
+    //
+    //                     console.log("migrationItems", apps, {status: "", item: "Migration de vos rendez-vous en cours..."})
+    //                     if(apps && apps.length !== 0){
+    //                         let prom = Promise.resolve([])
+    //                         _.chunk(apps, 100).forEach(chunkOfAppointments => {
+    //                             prom = prom.then(prevResults => this.api.bemikrono().createAppointments(chunkOfAppointments).then(appRes => {
+    //                                 console.log("appRes", appRes);
+    //                                 _.forEach( chunkOfAppointments, (i=>{
+    //                                     this.api.calendaritem().modifyCalendarItem(_.get(i, "originalObject")).then(() => { /*this.push("migrationItems", { status: "", item: "Migration terminée"})*/
+    //                                     })
+    //                                 }))
+    //
+    //                             }).then(res => {
+    //                                 console.log("migrationItems", {status: "", item: "100 rendez-vous (de plus) migrés..."})
+    //                                 return prevResults.concat(res)
+    //                             }))
+    //                         })
+    //                         prom = prom.then(results => {
+    //                             console.log("Appointment migration done for user", user)
+    //                         }).catch((e)=>{
+    //                             console.log("error migrating appointments for user", e, user)
+    //                             return Promise.reject(e)
+    //                         })
+    //                     }else{
+    //                         console.log("Appointment migration done for user: nothing to migrate", user)
+    //                     }
+    //                 }).catch((e)=>{
+    //                     console.log("error migrating appointments for user", e, user)
+    //                     return Promise.reject(e)
+    //                 })
+    //             }
+    //         })
+    //     })
+    //     return promiseChain
+    // }
 
 }
 
