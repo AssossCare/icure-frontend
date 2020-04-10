@@ -299,7 +299,7 @@ class HtMsgInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement) {
             </div>
         </div>
         
-        <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[selectedInvoiceForDetail.patient]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
+        <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[selectedInvoiceForDetail.patient]]" i18n="[[i18n]]" resources="[[resources]]" on-close-invoicing-dialog="_closeInvoicingDialog"></ht-pat-invoicing-dialog>
         
         <paper-dialog class="modalDialog" id="flagInvoiceAsLostConfirmationDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
@@ -509,7 +509,7 @@ class HtMsgInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _getMessage(){
-        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
     }
 
     _openCancelConfirmationDialog(){
@@ -530,6 +530,11 @@ class HtMsgInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement) {
                     this._closeDetailPanel()
                 })
         }
+    }
+
+    _closeInvoicingDialog(){
+        this._closeDetailPanel()
+        this._getMessage()
     }
 }
 

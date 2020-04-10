@@ -250,6 +250,18 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                  padding: 10px;
             }
             
+            .sendingSpinner{
+               height: 100px!important;
+               width: 100px!important;
+               margin: auto;
+           }
+
+           .prossessList{
+               height: calc(100% - 100px);
+               width: auto;
+               padding: 4px;
+           }
+            
         </style>
         
         <div class="panel">
@@ -573,7 +585,7 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
     }
 
     getMessage(){
-        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: true}}))
     }
 
     _getRefusedAmount(totalAmount, acceptedAmount){

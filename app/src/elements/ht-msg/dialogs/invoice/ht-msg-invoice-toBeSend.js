@@ -233,7 +233,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                   padding: 10px;
              }
              
-             #warningBeforeSend{
+             #checkBeforeSendingDialog{
                     height: 500px;
                     width: 800px;
              }
@@ -268,6 +268,19 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 height: calc(100% - 100px);
                 width: auto;
                 padding: 4px;
+             }
+             
+             .content-container{
+                padding: 4px;
+                width: auto;
+             }
+             
+             .previousCheckContainer{
+             
+             }
+             
+             .listOfUnsentInvoiceContainer{
+             
              }
             
         </style>
@@ -336,89 +349,92 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[api.tokenId]]">                    
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
                     <template is="dom-if" if="[[!api.tokenId]]" restamp="true">                   
                         <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
-                    </template>
+                    </template> 
                 </template>
             </div>
         </div>  
         
-        <paper-dialog id="warningBeforeSend">
+        <paper-dialog id="checkBeforeSendingDialog">
             <h2 class="modal-title">[[localize('pre_chk_bef_inv','Pre check before invoice',language)]]</h2>
-
-            <div class="previousCheck">
-                <h4>[[localize('pr_ctr_block_inv','Prior control(s) blocking(s)',language)]]</h4>
-                <template is="dom-if" if="[[checkBeforeSendEfact.inamiCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_nihii_inv','- Nihii invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.ssinCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv','- Ssin invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.bceCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_cbe_inv','- Cbe invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.ibanCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_iban_inv','- Iban invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.bicCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_bic_inv','- Bic invalid',language)]]</div>
-                </template>
-
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck100]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA100_inv','- Anomaly detected on the invoiceNumber for OA100. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck200]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA200_inv','- Anomaly detected on the invoiceNumber for OA200. Please contact helpdesk',language)]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck300]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA300_inv','- Anomaly detected on the invoiceNumber for OA300. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck306]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA306_inv','- Anomaly detected on the invoiceNumber for OA306. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck400]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA400_inv','- Anomaly detected on the invoiceNumber for OA400. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck500]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA500_inv','- Anomaly detected on the invoiceNumber for OA500. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck600]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA600_inv','- Anomaly detected on the invoiceNumber for OA600. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck900]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA900_inv','- Anomaly detected on the invoiceNumber for OA900. Please contact helpdesk',language)]]</div>
-                </template>
-            </div>
-            <template is="dom-if" if="[[patientWithoutMutuality.length]]">
-                <div class="unsentInvoice">
-                    <h4>[[localize('pr_don_send_inv','Next invoice don't be send',language)]]</h4>
-                    <vaadin-grid id="patientsWithoutAssurabilityGrid" items="[[patientWithoutMutuality]]">
-                        <vaadin-grid-column class="recipient-col">
-                            <template class="header">
-                                <vaadin-grid-sorter path="patientName">[[localize('pr_pat_inv','Patient',language)]]</vaadin-grid-sorter>
-                            </template>
-                            <template>[[item.patientName]]</template>
-                        </vaadin-grid-column>
-                        <vaadin-grid-column class="recipient-col">
-                            <template class="header">
-                                <vaadin-grid-sorter>Cause</vaadin-grid-sorter>
-                            </template>
-                            <template>[[localize('pr_pat_ass_inf_inv','Patient without assurability information',language)]]</template>
-                        </vaadin-grid-column>
-                    </vaadin-grid>
+            <div class="content"> 
+                <div class="content-container">
+                    <div class="previousCheckContainer">
+                    <h4>[[localize('pr_ctr_block_inv','Prior control(s) blocking(s)',language)]]</h4>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.inamiCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_nihii_inv','- Nihii invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.ssinCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv','- Ssin invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.bceCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_cbe_inv','- Cbe invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.ibanCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_iban_inv','- Iban invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.bicCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_bic_inv','- Bic invalid',language)]]</div>
+                    </template>
+    
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck100]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA100_inv','- Anomaly detected on the invoiceNumber for OA100. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck200]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA200_inv','- Anomaly detected on the invoiceNumber for OA200. Please contact helpdesk',language)]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck300]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA300_inv','- Anomaly detected on the invoiceNumber for OA300. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck306]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA306_inv','- Anomaly detected on the invoiceNumber for OA306. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck400]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA400_inv','- Anomaly detected on the invoiceNumber for OA400. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck500]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA500_inv','- Anomaly detected on the invoiceNumber for OA500. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck600]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA600_inv','- Anomaly detected on the invoiceNumber for OA600. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck900]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA900_inv','- Anomaly detected on the invoiceNumber for OA900. Please contact helpdesk',language)]]</div>
+                    </template>
                 </div>
-            </template>
+                <template is="dom-if" if="[[patientWithoutMutuality.length]]">
+                    <div class="listOfUnsentInvoiceContainer">
+                        <h4>[[localize("pr_don_send_inv","Next invoice don't be send",language)]]</h4>
+                        <div class="table">
+                            <div class="tr th">
+                                <div class="td fg2">[[localize('pr_pat_inv','Patient',language)]]</div>
+                                <div class="td fg2">[[localize('pr_pat_inv_rea','Reason',language)]]</div>
+                            </div>
+                            <template is="dom-repeat" items="[[patientWithoutMutuality]]" as="p">
+                                 <div class="tr">
+                                    <div class="td fg2">[[p.patientName]]</div>
+                                    <div class="td fg2">[[localize('pr_pat_ass_inf_inv','Patient without assurability information',language)]]</div>
+                                </div>
+                            </template>
+                        </div>                       
+                    </div>
+                </template>
+                </div>            
+            </div>
             <div class="buttons">
-                <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--other" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[patientWithoutMutuality.length]]">
                     <paper-button class="button button--save" on-tap="sendInvoices">[[localize('continue','Continue',language)]]</paper-button>
                 </template>
             </div>
-        </paper-dialog>  
+        </paper-dialog>
         
+      
          <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -605,7 +621,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             _.get(this, 'checkBeforeSendEfact.invoiceCheck100', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck200', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck300', null) === false ||
             _.get(this, 'checkBeforeSendEfact.invoiceCheck306', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck400', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck500', null) === false ||
             _.get(this, 'checkBeforeSendEfact.invoiceCheck600', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck900', null) === false){
-            this.$['warningBeforeSend'].open()
+            this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
         }else{
             this.sendInvoices()
         }
@@ -621,6 +637,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
     sendInvoices(){
         //todo
+        this.shadowRoot.querySelector('#checkBeforeSendingDialog') ? this.shadowRoot.querySelector('#checkBeforeSendingDialog').close() : null
         this.set('progressItem', [])
 
         const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
@@ -641,7 +658,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         undefined,
                         (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`))
                     ).then(message => {
-                        this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(fed, 'code', ""))
+                        this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
                         this.api.register(message,'message')
                     })
                 })
@@ -649,13 +666,17 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             return prom.then(() => {
                 this.set('isSending',false)
                 this.shadowRoot.querySelector('#sendingDialog').close()
-                this.getMessage()
+                this.getMessage(true)
             })
         }
     }
 
-    getMessage(){
-        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+    getMessage(refreshAll){
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: refreshAll}}))
+    }
+
+    _refreshInvoiceList(){
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
     }
 
     _displayInfoInvoicePanel(e){

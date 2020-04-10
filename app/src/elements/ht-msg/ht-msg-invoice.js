@@ -91,6 +91,7 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                     list-of-invoice="[[messagesToBeCorrected]]"
                     is-loading="[[isLoading]]"
                     on-open-invoice-detail-panel="_openInvoiceDetailPanel"
+                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
                 ></ht-msg-invoice-to-be-corrected>
             </template>  
             <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeSend')]]">
@@ -104,6 +105,7 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                     list-of-invoice="[[selectedInvoicesToBeSend]]"
                     is-loading="[[isLoading]]"
                     on-open-invoice-detail-panel="_openInvoiceDetailPanel"
+                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
                     >                   
                 </ht-msg-invoice-to-be-send>
             </template>   
@@ -328,8 +330,11 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
           },
           routeData:{
               type: Object,
-
               value: () => {}
+          },
+          refreshAll:{
+              type: Boolean,
+              value: false
           }
       };
   }
@@ -365,11 +370,12 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
 
     getMessage(){
         if(!_.get(this, 'isMessagesLoaded', false))
-            this.fetchMessageToBeSendOrToBeCorrected()
+            this.fetchMessageToBeSendOrToBeCorrected({detail: {refreshAll: true}})
     }
 
-    fetchMessageToBeSendOrToBeCorrected(){
+    fetchMessageToBeSendOrToBeCorrected(e){
         this.set("isLoading",true)
+        this.set("refreshAll", _.get(e, 'detail.refreshAll', true))
         let prom = Promise.resolve()
 
         this.api.setPreventLogging()
@@ -428,7 +434,12 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                 this.set("totalInvoicesToBeSend.totalAmount",this.selectedInvoicesToBeSend ? this.selectedInvoicesToBeSend.reduce((tot, m) => tot + Number(m.totalAmount), 0).toFixed(2) : 0.00)
             }).finally(() =>{
                 this.api.setPreventLogging(false)
-                return this.fetchMessages()
+                if( _.get(this, 'refreshAll', true)){
+                    return this.fetchMessages()
+                }else{
+                    this.set("isLoading",false)
+                    return Promise.resolve({})
+                }
             })
                 .catch(e => console.log('Erreur lors de la récupération des factures: ', e))
         })
@@ -461,8 +472,11 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                             .then(docs => {
                                 console.log(docs)
                                 const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
-                                return jsonDoc && jsonDoc.attachmentId ? this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, jsonDoc.secretForeignKeys).then(a => {
+                                return jsonDoc && jsonDoc.attachmentId ?
+                                    (_.size(jsonDoc.encryptionKeys) || _.size(jsonDoc.delegations) ?
+                                        this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId))
 
+                                        .then(a => {
                                     if (typeof a === "string"){
                                         try { a = JSON.parse( this.cleanStringForJsonParsing(a) ) } catch (ignored) {}
                                     } else if (typeof a === "object") {

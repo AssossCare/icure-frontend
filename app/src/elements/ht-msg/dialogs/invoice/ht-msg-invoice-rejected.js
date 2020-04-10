@@ -408,7 +408,7 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
                       }))
               })))
               .then(() => {
-                  this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+                  this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: true}}))
               })
               .finally(()=>this.api.setPreventLogging(false))
       }
