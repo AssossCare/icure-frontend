@@ -204,6 +204,10 @@
                 flex-grow: 2;
             }
 
+            .fg4{
+                flex-grow: 4;
+            }
+
             .status{
                 display: block;
                 margin-left: auto;
@@ -297,6 +301,11 @@
 
             }
 
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
         </style>
 
         <div class="panel">
@@ -326,37 +335,49 @@
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-repeat" items="[[_sortInvoiceListByOa(filteredListOfInvoice)]]" as="inv">
-                            <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
-                                <div class="td fg02">
-                                    <template is="dom-if" if="[[inv.realizedByTrainee]]">
-                                        <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
-                                    </template>
-                                </div>
-                                <div class="td fg05">[[inv.insuranceCode]]</div>
-                                <div class="td fg1">[[inv.invoiceReference]]</div>
-                                <div class="td fg2">
-                                    <template is="dom-if" if="[[!inv.insurabilityCheck]]">
-                                        <iron-icon icon="vaadin:circle" class="assurability--redStatus"></iron-icon>
-                                    </template>
-                                    <template is="dom-if" if="[[inv.insurabilityCheck]]">
-                                        <iron-icon icon="vaadin:circle" class="assurability--greenStatus"></iron-icon>
-                                    </template>
-                                    [[inv.patientName]]
-                                </div>
-                                <div class="td fg1">[[inv.patientSsin]]</div>
-                                <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>
-                                <div class="td fg1">[[inv.reimbursement]]€</div>
-                                <div class="td fg1">[[inv.patientIntervention]]€</div>
-                                <div class="td fg1">[[inv.doctorSupplement]]€</div>
-                                <div class="td fg1">[[inv.totalAmount]]€</div>
-                                <div class="td fg1">
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group">
+                            <div class="tr tr-group">
+                                <div class="td fg4">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'oa')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'pat')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ext')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'tot')]]€</div>
+                                <div class="td fg1"></div>
+                            </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
+                                    <div class="td fg02">
+                                        <template is="dom-if" if="[[inv.realizedByTrainee]]">
+                                            <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
+                                        </template>
+                                    </div>
+                                    <div class="td fg05">[[inv.insuranceCode]]</div>
+                                    <div class="td fg1">[[inv.invoiceReference]]</div>
+                                    <div class="td fg2">
+                                        <template is="dom-if" if="[[!inv.insurabilityCheck]]">
+                                            <iron-icon icon="vaadin:circle" class="assurability--redStatus"></iron-icon>
+                                        </template>
+                                        <template is="dom-if" if="[[inv.insurabilityCheck]]">
+                                            <iron-icon icon="vaadin:circle" class="assurability--greenStatus"></iron-icon>
+                                        </template>
+                                        [[inv.patientName]]
+                                    </div>
+                                    <div class="td fg1">[[inv.patientSsin]]</div>
+                                    <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>
+                                    <div class="td fg1">[[inv.reimbursement]]€</div>
+                                    <div class="td fg1">[[inv.patientIntervention]]€</div>
+                                    <div class="td fg1">[[inv.doctorSupplement]]€</div>
+                                    <div class="td fg1">[[inv.totalAmount]]€</div>
+                                    <div class="td fg1">
                                     <span class="invoice-status invoice-status--orangeStatus">
                                         <iron-icon icon="vaadin:circle" class="statusIcon invoice-status--orangeStatus"></iron-icon>
                                         [[inv.statut]]
                                      </span>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
                         </template>
                     </template>
                 </div>
@@ -560,15 +581,25 @@
             }
 
             _initialize(){
-                this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
+                if(_.size(_.get(this, 'listOfInvoice', [])) > 0){
 
-                const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
-                const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
-                this.set('cannotSend',!maySend)
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'parentInsuranceDto.code'), inv => inv))
+
+                    const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
+                    const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
+                    this.set('cannotSend',!maySend)
+                }
             }
 
-            _sortInvoiceListByOa(listOfInvoice) {
-                return _.sortBy(listOfInvoice, ['insuranceCode'], ['asc'])
+            _getGroupInformation(group){
+                return _.get(_.head(group), 'parentInsuranceDto.code', null)+": "+_.get(_.head(group), 'parentInsuranceDto.name.'+this.language, null)
+            }
+
+            _getTotalOfGroup(group, type){
+                return type === "oa" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'reimbursement', 0.00))}, 0).toFixed(2) :
+                       type === "pat" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'patientIntervention', 0.00))}, 0).toFixed(2) :
+                       type === "ext" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'doctorSupplement', 0.00))}, 0).toFixed(2) :
+                       type === "tot" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'totalAmount', 0.00))}, 0).toFixed(2) : 0.00
             }
 
             _forceZeroNum(num) {
@@ -613,13 +644,13 @@
                                 .uniq()
                                 .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                                 .value()
-                            this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']))
+                            this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
                         }else{
-                            this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                            this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
                         }
                     }, 100)
                 }else{
-                    this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
                 }
             }
 
