@@ -322,6 +322,7 @@
                 <div class="table">
                     <div class="tr th">
                         <div class="td fg02"></div>
+                        <div class="td fg02"></div>
                         <div class="td fg05">[[localize('inv_mut','Mutual',language)]]</div>
                         <div class="td fg1">[[localize('inv_num_fac','Invoice number',language)]]</div>
                         <div class="td fg2">[[localize('inv_pat','Patient',language)]]</div>
@@ -348,6 +349,7 @@
                             </div>
                             <template is="dom-repeat" items="[[group]]" as="inv">
                                 <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
+                                    <div class="td fg02"></div>
                                     <div class="td fg02">
                                         <template is="dom-if" if="[[inv.realizedByTrainee]]">
                                             <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
