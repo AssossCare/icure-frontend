@@ -4789,10 +4789,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
                         const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
-                        const oneWeekAgo = moment().subtract(7, 'days')
-
-                        //s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication' && !_.values(s.content).some(c => c && c.medicationValue && c.medicationValue.endMomentAsString && this.api.moment(c.medicationValue.endMomentAsString).isBefore(oneWeekAgo)))
-                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && !(this.api.contact().medicationValue(s, this.language) || {}).endMoment).map(m => {
+                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
                             return Object.assign(m, {
                                 colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
                             })
@@ -7512,7 +7509,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return this.medications.filter(s => s.tags.some(c => _.get(c, 'type', null) === 'CD-ITEM' && _.get(c, 'code', null) === 'medication' && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && (_.get(c, 'medicationValue.endMoment', null) && this.api.moment(_.get(c, 'medicationValue.endMoment', null)).isBefore(yesterday)) || (_.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(today)))));
             }
 
-            /**@todo */
+            /**@todo julien*/
             _createNewMedications(e) {
                 const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
 
