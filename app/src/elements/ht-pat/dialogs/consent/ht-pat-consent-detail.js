@@ -6,7 +6,7 @@ import '../../../collapse-button/collapse-button.js';
 import '../../../../styles/dialog-style.js';
 import '../../../../styles/scrollbar-style.js';
 import '../../../../styles/paper-tabs-style.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";

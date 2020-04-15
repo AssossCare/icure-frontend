@@ -5,7 +5,7 @@ import '../../../dynamic-form/dynamic-doc.js';
 import '../../../collapse-button/collapse-button.js';
 import './ht-pat-hub-transaction-view.js';
 import '../../../../styles/dialog-style.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";

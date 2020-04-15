@@ -11,7 +11,7 @@ import '../../../styles/dialog-style.js';
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 import XLSX from 'xlsx'
 import 'xlsx/dist/shim.min'

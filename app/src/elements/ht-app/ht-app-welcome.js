@@ -7,7 +7,7 @@ import "@polymer/paper-input/paper-input"
 import "@polymer/paper-item/paper-item"
 import "@polymer/paper-listbox/paper-listbox"
 
-import { HealthcarePartyDto } from 'icc-api/dist/icc-api/model/models'
+import { HealthcarePartyDto } from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 
 //noinspection JSUnusedGlobalSymbols

@@ -21,7 +21,7 @@ import "@polymer/iron-icon/iron-icon"
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 import { Base64 } from 'js-base64';
 
 import {PolymerElement, html} from '@polymer/polymer';

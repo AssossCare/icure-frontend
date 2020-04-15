@@ -10,7 +10,7 @@ import "@polymer/paper-dialog/paper-dialog"
 import "@vaadin/vaadin-grid/vaadin-grid"
 import "@vaadin/vaadin-grid/vaadin-grid-column"
 
-import { HealthcarePartyDto } from 'icc-api/dist/icc-api/model/models'
+import { HealthcarePartyDto } from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 //noinspection JSUnusedGlobalSymbols
 import {PolymerElement, html} from '@polymer/polymer';

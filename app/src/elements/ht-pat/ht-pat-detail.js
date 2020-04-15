@@ -77,7 +77,7 @@ import '@polymer/paper-radio-button/paper-radio-button'
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
 import styx from '../../../scripts/styx'
-import {AccessLogDto} from "icc-api/dist/icc-api/model/AccessLogDto"
+//import {AccessLogDto} from "@taktik/icc-api-legacy/dist/icc-api/model/AccessLogDto"
 
 const md5 = require('md5')
 import XLSX from 'xlsx'

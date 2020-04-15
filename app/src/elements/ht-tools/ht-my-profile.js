@@ -6,7 +6,7 @@ import '../../styles/buttons-style.js';
 import '../../styles/scrollbar-style.js';
 import '../../styles/paper-tabs-style.js';
 import '../../styles/shared-styles.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 import iban from 'iban'
 import {TkLocalizerMixin} from "../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";

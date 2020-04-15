@@ -3,7 +3,7 @@ import '../../../dynamic-form/dynamic-pills.js';
 import '../../../ht-spinner/ht-spinner.js';
 import '../../../../styles/dialog-style.js';
 import '../../../../styles/buttons-style.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
 import promiseLimit from 'promise-limit';

@@ -30,7 +30,7 @@ import moment from 'moment/src/moment'
 import '../prose-editor/prose-editor/prose-editor'
 import * as evaljs from "evaljs"
 import mustache from "mustache/mustache.js"
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 const $_documentContainer = document.createElement('template')
 

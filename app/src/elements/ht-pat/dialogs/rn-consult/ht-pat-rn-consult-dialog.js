@@ -11,7 +11,7 @@ import '../../../dynamic-form/dynamic-text-field.js';
 import '../../../../styles/notification-style.js';
 import './ht-pat-rn-consult-detail.js';
 import './ht-pat-rn-consult-notification.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";

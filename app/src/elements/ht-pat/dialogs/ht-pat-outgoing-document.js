@@ -14,7 +14,7 @@ import _ from 'lodash/lodash'
 import moment from 'moment/src/moment'
 import '../../prose-editor/prose-editor/prose-editor'
 import * as evaljs from "evaljs"
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 
 import {PolymerElement, html} from '@polymer/polymer'

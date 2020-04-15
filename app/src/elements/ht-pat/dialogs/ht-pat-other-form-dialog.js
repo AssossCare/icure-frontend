@@ -1,4 +1,4 @@
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 import '../../filter-panel/filter-panel.js';
 
 import '../../collapse-button/collapse-button.js';

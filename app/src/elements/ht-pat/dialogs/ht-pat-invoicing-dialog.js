@@ -4,7 +4,7 @@ import '../../../styles/vaadin-icure-theme.js'
 import '../../../styles/dialog-style.js'
 import './related-code-link.js'
 import '../../dynamic-form/validator/ht-inami-validator.js'
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
 import * as evaljs from "evaljs"
 import mustache from "mustache/mustache.js"

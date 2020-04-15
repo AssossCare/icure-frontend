@@ -16,7 +16,7 @@ import "@vaadin/vaadin-grid/vaadin-grid"
 import "@vaadin/vaadin-grid/vaadin-grid-column"
 
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../tk-localizer";
