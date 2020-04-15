@@ -805,7 +805,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         )).then(([a, b]) => {
                             const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
                             //this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
-                            return items.filter(item => parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
+                            return items.filter(item => item.patientId && parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
                                 ownerRef: user.id,
                                 externalId: item.id,
                                 name: "ci_" + item.id,
