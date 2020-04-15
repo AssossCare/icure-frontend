@@ -607,15 +607,20 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     startMigrateFieldsToMikrono(){
         this.set("migratedFields", [])
-        let userlist = [this.user];
         let tmp = []
-        return this.migrateAppointmentsForEachUser(userlist).catch((e) => console.log(e)).then(resList => {
-            console.log("out of promise", resList)
-            resList.forEach(resItem => {
-                Promise.all(resItem).then(res => {
-                    console.log("res is ",res)
-                    tmp = tmp.concat(res)
-                    this.set("migratedFields", tmp)
+        this.api.user().listUsers().then(users => {
+            const listOfUsers = users.rows
+            return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
+        }).then(userlist => {
+            //userlist = [this.user];
+            return this.migrateAppointmentsForEachUser(userlist).catch((e) => console.log(e)).then(resList => {
+                console.log("out of promise", resList)
+                resList.forEach(resItem => {
+                    Promise.all(resItem).then(res => {
+                        console.log("res is ",res)
+                        tmp = tmp.concat(res)
+                        this.set("migratedFields", tmp)
+                    })
                 })
             })
         })
@@ -649,7 +654,6 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                     if (workMobile && workMobile.telecomNumber !== "" && workEmail && workEmail.telecomNumber !== "") {
                         return this.api.bemikrono().register(user.id, {}).then(user => this.api.register(user, 'user')).then(userRes => {
-                            //if (userRes === true) {
                             if (userRes) {
                                 this.api.user().getUser(user.id).then(u => {
                                     this.set('user', u)
@@ -818,7 +822,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         })
                     })
                 }).then(apps => {
-                    apps = apps.slice(0,3);
+                    //apps = apps.slice(0,3);
                     console.log("migrationItems", apps, {status: "", item: "Migration de vos rendez-vous en cours..."})
                     if(apps && apps.length !== 0){
                         let prom = Promise.resolve([])
