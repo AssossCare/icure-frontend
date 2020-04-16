@@ -1043,8 +1043,9 @@
             _getAttachmentCount(cnt){
                 if(this._hasAttachments(cnt) && !this._isMedicationView(this.transInfo)){
                     if (this.shadowRoot) this.shadowRoot.getElementById("tabAttachments").classList.remove("doNotDisplay")
-                    this.set("tabs", 1);
-                    this.set("tabs", 0);
+                    const trType = _.get(_.get(this, 'transInfo.cds', []).find(cd => _.get(cd, 's', null) === "CD-TRANSACTION"), 'value', null)
+                    trType === "diarynote" || trType === "note" || trType === "labresult" || trType === "contactreport" ? this.set("tabs", 1) : this.set("tabs", 0)
+
                 }else{
                     if (this.shadowRoot) this.shadowRoot.getElementById("tabAttachments").classList.add("doNotDisplay")
                     this.set("tabs", 0);
