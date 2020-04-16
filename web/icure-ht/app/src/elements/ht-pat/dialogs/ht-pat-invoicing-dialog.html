@@ -390,7 +390,6 @@
                 flex-grow: 1;
             }
             .invoice-item .invoice-text-row.invoice-text-date {
-                height: 14px;
                 padding: 0 8px;
                 font-size: var(--font-size-small);
             }
@@ -966,6 +965,11 @@
                 width: 500px;
             }
 
+            #changePaymentTypeDialog {
+                height: 300px;
+                width: 500px;
+            }
+
             #noDerogation {
                 height: 200px;
                 width: 500px;
@@ -1130,6 +1134,53 @@
                 color: var(--app-status-color-ok);
             }
 
+            .invoice-panel-header{
+                height: 50px;
+                margin-bottom: 10px;
+                display: flex;
+            }
+
+            .invoice-panel-list{
+                height: calc(100% - 60px);
+                overflow: auto;
+            }
+
+            .patient-picture-container {
+                height: 40px;
+                width: 40px;
+                min-width: 40px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 5px;
+            }
+
+            .patient-picture-container img{
+                width:100%;
+                margin:50%;
+                transform: translate(-50%,-50%);
+            }
+
+            .patient-info{
+                padding-left: 12px;
+                display:flex;
+                flex-direction:column;
+                align-items: flex-start;
+                justify-content: center;
+            }
+            .patient-name{
+                font-weight:700;
+                line-height:14px;
+                font-size: var(--font-size-small);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .patient-birthdate{
+                font-size: var(--font-size-small);
+                line-height: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
         </style>
 
         <ht-inami-validator api="[[api]]" validator-name="ht-inami-validator"></ht-inami-validator>
@@ -1139,8 +1190,16 @@
 
         <paper-dialog id="invoiceDialog" opened="{{opened}}">
             <div class="invoice-panel">
-                <paper-listbox id="_invoice_listbox" focused selectable="paper-item" selected="{{selectedInvoiceIndex}}">
-                    <template is="dom-repeat" items="[[invoices]]">
+                <div class="invoice-panel-header">
+                    <div class="patient-picture-container"><img src$="[[picture(patient,patient.picture)]]"></div>
+                    <div class="patient-info">
+                        <div class="patient-name">[[getGender(patient.gender)]] [[patient.firstName]] [[patient.lastName]]</div>
+                        <div class="patient-birthdate">°[[_timeFormat(patient.dateOfBirth)]] °[[_ageFormat(patient.dateOfBirth)]] [[patient.ssin]]</div>
+                    </div>
+                </div>
+                <div class="invoice-panel-list">
+                    <paper-listbox id="_invoice_listbox" focused selectable="paper-item" selected="{{selectedInvoiceIndex}}">
+                        <template is="dom-repeat" items="[[invoices]]">
                             <paper-item class="layout vertical invoice-item invoice--big invoice-text" id="[[item.id]]">
                                 <div class="invoice-text-row invoice-text-date">
                                     <label>N° [[item.invoiceReference]]</label>
@@ -1221,8 +1280,9 @@
                                     <paper-tooltip position="bottom" for="he-edit-btn-duplicate_[[item.id]]">[[localize('gen_duplicate','Generate duplicata',language)]]</paper-tooltip>
                                 </template>
                             </paper-item>
-                    </template>
-                </paper-listbox>
+                        </template>
+                    </paper-listbox>
+                </div>
             </div>
             <div class="detail-panel">
                 <div class="invoice-header">
@@ -1626,6 +1686,7 @@
                                 <paper-button disabled="[[isLoadingJustif]]" class="button button--save" on-tap="_cancelDialogOpen">[[localize('can_eattest','Cancel eattest',language)]]</paper-button>
                             </template>
                         </template>
+                        <paper-button on-tap="_changePaymentType" class="button button--other">[[localize('btn-chg-pai-met','Change payment method',language)]]</paper-button>
                         <paper-button on-tap="_switchBetweenMethodForJustif" class="button button--save" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
                     </template>
                 </div>
@@ -1773,6 +1834,25 @@
                 <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_destroyInvoice">[[localize('inv_cancel_eattest','Annuler l\'eattest',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_confirmDerog">[[localize('valid','Validate',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="changePaymentTypeDialog">
+            <h2 class="modal-title">Type de paiement</h2>
+            <div class="content">
+                <div class="p5">
+                    <p>Veuillez introduire le type de paiement</p>
+                    <div class="inputs-line">
+                        <vaadin-combo-box id="paymentType" filtered-items="[[paymentTypes]]"
+                                          item-label-path="label.[[language]]" item-value-path="id"
+                                          label="Type de paiement"
+                                          value="{{selectedInvoice.paymentType}}" class="manualEncodingContainerChild"></vaadin-combo-box>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_confirmPaymentChanged">[[localize('valid','Validate',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -2794,6 +2874,7 @@
 
             _closeDialog() {
                 this.$.invoiceDialog.close()
+                this.dispatchEvent(new CustomEvent('close-invoicing-dialog', {bubbles: true, composed: true}))
             }
 
             _isTrainee(careProviderType) {
@@ -4033,7 +4114,10 @@
                             a.click();
                             window.URL.revokeObjectURL(url);
                         }
-                    }).finally(() => this.set('isLoadingJustif',false))
+                    }).finally(() => {
+                        this.set('isLoadingJustif',false)
+                        this._closeDialog()
+                })
             }
 
             _ifStatusDateExist(date){
@@ -5337,7 +5421,7 @@
             }
 
             _getPaymentType(paymentType){
-                return this.localize(paymentType, paymentType, this.language)
+                return this.localize('pai-type-'+paymentType, paymentType, this.language)
             }
 
             _toBeCorrected(item){
@@ -5354,6 +5438,36 @@
 
             _isSpecialist(){
                 return !!(_.get(this, 'hcp.nihii', null) && _.startsWith(_.get(this, 'hcp.nihii', null), "1", 0) && _.size(_.get(this, 'hcp.nihii', null)) === 11 && (_.get(this, 'hcp.nihii', null).substr(_.size(_.get(this, 'hcp.nihii', null)) - 3) >= 10))
+            }
+
+            _changePaymentType(){
+               this.shadowRoot.querySelector('#changePaymentTypeDialog').open()
+            }
+
+            _confirmPaymentChanged(){
+                console.log(this.selectedInvoice)
+                this.api.invoice().modifyInvoice(this.selectedInvoice)
+                    .then(inv => this.api.register(inv,"invoice"))
+                    .then(inv => {
+                        this.set("selectedInvoice",inv)
+                        this.shadowRoot.querySelector('#changePaymentTypeDialog').close()
+                        this.updateGui(inv, true)
+                    })
+            }
+
+            _timeFormat(date) {
+                return date ? this.api.formatedMoment(date) : '';
+            }
+
+            _ageFormat(date) {
+                return date ? this.api.getCurrentAgeFromBirthDate(date,( e , s ) => this.localize(e, s, this.language)) : '';
+            }
+
+            picture(pat) {
+                if (!pat) {
+                    return require('../../../../images/male-placeholder.png');
+                }
+                return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0,1).toLowerCase() === 'f') ? require('../../../../images/female-placeholder.png') : require('../../../../images/male-placeholder.png');
             }
         }
 

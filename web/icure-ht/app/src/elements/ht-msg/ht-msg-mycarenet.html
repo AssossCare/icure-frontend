@@ -448,11 +448,12 @@
                 }
                 Promise.all(_.uniq(this.selectedItems.filter(item => this._isList(item)).flatMap(i => i.children || [i])).map(msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg).then(
                     docs => Promise.all(docs.map(d => this.api.document().getAttachment(d.id, d.attachmentId).then(a => {
-                        try {
+                        return a
+                        /*try {
                             return JSON.parse(new Uint8Array(a).reduce((data, byte) => data + String.fromCharCode(byte), ''))
                         } catch (e) {
                             console.log(e)
-                        }
+                        }*/
                     }))).then( lists => {
                         const inscriptions = _.flatMap(_.compact(lists.map(l => l && l.inscriptions)))
                         const ssins =  _.uniq(_.compact(inscriptions.filter(i => !i.lastName && i.inss)))
@@ -467,7 +468,7 @@
                             }
                         ) : Promise.resolve([])).then(patients => {
                             lists.forEach(l => {
-                                l.inscriptions.forEach( i => {
+                                _.get(l, 'inscriptions', []).forEach( i => {
                                 const ssin = i.inss
                                 if (ssin && !i.lastName) {
                                     const pat =  patients.find(p => p.ssin === ssin)
@@ -499,8 +500,8 @@
                             return lists
                         })
                     })))).then(listsOfLists => {
-                    this.set('subMessages', _.flatMap(_.flatMap(listsOfLists), x => x.inscriptions))
-                    this.set('tempoSubMessages', _.flatMap(_.flatMap(listsOfLists), x => x.inscriptions))
+                    this.set('subMessages', _.flatMap(_.flatMap(listsOfLists), x => _.get(x, 'inscriptions', [])))
+                    this.set('tempoSubMessages', _.flatMap(_.flatMap(listsOfLists), x => _.get(x, 'inscriptions', [])))
                 })
             }
 
@@ -518,7 +519,7 @@
 
             getMessages() {
                 this.set('isLoadingDmg', true)
-                this.api.fhc().Dmgcontroller().getDmgMessagesUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName,"", [])
+                this.api.fhc().Dmgcontroller().getDmgMessagesUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, [])
                     .then( x => this.api.logMcn(x, this.user, this.hcp.id, "DMG", "loadMessages") )
                     .then(list => this.api.message().processDmgMessagesList(this.user,this.hcp,list,this.api.document()))
                     .then(([ackHashes, dmgHashes]) => Promise.all([

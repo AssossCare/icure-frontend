@@ -303,7 +303,7 @@ function filter(parsedInput, api, hcpartyId, debug) {
 		function contactsToPatientIds(contactsOutput) {
 			return __awaiter(this, void 0, void 0, function* () {
 				try {
-					const contacts = contactsOutput.rows || [];
+					const contacts = contactsOutput || [];
 					const extractPromises = contacts.map((ctc) => api.cryptoicc.extractKeysFromDelegationsForHcpHierarchy(hcpartyId, ctc.id || '', ctc.cryptedForeignKeys || {}));
 					return [...new Set(lodash_1.flatMap(yield Promise.all(extractPromises), it => it.extractedKeys))];
 				}
