@@ -4567,6 +4567,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _refreshFromServices() {
         const firstJanuary2018 = moment("2018-01-01")
+        const showAllActifHE = (this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHe")|| {typedValue: {booleanValue:false}}).typedValue.booleanValue
         if (this.currentContact) {
             const combinedHes = (this.activeHealthElements || []).concat(this.inactiveHealthElements || []).concat(this.archivedHealthElements || []).concat(this.allergies || []).concat(this.risks || []).concat(this.familyrisks || []).concat(this.surgicalHealthElements || [])
             const idServicesInHes = combinedHes.map(he => he.idService)
@@ -4591,7 +4592,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     cc.healthElements.forEach(he => he.colour = cc.descr.colour)
                 })
             }).finally(() => {
-                this.set('activeHealthElements', (this.activeHealthElements || []).concat(svcHes).filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement'))))
+                this.set('activeHealthElements', (this.activeHealthElements || []).concat(svcHes).filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || showAllActifHE || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement'))))
                 this.set('inactiveHealthElements', (this.inactiveHealthElements || []).concat(svcHes).filter(it => ((it.closingDate && this.api.moment(it.closingDate).isBefore(now)) || (it.status & 1) === 1) && (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement'))))
                 this.set('archivedHealthElements', (this.archivedHealthElements || []).concat(svcHes).filter(it => (it.status & 3) === 3))
                 this.set('allergies', (this.allergies || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'allergy')))
@@ -4758,6 +4759,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 })
 
                 const firstJanuary2018 = moment("2018-01-01")
+                const showAllActifHE = (this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHe")|| {typedValue: {booleanValue:false}}).typedValue.booleanValue
                 this.api.code().icpcChapters(_.compact(combinedHesWithHistory.map(he => he.codes.find(c => c.type === 'ICPC' || c.type === 'ICPC2'))).map(x => x.code)).then(codes => {
                     codes.forEach(cc => {
                         cc.healthElements = _.sortBy(combinedHesWithHistory.filter(he => {
@@ -4770,7 +4772,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
                     this.set('healthElements', combinedHesWithHistory)
 
-                    this.set('activeHealthElements', combinedHes.filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement' || c.code === 'diagnosis'))))
+                    this.set('activeHealthElements', combinedHes.filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || showAllActifHE || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement' || c.code === 'diagnosis'))))
                     this.set('inactiveHealthElements', combinedHes.filter(it => (it.closingDate && this.api.moment(it.closingDate).isBefore(now) || (it.status & 1) === 1) && (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement' || c.code === 'diagnosis'))))
                     this.set('archivedHealthElements', combinedHes.filter(it => (it.status & 3) === 3))
                     this.set('allergies', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => (c.type === 'CD-ITEM' || c.type === 'CD-ITEM-EXT-CHARACTERIZATION') && (c.code === 'allergy' || c.code === 'adr'))))
@@ -6629,6 +6631,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _readEid() {
+        if(!this.api.electron().isAvailable())return;
         this.api.electron().read()
             .then(res => {
                 if (res && res.cards.length && res.cards[0]) {

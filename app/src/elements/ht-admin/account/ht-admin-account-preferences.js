@@ -10,19 +10,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import "@polymer/paper-checkbox/paper-checkbox"
 import "@polymer/paper-dropdown-menu/paper-dropdown-menu"
 import "@polymer/paper-input/paper-input"
+import "@polymer/paper-button/paper-button"
 import "@polymer/paper-item/paper-item"
 import "@polymer/paper-listbox/paper-listbox"
 import "@polymer/paper-radio-button/paper-radio-button"
 import "@polymer/paper-radio-group/paper-radio-group"
+
+import '../../../styles/buttons-style'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../tk-localizer";
 class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-        <style include="shared-styles">
+        <style include="shared-styles button-styles">
             :host {
                 display: block;
+                height: 100%;
             }
 
             :host *:focus{
@@ -34,6 +38,7 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
                 height: 100%;
                 padding: 0 24px;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .section-title{
@@ -258,6 +263,7 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
                 <h5 class="header">Dossier patient</h5>
                 <div class="content">
                     <paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>
+                    <paper-checkbox checked="{{showAllHE}}">[[localize('show-all-HE','don t hide actif health element before january 2018',language)]]</paper-checkbox>
                 </div>
             </div>
 
@@ -301,6 +307,12 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
                     <paper-input label="OA 900" value="{{_getBatchNumber(900)}}"></paper-input>
                 </div> 
             </div>
+            
+            <div class="buttons">
+                <paper-button class="button button--save" role="button" on-tap="save">
+                    [[localize('save','save',this.language)]]
+                </paper-button>
+            </div>
         </div>
 `;
   }
@@ -320,6 +332,10 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
               noReset: true
           },
           openPostItAuto: {
+              type: Boolean,
+              value: false
+          },
+          showAllHE: {
               type: Boolean,
               value: false
           },
@@ -368,6 +384,8 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
       }))).then(batchNumbers => this.set('listOfEfactBatchNumbers', batchNumbers))
           .finally(() => console.log(this.listOfEfactBatchNumbers))
 
+
+      this.set("showAllHE",(this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHe")|| {typedValue: {booleanValue:false}}).typedValue.booleanValue)
   }
 
   _getBatchNumber(oa){
@@ -377,6 +395,28 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
 
   _getValueLabel(label){
       return label[this.language]
+  }
+
+  save(){
+      const propShowAllHe = this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHe")
+      if(propShowAllHe){
+          propShowAllHe.typedValue.booleanValue= this.showAllHE
+      }else{
+          this.push("user.properties",{
+              type : {
+                  identifier : "be.topaz.preferred.showAllHe",
+                  type: "BOOLEAN",
+                  unique : true,
+                  localized : false
+              },
+              typedValue:{
+                  type : "BOOLEAN",
+                  booleanValue : this.showAllHE
+              }
+          })
+      }
+
+      this.api.user().modifyUser(this.user).then(u=> this.api.register(u,"user")).then(u=>this.set("user",u))
   }
 }
 
