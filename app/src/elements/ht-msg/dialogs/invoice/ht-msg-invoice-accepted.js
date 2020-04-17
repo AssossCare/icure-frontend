@@ -208,6 +208,11 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
             .fg2{
                 flex-grow: 2;
             }  
+            
+            .fg5{
+                flex-grow: 4.6;
+            }
+
                        
             .status{
               display: block;
@@ -228,6 +233,12 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                 display:flex;
                 padding: 5px;
             }
+            
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
             
         </style>
         
@@ -262,26 +273,42 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-repeat" items="[[_sortInvoiceListByInvoiceRef(filteredListOfInvoice)]]" as="inv">
-                            <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
-                                <div class="td fg2">[[inv.messageInfo.hcp]]</div>
-                                <div class="td fg05">[[inv.messageInfo.oa]]</div>
-                                <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_getRefusedAmount(inv.messageInfo.invoicedAmount, inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>
-                                <div class="td fg2">[[inv.messageInfo.paymentReference]]</div>
-                                <div class="td fg1">[[_formatAmount(inv.messageInfo.amountPaid)]]€</div>
-                                <div class="td fg05">[[_getPaidStatus(inv.messageInfo.paid)]]</div>
-                                <div class="td fg1">[[inv.messageInfo.paymentAccount]]</div>        
-                                <div class="td fg1">[[inv.messageInfo.paymentDate]]</div>    
-                                <div class="td fg0">
-                                    <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
-                                </div>                         
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group">
+                            <div class="tr tr-group">
+                                <div class="td fg5">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'fact')]]€</span></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'acc')]]€</span></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ref')]]€</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg2"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg05"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg0"></div>
                             </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
+                                    <div class="td fg2">[[inv.messageInfo.hcp]]</div>
+                                    <div class="td fg05">[[inv.messageInfo.oa]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
+                                    <div class="td fg1"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_getRefusedAmount(inv.messageInfo.invoicedAmount, inv.messageInfo.acceptedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class$="invoice-status [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>
+                                    <div class="td fg2">[[inv.messageInfo.paymentReference]]</div>
+                                    <div class="td fg1">[[_formatAmount(inv.messageInfo.amountPaid)]]€</div>
+                                    <div class="td fg05">[[_getPaidStatus(inv.messageInfo.paid)]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.paymentAccount]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.paymentDate]]</div>
+                                    <div class="td fg0">
+                                        <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
                     </template>                                     
                 </div>
@@ -324,6 +351,10 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            listOfOa:{
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -337,11 +368,9 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
     }
 
     _initialize(){
-        this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
-    }
-
-    _sortInvoiceListByInvoiceRef(listOfInvoice) {
-        return _.sortBy(listOfInvoice, ['invoiceReference'], ['asc'])
+        if(_.size(_.get(this, 'listOfInvoice', [])) > 0){
+            this.set('filteredListOfInvoice',  _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'message.metas.ioFederationCode'), inv => inv))
+        }
     }
 
     _getIconStatusClass(status) {
@@ -443,18 +472,29 @@ class HtMsgInvoiceAccepted extends TkLocalizerMixin(PolymerElement) {
                         .uniq()
                         .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                         .value()
-                    this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }else{
-                    this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }
             }, 100)
         }else{
-            this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+            this.set('filteredListOfInvoice',_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
         }
     }
 
     _getRefusedAmount(totalAmount, acceptedAmount){
         return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
+    }
+
+    _getGroupInformation(group){
+        const oa = _.get(this, 'listOfOa', []).find(oa => _.get(oa, 'code', null) === _.get(_.head(group), 'message.metas.ioFederationCode', '000'))
+        return _.get(oa, 'code', null)+": "+_.get(oa, 'name.'+this.language, null)
+    }
+
+    _getTotalOfGroup(group, type){
+        return type === "fact" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00))}, 0).toFixed(2) :
+            type === "acc" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00))}, 0).toFixed(2) :
+                type === "ref" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.refusedAmount', 0.00))}, 0).toFixed(2) : 0.00
     }
 
 }

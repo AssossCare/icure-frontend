@@ -183,8 +183,12 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
             
             .fg2{
                 flex-grow: 2;
-            }  
-                       
+            } 
+            
+            .fg3{
+                flex-grow: 2.6;
+            }
+           
             .status{
               display: block;
               margin-left: auto;
@@ -204,6 +208,12 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
                 display:flex;
                 padding: 5px;
             }
+            
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
             
         </style>
         
@@ -234,22 +244,36 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-repeat" items="[[_sortInvoiceListByInvoiceRef(filteredListOfInvoice)]]" as="inv">
-                            <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
-                                <div class="td fg2">[[inv.messageInfo.hcp]]</div>
-                                <div class="td fg05">[[inv.messageInfo.oa]]</div>
-                                <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
-                                <div class="td fg1"><span class="">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
-                                <div class="td fg1"><span class="txtcolor--greenStatus">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1"><span class="txtcolor--redStatus">[[_getRefusedAmount(inv.messageInfo.invoicedAmount, inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1"><span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>                             
-                                <div class="td fg2">[[inv.messageInfo.rejectionReason]]</span></div>                                                       
-                                <div class="td fg0">
-                                    <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
-                                </div> 
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group">
+                            <div class="tr tr-group">
+                                <div class="td fg3">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'fact')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'acc')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ref')]]€</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg2"></div>
+                                <div class="td fg0"></div>
                             </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
+                                    <div class="td fg2">[[inv.messageInfo.hcp]]</div>
+                                    <div class="td fg05">[[inv.messageInfo.oa]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
+                                    <div class="td fg1"><span class="">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class="txtcolor--greenStatus">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class="txtcolor--redStatus">[[_getRefusedAmount(inv.messageInfo.invoicedAmount, inv.messageInfo.acceptedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class="invoice-status invoice-status--redStatus"><iron-icon icon="vaadin:circle" class="statusIcon invoice-status--redStatus"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>
+                                    <div class="td fg2">[[inv.messageInfo.rejectionReason]]</span></div>
+                                    <div class="td fg0">
+                                        <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
                     </template>     
                 </div>
@@ -298,6 +322,10 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            listOfOa:{
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -315,7 +343,9 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
     }
 
     _initialize(){
-        this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
+        if(_.size(_.get(this, 'listOfInvoice', [])) > 0){
+            this.set('filteredListOfInvoice',  _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'message.metas.ioFederationCode'), inv => inv))
+        }
     }
 
     formatDate(d,f) {
@@ -379,13 +409,13 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
                         .uniq()
                         .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                         .value()
-                    this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['messageInfo.oa', 'messageInfo.invoiceDate'], ['asc', 'asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }else{
-                    this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['messageInfo.oa', 'messageInfo.invoiceDate'], ['asc', 'asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }
             }, 100)
         }else{
-            this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['messageInfo.oa', 'messageInfo.invoiceDate'], ['asc', 'asc']))
+            this.set('filteredListOfInvoice',_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
         }
     }
 
@@ -420,6 +450,17 @@ class HtMsgInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
 
     _getNbMsgToArchive(){
         return _.size(_.get(this, 'messageIdsCanBeAutoArchived', []))
+    }
+
+    _getGroupInformation(group){
+        const oa = _.get(this, 'listOfOa', []).find(oa => _.get(oa, 'code', null) === _.get(_.head(group), 'message.metas.ioFederationCode', '000'))
+        return _.get(oa, 'code', null)+": "+_.get(oa, 'name.'+this.language, null)
+    }
+
+    _getTotalOfGroup(group, type){
+        return type === "fact" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00))}, 0).toFixed(2) :
+            type === "acc" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00))}, 0).toFixed(2) :
+                type === "ref" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.refusedAmount', 0.00))}, 0).toFixed(2) : 0.00
     }
 
 }

@@ -804,7 +804,7 @@ class HtPatPrimaryPreventionDialog extends TkLocalizerMixin(mixinBehaviors([Iron
               }
           })
 
-
+          /**@todo julien changer le fetch en requete electron api*/
           prom = prom.then(listOfContact => {
               if(_.get(this, 'isReminderActive', null)){
                   if(_.get(this.selectedReminderType, 'code', null) === "xlsx"){

@@ -1374,6 +1374,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
           lang:{
               type: String,
               value: null
+          },
+          electronUrl:{
+              type: String,
+              value: "http://127.0.0.1:16042"
           }
 
   }
@@ -1489,10 +1493,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
 
       //init socket io
       this.set("socket",null)
-      this.api.isElectronAvailable().then(electron => {
+      this.api.electron().checkAvailable().then(electron => {
           this.set("isElectron",electron)
           if (electron) {
-              this.set("socket",io(_.get(this,"api.electronHost","http://127.0.0.1:16042")))
+              this.set("socket",io(_.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042"))
 
               this.socket.on("connect", () => {
                   console.log("connection avec le socket de electron")
@@ -1515,21 +1519,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                   }
               })
 
-              fetch('http://127.0.0.1:16042/checkDrugs',{
-                  method: "GET",
-                  headers: {
-                      "Content-Type": "application/json; charset=utf-8"
-                  }
-              })
+              this.api.electron().checkDrugs()
 
               this.notifyPath("socket");
-          }
-
-          if(this.isElectron){
-              fetch('http://127.0.0.1:16042/getVersion')
-                  .then((response) => {
-                      return response.json()
-                  })
+              this.api.electron().getVersion()
                   .then(res => {
                       if (res.version) {
                           this.set("electronVersion", res.version)
@@ -1537,12 +1530,9 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                       }
                   })
 
-              fetch('http://127.0.0.1:16042/getConnexionData')
-                  .then((response) => {
-                      return response.json()
-                  })
+              this.api.electron().getConnexionData()
                   .then(res => {
-                      if(res.ok){
+                      if(res.ok && !(_.get(this,"credentials.userId",false) || _.get(this,"credentials.password",false))){
                           this.set("api.isMH",res.tokenData.isMH)
                           if(res.tokenData.isMH){
                               this.set('api.tokenIdMH', res.tokenData.tokenId)
@@ -1727,7 +1717,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
                   this.loginAndRedirect(page)
               } else {
-                  fetch('http://127.0.0.1:16042/logout')
+                  this.api.electron().logout()
                   this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
               }
           } else {
@@ -1865,20 +1855,15 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               this.set('api.token', res.token)
               }
 
-              this.api.isElectronAvailable().then(electron =>{
-                  if(electron){
-                      fetch('http://127.0.0.1:16042/tokenFHC', {
-                          method: "POST",
-                          headers: {"Content-Type": "application/json"},
-                          body: !isMH ? JSON.stringify({isMH:false,tokenId:this.api.tokenId, token:this.api.token}) : JSON.stringify({isMH:true,keystoreIdMH:this.api.keystoreIdMH, tokenIdMH:this.api.tokenIdMH, tokenMH:this.api.tokenMH, nihiiMH:this.api.nihiiMH})
-                      }).then(response => response.json()).then(rep => {
-                          if(rep.ok){
-                              this.set('routeData.page', "diary")
-                              setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                          }
-                      })
-                  }
-              })
+              if(this.api.electron().isAvailable()){
+                  this.api.electron().tokenFHC(isMH,!isMH?this.api.tokenId:this.api.tokenIdMH,!isMH ? this.api.token :this.api.tokenMH, isMH ? this.api.keystoreIdMH : null , isMH ? this.api.nihiiMH : null)
+                  .then(rep => {
+                      if(rep.ok){
+                          this.set('routeData.page', "diary")
+                          setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
+                      }
+                  })
+              }
               return res.tokenId
           }).catch((e) => {
               this.$.eHealthStatus.classList.remove('pending')
@@ -1960,26 +1945,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                   this.route.__queryParams.userId =this.route.__queryParams.oldUserId
               }
 
-              this.api.isElectronAvailable().then(electron => {
-                  this.set("isElectron",electron)
-                  if (electron === true) {
-                      //request electron tc.
-                      fetch('http://localhost:16042/tc', {
-                          method: "POST",
-                          headers: {
-                              "Content-Type": "application/json; charset=utf-8"
-                          },
-                          body: JSON.stringify({
-                              "userId": this.user.id,
-                              "token": this.user.applicationTokens.MIKRONO || this.user.applicationTokens.tmp || this.user.applicationTokens.tmpFirstLogin,
-                              "credential": this.api.credentials
-                          })
-                      })
-                  }
-              })
+              this.api.electron().topazCredential(this.user,this.api.credentials)
 
               this.set('credentials.twofa', null)
-          u.groupId ? this.set('credentials.userId', u.groupId+"/"+u.id) : this.set('credentials.userId', u.id)
+              u.groupId ? this.set('credentials.userId', u.groupId+"/"+u.id) : this.set('credentials.userId', u.id)
               this.set('credentials.appToken', u.applicationTokens && u.applicationTokens.ICC)
 
               if ((this.credentials.userId && this.credentials.appToken)) {
@@ -1987,44 +1956,43 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                   this.set('headers.Authorization', 'Basic ' + btoa(this.credentials.userId + ':' + this.credentials.appToken))
               }
               sessionStorage.setItem('auth', JSON.stringify(this.credentials))
-          localStorage.setItem('last_connection',this.credentials.username)
+              localStorage.setItem('last_connection',this.credentials.username)
 
               if (!this.authenticated) {
                   this.authenticated = true
 
-              const loadKeysForParent = (parentId, prom) => {
-                  if (parentId) {
-                      return prom.then(([success, destPage]) => {
-                          if (success) {
-                              return this.api.hcparty().getHealthcareParty(parentId).then(hcp =>
-                                  loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, destPage))
-                              )
-                          } else {
-                              return Promise.resolve([success, destPage])
-                          }
-                      })
-                  } else {
-                      return prom
-                  }
-              }
-
-              loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
-                  if (success) {
-                              const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
-                              if (!this.routeData || destPage !== this.routeData.page) {
-                                  this.set('routeData.page', destPage)
+                  const loadKeysForParent = (parentId, prom) => {
+                      if (parentId) {
+                          return prom.then(([success, destPage]) => {
+                              if (success) {
+                                  return this.api.hcparty().getHealthcareParty(parentId).then(hcp =>
+                                      loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, destPage))
+                                  )
                               } else {
-                                  this._routePageChanged(destPage)
+                                  return Promise.resolve([success, destPage])
                               }
+                          })
+                      } else {
+                          return prom
+                      }
                   }
-              })
-          }
-          this._timeCheck()
+
+                  loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
+                      if (success) {
+                          const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
+                          if (!this.routeData || destPage !== this.routeData.page) {
+                              this.set('routeData.page', destPage)
+                          } else {
+                              this._routePageChanged(destPage)
+                          }
+                      }
+                  })
+              }
+              this._timeCheck()
               this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
               this._inboxMessageCheck()
               this._checkForUpdateMessage()
               //this._correctionGenderPatients();
-
           })
       }).catch(function (e) {
           this.authenticated = false
@@ -2384,25 +2352,16 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
 
 
               if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-                  this.api.isElectronAvailable().then(electron =>{
-                      if(electron === false){
-                          window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
-                      }else{
-                          fetch('http://127.0.0.1:16042/mc', {
-                              method: "POST",
-                              headers: {"Content-Type": "application/json"},
-                              body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                          }).then(response => response.json()).then(rep => {
-                              if(rep.ok){
-                                  this.set('routeData.page', "diary")
-                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                              }
-                          })
-
-
-                      }
-                  })
-
+                  if(!this.api.electron().isAvailable()){
+                      window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
+                  }else{
+                      this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
+                          if(rep.ok){
+                              this.set('routeData.page', "diary")
+                              setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
+                          }
+                      })
+                  }
               }else{
                   const addresses = hcp && hcp.addresses || null
                   const workAddresses = addresses.find(adr => adr.addressType === "work") || null
@@ -2419,25 +2378,17 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                                   const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
                                   const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
                                   if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-                                      this.api.isElectronAvailable().then(electron =>{
-                                          if(electron === false){
-                                                      window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
-                                          }else{
-                                              fetch('http://127.0.0.1:16042/mc', {
-                                                  method: "POST",
-                                                  headers: {"Content-Type": "application/json"},
-                                                  body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                                              }).then(response => response.json()).then(rep => {
-                                                  if(rep.ok){
-                                                      this.set('routeData.page', "diary")
-                                                      setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                                                  }
-                                              })
-
-
-                                          }
-                                                  })
-                                              }else{
+                                      if(!this.api.electron().isAvailable()){
+                                          window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
+                                      }else{
+                                          this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
+                                              if(rep.ok){
+                                                  this.set('routeData.page', "diary")
+                                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
+                                              }
+                                          })
+                                      }
+                                  }else{
                                       this.set("mikronoError", {
                                           addresses: false,
                                           workAddresses : false,
@@ -2704,6 +2655,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
   _isPatientView(){
       return this.route.path.includes("/pat")
   }
+
 }
 
 customElements.define(HtApp.is, HtApp)

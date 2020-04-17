@@ -1474,6 +1474,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
           && !this._urlMimeType(uti, utis, null, data))
   }
 
+  /**@todo julien changer le fetch pour l'electron api*/
   _dataUrlChanged(dataUrl) {
       const promResolve = Promise.resolve()
       if (dataUrl && dataUrl.length && this.document && this.document.mainUti !== "com.adobe.pdf" && this.document.mainUti !== "public.jpeg" && this.document.mainUti !== "public.png") {

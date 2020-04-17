@@ -1,6 +1,6 @@
 {
   "name": "icure-ht",
-  "version": "0.0.435",
+  "version": "0.0.445",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
@@ -161,6 +161,7 @@
     "electron-tabs": "^0.9.5",
     "es-abstract": "^1.16.3",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
+    "electron-topaz-api": "git+https://github.com/AssossCare/topaz-electron-api#caebad23ab078eb68deb411671a8d1b56c6e216a",
     "fhc-api": "^1.0.54",
     "global": "^4.4.0",
     "iban": "0.0.11",

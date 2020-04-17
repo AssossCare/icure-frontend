@@ -204,7 +204,7 @@ class HtAdminAccountElectron extends TkLocalizerMixin(PolymerElement) {
 
     _electronInit(){
         if(!this.electronAvailable)return;
-        fetch("http://127.0.0.1:16042/getConfigFile").then(response => response.json()).then(configuration => {
+        this.api.electron().getConfigFile().then(configuration => {
             this.set("electronData",{
                 frontendChoose : configuration.frontend.includes("tzc.icure.cloud") ? "testC" : configuration.frontend.includes("tzb.icure.cloud") ? "testB" : configuration.frontend.includes("tz.icure.cloud") ? "official" : "dev-url",
                 backendChoose : !configuration.backend ? "locale" : configuration.backend.includes("https://backend.svc.icure.cloud") ? "online" : configuration.backend.includes("https://backendb.svc.icure.cloud") ? "online-test" : configuration.backend,
@@ -225,13 +225,7 @@ class HtAdminAccountElectron extends TkLocalizerMixin(PolymerElement) {
                 body.backend= !_.get(this, "electronData.backendChoose", false) ? "https://backend.svc.icure.cloud" : this.electronData.backendChoose.includes("online") ? "https://backend.svc.icure.cloud" : this.electronData.backendChoose.includes("online-test") ? "https://backendb.svc.icure.cloud" : this.electronData.backendChoose
             }
 
-            fetch("http://127.0.0.1:16042/setConfigFile",{
-                method: "POST",
-                headers: {
-                    "Content-Type" : "application/json; charset=utf-8"
-                },
-                body: JSON.stringify({"data" : body})
-            })
+            this.api.electron().setConfigFile(body)
         }
     }
 

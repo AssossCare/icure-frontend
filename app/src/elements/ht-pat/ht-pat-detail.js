@@ -6629,10 +6629,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _readEid() {
-        fetch(`${_.get(this, "api.electronHost", "http://127.0.0.1:16042")}/read`)
-            .then((response) => {
-                return response.json()
-            })
+        this.api.electron().read()
             .then(res => {
                 if (res && res.cards.length && res.cards[0]) {
                     this.set('cardData', res.cards[0])

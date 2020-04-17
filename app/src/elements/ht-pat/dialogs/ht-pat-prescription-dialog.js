@@ -492,16 +492,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       this.$.dialog.open()
       this._refreshDrugsToBePrescribed()
       this.api && this.api.isElectronAvailable()
-          .then(hasElectron => hasElectron ? fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json; charset=utf-8"
-              },
-              body: JSON.stringify({
-                  userId: this.user.id
-              })
-          })
-              .then(response => response && response.status===200 ? response.json() : Promise.resolve({}))
+          .then(hasElectron => hasElectron ? this.api.electron().getPrinterSetting(this.user.id)
               .then( data => {
                   this.set('selectedFormat',data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ? JSON.parse(data.data).find(x => x.type==="recipe").format : "A4")
               }): this.set('selectedFormat',"A4") )

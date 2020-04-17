@@ -1563,6 +1563,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
       return pi ? `${pi.paragraphName}_${pi.paragraphVersion}_${addedDoc.verseSeq}_${addedDoc.documentSeq}_${this.localizeObjectKey(addedDoc, 'descr')}` : 'annex'
   }
 
+  /**@todo julien changer le fetch en requete electron api*/
   _downloadAnnex(e) {
       const pi = this.displayedParagraph && this.displayedParagraph.paragraphInfo
       if (e && e.detail && e.detail.value && pi) {

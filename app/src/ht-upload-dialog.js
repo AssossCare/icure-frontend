@@ -799,22 +799,10 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
 
   _hasElectronChanged() {
       if (!this.hasElectron) return;
-      Promise.all([fetch("http://127.0.0.1:16042/scanning", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({
-              request: "list"
-          })
-      }), fetch('http://127.0.0.1:16042/getPrinterSetting', {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json; charset=utf-8"
-          },
-          body: JSON.stringify({
-              userId: this.user.id
-          })
-      })
-      ]).then(response => Promise.all(response.map(rep => rep.json()))).then(([data, settings]) => {
+      Promise.all([
+          this.api.electron().scanning("list",null,null,null,null),
+          this.api.electron().getPrinterSetting(this.user.id)
+      ]).then(([data, settings]) => {
           if (!data.ok) return;
           const scanner = settings && settings.data && settings.data !== 'error' && JSON.parse(settings.data).find(set => set.type === "scanner")
           this.set("selectedScanner", scanner && data.data.all.find(scan => scan.id === scanner.printer || scan.label === scanner.printer) ? scanner.printer : data.data.default.id)
@@ -1000,18 +988,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
 
   _launchScan() {
       this.set("isScanning", true);
-      fetch("http://127.0.0.1:16042/scanning", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({
-              request: "scan",
-              scanner: this.selectedScanner,
-              index: this.scannerList.findIndex(item => item.id === this.selectedScanner).toString(),
-              color: this.scannerColor ? "1" : "0",
-              duplex: this.scannerDuplex ? "1" : "0"
-          })
-      })
-          .then(response => response.json())
+      this.api.electron().scanning("scan",this.selectedScanner,this.scannerList.findIndex(item => item.id === this.selectedScanner).toString(),this.scannerColor ? "1" : "0", this.scannerDuplex ? "1" : "0")
           .then(response => {
               if (!response.ok) {
                   this.dispatchEvent(new CustomEvent("error-message", {
