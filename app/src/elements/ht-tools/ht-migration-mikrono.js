@@ -784,6 +784,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     }
 
     migrateAppointmentsForEachUser(userlist) {
+
         return Promise.all(userlist.map(user => {
             const applicationTokens = _.get(user, "applicationTokens", "" )
             const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
