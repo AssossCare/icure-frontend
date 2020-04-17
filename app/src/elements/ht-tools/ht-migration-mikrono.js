@@ -576,7 +576,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             //return listOfActivesUsersWithAgenda
             return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
         }).then(userlist => {
-            userlist = [this.user]
+            //userlist = [this.user]
             let arTmp = []
             userlist.forEach(usr => {
                 arTmp.push({Name : usr.name, Status:"---"})
@@ -735,7 +735,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     }
                 })
             }).then(apps => {
-                apps = apps.slice(0,3);
+                //apps = apps.slice(0,3);
                 console.log("appointmentTypes to be send to mikrono: ", apps);
                 if(apps && apps.length !== 0){
                     let prom = Promise.resolve([])
