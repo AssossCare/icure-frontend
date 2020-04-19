@@ -1170,6 +1170,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
                         <template is="dom-if" if="[[!_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
+                            <paper-button class="button button--save" on-tap="_test">TEST MAILER</paper-button>
                             <paper-button class="button button--save" on-tap="_addPatient">[[localize('add_pat','Add Patient',language)]]</paper-button>
 
                             <template is="dom-if" if=[[!showExportContainer]]>
@@ -3464,6 +3465,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('nbPatientSelected', _.size(_.get(this, 'patientSelected', []).filter(patient => patient.check)))
                 }
             }
+
+            _test() {
+                this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
+                    documentId: "681798fe-62ae-47c4-9ca9-63631247adfa",
+                    fileContent: null,
+                    filename: "2020-04-19-certificat-specifique-document-sortant-1587310948226.pdf",
+                    predefinedMessage: "sendPrescription"
+                }}))
+            }
+
         }
 
         customElements.define(HtPatList.is, HtPatList)

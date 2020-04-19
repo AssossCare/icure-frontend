@@ -1,0 +1,300 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/ht-spinner/ht-spinner.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+
+
+
+<dom-module id="ht-mailer-dialog">
+
+
+
+    <template>
+
+
+
+        <style include="shared-styles scrollbar-style dialog-style">
+            .overlaySpinnerContainer {
+                position:absolute;
+                width:100%;
+                height:100%;
+                z-index:10;
+                background:rgba(255, 255, 255, .8);
+                top:0;
+                left:0;
+            }
+            .overlaySpinner {
+                max-width:80px;
+                margin:100px auto
+            }
+            #htMailerDialogContent {
+                width:90%;
+                min-width: 400px;
+                max-width: 900px;
+                height:600px;
+            }
+            .modal-title {
+                justify-content: flex-start;
+            }
+        </style>
+
+
+
+        <template is="dom-if" if="[[_isBusy]]"><div class="overlaySpinnerContainer"><div class="overlaySpinner"><ht-spinner active></ht-spinner></div></div></template>
+
+
+
+        <paper-dialog class="modalDialog" id="htMailerDialogContent" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="communication:email"></iron-icon> &nbsp;[[localize('sendDocumentByEmail','Send a document by email',language)]]</h2>
+            <div class="content pl20 pr20">
+                <div class=""><paper-input id="recipients" placeholder="[[localize('recipient_s','Recipient(s)',language)]]"></paper-input></div>
+                <div class=""><paper-input id="subject" placeholder="[[localize('writeYourSubject', 'Write your subject', language)]]" value="[[_data.mail.subject]]"></paper-input></div>
+                <div class=""><paper-input-container alway-float-label="true"><iron-autogrow-textarea slot="input" class="paper-input-input" id="message" placeholder="[[localize('writeYourMessage', 'Write your message', language)]]"  value="[[_data.mail.message]]"></iron-autogrow-textarea></paper-input-container></div>
+                <div class=""><paper-input readonly value="[[localize('attachment', 'attachment', language)]]: [[_data.mail.attachmentName]]"></paper-input></div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" on-tap="_closeComponent"><iron-icon icon="icons:close"></iron-icon> &nbsp; [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_send"><iron-icon icon="check-circle"></iron-icon>[[localize('send','Send',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+
+
+    </template>
+
+
+
+    <script>
+
+
+
+        import _ from 'lodash/lodash';
+        import { Base64 } from 'js-base64';
+
+
+
+        class HtMailerDialog extends Polymer.TkLocalizerMixin(Polymer.Element) {
+
+            static get is() {
+                return 'ht-mailer-dialog';
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true,
+                        value: () => {}
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true,
+                        value: () => {}
+                    },
+                    resources: {
+                        type: Object,
+                        noReset: true,
+                        value: () => {}
+                    },
+                    language: {
+                        type: String,
+                        noReset: true,
+                        value: "fr"
+                    },
+                    _isBusy: {
+                        type: Boolean,
+                        value: false,
+                        noReset: true
+                    },
+                    _predefinedMessages: {
+                        type: Array,
+                        value: () => [{
+                            scenario: "default",
+                            subject: "Un document vous concernant",
+                            message: `Bonjour Madame, bonjour Monsieur,
+
+Veuillez je vous prie trouver ci-joint le document vous concernant.
+Je vous en souhaitons la bonne réception.
+
+Bien à vous,`
+                        },{
+                            scenario: "sendPrescription",
+                            subject: "Votre prescription électronique",
+                            message: `Bonjour Madame, bonjour Monsieur,
+
+Veuillez je vous prie trouver ci-joint votre prescription électronique au format PDF, relative à votre médication.
+Je vous en souhaitons la bonne réception.
+
+Bien à vous,`
+                        }]
+                    },
+                    _data: {
+                        type: Object,
+                        value: () => {return{
+                            currentHcp: {},
+                            attachment: {},
+                            mail: {},
+                        }}
+                    }
+                };
+            }
+
+            static get observers() {
+                return [];
+            }
+
+            constructor() {
+                super();
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            _resetComponentProperties() {
+                const promResolve = Promise.resolve();
+                return promResolve
+                    .then(() => {
+                        const componentProperties = HtMailerDialog.properties
+                        Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
+                        return promResolve
+                    })
+            }
+
+            _upperFirstAll(inputValue){
+                return _.trim(_.map(_.trim(inputValue).toLowerCase().split(" "),i=>_.upperFirst(_.trim(i))).join(" "))
+            }
+
+            _getPrettifiedHcp() {
+                const promResolve = Promise.resolve()
+                return this.api.hcparty().getCurrentHealthcareParty()
+                    .then(hcp => {
+                        const addressData = _.find(_.get(hcp,"addresses",[]), {addressType:"work"}) || _.find(_.get(hcp,"addresses",[]), {addressType:"home"}) || _.get(hcp,"addresses[0]",[])
+                        return _.merge({}, hcp, {
+                            address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
+                            postalCode: _.trim(_.get(addressData,"postalCode","")),
+                            city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
+                            country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
+                            phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
+                            mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
+                            email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
+                            firstName: this._upperFirstAll(_.get(hcp,"firstName","")),
+                            lastName: this._upperFirstAll(_.get(hcp,"lastName","")),
+                            names: this._upperFirstAll(_.get(hcp,"lastName","")) + " " + this._upperFirstAll(_.get(hcp,"firstName","")),
+                            nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp,"nihii",""))),
+                            ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp,"ssin",""))),
+                        })
+                    })
+                    .catch(()=>promResolve)
+            }
+
+            _getAttachmentName() {
+                return _.trim(_.get(this,"_data.attachment.name"))
+            }
+
+            _sendTransactionalEmail(data) {
+
+                const timeout = 10000
+                const fetchImpl = typeof window !== "undefined" ? window.fetch : typeof self !== "undefined" ? self.fetch : fetch
+
+                return new Promise((resolve, reject) => {
+                    let timer = setTimeout(() => reject({ message: "Request timed out", status: "Request timed out" }), timeout);
+                    fetchImpl("https://mj-tc.topaz.care/topaz-mailjet-proxy/?ts=" + +new Date(), {
+                        method: "POST",
+                        mode: "cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => { clearTimeout(timer); resolve(response); })
+                        .catch(err => { clearTimeout(timer); reject(err); });
+                })
+                    .then(response => parseInt(_.get(response,"status",0)) >= 400 ?
+                        {message: _.get(response,"statusText"), status: _.get(response,"status"), code: _.get(response,"status"), headers: _.get(response,"headers")} :
+                        response.json() || {}
+                    )
+
+            }
+
+            _closeComponent() {
+
+                const promResolve = Promise.resolve()
+                const htMailerDialogContent = this.shadowRoot.querySelector("#htMailerDialogContent")
+
+                return promResolve
+                    .then(() => this._resetComponentProperties())
+                    .then(()=>this.set("_isBusy", false))
+                    .then(()=> this.shadowRoot.querySelector("#recipients").value="")
+                    .then(()=> this.shadowRoot.querySelector("#subject").value="")
+                    .then(()=> this.shadowRoot.querySelector("#message").value="")
+                    .then(() => htMailerDialogContent && htMailerDialogContent.close())
+
+            }
+
+            open(inputData) {
+
+                const promResolve = Promise.resolve()
+                const documentId = _.trim(_.get(inputData,"documentId",null))
+                const fileContent = _.get(inputData,"fileContent",null)
+                const filename = _.trim(_.get(inputData,"filename",null))
+                const predefinedMessage = _.find(this._predefinedMessages, {scenario:_.trim(_.get(inputData,"predefinedMessage","default"))})
+                const htMailerDialogContent = this.shadowRoot.querySelector("#htMailerDialogContent")
+
+                if(!!_.get(this,"_isBusy",false) || !_.trim(filename) || (!_.trim(documentId) && !fileContent)) return;
+
+                return promResolve
+                    .then(()=>this.set("_isBusy", true))
+                    .then(()=>_.map(_.get(this,"_data",{}), (propValue,propKey) => typeof _.get(propValue,"value",null) !== "function" ? null : this.set("_data." + propKey, _.get(propValue,"value",null)())))
+                    .then(() => this._resetComponentProperties())
+                    .then(() => !documentId ? _.assign(this._data, {attachment:{name:filename,content:fileContent}}) : this.api.document().getDocument(documentId)
+                        .then(doc => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"user.healthcarePartyId", null), _.trim(_.get(doc,"id","")), _.size(_.get(doc,"encryptionKeys",[])) ? _.get(doc,"encryptionKeys",[]) : _.get(doc,"delegations",[])).then(({extractedKeys: enckeys}) => [doc,enckeys]))
+                        .then(([doc,enckeys]) => this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>[doc,decryptedContent]))
+                        .then(([doc,decryptedContent]) => _.assign(this._data, {attachment:{name:_.trim(filename)?_.trim(filename):_.trim(_.get(doc,"name")),content:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(decryptedContent)))}}))
+                        .catch(e=>{console.log("ERROR while getting attachment", e); return promResolve;})
+                    )
+                    .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
+                    .then(() => this.set("_data.mail.subject", _.trim(_.get(predefinedMessage,"subject",""))))
+                    .then(() => this.set("_data.mail.message", _.trim(_.get(predefinedMessage,"message","")) + "\n" + this.localize("doctorAbreviation", "Dr.", this.language) + " " + _.get(this,"_data.currentHcp.names") + "\n" + this.localize("inami", "NIHII", this.language).toUpperCase() + ": " + _.get(this,"_data.currentHcp.nihiiHr")))
+                    .then(() => this.set("_data.mail.attachmentName", _.trim(_.get(this,"_data.attachment.name",""))))
+                    .then(() => htMailerDialogContent && htMailerDialogContent.open())
+                    .catch(e => console.log("ERROR with mailer", e))
+                    .finally(() => (this.set("_isBusy", false)||true) && promResolve)
+
+                    /*
+
+                    // fileContent => ab / ua / base64 => anticiper les scénarios
+                    // Faire validation du champ sujet && destinataire
+                    // Embellir un rien ? Icônes / labels ?
+                    // Message relatif à "non-sécurisé"
+                    // Send
+                    // Gérer PJ au niveau du proxy
+                    // Nice template email, responsive
+
+                    .then(() => this._sendTransactionalEmail([{
+                        from: {"email": "topaz@mj-tc.topaz.care", "name": "Topaz"},
+                        to: [{"email": "fabien_zimmer@hotmail.com","name": "Fabien Zimmer"}, {"email": "fabien@i-fab.be","name": "Fabien Zimmer"}],
+                        subject: "Email de test - logiciel Topaz",
+                        body: "<h3>Dear passenger 1, welcome to <a href='https://www.mailjet.com/'>Mailjet</a>!</h3><br />May the delivery force be with you!",
+                    }]))
+                    .then(mailjetAnswer => console.log("mailjetAnswer", mailjetAnswer))
+                    .then(() => this._closeComponent())
+                    .then(() => confirm on screen d'une manière ou d'une autre)
+                     */
+
+            }
+
+            _send() {
+
+                console.log("send");
+
+            }
+
+        }
+
+        customElements.define(HtMailerDialog.is, HtMailerDialog);
+
+
+
+    </script>
+
+</dom-module>
