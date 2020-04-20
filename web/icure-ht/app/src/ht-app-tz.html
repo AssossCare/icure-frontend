@@ -2717,7 +2717,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _openMailer(e) {
                 const mailerDialog = this.shadowRoot.querySelector("#htMailerDialog")
-                return mailerDialog && typeof _.get(mailerDialog,"open") === "function" && mailerDialog.open(_.get(e,"detail",{}))
+                return mailerDialog && typeof _.get(mailerDialog,"open") === "function" && mailerDialog.open(_.assign({},_.get(e,"detail",{}), _.get(this,"headers",{})))
             }
 
         }

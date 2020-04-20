@@ -2,12 +2,12 @@
 
 <link rel="import" href="../../../../bower_components/iron-validator-behavior/iron-validator-behavior.html">
 
-<dom-module id="ht-inami-validator">
+<dom-module id="ht-email-validator">
     <script>
 
-        class HtInamiValidator extends Polymer.mixinBehaviors([Polymer.IronValidatorBehavior], Polymer.Element) {
+        class HtEmailValidator extends Polymer.mixinBehaviors([Polymer.IronValidatorBehavior], Polymer.Element) {
             static get is() {
-                return 'ht-inami-validator';
+                return 'ht-email-validator';
             }
 
             static get properties() {
@@ -27,10 +27,32 @@
             }
 
             validate(value) {
-                return !value || this.api.patient().checkInami(value+"")
+
+                const values = _.map(_.trim(value).split(/,|;| /), _.trim)
+
+                // RFC 2823
+                const regExp1 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
+
+                // RFC 5322
+                const regExp2 = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/i
+
+                // RFC 2822
+                const regExp3 = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/i
+
+                // RFC 2822
+                const regExp4 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
+
+                // Accepts unicode
+                const regExp5 = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/i
+
+                // Microsoft ASP MVC
+                const regExp6 = /^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/i
+
+                return _.size(_.filter(values, it => _.trim(it) && regExp6.test(it) )) === _.size(values)
+
             }
         }
 
-        customElements.define(HtInamiValidator.is, HtInamiValidator);
+        customElements.define(HtEmailValidator.is, HtEmailValidator);
     </script>
 </dom-module>
