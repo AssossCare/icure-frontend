@@ -434,7 +434,7 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
         const id = el.target.parentElement.parentElement.id;
         const item = this.value.find(s => s.id === id);
         if (item) {
-			this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew : false, service : item,content : this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onSave : this._createMedication.bind(this)}, bubbles: true, composed: true} ))
+			this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew : false, service : _.cloneDeep(item),content : this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onSave : this._medicationChanged.bind(this)}, bubbles: true, composed: true} ))
         }
 	}
 
@@ -455,8 +455,16 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 		this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
 	}
 
-	_valueChanged() {
-		console.log(value);
+	_medicationChanged(medication) {
+		console.log(medication);
+		const idx = this.value.findIndex(m => m.id === medication.newMedication.id)
+		this.set("value."+idx,medication.newMedication)
+		this.dispatchEvent(new CustomEvent('field-changed', {
+			detail: {
+				context: this.context,
+				medications: this.value
+			}
+		}))
 		/*let localizedValue = this._localizedValue(this.value);
         if (!_.isEqual(this.value, this.previouslySavedValue)) {
             this.set('previouslySavedValue', _.cloneDeep(this.value))

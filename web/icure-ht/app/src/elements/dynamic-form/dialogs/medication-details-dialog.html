@@ -394,7 +394,8 @@
                 return {title: fields.length > 1 ? fields[0] : "", formula: fields.length > 1 ? fields[1] : fields.length > 0 ? fields[0] : ""};
             }
 
-            open(service, medicationContent, boxes) {
+            open(action,service, medicationContent, boxes) {
+                this.set("saveAction",action)
                 this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
                     .then(hes => {
                         const allergies = hes.filter(he => he.tags.some(tag => tag.type === "CD-ITEM" && (tag.code === "allergy" || tag.code === "adr")))
@@ -505,7 +506,8 @@
 
             _valueChanged() {
                 console.log("_valueChanged()",this.medicationDetail)
-                this.dispatchEvent(new CustomEvent('value-changed', {detail: {medication: this.medicationDetail}, bubbles: true, composed: true}))
+                this.saveAction(this.medicationDetail)
+                //this.dispatchEvent(new CustomEvent('value-changed', {detail: {medication: this.medicationDetail}, bubbles: true, composed: true}))
             }
 
             _medicationName(svc) {

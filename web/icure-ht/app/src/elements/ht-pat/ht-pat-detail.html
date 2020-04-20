@@ -2849,6 +2849,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 i18n="[[i18n]]" language="[[language]]"
                 medications="[[existingMedications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]">
         </medication-prescription-dialog>
+        <!-- todo julien change l'event-->
         <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}" on-value-changed="_medicationDetailValueChanged"></medication-details-dialog>
         <medication-plan-dialog id="medication-plan" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" user="[[user]]" patient="[[patient]]" on-print-prescription="onPrintPrescription"></medication-plan-dialog>
         <!--<ht-pat-mcn-chapteriv-agreement id="chapterivdialog" api="[[api]]" user="[[user]]" patient="[[patient]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" on-create-service="_createService" on-update-services="_updateServices"></ht-pat-mcn-chapteriv-agreement>-->
@@ -6146,7 +6147,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if(e.detail.isNew) {
                     this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
                 }else{
-                    this.$['medication-detail'].open(e.detail.service, e.detail.content);
+                    this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
                 }
             }
 
