@@ -6143,9 +6143,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             openMedicationDialog(e){
                 //e.detail.service, {isPrescription: false}
-                this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+                if(e.detail.isNew) {
+                    this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+                }else{
+                    this.$['medication-detail'].open(e.detail.service, e.detail.content);
+                }
             }
 
+            //todo @julien not sure it's now used
             _medicationDetail(e) {
                 this.currentMedicationDetailEventDetail = e.detail
                 this.$['medication-detail'].open(e.detail.service, e.detail.content);

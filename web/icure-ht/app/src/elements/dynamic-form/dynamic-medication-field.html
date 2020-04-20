@@ -272,19 +272,19 @@
 
 		<div class="subform-container">
 			<ul>
-				<template is="dom-repeat" items="[[_getNewsMedications(value, value.*, refresher)]]" as="lv">
+				<template is="dom-repeat" items="[[_localizedValue(value, value.*, refresher)]]" as="lv">
 					<li id="[[lv.id]]" class="medication-line"><span class="medication-text">[[lv.stringValue]]</span>
 						<template is="dom-if" if="[[!isReadOnlyOrAlreadyPrescribed(lv)]]">
 							<div class="action-buttons"><paper-icon-button icon="create" on-tap="editMedication"></paper-icon-button><paper-icon-button icon="clear" on-tap="clearMedication"></paper-icon-button></div>
 						</template>
 					</li>
 				</template>
-				<template is="dom-if" if="[[_hasEndDate(value, value.*, refresher)]]">
+				<!--<template is="dom-if" if="[[_hasEndDate(value, value.*, refresher)]]">
 					[[localize("medication_clo","Médications Cloturées",language)]]
 					<template is="dom-repeat" items="[[_getCloseMedication(value, value.*, refresher)]]" as="clo">
 						<li id="[[clo.id]]" class="medication-line"><span class="medication-text">[[clo.stringValue]]</span></li>
 					</template>
-				</template>
+				</template>-->
 			</ul>
 
 
@@ -380,7 +380,7 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
 	/** get partie for displaying*/
 
-    _getNewsMedications(value){
+    /*_getNewsMedications(value){
         return this._localizedValue(value.filter(v =>!(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : true}}).medicationValue.endMoment))
     }
 
@@ -391,7 +391,7 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     _getCloseMedication(value){
         return this._localizedValue(value.filter(v =>(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment))
-    }
+    }*/
 
     //what is this
     isReadOnlyOrAlreadyPrescribed(val) {
@@ -421,23 +421,7 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	/**data manager partie*/
 
 	// no need
-    _valueChanged() {
-        console.log(value);
-        /*let localizedValue = this._localizedValue(this.value);
-        if (!_.isEqual(this.value, this.previouslySavedValue)) {
-            this.set('previouslySavedValue', _.cloneDeep(this.value))
-            this.set('localizedValue', localizedValue);
-            this.set('refresher', this.refresher+1)
-            if(!this.readOnly) {
-                this.dispatchEvent(new CustomEvent('field-changed', {
-                    detail: {
-                        context: this.context,
-                        value: this.value
-                    }
-                }));
-            }
-        }*/
-    }
+
 
     clearMedication(el) {
         /*const id = el.target.parentElement.parentElement.id;
@@ -447,16 +431,15 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     editMedication(el) {
-        /*const id = el.target.parentElement.parentElement.id;
+        const id = el.target.parentElement.parentElement.id;
         const item = this.value.find(s => s.id === id);
-        this.set('previouslySavedValue', _.cloneDeep(this.value))
         if (item) {
-            this.dispatchEvent(new CustomEvent('medication-detail', { detail: {service: item, content: this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
-        }*/
-    }
+			this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew : false, service : item,content : this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onSave : this._createMedication.bind(this)}, bubbles: true, composed: true} ))
+        }
+	}
 
     addMedication() {
-		this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {service : null, onSave : this._createMedication.bind(this)}, bubbles: true, composed: true} ))
+		this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew: true, service : null, onSave : this._createMedication.bind(this)}, bubbles: true, composed: true} ))
     }
 
     /**Print partie @todo change event*/
@@ -472,11 +455,27 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 		this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
 	}
 
+	_valueChanged() {
+		console.log(value);
+		/*let localizedValue = this._localizedValue(this.value);
+        if (!_.isEqual(this.value, this.previouslySavedValue)) {
+            this.set('previouslySavedValue', _.cloneDeep(this.value))
+            this.set('localizedValue', localizedValue);
+            this.set('refresher', this.refresher+1)
+            if(!this.readOnly) {
+                this.dispatchEvent(new CustomEvent('field-changed', {
+                    detail: {
+                        context: this.context,
+                        value: this.value
+                    }
+                }));
+            }
+        }*/
+	}
 
 
 
-
-
+	//edit
 	extractContentWithIdFromMedicationService(m, isNew, isPrescription) {
         console.log('extractContentWithIdFromMedicationService',m,isNew)
 		return {
