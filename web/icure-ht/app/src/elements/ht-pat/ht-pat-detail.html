@@ -3802,6 +3802,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('curGenInsResp', genInsResp)
                     const genInsOk = !_.get(this, 'curGenInsResp.faultCode', null) && _.size(_.get(this, 'curGenInsResp.insurabilities', [])) > 0 && _.get(this, 'curGenInsResp.insurabilities[0].ct1', null) !== '000' && !(this.curGenInsResp.generalSituation && this.curGenInsResp.generalSituation.length)
                     const medicalHouse = this.curGenInsResp.medicalHouseInfo && this.curGenInsResp.medicalHouseInfo.medical && this.api.before(this.curGenInsResp.medicalHouseInfo.periodStart, +new Date()) && (!this.curGenInsResp.medicalHouseInfo.periodEnd || this.api.after(this.curGenInsResp.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
+                    const lastIns = _.get(this.patient, 'insurabilities', []).find(ins => !_.get(ins, 'endDate', null))
+
+                    //todo import
+                    if(genInsOk){
+                        ;(_.get(lastIns, 'insuranceId', null) ? this.api.insurance().getInsurance(_.get(lastIns, 'insuranceId', null)) : Promise.resolve({})).then(ins => {
+                            if(_.get(lastIns, 'parameters.tc1', '') !==  _.get(_.head(_.get(this.curGenInsResp, 'insurabilities', [])), 'ct1', null) || _.get(lastIns, 'identificationNumber', '') !== _.get(_.head(_.get(this.curGenInsResp, 'insurabilities', [])), 'regNrWithMut', null) || _.head(_.get(ins, 'code', '').split(',')) !== _.get(_.head(_.get(this.curGenInsResp, 'insurabilities', [])), 'mutuality', null)){
+                                (_.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'mutuality', null) ? this.api.insurance().listInsurancesByCode(_.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'mutuality', null)) : Promise.resolve({})).then(insurance => {
+                                    lastIns.endDate = moment().format('YYYYMMDD')
+                                    this.set('patient.insurabilities', _.concat(_.get(this.patient, 'insurabilities', []), {
+                                        parameters: {
+                                            paymentapproval: _.get(this, 'curGenInsResp.paymentByIo', null),
+                                            preferentialstatus: _.get(this, 'specialSocialCategory', null),
+                                            tc1: _.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'ct1', null),
+                                            tc2: _.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'ct2', null)
+                                        },
+                                        identificationNumber: _.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'regNrWithMut', null),
+                                        insuranceId: _.get(_.head(insurance), 'id', null),
+                                        startDate: _.get(_.head(_.get(this, 'curGenInsResp.insurabilities', [])), 'period.periodStart', null),
+                                        endDate: null
+                                    }))
+
+                                    return Promise.resolve(this.patient)
+                                })
+                                .then(() => this.api.patient().modifyPatientWithUser(this.user,this.patient))
+                                .then(pat => this.api.register(pat,"patient"))
+                                .then(pat => this._patientSaved())
+                            }else{
+                                return Promise.resolve({})
+                            }
+                        })
+
+                    }
+
 
                     this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('medicalHouse') : null
                     this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('noInsurance') : null
