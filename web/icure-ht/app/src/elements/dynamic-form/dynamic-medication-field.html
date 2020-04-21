@@ -444,7 +444,7 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
     /**Print partie @todo change event*/
 
     openPrintDialog() {
-        /*this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))*/
+        this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))
     }
 
     /** save partie*/

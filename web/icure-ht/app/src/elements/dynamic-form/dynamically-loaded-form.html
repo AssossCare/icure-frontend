@@ -654,22 +654,6 @@
                         return c;
                     },
                     setValueContainers: (label, containers) => {
-						/*const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
-
-						let prom = Promise.resolve([])
-
-						Promise.all(medicationArray.map(m => {
-							const newMedication = _.cloneDeep(_.omit(m.newMedication, ["id"]));
-							(this.api.contact().medicationValue(newMedication, this.language) || {endMoment: ""}).endMoment = null;
-							newMedication.tags = newMedication.tags && newMedication.tags.filter(tag => !(tag.type === "ICURE" && tag.code === "PRESC")) || [];
-							(newMedication.tags.find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {type: "CD-ITEM", version: "1"})).code = "medication";
-							newMedication.label = this.localize('medication', 'medication', this.language);
-							newMedication.id = this.api.crypto().randomUuid();
-							prom = prom.then(promiseCarrier => !(m.options && (m.options.createMedication || !m.options.isPrescription)) ? _.concat(promiseCarrier, null) : this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication)).then(x => _.concat(promiseCarrier,x)))
-						}))
-
-						prom.then(results => results.find(r => r) && this.refreshPatient())*/
-
                         if (!this.currentContact) {
                             return;
                         }
