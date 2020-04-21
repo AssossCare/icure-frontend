@@ -424,10 +424,9 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
 
     clearMedication(el) {
-        /*const id = el.target.parentElement.parentElement.id;
-        this.set('previouslySavedValue', _.cloneDeep(this.value))
+        const id = el.target.parentElement.parentElement.id;
         this.splice('value', this.value.findIndex(s => s.id === id), 1);
-        this._valueChanged()*/
+		this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
     }
 
     editMedication(el) {
@@ -465,20 +464,6 @@ class DynamicMedicationField extends Polymer.TkLocalizerMixin(Polymer.Element) {
 				medications: this.value
 			}
 		}))
-		/*let localizedValue = this._localizedValue(this.value);
-        if (!_.isEqual(this.value, this.previouslySavedValue)) {
-            this.set('previouslySavedValue', _.cloneDeep(this.value))
-            this.set('localizedValue', localizedValue);
-            this.set('refresher', this.refresher+1)
-            if(!this.readOnly) {
-                this.dispatchEvent(new CustomEvent('field-changed', {
-                    detail: {
-                        context: this.context,
-                        value: this.value
-                    }
-                }));
-            }
-        }*/
 	}
 
 
