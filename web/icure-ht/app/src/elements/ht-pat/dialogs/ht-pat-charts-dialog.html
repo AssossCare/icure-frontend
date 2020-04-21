@@ -836,11 +836,11 @@
             }
 
             _inWeeks(self, s, dateOfBirth) {
-                return self.api.moment(s.valueDate).diff(dateOfBirth, 'weeks') < 13;
+                return _.get(s, 'valueDate', null) ? self.api.moment(_.get(s, 'valueDate', null)).diff(dateOfBirth, 'weeks') < 13 : null;
             }
 
             _inMonths(self, s, dateOfBirth) {
-                return self.api.moment(s.valueDate).diff(dateOfBirth, 'months') < 60;
+                return  _.get(s, 'valueDate', null) ? self.api.moment( _.get(s, 'valueDate', null)).diff(dateOfBirth, 'months') < 60: null;
             }
 
             _compareValueDates(a, b) {
