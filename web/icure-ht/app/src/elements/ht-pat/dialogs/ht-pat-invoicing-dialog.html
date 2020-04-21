@@ -2738,7 +2738,7 @@
                     return
                 }
 
-                if (_.get(this,"selectedInvoice.invoicingCodes",[]).find(code => code.code.includes("101990") || code.code.includes("101135")) && _.get(this,'selectedInvoice.sentMediumType','')==="eattest"){
+                if (_.get(this,"selectedInvoice.invoicingCodes",[]).find(code => _.get(code, 'code', []).includes("101990") || _.get(code, 'code', []).includes("101135")) && _.get(this,'selectedInvoice.sentMediumType','')==="eattest"){
                     this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
                 }
 
@@ -2899,12 +2899,12 @@
 
             analyzeMediumType(e) {
                 if(!this.selectedInvoice || !this.selectedMediumCodeType) return;
-                if(_.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  code.code.includes("101990") || code.code.includes("101135")) && e.detail.value==="eattest"){
+                if(_.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  _.get(code, 'code', []).includes("101990") || _.get(code, 'code', []).includes("101135")) && _.get(e, 'detail.value', null)==="eattest"){
                     this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
                 }
-                this.set('selectedMediumCodeType', e.detail.value)
-                this.set('selectedInvoice.sentMediumType',e.detail.value)
-                const mediumType = e.detail.value
+                this.set('selectedMediumCodeType', _.get(e, 'detail.value', null))
+                this.set('selectedInvoice.sentMediumType', _.get(e, 'detail.value', null))
+                const mediumType = _.get(e, 'detail.value', null)
 
                 if (mediumType === 'eattest') {
                     this.set('invoiceDateAsString', moment().format('YYYY-MM-DD'))
@@ -2915,7 +2915,7 @@
                     this.set('selectedInvoice.invoiceType',"mutualfund")
                 }
 
-                e && e.detail && e.detail.value && e.detail.value === "efact" ? this.set('isThirdParty', true) : this.set('isThirdParty', false)
+                _.get(e, 'detail.value', null) === "efact" ? this.set('isThirdParty', true) : this.set('isThirdParty', false)
 
                 this.api.invoice().modifyInvoice(this.selectedInvoice)
                     .then(invoice => this.api.register(invoice,'invoice'))
@@ -3021,33 +3021,36 @@
 
                     if(nmcl.code!="109955") {
                         nmcl.valorisations.forEach(val => {
-                            const gen = (env.gen(val.predicate)())
                             let status = {done: false}
 
-                            while (!status.done) {
-                                status = gen.next() //Execute lines one by one
+                            if(_.get(val, 'predicate', null)){
+                                const gen = (env.gen(_.get(val, 'predicate', null))())
+
+                                while (!status.done) {
+                                    status = gen.next() //Execute lines one by one
+                                }
                             }
 
-                            val.reimbursement = Number(val.reimbursement).toFixed(2)
-                            val.patientIntervention = Number(val.patientIntervention).toFixed(2)
-                            val.doctorSupplement = Number(val.doctorSupplement || '0').toFixed(2)
-                            val.totalAmount = (Number(val.doctorSupplement || 0)+Number(val.patientIntervention || 0)+Number(val.reimbursement || 0)).toFixed(2)
+                            val.reimbursement = Number(_.get(val, 'reimbursement', '0.00')).toFixed(2)
+                            val.patientIntervention = Number(_.get(val, 'patientIntervention', '0.00')).toFixed(2)
+                            val.doctorSupplement = Number(_.get(val, 'doctorSupplement', '0.00')).toFixed(2)
+                            val.totalAmount = (Number(_.get(val, 'doctorSupplement', '0.00'))+Number(_.get(val, 'patientIntervention', '0.00'))+Number(_.get(val, 'reimbursement', '0.00'))).toFixed(2)
 
                             // Patient has NO ins, charge it with all due fees
                             if (!this._hasInsurability()) {
-                                val.patientIntervention = Number(Number(val.patientIntervention) + Number(val.reimbursement)).toFixed(2);
+                                val.patientIntervention = Number(Number(_.get(val, 'patientIntervention', '0.00')) + Number(_.get(val, 'reimbursement', '0.00'))).toFixed(2);
                                 val.reimbursement = Number('0').toFixed(2);
                             }
 
-                            if (status.value && moment().isBetween(this.api.moment(val.startOfValidity), this.api.moment(val.endOfValidity))) {
+                            if (_.get(status, 'value', null) && moment().isBetween(this.api.moment(val.startOfValidity), this.api.moment(val.endOfValidity))) {
 
-                                newNmcl.totalAmount = Number(Number(newNmcl.totalAmount) + Number(val.totalAmount)).toFixed(2);
-                                newNmcl.reimbursement = Number(Number(newNmcl.reimbursement) + Number(val.reimbursement)).toFixed(2);
-                                newNmcl.patientIntervention = Number(Number(newNmcl.patientIntervention) + Number(val.patientIntervention)).toFixed(2);
+                                newNmcl.totalAmount = Number(Number(_.get(newNmcl, 'totalAmount', '0.00')) + Number(_.get(val, 'totalAmount', '0.00'))).toFixed(2);
+                                newNmcl.reimbursement = Number(Number(_.get(newNmcl, 'reimbursement', '0.00')) + Number(_.get(val, 'reimbursement', '0.00'))).toFixed(2);
+                                newNmcl.patientIntervention = Number(Number(_.get(newNmcl, 'patientIntervention', '0.00')) + Number(_.get(val, 'patientIntervention', '0.00'))).toFixed(2);
 
                                 // Patient has NO ins, charge it with all due fees
                                 if (!this._hasInsurability()) {
-                                    newNmcl.patientIntervention = Number(newNmcl.reimbursement).toFixed(2);
+                                    newNmcl.patientIntervention = Number(_.get(newNmcl, 'reimbursement', '0.00')).toFixed(2);
                                     newNmcl.reimbursement = Number('0').toFixed(2);
                                 }
                             }
