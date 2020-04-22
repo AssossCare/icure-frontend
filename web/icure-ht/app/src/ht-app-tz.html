@@ -695,6 +695,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 overflow:hidden
             }
 
+
+            #mailerMessage {
+                cursor: pointer;
+            }
+
+            #mailerMessage .notification-msg {
+                grid-column:1/span 3;
+            }
+
+            #mailerMessage.notification-container .notification-btn.single-btn{
+                grid-column: 4 / span 1!important;
+            }
+
             #iconCloseErrorEID{
                 width:100%;
                 height: 100%;
@@ -860,7 +873,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-main>
-                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage"  on-open-mailer="_openMailer">
+                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage"  on-open-mailer="_openMailer" >
                         <splash-screen-tz></splash-screen-tz>
                     </ht-pat>
                     <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" on-open-mailer="_openMailer">
@@ -996,6 +1009,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
+        <paper-item id="mailerMessage" class="notification-container electron-notification-panel">
+            <div class="notification-msg" on-tap="_closeNotif"><iron-icon class="notification-icn ml10" icon="communication:email" on-tap="_closeNotif"></iron-icon>[[mailerMessage]]</div>
+            <paper-button class="notification-btn single-btn" on-tap="_closeNotif">[[localize('clo','Close', language)]]</paper-button>
+        </paper-item>
+
         <paper-item id="ehBoxMessage" class="notification-container electron-notification-panel">
             <iron-icon class="notification-icn" icon="communication:email" on-tap="_gotoEhBox"></iron-icon>
             <div class="notification-msg" on-tap="_gotoEhBox">[[ehBoxWebWorkerTotalNewMessages]] [[localize('ehb.newMessages','new message(s)', language)]]</div>
@@ -1049,7 +1067,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="warningLabel displayNotification" id="keystoreExpiresSoonLabel"><iron-icon icon="alarm"></iron-icon> [[localize('keystoreExpiresSoonLabel','Votre keystore va bientôt expirer',language)]] : [[keyStoreValidityLabel]]</div>
         </template>
 
-        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-mailer-dialog>
+        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-mailer-message="_mailerMessage"></ht-mailer-dialog>
 
     </template>
 
@@ -1251,6 +1269,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     ehBoxWebWorkerTotalNewMessages: {
                         type: Number,
                         value: 0
+                    },
+                    mailerMessage: {
+                        type: String,
+                        value: ""
                     },
                     EhboxCheckingActive: {
                         type: Boolean,
@@ -2718,6 +2740,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _openMailer(e) {
                 const mailerDialog = this.shadowRoot.querySelector("#htMailerDialog")
                 return mailerDialog && typeof _.get(mailerDialog,"open") === "function" && mailerDialog.open(_.assign({},_.get(e,"detail",{}), _.get(this,"headers",{})))
+            }
+
+            _mailerMessage(e) {
+                if(!_.trim(_.get(e,"detail.message"))) return;
+                this.set('mailerMessage', _.trim(_.get(e,"detail.message")))
+                this.$['mailerMessage'].classList.add('notification');
+                setTimeout(() => { this.$['mailerMessage'].classList.remove('notification'); }, 10000);
             }
 
         }

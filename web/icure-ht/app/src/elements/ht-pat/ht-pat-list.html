@@ -1170,7 +1170,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
                         <template is="dom-if" if="[[!_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
-                            <paper-button class="button button--save" on-tap="_test">TEST MAILER</paper-button>
                             <paper-button class="button button--save" on-tap="_addPatient">[[localize('add_pat','Add Patient',language)]]</paper-button>
 
                             <template is="dom-if" if=[[!showExportContainer]]>
@@ -3467,13 +3466,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _test() {
-                this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
-                    documentId: "681798fe-62ae-47c4-9ca9-63631247adfa",
-                    fileContent: null,
-                    filename: "2020-04-19-certificat-specifique-document-sortant-1587310948226.pdf",
-                    predefinedMessage: "sendPrescription",
-                    contentType: null,
-                }}))
+
+                // Without document id / pass content directly
+                return this.api.document().getDocument("681798fe-62ae-47c4-9ca9-63631247adfa")
+                    .then(doc => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"user.healthcarePartyId", null), _.trim(_.get(doc,"id","")), _.size(_.get(doc,"encryptionKeys",[])) ? _.get(doc,"encryptionKeys",[]) : _.get(doc,"delegations",[])).then(({extractedKeys: enckeys}) => [doc,enckeys]))
+                    .then(([doc,enckeys]) => this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>[doc,decryptedContent]))
+                    .then(([doc,decryptedContent]) => this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
+                        filename: "test-fabien.pdf",
+                        fileContent: decryptedContent,
+                        contentType: "application/pdf"
+                    }})))
+
+                // With document id
+                // this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
+                //     documentId: "681798fe-62ae-47c4-9ca9-63631247adfa",
+                //     filename: null,
+                //     fileContent: null,
+                //     contentType: null,
+                //     predefinedMessage: "sendPrescription",
+                // }}))
+
             }
 
         }

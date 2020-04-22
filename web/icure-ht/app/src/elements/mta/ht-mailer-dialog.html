@@ -337,18 +337,17 @@ Bien à vous,`
                 const predefinedMessage = _.find(this._predefinedMessages, {scenario:_.trim(_.get(inputData,"predefinedMessage","default"))})
                 const htMailerDialogContent = this.shadowRoot.querySelector("#htMailerDialogContent")
 
-                if(!!_.get(this,"_isBusy",false) || !_.trim(filename) || (!_.trim(documentId) && !fileContent)) return;
+                if(!!_.get(this,"_isBusy",false) || (!_.trim(filename) && !_.trim(documentId)) || (!_.trim(documentId) && !fileContent)) return;
 
                 return promResolve
                     .then(()=>this.set("_isBusy", true))
                     .then(()=>_.map(_.get(this,"_data",{}), (propValue,propKey) => typeof _.get(propValue,"value",null) !== "function" ? null : this.set("_data." + propKey, _.get(propValue,"value",null)())))
                     .then(() => this._resetComponentProperties())
                     .then(() => _.assign(this._data, {"Authorization":_.get(inputData,"Authorization")}))
-                    .then(() => !documentId ? _.assign(this._data, {attachment:{name:filename,content:fileContent, contentType:contentType}}) : this.api.document().getDocument(documentId)
+                    .then(() => !documentId ? _.assign(this._data, {attachment:{name:filename||this.api.crypto().randomUuid()+'.pdf',content:this.api.crypto().utils.ua2hex(fileContent), contentType:contentType}}) : this.api.document().getDocument(documentId)
                         .then(doc => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"user.healthcarePartyId", null), _.trim(_.get(doc,"id","")), _.size(_.get(doc,"encryptionKeys",[])) ? _.get(doc,"encryptionKeys",[]) : _.get(doc,"delegations",[])).then(({extractedKeys: enckeys}) => [doc,enckeys]))
                         .then(([doc,enckeys]) => this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>[doc,decryptedContent]))
-                        .then(([doc,decryptedContent]) => _.assign(this._data, {attachment:{name:_.trim(filename)?_.trim(filename):_.trim(_.get(doc,"name")),content:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(decryptedContent))),contentType:_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti",""))))?_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti","")))):"application/pdf"}}))
-                        // .then(([doc,decryptedContent]) => _.assign(this._data, {attachment:{name:_.trim(filename)?_.trim(filename):_.trim(_.get(doc,"name")),content:this.api.crypto().utils.ua2text(decryptedContent),contentType:_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti",""))))?_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti","")))):"application/pdf"}}))
+                        .then(([doc,decryptedContent]) => _.assign(this._data, {attachment:{name:_.trim(filename)?_.trim(filename):_.trim(_.get(doc,"name"))||this.api.crypto().randomUuid()+'.pdf',content:this.api.crypto().utils.ua2hex(decryptedContent),contentType:_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti",""))))?_.trim(this.api.document().mimeType(_.trim(_.get(doc,"mainUti","")))):"application/pdf"}}))
                         .catch(e=>{console.log("ERROR while getting attachment", e); return promResolve;})
                     )
                     .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
@@ -359,9 +358,6 @@ Bien à vous,`
                     .catch(e => console.log("ERROR with mailer", e))
                     .finally(() => (this.set("_isBusy", false)||true) && promResolve)
 
-                    // fileContent => ab / ua / base64 => anticiper les scénarios
-                    // Ecrire une petit spec pour les collègues :-)
-
             }
 
             _send() {
@@ -371,7 +367,8 @@ Bien à vous,`
                 const fieldsToValidate = ["#recipients","#subject","#message"]
                 const fieldsValidation = _.compact(_.map( fieldsToValidate, k => { const fieldToValidate = this.shadowRoot.querySelector(k); return (fieldToValidate && typeof _.get(fieldToValidate, "validate", false) === "function" && _.trim(_.get(fieldToValidate,"value",false)) && fieldToValidate.validate()); }))
 
-                return _.size(fieldsToValidate) !== _.size(fieldsValidation) ? promResolve : promResolve
+                return !!_.get(this,"_isBusy",false) || _.size(fieldsToValidate) !== _.size(fieldsValidation) ? promResolve : promResolve
+                    .then(()=>this.set("_isBusy", true))
                     .then(() =>{
                         const recipients = _.map(_.trim(this.shadowRoot.querySelector("#recipients").value||"").split(/,|;| /), _.trim)
                         const subject = _.trim(this.shadowRoot.querySelector("#subject").value||"")
@@ -396,12 +393,12 @@ Bien à vous,`
                         return prom
                     })
                     .then(sendMailResults => {
-                        console.log("sendMailResults",sendMailResults);
+                        const success = _.size(_.filter(sendMailResults , it => !!_.trim(_.get(it,"Sent[0].MessageUUID")))) === _.size(sendMailResults)
+                        this.dispatchEvent(new CustomEvent("mailer-message", {composed: true, bubbles: true, detail: {message:success ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))
+                        return success ? this._closeComponent() : null
                     })
-                    // .catch
-                    // .finaly
-                    // .then(() => this._closeComponent())
-                    // .then(() => confirm on screen d'une manière ou d'une autre)
+                    .catch(e => console.log("ERROR when sending mail", e))
+                    .finally(() => (this.set("_isBusy", false)||true) && promResolve)
 
             }
 
