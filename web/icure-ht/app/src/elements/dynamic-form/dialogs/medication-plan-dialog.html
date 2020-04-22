@@ -1114,6 +1114,7 @@
                 <paper-button dialog-confirm autofocus on-tap="cancel" class="button">[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="{{_isDisplayingPrintButton(selectedTab)}}">
                     <paper-button on-tap="print" class="button button--other">[[localize('print','Print',language)]]</paper-button>
+                    <paper-button on-tap="_printAndSendByEmail" class="button button--other">[[localize('sendByEmail','Send by email',language)]]</paper-button>
                 </template>
                 <!--<paper-button dialog-confirm autofocus on-tap="" class="button button--save">[[localize('add_medication','Add Medication',language)]]</paper-button>-->
             </div>
@@ -2156,7 +2157,7 @@
                 this.$.chapterivdialog && this.$.chapterivdialog.reset()
             }
 
-            print() {
+            print(sendDocumentByEmail=false) {
                 const template = require(this._isEqual(this.selectedTab,1) ? "./src/medication-doctor-view-pdf-template.json" : "./src/medication-patient-view-pdf-template.json")
 
                 let list = this.presentList
@@ -2234,17 +2235,28 @@
 
                 //type:"doc-off-format"
                 this.api.pdfReport(mustache.render(template.html, view), {
-                    type: "rapp-mail",
+                    type: !sendDocumentByEmail ? "rapp-mail" : null,
                     rotate : 1
-                }).then(({pdf: pdfFileContent, printed: printed}) => !printed && this.api.triggerFileDownload(
-                    pdfFileContent,
-                    "application/pdf",
-                    _.kebabCase(_.compact([
+                }).then(({pdf: pdfFileContent, printed: printed}) => {
+
+                    const filename = _.kebabCase(_.compact([
                         this._isEqual(this.selectedTab,1) ? "doctor_" : "patient_",
                         "schema_medication_",
                         +new Date()
                     ]).join("_")) + ".pdf"
-                ))
+
+                    return !sendDocumentByEmail ?!printed && this.api.triggerFileDownload(pdfFileContent,"application/pdf",filename) : this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
+                        documentId: null,
+                        filename: filename,
+                        fileContent: pdfFileContent,
+                        contentType: "application/pdf",
+                        predefinedMessage: "sendMedicationScheme",
+                    }}))
+                })
+            }
+
+            _printAndSendByEmail() {
+                return this.print(true);
             }
 
             _isDisplayingPrintButton(){

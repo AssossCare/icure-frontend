@@ -2691,7 +2691,8 @@
 		"outsideOfCountry": "Outside of country",
 		"sendDocumentByEmail": "Send a document by email",
 		"recipientsEmailAddresses": "Recipient(s) email address(es)",
-		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible."
+		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
+		"sendByEmail": "Send by email"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5477,7 +5478,8 @@
 		"outsideOfCountry": "à l'étranger",
 		"sendDocumentByEmail": "Envoyer un document par email",
 		"recipientsEmailAddresses": "Adresse(s) email du/des destinataire(s)",
-		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible."
+		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible.",
+		"sendByEmail": "Envoyer par email"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8219,6 +8221,7 @@
 		"outsideOfCountry": "In het buitenland",
 		"sendDocumentByEmail": "Send a document by email",
 		"recipientsEmailAddresses": "Recipient(s) email address(es)",
-		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible."
+		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
+		"sendByEmail": "Send by email"
 	}
 }

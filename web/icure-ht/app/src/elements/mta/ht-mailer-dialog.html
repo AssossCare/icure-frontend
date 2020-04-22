@@ -123,6 +123,15 @@ Je vous en souhaite la bonne réception.
 
 Bien à vous,`
                         },{
+                            scenario: "sendMedicationScheme",
+                            subject: "Votre schéma de médication",
+                            message: `Bonjour Madame, bonjour Monsieur,
+
+Veuillez, je vous prie, trouver ci-joint votre schéma de médication au format PDF.
+Je vous en souhaite la bonne réception.
+
+Bien à vous,`
+                        },{
                             scenario: "sendPrescription",
                             subject: "Votre prescription électronique",
                             message: `Bonjour Madame, bonjour Monsieur,
@@ -384,7 +393,7 @@ Bien à vous,`
                                     "Html-part": this._getHtmlTemplate({subject:subject,message:message}),
                                     "Text-part": textPart,
                                     "Headers" : { "Reply-To": _.get(this,"_data.currentHcp.email", "info@topaz.care") },
-                                    "Attachments":[{"Content-type":_.trim(_.get(this,"_data.attachment.contentType")),"Filename":_.trim(_.get(this,"_data.attachment.name")),"content":_.get(this,"_data.attachment.content")}],
+                                    "Attachments": !_.get(this,"_data.attachment.content") ? null : [{"Content-type":_.trim(_.get(this,"_data.attachment.contentType")),"Filename":_.trim(_.get(this,"_data.attachment.name")),"content":_.get(this,"_data.attachment.content")}],
                                 }))
                                 .then(mailjetAnswer => _.concat(promisesCarrier,mailjetAnswer))
                                 .catch(e => _.concat(promisesCarrier,null))
