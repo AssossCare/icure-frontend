@@ -2157,7 +2157,10 @@
                 this.$.chapterivdialog && this.$.chapterivdialog.reset()
             }
 
-            print(sendDocumentByEmail=false) {
+            print(e) {
+
+                const sendDocumentByEmail = !!_.get(e,"sendDocumentByEmail", false)
+
                 const template = require(this._isEqual(this.selectedTab,1) ? "./src/medication-doctor-view-pdf-template.json" : "./src/medication-patient-view-pdf-template.json")
 
                 let list = this.presentList
@@ -2251,12 +2254,13 @@
                         fileContent: pdfFileContent,
                         contentType: "application/pdf",
                         predefinedMessage: "sendMedicationScheme",
+                        patientId: _.trim(_.get(this,"patient.id",null))
                     }}))
                 })
             }
 
             _printAndSendByEmail() {
-                return this.print(true);
+                return this.print({sendDocumentByEmail:true});
             }
 
             _isDisplayingPrintButton(){

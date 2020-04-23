@@ -838,7 +838,9 @@
                 return medsDup;
             }
 
-            _printPrescriptions(sendDocumentByEmail=false) {
+            _printPrescriptions(e) {
+
+                const sendDocumentByEmail = !!_.get(e,"sendDocumentByEmail", false)
 
                 if(!this._printEnabled())return
 
@@ -934,7 +936,9 @@
                     })
             }
 
-            _printPrescriptionNoRecipe(sendDocumentByEmail=false) {
+            _printPrescriptionNoRecipe(e) {
+
+                const sendDocumentByEmail = !!_.get(e,"sendDocumentByEmail", false)
 
                 if(!this._printEnabled()) return;
 
@@ -949,13 +953,13 @@
 
             _printAndSendByEmail(e) {
 
-                return this._printPrescriptions(true)
+                return this._printPrescriptions({sendDocumentByEmail:true})
 
             }
 
             _printAndSendByEmailNoRecipe(e) {
 
-                return this._printPrescriptionNoRecipe(true)
+                return this._printPrescriptionNoRecipe({sendDocumentByEmail:true})
 
             }
 
@@ -1311,6 +1315,7 @@
                         fileContent: null,
                         contentType: null,
                         predefinedMessage: "sendPrescription",
+                        patientId: _.trim(_.get(this,"patient.id",null))
                     }}))
 
                 })
