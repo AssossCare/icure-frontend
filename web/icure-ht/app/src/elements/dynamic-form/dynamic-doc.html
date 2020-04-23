@@ -1282,6 +1282,10 @@
                         type: Object,
                         value: () => {}
                     },
+                    patient:{
+                        type: Object,
+                        value: () => {}
+                    },
                     labOrProtocolContent: {
                         type: Array,
                         value: () => []
@@ -1657,7 +1661,7 @@
 
             _sendByEmail(e) {
                 const documentId = _.get(e,"target.dataset.documentId", false);
-                return !documentId ? false : this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {documentId: documentId}}))
+                return !documentId ? false : this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {documentId: documentId, patientId:_.trim(_.get(this,"patient.id"))}}))
             }
 
             _fullWidth(inputData) {
