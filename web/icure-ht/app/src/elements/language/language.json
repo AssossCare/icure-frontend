@@ -220,6 +220,7 @@
 		"attached": "Attached",
 		"attached_to": "Attached to",
 		"attachments": "Attachments",
+		"attachment": "Attachment",
 		"auc": "Aucun",
 		"aut": "Author",
 		"auto_logout": "Auto logout delay (minutes)",
@@ -2687,7 +2688,11 @@
 		"notInsured": "Not insured",
 		"noReasonGiven": "No reason given",
 		"isHospitalized": "Hospitalized",
-		"outsideOfCountry": "Outside of country"
+		"outsideOfCountry": "Outside of country",
+		"sendDocumentByEmail": "Send a document by email",
+		"recipientsEmailAddresses": "Recipient(s) email address(es)",
+		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
+		"sendByEmail": "Send by email"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -2919,6 +2924,7 @@
 		"attached": "Annexés",
 		"attached_to": "Annexés à",
 		"attachments": "Annexes",
+		"attachment": "Pièce jointe",
 		"auc": "Aucun",
 		"aut": "Auteur",
 		"auto_logout": "Déconnexion auto (minutes)",
@@ -5469,7 +5475,11 @@
 		"notInsured": "Pas d'assurabilité",
 		"noReasonGiven": "Pas de raison donné",
 		"isHospitalized": "Hospitalisé",
-		"outsideOfCountry": "à l'étranger"
+		"outsideOfCountry": "à l'étranger",
+		"sendDocumentByEmail": "Envoyer un document par email",
+		"recipientsEmailAddresses": "Adresse(s) email du/des destinataire(s)",
+		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible.",
+		"sendByEmail": "Envoyer par email"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -5694,6 +5704,7 @@
 		"attached": "In bijlage",
 		"attached_to": "In bijlage met",
 		"attachments": "Bijlagen",
+		"attachment": "Bijlaag",
 		"auc": "Geen enkel",
 		"aut": "Auteur",
 		"auto_logout": "Automatisch afmelden na (minuten)",
@@ -8207,6 +8218,10 @@
 		"notInsured": "Niet verzekerd",
 		"noReasonGiven": "Geen reden gegeven",
 		"isHospitalized": "Gehospitaliseerd",
-		"outsideOfCountry": "In het buitenland"
+		"outsideOfCountry": "In het buitenland",
+		"sendDocumentByEmail": "Send a document by email",
+		"recipientsEmailAddresses": "Recipient(s) email address(es)",
+		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
+		"sendByEmail": "Send by email"
 	}
 }

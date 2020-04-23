@@ -176,6 +176,7 @@
                 <paper-button class="button" on-tap="" dialog-dismiss>[[localize('can', "Annuler", language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_printPrescriptionNoRecipe" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
                 <paper-button class="button button--save" dialog-dismiss autofocus on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('try_again','Réessayer',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_printAndSendByEmailNoRecipe" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
             </div>
 
         </paper-dialog>
@@ -346,6 +347,7 @@
                     <div class="printButton">
                         <paper-button class="button" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
                         <paper-button class="button button--save" dialog-confirm autofocus on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]">[[localize('pri','Print',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_printAndSendByEmail" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
                     </div>
                 </div>
             </template>
@@ -757,7 +759,6 @@
                 return svc && this.api.contact().medication().posologyToString(this.api.contact().medicationValue(svc, this.language), this.language) || this.localize("known_usage", "Usage connu");
             }
 
-
             _enabled(column, line) {
 				if (line === undefined) {
 					return true;
@@ -796,7 +797,6 @@
             _regCodeIsCustom(r) {
                 return (r.dayPeriod && ["midday", "afterwakingup"].includes(r.dayPeriod.code));
             }
-
 
             _convertForRecipe(medications) {
                 // @todo: use code api
@@ -838,11 +838,10 @@
                 return medsDup;
             }
 
-            _printPrescriptions(e) {
-                if(!this._printEnabled()) {
-                    console.log("nothing to print")
-                    return
-                }
+            _printPrescriptions(sendDocumentByEmail=false) {
+
+                if(!this._printEnabled())return
+
                 this.$.confirmNoRecipe.close()
 				this.$.loading.open();
 				const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
@@ -883,7 +882,7 @@
                         })
                         .then(()=>{
                             toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-                            this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
+                            this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat,sendDocumentByEmail)
                             this.$.loading.close();
                         })
                         .catch(error=>{
@@ -928,28 +927,36 @@
                     [{ drugIds: service.id }];
                 const drugs = [service];
                 const toPrint = this._formatBody(ids, drugs);
-                this._pdfReport(drugs, toPrint, 'presc')
+                this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
                     .then(() => {
                         console.log("printed")
                         //this._markDrugsAsSent(drugsToBePrescribed)
                     })
             }
 
-            _printPrescriptionNoRecipe(e) {
-                if(!this._printEnabled()) {
-                    console.log("nothing to print")
-                    return
-                }
+            _printPrescriptionNoRecipe(sendDocumentByEmail=false) {
+
+                if(!this._printEnabled()) return;
+
                 const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
                 const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
                 this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
                 const element = this.root.querySelector("#barCode");
 
                 const toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-                this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
-                    .then(()=>{
-                        this._markDrugsAsSent(drugsToBePrescribed)
-                    })
+                return this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat,sendDocumentByEmail).then(()=> this._markDrugsAsSent(drugsToBePrescribed))
+            }
+
+            _printAndSendByEmail(e) {
+
+                return this._printPrescriptions(true)
+
+            }
+
+            _printAndSendByEmailNoRecipe(e) {
+
+                return this._printPrescriptionNoRecipe(true)
+
             }
 
             _formatPrescriptionsBody(splitColumns,drugsToBePrescribed,patient,hcp,deliveryDate, endDateForExecution, element) {
@@ -1237,7 +1244,7 @@
                 return toPrint
             }
 
-            _pdfReport(drugsToBePrescribed,toPrint,size) {
+            _pdfReport(drugsToBePrescribed,toPrint,size, sendDocumentByEmail=false) {
 
                 this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: true}}))
 
@@ -1253,7 +1260,7 @@
                 }
 
                 return this.api.pdfReport(mustache.render(toPrint, null), {
-                    type: "recipe",
+                    type: !sendDocumentByEmail ? "recipe" : null,
                     paperWidth: this.patient.ssin && this.api.tokenId && size == 'A4' ? 210 : 105,
                     paperHeight: this.patient.ssin && this.api.tokenId && size == 'A4' ? 297 : 210,
                     marginLeft: 5,
@@ -1282,7 +1289,7 @@
                         {
                             documentType: 'report',
                             mainUti: this.api.document().uti("application/pdf"),
-                            name: pdfPrintingData.documentMetas.title + " - " + pdfPrintingData.documentMetas.patientName
+                            name: pdfPrintingData.documentMetas.title + " - " + pdfPrintingData.documentMetas.patientName + '.pdf'
                         }
                     ).then(newDocumentInstance=>_.assign({newDocumentInstance:newDocumentInstance},pdfPrintingData))
                 )
@@ -1297,7 +1304,16 @@
                     }}))
                     return pdfPrintingData
                 })
-                .then(pdfPrintingData => !pdfPrintingData.printed && this.api.triggerFileDownload( pdfPrintingData.pdfFileContent, "application/pdf", pdfPrintingData.downloadFileName ))
+                .then(pdfPrintingData => {
+                    return !sendDocumentByEmail ? !pdfPrintingData.printed && this.api.triggerFileDownload( pdfPrintingData.pdfFileContent, "application/pdf", pdfPrintingData.downloadFileName ) : this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {
+                        documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
+                        filename: null,
+                        fileContent: null,
+                        contentType: null,
+                        predefinedMessage: "sendPrescription",
+                    }}))
+
+                })
                 .catch(e=>{
                     console.log(e)
                     this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false}}))
@@ -1326,7 +1342,6 @@
                 this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
                 this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.currentContact}, bubbles: true, composed: true}));
             }
-
 
             _markDrugsAsSent(drugsToBePrescribed) {
                 this._markDrugsAs(drugsToBePrescribed, "ordered", STATUS_SENT);

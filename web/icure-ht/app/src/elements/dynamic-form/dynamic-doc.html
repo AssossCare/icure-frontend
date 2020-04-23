@@ -513,6 +513,11 @@
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
                                 </template>
 
+                                <template is="dom-if" if="[[sendbyemail]]">
+                                    <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                    <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
+                                </template>
+
                                 <template is="dom-if" if="[[allowEsLink]]">
                                     <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
                                     <paper-menu-button class="form-title-bar-btn" horizontal-align="right" dynamic-align="true" vertical-offset="30">
@@ -604,6 +609,11 @@
                                 <template is="dom-if" if="[[forwardable]]">
                                     <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[sendbyemail]]">
+                                    <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                    <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[allowEsLink]]">
@@ -869,6 +879,11 @@
                                         <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
                                     </template>
 
+                                    <template is="dom-if" if="[[sendbyemail]]">
+                                        <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                        <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
+                                    </template>
+
                                     <template is="dom-if" if="[[!isPatDetail]]">
                                         <template is="dom-if" if="[[!forceNoAssignation]]">
                                             <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
@@ -960,6 +975,11 @@
                             <template is="dom-if" if="[[forwardable]]">
                                 <paper-icon-button on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
                                 <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                            </template>
+
+                            <template is="dom-if" if="[[sendbyemail]]">
+                                <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[allowEsLink]]">
@@ -1178,6 +1198,10 @@
                         type: Boolean
                     },
                     forwardable:{
+                        type: Boolean,
+                        value: false
+                    },
+                    sendbyemail:{
                         type: Boolean,
                         value: false
                     },
@@ -1629,6 +1653,11 @@
             _forwardDocument(e) {
                 const documentId = _.get(e,"target.dataset.documentId", false);
                 return !!documentId ? this.dispatchEvent(new CustomEvent(this.forwardDocumentEvent, { composed: true, bubbles: true, detail: { documentId:documentId } })) : false;
+            }
+
+            _sendByEmail(e) {
+                const documentId = _.get(e,"target.dataset.documentId", false);
+                return !documentId ? false : this.dispatchEvent(new CustomEvent("open-mailer", {composed: true, bubbles: true, detail: {documentId: documentId}}))
             }
 
             _fullWidth(inputData) {

@@ -67,6 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="elements/menu-bar/menu-bar.html">
 <link rel="import" href="elements/ht-app/ht-app-entities-selector.html">
 <link rel="import" href="elements/ht-app/ht-app-setup-prompt.html">
+<link rel="import" href="elements/mta/ht-mailer-dialog.html">
 
 <link rel="import" href="elements/icc-api/icc-api.html">
 
@@ -694,6 +695,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 overflow:hidden
             }
 
+
+            #mailerMessage {
+                cursor: pointer;
+            }
+
+            #mailerMessage .notification-msg {
+                grid-column:1/span 3;
+            }
+
+            #mailerMessage.notification-container .notification-btn.single-btn{
+                grid-column: 4 / span 1!important;
+            }
+
             #iconCloseErrorEID{
                 width:100%;
                 height: 100%;
@@ -856,23 +870,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         attr-for-selected="name"
                         fallback-selection="view404"
                         role="main">
-                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage">
+                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-main>
-                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]"
-                            socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage">
+                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage"  on-open-mailer="_openMailer" >
                         <splash-screen-tz></splash-screen-tz>
                     </ht-pat>
-                    <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}">
+                    <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" on-open-mailer="_openMailer">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-hcp>
-                    <ht-msg name="msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" force-refresh="[[_forceEhBoxRefresh]]" on-trigger-open-my-profile="_triggerOpenMyProfile" on-trigger-goto-admin="_triggerOpenAdminGroupsManagementSubMenu" on-idle="resetTimer" on-refresh-patient="_refreshPatient">
+                    <ht-msg name="msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" force-refresh="[[_forceEhBoxRefresh]]" on-trigger-open-my-profile="_triggerOpenMyProfile" on-trigger-goto-admin="_triggerOpenAdminGroupsManagementSubMenu" on-idle="resetTimer" on-refresh-patient="_refreshPatient" on-open-mailer="_openMailer">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-msg>
                     <ht-diary id="htDiary" name="diary" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-diary>
-                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]">
+                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]" on-open-mailer="_openMailer">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-admin>
                     <ht-view404 name="view404"></ht-view404>
@@ -996,6 +1009,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
+        <paper-item id="mailerMessage" class="notification-container electron-notification-panel">
+            <div class="notification-msg" on-tap="_closeNotif"><iron-icon class="notification-icn ml10" icon="communication:email" on-tap="_closeNotif"></iron-icon>[[mailerMessage]]</div>
+            <paper-button class="notification-btn single-btn" on-tap="_closeNotif">[[localize('clo','Close', language)]]</paper-button>
+        </paper-item>
+
         <paper-item id="ehBoxMessage" class="notification-container electron-notification-panel">
             <iron-icon class="notification-icn" icon="communication:email" on-tap="_gotoEhBox"></iron-icon>
             <div class="notification-msg" on-tap="_gotoEhBox">[[ehBoxWebWorkerTotalNewMessages]] [[localize('ehb.newMessages','new message(s)', language)]]</div>
@@ -1049,6 +1067,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="warningLabel displayNotification" id="keystoreExpiresSoonLabel"><iron-icon icon="alarm"></iron-icon> [[localize('keystoreExpiresSoonLabel','Votre keystore va bientôt expirer',language)]] : [[keyStoreValidityLabel]]</div>
         </template>
 
+        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-mailer-message="_mailerMessage"></ht-mailer-dialog>
 
     </template>
 
@@ -1250,6 +1269,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     ehBoxWebWorkerTotalNewMessages: {
                         type: Number,
                         value: 0
+                    },
+                    mailerMessage: {
+                        type: String,
+                        value: ""
                     },
                     EhboxCheckingActive: {
                         type: Boolean,
@@ -2712,6 +2735,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _isPatientView(){
                 return this.route.path.includes("/pat")
+            }
+
+            _openMailer(e) {
+                const mailerDialog = this.shadowRoot.querySelector("#htMailerDialog")
+                return mailerDialog && typeof _.get(mailerDialog,"open") === "function" && mailerDialog.open(_.assign({},_.get(e,"detail",{}), _.get(this,"headers",{})))
+            }
+
+            _mailerMessage(e) {
+                if(!_.trim(_.get(e,"detail.message"))) return;
+                this.set('mailerMessage', _.trim(_.get(e,"detail.message")))
+                this.$['mailerMessage'].classList.add('notification');
+                setTimeout(() => { this.$['mailerMessage'].classList.remove('notification'); }, 10000);
             }
 
         }
