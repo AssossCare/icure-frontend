@@ -1,10 +1,35 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.460",
+		  "updateDate": "2020-04-23",
+		  "startDate" : "2020-04-23",
+		  "endDate" : "2020-05-30",
+		  "mainType" : "News",
+		  "mainTitle" : "Visioconférence & améliorations",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Visioconférence & améliorations"
+				  },
+				  "description": {
+					  "fr": "Malgré le télétravail de notre équipe, les développements et les améliorations se poursuivent. Au-delà des nouveaux certificats médicaux covid-19, voici les évolutions et améliorations de votre logiciel :<br/><br/><b><i>Nouvelles fonctionnalités</i></b><br/><u>Envoi par e-mail de divers documents</u><br/>Il vous est aujourd’hui possible d’envoyer un email directement au départ de Topaz. Cela vous permet d’envoyer une prescription ou un document à un patient ou à un collègue. Nous attirons toutefois votre attention sur le fait qu’il vous est demandé de privilégier l’utilisation de votre eHealthBox.<div style='width: 96%; display: flex; padding: 2%;'><img style='height: 50%; width: 50%; margin: auto;' src='https://image.noelshack.com/fichiers/2020/17/4/1587673935-capture-d-ecran-2020-04-23-a-22-27-52.png'></img></div><br/>Vous trouverez via <a href='https://youtu.be/KZqDgKS-2ok' target='_blank'>ce lien</a> la vidéo qui explicite cette nouvelle fonctionnalité.<br/><br/><u>Visioconférence grâce à votre agenda</u><br/>En cette période particulièrement compliquée, nous avons intégré un module à votre agenda vous permettant d’effectuer des visioconférences avec vos patients notamment. </br>Vous trouverez via <a href='https://application.mikrono.com/docs/documentation?id=5e89f26b83103d01b7a28151' target='_blank'>ce lien</a> le mode d’emploi de cette nouvelle fonctionnalité<div style='width: 96%; display: flex; padding: 2%;'><img style='height: 50%; width: 50%; margin: auto;' src='https://image.noelshack.com/fichiers/2020/17/4/1587673846-image-9.png'></img></div><br/><b><i>Améliorations</i></b><br/><b><i><u>Onglet Patient</u> : service eHealth</i></b><ul><li>Amélioration de la vitesse de réaction des e-services (recip-e, ...)</li><li>Pour les médecins spécialistes : correction et stabilisation de la récupération des informations en matière d’assurabilité </li><li>Lors de la consultation des documents situés sur les hubs, l’onglet « Documents » est directement visible</li></ul><b><i><u>Onglet Patient</u>: Volet 1 Schéma de médication</i></b><ul><li>Amélioration du schéma de médication (recherche, présentation, ...)</li></ul><b><i><u>Onglet Patient</u>: Volet 3 Facturation</i></b><ul><li>Ajout de la possibilité de modifier le moyen de paiement d’une attestation</li></ul><b><i><u>Onglet Messages</u>: Facturation</i></b><ul><li>Refonte importante des fenêtres de suivi de facturation efact</li><li>Ajout des informations du bénéficiaire dans la fenêtre de facturation</li><li>Possibilité de supprimer une facture prête à l’envoi</li><li>Possibilité de sélectionner les factures à envoyer</li></ul><b><i><u>Onglet Messages</u>: MyCareNet</i></b><ul><li>Possibilité de recevoir les listes de vos patients pour lesquels vous avez un DMG</li></ul>N’hésitez pas à contacter notre support si vous rencontrez des difficultés.<br/><br/>Gaëtan DE LAEVER<br/>Coordinateur général</br></br>PS : Une question, un conseil, adressez-vous à notre support par mail : support@topaz.care ou par téléphone au 02/319.22.41 du lundi au vendredi de 8h à 20h et le samedi de 9h à 13h"
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.431",
 		  "updateDate": "2020-03-30",
 		  "startDate" : "2020-03-30",
-		  "endDate" : "2020-04-30",
+		  "endDate" : "2020-04-23",
 		  "mainType" : "News",
 		  "mainTitle" : "MDA & eAttest V2",
 		  "mainLink" : null,
