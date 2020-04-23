@@ -51,7 +51,7 @@
         <paper-dialog class="modalDialog" id="htMailerDialogContent" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title"><iron-icon icon="communication:email"></iron-icon> &nbsp;[[localize('sendDocumentByEmail','Send a document by email',language)]]</h2>
             <div class="content pl20 pr20">
-                <div class=""><paper-input id="recipients" placeholder="[[localize('recipientsEmailAddresses','Recipient(s) email address(es)',language)]]" validator="ht-email-validator" auto-validate><paper-icon-button slot="prefix" icon="icons:assignment-ind"></paper-icon-button></paper-input></div>
+                <div class=""><paper-input id="recipients" placeholder="[[localize('recipientsEmailAddresses','Recipient(s) email address(es)',language)]]" value="[[_data.mail.recipient]]" validator="ht-email-validator" auto-validate><paper-icon-button slot="prefix" icon="icons:assignment-ind"></paper-icon-button></paper-input></div>
                 <div class=""><paper-input id="subject" placeholder="[[localize('writeYourSubject', 'Write your subject', language)]]" value="[[_data.mail.subject]]" auto-validate required><paper-icon-button slot="prefix" icon="icons:assignment"></paper-icon-button></paper-input></div>
                 <div class=""><paper-input-container alway-float-label="true"><iron-autogrow-textarea slot="input" class="paper-input-input" id="message" placeholder="[[localize('writeYourMessage', 'Write your message', language)]]"  value="[[_data.mail.message]]" auto-validate required></iron-autogrow-textarea></paper-input-container></div>
                 <div class="mt30"><iron-icon icon="editor:attach-file" class="darkBlue mr5"></iron-icon>[[_data.mail.attachmentName]]</div>
@@ -75,6 +75,7 @@
 
         import _ from 'lodash/lodash';
         import { Base64 } from 'js-base64';
+        import moment from 'moment/src/moment';
 
 
 
@@ -146,6 +147,7 @@ Bien à vous,`
                         type: Object,
                         value: () => {return{
                             currentHcp: {},
+                            currentPatient: {},
                             attachment: {},
                             mail: {},
                         }}
@@ -199,6 +201,66 @@ Bien à vous,`
                             ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp,"ssin",""))),
                         })
                     })
+                    .catch(()=>promResolve)
+            }
+
+            _YYYYMMDDToDDMMYYYY(inputValue) {
+                return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDD").format('DD/MM/YYYY') : ""
+            }
+
+            _prettifyPatient(patient) {
+                const addressData = _.find(_.get(patient, "addresses", []), {addressType: "home"}) || _.find(_.get(patient, "addresses", []), {addressType: "work"}) || _.get(patient, "addresses[0]", [])
+                return _.merge({}, patient, {
+                    address: [_.trim(_.get(addressData, "street", "")), _.trim(_.get(addressData, "houseNumber", "")) + (!!_.trim(_.get(addressData, "postboxNumber", "")) ? "/" + _.trim(_.get(addressData, "postboxNumber", "")) : "")].join(", "),
+                    postalCode: _.trim(_.get(addressData, "postalCode", "")),
+                    city: this._upperFirstAll(_.trim(_.get(addressData, "city", ""))),
+                    country: this._upperFirstAll(_.trim(_.get(addressData, "country", ""))),
+                    phone: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "phone"}), "telecomNumber", "")),
+                    mobile: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "mobile"}), "telecomNumber", "")),
+                    email: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "email"}), "telecomNumber", "")),
+                    firstName: this._upperFirstAll(_.get(patient, "firstName", "")),
+                    lastName: this._upperFirstAll(_.get(patient, "lastName", "")),
+                    ssinHr: this.api.formatSsinNumber(_.trim(_.get(patient, "ssin", ""))),
+                    gender: _.trim(_.get(patient, "gender", "male")),
+                    genderHr: this._upperFirstAll(this.localize(_.trim(_.get(patient, "gender", "male")) + "GenderLong", "masculin")),
+                    dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(patient, "dateOfBirth"))),
+                    insuranceData: _
+                        .chain(_.get(patient, "insurabilities", {}))
+                        .filter((i) => {
+                            return i &&
+                                !!moment(_.trim(_.get(i, "startDate", "0")), "YYYYMMDD").isBefore(moment()) &&
+                                (!!moment(_.trim(_.get(i, "endDate", "0")), "YYYYMMDD").isAfter(moment()) || !_.trim(_.get(i, "endDate", ""))) &&
+                                !!_.trim(_.get(i, "insuranceId", ""))
+                        })
+                        .map(i => {
+                            return {
+                                insuranceId: _.trim(_.get(i, "insuranceId", "")),
+                                identificationNumber: _.trim(_.get(i, "identificationNumber", "")),
+                                tc1: _.trim(_.get(i, "parameters.tc1", "")),
+                                tc2: _.trim(_.get(i, "parameters.tc2", "")),
+                                preferentialstatus: typeof _.get(i, "parameters.preferentialstatus") === "boolean" ? !!_.get(i, "parameters.preferentialstatus", false) : _.trim(_.get(i, "parameters.preferentialstatus")) === "true"
+                            }
+                        })
+                        .head()
+                        .value(),
+                })
+            }
+
+            _getPrettifiedPatient(user, patientId, patientObject=null) {
+                const promResolve = Promise.resolve()
+                return !_.size(patientObject) && (!_.trim(_.get(user, "id")) || !_.trim(patientId)) ? promResolve : (!!_.size(patientObject) ? Promise.resolve(patientObject) : this.api.patient().getPatientWithUser(user, patientId))
+                    .then(patient => this._prettifyPatient(patient))
+                    .then(patient => this._getInsuranceData(_.trim(_.get(patient,"insuranceData.insuranceId"))).then(insuranceData => _.merge({},patient,{insuranceData:insuranceData})))
+                    .catch(()=>promResolve)
+            }
+
+            _getInsuranceData(insuranceId) {
+                const promResolve = Promise.resolve()
+                return !_.trim(insuranceId) ? promResolve : this.api.insurance().getInsurance(insuranceId)
+                    .then(insuranceData => _.merge({}, {
+                        code: _.trim(_.get(insuranceData, "code", "")),
+                        name: this._upperFirstAll(!!_.trim(_.get(insuranceData, "name." + this.language, "")) ? _.trim(_.get(insuranceData, "name." + this.language, "")) : _.trim(_.find(_.get(insuranceData, "name", {}), _.trim)))
+                    }))
                     .catch(()=>promResolve)
             }
 
@@ -345,6 +407,7 @@ Bien à vous,`
                 const filename = _.trim(_.get(inputData,"filename",null))
                 const predefinedMessage = _.find(this._predefinedMessages, {scenario:_.trim(_.get(inputData,"predefinedMessage","default"))})
                 const htMailerDialogContent = this.shadowRoot.querySelector("#htMailerDialogContent")
+                const patientId = _.trim(_.get(inputData,"patientId",null))
 
                 if(!!_.get(this,"_isBusy",false) || (!_.trim(filename) && !_.trim(documentId)) || (!_.trim(documentId) && !fileContent)) return;
 
@@ -360,6 +423,8 @@ Bien à vous,`
                         .catch(e=>{console.log("ERROR while getting attachment", e); return promResolve;})
                     )
                     .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
+                    .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), patientId).then(patient => _.assign(this._data, {currentPatient:patient})))
+                    .then(() => this.set("_data.mail.recipient", _.trim(_.get(this,"_data.currentPatient.email",""))))
                     .then(() => this.set("_data.mail.subject", _.trim(_.get(predefinedMessage,"subject",""))))
                     .then(() => this.set("_data.mail.message", _.trim(_.get(predefinedMessage,"message","")) + "\n" + this.localize("doctorAbreviation", "Dr.", this.language) + " " + _.get(this,"_data.currentHcp.names") + "\n" + this.localize("inami", "NIHII", this.language).toUpperCase() + ": " + _.get(this,"_data.currentHcp.nihiiHr")))
                     .then(() => this.set("_data.mail.attachmentName", _.trim(_.get(this,"_data.attachment.name",""))))

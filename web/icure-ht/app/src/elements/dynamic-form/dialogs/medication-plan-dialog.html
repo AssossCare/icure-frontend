@@ -2254,6 +2254,7 @@
                         fileContent: pdfFileContent,
                         contentType: "application/pdf",
                         predefinedMessage: "sendMedicationScheme",
+                        patientId: _.trim(_.get(this,"patient.id",null))
                     }}))
                 })
             }
