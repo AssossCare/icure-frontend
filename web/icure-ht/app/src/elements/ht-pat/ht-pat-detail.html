@@ -2827,6 +2827,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-dialog>
         <ht-pat-preventive-acts-dialog id="preventiveActs" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" contacts="[[contacts]]" on-open-action="openActionDialog" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" services-refresher="[[servicesRefresher]]"></ht-pat-preventive-acts-dialog>
         <ht-pat-action-plan-dialog id="planActionForm" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" current-contact="[[currentContact]]" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" readonly="false"></ht-pat-action-plan-dialog>
+        <!--todo julien checker la diff entre medications et existingMedications ??????-->
         <medication-prescription-dialog
                 id="medication-prescription"
                 api="[[api]]" user="[[user]]" patient="[[patient]]"
@@ -4610,7 +4611,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     const combinedHes = (this.activeHealthElements || []).concat(this.inactiveHealthElements || []).concat(this.archivedHealthElements || []).concat(this.allergies || []).concat(this.risks || []).concat(this.familyrisks || []).concat(this.surgicalHealthElements || [])
                     const idServicesInHes = combinedHes.map(he => he.idService)
 
-                    const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
+                    const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['medication','healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
                     const svcHes = hesAsServices.map(svc => this._makeHeFromSvc(svc))
 
                     const now = moment()
@@ -4637,12 +4638,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.set('risks', (this.risks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk'))))
                         this.set('familyrisks', (this.familyrisks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
                         this.set('surgicalHealthElements', (this.surgicalHealthElements || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
+
+                        this.set('medications',_.sortBy(_.uniqBy(svcHes.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication')).map(m =>m.svc).concat(this.medications),'id').filter(s =>!s.endOfLife && (!(this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
+                            return Object.assign(m, {
+                                colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
+                            })
+                        }),sorter))
+
                         this.set("allHealthElements",{
                             activeHealthElements: this.activeHealthElements,
                             inactiveHealthElements: this.inactiveHealthElements,
                             archivedHealthElements: this.archivedHealthElements,
                             allergies: this.allergies,
-                            medications: this.existingMedications,
+                            medications: this.existingMedications,//todo julien ?????? pourquoi pas medications ????
                             risks: this.risks,
                             familyrisks: this.familyrisks,
                             surgicalHealthElements: this.surgicalHealthElements
@@ -4779,6 +4787,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             })
                         }), sorter))
 
+                        //todo julien voir avec le prochain/prochain todo celui des prescriptions a la fin de refresh patient
+                        this.set("treatmentHistory", svcs);
+                        this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
+
+                        //todo julien a quoi ca sert cette merde je te jure ???????
                         this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
 
                         const combinedHes = _.sortBy(_.concat(svcHes, hes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
@@ -4814,7 +4827,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 inactiveHealthElements: this.inactiveHealthElements,
                                 archivedHealthElements: this.archivedHealthElements,
                                 allergies: this.allergies,
-                                medications: this.existingMedications,
+                                medications: this.existingMedications,//todo julien ?????? pourquoi pas medications ????
                                 risks: this.risks,
                                 familyrisks: this.familyrisks,
                                 surgicalHealthElements: this.surgicalHealthElements
@@ -4967,6 +4980,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }).finally(()=>this.set("SpinnerActive",false))
                     })
 
+                        //todo julien here tout remonter un peu plus haut
                         .then(() => this.api.contact().filterServices(ctcs, s => s.tags.find(t => (t.type === 'ICURE' && t.code === "PRESC" || t.type === 'CD-ITEM' && t.code === "medication") && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now)))))
                         .then(svcs => {
                             this.set("treatmentHistory", svcs);
