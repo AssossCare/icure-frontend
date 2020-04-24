@@ -311,6 +311,9 @@
                     <paper-button class="button button--save" on-tap="_openInvoicingDialog" >[[localize('btn-correct', 'Correct', language)]]</paper-button>
                 </template>
                 <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>
+                <!--Only for dev-->
+                <!--<paper-button class="button" on-tap="_recreateInvoice">[[localize('','Recreate invoice',language)]]</paper-button>-->
+                <!---->
             </div>
         </div>
 
@@ -559,6 +562,16 @@
                 }
             }
 
+            _recreateInvoice(){
+                if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
+                    this.api.invoice().newInstance(this.user, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
+                        "deletionDate", "created", "modified",
+                        "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
+                        "encryptedSelf"]))
+                    .then(ninv => this.api.invoice().modifyInvoice(ninv))
+                    .then(inv => console.log(inv))
+                }
+            }
 
         }
 

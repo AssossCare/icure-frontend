@@ -1673,6 +1673,7 @@
                     <paper-button class="button button--other" on-tap="_closeDialog">[[localize('clo','close',language)]]</paper-button>
 
                     <template is="dom-if" if="[[!isInvoiceClosed]]">
+                        <!--<paper-button on-tap="_deleteInvoice" class="button button--other">[[localize('del_inv','Delete invoice',language)]]</paper-button>-->
                         <template is="dom-if" if="[[!_isSpecialist()]]">
                             <template is="dom-if" if="[[hasInsurability]]"><paper-button class="button button--other" on-tap="_verifyTarification" disabled="[[_isETarButtonDisabled(selectedInvoice,isLoadingValidation,isTarificationMcnError,npi,selectedInvoice.sentMediumType)]]">[[localize('eTarif','Validation eTarif',language)]]</paper-button></template>
                         </template>
@@ -5471,6 +5472,13 @@
                     return require('../../../../images/male-placeholder.png');
                 }
                 return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0,1).toLowerCase() === 'f') ? require('../../../../images/female-placeholder.png') : require('../../../../images/male-placeholder.png');
+            }
+
+            _deleteInvoice(){
+                this.api.invoice().deleteInvoice(_.get(this.selectedInvoice, 'id', null)).then(inv => {
+                    console.log("Invoice n°"+_.get(inv, 'id', null)+" is deleted")
+                    this.updateGui(_.get(this, 'invoices', []).find(inv => !inv.id), true)
+                })
             }
         }
 
