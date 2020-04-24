@@ -2966,18 +2966,12 @@
             }
 
             saveMedications() {
-                //@todo julien changed here call this.saveAction
                 this.saveAction(this.medicationAccumulator.map(m => {
                     if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
                         m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
                     }
                     return m;
                 }))
-                /*this.dispatchEvent(new CustomEvent(this.isPrescription ? 'save-medications' : 'new-medications', {
-                    detail: {medications: this.medicationAccumulator},
-                    bubbles: true,
-                    composed: true
-                })*/
             }
 
             click(e) {

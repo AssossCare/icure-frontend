@@ -2218,7 +2218,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                             </div>
                                         </paper-item>
                                     </template>
-                                    <!-- @todo julien here too-->
                                     <template is="dom-if" if="[[medications.length]]">
                                         <paper-item class="menu-item sublist-footer"><div class="one-line-menu">[[localize('add_med','Add medication',language)]]</div><paper-icon-button class="menu-item-icon" icon="icons:add" on-tap="_addMedication" data-label="Medications" data-tags="CD-ITEM|medication|1.0"></paper-icon-button></paper-item>
                                     </template>
@@ -2480,14 +2479,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-
-                        <!--@todo julien dynamic medication field
-                        on-medications-validation="_medicationDetailValueChanged"
-                        on-medications-selection="_selectMultiMedication"
-                         on-medication-selection="_selectMedication"
-                         on-medication-detail="_medicationDetail"
-                         on-medications-detail="_medicationsDetail" ci desssous-->
-
                             <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]"
                                 api="[[api]]"
                                 i18n="[[i18n]]"
@@ -2506,13 +2497,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 on-close-contact="_closeContact"
                                 on-change="formsChanged"
                                 on-must-save-contact="_saveContact"
-
-
-
-
                                 on-call-medication-dialog="openMedicationDialog"
-
-
                                 contact-type-list="[[contactTypeList]]"
                                 on-contact-saved="contactChanged"
                                 on-open-charts-dialog="_openChartsDialog"
@@ -2848,7 +2833,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 i18n="[[i18n]]" language="[[language]]"
                 medications="[[existingMedications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]">
         </medication-prescription-dialog>
-        <!-- todo julien change l'event-->
         <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}"></medication-details-dialog>
         <medication-plan-dialog id="medication-plan" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" user="[[user]]" patient="[[patient]]" on-print-prescription="onPrintPrescription"></medication-plan-dialog>
         <!--<ht-pat-mcn-chapteriv-agreement id="chapterivdialog" api="[[api]]" user="[[user]]" patient="[[patient]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" on-create-service="_createService" on-update-services="_updateServices"></ht-pat-mcn-chapteriv-agreement>-->
@@ -6118,22 +6102,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     });
             }
 
-            _selectMedication(e) {
-                this.currentSelectMedicationEventDetail = e.detail
-                this.$['medication-selection'].open(e.detail.service, e.detail.content );
-            }
-
-            // _selectMultiMedication(e) {
-            //     this.currentSelectMedicationEventDetail = e.detail
-            //     this.$['medication-prescription'].open(e.detail.service, {isPrescription: true});
-            // }
-
-            //@todo julien refaire ici aussi
-            _selectMultiMedication(e) {
-                this.currentMedicationDetailEventDetail = e.detail;
-                this.$['medication-prescription'].open(e.detail.service, {isPrescription: true},(medications)=> {console.log("pas encore de save")});
-            }
-
             /**
              * Partie medication
              * */
@@ -6145,12 +6113,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }else{
                     this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
                 }
-            }
-
-            //todo @julien not sure it's now used
-            _medicationDetail(e) {
-                this.currentMedicationDetailEventDetail = e.detail
-                this.$['medication-detail'].open(e.detail.service, e.detail.content);
             }
 
             _medicationsDetail(e) {
@@ -7511,7 +7473,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return this.medications.filter(s => s.tags.some(c => _.get(c, 'type', null) === 'CD-ITEM' && _.get(c, 'code', null) === 'medication' && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && (_.get(c, 'medicationValue.endMoment', null) && this.api.moment(_.get(c, 'medicationValue.endMoment', null)).isBefore(yesterday)) || (_.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(today)))));
             }
 
-            /**@todo julien*/
             _createNewMedications(e) {
                 const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
 
