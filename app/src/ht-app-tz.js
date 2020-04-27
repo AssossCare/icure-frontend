@@ -109,6 +109,7 @@ import io from 'socket.io-client';
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
 import _ from "lodash";
+import './elements/ht-tools/ht-migration-mikrono';
 
 class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   static get template() {
@@ -864,7 +865,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                     <paper-item class="extra-menu-item" on-tap="_inviteHCP">[[localize('inviteHCP','Invite a colleague ',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_logList">[[localize('acc_log','Access Log',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_tuto">[[localize('tutorial','Tutorial',language)]]</paper-item>
-                                    <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>
+<!--                                    <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>-->
                                     
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateAllPricareAgendasToMikrono">[[localize('import_all_pricare_agenda','Import Pricare Agendas',language)]]</paper-item>-->
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateAllPricareAgendasToMikronoDEBUG">[[localize('import_all_pricare_agenda_debug','Import DEBUG Pricare Agendas',language)]]</paper-item>-->

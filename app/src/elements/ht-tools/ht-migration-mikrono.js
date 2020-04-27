@@ -608,19 +608,37 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     startMigrateFieldsToMikrono(){
         this.set("migratedFields", [])
         let tmp = []
-        this.api.user().listUsers().then(users => {
-            const listOfUsers = users.rows
-            return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
-        }).then(userlist => {
-            //userlist = [this.user];
-            return this.migrateAppointmentsForEachUser(userlist).catch((e) => console.log(e)).then(resList => {
-                console.log("out of promise", resList)
-                resList.forEach(resItem => {
-                    Promise.all(resItem).then(res => {
-                        console.log("res is ",res)
-                        tmp = tmp.concat(res)
-                        this.set("migratedFields", tmp)
-                    })
+        this.getAppTypes().then(appTypes => {
+            this.api.user().listUsers().then(users => {
+                const listOfUsers = users.rows
+                return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@')) || []
+                // const lst = ['a@a.a',
+                //     'b@b.b']
+                // return listOfUsers && listOfUsers.filter(u => u && u.login.includes('@') && lst.includes(u.login)) || []
+            }).then(userlist => {
+                //userlist = [this.user];
+                let lsDates = []
+                const dStart = moment().subtract(90, 'days')
+                const dEnd =  moment().add(12, 'months')
+                let dCur = moment().subtract(90, 'days')
+                while(dEnd.isAfter(dCur)){
+                    lsDates.push(dCur.clone())
+                    dCur = dCur.add(1,'days')
+                }
+                console.log("lsDates", lsDates);
+
+                let prom = Promise.resolve([])
+                _.map(lsDates, cDat => {
+                    const startDat = cDat.format('YYYYMMDD000000')
+                    const endDat = cDat.add(1, 'day').format('YYYYMMDD000000')
+                    console.log("processing : ", startDat)
+                    prom = prom
+                        .then(promiseCarrier => this.migrateAppointmentsForEachUser(userlist, startDat, endDat, appTypes)
+                        .then(x => _.concat(promiseCarrier,x))
+                        .catch(() => _.concat(promiseCarrier,null)))
+                })
+                prom.then(resList =>{
+                    Promise.all(resList).then(res => console.log(res))
                 })
             })
         })
@@ -634,6 +652,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     createMikronoAgendaForEachUser(userlist) {
         console.log("userlist: ", userlist)
+        //userlist = userlist.slice(0,3);
         return Promise.all(userlist.map(user => {
             console.log("start creating mikrono agenda for user", user)
             return this.api.hcparty().getHealthcareParty(user.healthcarePartyId).then(hcp => {
@@ -783,7 +802,174 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         }
     }
 
-    migrateAppointmentsForEachUser(userlist) {
+    migrateAppointmentsForEachUser(userList, dFrom, dTo, mikronoTypeIdByTopazTypeId) {
+        //1. get parentHcpId
+        //2. get AppointmentTypes
+        //3. get calendarItems of parentHcp (there are no other)
+        //4. get UserList
+        //5. get filter items and send to mikrono
+        //6. modify changed calendarItems
+        let curHcp
+        //let mikronoTypeIdByTopazTypeId
+        let allApps
+        let mergedApps
+        let resultApps
+        return this.api.hcparty().getCurrentHealthcareParty()
+            .then(hcp => {
+                curHcp = hcp
+                return this.getCalendarItems(curHcp.parentId, dFrom, dTo)
+            })
+            .then(apps => {
+                allApps = apps
+                return this.mergeCalendarItems(allApps, mikronoTypeIdByTopazTypeId, userList)
+            })
+            .then(apps => {
+                mergedApps = apps
+                return this.sendToMikrono(mergedApps)
+            })
+    }
+
+    getAppTypes(){
+        return this.api.calendaritemtype().getCalendarItemTypes().then(apptypes => {
+            return apptypes.reduce((dict, apptype) => {
+                dict[apptype.id] = apptype.mikronoId
+                return dict
+            }, {})
+        })
+    }
+
+    getCalendarItems(hcpId, dFrom, dTo){
+        return this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(dFrom, dTo, hcpId)
+    }
+
+    mergeCalendarItems(apps, mikronoTypeIdByTopazTypeId, userList){
+        let mergedApps = []
+        userList.forEach(user => {
+            let items = apps.filter(calItem => calItem.responsible === user.healthcarePartyId)
+            if(items.length > 0 ){
+                console.log("has items", items)
+            }
+            //items = items.filter(item => item.patientId && parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
+            items = items.filter(item => item.patientId && parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0))).map(item => ({
+                ownerRef: user.id,
+                externalId: item.id,
+                name: "ci_" + item.id,
+                comments: _.trim(_.get(item, "details", "")) || null,
+                customerId: item.patientId,
+                title: _.trim(_.get(item, "title", "")) || null,
+                startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                type: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+                appointmentTypeId: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+                status: item.meetingTags.map(mt => mt.code).slice(-1)[0], // get last code to mark canceled appointments
+                originalObject: _.merge(item, {wasMigrated: true})
+            }))
+            mergedApps = mergedApps.concat(items)
+        })
+        if(mergedApps.length > 0 ) {
+            console.log("mergedApps", mergedApps)
+        }
+        return Promise.resolve(mergedApps)
+    }
+
+    sendToMikrono(apps){
+        if(apps.length > 0) {
+            return this.api.bemikrono().createAppointments(apps).then(appRes => {
+                console.log("appRes", appRes);
+                return apps.map(app => {
+                    return this.api.calendaritem().modifyCalendarItem(_.get(app, "originalObject")).then(() => {
+                        console.log("migrated item", app);
+                        return app
+                    })
+                })
+            })
+        } else {
+            return Promise.resolve([])
+        }
+    }
+
+    migrateAppointmentsForEachUser_OLD_(userlist, dFrom, dTo) {
+
+        return Promise.all(userlist.map(user => {
+            const applicationTokens = _.get(user, "applicationTokens", "" )
+            const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+            const mikronoUser = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+            const mikronoPassword = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+
+            if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
+                console.log("migrationItems", {status: "", item: "Récupération de vos rendez-vous en cours..."})
+
+                return this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
+                    return this.api.calendaritemtype().getCalendarItemTypes().then(apptypes => {
+                        let mikronoTypeIdByTopazTypeId = apptypes.reduce((dict, apptype) => {
+                            dict[apptype.id] = apptype.mikronoId
+                            return dict
+                        }, {})
+                        console.log("mikronoTypeIdByTopazTypeId", mikronoTypeIdByTopazTypeId);
+                        return Promise.all([this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(dFrom, dTo, user.healthcarePartyId)].concat(
+                            hcp.parentId ? [this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(dFrom, dTo, hcp.parentId)] : []
+                        )).then(([a, b]) => {
+                            const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
+                            //this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
+                            return items.filter(item => item.patientId && parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
+                                ownerRef: user.id,
+                                externalId: item.id,
+                                name: "ci_" + item.id,
+                                comments: _.trim(_.get(item, "details", "")) || null,
+                                customerId: item.patientId,
+                                title: _.trim(_.get(item, "title", "")) || null,
+                                startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                                endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                                type: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+                                appointmentTypeId: mikronoTypeIdByTopazTypeId[item.calendarItemTypeId],
+                                status: item.meetingTags.map(mt => mt.code).slice(-1)[0], // get last code to mark canceled appointments
+                                originalObject: _.merge(item, {wasMigrated: true})
+                            }))
+                        })
+                    })
+                }).then(apps => {
+                    //apps = apps.slice(0,3);
+                    console.log("migrationItems", apps, {status: "", item: "Migration de vos rendez-vous en cours..."})
+                    if(apps && apps.length !== 0){
+                        let prom = Promise.resolve([])
+                        _.chunk(apps, 100).forEach(chunkOfAppointments => {
+                            prom = prom.then(prevResults => this.api.bemikrono().createAppointments(chunkOfAppointments).then(appRes => {
+                                console.log("appRes", appRes);
+                                return chunkOfAppointments.map(app => {
+                                    return this.api.calendaritem().modifyCalendarItem(_.get(app, "originalObject")).then(() => {
+                                        console.log("migrated item", app);
+                                        return app
+                                    })
+                                })
+                            }).then(res => {
+                                console.log("migrationItems", {status: "", item: "100 rendez-vous (de plus) migrés..."})
+                                return prevResults.concat(res)
+                            }))
+                        })
+                        prom = prom.then(results => {
+                            console.log("Appointment migration done for user", user)
+                            return Promise.resolve(results);
+                        }).catch((e)=>{
+                            console.log("error migrating appointments for user", e, user)
+                            return Promise.resolve([{Name: user.id, Status:"created Appointments: error!"}])
+                        })
+                        return prom
+                    }else{
+                        console.log("Appointment migration done for user: nothing to migrate", user)
+                        return Promise.resolve([{Name: user.id, Status:"created Appointments: nothing to create!"}])
+                    }
+                }).catch((e)=>{
+                    console.log("error migrating appointments for user", e, user)
+                    return Promise.resolve({Name: user.id, Status:"created Appointments: nothing to create!"});
+                })
+            } else {
+                console.log("Can't create AppointmentTypes: not a mikrono user", this.user)
+                return Promise.resolve([{Name: "", Status:"Can't create Appointments: not a mikrono user"}])
+            }
+        }))
+    }
+
+    migrateAppointmentsForEachUser_OLD(userlist) {
 
         return Promise.all(userlist.map(user => {
             const applicationTokens = _.get(user, "applicationTokens", "" )
