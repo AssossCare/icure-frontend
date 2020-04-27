@@ -551,43 +551,78 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 .then(infos => this.set('invoicesFromBatch', infos))
                 .then(() => this.api.message().getChildren(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
                 .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
-                .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => this.api.document().getAttachment(d.id, d.attachmentId))))
+                .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId)))))
                 .then((attachs) => {
                     this.api.setPreventLogging(false)
                     attachs.forEach( a => {
 
-                        if (typeof a === "string"){
-                            try { a = JSON.parse( this.cleanStringForJsonParsing(a) ) } catch (ignored) {}
-                        } else if (typeof a === "object") {
-                            try { a = JSON.parse( this.cleanStringForJsonParsing(new Uint8Array(a).reduce((data, byte) => data + String.fromCharCode(byte), ''))); } catch (ignored) {}
+                        if(!_.isEmpty(_.get(a, 'message', {}))) {
+                            //Treatment for Topaz
+                            if (typeof a === "string"){
+                                try { a = JSON.parse( this.cleanStringForJsonParsing(a) ) } catch (ignored) {}
+                            } else if (typeof a === "object") {
+                                try { a = JSON.parse( this.cleanStringForJsonParsing(new Uint8Array(a).reduce((data, byte) => data + String.fromCharCode(byte), ''))); } catch (ignored) {}
+                            }
+
+                            const zone1and90 = _.get(a, 'message', []).find(enr => _.get(enr, 'zones', []).find(z => z.zone === "1" || z.zone === "90"))
+                            let errorString = ''
+                            Object.keys(_.get(zone1and90, 'errorDetail', [])).find(key => {
+                                if(key.includes('rejectionCode')) {
+                                    if( parseInt(zone1and90.errorDetail[key]) > 0 ){
+                                        const index = key.replace('rejectionCode',"")
+                                        errorString = zone1and90.errorDetail['rejectionDescr' + index] + ' '
+                                        return zone1and90.errorDetail['rejectionDescr' + index] && zone1and90.errorDetail['rejectionDescr' + index].length
+                                    }
+                                }
+                                return false
+                            })
+
+                            this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, errorString)));
+
+                            const zone200 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "200"))
+                            const zone300 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "300"))
+                            const zone400 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "400"))
+                            const zone500 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "500"))
+
+                            let globalError = _.compact(_.uniq([zone200 && this.SEG_getErrSegment_200(zone200.zones || []),
+                                zone300 && this.SEG_getErrSegment_300(zone300.zones || []),
+                                zone400 && this.SEG_getErrSegment_400(zone400.zones || []),
+                                zone500 && this.SEG_getErrSegment_500(zone500.zones || [])]))
+
+                            this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, globalError)));
+                        }else{
+                            //Treatment for Icure
+                            let errorString = ''
+                            const zone1and90 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "1" || _.get(z, 'zone', null) === "90"))
+
+                            Object.keys(_.get(zone1and90, 'errorDetail', [])).find(key => {
+                                if(key.includes('rejectionCode')) {
+                                    if( parseInt(zone1and90.errorDetail[key]) > 0 ){
+                                        const index = key.replace('rejectionCode',"")
+                                        errorString = zone1and90.errorDetail['rejectionDescr' + index] + ' '
+                                        return zone1and90.errorDetail['rejectionDescr' + index] && zone1and90.errorDetail['rejectionDescr' + index].length
+                                    }
+                                }
+                                return false
+                            })
+
+                            this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, errorString)));
+
+                            const zone200 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "200"))
+                            const zone300 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "300"))
+                            const zone400 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "400"))
+                            const zone500 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "500"))
+
+                            let globalError = _.compact(_.uniq([zone200 && this.SEG_getErrSegment_200(zone200.zones || []),
+                                zone300 && this.SEG_getErrSegment_300(_.get(zone300, 'zones', [])),
+                                zone400 && this.SEG_getErrSegment_400(_.get(zone400, 'zones', [])),
+                                zone500 && this.SEG_getErrSegment_500(_.get(zone500, 'zones', []))]))
+
+                            this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, globalError)));
                         }
 
-                        const zone1and90 = _.get(a, 'message', []).find(enr => _.get(enr, 'zones', []).find(z => z.zone === "1" || z.zone === "90"))
-                        let errorString = ''
-                        Object.keys(_.get(zone1and90, 'errorDetail', [])).find(key => {
-                            if(key.includes('rejectionCode')) {
-                                if( parseInt(zone1and90.errorDetail[key]) > 0 ){
-                                    const index = key.replace('rejectionCode',"")
-                                    errorString = zone1and90.errorDetail['rejectionDescr' + index] + ' '
-                                    return zone1and90.errorDetail['rejectionDescr' + index] && zone1and90.errorDetail['rejectionDescr' + index].length
-                                }
-                            }
-                            return false
-                        })
 
-                        this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, errorString)));
-
-                        const zone200 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "200"))
-                        const zone300 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "300"))
-                        const zone400 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "400"))
-                        const zone500 = _.get(a, 'message', []).find(enr => enr.zones.find(z => z.zone === "500"))
-
-                        let globalError = _.compact(_.uniq([zone200 && this.SEG_getErrSegment_200(zone200.zones || []),
-                            zone300 && this.SEG_getErrSegment_300(zone300.zones || []),
-                            zone400 && this.SEG_getErrSegment_400(zone400.zones || []),
-                            zone500 && this.SEG_getErrSegment_500(zone500.zones || [])]))
-
-                        this.set('invoicesErrorMsg', _.compact(_.concat(this.invoicesErrorMsg, globalError)));
 
                     })
                 }).finally(()=>{
@@ -1222,10 +1257,12 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _createInvoiceToBeCorrectedFromBatch(){
-        if(!_.isEmpty(_.get(this, 'selectedInvoiceForDetail', {})) && _.size(_.get(this, 'invoicesFromBatch', [])) > 0 && _.size(_.compact(_.get(this, 'invoicesFromBatch', []).map(inv => _.get(inv, 'invoice.invoicingCodes', []).map(c => _.get(c, 'accepted', null) === false ? _.get(c, 'accepted', null) : null)))) > 0){
+        if(!_.isEmpty(_.get(this, 'selectedInvoiceForDetail', {})) && _.size(_.get(this, 'invoicesFromBatch', [])) > 0 && _.size(_.compact(_.get(this, 'invoicesFromBatch', []).map(inv => _.get(inv, 'invoice.invoicingCodes', []).map(c => _.get(c, 'accepted', null) === false ? _.get(c, 'id', null) : null)))) > 0){
+            this._closeRecreationDialog()
             this.set('isLoading', true)
             this._createInstanceOfNewInvoiceFromList(_.get(this, 'invoicesFromBatch', []))
                 .then(listOfInvoice => this._createNewInvoiceFromList(listOfInvoice))
+                .then(listOfInvoice => this._modifyOriginalInvoiceFromList(listOfInvoice))
                 .then(listOfInvoice => {
                     this._archiveBatch()
                 })
@@ -1235,29 +1272,29 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
     _createInstanceOfNewInvoiceFromList(invoicesFromBatch){
         let prom = Promise.resolve()
         _.compact(invoicesFromBatch).map(inv => {
-            _.size(_.compact(_.get(inv, 'invoice.invoicingCodes', []).map(c => _.get(c, 'accepted', null) === false ? _.get(c, 'accepted', null) : null))) > 0 ?
-            prom = prom.then(listOfInvoice =>
-                this.api.invoice().newInstance(this.user, _.get(inv, 'patientDto', {}), _.omit(_.get(inv, 'invoice', {}), [
-                    "id", "rev", "deletionDate", "created", "modified", "sentDate", "printedDate",
-                    "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
-                    "invoicingCodes", "error", "receipts", "encryptedSelf"])
-                ).then(ninv => {
-                    inv.invoice.correctiveInvoiceId = _.get(ninv, 'id', null)
-                    ninv.correctedInvoiceId = _.get(inv, 'invoice.id', null)
-                    ninv.invoicingCodes = _.get(inv, 'invoice.invoicingCodes', []).map(invc =>
-                        !_.get(invc, 'accepted', false) ? _.assign(_.omit(invc, ["id", "accepted", "canceled", "pending", "resent", "archived"]), {
-                            id: this.api.crypto().randomUuid(),
-                            accepted: false,
-                            canceled: false,
-                            pending: true,
-                            resent: true,
-                            archived: false
-                        }) : null
-                    )
+            _.size(_.compact(_.get(inv, 'invoice.invoicingCodes', []).map(c => _.get(c, 'accepted', null) === false ? _.get(c, 'id', null) : null))) > 0 ?
+                prom = prom.then(listOfInvoice =>
+                    this.api.invoice().newInstance(this.user, _.get(inv, 'patientDto', {}), _.omit(_.get(inv, 'invoice', {}), [
+                        "id", "rev", "deletionDate", "created", "modified", "sentDate", "printedDate",
+                        "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
+                        "invoicingCodes", "error", "receipts", "encryptedSelf"])
+                    ).then(ninv => {
+                        inv.invoice.correctiveInvoiceId = _.get(ninv, 'id', null)
+                        ninv.correctedInvoiceId = _.get(inv, 'invoice.id', null)
+                        ninv.invoicingCodes = _.get(inv, 'invoice.invoicingCodes', []).map(invc =>
+                            !_.get(invc, 'accepted', false) ? _.assign(_.omit(invc, ["id", "accepted", "canceled", "pending", "resent", "archived"]), {
+                                id: this.api.crypto().randomUuid(),
+                                accepted: false,
+                                canceled: false,
+                                pending: true,
+                                resent: true,
+                                archived: false
+                            }) : null
+                        )
 
-                    return _.concat(listOfInvoice, {invoice: _.get(inv, 'invoice', {}), correctiveInvoice: ninv})
+                        return _.concat(listOfInvoice, {invoice: _.get(inv, 'invoice', {}), correctiveInvoice: ninv})
 
-                })) : Promise.resolve()
+                    })) : Promise.resolve()
         })
 
         return prom
@@ -1271,6 +1308,18 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 .then(parentIns => this.api.invoice().createInvoice(_.get(inv, 'correctiveInvoice', {}), 'invoice:' + this.user.healthcarePartyId + ':' + _.get(inv, 'parentIns.code', '000') + ':'))
                 .then(ninv => {
                     return _.concat(newInvoiceList, {invoice: _.get(inv, 'invoice', {}), correctiveInvoice: ninv})
+                }))
+        })
+
+        return prom
+    }
+
+    _modifyOriginalInvoiceFromList(listOfInvoice){
+        let prom = Promise.resolve()
+        _.compact(listOfInvoice).map(inv => {
+            prom = prom.then(invoiceList => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {}))
+                .then(originalInv => {
+                    return _.concat(invoiceList, {invoice: originalInv, correctiveInvoice: _.get(inv, 'correctiveInvoice', {})})
                 }))
         })
 

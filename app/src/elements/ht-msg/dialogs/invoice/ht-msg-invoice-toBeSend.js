@@ -191,7 +191,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             }  
             
             .fg4{
-                flex-grow: 4;
+                flex-grow: 4.2;
             }
                        
             .status{
@@ -321,7 +321,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group">
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group" id="invoiceList">
                             <div class="tr tr-group">
                                 <div class="td fg4">[[_getGroupInformation(group)]]</div>
                                 <div class="td fg1"></div>
@@ -334,6 +334,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             </div>
                             <template is="dom-repeat" items="[[group]]" as="inv">
                                 <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
+                                    <div class="td fg02"><vaadin-checkbox checked="[[inv.sendingFlag]]" id="[[inv.uuid]]" on-checked-changed="_selectedSendingFlagChanged" on-tap="_stopPropagation"></vaadin-checkbox></div>
                                     <div class="td fg02">
                                         <template is="dom-if" if="[[inv.realizedByTrainee]]">
                                             <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
@@ -371,7 +372,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
-                    <template is="dom-if" if="[[api.tokenId]]">                    
+                    <template is="dom-if" if="[[api.tokenId]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
                     <template is="dom-if" if="[[!api.tokenId]]" restamp="true">                   
@@ -557,9 +558,11 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     _initialize(){
         if(_.size(_.get(this, 'listOfInvoice', [])) > 0) {
             this.set('filteredListOfInvoice', _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'parentInsuranceDto.code'), inv => inv))
-            const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
-            const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
-            this.set('cannotSend',!maySend)
+
+            const lastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? this.api.moment(parseInt(localStorage.getItem('lastInvoicesSent'))).format('YYYY-MM-DD') : '2000-01-01'
+            const maySend =  this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
+            this.set('cannotSend',maySend)
+
         }
 
     }
@@ -671,8 +674,9 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         this.shadowRoot.querySelector('#checkBeforeSendingDialog') ? this.shadowRoot.querySelector('#checkBeforeSendingDialog').close() : null
         this.set('progressItem', [])
 
-        const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
-        const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
+        const lastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? this.api.moment(parseInt(localStorage.getItem('lastInvoicesSent'))).format('YYYY-MM-DD') : '2000-01-01'
+        const maySend =  !this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
+
         if (maySend) {
             this.set('cannotSend',true)
             localStorage.setItem('lastInvoicesSent', Date.now())
@@ -681,11 +685,11 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
 
             let prom = Promise.resolve()
-            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => inv.insurabilityCheck === true), 500)))
+            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true), 100)))
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:iv.patient})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
+                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
                         undefined,
                         (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`))
                     ).then(message => {
@@ -715,6 +719,23 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.dispatchEvent(new CustomEvent('open-invoice-detail-panel', {bubbles: true, composed: true, detail: {selectedInv: JSON.parse(_.get(e, 'currentTarget.dataset.item', null))}}))
         }
     }
+
+    _selectedSendingFlagChanged(e){
+        e.stopPropagation()
+        if(_.get(e, 'target.id', null)){
+            let inv = _.get(this, 'listOfInvoice', []).find(inv => _.get(inv, 'uuid', null) === _.get(e, 'target.id', ''))
+            inv.sendingFlag = _.get(e, 'target.checked', false)
+        }
+    }
+
+    _stopPropagation(e){
+        e.stopPropagation()
+    }
+
+    _getGroupId(group){
+        return _.get(_.head(group), 'parentInsuranceDto.id', null)
+    }
+
 
 }
 

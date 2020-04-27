@@ -444,6 +444,7 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
                     error: efact.invoice.error || "",
                     insurabilityCheck: insurabilityComplete,
                     realizedByTrainee : efact.invoice.internshipNihii && efact.invoice.internshipNihii.length ? true : false,
+                    sendingFlag: insurabilityComplete,
                     normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(efact, _.trim('patient.lastName'), ""), _.get(efact, _.trim('patient.firstName'), ""), _.trim(_.get(efact, 'invoice.invoiceReference', "")).toString(), _.trim(_.get(efact, 'insurance.code', "")).toString(), _.trim(_.get(efact, 'patient.ssin', "")).toString(), _.trim(_.get(efact, 'invoice.invoiceDate', '')).toString()])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
                 })
             })).then(invoices => {
