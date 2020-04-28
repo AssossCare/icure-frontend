@@ -349,106 +349,100 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
       this.updateStyles({ '--dynamic-field-width': width, '--dynamic-field-width-percent': '' + width + '%' });
 	}
 
+    /** get partie for displaying*/
+
+    //what is this
+    isReadOnlyOrAlreadyPrescribed(val) {
+        const idx = this.value.findIndex(s => s.id === val.id)
+        return this.readOnly || this._isDrugAlreadyPrescribed(this.value[idx]) || !this.createTreatment
+    }//too
+    _isDrugAlreadyPrescribed(s) {
+        return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
+    }
+
   _localizedValue(value) {
       return value && _.compact(_.sortBy(value, 'index').map(v => v && v.content && this.localizedMedicationValueWithId(v.id, v.content, this.language))) || [];
 	}
 
-  _valueChanged() {
-      let localizedValue = this._localizedValue(this.value);
-      if (!_.isEqual(this.value, this.previouslySavedValue)) {
-          this.set('previouslySavedValue', _.cloneDeep(this.value))
-          this.set('localizedValue', localizedValue);
-          this.set('refresher', this.refresher+1)
-          if(!this.readOnly) {
-              this.dispatchEvent(new CustomEvent('field-changed', {
-                  detail: {
-                      context: this.context,
-                      value: this.value
-                  }
-              }));
-          }
-      }
-	}
-
-  _medicationCreated(e) {
-      this.push('value', ..._.flatMap(e.detail.medications, m => _.times(m.boxes || 1, () => _.omit(m.newMedication, ['id']))));
-      this.set('editedMedications', e.detail.medications);
-      const medication = e.detail.medications.length && e.detail.medications[0] || null;
-      this.dispatchEvent(new CustomEvent('medications-validation', { detail: {medications: e.detail.medications, medication: medication, onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
-	}
-
-  // _forceValueChanged() {
-  // 	this.set('refresher', this.refresher+1)
-  // 	if(!this.readOnly) {
-  // 		this.dispatchEvent(new CustomEvent('field-changed', {
-  // 			detail: {
-  // 				context: this.context,
-  // 				value: this.value
-  // 			}
-  // 		}));
-  // 	}
-  // }
-
-  _displayMedicationDetails(e) {
-      this.set('previouslySavedValue', _.cloneDeep(this.value))
-      this.dispatchEvent(new CustomEvent('medication-detail', { detail: {service: e.detail.medication, onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
-  }
-
-  localizedMedicationValueWithId(id, e, lng) {
+    localizedMedicationValueWithId(id, e, lng) {
       if (!e) {
           return null;
       }
       return { id: id, stringValue: this.api.contact().medication().medicationToString((this.api.contact().preferredContent({content: e},this.language) || {}).medicationValue || "", this.language.toLowerCase() || 'fr') };
 	}
 
-  extractContentWithIdFromMedicationService(m, isNew, isPrescription) {
-      console.log('extractContentWithIdFromMedicationService',m,isNew)
-      return {
-          id: m.id,
-          codes: m.codes,
-          medicationValue: (this.api.contact().preferredContent(m, this.language) || (m.content[this.language] = { medicationValue: { regimen: [] } })).medicationValue,
-          isNew: isNew || false,
-          isPrescription: isPrescription || m.isPrescription || false
-      };
+    //what is this
+    isReadOnlyOrMedication(val) { // disable edition of medication (but keep prescription editable) because not working for the moment
+        return this.readOnly || !this.createTreatment
+    }
+
+    /**data manager partie*/
+
+    // no need
+
+
+    clearMedication(el) {
+        const id = el.target.parentElement.parentElement.id;
+        this.splice('value', this.value.findIndex(s => s.id === id), 1);
+        this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
+    }
+
+    editMedication(el) {
+        const id = el.target.parentElement.parentElement.id;
+        const item = this.value.find(s => s.id === id);
+        if (item) {
+            this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew : false, service : _.cloneDeep(item),content : this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onSave : this._medicationChanged.bind(this)}, bubbles: true, composed: true} ))
+        }
+    }
+
+    addMedication() {
+        this.dispatchEvent(new CustomEvent('call-medication-dialog', { detail: {isNew: true, service : null, onSave : this._createMedication.bind(this)}, bubbles: true, composed: true} ))
+    }
+
+    /**Print partie @todo change event*/
+
+    openPrescriptionDialog() {
+        this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))
+    }
+
+    /** save partie*/
+
+    _createMedication(newMedications) {
+        this.push('value', ..._.flatMap(newMedications, m => _.times(m.boxes || 1, () => _.omit(m.newMedication, ['id']))));
+        this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
+    }
+
+    _medicationChanged(medication) {
+        console.log(medication);
+        const idx = this.value.findIndex(m => m.id === medication.newMedication.id)
+        this.set("value."+idx,medication.newMedication)
+        this.dispatchEvent(new CustomEvent('field-changed', {
+            detail: {
+                context: this.context,
+                medications: this.value
+            }
+        }))
+    }
+
+
+
+    //edit
+    extractContentWithIdFromMedicationService(m, isNew, isPrescription) {
+        console.log('extractContentWithIdFromMedicationService',m,isNew)
+        return {
+            id: m.id,
+            codes: m.codes,
+            medicationValue: (this.api.contact().preferredContent(m, this.language) || (m.content[this.language] = { medicationValue: { regimen: [] } })).medicationValue,
+            isNew: isNew || false,
+            isPrescription: isPrescription || m.isPrescription || false
+        };
 	}
 
-  openPrescriptionDialog() {
-      this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))
-	}
-
-  addMedication() {
-      this.set('previouslySavedValue', _.cloneDeep(this.value))
-      this.dispatchEvent(new CustomEvent('medications-selection', { detail: {onCreate: this._medicationCreated.bind(this), onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
-	}
-
-  editMedication(el) {
-      const id = el.target.parentElement.parentElement.id;
-      const item = this.value.find(s => s.id === id);
-      this.set('previouslySavedValue', _.cloneDeep(this.value))
-      if (item) {
-          this.dispatchEvent(new CustomEvent('medication-detail', { detail: {service: item, content: this.extractContentWithIdFromMedicationService(item, false, this.createTreatment), onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
-      }
-	}
-
-  isReadOnlyOrAlreadyPrescribed(val) {
-      const idx = this.value.findIndex(s => s.id === val.id)
-      return this.readOnly || this._isDrugAlreadyPrescribed(this.value[idx]) || !this.createTreatment
-	}
-
-  _isDrugAlreadyPrescribed(s) {
-      return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
-	}
-
-  isReadOnlyOrMedication(val) { // disable edition of medication (but keep prescription editable) because not working for the moment
-      return this.readOnly || !this.createTreatment
-  }
-
-  clearMedication(el) {
-      const id = el.target.parentElement.parentElement.id;
-      this.set('previouslySavedValue', _.cloneDeep(this.value))
-      this.splice('value', this.value.findIndex(s => s.id === id), 1);
-      this._valueChanged()
-	}
+    /**useless things*/
+    _displayMedicationDetails(e) {
+        this.set('previouslySavedValue', _.cloneDeep(this.value))
+        this.dispatchEvent(new CustomEvent('medication-detail', { detail: {service: e.detail.medication, onValueChanged: this._valueChanged.bind(this)}, bubbles: true, composed: true} ))
+    }
 }
 
 customElements.define(DynamicMedicationField.is, DynamicMedicationField);
