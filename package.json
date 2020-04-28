@@ -161,7 +161,7 @@
     "electron-tabs": "^0.9.5",
     "es-abstract": "^1.16.3",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
-    "electron-topaz-api": "git+https://github.com/WatheletJulien/topaz-electron-api.git#8ce18366869edbf0304fbb0cad36f1adf823eaa7",
+    "electron-topaz-api": "git+https://github.com/WatheletJulien/topaz-electron-api.git#7d1d6cbada9c3d8c458c9d888f6c4f684f134211",
     "fhc-api": "^1.0.54",
     "global": "^4.4.0",
     "iban": "0.0.11",

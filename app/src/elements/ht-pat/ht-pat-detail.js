@@ -6511,19 +6511,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _linkToCBIP(e) {
         e.stopPropagation()
-        this.api && this.api.isElectronAvailable().then(electron => {
-            if(electron){
-                fetch(_.get(this,"api.electronHost","http://127.0.0.1:16042")+"/openWebPage",{
-                    method: "POST",
-                    headers: {
-                        "Content-Type" : "application/json; charset=utf-8"
-                    },
-                    body: JSON.stringify({url :"https://www.cbip.be/fr/start"} )
-                })
-            }else{
-                window.open("https://www.cbip.be/fr/start", '_blank')
-            }
-        })
+        if(this.api && this.api.electron().isAvailable()){
+            this.api.electron().openWebPage("https://www.cbip.be/fr/start")
+        }else{
+            window.open("https://www.cbip.be/fr/start", '_blank')
+        }
     }
 
     _ebmPicture() {
