@@ -2940,8 +2940,8 @@
                     newMedClone.tags = newMed.tags && newMed.tags.length && newMed.tags.filter(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || [];
                     const medicationValueClone = this.api.contact().medicationValue(newMedClone, this.language);
                     if (hasMedication) {
-                        medicationValueClone.beginMoment = parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10);
-                        medicationValueClone.endMoment = null;
+                        medicationValueClone.beginMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10) : medicationValueClone.beginMoment;
+                        medicationValueClone.endMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? null : medicationValueClone.endMoment
                     }
                     (this.api.contact().medicationValue(newMedClone, this.language) || {medicationValue: {}}).status = 0;
                     newMedClone.beginMoment = null;

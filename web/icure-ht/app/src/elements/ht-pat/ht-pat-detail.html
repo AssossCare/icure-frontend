@@ -4788,8 +4788,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }), sorter))
 
                         //todo julien voir avec le prochain/prochain todo celui des prescriptions a la fin de refresh patient
-                        this.set("treatmentHistory", svcs);
-                        this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
+                        //this.set("treatmentHistory", svcs);
+                        //this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
 
                         //todo julien a quoi ca sert cette merde je te jure ???????
                         this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
