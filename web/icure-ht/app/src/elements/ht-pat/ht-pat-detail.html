@@ -4215,6 +4215,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.saveContact(this.currentContact)
             }
 
+            //todo julien useless ??
             updateMedication(svc) {
                 if (!svc.id) return;
                 svc.modified = +new Date();
@@ -6104,7 +6105,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.$['medication-prescription'].open(e.detail.service, {isPrescription: false}, (medications) => {this._createNewMedications({detail : {medications}})});
             }
 
-            //here
             _editMedication(e) {
                 const id = e.target.id.substr("med-edit-btn-edit_".length)
                 const medicationService = this.medications.find(s => s.id === id)
