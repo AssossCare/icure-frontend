@@ -472,6 +472,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     </template>
                     <template is="dom-if" if="[[fieldMigration]]">
                       <paper-button on-tap="startMigrateFieldsToMikrono" class="button" >Fields</paper-button>
+                        <div>Processing date: [[processDate]]</div>
                         <template is="dom-repeat" items="[[migratedFields]]">
                             <div>[[item.name]]: migrated</div>
                         </template>
@@ -528,6 +529,10 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 value: function () {
                     return [];
                 }
+            },
+            processDate:{
+                type: String,
+                value:""
             }
         };
     }
@@ -660,8 +665,11 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 const mikronoUrl = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
                 const mikronoUser = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
                 const mikronoPassword = user && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
-
-                if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
+                const userActive = user && user.status ? user.status : "---"
+                if(userActive !== "ACTIVE"){
+                    console.log("User inactive", user, hcp)
+                    return {Name: user.name, Status: "User inactive"}
+                } else if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
                     console.log("Agenda already exists", user, hcp)
                     return {Name: user.name, Status: "Agenda already exists"}
                 } else {
@@ -699,7 +707,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                     }
                                 });
                             } else {
-                                console.log("mikronoError", {
+                                console.log("mikronoError", user.login, {
                                     user: user,
                                     errorMsg: "error when registering user",
                                     addresses: addresses ? true : false,
@@ -714,7 +722,7 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                         })
                     } else {
-                        console.log("mikronoError", {
+                        console.log("mikronoError", user.login, {
                             user: user,
                             errorMsg: "no telecom",
                             addresses: addresses ? true : false,
@@ -814,6 +822,8 @@ class HtMigrationMikrono extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         let allApps
         let mergedApps
         let resultApps
+        console.log("Processing date : ", dFrom)
+        this.set("processDate", dFrom)
         return this.api.hcparty().getCurrentHealthcareParty()
             .then(hcp => {
                 curHcp = hcp
