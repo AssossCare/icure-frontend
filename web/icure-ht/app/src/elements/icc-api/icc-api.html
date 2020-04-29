@@ -11,6 +11,7 @@
     import * as api from 'icc-api/dist/icc-api/iccApi'
     import moment from 'moment/src/moment'
     import _ from 'lodash/lodash';
+    import { filter as icrFilter } from '../../../scripts/filters'
 
     import {IccBedrugsXApi} from 'icc-api/dist/icc-x-api/icc-bedrugs-x-api'
     import {IccBekmehrXApi} from 'icc-api/dist/icc-x-api/icc-bekmehr-x-api'
@@ -1158,6 +1159,19 @@
 
         _isValidMail(email){
             return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(email))
+        }
+
+        _executeReportingQuery(searchFilter, hcp, user){
+            let svcFilter = null
+            let lastParamsWithIdxProm = Promise.resolve()
+
+            svcFilter = parse(`PAT[${searchFilter}]`, {hcpId: _.get(hcp, 'parentId', null) || _.get(user, 'healthcarePartyId', null)})
+
+            lastParamsWithIdxProm = icrFilter(svcFilter, {
+                cryptoicc: this.api.crypto(), usericc: this.api.user(), patienticc: this.api.patient(), contacticc: this.api.contact(), helementicc: this.api.helement(), invoiceicc: this.api.invoice(), hcpartyicc: this.api.hcparty()
+            }, this.hcp.parentId || this.user.healthcarePartyId, false).then(pl => pl.rows)
+
+            return lastParamsWithIdxProm
         }
     }
 

@@ -270,6 +270,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 flex-direction: row;
             }
 
+            #flatrateReports {
+                flex-direction: row;
+            }
+
+            #invoiceReports {
+                flex-direction: row;
+            }
+
+            #consultationReports {
+                flex-direction: row;
+            }
+
+            #patientReports {
+                flex-direction: row;
+            }
+
             .management-line.one-line-menu {
                 width: 100%;
                 justify-content: space-between;
@@ -383,6 +399,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </paper-listbox>
             </collapse-button>
 
+
+            <!--
             <collapse-button id="reportcollapse">
                 <paper-item id="reports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
                     <div class="one-line-menu list-title reports-line">
@@ -400,6 +418,91 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="ageStructure">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('age_structure','Age structure',language)]]
                     </paper-item>
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="rashReport">
+                        <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('rash','RASH',language)]]
+                    </paper-item>
+                </paper-listbox>
+            </collapse-button>
+-->
+            <collapse-button id="patientReportcollapse">
+                <paper-item id="patientReports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                    <div class="one-line-menu list-title reports-line">
+                        <div>
+                            <iron-icon icon="social:people" class="force-left"></iron-icon>
+                            <span class="force-left force-ellipsis box-txt">[[localize('rep-pat','Patient reporting',language)]]</span>
+                        </div>
+                    </div>
+                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                </paper-item>
+                <paper-listbox id="reportlist" class="menu-content sublist" selected="{{patientReportSelectionIndex}}" selected-item="{{patientReportSelectionItem}}" selectable="paper-item">
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="ageStructure">
+                        <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('age_structure','Age structure',language)]]
+                    </paper-item>
+                </paper-listbox>
+            </collapse-button>
+
+            <collapse-button id="consultationReportcollapse">
+                <paper-item id="consultationReports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                    <div class="one-line-menu list-title reports-line">
+                        <div>
+                            <iron-icon icon="icons:assignment" class="force-left"></iron-icon>
+                            <span class="force-left force-ellipsis box-txt">[[localize('rep-cons','Consultation reporting',language)]]</span>
+                        </div>
+                    </div>
+                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                </paper-item>
+                <paper-listbox id="reportlist" class="menu-content sublist" selected="{{consultationReportSelectionIndex}}" selected-item="{{consultationReportSelectionItem}}" selectable="paper-item">
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="listOfAttestationSubMenu">
+                        <iron-icon class="sub-menu-icon" icon="maps:local-library"></iron-icon> [[localize('lst_att','List of attestations',language)]]
+                    </paper-item>
+                </paper-listbox>
+            </collapse-button>
+
+            <collapse-button id="invoiceReportcollapse">
+                <paper-item id="invoiceReports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                    <div class="one-line-menu list-title reports-line">
+                        <div>
+                            <iron-icon icon="icons:euro-symbol" class="force-left"></iron-icon>
+                            <span class="force-left force-ellipsis box-txt">[[localize('rep-inv','Invoice reporting',language)]]</span>
+                        </div>
+                    </div>
+                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                </paper-item>
+                <paper-listbox id="reportlist" class="menu-content sublist" selected="{{invoiceReportSelectionIndex}}" selected-item="{{invoiceReportSelectionItem}}" selectable="paper-item">
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="listOfAttestationSubMenu">
+                        <iron-icon class="sub-menu-icon" icon="maps:local-atm"></iron-icon> [[localize('lst_att','List of attestations',language)]]
+                    </paper-item>
+                </paper-listbox>
+            </collapse-button>
+
+            <collapse-button id="flatrateReportcollapse">
+                <paper-item id="flatrateReports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                    <div class="one-line-menu list-title reports-line">
+                        <div>
+                            <iron-icon icon="icons:accessibility" class="force-left"></iron-icon>
+                            <span class="force-left force-ellipsis box-txt">[[localize('rep-flatrate','Flatrate reporting',language)]]</span>
+                        </div>
+                    </div>
+                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                </paper-item>
+                <paper-listbox id="reportlist" class="menu-content sublist" selected="{{flatrateReportSelectionIndex}}" selected-item="{{flatrateReportSelectionItem}}" selectable="paper-item">
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="listOfAttestationSubMenu">
+                        <iron-icon class="sub-menu-icon" icon="icons:list"></iron-icon> [[localize('lst_att','List of attestations',language)]]
+                    </paper-item>
+                </paper-listbox>
+            </collapse-button>
+
+            <collapse-button id="authorityReportcollapse">
+                <paper-item id="authorityReports" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                    <div class="one-line-menu list-title reports-line">
+                        <div>
+                            <iron-icon icon="icons:accessibility" class="force-left"></iron-icon>
+                            <span class="force-left force-ellipsis box-txt">[[localize('rep-authority','Authority reporting',language)]]</span>
+                        </div>
+                    </div>
+                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                </paper-item>
+                <paper-listbox id="reportlist" class="menu-content sublist" selected="{{authorityReportSelectionIndex}}" selected-item="{{authorityReportSelectionItem}}" selectable="paper-item">
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="rashReport">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('rash','RASH',language)]]
                     </paper-item>
@@ -461,7 +564,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     _isElectronAvailable: {
                         type: Boolean,
                         value: false
+                    },
+                    patientReportSelectionIndex: {
+                        type: Number,
+                        value: null
+                    },
+                    consultationReportSelectionIndex: {
+                        type: Number,
+                        value: null
+                    },
+                    invoiceReportSelectionIndex: {
+                        type: Number,
+                        value: null
+                    },
+                    flatrateReportSelectionIndex: {
+                        type: Number,
+                        value: null
+                    },
+                    authorityReportSelectionIndex: {
+                        type: Number,
+                        value: null
+                    },
+                    flatrateReportSelectionItem: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    invoiceReportSelectionItem: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    consultationReportSelectionItem: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    patientReportSelectionItem: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    authorityReportSelectionItem: {
+                        type: Object,
+                        value: () => {
+                        }
                     }
+
                 }
             }
 
@@ -469,7 +618,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return ['apiReady(user)',
                     '_managementSelectionIndexChanged(managementSelectionIndex)',
                     '_accountSelectionIndexChanged(accountSelectionIndex)',
-                    '_reportSelectionIndexChanged(reportSelectionIndex)'
+                    '_invoiceReportSelectionIndexChanged(invoiceReportSelectionIndex)',
+                    '_patientReportSelectionIndexChanged(patientReportSelectionIndex)',
+                    '_consultationReportSelectionIndexChanged(consultationReportSelectionIndex)',
+                    '_flatrateReportSelectionIndexChanged(flatrateReportSelectionIndex)',
+                    '_authorityReportSelectionIndexChanged(authorityReportSelectionIndex)'
                 ];
             }
 
@@ -487,11 +640,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _select(id, name) {
-                const indexes = ['managementSelectionIndex', 'accountSelectionIndex', 'reportSelectionIndex'];
+                const indexes = ['managementSelectionIndex', 'accountSelectionIndex', 'invoiceReportSelectionIndex', 'patientReportSelectionIndex', 'consultationReportSelectionIndex', 'flatrateReportSelectionIndex'];
                 indexes.filter(item => item !== name).forEach(item => {
                     this.set(item, null);
                 });
-                const ids = ['management', 'account', 'reports'];
+                const ids = ['management', 'account', 'patientReports', 'consultationReports', 'invoiceReports', 'flatrateReports'];
                 ids.filter(item => item !== id).forEach(item => {
                     this.shadowRoot.querySelector('#' + item).classList.remove('iron-selected')
                 });
@@ -540,6 +693,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this.reportSelectionIndex !== null && this.reportSelectionIndex !== undefined) {
                     this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.reportSelectionItem.id, submenu: this.reportSelectionItem.dataset.submenu} } }));
                     this._select("reports", "reportSelectionIndex");
+                }
+            }
+
+            _flatrateReportSelectionIndexChanged(){
+                if (this.flatrateReportSelectionIndex !== null && this.flatrateReportSelectionIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.flatrateReportSelectionItem.id, submenu: this.flatrateReportSelectionItem.dataset.submenu} } }));
+                    this._select("flatrateReports", "flatrateReportSelectionIndex");
+                }
+            }
+
+            _consultationReportSelectionIndexChanged(){
+                if (this.consultationReportSelectionIndex !== null && this.consultationReportSelectionIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.consultationReportSelectionItem.id, submenu: this.consultationReportSelectionItem.dataset.submenu} } }));
+                    this._select("consultationReports", "consultationReportSelectionIndex");
+                }
+            }
+
+            _patientReportSelectionIndexChanged(){
+                if (this.patientReportSelectionIndex !== null && this.patientReportSelectionIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.patientReportSelectionItem.id, submenu: this.patientReportSelectionItem.dataset.submenu} } }));
+                    this._select("patientReports", "patientReportSelectionIndex");
+                }
+            }
+
+            _invoiceReportSelectionIndexChanged(){
+                if (this.invoiceReportSelectionIndex !== null && this.invoiceReportSelectionIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.invoiceReportSelectionItem.id, submenu: this.invoiceReportSelectionItem.dataset.submenu} } }));
+                    this._select("invoiceReports", "invoiceReportSelectionIndex");
+                }
+            }
+
+            _authorityReportSelectionIndexChanged(){
+                if (this.authorityReportSelectionIndex !== null && this.authorityReportSelectionIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: this.authorityReportSelectionItem.id, submenu: this.authorityReportSelectionItem.dataset.submenu} } }));
+                    this._select("authorityReports", "authorityReportSelectionIndex");
                 }
             }
 
