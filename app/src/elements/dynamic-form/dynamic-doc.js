@@ -1381,7 +1381,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
           ).then(({extractedKeys: enckeys}) => {
               const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
               const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
-              const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
+              const docName = !docExt && utiExt ? doc.name + "." + (!utiExt.includes("text") ? utiExt : "txt") : doc.name
               const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
               let a = document.createElement("a");
               document.body.appendChild(a);
