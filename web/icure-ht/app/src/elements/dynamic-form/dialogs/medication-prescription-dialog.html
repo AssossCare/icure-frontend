@@ -372,7 +372,7 @@
 
             .filters-bar--small-icon {
                 height: 32px;
-                width: 32px;      
+                width: 32px;
             }
 
             paper-icon-button.list-item-icon--add {
@@ -1845,6 +1845,10 @@
                     refreshDescription: {
                         type: String,
                         value: ""
+                    },
+                    saveAction: {
+                        type: Object,
+                        value: () =>{console.log("no save Action")}
                     }
                 }
             }
@@ -2064,7 +2068,8 @@
                 this._updateAccumulatorSelection(idx);
             }
 
-            open(medication, options = {}) {
+            open(medication, options = {}, saveAction) {
+                this.set("saveAction",saveAction)
                 // @todo: spinner
                 this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
                     .then(hes => {
@@ -2286,7 +2291,7 @@
                 if (id) return '';
                 return "NO_ENTRY";
             }
-            
+
             _getPriceIndexStyle(index) {
                 return index > 1 ? "" : "PRICE_INDEX--" + (index > 0 ? "CHEAP" : "CHEAPEST");
             }
@@ -2935,8 +2940,8 @@
                     newMedClone.tags = newMed.tags && newMed.tags.length && newMed.tags.filter(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || [];
                     const medicationValueClone = this.api.contact().medicationValue(newMedClone, this.language);
                     if (hasMedication) {
-                        medicationValueClone.beginMoment = parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10);
-                        medicationValueClone.endMoment = null;
+                        medicationValueClone.beginMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10) : medicationValueClone.beginMoment;
+                        medicationValueClone.endMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? null : medicationValueClone.endMoment
                     }
                     (this.api.contact().medicationValue(newMedClone, this.language) || {medicationValue: {}}).status = 0;
                     newMedClone.beginMoment = null;
@@ -2961,10 +2966,11 @@
             }
 
             saveMedications() {
-                this.dispatchEvent(new CustomEvent(this.isPrescription ? 'save-medications' : 'new-medications', {
-                    detail: {medications: this.medicationAccumulator},
-                    bubbles: true,
-                    composed: true
+                this.saveAction(this.medicationAccumulator.map(m => {
+                    if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
+                        m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
+                    }
+                    return m;
                 }))
             }
 
