@@ -44,6 +44,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="reports/ht-admin-reports-list-of-attestations.html">
 <link rel="import" href="reports/ht-admin-reports-age-structure.html">
 <link rel="import" href="reports/ht-admin-reports-rash.html">
+<link rel="import" href="reports/ht-admin-reports-consultation.html">
+
+<link rel="import" href="reports/ht-admin-reports-patient.html">
+<link rel="import" href="reports/ht-admin-reports-patient-with-mh-contract.html">
+<link rel="import" href="reports/ht-admin-reports-patient-without-mh-contract.html">
+
 
 
 <dom-module id="ht-admin-reports">
@@ -81,6 +87,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: calc(100% - 50px);
             }
 
+            #admin-reports-no-mh-contract{
+                height: calc(100% - 50px);
+            }
+
+            #admin-reports-mh-contract{
+                height: calc(100% - 50px);
+            }
+
 
         </style>
 
@@ -92,6 +106,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
         <template is="dom-if" if="[[rashReport]]">
             <ht-admin-reports-rash id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-rash>
+        </template>
+        <template is="dom-if" if="[[listOfConsultation]]">
+            <ht-admin-reports-list-of-consultation id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-list-of-consultation>
+        </template>
+
+        <template is="dom-if" if="[[listOfPatient]]">
+            <ht-admin-reports-patient id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient>
+        </template>
+        <template is="dom-if" if="[[patientWithMhContract]]">
+            <ht-admin-reports-patient-with-mh-contract id="admin-reports-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient-with-mh-contract>
+        </template>
+        <template is="dom-if" if="[[patientWithoutMhContract]]">
+            <ht-admin-reports-patient-without-mh-contract id="admin-reports-no-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient-without-mh-contract>
         </template>
 
     </template>
@@ -128,6 +155,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Boolean,
                         value: false
                     },
+                    listOfPatient:{
+                        type: Boolean,
+                        value: false
+                    },
+                    listOfConsultation:{
+                        type: Boolean,
+                        value: false
+                    },
                     rashReport:{
                       type: Boolean,
                       value: false
@@ -135,6 +170,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     selection: {
                         type: Object,
                         observer: '_select'
+                    },
+                    patientWithMhContract:{
+                        type: Boolean,
+                        value: false
+                    },
+                    patientWithoutMhContract:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -163,6 +206,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('listOfAttestationLayout', this.selectedSubMenu === "listOfAttestationSubMenu");
                 this.set('ageStructure', this.selectedSubMenu === "ageStructure");
                 this.set('rashReport', this.selectedSubMenu === "rashReport");
+                this.set('listOfConsultation', this.selectedSubMenu === "listOfConsultation")
+                this.set('listOfPatient', this.selectedSubMenu === "listOfPatient")
+                this.set('patientWithMhContract', this.selectedSubMenu === "patientWithMhContract")
+                this.set('patientWithoutMhContract', this.selectedSubMenu === "patientWithoutMhContract")
             }
         }
 

@@ -1,0 +1,415 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../dynamic-form/dynamic-text-field.html">
+
+
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+
+
+<dom-module id="ht-admin-reports-patient-with-mh-contract">
+
+    <template>
+
+        <style include="shared-styles dialog-style buttons-style paper-tabs-style">
+            :host {
+                display: block;
+            }
+
+            :host *:focus{
+                outline:0!important;
+            }
+
+            .mhContract-panel{
+                width: 100%;
+                height: 100%;
+                grid-column-gap: 24px;
+                grid-row-gap: 24px;
+                padding: 0 24px;
+                box-sizing: border-box;
+                background: white;
+            }
+
+            .mhContractRequest{
+                display: flex;
+            }
+
+            #yearOfRequest{
+                padding: 5px;
+            }
+
+            .btn-container{
+                margin: 18px;
+                display: flex;
+            }
+
+            .btn-icon{
+                height: 14px!important;
+                width: 14px!important;
+            }
+
+            .result-container{
+                height: calc(100% - 110px);
+                width: 100%;
+            }
+
+            .table{
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .tr{
+                display: flex;
+                height: auto;
+                padding: 2px;
+            }
+
+            .bb{
+                border-bottom: 1px solid lightgray;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg3{
+                flex-grow: 3;
+            }
+
+            .panel-search{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-content{
+                height: calc(100% - 40px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+        </style>
+
+        <div class="mhContract-panel">
+            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-pmc-pat-with-mh', 'Patient with medical house contract', language)]]</h4>
+
+            <div class="mhContractRequest">
+                <div class="mhContractYear">
+                    <vaadin-combo-box id="yearOfRequest" filtered-items="[[availableYearForReport]]" item-label-path="label" item-value-path="id" label="[[localize('rash-which-year', 'For which year do you want to generate the Rash report ?', language)]]" selected-item="{{selectedYear}}"></vaadin-combo-box>
+                </div>
+                <div class="btn-container">
+                    <paper-button class="button button--save" on-tap="_getReportInformation"><iron-icon icon="vaadin:download" class="btn-icon"></iron-icon> [[localize('rash-gen-rep','Generate report',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_resetReport"><iron-icon icon="vaadin:close" class="btn-icon"></iron-icon> [[localize('rash-reset','Reset',language)]]</paper-button>
+                </div>
+            </div>
+
+            <div class="result-container">
+                <div class="panel-search">
+                    <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+                </div>
+                <div class="panel-content">
+                    <div class="table">
+                        <div class="tr bb th">
+                            <div class="td fg1">[[localize('', 'Patient', language)]]</div>
+                            <div class="td fg1">[[localize('', 'Ssin', language)]]</div>
+                            <div class="td fg1">[[localize('', 'Date of birth', language)]]</div>
+                            <div class="td fg1">[[localize('', 'Gender', language)]]</div>
+                            <div class="td fg1">[[localize('', 'Start coverage', language)]]</div>
+                            <div class="td fg1">[[localize('', 'End coverage', language)]]</div>
+                            <div class="td fg1">[[localize('', 'Coverage type', language)]]</div>
+                        </div>
+                        <template is="dom-repeat" items="[[filteredListOfPatientWithMhContract]]" as="pat">
+                            <div class="tr bb">
+                                <div class="td fg1">[[pat.lastName]] [[pat.firstName]]</div>
+                                <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
+                                <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
+                                <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
+                                <div class="td fg1">[[_getStartOfCoverage(pat)]]</div>
+                                <div class="td fg1">[[_getEndOfCoverage(pat)]]</div>
+                                <div class="td fg1">[[_getCoverageType(pat)]]</div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-button">
+
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import { parse } from '../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../scripts/filters'
+        import '../../../../bower_components/js-xlsx/shim.js'
+        const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
+
+        class HtAdminReportsPatientWithMhContract extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-reports-patient-with-mh-contract'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true
+                    },
+                    patientList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    patientWithMhContract:{
+                        type: Array,
+                        value: () => []
+                    },
+                    filteredListOfPatientWithMhContract:{
+                      type: Array,
+                      value: () => []
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    selectedYear:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    availableYearForReport:{
+                        type: Object,
+                        value: () => []
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    },
+                    filter:{
+                        type: String,
+                        value: null
+                    }
+                }
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user)', '_filterValueChanged(filter)'];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _initializeDataProvider(){
+                this.set('patientList', [])
+                this.set('hcp', {})
+
+                this.set('selectedYear', {})
+                this.set('availableYearForReport', [])
+
+                this.set('availableYearForReport', [
+                    {label: 2019, id: 2019},
+                    {label: 2020, id: 2020}
+                ])
+
+                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
+
+            }
+
+            _getReportInformation(){
+                //this.$['processDialog'].open()
+                //this.set('isLoading', true)
+
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+                    this.set('hcp', hcp)
+                    const filter = {
+                        $type: "PatientByHcPartyNameContainsFuzzyFilter",
+                        healthcarePartyId: _.get(hcp, 'parentId', null) ? _.get(hcp, 'parentId', null) : _.get(hcp, 'id', null),
+                        searchString: ""
+                    };
+
+                    return this.api.patient().filterByWithUser(this.user, null, null, 30000, 0, null, true, {filter: filter})
+
+                }).then(patients => {
+                    this.set('patientList', _.get(patients, 'rows', []).map(pat => _.assign(pat, {
+                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'firstName', ''), _.get(pat, 'lastName', ''), _.get(pat, 'ssin', ''), _.get(pat, 'dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                    })))
+
+                    this._getPatientWithFlatrateContract()
+                })
+
+
+            }
+
+            _getPatientWithFlatrateContract(){
+                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
+                this.set('patientWithMhContract', _.sortBy(_.get(this, 'patientList', []).filter(pat => (_.get(pat, 'active', false) === true) &&  _.size(_.get(pat, "medicalHouseContracts", [])) &&
+                    _.some(_.get(pat, "medicalHouseContracts", []), mhc => mhc &&
+                        (mhc.kine || mhc.gp || mhc.nurse) &&
+                        _.trim(_.get(mhc,"startOfContract") &&
+                            _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
+                            (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
+                            (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
+                            (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))), ['lastName', 'firstName'], ['asc', 'asc']))
+
+                this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+            }
+
+
+            _resetReport(){
+
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const patientSearchResults =  _.chain(_.get(this, "patientWithMhContract", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
+                                .value()
+                            this.set('filteredListOfPatientWithMhContract', _.sortBy(patientSearchResults, ['lastName', 'firstName'], ['asc', 'asc']))
+                        }else{
+                            this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                }
+            }
+
+            _formatDate(date){
+                return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+            }
+
+            _localizeGender(gender){
+                return gender ? this.localize('gender_'+gender, gender, this.language) : null
+            }
+
+            _formatSsin(ssin){
+                return ssin ? this.api.formatSsinNumber(ssin): null
+            }
+
+            _getCoverageType(pat){
+
+            }
+
+            _getEndOfCoverage(pat){
+
+            }
+
+            _getStartOfCoverage(pat){
+
+            }
+
+
+        }
+
+        customElements.define(HtAdminReportsPatientWithMhContract.is, HtAdminReportsPatientWithMhContract)
+    </script>
+</dom-module>

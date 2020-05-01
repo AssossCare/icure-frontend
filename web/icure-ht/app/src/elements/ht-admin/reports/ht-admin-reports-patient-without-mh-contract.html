@@ -1,0 +1,197 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+
+
+<dom-module id="ht-admin-reports-patient-without-mh-contract">
+
+    <template>
+
+        <style include="shared-styles dialog-style buttons-style paper-tabs-style">
+            :host {
+                display: block;
+            }
+
+            :host *:focus{
+                outline:0!important;
+            }
+
+            .mhContract-panel{
+                width: 100%;
+                height: 100%;
+                grid-column-gap: 24px;
+                grid-row-gap: 24px;
+                padding: 0 24px;
+                box-sizing: border-box;
+                background: white;
+            }
+
+            .mhContractRequest{
+                display: flex;
+            }
+
+            #yearOfRequest{
+                padding: 5px;
+            }
+
+            .btn-container{
+                margin: 18px;
+                display: flex;
+            }
+
+            .btn-icon{
+                height: 14px!important;
+                width: 14px!important;
+            }
+
+        </style>
+
+        <div class="mhContract-panel">
+            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-pnmc-pat-without-mh', 'Patient without medical house contract', language)]]</h4>
+
+            <div class="mhContractRequest">
+                <div class="mhContractYear">
+                    <vaadin-combo-box id="yearOfRequest" filtered-items="[[availableYearForReport]]" item-label-path="label" item-value-path="id" label="[[localize('rash-which-year', 'For which year do you want to generate the Rash report ?', language)]]" selected-item="{{selectedYear}}"></vaadin-combo-box>
+                </div>
+                <div class="btn-container">
+                    <paper-button class="button button--save" on-tap="_getReportInformation"><iron-icon icon="vaadin:download" class="btn-icon"></iron-icon> [[localize('rash-gen-rep','Generate report',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_resetReport"><iron-icon icon="vaadin:close" class="btn-icon"></iron-icon> [[localize('rash-reset','Reset',language)]]</paper-button>
+                </div>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import { parse } from '../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../scripts/filters'
+        import '../../../../bower_components/js-xlsx/shim.js'
+        const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
+
+        class HtAdminReportsPatientWithoutMhContract extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-reports-patient-without-mh-contract'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true
+                    },
+                    patientList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    selectedYear:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    availableYearForReport:{
+                        type: Object,
+                        value: () => []
+                    }
+                }
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user)'];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _initializeDataProvider(){
+                this.set('patientList', [])
+                this.set('hcp', {})
+
+                this.set('selectedYear', {})
+                this.set('availableYearForReport', [])
+
+                this.set('availableYearForReport', [
+                    {label: 2019, id: 2019},
+                    {label: 2020, id: 2020}
+                ])
+
+                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
+            }
+
+            _getReportInformation(){
+
+            }
+
+            _resetReport(){
+
+            }
+
+            _getNumberOfPatientWithoutFlatrateContract(){
+                return parseInt(_.size(_.get(this, 'patientList', []).filter(p => _.get(p, 'active', false) === true ))) - parseInt(this._getNumberOfPatientWithFlatrateContract())
+            }
+
+
+        }
+
+        customElements.define(HtAdminReportsPatientWithoutMhContract.is, HtAdminReportsPatientWithoutMhContract)
+    </script>
+</dom-module>
