@@ -1020,7 +1020,7 @@
                                         return {
                                             label: serie.label,
                                             fillColor: "transparent",
-                                            data: _.compact(services.map(s => _.get(s.content.fr.measureValue, serie.value, null) ? _.get(s.content.fr.measureValue, serie.value, null) : _.get(s.content.measure.measureValue, serie.value, null) ? _.get(s.content.measure.measureValue, serie.value, null) : null)) || [],
+                                            data: _.compact(services.map(s => _.get(s, 'content.fr.measureValue.serie.value', null) ? _.get(s, 'content.fr.measureValue.serie.value', null) : _.get(s, 'content.measure.measureValue.serie.value', null) ? _.get(s, 'content.measure.measureValue.serie.value', null) : null)) || [],
                                             lineTension: 0.1,
                                             backgroundColor: serie.backgroundColor,
                                             borderColor: serie.borderColor
