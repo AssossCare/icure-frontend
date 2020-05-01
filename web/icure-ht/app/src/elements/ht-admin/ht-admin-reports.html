@@ -115,10 +115,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <ht-admin-reports-patient id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient>
         </template>
         <template is="dom-if" if="[[patientWithMhContract]]">
-            <ht-admin-reports-patient-with-mh-contract id="admin-reports-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient-with-mh-contract>
+            <ht-admin-reports-patient-with-mh-contract id="admin-reports-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-with-mh-contract>
         </template>
         <template is="dom-if" if="[[patientWithoutMhContract]]">
-            <ht-admin-reports-patient-without-mh-contract id="admin-reports-no-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-patient-without-mh-contract>
+            <ht-admin-reports-patient-without-mh-contract id="admin-reports-no-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-without-mh-contract>
         </template>
 
     </template>
@@ -127,6 +127,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
+        import '../../../bower_components/js-xlsx/shim.js'
+        const XLSX = require('../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class HtAdminReports extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
@@ -210,6 +212,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('listOfPatient', this.selectedSubMenu === "listOfPatient")
                 this.set('patientWithMhContract', this.selectedSubMenu === "patientWithMhContract")
                 this.set('patientWithoutMhContract', this.selectedSubMenu === "patientWithoutMhContract")
+            }
+
+            generateXlsFile(e){
+
+                if(!_.isEmpty(_.get(e, 'detail', {}))){
+
+                    // Create xls work book and assign properties
+                    const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                    xlsWorkBook.Props = {Title: _.get(e, 'detail.title', null), Author: _.get(e, 'detail.author', null)}
+
+                    // Create sheet based on json data collection
+                    var xlsWorkSheet = XLSX.utils.json_to_sheet(_.get(e, 'detail.data', []))
+
+                    // Link sheet to workbook
+                    XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, _.get(e, 'detail.title', null))
+
+                    // Virtual data output
+                    var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                    // Put output to virtual "file"
+                    var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                    // Create download link and append to page's body
+                    var downloadLink = document.createElement("a")
+                    document.body.appendChild(downloadLink)
+                    downloadLink.style = "display: none"
+
+                    // Create url
+                    var urlObject = window.URL.createObjectURL(fileBlob)
+
+                    // Link to url
+                    downloadLink.href = urlObject
+                    downloadLink.download = _.get(e, 'detail.filename', null)
+
+                    // Trigger download and drop object
+                    downloadLink.click()
+                    window.URL.revokeObjectURL(urlObject)
+
+                    // Free mem
+                    fileBlob = false
+                    xlsWorkBookOutput = false
+                }
             }
         }
 

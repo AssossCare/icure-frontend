@@ -92,7 +92,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .result-container{
-                height: calc(100% - 110px);
+                height: calc(100% - 135px);
                 width: 100%;
             }
 
@@ -213,16 +213,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
                                 <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
                                 <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
-                                <div class="td fg1">[[_getStartOfCoverage(pat)]]</div>
-                                <div class="td fg1">[[_getEndOfCoverage(pat)]]</div>
-                                <div class="td fg1">[[_getCoverageType(pat)]]</div>
+                                <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
+                                <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
+                                <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
             <div class="panel-button">
-
+                <paper-button class="button button--other" on-tap="_exportResult" id="all">[[localize('','Export all',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_exportResult" id="filtered">[[localize('','Export search',language)]]</paper-button>
             </div>
         </div>
 
@@ -234,8 +235,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         import _ from 'lodash/lodash';
         import { parse } from '../../../../scripts/icure-reporting'
         import { filter as icrFilter } from '../../../../scripts/filters'
-        import '../../../../bower_components/js-xlsx/shim.js'
-        const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class HtAdminReportsPatientWithMhContract extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
@@ -300,11 +299,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _initializeDataProvider(){
-                this.set('patientList', [])
-                this.set('hcp', {})
-
-                this.set('selectedYear', {})
-                this.set('availableYearForReport', [])
+                this._reset()
 
                 this.set('availableYearForReport', [
                     {label: 2019, id: 2019},
@@ -313,6 +308,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
 
+            }
+
+            _reset(){
+                this.set('patientList', [])
+                this.set('hcp', {})
+                this.set('filter', null)
+                this.set('selectedYear', {})
+                this.set('availableYearForReport', [])
+                this.set('patientList', [])
+                this.set('filteredListOfPatientWithMhContract', [])
             }
 
             _getReportInformation(){
@@ -356,7 +361,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
             _resetReport(){
-
+                this._reset()
             }
 
             _filterValueChanged(){
@@ -395,18 +400,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return ssin ? this.api.formatSsinNumber(ssin): null
             }
 
-            _getCoverageType(pat){
+            _getCoverageType(m,k,i){
+                return (m ? "M" : "")+(k ? "K" : "")+(i ? "I" : "")
 
             }
 
-            _getEndOfCoverage(pat){
+            _getCoverageInfo(pat, type){
+                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
+                const contract = _.get(pat, 'medicalHouseContracts', []).find(mhc => _.trim(_.get(mhc,"startOfContract") &&
+                    _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
+                    (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
+                    (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
+                    (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))
+
+                return type === "startOfCoverage" ? this._formatDate(_.get(contract, 'startOfCoverage' , null)) :
+                    type === "endOfCoverage" ? this._formatDate(_.get(contract, 'endOfCoverage' , null)) :
+                        type === "coverageType" ? this._getCoverageType(_.get(contract, 'gp' , false), _.get(contract, 'kine' , false), _.get(contract, 'nurse' , false)) : null
 
             }
 
-            _getStartOfCoverage(pat){
+            _exportResult(e){
+                if(_.get(e, 'target.id', null)){
+                    const type = _.get(e, 'target.id', null)
+                    let data = []
 
+                    data.push([
+                        this.localize('', 'Patient', this.language),
+                        this.localize('', 'Ssin', this.language),
+                        this.localize('', 'Date of birth', this.language),
+                        this.localize('', 'Gender', this.language),
+                        this.localize('', 'Start coverage', this.language),
+                        this.localize('', 'End coverage', this.language),
+                        this.localize('', 'Coverage type', this.language),
+                        this.localize('postalAddress', 'Postal address', this.language),
+                        this.localize('postalCode', 'postalCode', this.language),
+                        this.localize('city', 'city', this.language),
+                        this.localize('country', 'country', this.language),
+                        this.localize('email', 'Email', this.language),
+                        this.localize('phone', 'Phone', this.language)
+                    ])
+
+                    ;(type === "all" ? _.get(this, 'patientWithMhContract', []) : _.get(this, 'filteredListOfPatientWithMhContract', [])).map(pat => {
+                        data.push([
+                            _.get(pat, 'lastName', "")+" "+_.get(pat, "firstName", ""),
+                            _.get(pat, 'ssin', ""),
+                            this._formatDate(_.get(pat, 'dateOfBirth', null)),
+                            this._localizeGender(_.get(pat, 'gender', null)),
+                            this._getCoverageInfo(pat, 'startOfCoverage'),
+                            this._getCoverageInfo(pat, 'endOfCoverage'),
+                            this._getCoverageInfo(pat, 'coverageType'),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "houseNumber", "")+" "+_.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "street", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "postalCode", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "city", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "country", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone")), "telecomNumber", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "email")), "telecomNumber", "")
+                        ])
+                    })
+
+                    this.dispatchEvent(new CustomEvent('generate-xlsx', {bubbles: true, composed: true, detail: {
+                        data: data,
+                        filename: "mhContract"+_.get(this.selectedYear, 'id', null)+"_"+moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                        title: "mhContract "+_.get(this.selectedYear, 'id', null),
+                        author: "Topaz"}
+                    }))
+
+                }
             }
-
 
         }
 
