@@ -110,6 +110,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
 import _ from "lodash";
 import './elements/ht-tools/ht-migration-mikrono';
+import './elements/ht-tools/ht-migration-data-fix';
 
 class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   static get template() {
@@ -766,7 +767,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         <ht-access-log id="ht-access-log" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-access-log>
         <ht-my-profile id="ht-my-profile" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-user-saved="_userSaved"></ht-my-profile>
 
-        <ht-migration-mikrono id="htMigrationMikrono" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-migration-mikrono>   
+        <ht-migration-mikrono id="htMigrationMikrono" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-migration-mikrono>
+        
+        <ht-migration-data-fix id="htMigrationDataFix" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-migration-data-fix>   
         
         <ht-update-dialog id="htUpdateDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-update-dialog>
 
@@ -871,7 +874,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateAllPricareAgendasToMikronoDEBUG">[[localize('import_all_pricare_agenda_debug','Import DEBUG Pricare Agendas',language)]]</paper-item>-->
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserPricareAgendaToMikrono">[[localize('import_single_pricare_agenda_debug','Import Single Pricare Agenda',language)]]</paper-item>-->
 
-                                    <paper-item class="extra-menu-item" on-tap="agendaMigrationDialog">0.[[localize('agenda_import_dialog','Agenda import dialog',language)]]</paper-item>    
+                                    <paper-item class="extra-menu-item" on-tap="agendaMigrationDialog">0.[[localize('agenda_import_dialog','Agenda import dialog',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="dataFixMigrationDialog">1.[[localize('data_fix_dialog','Datas fix dialog',language)]]</paper-item>
+                                        
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserToMikrono">1.[[localize('import_single_pricare_agenda_debug','create user',language)]]</paper-item>-->
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateAppointmentTypesToMikrono">2.[[localize('import_single_pricare_agenda_debug','create types',language)]]</paper-item>-->
 <!--                                    <paper-item class="extra-menu-item" on-tap="migrateCurrentUserAppointmentsToMikrono">3.[[localize('import_single_pricare_agenda_debug','create appointments',language)]]</paper-item>-->
@@ -2536,6 +2541,10 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
     agendaMigrationDialog(){
         this.$['htMigrationMikrono'].open()
+    }
+
+    dataFixMigrationDialog(){
+        this.$['htMigrationDataFix'].open()
     }
 
     migrateCurrentUserToMikrono() {
