@@ -52,7 +52,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="./dialogs/process-dialog.html">
 
 
-<dom-module id="ht-admin-reports-patient-with-mh-contract">
+<dom-module id="ht-admin-reports-patient-prestaire-ctc">
 
     <template>
 
@@ -182,12 +182,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </style>
 
         <div class="mhContract-panel">
-            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-pmc-pat-with-mh', 'Patient with medical house contract', language)]]</h4>
+            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-nb-ctc-hcp', 'List of all patient with number of contact and contact by hcp', language)]]</h4>
 
             <div class="mhContractRequest">
-                <div class="mhContractYear">
-                    <vaadin-combo-box id="yearOfRequest" filtered-items="[[availableYearForReport]]" item-label-path="label" item-value-path="id" label="[[localize('rash-which-year', 'For which year do you want to generate the Rash report ?', language)]]" selected-item="{{selectedYear}}"></vaadin-combo-box>
-                </div>
                 <div class="btn-container">
                     <paper-button class="button button--save" on-tap="_getReportInformation"><iron-icon icon="vaadin:download" class="btn-icon"></iron-icon> [[localize('rash-gen-rep','Generate report',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_resetReport"><iron-icon icon="vaadin:close" class="btn-icon"></iron-icon> [[localize('rash-reset','Reset',language)]]</paper-button>
@@ -206,21 +203,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 <div class="td fg1">[[localize('rep-pmc-ssin', 'Ssin', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-date-of-birth', 'Date of birth', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-gender', 'Gender', language)]]</div>
-                                <div class="td fg1">[[localize('rep-pmc-start-cov', 'Start coverage', language)]]</div>
-                                <div class="td fg1">[[localize('rep-pmc-end-cov', 'End coverage', language)]]</div>
-                                <div class="td fg1">[[localize('rep-pmc-cov-type', 'Coverage type', language)]]</div>
                                 <div class="td fg05">[[localize('rep-pmc-ctc-count', 'Contact count', language)]]</div>
                                 <div class="td fg2">[[localize('rep-pmc-ctc-count-hcp', 'Contact by hcp', language)]]</div>
                             </div>
-                            <template is="dom-repeat" items="[[filteredListOfPatientWithMhContract]]" as="pat">
+                            <template is="dom-repeat" items="[[filteredListOfPatient]]" as="pat">
                                 <div class="tr bb">
                                     <div class="td fg2">[[pat.lastName]] [[pat.firstName]]</div>
                                     <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
                                     <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
                                     <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
-                                    <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
-                                    <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
-                                    <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
                                     <div class="td fg05">[[_getContactCount(pat)]]</div>
                                     <div class="td fg2">
                                         <template is="dom-repeat" items="[[_getContactCountByHcp(pat)]]" as="hcp">
@@ -251,9 +242,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         import { parse } from '../../../../scripts/icure-reporting'
         import { filter as icrFilter } from '../../../../scripts/filters'
 
-        class HtAdminReportsPatientWithMhContract extends Polymer.TkLocalizerMixin(Polymer.Element) {
+        class HtAdminReportsPatientPrestataireCtc extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
-                return 'ht-admin-reports-patient-with-mh-contract'
+                return 'ht-admin-reports-patient-prestaire-ctc'
             }
 
             static get properties() {
@@ -270,25 +261,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Array,
                         value: () => []
                     },
-                    patientWithMhContract:{
+                    filteredListOfPatient:{
                         type: Array,
                         value: () => []
-                    },
-                    filteredListOfPatientWithMhContract:{
-                      type: Array,
-                      value: () => []
                     },
                     hcp:{
                         type: Object,
                         value: () => {}
-                    },
-                    selectedYear:{
-                        type: Object,
-                        value: () => {}
-                    },
-                    availableYearForReport:{
-                        type: Object,
-                        value: () => []
                     },
                     filter:{
                         type: String,
@@ -315,22 +294,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _initializeDataProvider(){
                 this._reset()
-
-                this.set('availableYearForReport', [
-                    {label: 2019, id: 2019},
-                    {label: 2020, id: 2020}
-                ])
-
-                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
             }
 
             _reset(){
                 this.set('hcp', {})
                 this.set('filter', null)
-                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
                 this.set('patientList', [])
-                this.set('patientWithMhContract', [])
-                this.set('filteredListOfPatientWithMhContract', [])
+                this.set('filteredListOfPatient', [])
                 this.set('showResult', false)
             }
 
@@ -353,8 +323,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     _.get(patients, 'rows', []).map(pat => {
                         prom = prom.then(listOfPat => this.api.contact().findBy((_.get(this.hcp, 'parentId', null) ? _.get(this.hcp, 'parentId', null) : _.get(this.hcp, 'id', null)), pat)
-                                        .then(ctcs => _.concat(listOfPat, {patient: pat, contactList: ctcs}))
-                                        .catch(e => console.log(e))
+                            .then(ctcs => _.concat(listOfPat, {patient: pat, contactList: ctcs}))
+                            .catch(e => console.log(e))
                         )
                     })
 
@@ -362,17 +332,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         const listOfHcpIds = _.uniq(_.compact(_.flatten(_.compact(listOfPat).map(pat => _.get(pat, 'contactList').map(ctc => _.get(ctc, 'responsible', null))))))
                         Promise.all([listOfPat, this.api.hcparty().getHealthcareParties(listOfHcpIds.join(','))]).then(([listOfPat, listOfHcp]) => {
                             return _.compact(listOfPat).map(pat => _.assign(_.get(pat, 'patient', {}), {
-                                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'patient.firstName', ''), _.get(pat, 'patient.lastName', ''), _.get(pat, 'patient.ssin', ''), _.get(pat, 'patient.dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
-                                        contactList: _.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
-                                            responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
-                                        })),
-                                        contactInfo: _.groupBy(_.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
-                                            responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
-                                        })), 'responsibleName')
-                                    }))
+                                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'patient.firstName', ''), _.get(pat, 'patient.lastName', ''), _.get(pat, 'patient.ssin', ''), _.get(pat, 'patient.dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
+                                contactList: _.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
+                                    responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
+                                })),
+                                contactInfo: _.groupBy(_.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
+                                    responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
+                                })), 'responsibleName')
+                            }))
                         }).then(listOfPatient => {
-                            this.set('patientList', listOfPatient)
-                            this._getPatientWithFlatrateContract()
+                            this.set('patientList', _.sortBy(listOfPatient, ['lastName', 'firstName'], ['asc', 'asc']))
+                            this.set('filteredListOfPatient', _.sortBy(listOfPatient, ['lastName', 'firstName'], ['asc', 'asc']))
                         }).finally(() => {
                             this.$["processDialog"].closeDialog()
                             this.set('showResult', true)
@@ -380,21 +350,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     })
                 })
             }
-
-            _getPatientWithFlatrateContract(){
-                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
-                this.set('patientWithMhContract', _.sortBy(_.get(this, 'patientList', []).filter(pat => (_.get(pat, 'active', false) === true) &&  _.size(_.get(pat, "medicalHouseContracts", [])) &&
-                    _.some(_.get(pat, "medicalHouseContracts", []), mhc => mhc &&
-                        (mhc.kine || mhc.gp || mhc.nurse) &&
-                        _.trim(_.get(mhc,"startOfContract") &&
-                            _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
-                            (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
-                            (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
-                            (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))), ['lastName', 'firstName'], ['asc', 'asc']))
-
-                this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
-            }
-
 
             _resetReport(){
                 this._reset()
@@ -407,20 +362,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     setTimeout(() => {
                         if(parseInt(_.get(keywordsString,"length",0)) > 2) {
-                            const patientSearchResults =  _.chain(_.get(this, "patientWithMhContract", []))
+                            const patientSearchResults =  _.chain(_.get(this, "patientList", []))
                                 .chain(_.get(this, "filter", []))
                                 .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
                                 .compact()
                                 .uniq()
                                 .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                                 .value()
-                            this.set('filteredListOfPatientWithMhContract', _.sortBy(patientSearchResults, ['lastName', 'firstName'], ['asc', 'asc']))
+                            this.set('filteredListOfPatient', _.sortBy(patientSearchResults, ['lastName', 'firstName'], ['asc', 'asc']))
                         }else{
-                            this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                            this.set('filteredListOfPatient', _.sortBy(_.get(this, 'patientList', []), ['lastName', 'firstName'], ['asc', 'asc']))
                         }
                     }, 100)
                 }else{
-                    this.set('filteredListOfPatientWithMhContract', _.sortBy(_.get(this, 'patientWithMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                    this.set('filteredListOfPatient', _.sortBy(_.get(this, 'patientList', []), ['lastName', 'firstName'], ['asc', 'asc']))
                 }
             }
 
@@ -436,25 +391,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return ssin ? this.api.formatSsinNumber(ssin): null
             }
 
-            _getCoverageType(m,k,i){
-                return (m ? "M" : "")+(k ? "K" : "")+(i ? "I" : "")
-
-            }
-
-            _getCoverageInfo(pat, type){
-                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
-                const contract = _.get(pat, 'medicalHouseContracts', []).find(mhc => _.trim(_.get(mhc,"startOfContract") &&
-                    _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
-                    (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
-                    (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
-                    (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))
-
-                return type === "startOfCoverage" ? this._formatDate(_.get(contract, 'startOfCoverage' , null)) :
-                    type === "endOfCoverage" ? this._formatDate(_.get(contract, 'endOfCoverage' , null)) :
-                        type === "coverageType" ? this._getCoverageType(_.get(contract, 'gp' , false), _.get(contract, 'kine' , false), _.get(contract, 'nurse' , false)) : null
-
-            }
-
             _exportResult(e){
                 if(_.get(e, 'target.id', null)){
                     const type = _.get(e, 'target.id', null)
@@ -465,9 +401,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.localize('rep-pmc-ssin', 'Ssin', this.language),
                         this.localize('rep-pmc-date-of-birth', 'Date of birth', this.language),
                         this.localize('rep-pmc-gender', 'Gender', this.language),
-                        this.localize('rep-pmc-start-cov', 'Start coverage', this.language),
-                        this.localize('rep-pmc-end-cov', 'End coverage', this.language),
-                        this.localize('rep-pmc-cov-type', 'Coverage type', this.language),
                         this.localize('rep-pmc-address', 'Postal address', this.language),
                         this.localize('rep-pmc-cp', 'postalCode', this.language),
                         this.localize('rep-pmc-city', 'city', this.language),
@@ -478,15 +411,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.localize('rep-pmc-ctc-count-hcp', 'Nb ctc by hcp', this.language)
                     ])
 
-                    ;(type === "all" ? _.get(this, 'patientWithMhContract', []) : _.get(this, 'filteredListOfPatientWithMhContract', [])).map(pat => {
+                    ;(type === "all" ? _.get(this, 'patientList', []) : _.get(this, 'filteredListOfPatient', [])).map(pat => {
                         data.push([
                             _.get(pat, 'lastName', "")+" "+_.get(pat, "firstName", ""),
                             _.get(pat, 'ssin', ""),
                             this._formatDate(_.get(pat, 'dateOfBirth', null)),
                             this._localizeGender(_.get(pat, 'gender', null)),
-                            this._getCoverageInfo(pat, 'startOfCoverage'),
-                            this._getCoverageInfo(pat, 'endOfCoverage'),
-                            this._getCoverageInfo(pat, 'coverageType'),
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "houseNumber", "")+" "+_.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "street", ""),
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "postalCode", ""),
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "city", ""),
@@ -499,10 +429,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     })
 
                     this.dispatchEvent(new CustomEvent('generate-xlsx', {bubbles: true, composed: true, detail: {
-                        data: data,
-                        filename: "mhContract"+_.get(this.selectedYear, 'id', null)+"_"+moment().format("YYYYMMDD-HHmmss")+ ".xls",
-                        title: "mhContract "+_.get(this.selectedYear, 'id', null),
-                        author: "Topaz"}
+                            data: data,
+                            filename: "patCtcHcp"+_.get(this.selectedYear, 'id', null)+"_"+moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                            title: "patCtcHcp "+_.get(this.selectedYear, 'id', null),
+                            author: "Topaz"}
                     }))
 
                 }
@@ -518,6 +448,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         }
 
-        customElements.define(HtAdminReportsPatientWithMhContract.is, HtAdminReportsPatientWithMhContract)
+        customElements.define(HtAdminReportsPatientPrestataireCtc.is, HtAdminReportsPatientPrestataireCtc)
     </script>
 </dom-module>

@@ -49,6 +49,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="reports/ht-admin-reports-patient.html">
 <link rel="import" href="reports/ht-admin-reports-patient-with-mh-contract.html">
 <link rel="import" href="reports/ht-admin-reports-patient-without-mh-contract.html">
+<link rel="import" href="reports/ht-admin-reports-patient-prestaire-ctc.html">
 
 
 
@@ -95,6 +96,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: calc(100% - 50px);
             }
 
+            #admin-reports-patient-prestaire-ctc{
+                height: calc(100% - 50px);
+            }
+
 
         </style>
 
@@ -119,6 +124,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
         <template is="dom-if" if="[[patientWithoutMhContract]]">
             <ht-admin-reports-patient-without-mh-contract id="admin-reports-no-mh-contract" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-without-mh-contract>
+        </template>
+
+        <template is="dom-if" if="[[patientPrestaCtc]]">
+            <ht-admin-reports-patient-prestaire-ctc id="admin-reports-patient-prestaire-ctc" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-prestaire-ctc>
         </template>
 
     </template>
@@ -180,6 +189,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     patientWithoutMhContract:{
                         type: Boolean,
                         value: false
+                    },
+                    patientPrestaCtc:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -212,6 +225,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('listOfPatient', this.selectedSubMenu === "listOfPatient")
                 this.set('patientWithMhContract', this.selectedSubMenu === "patientWithMhContract")
                 this.set('patientWithoutMhContract', this.selectedSubMenu === "patientWithoutMhContract")
+                this.set('patientPrestaCtc', this.selectedSubMenu === "patientPrestaCtc")
             }
 
             generateXlsFile(e){
