@@ -49,6 +49,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../ht-spinner/ht-spinner.html">
 
+<link rel="import" href="./dialogs/process-dialog.html">
+
 
 <dom-module id="ht-admin-reports-patient-with-mh-contract">
 
@@ -185,6 +187,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="mhContractRequest">
                 <div class="mhContractYear">
                     <vaadin-combo-box id="yearOfRequest" filtered-items="[[availableYearForReport]]" item-label-path="label" item-value-path="id" label="[[localize('rash-which-year', 'For which year do you want to generate the Rash report ?', language)]]" selected-item="{{selectedYear}}"></vaadin-combo-box>
+                    <vaadin-combo-box id="consultRequest" filtered-items="[[availableConsultRequest]]" item-label-path="label.fr" item-value-path="id" label="[[localize('rep-pmc-cons-info', 'Do you want include consultation informations ?', language)]]" selected-item="{{selectedConsultRequest}}"></vaadin-combo-box>
                 </div>
                 <div class="btn-container">
                     <paper-button class="button button--save" on-tap="_getReportInformation"><iron-icon icon="vaadin:download" class="btn-icon"></iron-icon> [[localize('rash-gen-rep','Generate report',language)]]</paper-button>
@@ -192,40 +195,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
             </div>
 
-            <div class="result-container">
-                <div class="panel-search">
-                    <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
-                </div>
-                <div class="panel-content">
-                    <div class="table">
-                        <div class="tr bb th">
-                            <div class="td fg1">[[localize('', 'Patient', language)]]</div>
-                            <div class="td fg1">[[localize('', 'Ssin', language)]]</div>
-                            <div class="td fg1">[[localize('', 'Date of birth', language)]]</div>
-                            <div class="td fg1">[[localize('', 'Gender', language)]]</div>
-                            <div class="td fg1">[[localize('', 'Start coverage', language)]]</div>
-                            <div class="td fg1">[[localize('', 'End coverage', language)]]</div>
-                            <div class="td fg1">[[localize('', 'Coverage type', language)]]</div>
-                        </div>
-                        <template is="dom-repeat" items="[[filteredListOfPatientWithMhContract]]" as="pat">
-                            <div class="tr bb">
-                                <div class="td fg1">[[pat.lastName]] [[pat.firstName]]</div>
-                                <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
-                                <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
-                                <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
-                                <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
-                                <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
-                                <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
+            <template is="dom-if" if="[[showResult]]">
+                <div class="result-container">
+                    <div class="panel-search">
+                        <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+                    </div>
+                    <div class="panel-content">
+                        <div class="table">
+                            <div class="tr bb th">
+                                <div class="td fg1">[[localize('rep-pmc-pat', 'Patient', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-ssin', 'Ssin', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-date-of-birth', 'Date of birth', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-gender', 'Gender', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-start-cov', 'Start coverage', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-end-cov', 'End coverage', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-cov-type', 'Coverage type', language)]]</div>
                             </div>
-                        </template>
+                            <template is="dom-repeat" items="[[filteredListOfPatientWithMhContract]]" as="pat">
+                                <div class="tr bb">
+                                    <div class="td fg1">[[pat.lastName]] [[pat.firstName]]</div>
+                                    <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
+                                    <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
+                                    <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="panel-button">
-                <paper-button class="button button--other" on-tap="_exportResult" id="all">[[localize('','Export all',language)]]</paper-button>
-                <paper-button class="button button--other" on-tap="_exportResult" id="filtered">[[localize('','Export search',language)]]</paper-button>
-            </div>
+                <div class="panel-button">
+                    <paper-button class="button button--other" on-tap="_exportResult" id="all">[[localize('rep-pmc-exp-all','Export all',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_exportResult" id="filtered">[[localize('rep-pmc-exp-sea','Export search',language)]]</paper-button>
+                </div>
+            </template>
+
         </div>
+
+        <process-dialog id="processDialog" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></process-dialog>
 
     </template>
 
@@ -275,13 +283,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Object,
                         value: () => []
                     },
-                    isLoading:{
-                        type: Boolean,
-                        value: false
-                    },
                     filter:{
                         type: String,
                         value: null
+                    },
+                    showResult:{
+                        type: Boolean,
+                        value: false
+                    },
+                    availableConsultRequest:{
+                      type: Array,
+                      value: () => []
+                    },
+                    selectedConsultRequest:{
+                        type: Object,
+                        value: () => {}
                     }
                 }
             }
@@ -308,21 +324,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
 
+                this.set('availableConsultRequest', [
+                    {label: {fr: "Oui", nl: "Ja", en: "Yes"} , id: "true"},
+                    {label: {fr: "Non", nl: "Ne", en: "No"}, id: "false"}
+                ])
+
+                this.set('selectedConsultRequest', _.get(this, 'availableConsultRequest', []).find(acr => _.get(acr, "id", null) === "false"))
             }
 
             _reset(){
                 this.set('patientList', [])
                 this.set('hcp', {})
                 this.set('filter', null)
-                this.set('selectedYear', {})
-                this.set('availableYearForReport', [])
+                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
                 this.set('patientList', [])
+                this.set('patientWithMhContract', [])
                 this.set('filteredListOfPatientWithMhContract', [])
+                this.set('showResult', false)
             }
 
             _getReportInformation(){
-                //this.$['processDialog'].open()
-                //this.set('isLoading', true)
+                this.set('showResult', false)
+                this.$["processDialog"].openDialog()
 
                 this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
                     this.set('hcp', hcp)
@@ -335,14 +358,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     return this.api.patient().filterByWithUser(this.user, null, null, 30000, 0, null, true, {filter: filter})
 
                 }).then(patients => {
-                    this.set('patientList', _.get(patients, 'rows', []).map(pat => _.assign(pat, {
-                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'firstName', ''), _.get(pat, 'lastName', ''), _.get(pat, 'ssin', ''), _.get(pat, 'dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
-                    })))
+                    let prom = Promise.resolve({})
 
-                    this._getPatientWithFlatrateContract()
+                    _.get(patients, 'rows', []).map(pat => {
+                        prom = prom.then(listOfPat => this.api.contact().findBy(_.get(this.user, 'healthcarePartyId', null), pat)
+                                        .then(ctcs => _.concat(listOfPat, {patient: pat, contactList: ctcs}))
+                                        .catch(e => console.log(e))
+                        )
+                    })
+
+                    prom.then(listOfPat => {
+                        const listOfHcpIds = _.uniq(_.compact(_.flatten(_.compact(listOfPat).map(pat => _.get(pat, 'contactList').map(ctc => _.get(ctc, 'responsible', null))))))
+                        this.api.hcparty().getHealthcareParties(listOfHcpIds.join(',')).then(listOfHcp => {
+                            //todo list ctc by hcp by patient
+                        })
+                        /*
+                        this.set('patientList', patAndCtc.map(patAndCtc => _.assign(pat, {
+                            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'firstName', ''), _.get(pat, 'lastName', ''), _.get(pat, 'ssin', ''), _.get(pat, 'dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                        })))
+                        */
+                        this._getPatientWithFlatrateContract()
+                    }).finally(() => {
+
+                        this.$["processDialog"].closeDialog()
+                        this.set('showResult', true)
+                    })
                 })
-
-
             }
 
             _getPatientWithFlatrateContract(){
@@ -425,19 +466,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     let data = []
 
                     data.push([
-                        this.localize('', 'Patient', this.language),
-                        this.localize('', 'Ssin', this.language),
-                        this.localize('', 'Date of birth', this.language),
-                        this.localize('', 'Gender', this.language),
-                        this.localize('', 'Start coverage', this.language),
-                        this.localize('', 'End coverage', this.language),
-                        this.localize('', 'Coverage type', this.language),
-                        this.localize('postalAddress', 'Postal address', this.language),
-                        this.localize('postalCode', 'postalCode', this.language),
-                        this.localize('city', 'city', this.language),
-                        this.localize('country', 'country', this.language),
-                        this.localize('email', 'Email', this.language),
-                        this.localize('phone', 'Phone', this.language)
+                        this.localize('rep-pmc-pat', 'Patient', this.language),
+                        this.localize('rep-pmc-ssin', 'Ssin', this.language),
+                        this.localize('rep-pmc-date-of-birth', 'Date of birth', this.language),
+                        this.localize('rep-pmc-gender', 'Gender', this.language),
+                        this.localize('rep-pmc-start-cov', 'Start coverage', this.language),
+                        this.localize('rep-pmc-end-cov', 'End coverage', this.language),
+                        this.localize('rep-pmc-cov-type', 'Coverage type', this.language),
+                        this.localize('rep-pmc-address', 'Postal address', this.language),
+                        this.localize('rep-pmc-cp', 'postalCode', this.language),
+                        this.localize('rep-pmc-city', 'city', this.language),
+                        this.localize('rep-pmc-country', 'country', this.language),
+                        this.localize('rep-pmc-email', 'Email', this.language),
+                        this.localize('rep-pmc-phone', 'Phone', this.language)
                     ])
 
                     ;(type === "all" ? _.get(this, 'patientWithMhContract', []) : _.get(this, 'filteredListOfPatientWithMhContract', [])).map(pat => {

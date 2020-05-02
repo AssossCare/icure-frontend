@@ -89,10 +89,96 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 width: 14px!important;
             }
 
+            .result-container{
+                height: calc(100% - 135px);
+                width: 100%;
+            }
+
+            .table{
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .tr{
+                display: flex;
+                height: auto;
+                padding: 2px;
+            }
+
+            .bb{
+                border-bottom: 1px solid lightgray;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg3{
+                flex-grow: 3;
+            }
+
+            .panel-search{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-content{
+                height: calc(100% - 40px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .searchField{
+                display: block;
+            }
+
         </style>
 
         <div class="mhContract-panel">
-            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-pnmc-pat-without-mh', 'Patient without medical house contract', language)]]</h4>
+            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-pnmc-pat-with-mh', 'Patient without medical house contract', language)]]</h4>
 
             <div class="mhContractRequest">
                 <div class="mhContractYear">
@@ -103,7 +189,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-button class="button button--other" on-tap="_resetReport"><iron-icon icon="vaadin:close" class="btn-icon"></iron-icon> [[localize('rash-reset','Reset',language)]]</paper-button>
                 </div>
             </div>
+
+            <template is="dom-if" if="[[showResult]]">
+                <div class="result-container">
+                    <div class="panel-search">
+                        <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+                    </div>
+                    <div class="panel-content">
+                        <div class="table">
+                            <div class="tr bb th">
+                                <div class="td fg1">[[localize('rep-pmc-pat', 'Patient', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-ssin', 'Ssin', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-date-of-birth', 'Date of birth', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-gender', 'Gender', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-start-cov', 'Start coverage', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-end-cov', 'End coverage', language)]]</div>
+                                <div class="td fg1">[[localize('rep-pmc-cov-type', 'Coverage type', language)]]</div>
+                            </div>
+                            <template is="dom-repeat" items="[[filteredListOfPatientWithoutMhContract]]" as="pat">
+                                <div class="tr bb">
+                                    <div class="td fg1">[[pat.lastName]] [[pat.firstName]]</div>
+                                    <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
+                                    <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
+                                    <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
+                                    <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-button">
+                    <paper-button class="button button--other" on-tap="_exportResult" id="all">[[localize('rep-pmc-exp-all','Export all',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_exportResult" id="filtered">[[localize('rep-pmc-exp-sea','Export search',language)]]</paper-button>
+                </div>
+            </template>
+
         </div>
+
+        <process-dialog id="processDialog" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></process-dialog>
 
     </template>
 
@@ -135,6 +260,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Array,
                         value: () => []
                     },
+                    patientWithoutMhContract:{
+                        type: Array,
+                        value: () => []
+                    },
+                    filteredListOfPatientWithoutMhContract:{
+                        type: Array,
+                        value: () => []
+                    },
                     hcp:{
                         type: Object,
                         value: () => {}
@@ -146,12 +279,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     availableYearForReport:{
                         type: Object,
                         value: () => []
+                    },
+                    filter:{
+                        type: String,
+                        value: null
                     }
                 }
             }
 
             static get observers() {
-                return ['_initializeDataProvider(api, user)'];
+                return ['_initializeDataProvider(api, user)', '_filterValueChanged(filter)'];
             }
 
             constructor() {
@@ -163,11 +300,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _initializeDataProvider(){
-                this.set('patientList', [])
-                this.set('hcp', {})
-
-                this.set('selectedYear', {})
-                this.set('availableYearForReport', [])
+                this._reset()
 
                 this.set('availableYearForReport', [
                     {label: 2019, id: 2019},
@@ -175,20 +308,182 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 ])
 
                 this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
+
+            }
+
+            _reset(){
+                this.set('patientList', [])
+                this.set('hcp', {})
+                this.set('filter', null)
+                this.set('selectedYear', _.get(this, 'availableYearForReport', []).find(ay => _.get(ay, 'id', null) === parseInt(this.api.moment(new Date()).format('YYYY'))))
+                this.set('patientList', [])
+                this.set('patientWithoutMhContract', [])
+                this.set('filteredListOfPatientWithoutMhContract', [])
+                this.set('showResult', false)
             }
 
             _getReportInformation(){
+                this.set('showResult', false)
+                this.$["processDialog"].openDialog()
 
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+                    this.set('hcp', hcp)
+                    const filter = {
+                        $type: "PatientByHcPartyNameContainsFuzzyFilter",
+                        healthcarePartyId: _.get(hcp, 'parentId', null) ? _.get(hcp, 'parentId', null) : _.get(hcp, 'id', null),
+                        searchString: ""
+                    };
+
+                    return this.api.patient().filterByWithUser(this.user, null, null, 30000, 0, null, true, {filter: filter})
+
+                }).then(patients => {
+                    let prom = Promise.resolve({})
+
+                    this.set('patientList', _.get(patients, 'rows', []).map(pat => _.assign(pat, {
+                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'firstName', ''), _.get(pat, 'lastName', ''), _.get(pat, 'ssin', ''), _.get(pat, 'dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                    })))
+
+                    _.get(this, 'patientList', []).map(pat => {
+                        prom = prom.then(patAndCtc => this.api.contact().findBy(_.get(this.hcp, 'parentId', null) ? _.get(this.hcp, 'parentId', null) : _.get(this.hcp, 'id', null), pat)
+                            .then(ctcs => _.concat(patAndCtc, {patient: pat, contactList: ctcs}))
+                        )
+                    })
+
+                    prom.then(patAndCtc => {
+                        console.log(patAndCtc)
+                    })
+
+                    this._getPatientWithoutFlatrateContract()
+                }).finally(() => {
+                    this.$["processDialog"].closeDialog()
+                    this.set('showResult', true)
+                })
+
+
+            }
+
+            _getPatientWithoutFlatrateContract(){
+                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
+                this.set('patientWithoutMhContract', _.sortBy(_.get(this, 'patientList', []).filter(pat => !((_.get(pat, 'active', false) === true) &&  _.size(_.get(pat, "medicalHouseContracts", [])) &&
+                    _.some(_.get(pat, "medicalHouseContracts", []), mhc => mhc &&
+                        (mhc.kine || mhc.gp || mhc.nurse) &&
+                        _.trim(_.get(mhc,"startOfContract") &&
+                            _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
+                            (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
+                            (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
+                            (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))), ['lastName', 'firstName'], ['asc', 'asc'])))
+
+                this.set('filteredListOfPatientWithoutMhContract', _.sortBy(_.get(this, 'patientWithoutMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                //return parseInt(_.size(_.get(this, 'patientList', []).filter(p => _.get(p, 'active', false) === true ))) - parseInt(this._getNumberOfPatientWithFlatrateContract())
             }
 
             _resetReport(){
+                this._reset()
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const patientSearchResults =  _.chain(_.get(this, "patientWithoutMhContract", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
+                                .value()
+                            this.set('filteredListOfPatientWithoutMhContract', _.sortBy(patientSearchResults, ['lastName', 'firstName'], ['asc', 'asc']))
+                        }else{
+                            this.set('filteredListOfPatientWithoutMhContract', _.sortBy(_.get(this, 'patientWithoutMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredListOfPatientWithoutMhContract', _.sortBy(_.get(this, 'patientWithoutMhContract', []), ['lastName', 'firstName'], ['asc', 'asc']))
+                }
+            }
+
+            _formatDate(date){
+                return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+            }
+
+            _localizeGender(gender){
+                return gender ? this.localize('gender_'+gender, gender, this.language) : null
+            }
+
+            _formatSsin(ssin){
+                return ssin ? this.api.formatSsinNumber(ssin): null
+            }
+
+            _getCoverageType(m,k,i){
+                return (m ? "M" : "")+(k ? "K" : "")+(i ? "I" : "")
 
             }
 
-            _getNumberOfPatientWithoutFlatrateContract(){
-                return parseInt(_.size(_.get(this, 'patientList', []).filter(p => _.get(p, 'active', false) === true ))) - parseInt(this._getNumberOfPatientWithFlatrateContract())
+            _getCoverageInfo(pat, type){
+                const startOfYear = parseInt(_.get(this, 'selectedYear.id', null)+"0101")
+                const contract = _.get(pat, 'medicalHouseContracts', []).find(mhc => _.trim(_.get(mhc,"startOfContract") &&
+                    _.get(mhc,"startOfContract") < (startOfYear+(1e4)) &&
+                    (!_.get(mhc,"startOfCoverage") || (_.get(mhc,"startOfCoverage") && _.get(mhc,"startOfCoverage") < (startOfYear+(1e4))) ) &&
+                    (!_.get(mhc,"endOfContract") || _.get(mhc,"endOfContract") > (startOfYear + 1130)) &&
+                    (!_.get(mhc,"endOfCoverage") || _.get(mhc,"endOfCoverage") > (startOfYear + 1130))))
+
+                return type === "startOfCoverage" ? this._formatDate(_.get(contract, 'startOfCoverage' , null)) :
+                    type === "endOfCoverage" ? this._formatDate(_.get(contract, 'endOfCoverage' , null)) :
+                        type === "coverageType" ? this._getCoverageType(_.get(contract, 'gp' , false), _.get(contract, 'kine' , false), _.get(contract, 'nurse' , false)) : null
+
             }
 
+            _exportResult(e){
+                if(_.get(e, 'target.id', null)){
+                    const type = _.get(e, 'target.id', null)
+                    let data = []
+
+                    data.push([
+                        this.localize('rep-pmc-pat', 'Patient', this.language),
+                        this.localize('rep-pmc-ssin', 'Ssin', this.language),
+                        this.localize('rep-pmc-date-of-birth', 'Date of birth', this.language),
+                        this.localize('rep-pmc-gender', 'Gender', this.language),
+                        this.localize('rep-pmc-start-cov', 'Start coverage', this.language),
+                        this.localize('rep-pmc-end-cov', 'End coverage', this.language),
+                        this.localize('rep-pmc-cov-type', 'Coverage type', this.language),
+                        this.localize('rep-pmc-address', 'Postal address', this.language),
+                        this.localize('rep-pmc-cp', 'postalCode', this.language),
+                        this.localize('rep-pmc-city', 'city', this.language),
+                        this.localize('rep-pmc-country', 'country', this.language),
+                        this.localize('rep-pmc-email', 'Email', this.language),
+                        this.localize('rep-pmc-phone', 'Phone', this.language)
+                    ])
+
+                    ;(type === "all" ? _.get(this, 'patientWithoutMhContract', []) : _.get(this, 'filteredListOfPatientWithoutMhContract', [])).map(pat => {
+                        data.push([
+                            _.get(pat, 'lastName', "")+" "+_.get(pat, "firstName", ""),
+                            _.get(pat, 'ssin', ""),
+                            this._formatDate(_.get(pat, 'dateOfBirth', null)),
+                            this._localizeGender(_.get(pat, 'gender', null)),
+                            this._getCoverageInfo(pat, 'startOfCoverage'),
+                            this._getCoverageInfo(pat, 'endOfCoverage'),
+                            this._getCoverageInfo(pat, 'coverageType'),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "houseNumber", "")+" "+_.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "street", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "postalCode", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "city", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "country", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone")), "telecomNumber", ""),
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "email")), "telecomNumber", "")
+                        ])
+                    })
+
+                    this.dispatchEvent(new CustomEvent('generate-xlsx', {bubbles: true, composed: true, detail: {
+                            data: data,
+                            filename: "mhContract"+_.get(this.selectedYear, 'id', null)+"_"+moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                            title: "mhContract "+_.get(this.selectedYear, 'id', null),
+                            author: "Topaz"}
+                    }))
+
+                }
+            }
 
         }
 
