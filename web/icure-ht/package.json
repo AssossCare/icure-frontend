@@ -1,6 +1,6 @@
 {
   "name": "icure-cloud",
-  "version": "0.0.463",
+  "version": "0.0.464",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
@@ -108,6 +108,7 @@
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
     "fhc-api": "1.0.54",
     "global": "^4.3.2",
+    "heic2any": "0.0.3",
     "iban": "0.0.11",
     "icc-api": "1.0.221",
     "jasmine": "^3.3.0",

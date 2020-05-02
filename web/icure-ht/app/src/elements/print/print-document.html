@@ -299,7 +299,7 @@
                     )
                     .then(([document,enckeys]) => this.api.beresultimport().canHandle(_.trim(_.get(document,"id","")), (enckeys||[]).join(',')).then(canHandle => ([document,enckeys,!!canHandle])).catch(() => Promise.resolve([document,enckeys,false])))
                     .then(([document,enckeys,canHandle]) => !canHandle ? Promise.resolve([document,enckeys]) : this.api.beresultimport().getInfos(_.trim(_.get(document,"id","")), true, null, (enckeys||[]).join(',')).then(docInfo=>([_.merge({},document,{docInfo:this._prettifyDocInfo(_.head(docInfo))}),enckeys])).catch(() => Promise.resolve([document,enckeys])))
-                    .then(([document,enckeys]) => this.api.document().getAttachment(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), (enckeys||[]).join(',')).then(attachmentContent => _.merge({}, document, {attachment: {content:attachmentContent, downloadUrl:this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))}})).catch(()=>Promise.resolve(document)))
+                    .then(([document,enckeys]) => (this._heicMimeType(document) ? this.api.document().getAttachmentAs(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), "application/octet-stream", (enckeys||[]).join(',')) : this.api.document().getAttachment(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), (enckeys||[]).join(',')) ).then(attachmentContent => _.merge({}, document, {attachment: {content:attachmentContent, downloadUrl:this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))}})).catch(()=>Promise.resolve(document)))
                     .then(document => {
                         const fileExtension = (_.trim(_.get(document,"name","")).split(".").pop()).toLowerCase()
                         const attachmentSize = _.get((typeof _.get(document,"attachment.content","") === "string" ? this.api.crypto().utils.text2ua(_.get(document,"attachment.content","")) : _.get(document,"attachment.content","")),"byteLength",0)
@@ -353,6 +353,10 @@
 
             _getImage(mimeType, content) {
                 return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="data:' + _.trim(mimeType) + ';base64,' + btoa(this.api.crypto().utils.ua2text(content)) + '"/></div>'
+            }
+
+            _getImageFromBase64(content) {
+                return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="'+content+'"/></div>'
             }
 
             _localize(value, defaultValue) {
@@ -881,16 +885,18 @@
                                 `
             }
 
-
             _getPdfContent() {
                 return "" +
                     this._getPdfHeader() +
                     (
                         // Simple text
-                        typeof _.get(this,"_data.content.body") === "string" ? "<pre>" + _.get(this,"_data.content.body") + "</pre>" :
+                        typeof _.get(this,"_data.content.body") === "string" && !this._heicMimeType(_.get(this,"_data.document",{})) ? "<pre>" + _.get(this,"_data.content.body") + "</pre>" :
 
                         // Images
                         _.get(this,"_data.content.body") instanceof ArrayBuffer && this._isImage(_.get(this,"_data.content")) ? this._getImage(_.get(this,"_data.content.mimeType"), _.get(this,"_data.content.body")) :
+
+                        // Heic / Heif image
+                        typeof _.get(this,"_data.content.body") === "string" && this._heicMimeType(_.get(this,"_data.document",{})) ? this._getImageFromBase64(_.get(this,"_data.content.body")) :
 
                         // Lab or protocol
                         _.get(this,"_data.content.body") instanceof ArrayBuffer && !!_.size(_.get(this,"_data.document.docInfo",{})) && !!_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue","")) ? "<pre>" + this._prettifyText(_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue",""))) + "</pre>" :
@@ -1021,7 +1027,8 @@
                 const documentInfoServices =  _.compact(_.map(_.get(document,"docInfo.services",{}), svc => svc))
 
                 return !_.size(document) ? promResolve : promResolve
-                    .then(() => {
+                    .then(() => this._heicMimeType(document) ? this.api.heicToJpg(document, _.get(document, "attachment.content")) : null)
+                    .then(heicBase64Image => {
                         return {
                             dateHr: !!_.size(contact) ? _.get(contact, "openingDateHr", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"created"))) : moment().format("DD/MM/YYYY"),
                             dateYYYYMMDD: !!_.size(contact) ? _.get(contact, "openingDateYYYYMMDD", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"created"))) : moment().format("YYYYMMDD"),
@@ -1039,8 +1046,7 @@
                                         normalValue: this._getServiceNormalValues(svc),
                                         author: this._getServiceAuthor(svc),
                                     }}) :
-                                    typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
-                                        _.get(document, "attachment.content"),
+                                    typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) : heicBase64Image ? heicBase64Image : _.get(document, "attachment.content"),
                             fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
                             mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
                             downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
@@ -1130,6 +1136,10 @@
                     svc => true /* !!_.trim(this._getServiceShortDescription(svc)) */
                 )
 
+            }
+
+            _heicMimeType(document) {
+                return document && _.get(document,"attachmentId",false) && ["heic","heif"].indexOf(_.trim(_.trim(_.get(document,"name","")).toLowerCase().split(".").pop())) > -1
             }
 
             printDocument(inputData) {
