@@ -50,6 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="reports/ht-admin-reports-patient-with-mh-contract.html">
 <link rel="import" href="reports/ht-admin-reports-patient-without-mh-contract.html">
 <link rel="import" href="reports/ht-admin-reports-patient-prestaire-ctc.html">
+<link rel="import" href="reports/ht-admin-reports-consultation-type.html">
 
 
 
@@ -130,6 +131,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <ht-admin-reports-patient-prestaire-ctc id="admin-reports-patient-prestaire-ctc" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-prestaire-ctc>
         </template>
 
+        <template is="dom-if" if="[[listOfConsultationByType]]">
+            <ht-admin-reports-consultation-type id="admin-reports-consultation-type" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-consultation-type>
+        </template>
+
     </template>
 
     <script>
@@ -193,6 +198,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     patientPrestaCtc:{
                         type: Boolean,
                         value: false
+                    },
+                    listOfConsultationByType:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -226,6 +235,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('patientWithMhContract', this.selectedSubMenu === "patientWithMhContract")
                 this.set('patientWithoutMhContract', this.selectedSubMenu === "patientWithoutMhContract")
                 this.set('patientPrestaCtc', this.selectedSubMenu === "patientPrestaCtc")
+                this.set('listOfConsultationByType', this.selectedSubMenu === "listOfConsultationByType")
             }
 
             generateXlsFile(e){

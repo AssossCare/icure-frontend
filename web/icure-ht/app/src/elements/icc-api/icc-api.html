@@ -12,6 +12,7 @@
     import moment from 'moment/src/moment'
     import _ from 'lodash/lodash';
     import { filter as icrFilter } from '../../../scripts/filters'
+    import { parse } from '../../../scripts/icure-reporting'
 
     import {IccBedrugsXApi} from 'icc-api/dist/icc-x-api/icc-bedrugs-x-api'
     import {IccBekmehrXApi} from 'icc-api/dist/icc-x-api/icc-bekmehr-x-api'
@@ -1168,8 +1169,8 @@
             svcFilter = parse(`PAT[${searchFilter}]`, {hcpId: _.get(hcp, 'parentId', null) || _.get(user, 'healthcarePartyId', null)})
 
             lastParamsWithIdxProm = icrFilter(svcFilter, {
-                cryptoicc: this.api.crypto(), usericc: this.api.user(), patienticc: this.api.patient(), contacticc: this.api.contact(), helementicc: this.api.helement(), invoiceicc: this.api.invoice(), hcpartyicc: this.api.hcparty()
-            }, this.hcp.parentId || this.user.healthcarePartyId, false).then(pl => pl.rows)
+                cryptoicc: this.crypto(), usericc: this.user(), patienticc: this.patient(), contacticc: this.contact(), helementicc: this.helement(), invoiceicc: this.invoice(), hcpartyicc: this.hcparty()
+            }, _.get(hcp, 'parentId', null) || _.get(user, 'healthcarePartyId', null), false).then(pl => pl.rows)
 
             return lastParamsWithIdxProm
         }
