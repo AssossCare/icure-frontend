@@ -1113,8 +1113,8 @@
             <div class="buttons">
                 <paper-button dialog-confirm autofocus on-tap="cancel" class="button">[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="{{_isDisplayingPrintButton(selectedTab)}}">
-                    <paper-button on-tap="print" class="button button--other">[[localize('print','Print',language)]]</paper-button>
                     <paper-button on-tap="_printAndSendByEmail" class="button button--other">[[localize('sendByEmail','Send by email',language)]]</paper-button>
+                    <paper-button on-tap="print" class="button button--other">[[localize('print','Print',language)]]</paper-button>
                 </template>
                 <!--<paper-button dialog-confirm autofocus on-tap="" class="button button--save">[[localize('add_medication','Add Medication',language)]]</paper-button>-->
             </div>
