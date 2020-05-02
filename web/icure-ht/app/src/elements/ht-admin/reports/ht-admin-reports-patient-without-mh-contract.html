@@ -198,23 +198,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <div class="panel-content">
                         <div class="table">
                             <div class="tr bb th">
-                                <div class="td fg1">[[localize('rep-pmc-pat', 'Patient', language)]]</div>
+                                <div class="td fg2">[[localize('rep-pmc-pat', 'Patient', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-ssin', 'Ssin', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-date-of-birth', 'Date of birth', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-gender', 'Gender', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-start-cov', 'Start coverage', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-end-cov', 'End coverage', language)]]</div>
                                 <div class="td fg1">[[localize('rep-pmc-cov-type', 'Coverage type', language)]]</div>
+                                <div class="td fg05">[[localize('rep-pmc-ctc-count', 'Contact count', language)]]</div>
+                                <div class="td fg2">[[localize('rep-pmc-ctc-count-hcp', 'Contact by hcp', language)]]</div>
                             </div>
                             <template is="dom-repeat" items="[[filteredListOfPatientWithoutMhContract]]" as="pat">
                                 <div class="tr bb">
-                                    <div class="td fg1">[[pat.lastName]] [[pat.firstName]]</div>
+                                    <div class="td fg2">[[pat.lastName]] [[pat.firstName]]</div>
                                     <div class="td fg1">[[_formatSsin(pat.ssin)]]</div>
                                     <div class="td fg1">[[_formatDate(pat.dateOfBirth)]]</div>
                                     <div class="td fg1">[[_localizeGender(pat.gender)]]</div>
                                     <div class="td fg1">[[_getCoverageInfo(pat, 'startOfCoverage')]]</div>
                                     <div class="td fg1">[[_getCoverageInfo(pat, 'endOfCoverage')]]</div>
                                     <div class="td fg1">[[_getCoverageInfo(pat, 'coverageType')]]</div>
+                                    <div class="td fg05">[[_getContactCount(pat)]]</div>
+                                    <div class="td fg2">
+                                        <template is="dom-repeat" items="[[_getContactCountByHcp(pat)]]" as="hcp">
+                                            [[hcp]]<br/>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -339,24 +347,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }).then(patients => {
                     let prom = Promise.resolve({})
 
-                    this.set('patientList', _.get(patients, 'rows', []).map(pat => _.assign(pat, {
-                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'firstName', ''), _.get(pat, 'lastName', ''), _.get(pat, 'ssin', ''), _.get(pat, 'dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
-                    })))
-
-                    _.get(this, 'patientList', []).map(pat => {
-                        prom = prom.then(patAndCtc => this.api.contact().findBy(_.get(this.hcp, 'parentId', null) ? _.get(this.hcp, 'parentId', null) : _.get(this.hcp, 'id', null), pat)
-                            .then(ctcs => _.concat(patAndCtc, {patient: pat, contactList: ctcs}))
+                    _.get(patients, 'rows', []).map(pat => {
+                        prom = prom.then(listOfPat => this.api.contact().findBy((_.get(this.hcp, 'parentId', null) ? _.get(this.hcp, 'parentId', null) : _.get(this.hcp, 'id', null)), pat)
+                            .then(ctcs => _.concat(listOfPat, {patient: pat, contactList: ctcs}))
+                            .catch(e => console.log(e))
                         )
                     })
 
-                    prom.then(patAndCtc => {
-                        console.log(patAndCtc)
+                    prom.then(listOfPat => {
+                        const listOfHcpIds = _.uniq(_.compact(_.flatten(_.compact(listOfPat).map(pat => _.get(pat, 'contactList').map(ctc => _.get(ctc, 'responsible', null))))))
+                        Promise.all([listOfPat, this.api.hcparty().getHealthcareParties(listOfHcpIds.join(','))]).then(([listOfPat, listOfHcp]) => {
+                            return _.compact(listOfPat).map(pat => _.assign(_.get(pat, 'patient', {}), {
+                                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, 'patient.firstName', ''), _.get(pat, 'patient.lastName', ''), _.get(pat, 'patient.ssin', ''), _.get(pat, 'patient.dateOfBirth', '')])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
+                                contactList: _.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
+                                    responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
+                                })),
+                                contactInfo: _.groupBy(_.get(pat, 'contactList', []).map(ctc => _.assign(ctc, {
+                                    responsibleName: _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name') ? _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'name', null) : _.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'firstName', "")+" "+_.get(listOfHcp.find(hcp => _.get(hcp, 'id', null) === _.get(ctc, 'responsible', "")), 'lastName', "")
+                                })), 'responsibleName')
+                            }))
+                        }).then(listOfPatient => {
+                            this.set('patientList', listOfPatient)
+                            this._getPatientWithoutFlatrateContract()
+                        }).finally(() => {
+                            this.$["processDialog"].closeDialog()
+                            this.set('showResult', true)
+                        })
                     })
-
-                    this._getPatientWithoutFlatrateContract()
-                }).finally(() => {
-                    this.$["processDialog"].closeDialog()
-                    this.set('showResult', true)
                 })
 
 
@@ -454,7 +471,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.localize('rep-pmc-city', 'city', this.language),
                         this.localize('rep-pmc-country', 'country', this.language),
                         this.localize('rep-pmc-email', 'Email', this.language),
-                        this.localize('rep-pmc-phone', 'Phone', this.language)
+                        this.localize('rep-pmc-phone', 'Phone', this.language),
+                        this.localize('rep-pmc-ctc-count', 'Nb of ctc', this.language),
+                        this.localize('rep-pmc-ctc-count-hcp', 'Nb ctc by hcp', this.language)
                     ])
 
                     ;(type === "all" ? _.get(this, 'patientWithoutMhContract', []) : _.get(this, 'filteredListOfPatientWithoutMhContract', [])).map(pat => {
@@ -471,7 +490,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "city", ""),
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "home"), "country", ""),
                             _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone")), "telecomNumber", ""),
-                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "email")), "telecomNumber", "")
+                            _.get(_.get(pat, 'addresses', []).find(adr => _.get(adr, 'telecoms', []).find(tel => tel.telecomType === "email")), "telecomNumber", ""),
+                            this._getContactCount(pat),
+                            this._getContactCountByHcp(pat).join(',')
                         ])
                     })
 
@@ -484,6 +505,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 }
             }
+
+            _getContactCountByHcp(pat){
+                return _.map(_.get(pat, 'contactInfo', {}), info => _.get(_.head(info), 'responsibleName', "")+": "+_.size(info))
+            }
+
+            _getContactCount(pat){
+                return _.size(_.get(pat, 'contactList', []))
+            }
+
 
         }
 
