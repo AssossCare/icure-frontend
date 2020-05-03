@@ -51,6 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="reports/ht-admin-reports-patient-without-mh-contract.html">
 <link rel="import" href="reports/ht-admin-reports-patient-prestaire-ctc.html">
 <link rel="import" href="reports/ht-admin-reports-consultation-type.html">
+<link rel="import" href="reports/ht-admin-reports-patient-by-consultation-type.html">
 
 
 
@@ -101,6 +102,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: calc(100% - 50px);
             }
 
+            #admin-reports-patient-by-consultation-type{
+                height: calc(100% - 50px);
+            }
+
 
         </style>
 
@@ -133,6 +138,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <template is="dom-if" if="[[listOfConsultationByType]]">
             <ht-admin-reports-consultation-type id="admin-reports-consultation-type" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-consultation-type>
+        </template>
+
+        <template is="dom-if" if="[[patientByContactType]]">
+            <ht-admin-reports-patient-by-consultation-type id="admin-reports-patient-by-consultation-type" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" on-generate-xlsx="generateXlsFile"></ht-admin-reports-patient-by-consultation-type>
         </template>
 
     </template>
@@ -202,6 +211,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     listOfConsultationByType:{
                         type: Boolean,
                         value: false
+                    },
+                    patientByContactType:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -236,6 +249,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('patientWithoutMhContract', this.selectedSubMenu === "patientWithoutMhContract")
                 this.set('patientPrestaCtc', this.selectedSubMenu === "patientPrestaCtc")
                 this.set('listOfConsultationByType', this.selectedSubMenu === "listOfConsultationByType")
+                this.set('patientByContactType', this.selectedSubMenu === "patientByContactType")
             }
 
             generateXlsFile(e){

@@ -49,6 +49,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 width: 600px
             }
 
+            #processDialogWithStep{
+                height: 300px;
+                width: 600px
+            }
+
             .processDialogContent{
                 padding: 5px;
                 text-align: center;
@@ -64,6 +69,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 transform: translate(-50%,-50%);
             }
 
+            .table{
+                height: auto;
+                width: 98%;
+                padding: 1%;
+            }
+
+            .tr{
+                height: auto;
+                width: 100%;
+                display: flex;
+            }
+
+            .w5{
+                width: 5%;
+            }
+
+            .w90{
+                width: 90%;
+            }
+
+            .process-icon{
+                height: 14px;
+                width: 14px;
+                padding: 0px;
+                color: var(--app-status-color-ok);
+            }
+
+            .center{
+                text-align: center;
+            }
+
+            .left{
+                text-align: left;
+            }
+
         </style>
 
         <paper-dialog id="processDialog">
@@ -71,6 +111,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="content">
                 <div class="processDialogContent">
                     [[localize('rash-proc-mess', 'This process can take a few minutes, please wait a moment', language)]]
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                </div>
+            </div>
+            <div class="buttons">
+                <div>&nbsp;</div>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="processDialogWithStep">
+            <h2 class="modal-title">[[localize('rash-proc', 'Process request', language)]]</h2>
+            <div class="content">
+                <div class="processDialogContent">
+                    [[localize('rash-proc-mess', 'This process can take a few minutes, please wait a moment', language)]]
+                    <div class="table">
+                        <template is="dom-repeat" items="[[processStep]]">
+                            <div class="tr">
+                                <div class="td w90 left">
+                                    [[item]]
+                                </div>
+                                <div class="td w5 center">
+                                    <iron-icon icon="vaadin:check-circle" class="process-icon"></iron-icon>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                 </div>
             </div>
@@ -100,6 +165,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     isLoading:{
                         type: Boolean,
                         value: false
+                    },
+                    processStep:{
+                        type: Array,
+                        value: () => []
                     }
                 }
             }
@@ -123,6 +192,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             closeDialog(){
                 this.$["processDialog"].close()
+                this.set('isLoading', false)
+            }
+
+            openDialogWithStep(){
+                this.$["processDialogWithStep"].open()
+                this.set('isLoading', true)
+            }
+
+            closeDialogWithStep(){
+                this.$["processDialogWithStep"].close()
                 this.set('isLoading', false)
             }
 

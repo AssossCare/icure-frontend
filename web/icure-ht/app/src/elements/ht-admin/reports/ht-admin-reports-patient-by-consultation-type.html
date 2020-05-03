@@ -1,0 +1,347 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../dynamic-form/dynamic-text-field.html">
+
+
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+
+<link rel="import" href="./dialogs/process-dialog.html">
+
+
+<dom-module id="ht-admin-reports-patient-by-consultation-type">
+
+    <template>
+
+        <style include="shared-styles dialog-style buttons-style paper-tabs-style">
+            :host {
+                display: block;
+            }
+
+            :host *:focus{
+                outline:0!important;
+            }
+
+            .mhContract-panel{
+                width: 100%;
+                height: 100%;
+                grid-column-gap: 24px;
+                grid-row-gap: 24px;
+                padding: 0 24px;
+                box-sizing: border-box;
+                background: white;
+            }
+
+            .mhContractRequest{
+                display: flex;
+            }
+
+            #yearOfRequest{
+                padding: 5px;
+            }
+
+            .btn-container{
+                margin: 18px;
+                display: flex;
+            }
+
+            .btn-icon{
+                height: 14px!important;
+                width: 14px!important;
+            }
+
+            .result-container{
+                height: calc(100% - 135px);
+                width: 100%;
+            }
+
+            .table{
+                height: auto;
+                width: 98%;
+                padding: 1%;
+            }
+
+            .tr{
+                height: auto;
+                width: 100%;
+                display: flex;
+            }
+
+            .td .info{
+                width: 5%;
+            }
+
+            .td .title{
+                width: 65%;
+            }
+
+            .td .result{
+                width: 28%;
+            }
+
+            .w5{
+                width: 5%;
+            }
+
+            .w65{
+                width: 65%;
+            }
+
+            .w30{
+                width: 28%;
+                text-align: right;
+            }
+
+            .w90{
+                width: 90%;
+            }
+
+            .panel-search{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-content{
+                height: calc(100% - 40px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+            .info-icon{
+                height: 14px;
+                width: 14px;
+                padding: 0px;
+            }
+
+        </style>
+
+        <div class="mhContract-panel">
+            <h4 class="section-title">[[localize('rash-report', 'Report', language)]] - [[localize('rep-cons-type', 'Number of contact by type', language)]]</h4>
+
+            <div class="mhContractRequest">
+                <div class="btn-container">
+                    <paper-button class="button button--save" on-tap="_getReportInformation"><iron-icon icon="vaadin:download" class="btn-icon"></iron-icon> [[localize('rash-gen-rep','Generate report',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_resetReport"><iron-icon icon="vaadin:close" class="btn-icon"></iron-icon> [[localize('rash-reset','Reset',language)]]</paper-button>
+                </div>
+            </div>
+            <template is="dom-if" if="[[showResult]]">
+                <div class="result-container">
+                    <div class="panel-search">
+
+                    </div>
+                    <div class="panel-content">
+                        <div class="table">
+                            <div class="tr bb th">
+                                <div class="td w5"></div>
+                                <div class="td w65"></div>
+                                <div class="td w30"></div>
+                            </div>
+                            <template is="dom-repeat" items="[[queryResult]]" as="res">
+                                <div class="tr bb">
+                                    <div class="td w5">
+                                        <paper-icon-button icon="vaadin:info-circle" class="info-icon" id="[[res.type]]" on-tap="_openRequestInfoDialog"></paper-icon-button>
+                                    </div>
+                                    <div class="td w65">[[_getQueryType(res)]]</div>
+                                    <div class="td w30">[[_getQueryResult(res)]]</div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-button">
+                    <paper-button class="button button--other" on-tap="_exportResult" id="all">[[localize('rep-pmc-exp-all','Export all',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_exportResult" id="filtered">[[localize('rep-pmc-exp-sea','Export search',language)]]</paper-button>
+                </div>
+            </template>
+        </div>
+
+
+        <process-dialog id="processDialog" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" process-step="[[processStep]]"></process-dialog>
+
+    </template>
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import { parse } from '../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../scripts/filters'
+
+        class HtAdminReportsPatientByConsultationType extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-reports-patient-by-consultation-type'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    showResult:{
+                        type: Boolean,
+                        value: false
+                    },
+                    queryList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    queryResult:{
+                        type: Array,
+                        value: () => []
+                    },
+                    processStep:{
+                        type: Array,
+                        value: () => []
+                    }
+                }
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user)'];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _initializeDataProvider(){
+                this._reset()
+                this.api.code().findCodes('be', 'BE-CONTACT-TYPE').then(listOfContactType => {
+                    console.log(listOfContactType)
+                    this.set('queryList', listOfContactType.map(ctcType => {
+                        return {
+                            type: _.get(ctcType, 'code', null),
+                            label: {
+                                fr: _.get(ctcType, 'label.fr', null),
+                                nl: _.get(ctcType, 'label.nl', null),
+                                en: _.get(ctcType, 'label.en', null)
+                            },
+                            filter: 'active == true & (CTC[:BE-CONTACT-TYPE == '+_.get(ctcType, "code", null)+'])'
+                        }
+                    }))
+                })
+            }
+
+            _reset(){
+                this.set('hcp', {})
+                this.set('filter', null)
+                this.set('showResult', false)
+                this.set('processStep', [])
+            }
+
+            _getReportInformation(){
+                this.set('showResult', false)
+                this.$["processDialog"].openDialogWithStep()
+
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+                    this.set('hcp', hcp)
+
+                    let prom = Promise.resolve({})
+
+                    _.get(this,'queryList', []).map(query => {
+                        prom = prom.then(queryResult => this.api._executeReportingQuery(_.get(query, 'filter', null), _.get(this, 'hcp', {}), _.get(this, 'user', {})).then(res => {
+                            this.push('processStep',  this.localize('rep-rec-type', 'Recovery of contact type: ', this.language)+' '+_.get(query, 'label.'+this.language, null))
+                            return _.concat(queryResult, {
+                                type: _.get(query, 'type', null),
+                                request: _.get(query, 'filter', null),
+                                result: res,
+                                label: _.get(query, 'label.'+this.language, null),
+                                numberOfConsultation: _.size(res)
+                            })
+                        }))
+                    })
+
+                    prom.then(queryResult => {
+                        this.set('queryResult', queryResult)
+                        this.$["processDialog"].closeDialogWithStep()
+                        this.set('showResult', true)
+                    })
+
+                })
+            }
+
+            _getQueryResult(query){
+                return _.get(query, 'numberOfConsultation', 0)
+            }
+
+            _getQueryType(query){
+                return this.localize('rep-nb-of-consult', 'Number of type consultations: ', this.language)+' '+_.get(query, 'label', '')
+            }
+
+            _openRequestInfoDialog(e){
+
+            }
+
+
+        }
+
+        customElements.define(HtAdminReportsPatientByConsultationType.is, HtAdminReportsPatientByConsultationType)
+    </script>
+</dom-module>
