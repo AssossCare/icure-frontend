@@ -50,6 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../ht-spinner/ht-spinner.html">
 
 <link rel="import" href="./dialogs/process-dialog.html">
+<link rel="import" href="./dialogs/request-info-dialog.html">
+
 
 
 <dom-module id="ht-admin-reports-patient-by-consultation-type">
@@ -102,6 +104,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: auto;
                 width: 98%;
                 padding: 1%;
+                font-size: var(--font-size-normal);
+            }
+
+            .bb{
+                border-bottom: 1px solid lightgray;
             }
 
             .tr{
@@ -147,6 +154,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             .panel-content{
                 height: calc(100% - 40px);
                 width: auto;
+                overflow: auto;
             }
 
             .panel-button{
@@ -165,6 +173,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: 14px;
                 width: 14px;
                 padding: 0px;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
             }
 
         </style>
@@ -187,8 +201,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <div class="table">
                             <div class="tr bb th">
                                 <div class="td w5"></div>
-                                <div class="td w65"></div>
-                                <div class="td w30"></div>
+                                <div class="td w65">[[localize('rep-pat-ctc-ctc-type', 'Contact type', language)]]</div>
+                                <div class="td w30">[[localize('rep-pat-ctc-nb-pat', 'Number of patient', language)]]</div>
                             </div>
                             <template is="dom-repeat" items="[[queryResult]]" as="res">
                                 <div class="tr bb">
@@ -209,8 +223,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
         </div>
 
-
         <process-dialog id="processDialog" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" process-step="[[processStep]]"></process-dialog>
+        <request-info-dialog id="requestInfoDialog" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" selected-request-info="[[selectedRequestInfo]]" selected-request-description-info=[[selectedRequestDescriptionInfo]]"></request-info-dialog>
 
     </template>
 
@@ -255,6 +269,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     processStep:{
                         type: Array,
                         value: () => []
+                    },
+                    selectedRequestDescriptionInfo:{
+                        type: String,
+                        value: null
+                    },
+                    selectedRequestInfo:{
+                        type: String,
+                        value: null
                     }
                 }
             }
@@ -294,6 +316,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('filter', null)
                 this.set('showResult', false)
                 this.set('processStep', [])
+                this.set('selectedRequestDescriptionInfo', null)
+                this.set('selectedRequestInfo', null)
             }
 
             _getReportInformation(){
@@ -319,7 +343,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     })
 
                     prom.then(queryResult => {
-                        this.set('queryResult', queryResult)
+                        this.set('queryResult', _.compact(queryResult))
                         this.$["processDialog"].closeDialogWithStep()
                         this.set('showResult', true)
                     })
@@ -332,11 +356,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _getQueryType(query){
-                return this.localize('rep-nb-of-consult', 'Number of type consultations: ', this.language)+' '+_.get(query, 'label', '')
+                return _.get(query, 'label', '')
             }
 
             _openRequestInfoDialog(e){
-
+                if(_.get(e, 'target.id', null)){
+                    this.set('selectedRequestInfo', _.get(_.get(this, 'queriesResult', []).find(qr => _.get(qr, 'type', null) === _.get(e, 'target.id', null)), 'request', null))
+                    this.set('selectedRequestDescriptionInfo', _.get(_.get(this, 'queriesResult', []).find(qr => _.get(qr, 'type', null) === _.get(e, 'target.id', null)), 'label', null))
+                    this.$["requestInfoDialog"]._openRequestInfoDialog()
+                }
             }
 
 
