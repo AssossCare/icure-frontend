@@ -717,6 +717,7 @@
                                     <paper-button on-tap="addDocument"><iron-icon icon="editor:attach-file"></iron-icon>[[localize('add_doc','Add document',language)]]</paper-button>
 									<!--<paper-button on-tap="writeLinkingLetter"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[localize('linkingLetter','Lettre de liaison',language)]]</paper-button>-->
                                     <paper-button on-tap="showCarePath"><iron-icon icon="vaadin:ambulance"></iron-icon>[[localize('care-path', 'Care path', language)]]</paper-button>
+									<paper-button on-tap="showEforms"><iron-icon icon="icons:description"></iron-icon>[[localize('eforms', 'E-forms', language)]]</paper-button>
                                 </div>
                             </div>
 						</template>
@@ -4221,6 +4222,11 @@
 				this.set('showAddFormsContainer', false);
                 this.dispatchEvent(new CustomEvent('open-care-path-list', { detail: {}, composed: true, bubbles: true}));
             }
+
+			showEforms(){
+				this.set('showAddFormsContainer', false)
+				this.dispatchEvent(new CustomEvent('open-eforms-dialog', { detail: {}, composed: true, bubbles: true}));
+			}
 
 			openBelRai(){
 				this.set('showAddEvaFormsContainer', false);
