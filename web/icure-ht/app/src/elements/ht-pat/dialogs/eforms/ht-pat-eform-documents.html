@@ -272,7 +272,7 @@
             }
 
             .doc-preview{
-                height: calc(100% - 50px);
+                height: calc(100% - 5px);
                 width: auto;
                 margin: 1%;
                 overflow: auto;
@@ -448,7 +448,7 @@
             _showDocument(e){
                 if(_.get(e, 'currentTarget.dataset.item', null)){
                     this.set("selectedDocument", JSON.parse(_.get(e, 'currentTarget.dataset.item', null)))
-                    this.dispatchEvent(new CustomEvent('selected-document', {detail: {documentId: _.get(this, "selectedDocument.id", null), docOrigin: _.get(this, 'selectedCarePath.linkedDocuments', []).find(doc => doc.id === _.get(this, 'selectedDocument.id', null)) ? "linkedDoc" : "availableDoc"}, composed: true, bubbles: true}))
+                    this.dispatchEvent(new CustomEvent('selected-document', {detail: {documentId: _.get(this, "selectedDocument.id", null)}, composed: true, bubbles: true}))
                 }
             }
 

@@ -296,15 +296,18 @@
                     </div>
                 </div>
                 <div class="eforms-menu-view">
-                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-tab-changed="_tabChanged"></ht-pat-eform-form-view>
+                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
                 </div>
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                <template is="dom-if" if="[[isDocumentTab]]">
+                <template is="dom-if" if="[[isSelectedDocument]]">
                     <paper-button class="button button--other" on-tap="_joinDocument"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-join-doc','Join document',language)]]</paper-button>
                 </template>
-                <paper-button class="button button--save" on-tap="_sendForm"><iron-icon icon="icons:check"></iron-icon> [[localize('send','Send',language)]]</paper-button>
+                <template is="dom-if" if="[[isSelectedForm]]">
+                    <paper-button class="button button--save" on-tap="_sendForm"><iron-icon icon="icons:check"></iron-icon> [[localize('send','Send',language)]]</paper-button>
+                </template>
+
             </div>
         </paper-dialog>
 
@@ -394,15 +397,19 @@
                         type: Array,
                         value: () => []
                     },
-                    isDocumentTab:{
+                    isSelectedDocument:{
                         type: Boolean,
                         value: false
+                    },
+                    selectedDocumentIdToBeImported:{
+                        type: String,
+                        value: null
                     }
                 };
             }
 
             static get observers() {
-                return ['_initialize(api, user)'];
+                return ['_initialize(api, user)', '_selectedFormChanged(selectedForm, selectedForm.*)'];
             }
 
             ready() {
@@ -418,7 +425,9 @@
                 this.set('oAuthToken', {})
                 this.set('patientSumehr', null)
                 this.set('availableDocumentList', [])
-                this.set('isDocumentTab', false)
+                this.set('isSelectedDocument', false)
+                this.set('isSelectedForm', false)
+                this.set('selectedDocumentIdToBeImported', null)
             }
 
             _initialize(){
@@ -564,14 +573,19 @@
                     )
             }
 
-            _tabChanged(e){
+            _selectedFormChanged(){
+                _.get(this, 'selectedForm.id.name', null) ? this.set('isSelectedForm', true) : this.set('isSelectedForm', false)
+            }
+
+            _selectedDocument(e){
                 if(_.get(e, 'detail', null)){
-                    _.get(e, 'detail.tabs', 0) === 1 ? this.set('isDocumentTab', true) : this.set('isDocumentTab', false)
+                    _.get(e, 'detail.documentId', null) ? this.set('isSelectedDocument', true) : this.set('isSelectedDocument', false)
+                    this.set('selectedDocumentIdToBeImported',  _.get(e, 'detail.documentId', null))
                 }
             }
 
             _joinDocument(){
-
+                this.$['htPatEformFormView']._joinDocument()
             }
 
         }

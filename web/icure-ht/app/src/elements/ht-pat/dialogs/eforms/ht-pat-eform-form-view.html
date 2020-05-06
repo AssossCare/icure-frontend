@@ -168,12 +168,16 @@
                     availableDocumentList:{
                         type: Array,
                         value: () => []
+                    },
+                    selectedDocumentIdToBeImported:{
+                        type: String,
+                        value: null
                     }
                 };
             }
 
             static get observers() {
-                return ['_tabChanged(tabs)'];
+                return [];
             }
 
             ready() {
@@ -309,7 +313,8 @@
                })
             }
 
-            _addAttachment(){
+            _addAttachment(doc, attachment){
+                const attachmentAsBlob = new Blob([new Uint8Array(attachment)])
                 return this.api.executeFetchRequest(_.get(this, 'eformsHost.eForms', null) + "/cloud/api/v1/forms/"+_.get(this.selectedFormInfo, 'formId', null)+"/attachments", {
                     method: "POST",
                     mode: "cors",
@@ -320,7 +325,10 @@
                         "Content-Type": 'multipart/mixed; boundary="jbiB48jJ8GsJHjes0vxvvA7ExjJBfOH8o20eSJU"; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm'
                     },
                     body: JSON.stringify({
-                        //todo
+                        "Content-Disposition": "form-data; name=attachment; filename="+_.get(doc, 'name', null),
+                        "Content-Type": "application/octet-stream",
+                        attachment: attachmentAsBlob,
+                        size: attachmentAsBlob.size
                     })
                 })
             }
@@ -423,6 +431,24 @@
 
             _tabChanged(){
                 this.dispatchEvent(new CustomEvent('tab-changed', {bubbles: true, composed: true, detail: {tab: _.get(this, 'tabs', 0)}}))
+            }
+
+            _joinDocument(){
+                if(_.get(this, 'selectedDocumentIdToBeImported', null)) {
+                    const selectedDoc = _.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', ''))
+
+                    if(_.get(selectedDoc, 'attachmentId', null)){
+                        (_.size(_.get(selectedDoc, 'encryptionKeys', [])) || _.size(_.get(selectedDoc, 'delegations', [])) ?
+                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this.user, 'healthcarePartyId', null), _.get(selectedDoc, 'id', null), _.size(_.get(selectedDoc, 'encryptionKeys', [])) ? _.get(selectedDoc, 'encryptionKeys', []) : _.get(selectedDoc, 'delegations', [])).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null), enckeys.join(','))) : this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null)))
+                            .then(attachment => {
+                                console.log(attachment)
+                                this._addAttachment(selectedDoc, attachment).then(attachmentResponse => {
+                                    _.parseInt(_.get(attachmentResponse, 'response.status', 0)) !== 201 ? this._showErrorNotification(_.get(attachmentResponse, 'response', 0), _.get(attachmentResponse, 'content', {})) : null
+                                })
+                            })
+                    }
+
+                }
             }
 
         }
