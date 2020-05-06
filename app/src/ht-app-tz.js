@@ -744,7 +744,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
         </style>
 
-        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" headers="[[headers]]" credentials="[[credentials]]"></icc-api>
+        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" electron-host="[[electronUrl]]" headers="[[headers]]" credentials="[[credentials]]"></icc-api>
 
         <paper-item id="noehealth" class="notification-panel noehealth">[[localize('no_ehe_con','No Ehealth connection ',language)]]
             <iron-icon icon="icons:warning"></iron-icon>
@@ -1408,7 +1408,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               type: String
           }
 
-  }
+      }
   }
 
   static get observers() {
@@ -1458,6 +1458,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   setUrls() {
       const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
       this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
+      this.set('electronUrl', params.electronUrl || (params.icureUrl && !params.icureUrl.includes(":16043") && !params.icureUrl.includes("https") && _.replace(params.icureUrl,"/rest/v1","")) || "http://127.0.0.1:16042")
       this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhctz.icure.cloud' : 'https://fhctz.icure.cloud'))
       this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
