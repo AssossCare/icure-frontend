@@ -499,7 +499,7 @@
                         'Content-Type': 'application/x-www-form-urlencoded; charset=ISO-8859-1',
                         Authorization: 'Basic '+btoa('figac:n7E.2[YPQj@"8W6JW;4c'),
                         Accept: '*/*',
-                        'Accept-Language': "fr-BE"
+                        'Accept-Language': this.language+"-BE"
                     },
                     body: 'sts-token='+_.get(this.api, 'fhcTokenInfo.tokenBase64', null)+'&grant_type=sts_token&integratorVersion=2.3.7'
                 })
@@ -510,7 +510,7 @@
                     method: "GET",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer '+_.get(this.oAuthToken, 'access_token', {})
                     }
                 })

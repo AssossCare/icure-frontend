@@ -70,11 +70,10 @@
                 <iron-icon class="tabIcon" icon="icons:assignment"></iron-icon> [[localize('eforms','E-forms',language)]]
             </paper-tab>
             <template is="dom-if" if="[[attachmentAvailable]]">
-
+                <paper-tab class="doNotDisplay" id="tabAttachments">
+                    <iron-icon class="tabIcon" icon="editor:attach-file"></iron-icon> [[_getAttachmentCount(attachmentCount)]] [[localize('attachments','Attachments',language)]]
+                </paper-tab>
             </template>
-            <paper-tab class="doNotDisplay" id="tabAttachments">
-                <iron-icon class="tabIcon" icon="editor:attach-file"></iron-icon> [[_getAttachmentCount(attachmentCount)]] [[localize('attachments','Attachments',language)]]
-            </paper-tab>
         </paper-tabs>
         <iron-pages selected="[[tabs]]">
             <page>
@@ -214,7 +213,10 @@
                 const promResolve = Promise.resolve()
 
                 return promResolve
-                    .then(() => this.set('isLoading', true))
+                    .then(() => {
+                        this.set('isLoading', true)
+                        this.set('attachmentAvailable', false)
+                    })
                     .then(() => this._removeForm())
                     .then(removeFormResonse => _.parseInt(_.get(removeFormResonse, 'response.status', 0)) !== 204 ? this._showErrorNotification(_.get(removeFormResonse, 'response', 0), _.get(removeFormResonse, 'content', {})) : null)
                     .then(() => this._createFormInstance())
@@ -229,7 +231,10 @@
                         .then(() => this._mergeDataSet())
                     )
                     .then(mergeDataSetResponse => _.parseInt(_.get(mergeDataSetResponse, 'response.status', 0)) === 204 ? this._unlockForm() : this._showErrorNotification(_.get(mergeDataSetResponse, 'response', 0), _.get(mergeDataSetResponse, 'content', {})))
-                    .finally(() => this.set('isLoading', false))
+                    .finally(() => {
+                        this.set('isLoading', false)
+                        this.set('attachmentAvailable', true)
+                    })
 
             }
 
@@ -239,7 +244,7 @@
                     mode: "cors",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
                         'Content-Type': "application/json;charset=UTF-8"
                     },
@@ -262,7 +267,7 @@
                     mode: "cors",
                     headers: {
                         Accept: "text/plain",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
                         'Content-Type': "application/vnd.healthconnect.eforms.kmehr.integrator.v1+xml;charset=UTF-8"
                     },
@@ -276,7 +281,7 @@
                     mode: "cors",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
                         "Content-Type": "application/json;charset=UTF-8"
                     },
@@ -293,7 +298,7 @@
                    mode: "cors",
                    headers: {
                        Accept: "application/json;charset=UTF-8",
-                       "Accept-Language": "fr-BE",
+                       "Accept-Language": this.language+"-BE",
                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
 
                    }
@@ -306,7 +311,7 @@
                    mode: "cors",
                    headers: {
                        Accept: "application/json;charset=UTF-8",
-                       "Accept-Language": "fr-BE",
+                       "Accept-Language": this.language+"-BE",
                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
 
                    }
@@ -318,7 +323,7 @@
                     method: "GET",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer '+ _.get(this, 'oAuthToken.access_token', null),
                         'Content-Type': 'application/xml'
                     }
@@ -330,7 +335,7 @@
                     method: "GET",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer '+ _.get(this, 'oAuthToken.access_token', null),
                         'Content-Type': 'application/xml'
                     }
@@ -342,7 +347,7 @@
                    method: "GET",
                    headers: {
                        Accept: "application/json;charset=UTF-8",
-                       "Accept-Language": "fr-BE",
+                       "Accept-Language": this.language+"-BE",
                        Authorization: 'Bearer '+ _.get(this, 'oAuthToken.access_token', null),
                    }
                })
@@ -408,7 +413,7 @@
                     mode: "cors",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
-                        "Accept-Language": "fr-BE",
+                        "Accept-Language": this.language+"-BE",
                         Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null)
                     },
                     body: formData
