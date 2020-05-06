@@ -135,7 +135,7 @@
                     <template is="dom-if" if="[[_isNews(news)]]">
                         <div class="blockNews">
                             <div class="newsTitle bold">
-                                [[news.mainTitle]]
+                                [[_localizeTitle(news)]]
                             </div>
                             <div class="newsContent">
                                 <template is="dom-repeat" items="[[news.modules]]" as="module">
@@ -265,6 +265,10 @@
 
         _isLink(news){
             return news && news.mainLink ? true : false
+        }
+
+        _localizeTitle(news){
+            return _.get(_.head(_.get(news, 'modules', [])), 'title.'+this.language, null)
         }
 
 
