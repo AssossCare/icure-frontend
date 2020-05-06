@@ -28,11 +28,12 @@
 <link rel="import" href="../../../../styles/buttons-style.html">
 <link rel="import" href="../../../../styles/shared-styles.html">
 <link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../../styles/notification-style.html">
 
 
 <dom-module id="ht-pat-eform-form-view">
     <template>
-        <style include="dialog-style scrollbar-style buttons-style shared-style paper-tabs-style">
+        <style include="dialog-style scrollbar-style buttons-style shared-style paper-tabs-style notification-style">
 
             .formContainer{
                 height: calc(98% - 20px);
@@ -40,10 +41,51 @@
                 padding: 1%;
             }
 
+            .pageContent{
+                padding: 12px;
+                width: auto;
+                box-sizing: border-box;
+                height: 100%;
+            }
+
+            .tabIcon{
+                padding-right: 10px;
+            }
+
+            iron-pages{
+                height: 100%;
+                height: calc(100% - 50px);
+            }
+
 
         </style>
 
-        <embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/>
+        <paper-tabs selected="{{tabs}}" >
+            <paper-tab>
+                <iron-icon class="tabIcon" icon="icons:assignment"></iron-icon> [[localize('eforms','E-forms',language)]]
+            </paper-tab>
+            <template is="dom-if" if="[[attachmentAvailable]]">
+
+            </template>
+            <paper-tab class="doNotDisplay" id="tabAttachments">
+                <iron-icon class="tabIcon" icon="editor:attach-file"></iron-icon> [[_getAttachmentCount(attachmentCount)]] [[localize('attachments','Attachments',language)]]
+            </paper-tab>
+        </paper-tabs>
+        <iron-pages selected="[[tabs]]">
+            <page>
+                <div class="pageContent">
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                    <template is="dom-if" if="[[!isLoading]]">
+                        <embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/>
+                    </template>
+                </div>
+            </page>
+            <page>
+                <div class="pageContent">
+
+                </div>
+            </page>
+        </iron-pages>
 
     </template>
     <script>
@@ -111,6 +153,14 @@
                     dataSetId:{
                         type:String,
                         value: null
+                    },
+                    tabs:{
+                        type: Number,
+                        value: 0
+                    },
+                    attachmentAvailable:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -131,18 +181,21 @@
             }
 
             _showForm() {
+                this.set('isLoading', true)
                 this._removeForm().then(removeFormResonse => {
+                    _.parseInt(_.get(removeFormResonse, 'response.status', 0)) !== 204 ? this._showErrorNotification(_.get(removeFormResonse, 'response', 0), _.get(removeFormResonse, 'content', {})) : null
                     return this._createFormInstance()
                 }).then(formInstanceResponse => {
-                    _.parseInt(_.get(formInstanceResponse, 'response.status', 0)) === 201 ? this.set("selectedFormInfo", _.get(formInstanceResponse, 'content', {})) : null
+                    _.parseInt(_.get(formInstanceResponse, 'response.status', 0)) === 201 ? this.set("selectedFormInfo", _.get(formInstanceResponse, 'content', {})) : this._showErrorNotification(_.get(formInstanceResponse, 'response', 0), _.get(formInstanceResponse, 'content', {}))
                     return _.parseInt(_.get(formInstanceResponse, 'response.status', 0)) === 201 ? this._uploadDataSet() : Promise.resolve({})
                 }).then(dataSetResponse => {
-                    _.parseInt(_.get(dataSetResponse, 'response.status', 0)) === 200 ? this.set("dataSetId", _.get(dataSetResponse, 'content', null)) : null
+                    _.parseInt(_.get(dataSetResponse, 'response.status', 0)) === 200 ? this.set("dataSetId", _.get(dataSetResponse, 'content', null)) : this._showErrorNotification(_.get(dataSetResponse, 'response', 0), _.get(dataSetResponse, 'content', {}))
                     return _.parseInt(_.get(dataSetResponse, 'response.status', 0)) === 200 ? this._mergeDataSet() : Promise.resolve({})
                }).then(mergeDataSetResponse => {
+                    _.parseInt(_.get(mergeDataSetResponse, 'response.status', 0)) !== 204 ? this._showErrorNotification(_.get(mergeDataSetResponse, 'response', 0), _.get(mergeDataSetResponse, 'content', {})) : null
                     return _.parseInt(_.get(mergeDataSetResponse, 'response.status', 0)) === 204 ? this._unlockForm() : Promise.resolve({})
                }).finally(() => {
-
+                    this.set('isLoading', false)
                })
             }
 
@@ -223,7 +276,7 @@
                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
 
                    }
-               }) : Promise.resolve({})
+               }) : Promise.resolve({response: {status: 204}})
             }
 
             _getFormAdr(){
@@ -249,6 +302,22 @@
                })
             }
 
+            _addAttachment(){
+                return this.api.executeFetchRequest(_.get(this, 'eformsHost.eForms', null) + "/cloud/api/v1/forms/"+_.get(this.selectedFormInfo, 'formId', null)+"/attachments", {
+                    method: "POST",
+                    mode: "cors",
+                    headers: {
+                        Accept: "application/json;charset=UTF-8",
+                        "Accept-Language": "fr-BE",
+                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
+                        "Content-Type": 'multipart/mixed; boundary="jbiB48jJ8GsJHjes0vxvvA7ExjJBfOH8o20eSJU"; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm'
+                    },
+                    body: JSON.stringify({
+                        //todo
+                    })
+                })
+            }
+
             _sendForm(){
                 this._getFormAdr().then(adrResponse => {
                     if( _.parseInt(_.get(adrResponse, 'response.status', 0)) === 200){
@@ -259,6 +328,8 @@
                             this._importDocumentIntoPatient(_.head(_.get(pdf, 'Content', [])), _.head(_.get(pdf, 'Name', [])), _.head(_.get(pdf, 'MimeType', [])))
 
                         })
+                    }else{
+                        this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {}))
                     }
                 })
             }
@@ -282,10 +353,10 @@
                             mediaType: mimeType
                         },
                         toAddresses: [_.get(this.user, 'email', this.user && this.user.healthcarePartyId)],
-                        subject: "Import form: "+ docName || null,
+                        subject: "Import form: "+ _.get(this. selectedForm, 'label', null) || null,
                         status : 0 | 1<<25 | (this.patient.id ? 1<<26 : 0)
                     }))
-                        .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : this.patient.id, isAssigned: true}))))]))
+                        .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.get(this.patient, 'id', null), isAssigned: true}))))]))
                         .then(([createdMessage, cryptedMeta]) => {
                             createdMessage.metas.cryptedInfo = Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedMeta)))
                             return this.api.message().modifyMessage(createdMessage)
@@ -310,7 +381,7 @@
                                 content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
                                 label: 'document',
                                 tags: [
-                                    {type: 'CD-TRANSACTION', code: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.docType ? this.selectedDocumentToBeImported.docType : 'request'},
+                                    {type: 'CD-TRANSACTION', code: 'request'},
                                     {type: 'EFORMS', code: 'download'},
                                 ]
                             });
@@ -318,9 +389,13 @@
                             sc.services.push({ serviceId: svc.id });
 
                             this.saveCurrentContact().then(c => {
-
+                                this.dispatchEvent(new CustomEvent('eforms-download', {bubbles: true, composed: true, detail: {}}))
                             })
-                        }))
+                        }).finally(() => {
+                            this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}}))
+                        })).catch(e => {
+                            console.log("---error upload attachment---", e)
+                        })
             }
 
             saveCurrentContact() {
@@ -328,6 +403,10 @@
                     this.currentContact.id = this.api.crypto().randomUuid()
                 }
                 return (this.currentContact.rev ? this.api.contact().modifyContactWithUser(this.user, this.currentContact) : this.api.contact().createContactWithUser(this.user, this.currentContact)).then(c=>this.api.register(c,'contact')).then(c => (this.currentContact.rev = c.rev) && c);
+            }
+
+            _showErrorNotification(response, content){
+                this.dispatchEvent(new CustomEvent('show-error-notification', {bubbles: true, composed: true, detail: {response: response, content: content}}))
             }
 
         }
