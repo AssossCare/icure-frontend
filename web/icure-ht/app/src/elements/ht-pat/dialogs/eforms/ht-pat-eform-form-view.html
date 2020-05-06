@@ -198,6 +198,7 @@
                 this.set('dataSetId', null)
                 this.set('selectedFormInfo', {})
                 this.set('embededFormDomIf', false)
+                this.set('isLoading', false)
             }
 
             _showForm() {
@@ -380,7 +381,9 @@
 
                 const promResolve = Promise.resolve()
 
-                return this._getFormAdr()
+                return promResolve
+                    .then(() => this.set('isLoading', true))
+                    .then(() => this._getFormAdr())
                     .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
                         .then(parsedXml => {
                             const pdf = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/pdf"))
@@ -393,7 +396,7 @@
                         const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
                         return this._sendFormUsingEhBox(parsedXml)
                     })
-                    .finally(() => this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
+                    .finally(() => (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
 
             }
 
@@ -501,6 +504,7 @@
                 let sendMessageResponse = false
 
                 return !_.size(parsedXml) ? promResolve : promResolve
+                    .then(() => this.set('isLoading', true))
                     .then(() => _.map(_.get(parsedXml, "ADR.Addressee", []), it => {
                         const identifierValue = _.trim(_.trim(_.get(it, "Identifier[0]", "")).replace(/[^0-9]*/g, ""))
                         const isValidCbe = !!patternsValidation.tenDigits.test(identifierValue)
@@ -570,34 +574,19 @@
                     .then(([currentHcp, recipients, message]) => {
 
                         // EhBox won't allow for empty values
-                        Object.keys(message.customMetas).forEach(k => {
-                            if (!_.trim(message.customMetas[k])) try {
-                                delete message.customMetas[k]
-                            } catch (e) {
-                            }
-                        })
+                        Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
 
                         return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, usePublicationReceipt, useReceivedReceipt, useReadReceipt)
                             .then(x => sendMessageResponse = x)
                             .catch(x => sendMessageResponse = x)
                             .finally(() => {
-
                                 console.log("sendMessageResponse", sendMessageResponse);
-
-                                // [Either] went well
-                                // [OR] couldn't find ETK (missing recipient public key) - when crypting message
-                                // [OR] (hardcoded) -> "successfull" (labellisation)
                                 // return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
-
+                                return this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))
                             })
 
                     })
-                    .catch(e => {
-                        this._resetLoadingMessage();
-                        this.set('_isLoading', false);
-                        this.$["failed"].classList.add('displayNotification')
-                        console.log("ERROR with getCurrentHealthcareParty while _doSendMessageWithEhBox: ", e);
-                    })
+                    .catch(e => this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:this.localize("sen_error", "Message could not be sent", this.language)}})))
 
             }
 

@@ -1067,7 +1067,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="warningLabel displayNotification" id="keystoreExpiresSoonLabel"><iron-icon icon="alarm"></iron-icon> [[localize('keystoreExpiresSoonLabel','Votre keystore va bientôt expirer',language)]] : [[keyStoreValidityLabel]]</div>
         </template>
 
-        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-mailer-message="_mailerMessage"></ht-mailer-dialog>
+        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
 
     </template>
 
@@ -2748,7 +2748,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return mailerDialog && typeof _.get(mailerDialog,"open") === "function" && mailerDialog.open(_.assign({},_.get(e,"detail",{}), _.get(this,"headers",{})))
             }
 
-            _mailerMessage(e) {
+            _feedbackMessage(e) {
                 if(!_.trim(_.get(e,"detail.message"))) return;
                 this.set('mailerMessage', _.trim(_.get(e,"detail.message")))
                 this.$['mailerMessage'].classList.add('notification');
