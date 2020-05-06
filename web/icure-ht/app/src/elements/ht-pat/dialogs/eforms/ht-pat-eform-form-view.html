@@ -80,8 +80,8 @@
             <page>
                 <div class="pageContent">
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
-                    <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-if" if="[[embededFormDomIf]]" restamp="true"><embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/></template>
+                    <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                        <template is="dom-if" if="[[embededFormDomIf]]"><embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/></template>
                     </template>
                 </div>
             </page>
@@ -393,6 +393,7 @@
                         const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
                         return this._sendFormUsingEhBox(parsedXml)
                     })
+                    .finally(() => this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
 
             }
 
@@ -445,7 +446,7 @@
                             content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
                             label: 'document',
                             tags: [
-                                {type: 'CD-TRANSACTION', code: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.docType ? this.selectedDocumentToBeImported.docType : 'request'},
+                                {type: 'CD-TRANSACTION', code: 'request'},
                                 {type: 'EFORMS', code: 'download'},
                             ]
                         });
@@ -455,7 +456,6 @@
                         return this.saveCurrentContact().then(() => this.dispatchEvent(new CustomEvent('eforms-download', {bubbles: true, composed: true, detail: {}})))
                     })
                     .catch(e => { console.log("---error upload attachment---", e); return promResolve })
-                    .finally(() => this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
 
             }
 
@@ -469,18 +469,22 @@
             _sendFormUsingEhBox(parsedXml) {
 
                 const promResolve = Promise.resolve()
-                const patternsValidation = { heightDigits: /^([0-9]){8}$/i, tenDigits: /^([0-9]){10}$/i, elevenDigits: /^([0-9]){11}$/i}
+                const patternsValidation = {
+                    heightDigits: /^([0-9]){8}$/i,
+                    tenDigits: /^([0-9]){10}$/i,
+                    elevenDigits: /^([0-9]){11}$/i
+                }
                 const publicationId = +new Date
-                const subject = _.trim(_.get(parsedXml,"ADR.Subject[0]",""))
+                const subject = _.trim(_.get(parsedXml, "ADR.Subject[0]", ""))
                 const annexes = _.compact(_.map(_.get(parsedXml, "ADR.Attachment", []), it => {
-                    const filename = _.trim(_.get(it,"Name[0]",this.api.crypto().randomUuid()))
-                    const attachmentByteArray = this.api.crypto().utils.base64toByteArray(_.get(it,"Content[0]"))
-                    return !_.trim(_.get(it,"Content[0]")) ? false : {
-                          content: attachmentByteArray,
-                          filename: filename,
-                          mimeType: _.trim(_.get(it,"MimeType[0]","text/plain")),
-                          title: filename,
-                          // size: _.size(attachmentByteArray)
+                    const filename = _.trim(_.get(it, "Name[0]", this.api.crypto().randomUuid()))
+                    const attachmentByteArray = this.api.crypto().utils.base64toByteArray(_.get(it, "Content[0]"))
+                    return !_.trim(_.get(it, "Content[0]")) ? false : {
+                        content: attachmentByteArray,
+                        filename: filename,
+                        mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain")),
+                        title: filename,
+                        // size: _.size(attachmentByteArray)
                     }
                 }))
 
@@ -490,34 +494,34 @@
                 const usePublicationReceipt = true
 
                 // Unread by default, then eval important, cyrpted & has annexes statuses
-                let messageStatus = 1<<1
-                messageStatus = isEncrypted ? messageStatus|1<<3 : messageStatus
-                messageStatus = !!_.size(annexes) ? messageStatus|1<<4 : messageStatus
+                let messageStatus = 1 << 1
+                messageStatus = isEncrypted ? messageStatus | 1 << 3 : messageStatus
+                messageStatus = !!_.size(annexes) ? messageStatus | 1 << 4 : messageStatus
 
                 let sendMessageResponse = false
 
                 return !_.size(parsedXml) ? promResolve : promResolve
-                    .then(() => _.map(_.get(parsedXml,"ADR.Addressee",[]), it => {
-                        const identifierValue = _.trim(_.trim(_.get(it,"Identifier[0]","")).replace(/[^0-9]*/g,""))
+                    .then(() => _.map(_.get(parsedXml, "ADR.Addressee", []), it => {
+                        const identifierValue = _.trim(_.trim(_.get(it, "Identifier[0]", "")).replace(/[^0-9]*/g, ""))
                         const isValidCbe = !!patternsValidation.tenDigits.test(identifierValue)
                         const isValidEhp = !!patternsValidation.tenDigits.test(identifierValue)
                         const isValidSsin = !!patternsValidation.elevenDigits.test(identifierValue) && this.api.patient().isValidSsin(identifierValue)
                         const isValidNihii = !!patternsValidation.heightDigits.test(identifierValue) || !!patternsValidation.elevenDigits.test(identifierValue)
-                        const recipientsName = _.trim(_.get(it,"Name[0]","")) ? _.trim(_.get(it,"Name[0]","")) : _.trim(_.trim(_.get(it,"FirstName[0]","")) + " " + _.trim(_.get(it,"FirstName[0]","")))
+                        const recipientsName = _.trim(_.get(it, "Name[0]", "")) ? _.trim(_.get(it, "Name[0]", "")) : _.trim(_.trim(_.get(it, "FirstName[0]", "")) + " " + _.trim(_.get(it, "FirstName[0]", "")))
                         return {
-                            identifierType: { type: isValidCbe ? "CBE" : isValidEhp ? "EHP" : isValidSsin ? "SSIN" : "NIHII" },
+                            identifierType: {type: isValidCbe ? "CBE" : isValidEhp ? "EHP" : isValidSsin ? "SSIN" : "NIHII"},
                             id: identifierValue,
                             name: _.trim(recipientsName) ? _.trim(recipientsName) : null,
-                            quality: _.trim(_.get(it,"Quality[0]","DOCTOR")),
+                            quality: _.trim(_.get(it, "Quality[0]", "DOCTOR")),
                         }
                     }))
-                    .then(recipients => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp => [currentHcp,recipients]))
-                    .then(([currentHcp,recipients]) => [currentHcp, recipients, {
-                        id : this.api.crypto().randomUuid(),
-                        publicationId : publicationId,
-                        publicationDateTime : parseInt(moment().format('YYYYMMDD')),
-                        expirationDateTime : parseInt(moment().add(1,"years").format('YYYYMMDD')),
-                        customMetas : {
+                    .then(recipients => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp => [currentHcp, recipients]))
+                    .then(([currentHcp, recipients]) => [currentHcp, recipients, {
+                        id: this.api.crypto().randomUuid(),
+                        publicationId: publicationId,
+                        publicationDateTime: parseInt(moment().format('YYYYMMDD')),
+                        expirationDateTime: parseInt(moment().add(1, "years").format('YYYYMMDD')),
+                        customMetas: {
                             "CM-AuthorID": _.trim(_.get(currentHcp, "nihii", _.get(currentHcp, "ssin", ""))),
                             "CM-AuthorIDType": _.trim(_.get(currentHcp, "nihii", "")) ? "NIHII" : "SSIN",
                             "CM-AuthorType": _.trim(_.get(currentHcp, "civility", "doctor")).toUpperCase(),
@@ -533,59 +537,64 @@
                             "CM-Requestnumber": publicationId,
                             "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
                         },
-                        document : { title: subject, textContent: "", mimeType: 'text/plain', filename: subject},
-                        freeText : "",
-                        freeInformationTableTitle : null,
-                        freeInformationTableRows : {},
-                        patientInss :  null,
-                        annex : annexes,
-                        copyMailTo : [],
-                        documentTitle : subject,
-                        annexList : annexes,
-                        useReceivedReceipt : useReceivedReceipt,
-                        useReadReceipt : useReadReceipt,
-                        usePublicationReceipt : usePublicationReceipt,
-                        hasAnnex : !!_.size(annexes),
-                        hasFreeInformations : false,
-                        important : false,
-                        encrypted : isEncrypted,
-                        destinations : recipients,
-                        sender : {
+                        document: {title: subject, textContent: "", mimeType: 'text/plain', filename: subject},
+                        freeText: "",
+                        freeInformationTableTitle: null,
+                        freeInformationTableRows: {},
+                        patientInss: null,
+                        annex: annexes,
+                        copyMailTo: [],
+                        documentTitle: subject,
+                        annexList: annexes,
+                        useReceivedReceipt: useReceivedReceipt,
+                        useReadReceipt: useReadReceipt,
+                        usePublicationReceipt: usePublicationReceipt,
+                        hasAnnex: !!_.size(annexes),
+                        hasFreeInformations: false,
+                        important: false,
+                        encrypted: isEncrypted,
+                        destinations: recipients,
+                        sender: {
                             identifierType: "NIHII",
                             id: _.trim(_.get(currentHcp, "nihii", "")),
-                            quality: _.trim(_.get(currentHcp,"quality","doctor")).toUpperCase(),
+                            quality: _.trim(_.get(currentHcp, "quality", "doctor")).toUpperCase(),
                             applicationId: "",
-                            lastName: _.trim(_.get(currentHcp,"lastName","")),
-                            firstName: _.trim(_.get(currentHcp,"firstName","")),
-                            organizationName: (!_.trim(_.get(currentHcp,"lastName","")) && !_.trim(_.get(currentHcp,"firstName",""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
+                            lastName: _.trim(_.get(currentHcp, "lastName", "")),
+                            firstName: _.trim(_.get(currentHcp, "firstName", "")),
+                            organizationName: (!_.trim(_.get(currentHcp, "lastName", "")) && !_.trim(_.get(currentHcp, "firstName", ""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
                             personInOrganisation: ""
                         },
-                        fromHealthcarePartyId: _.get(currentHcp,"id",""),
+                        fromHealthcarePartyId: _.get(currentHcp, "id", ""),
                         status: messageStatus
                     }])
-                    .then(([currentHcp,recipients,message]) => {
+                    .then(([currentHcp, recipients, message]) => {
 
                         // EhBox won't allow for empty values
-                        Object.keys(message.customMetas).forEach(k =>{ if(!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch(e){} })
+                        Object.keys(message.customMetas).forEach(k => {
+                            if (!_.trim(message.customMetas[k])) try {
+                                delete message.customMetas[k]
+                            } catch (e) {
+                            }
+                        })
 
-                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this,"api.keystoreId",null),_.get(this,"api.tokenId",null),_.get(this,"api.credentials.ehpassword",null),message,usePublicationReceipt,useReceivedReceipt,useReadReceipt)
-                           .then(x=>sendMessageResponse=x)
-                           .catch(x=>sendMessageResponse=x)
-                           .finally(()=>{
+                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, usePublicationReceipt, useReceivedReceipt, useReadReceipt)
+                            .then(x => sendMessageResponse = x)
+                            .catch(x => sendMessageResponse = x)
+                            .finally(() => {
 
-                               console.log("sendMessageResponse", sendMessageResponse);
+                                console.log("sendMessageResponse", sendMessageResponse);
 
-                               // [Either] went well
-                               // [OR] couldn't find ETK (missing recipient public key) - when crypting message
-                               // [OR] (hardcoded) -> "successfull" (labellisation)
-                               // return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
+                                // [Either] went well
+                                // [OR] couldn't find ETK (missing recipient public key) - when crypting message
+                                // [OR] (hardcoded) -> "successfull" (labellisation)
+                                // return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
 
-                           })
+                            })
 
                     })
-                    .catch(e=>{
+                    .catch(e => {
                         this._resetLoadingMessage();
-                        this.set('_isLoading', false );
+                        this.set('_isLoading', false);
                         this.$["failed"].classList.add('displayNotification')
                         console.log("ERROR with getCurrentHealthcareParty while _doSendMessageWithEhBox: ", e);
                     })
