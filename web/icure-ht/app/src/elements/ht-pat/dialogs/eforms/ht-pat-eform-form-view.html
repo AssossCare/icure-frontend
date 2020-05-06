@@ -87,7 +87,7 @@
             </page>
             <page>
                 <div class="pageContent">
-                    <ht-pat-eform-form-documents id="htPatEformFormDocuments" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" available-document-list="[[availableDocumentList]]"></ht-pat-eform-form-documents>
+                    <ht-pat-eform-form-documents id="htPatEformFormDocuments" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" unlinked-documents="[[unlinkedDocuments]]" linked-documents="[[linkedDocuments]]"></ht-pat-eform-form-documents>
                 </div>
             </page>
         </iron-pages>
@@ -181,6 +181,14 @@
                     selectedDocumentIdToBeImported:{
                         type: String,
                         value: null
+                    },
+                    unlinkedDocuments:{
+                        type: Array,
+                        value: () => []
+                    },
+                    linkedDocuments:{
+                        type: Array,
+                        value: () => []
                     }
                 };
             }
@@ -317,6 +325,18 @@
                 })
             }
 
+            _getAllAttachments(){
+                return this.api.executeFetchRequest(_.get(this, 'eformsHost.eForms', null) + "/cloud/api/v1/forms/"+_.get(this.selectedFormInfo, 'formId', null)+"/attachments", {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json;charset=UTF-8",
+                        "Accept-Language": "fr-BE",
+                        Authorization: 'Bearer '+ _.get(this, 'oAuthToken.access_token', null),
+                        'Content-Type': 'application/xml'
+                    }
+                })
+            }
+
             _getExportFormat() {
                return this.api.executeFetchRequest(_.get(this, 'eformsHost.eForms', null) + "/cloud/api/v1/forms/"+_.get(this.selectedFormInfo, 'formId', null)+"/pdf", {
                    method: "GET",
@@ -337,43 +357,61 @@
             }
 
             _joinDocument() {
-
                 if(_.get(this, 'selectedDocumentIdToBeImported', null)) {
-
                     const selectedDoc = _.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', ''))
 
                     if(_.get(selectedDoc, 'attachmentId', null)){
                         (_.size(_.get(selectedDoc, 'encryptionKeys', [])) || _.size(_.get(selectedDoc, 'delegations', [])) ?
-                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this.user, 'healthcarePartyId', null), _.get(selectedDoc, 'id', null), _.size(_.get(selectedDoc, 'encryptionKeys', [])) ? _.get(selectedDoc, 'encryptionKeys', []) : _.get(selectedDoc, 'delegations', [])).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null), enckeys.join(','))) : this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null)))
-                            .then(attachment => {
-                                console.log(attachment)
-                                this._addAttachment(selectedDoc, attachment).then(attachmentResponse => {
-                                    _.parseInt(_.get(attachmentResponse, 'response.status', 0)) !== 201 ? this._showErrorNotification(_.get(attachmentResponse, 'response', 0), _.get(attachmentResponse, 'content', {})) : null
-                                })
-                            })
+                                this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this.user, 'healthcarePartyId', null), _.get(selectedDoc, 'id', null), _.size(_.get(selectedDoc, 'encryptionKeys', [])) ?
+                                    _.get(selectedDoc, 'encryptionKeys', []) : _.get(selectedDoc, 'delegations', []))
+                                        .then(({extractedKeys: enckeys}) => this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null), enckeys.join(','))) :
+                                this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null))
+                        ).then(attachment => this._addAttachment(selectedDoc, attachment))
+                        .then(attachmentResponse =>
+                            _.parseInt(_.get(attachmentResponse, 'response.status', 0)) === 201 ? this._linkDocument(selectedDoc) : this._showErrorNotification(_.get(attachmentResponse, 'response', 0), _.get(attachmentResponse, 'content', {}))
+                        ).finally(() => {
+
+                        })
                     }
 
                 }
+            }
 
+            _linkDocument(selectedDoc){
+                const targetDocument = _.head(_.remove(this.unlinkedDocuments, {id: _.get(selectedDoc, 'id', null)}))
+                this.push("linkedDocuments", targetDocument)
+                this.$["htPatEformFormDocuments"]._refreshLinkedAndAvailableDocuments()
+            }
+
+            _refreshAttachement(){
+                return this._getAllAttachments().then(allAttachment => {
+                    this.set('unlinkedDocuments', _.get(this, 'availableDocumentList', []))
+                    this.set('linkedDocuments', [])
+                    if(_.parseInt(_.get(allAttachment, 'response.status', 0)) === 200){
+                        _.get(allAttachment, 'content', []).map(att => {
+                            const docTarget = _.head(_.remove(this.unlinkedDocuments, {id: _.get(_.get(this, 'unlinkedDocuments', []).find(doc => _.get(doc, 'name', null) === _.get(att, 'fileName', null)), 'id', null)}))
+                            this.push('linkedDocuments', docTarget)
+                        })
+                        this.$["htPatEformFormDocuments"]._refreshLinkedAndAvailableDocuments()
+                    }
+                })
             }
 
             _addAttachment(doc, attachment) {
-                const attachmentAsBlob = new Blob([new Uint8Array(attachment)])
+                const attachmentAsBlob = new Blob([new Uint8Array(attachment)], {type: 'application/pdf'})
+
+                const formData = new FormData();
+                formData.append('attachment', attachmentAsBlob, _.get(doc, 'name', null));
+
                 return this.api.executeFetchRequest(_.get(this, 'eformsHost.eForms', null) + "/cloud/api/v1/forms/"+_.get(this.selectedFormInfo, 'formId', null)+"/attachments", {
                     method: "POST",
                     mode: "cors",
                     headers: {
                         Accept: "application/json;charset=UTF-8",
                         "Accept-Language": "fr-BE",
-                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null),
-                        "Content-Type": 'multipart/mixed; boundary="jbiB48jJ8GsJHjes0vxvvA7ExjJBfOH8o20eSJU"; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm'
+                        Authorization: 'Bearer ' + _.get(this, 'oAuthToken.access_token', null)
                     },
-                    body: JSON.stringify({
-                        "Content-Disposition": "form-data; name=attachment; filename="+_.get(doc, 'name', null),
-                        "Content-Type": "application/octet-stream",
-                        attachment: attachmentAsBlob,
-                        size: attachmentAsBlob.size
-                    })
+                    body: formData
                 })
             }
 

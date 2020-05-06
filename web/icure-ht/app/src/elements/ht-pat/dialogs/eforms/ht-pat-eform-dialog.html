@@ -296,7 +296,7 @@
                     </div>
                 </div>
                 <div class="eforms-menu-view">
-                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
+                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" linked-documents="[[linkedDocuments]]" unlinked-documents="[[unlinkedDocuments]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
                 </div>
             </div>
             <div class="buttons">
@@ -404,6 +404,14 @@
                     selectedDocumentIdToBeImported:{
                         type: String,
                         value: null
+                    },
+                    unlinkedDocuments:{
+                        type: Array,
+                        value: () => []
+                    },
+                    linkedDocuments:{
+                        type: Array,
+                        value: () => []
                     }
                 };
             }
@@ -428,6 +436,8 @@
                 this.set('isSelectedDocument', false)
                 this.set('isSelectedForm', false)
                 this.set('selectedDocumentIdToBeImported', null)
+                this.set('linkedDocuments', [])
+                this.set('unlinkedDocuments', [])
             }
 
             _initialize(){
@@ -446,6 +456,7 @@
                         return this._getDocuments()
                     }).then(availableDocument => {
                         this.set("availableDocumentList", availableDocument.map(ad => ad.document))
+                        this.set('unlinkedDocuments', availableDocument.map(ad => ad.document))
                         return this._generateSumehrV2()
                     }).then(sumehr => {
                         this.set('patientSumehr', sumehr)
@@ -575,6 +586,7 @@
 
             _selectedFormChanged(){
                 _.get(this, 'selectedForm.id.name', null) ? this.set('isSelectedForm', true) : this.set('isSelectedForm', false)
+                this.set('isSelectedDocument', false)
             }
 
             _selectedDocument(e){
