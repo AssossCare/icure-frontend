@@ -2982,7 +2982,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <ht-pat-care-path-detail-dialog id="htPatCarePathDetailDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" contacts="[[contacts]]" current-contact="[[currentContact]]" resources="[[resources]]" selected-care-path-info="[[selectedCarePathInfo]]" active-health-elements="[[activeHealthElements]]" on-save-care-path="_refreshFromServices" on-closing-care-path="refreshPatient"></ht-pat-care-path-detail-dialog>
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
-        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]"></ht-pat-eform-dialog>
+        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
     </template>
     <script>
         import moment from 'moment/src/moment';
@@ -6979,6 +6979,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
             }
 
+            _eformsDownload(e){
+                this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
+            }
+
             // _saveDoc(e){
             //     this.shadowRoot.querySelector('#ctcDetailPanel').saveDoc(e)
             //     // this.root.querySelector('ht-pat-detail-ctc-detail-panel')._saveDoc(e)
@@ -7121,7 +7125,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _openEformDialog(){
-                this.$['htPatEformDialog'].openDialog()
+                if(this._checkForEhealthSession() === true){
+                    this.$['htPatEformDialog'].openDialog()
+                }else{
+                    this._ehealthErrorNotification()
+                }
             }
 
             _openCarePathDetail(e){
