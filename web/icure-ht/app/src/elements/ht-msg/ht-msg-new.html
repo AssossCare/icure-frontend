@@ -2116,6 +2116,15 @@
                         status: messageStatus
                     };
 
+                    _.merge({
+                        "CM-SenderID": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorID",""),
+                        "CM-SenderIDType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorIDType",""),
+                        "CM-SenderType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorType",""),
+                        "CM-SenderLastName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorLastName",""),
+                        "CM-SenderFirstName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorFirstName",""),
+                        "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
+                    },messageToBeSentWithEhbox.customMetas)
+
                     this.api.fhc().Ehboxcontroller().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
                         .then(x=>sendMessageResponse=x)
                         .catch(x=>sendMessageResponse=x)

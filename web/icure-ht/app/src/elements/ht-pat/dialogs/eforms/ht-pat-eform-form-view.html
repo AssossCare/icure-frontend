@@ -35,7 +35,9 @@
 
 
 <dom-module id="ht-pat-eform-form-view">
+
     <template>
+
         <style include="dialog-style scrollbar-style buttons-style shared-style paper-tabs-style notification-style">
 
             .formContainer{
@@ -79,7 +81,7 @@
                 <div class="pageContent">
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/>
+                        <template is="dom-if" if="[[embededFormDomIf]]" restamp="true"><embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/></template>
                     </template>
                 </div>
             </page>
@@ -91,12 +93,15 @@
         </iron-pages>
 
     </template>
+
     <script>
+
         import * as models from 'icc-api/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
         import xml2js from 'xml2js/lib/xml2js';
 
         class HtPatEformFormView extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+
             static get is() {
                 return 'ht-pat-eform-form-view';
             }
@@ -157,6 +162,10 @@
                         type:String,
                         value: null
                     },
+                    embededFormDomIf: {
+                        type: Boolean,
+                        value: false
+                    },
                     tabs:{
                         type: Number,
                         value: 0
@@ -184,14 +193,34 @@
                 super.ready();
             }
 
-
             _reset() {
                 this.set('selectedForm', {})
                 this.set('dataSetId', null)
                 this.set('selectedFormInfo', {})
+                this.set('embededFormDomIf', false)
             }
 
             _showForm() {
+
+                /*
+                // todo
+                const promResolve = Promise.resolve()
+
+                return this._removeForm()
+                    .then(() => this._createFormInstance())
+                    .then(formInstanceResponse => _.parseInt(_.get(formInstanceResponse, 'response.status', 0)) !== 201 ? promResolve : promResolve
+                        .then(() => this.set("embededFormDomIf", false))
+                        .then(() => this.set("selectedFormInfo", _.get(formInstanceResponse, 'content', {})))
+                        .then(() => this.set("embededFormDomIf", true))
+                        .then(() => this._uploadDataSet())
+                    )
+                    .then(dataSetResponse => _.parseInt(_.get(dataSetResponse, 'response.status', 0)) !== 200 ? promResolve : promResolve
+                        .then(() => this.set("dataSetId", _.get(dataSetResponse, 'content', null)))
+                        .then(() => this._mergeDataSet())
+                    )
+                    .then(mergeDataSetResponse => _.parseInt(_.get(mergeDataSetResponse, 'response.status', 0)) === 204 ? this._unlockForm() : promResolve)
+                    */
+
                 this.set('isLoading', true)
                 this._removeForm().then(removeFormResonse => {
                     _.parseInt(_.get(removeFormResonse, 'response.status', 0)) !== 204 ? this._showErrorNotification(_.get(removeFormResonse, 'response', 0), _.get(removeFormResonse, 'content', {})) : null
@@ -208,6 +237,7 @@
                }).finally(() => {
                     this.set('isLoading', false)
                })
+
             }
 
             _createFormInstance() {
@@ -334,6 +364,27 @@
             }
 
             _sendForm(){
+
+                // Todo
+                /*
+                const promResolve = Promise.resolve()
+
+                return this._getFormAdr().then(adrResponse => {
+                    if( _.parseInt(_.get(adrResponse, 'response.status', 0)) === 200){
+                        return this.xmlStringToObject(_.get(adrResponse, 'content', null))
+                            .then(parsedXml => {
+                                const pdf =_.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/pdf"))
+                                const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
+                                return this._importDocumentIntoPatient(_.head(_.get(pdf, 'Content', [])), _.head(_.get(pdf, 'Name', [])), _.head(_.get(pdf, 'MimeType', [])))
+                                    .then(() => parsedXml)
+                                    .catch(e => parsedXml)
+                            })
+                            .then(parsedXml => this._sendFormUsingEhBox(parsedXml))
+                            .catch(e => promResolve)
+                    } else {
+                        return promResolve
+                */
+
                 this._getFormAdr().then(adrResponse => {
                     if( _.parseInt(_.get(adrResponse, 'response.status', 0)) === 200){
                         this.xmlStringToObject(_.get(adrResponse, 'content', null)).then(parsedXml => {
@@ -349,9 +400,8 @@
                     console.log(parsedXml)
                     const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
                     const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
-
-
                 })
+
             }
 
             xmlStringToObject(xml){
@@ -363,7 +413,10 @@
                 });
             }
 
-            _importDocumentIntoPatient(content, docName, mimeType){
+            _importDocumentIntoPatient(content, docName, mimeType) {
+
+                const promResolve = Promise.resolve()
+
                 return this.api.message().newInstance(this.user)
                     .then(nmi => this.api.message().createMessage(_.merge(nmi, {
                         transportGuid: "EFORM:IN:IMPORTED-DOCUMENT",
@@ -411,6 +464,39 @@
                         this.saveCurrentContact().then(c => {
                             this.dispatchEvent(new CustomEvent('eforms-download', {bubbles: true, composed: true, detail: {}}))
                         })
+/*
+// todo
+                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {
+                            documentType: 'request',
+                            mainUti: this.api.document().uti(mimeType),
+                            name: docName
+                        }))
+                        .then(newDocInstance => this.api.document().createDocument(newDocInstance))
+                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(content))
+                            .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
+                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                        .then(resourcesObject => {
+                            //Import into currentContact
+                            let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);
+                            if (!sc) {
+                                sc = { status: 64, services: [] };
+                                this.currentContact.subContacts.push(sc);
+                            }
+                            const svc = this.api.contact().service().newInstance(this.user, {
+                                content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
+                                label: 'document',
+                                tags: [
+                                    {type: 'CD-TRANSACTION', code: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.docType ? this.selectedDocumentToBeImported.docType : 'request'},
+                                    {type: 'EFORMS', code: 'download'},
+                                ]
+                            });
+                            this.currentContact.services.push(svc);
+                            sc.services.push({ serviceId: svc.id });
+
+                            return this.saveCurrentContact().then(c => c).catch(e => promResolve)
+                        }))
+                        .catch(e => promResolve)
+*/
                     }).finally(() => {
                         this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}}))
                     })).catch(e => {
@@ -424,6 +510,140 @@
                 }
                 return (this.currentContact.rev ? this.api.contact().modifyContactWithUser(this.user, this.currentContact) : this.api.contact().createContactWithUser(this.user, this.currentContact)).then(c=>this.api.register(c,'contact')).then(c => (this.currentContact.rev = c.rev) && c);
             }
+
+            _arrayBufferToByteArray(arrayBuffer) {
+                let fileByteArray = [];
+                new Uint8Array(arrayBuffer).forEach(int8 => fileByteArray.push(int8));
+                return fileByteArray;
+            }
+
+            _sendFormUsingEhBox(parsedXml) {
+
+                const promResolve = Promise.resolve()
+                const patternsValidation = { heightDigits: /^([0-9]){8}$/i, tenDigits: /^([0-9]){10}$/i, elevenDigits: /^([0-9]){11}$/i}
+                const publicationId = +new Date
+                const subject = _.trim(_.get(parsedXml,"ADR.Subject[0]",""))
+                const annexes = _.compact(_.map(_.get(parsedXml, "ADR.Attachment", []), it => {
+                    const filename = _.trim(_.get(it,"Name[0]",this.api.crypto().randomUuid()))
+                    const attachmentByteArray = this.api.crypto().utils.base64toByteArray(_.get(it,"Content[0]"))
+                    return !_.trim(_.get(it,"Content[0]")) ? false : {
+                          content: attachmentByteArray,
+                          filename: filename,
+                          mimeType: _.trim(_.get(it,"MimeType[0]","text/plain")),
+                          title: filename,
+                          // size: _.size(attachmentByteArray)
+                    }
+                }))
+
+                const isEncrypted = false
+                const useReceivedReceipt = true
+                const useReadReceipt = true
+                const usePublicationReceipt = true
+
+                // Unread by default, then eval important, cyrpted & has annexes statuses
+                let messageStatus = 1<<1
+                messageStatus = isEncrypted ? messageStatus|1<<3 : messageStatus
+                messageStatus = !!_.size(annexes) ? messageStatus|1<<4 : messageStatus
+
+                let sendMessageResponse = false
+
+                return !_.size(parsedXml) ? promResolve : promResolve
+                    .then(() => _.map(_.get(parsedXml,"ADR.Addressee",[]), it => {
+                        const identifierValue = _.trim(_.trim(_.get(it,"Identifier[0]","")).replace(/[^0-9]*/g,""))
+                        const isValidCbe = !!patternsValidation.tenDigits.test(identifierValue)
+                        const isValidEhp = !!patternsValidation.tenDigits.test(identifierValue)
+                        const isValidSsin = !!patternsValidation.elevenDigits.test(identifierValue) && this.api.patient().isValidSsin(identifierValue)
+                        const isValidNihii = !!patternsValidation.heightDigits.test(identifierValue) || !!patternsValidation.elevenDigits.test(identifierValue)
+                        const recipientsName = _.trim(_.get(it,"Name[0]","")) ? _.trim(_.get(it,"Name[0]","")) : _.trim(_.trim(_.get(it,"FirstName[0]","")) + " " + _.trim(_.get(it,"FirstName[0]","")))
+                        return {
+                            identifierType: { type: isValidCbe ? "CBE" : isValidEhp ? "EHP" : isValidSsin ? "SSIN" : "NIHII" },
+                            id: identifierValue,
+                            name: _.trim(recipientsName) ? _.trim(recipientsName) : null,
+                            quality: _.trim(_.get(it,"Quality[0]","DOCTOR")),
+                        }
+                    }))
+                    .then(recipients => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp => [currentHcp,recipients]))
+                    .then(([currentHcp,recipients]) => [currentHcp, recipients, {
+                        id : this.api.crypto().randomUuid(),
+                        publicationId : publicationId,
+                        publicationDateTime : parseInt(moment().format('YYYYMMDD')),
+                        expirationDateTime : parseInt(moment().add(1,"years").format('YYYYMMDD')),
+                        customMetas : {
+                            "CM-AuthorID": _.trim(_.get(currentHcp, "nihii", _.get(currentHcp, "ssin", ""))),
+                            "CM-AuthorIDType": _.trim(_.get(currentHcp, "nihii", "")) ? "NIHII" : "SSIN",
+                            "CM-AuthorType": _.trim(_.get(currentHcp, "civility", "doctor")).toUpperCase(),
+                            "CM-AuthorLastName": _.trim(_.get(currentHcp, "lastName", "")).toUpperCase(),
+                            "CM-AuthorFirstName": _.trim(_.get(currentHcp, "firstName", "")),
+                            "CM-AuthorName": (!_.trim(_.get(currentHcp, "lastName", "")) && !_.trim(_.get(currentHcp, "firstName", ""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
+                            "CM-RecipientID": _.trim(_.get(recipients, "[0].id", "")),
+                            "CM-RecipientIDType": _.trim(_.get(recipients, "[0].type", "NIHII")),
+                            "CM-RecipientName": recipientsName,
+                            "CM-EhrMessage": false,
+                            "CM-EhrMessageType": "Functionnal",
+                            "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
+                            "CM-Requestnumber": publicationId,
+                            "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
+                        },
+                        document : { title: subject, textContent: "", mimeType: 'text/plain', filename: subject},
+                        freeText : "",
+                        freeInformationTableTitle : null,
+                        freeInformationTableRows : {},
+                        patientInss :  null,
+                        annex : annexes,
+                        copyMailTo : [],
+                        documentTitle : subject,
+                        annexList : annexes,
+                        useReceivedReceipt : useReceivedReceipt,
+                        useReadReceipt : useReadReceipt,
+                        usePublicationReceipt : usePublicationReceipt,
+                        hasAnnex : !!_.size(annexes),
+                        hasFreeInformations : false,
+                        important : false,
+                        encrypted : isEncrypted,
+                        destinations : recipients,
+                        sender : {
+                            identifierType: "NIHII",
+                            id: _.trim(_.get(currentHcp, "nihii", "")),
+                            quality: _.trim(_.get(currentHcp,"quality","doctor")).toUpperCase(),
+                            applicationId: "",
+                            lastName: _.trim(_.get(currentHcp,"lastName","")),
+                            firstName: _.trim(_.get(currentHcp,"firstName","")),
+                            organizationName: (!_.trim(_.get(currentHcp,"lastName","")) && !_.trim(_.get(currentHcp,"firstName",""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
+                            personInOrganisation: ""
+                        },
+                        fromHealthcarePartyId: _.get(currentHcp,"id",""),
+                        status: messageStatus
+                    }])
+                    .then(([currentHcp,recipients,message]) => {
+
+                        // EhBox won't allow for empty values
+                        Object.keys(message.customMetas).forEach(k =>{ if(!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch(e){} })
+
+                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this,"api.keystoreId",null),_.get(this,"api.tokenId",null),_.get(this,"api.credentials.ehpassword",null),message,usePublicationReceipt,useReceivedReceipt,useReadReceipt)
+                           .then(x=>sendMessageResponse=x)
+                           .catch(x=>sendMessageResponse=x)
+                           .finally(()=>{
+
+                               console.log("sendMessageResponse", sendMessageResponse);
+
+                               // [Either] went well
+                               // [OR] couldn't find ETK (missing recipient public key) - when crypting message
+                               // [OR] (hardcoded) -> "successfull" (labellisation)
+                               // return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
+
+                           })
+
+                    })
+
+
+                    .catch(e=>{
+                        this._resetLoadingMessage();
+                        this.set('_isLoading', false );
+                        this.$["failed"].classList.add('displayNotification')
+                        console.log("ERROR with getCurrentHealthcareParty while _doSendMessageWithEhBox: ", e);
+                    })
+
+                }
 
             _showErrorNotification(response, content){
                 this.dispatchEvent(new CustomEvent('show-error-notification', {bubbles: true, composed: true, detail: {response: response, content: content}}))
@@ -452,6 +672,9 @@
             }
 
         }
+
         customElements.define(HtPatEformFormView.is, HtPatEformFormView);
+
     </script>
+
 </dom-module>
