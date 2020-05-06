@@ -30,6 +30,9 @@
 <link rel="import" href="../../../../styles/paper-tabs-style.html">
 <link rel="import" href="../../../../styles/notification-style.html">
 
+<link rel="import" href="./ht-pat-eform-documents.html">
+
+
 
 <dom-module id="ht-pat-eform-form-view">
     <template>
@@ -82,7 +85,7 @@
             </page>
             <page>
                 <div class="pageContent">
-
+                    <ht-pat-eform-form-documents id="htPatEformFormDocuments" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" available-document-list="[[availableDocumentList]]"></ht-pat-eform-form-documents>
                 </div>
             </page>
         </iron-pages>
@@ -161,12 +164,16 @@
                     attachmentAvailable:{
                         type: Boolean,
                         value: false
+                    },
+                    availableDocumentList:{
+                        type: Array,
+                        value: () => []
                     }
                 };
             }
 
             static get observers() {
-                return [];
+                return ['_tabChanged(tabs)'];
             }
 
             ready() {
@@ -323,14 +330,19 @@
                     if( _.parseInt(_.get(adrResponse, 'response.status', 0)) === 200){
                         this.xmlStringToObject(_.get(adrResponse, 'content', null)).then(parsedXml => {
                             const pdf =_.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/pdf"))
-                            const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
-
-                            this._importDocumentIntoPatient(_.head(_.get(pdf, 'Content', [])), _.head(_.get(pdf, 'Name', [])), _.head(_.get(pdf, 'MimeType', [])))
-
+                            return Promise.resolve([parsedXml, this._importDocumentIntoPatient(_.head(_.get(pdf, 'Content', [])), _.head(_.get(pdf, 'Name', [])), _.head(_.get(pdf, 'MimeType', [])))])
+                        }).then(([parsedXml, importResult]) => {
+                            return Promise.resolve(parsedXml)
                         })
                     }else{
                         this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {}))
                     }
+                }).then(parsedXml => {
+                    console.log(parsedXml)
+                    const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
+                    const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
+
+
                 })
             }
 
@@ -344,7 +356,7 @@
             }
 
             _importDocumentIntoPatient(content, docName, mimeType){
-                this.api.message().newInstance(this.user)
+                return this.api.message().newInstance(this.user)
                     .then(nmi => this.api.message().createMessage(_.merge(nmi, {
                         transportGuid: "EFORM:IN:IMPORTED-DOCUMENT",
                         recipients: [this.user && this.user.healthcarePartyId],
@@ -356,46 +368,46 @@
                         subject: "Import form: "+ _.get(this. selectedForm, 'label', null) || null,
                         status : 0 | 1<<25 | (this.patient.id ? 1<<26 : 0)
                     }))
-                        .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.get(this.patient, 'id', null), isAssigned: true}))))]))
-                        .then(([createdMessage, cryptedMeta]) => {
-                            createdMessage.metas.cryptedInfo = Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedMeta)))
-                            return this.api.message().modifyMessage(createdMessage)
-                        })
-                        .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {
-                            documentType: 'request',
-                            mainUti: this.api.document().uti(mimeType),
-                            name: docName
-                        }))
-                        .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(content))
-                            .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
-                        .then(resourcesObject => {
-                            //Import into currentContact
-                            let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);
-                            if (!sc) {
-                                sc = { status: 64, services: [] };
-                                this.currentContact.subContacts.push(sc);
-                            }
-                            const svc = this.api.contact().service().newInstance(this.user, {
-                                content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
-                                label: 'document',
-                                tags: [
-                                    {type: 'CD-TRANSACTION', code: 'request'},
-                                    {type: 'EFORMS', code: 'download'},
-                                ]
-                            });
-                            this.currentContact.services.push(svc);
-                            sc.services.push({ serviceId: svc.id });
+                    .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.get(this.patient, 'id', null), isAssigned: true}))))]))
+                    .then(([createdMessage, cryptedMeta]) => {
+                        createdMessage.metas.cryptedInfo = Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedMeta)))
+                        return this.api.message().modifyMessage(createdMessage)
+                    })
+                    .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {
+                        documentType: 'request',
+                        mainUti: this.api.document().uti(mimeType),
+                        name: docName
+                    }))
+                    .then(newDocInstance => this.api.document().createDocument(newDocInstance))
+                    .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(content))
+                        .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
+                    .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                    .then(resourcesObject => {
+                        //Import into currentContact
+                        let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);
+                        if (!sc) {
+                            sc = { status: 64, services: [] };
+                            this.currentContact.subContacts.push(sc);
+                        }
+                        const svc = this.api.contact().service().newInstance(this.user, {
+                            content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
+                            label: 'document',
+                            tags: [
+                                {type: 'CD-TRANSACTION', code: 'request'},
+                                {type: 'EFORMS', code: 'download'},
+                            ]
+                        });
+                        this.currentContact.services.push(svc);
+                        sc.services.push({ serviceId: svc.id });
 
-                            this.saveCurrentContact().then(c => {
-                                this.dispatchEvent(new CustomEvent('eforms-download', {bubbles: true, composed: true, detail: {}}))
-                            })
-                        }).finally(() => {
-                            this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}}))
-                        })).catch(e => {
-                            console.log("---error upload attachment---", e)
+                        this.saveCurrentContact().then(c => {
+                            this.dispatchEvent(new CustomEvent('eforms-download', {bubbles: true, composed: true, detail: {}}))
                         })
+                    }).finally(() => {
+                        this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}}))
+                    })).catch(e => {
+                        console.log("---error upload attachment---", e)
+                    })
             }
 
             saveCurrentContact() {
@@ -407,6 +419,10 @@
 
             _showErrorNotification(response, content){
                 this.dispatchEvent(new CustomEvent('show-error-notification', {bubbles: true, composed: true, detail: {response: response, content: content}}))
+            }
+
+            _tabChanged(){
+                this.dispatchEvent(new CustomEvent('tab-changed', {bubbles: true, composed: true, detail: {tab: _.get(this, 'tabs', 0)}}))
             }
 
         }

@@ -296,11 +296,14 @@
                     </div>
                 </div>
                 <div class="eforms-menu-view">
-                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog"></ht-pat-eform-form-view>
+                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-tab-changed="_tabChanged"></ht-pat-eform-form-view>
                 </div>
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <template is="dom-if" if="[[isDocumentTab]]">
+                    <paper-button class="button button--other" on-tap="_joinDocument"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-join-doc','Join document',language)]]</paper-button>
+                </template>
                 <paper-button class="button button--save" on-tap="_sendForm"><iron-icon icon="icons:check"></iron-icon> [[localize('send','Send',language)]]</paper-button>
             </div>
         </paper-dialog>
@@ -382,6 +385,18 @@
                     errorInfo:{
                         type: Object,
                         value: () => {}
+                    },
+                    contacts:{
+                        type: Array,
+                        value: () => []
+                    },
+                    availableDocumentList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    isDocumentTab:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -402,6 +417,8 @@
                 this.set('selectedForm', {})
                 this.set('oAuthToken', {})
                 this.set('patientSumehr', null)
+                this.set('availableDocumentList', [])
+                this.set('isDocumentTab', false)
             }
 
             _initialize(){
@@ -417,6 +434,9 @@
                     this.$['eformDetailDialog'].open()
                     this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
                         this.set('hcp', hcp)
+                        return this._getDocuments()
+                    }).then(availableDocument => {
+                        this.set("availableDocumentList", availableDocument.map(ad => ad.document))
                         return this._generateSumehrV2()
                     }).then(sumehr => {
                         this.set('patientSumehr', sumehr)
@@ -508,6 +528,50 @@
 
             _closeEformsErrorNotification(){
                 this.$["eforms-notification"].classList.remove('notification')
+            }
+
+            _getDocuments(){
+                return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), this.patient )
+                    .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.map(singleContact.services, singleService => !_.trim(_.get(singleService,"content." + this.language + ".documentId")) ? false : {
+                        contact: singleContact,
+                        service: singleService,
+                        serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
+                        formId: _.trim(_.get(singleService,"formId")),
+                        date: parseInt(_.get(singleService,"valueDate")),
+                        dateAndTimeHr: moment(parseInt(_.trim(_.get(singleService,"valueDate")).substring(0,8)),"YYYYMMDD").format('DD/MM/YYYY') + " - " + _.trim(_.get(singleService,"valueDate")).substring(8,10) + ":" + _.trim(_.get(singleService,"valueDate")).substring(10,12),
+                        documentId: _.trim(_.get(singleService,"content." + this.language + ".documentId"))
+                    })))))
+                    .then(foundServices => !_.size(foundServices) ? Promise.resolve([foundServices, []]) : this.api.document().getDocuments({ids:_.map(foundServices,s=>s.documentId)}).then(foundDocuments=>[foundServices,foundDocuments]))
+                    .then(([foundServices,foundDocuments]) => _.compact(_.map(foundServices, fs => {
+                        const serviceDocument = _.find(foundDocuments, {id: _.trim(_.get(fs, "documentId"))})
+                        const documentExtension = _.trim(_.last(_.trim(_.get(serviceDocument,"name","")).split("."))).toLowerCase()
+                        return (
+                            ['jpg','jpeg','pdf','png','tif','tiff'].indexOf(documentExtension) === -1 ||
+                            !_.trim(_.get(serviceDocument,"id","")) ||
+                            !_.trim(_.get(serviceDocument,"attachmentId","")) ||
+                            !_.trim(_.get(serviceDocument,"secretForeignKeys",""))
+                        ) ? false : _.merge({}, _.omit(fs, ['documentId']), {document: serviceDocument})
+                    })))
+                    .then(servicesAndDocuments => Promise.all(servicesAndDocuments.map(sad => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), _.trim(_.get(sad.document, "id", "")), _.size(_.get(sad.document, "encryptionKeys", [])) ? _.get(sad.document, "encryptionKeys", []) : _.get(sad.document, "delegations", []))
+                            .then(({extractedKeys: enckeys}) => !!_.trim(_.get(sad.document,"id","")) && _.trim(_.get(sad.document,"attachmentId","")) ? this.api.document().getAttachment(_.trim(_.get(sad.document,"id","")), _.trim(_.get(sad.document,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>(_.merge(sad, {document:{decryptedContent:decryptedContent}}))).catch(e=>{console.log("ERROR with getAttachment: ",e); }) : sad)
+                        )).then(servicesAndDocuments => servicesAndDocuments)
+                    )
+                    .then(servicesAndDocuments => _
+                        .chain(servicesAndDocuments)
+                        .filter(i => !!_.trim(_.get(i,"document.id")) && !!parseInt(_.get(i,"document.decryptedContent.byteLength")) )
+                        .orderBy(['date'], ['desc'])
+                        .value()
+                    )
+            }
+
+            _tabChanged(e){
+                if(_.get(e, 'detail', null)){
+                    _.get(e, 'detail.tabs', 0) === 1 ? this.set('isDocumentTab', true) : this.set('isDocumentTab', false)
+                }
+            }
+
+            _joinDocument(){
+
             }
 
         }
