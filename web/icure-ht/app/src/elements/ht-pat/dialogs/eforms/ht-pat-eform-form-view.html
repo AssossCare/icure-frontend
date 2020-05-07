@@ -425,7 +425,6 @@
                 const promResolve = Promise.resolve()
 
                 return promResolve
-                    .then(() => this.set('isLoading', true))
                     .then(() => this._getFormAdr())
                     .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
                         .then(parsedXml => {
