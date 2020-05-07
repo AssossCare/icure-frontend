@@ -296,14 +296,19 @@
                     </div>
                 </div>
                 <div class="eforms-menu-view">
-                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" linked-documents="[[linkedDocuments]]" unlinked-documents="[[unlinkedDocuments]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
+                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
                 </div>
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                <template is="dom-if" if="[[isSelectedDocument]]">
-                    <paper-button class="button button--other" on-tap="_joinDocument"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-join-doc','Join document',language)]]</paper-button>
+                <template is="dom-if" if="[[linkBtnAvailable]]">
+                    <paper-button class="button button--other" on-tap="_addFormAttachment"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-join-doc','Join document',language)]]</paper-button>
                 </template>
+                <!--
+                <template is="dom-if" if="[[unlinkBtnAvailable]]">
+                    <paper-button class="button button--other" on-tap="_removeFormAttachment"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-remove-doc','Remove document',language)]]</paper-button>
+                </template>
+                -->
                 <template is="dom-if" if="[[isSelectedForm]]">
                     <paper-button class="button button--save" on-tap="_sendForm"><iron-icon icon="icons:check"></iron-icon> [[localize('send','Send',language)]]</paper-button>
                 </template>
@@ -366,7 +371,8 @@
                         type: Object,
                         value: {
                             healthConnect: null,
-                            eForms: null
+                            eForms: null,
+                            credentials: null
                         }
                     },
                     formList:{
@@ -397,21 +403,17 @@
                         type: Array,
                         value: () => []
                     },
-                    isSelectedDocument:{
-                        type: Boolean,
-                        value: false
-                    },
                     selectedDocumentIdToBeImported:{
                         type: String,
                         value: null
                     },
-                    unlinkedDocuments:{
-                        type: Array,
-                        value: () => []
+                    linkBtnAvailable:{
+                        type: Boolean,
+                        value: false
                     },
-                    linkedDocuments:{
-                        type: Array,
-                        value: () => []
+                    unlinkBtnAvailable:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -433,22 +435,22 @@
                 this.set('oAuthToken', {})
                 this.set('patientSumehr', null)
                 this.set('availableDocumentList', [])
-                this.set('isSelectedDocument', false)
                 this.set('isSelectedForm', false)
                 this.set('selectedDocumentIdToBeImported', null)
-                this.set('linkedDocuments', [])
-                this.set('unlinkedDocuments', [])
+                this.set('unlinkBtnAvailable', false)
+                this.set('linkBtnAvailable', false)
             }
 
             _initialize(){
                 this._reset()
                 this.set('eformsHost.healthConnect', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.healthconnect.be" : "https://healthconnect.be")
                 this.set('eformsHost.eForms', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.e-forms.be" : "https://e-forms.be")
+                this.set('eformsHost.credentials', 'ZmlnYWM6bjdFLjJbWVBRakAiOFc2Slc7NGM=')
             }
 
             openDialog(){
                 this._reset()
-                if(_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) && _.get(this.api, 'fhcTokenInfo.tokenBase64', null)) {
+                if(_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null)) {
                     this.set('isLoading', true)
                     this.$['eformDetailDialog'].open()
                     this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
@@ -456,7 +458,6 @@
                         return this._getDocuments()
                     }).then(availableDocument => {
                         this.set("availableDocumentList", availableDocument.map(ad => ad.document))
-                        this.set('unlinkedDocuments', availableDocument.map(ad => ad.document))
                         return this._generateSumehrV2()
                     }).then(sumehr => {
                         this.set('patientSumehr', sumehr)
@@ -497,12 +498,16 @@
                     mode: "cors",
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded; charset=ISO-8859-1',
-                        Authorization: 'Basic '+btoa('figac:n7E.2[YPQj@"8W6JW;4c'),
+                        Authorization: 'Basic '+_.get(this, 'eformsHost.credentials', null),
                         Accept: '*/*',
                         'Accept-Language': this.language+"-BE"
                     },
-                    body: 'sts-token='+_.get(this.api, 'fhcTokenInfo.tokenBase64', null)+'&grant_type=sts_token&integratorVersion=2.3.7'
+                    body: 'sts-token='+this._getToken()+'&grant_type=sts_token&integratorVersion=2.3.7'
                 })
+            }
+
+            _getToken(){
+                return this.api.crypto().utils.base64url(new Uint8Array(Buffer.from(_.get(this.api, 'fhcTokenInfo.token', null))))
             }
 
             _getFormDefinition(){
@@ -586,18 +591,26 @@
 
             _selectedFormChanged(){
                 _.get(this, 'selectedForm.id.name', null) ? this.set('isSelectedForm', true) : this.set('isSelectedForm', false)
-                this.set('isSelectedDocument', false)
+                this.set("unlinkBtnAvailable", false)
+                this.set("linkBtnAvailable", false)
             }
 
             _selectedDocument(e){
                 if(_.get(e, 'detail', null)){
-                    _.get(e, 'detail.documentId', null) ? this.set('isSelectedDocument', true) : this.set('isSelectedDocument', false)
+                    this.set("unlinkBtnAvailable", false)
+                    this.set("linkBtnAvailable", false)
+                    const selectedDoc = _.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(e, 'detail.documentId', null))
+                    _.get(selectedDoc, 'uploadedDocumentId', null) ? this.set('unlinkBtnAvailable', true) : this.set("linkBtnAvailable", true)
                     this.set('selectedDocumentIdToBeImported',  _.get(e, 'detail.documentId', null))
                 }
             }
 
-            _joinDocument(){
-                this.$['htPatEformFormView']._joinDocument()
+            _addFormAttachment(){
+                this.$['htPatEformFormView']._addFormAttachment()
+            }
+
+            _removeFormAttachment(){
+                this.$['htPatEformFormView']._removeFormAttachment(_.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', null)))
             }
 
         }

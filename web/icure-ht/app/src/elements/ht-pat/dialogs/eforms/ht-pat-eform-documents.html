@@ -316,7 +316,7 @@
                                     <div class="dateTit">[[localize('dat','Date',language)]]</div>
                                     <div class="nameTit">[[localize('name','Name',language)]]</div>
                                 </div>
-                                <template is="dom-repeat" items="[[linkedDocuments]]" as="doc" id="linkedDocList">
+                                <template is="dom-repeat" items="[[linkedDocumentList]]" as="doc" id="linkedDocList">
                                     <collapse-button>
                                         <paper-item slot="sublist-collapse-item" id$="[[doc.id]]" data-item$="[[doc]]" aria-selected="[[selected]]" class$="menu-trigger menu-item [[isIronSelected(selected)]]" on-tap="_showDocument">
                                             <div id="subMenu-linked-doc" class="table-line-menu">
@@ -339,7 +339,7 @@
                                     <div class="dateTit">[[localize('dat','Date',language)]]</div>
                                     <div class="nameTit">[[localize('name','Name',language)]]</div>
                                 </div>
-                                <template is="dom-repeat" items="[[unlinkedDocuments]]" as="doc" id="availableDocList">
+                                <template is="dom-repeat" items="[[unlinkedDocumentList]]" as="doc" id="availableDocList">
                                     <collapse-button>
                                         <paper-item slot="sublist-collapse-item" id$="[[doc.id]]" data-item$="[[doc]]" aria-selected="[[selected]]" class$="menu-trigger menu-item [[isIronSelected(selected)]]" on-tap="_showDocument">
                                             <div id="subMenu-doc-to-link" class="table-line-menu">
@@ -426,11 +426,15 @@
                         type: Object,
                         value: () => {}
                     },
-                    unlinkedDocuments:{
+                    availableDocumentList:{
                         type: Array,
                         value: () => []
                     },
-                    linkedDocuments:{
+                    linkedDocumentList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    unlinkedDocumentList:{
                         type: Array,
                         value: () => []
                     }
@@ -461,10 +465,20 @@
             }
 
             _refreshLinkedAndAvailableDocuments() {
+                this._getUnLinkedDocument()
+                this._getLinkedDocument()
                 return setTimeout(() => {
                     this.shadowRoot.querySelector('#linkedDocList') && this.shadowRoot.querySelector('#linkedDocList').render()
                     this.shadowRoot.querySelector('#availableDocList') && this.shadowRoot.querySelector('#availableDocList').render()
                 }, 100)
+            }
+
+            _getUnLinkedDocument(){
+                this.set('unlinkedDocumentList', _.get(this, 'availableDocumentList', []).filter(doc => !_.get(doc, 'uploadedDocumentId', null)))
+            }
+
+            _getLinkedDocument(){
+                this.set('linkedDocumentList', _.get(this, 'availableDocumentList', []).filter(doc => _.get(doc, 'uploadedDocumentId', null)))
             }
 
         }
