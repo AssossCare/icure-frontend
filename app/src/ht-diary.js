@@ -103,7 +103,7 @@ class HtMsg extends PolymerElement {
       super.ready()
   }
 
-  loadMikronoIframe(proxy) {
+    loadMikronoIframe(proxy) {
       this.set("showAgenda", true);
       this.set("mikronoUrl", `${proxy}/iCureShortcut.jsp?id=${this.user.id}`);
     }

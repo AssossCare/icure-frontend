@@ -1880,7 +1880,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   .then(rep => {
                       if(rep.ok){
                           this.set('routeData.page', "diary")
-                          setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(this.mikronoProxy), 100)
+                          setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
                       }
                   })
 
@@ -2382,7 +2382,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                           .then(rep => {
                               if(rep.ok){
                                   this.set('routeData.page', "diary")
-                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(this.mikronoProxy), 100)
+                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
                               }
                           })
                   }
@@ -2409,7 +2409,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                           this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
                                               if(rep.ok){
                                                   this.set('routeData.page', "diary")
-                                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(this.mikronoProxy), 100)
+                                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
                                               }
                                           })
                                       }
