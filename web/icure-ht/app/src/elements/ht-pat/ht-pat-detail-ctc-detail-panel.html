@@ -4254,7 +4254,7 @@
 											{type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be" },
 											{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
 										]
-									}).then(resp => console.log(resp))
+									})
 								}) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://pcr-test-prescription-web.acc.pub.vascloud.be") : window.open("https://pcr-test-prescription-web.prd.pub.vascloud.be")
 			}
 
