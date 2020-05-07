@@ -11,6 +11,7 @@ import '../../styles/scrollbar-style.js';
 import '../../styles/paper-tabs-style.js';
 import '../../styles/shared-styles.js';
 import '../../styles/app-theme-tz.js';
+import {Base64} from "js-base64";
 
 class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement))  {
     static get template() {
@@ -444,13 +445,15 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         </div>
                         <div class="mig-menu-list-header-info">
                             <div class="mig-name">
-                                <span class="hub">Pricare Agenda to Mikrono</span>
+                                <span class="hub">Patient and data fix</span>
                             </div>
                         </div>
                     </div>
                     <div class="hub-submenu-container">
                         <ht-spinner active="[[isLoading]]"></ht-spinner>
                        <paper-button on-tap="doPatientTelFix" class="button" >Patient tel fix</paper-button>
+                       <paper-button on-tap="doDocSfkFix" class="button" >Document sfk fix</paper-button>
+                       <paper-button on-tap="doLabImportFix" class="button" >Lab import fix</paper-button>
                     </div>
                 </div>
                 <div class="mig-menu-view">
@@ -458,6 +461,14 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     <template is="dom-if" if="[[patientTelFix]]">
                         <paper-button on-tap="startPatientTelFix" class="button" >Fix patients</paper-button>
                         <div>Processing [[posPat]] of [[numPats]]</div>
+                    </template>
+                    <template is="dom-if" if="[[docSfkFix]]">
+                        <paper-button on-tap="startDocSfkFix" class="button" >Fix sfk docs</paper-button>
+                        <div>Processing [[posFix]] of [[numFix]]</div>
+                    </template>
+                    <template is="dom-if" if="[[labImportFix]]">
+                        <paper-button on-tap="startLabImportFix" class="button" >Fix import labs</paper-button>
+                        <div>Processing [[posFix]] of [[numFix]]</div>
                     </template>                
                 </div>
             </div>
@@ -489,11 +500,27 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 type: Boolean,
                 value: false
             },
+            docSfkFixFix:{
+                type: Boolean,
+                value: false
+            },
+            labImportFixFix:{
+                type: Boolean,
+                value: false
+            },
             numPats:{
                 type: Number,
                 value: 0
             },
             posPat:{
+                type: Number,
+                value:0
+            },
+            numFix:{
+                type: Number,
+                value: 0
+            },
+            posFix:{
                 type: Number,
                 value:0
             }
@@ -519,6 +546,20 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     doPatientTelFix(){
         this.set('patientTelFix', true);
+        this.set('docSfkFix', false);
+        this.set('labImportFix', false);
+    }
+
+    doDocSfkFix(){
+        this.set('patientTelFix', false);
+        this.set('docSfkFix', true);
+        this.set('labImportFix', false);
+    }
+
+    doLabImportFix(){
+        this.set('patientTelFix', false);
+        this.set('docSfkFix', false);
+        this.set('labImportFix', true);
     }
     
     startPatientTelFix() {
@@ -562,22 +603,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 prom.then(resList =>{
                     Promise.all(resList).then(res => console.log(res))
                 })
-                //2. per patient:
-                // myPatients.map(pat => {
-                //     this.api.patient().getPatientWithUser(this.user, pat.id).then(pat =>{
-                //         console.log("before", pat.addresses);
-                //         //2.1 remove empty telecoms
-                //         //2.2 set mobile telecom to mobile (detect gsm numbers)
-                //         pat.addresses.forEach(addr => {
-                //             addr.telecoms = addr.telecoms.filter(tc => !!tc.telecomNumber && tc.telecomNumber !=="")
-                //             addr.telecoms.filter(tc => tc && tc.telecomType && tc.telecomType === "phone").forEach(tc => {
-                //                 tc.telecomType = this.isMobileNumber(tc.telecomNumber) ? "mobile" : tc.telecomType
-                //             })
-                //         })
-                //         console.log("after", pat.addresses);
-                //         this.api.patient().modifyPatientWithUser(this.user, pat).then(patient => this.api.register(patient, 'patient'))
-                //     })
-                // })
             })
         })
     }
@@ -616,6 +641,203 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     })
                     .catch(()=>{ return Promise.resolve(); })
         )||[];
+
+    }
+
+    startDocSfkFix(){
+       //per patient
+       //per contact
+       //per doc
+        let iPos = 0
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(response =>{
+            this.set("hcp",response);
+            let hcpId = this.hcp.parentId ? this.hcp.parentId : this.hcp.id;
+            this.getPatientsByHcp(hcpId).then(myPatients => {
+                console.log("# patients", myPatients.length)
+                this.set("numPats", myPatients.length)
+                let prom = Promise.resolve([])
+                _.map(myPatients, pat => {
+                    prom = prom
+                        .then(promiseCarrier => this.api.patient().getPatientWithUser(this.user, pat.id).then(pat =>{
+                            this._getDirectoryDocuments(pat).then(docs => {
+                                console.log("docs", docs)
+                                return docs
+                            })
+                        }))
+                })
+                prom.then(resList =>{
+                    Promise.all(resList).then(res => console.log(res))
+                })
+            })
+        })
+    }
+
+    startLabImportFix(){
+        //per patient
+        //per contact (optional ?)
+        //per doc
+    }
+
+    _YYYYMMDDHHmmssToDDMMYYYY(inputValue) {
+        return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY') : ""
+    }
+
+    _getPrettifiedHcps(hcpIds=null) {
+
+        const promResolve = Promise.resolve()
+
+        return this.api.hcparty().getHealthcareParties((Array.isArray(hcpIds) && !!_.size(hcpIds)) ? hcpIds.join(",") : (typeof hcpIds === "string" && !!_.size(hcpIds)) ? hcpIds : _.get(this,"user.healthcarePartyId",""))
+            .then(hcps => _.map(hcps, hcp => {
+                const addressData = _.find(_.get(hcp,"addresses",[]), {addressType:"work"}) || _.find(_.get(hcp,"addresses",[]), {addressType:"home"}) || _.get(hcp,"addresses[0]",[])
+                return _.merge({}, hcp, _.mapValues({
+                    address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
+                    postalCode: _.trim(_.get(addressData,"postalCode","")),
+                    city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
+                    country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
+                    phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
+                    mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
+                    email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
+                    firstName: this._upperFirstAll(_.get(hcp,"firstName","")),
+                    lastName: this._upperFirstAll(_.get(hcp,"lastName","")),
+                    nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp,"nihii",""))),
+                    ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp,"ssin",""))),
+                }, i => typeof i === "string" ? !!_.trim(i) ? _.trim(i) : '-' : i))
+            }))
+            .then(hcps => {
+                const specialityIds = _.compact(_.uniq(_.flatten(_.map(hcps, i => _.map(_.get(i, "specialityCodes", []), sc => _.trim(_.get(sc, "id", "")))))))
+                return !_.size(specialityIds) ? hcps : this.api.code().getCodes(specialityIds.join(",")).then(specialityCodes => _.map(hcps, hcp => _.merge(hcp, {specialitiesHr: _.compact(_.map(_.get(hcp, "specialityCodes", []), sc => _.trim(_.get(_.find(specialityCodes, {id: _.trim(_.get(sc, "id", ""))}), "label." + this.language, "")))).join(", ")})))
+            }).catch(()=>promResolve)
+
+    }
+
+    _getDirectoryDocuments(patientObject) {
+
+        const promResolve = Promise.resolve();
+
+        return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), patientObject )
+            .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.concat(
+                // Target documentId in svc
+                _.map(singleContact.services, singleService => !( _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")) )? false : {
+                    contact: singleContact,
+                    service: singleService,
+                    serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
+                    date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                    dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                    documentId: _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")),
+                }),
+                // Target ehealthbox message
+                (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+                    contact: singleContact,
+                    services: singleContact.services,
+                    serviceTitle: _.trim(_.get(singleContact,"descr")),
+                    date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                    dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                    documentId: _.get(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}), "id",""),
+                    isLabResultOrProtocol: true,
+                }),
+                // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
+                (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+                    contact: singleContact,
+                    services: singleContact.services,
+                    serviceTitle: _.trim(_.get(singleContact,"descr")),
+                    date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                    dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                    documentId:null,
+                    isFromMigration: true,
+                })
+            )))))
+            .then(foundServicesWithDocumentId => !_.size(foundServicesWithDocumentId) ? Promise.resolve([foundServicesWithDocumentId, []]) : this.api.document().getDocuments({ids:_.uniq(_.compact(_.map(foundServicesWithDocumentId,s=>_.trim(_.get(s,"documentId","")))))}).then(foundDocuments=>[foundServicesWithDocumentId,foundDocuments]))
+            .then(([foundServicesWithDocumentId,foundDocuments]) => _.compact(_.map(foundServicesWithDocumentId, fswd => {
+                const serviceDocument = _.find(foundDocuments, {id: _.trim(_.get(fswd, "documentId"))})
+                return !!_.get(fswd,"isFromMigration",false) ? fswd : (!_.trim(_.get(serviceDocument,"id","")) || !_.trim(_.get(serviceDocument,"attachmentId","")) ) ? false : _.merge({}, fswd, {document: serviceDocument})
+            })))
+            .then(contactsAndDocuments => _.chain(contactsAndDocuments).filter(i => !!_.get(i,"isFromMigration",false) || !!_.trim(_.get(i,"document.id"))).orderBy(['date'], ['desc']).value())
+            .then(contactsAndDocuments => Promise.all(_.compact(_.map(contactsAndDocuments, cad => !_.trim(_.get(cad,"document.id")) ? false : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"_data.currentHcp.id",""), _.get(cad,"document.id"), _.get(cad,"document.cryptedForeignKeys")).then(x=>({documentId:_.get(cad,"document.id"), messageId:_.trim(_.head(_.get(x, "extractedKeys")))})).catch(()=>null)))).then(documentsIdsAndMessagesIds => ([contactsAndDocuments,documentsIdsAndMessagesIds])))
+            .then(([contactsAndDocuments,documentsIdsAndMessagesIds]) => !_.size(documentsIdsAndMessagesIds) ? contactsAndDocuments : Promise.all(_.map(documentsIdsAndMessagesIds, it => this.api.message().getMessage(_.get(it,"messageId")).then(msg => _.merge({}, it,{message:msg})).catch(()=>it)))
+                .then(messagesLinkedToDocuments => Promise.all(_.map(messagesLinkedToDocuments, msgLinkedToDoc => {
+
+                        const msg = _.merge({}, _.get(msgLinkedToDoc,"message",{}), {linkedDocumentId: _.get(msgLinkedToDoc,"documentId")})
+                        const cryptedInfo = _.trim(_.get(msg,"metas.cryptedInfo",""));
+                        const dataToDecrypt = ( ["DOC:IMPORT:IN", "DOC:SCAN:IN"].indexOf( _.trim(_.get(msg,"transportGuid",""))) > -1 ) && !!cryptedInfo ? new Uint8Array(this.api.crypto().utils.base64toArrayBuffer(cryptedInfo)) :
+                            ( ["HUB:IN:IMPORTED-DOCUMENT"].indexOf( _.trim(_.get(msg,"transportGuid",""))) > -1 ) && !!cryptedInfo ? this.api.crypto().utils.text2ua(Base64.decode(cryptedInfo)) :
+                                ( _.trim(_.get(msg,"transportGuid","")).indexOf("INBOX") > -1 ) && !!_.trim(_.get(msg,"metas.annexesInfos","")) ? this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(msg,"metas.annexesInfos","")))) :
+                                    false;
+                        let documentList = []; try{ documentList = JSON.parse(_.trim(_.get(msg,"metas.documentListJson",{}))); } catch(e) {}
+
+                        return !dataToDecrypt ? msg : this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, msg, dataToDecrypt)
+                            .then(uaDecryptedContent => JSON.parse(this.api.crypto().utils.ua2text(uaDecryptedContent)))
+                            .then(decryptedContent => _.merge(msg,{metas:{
+                                    decryptedInfo: !!Array.isArray(decryptedContent) ? _.head(decryptedContent) : decryptedContent,
+                                    documentList: documentList,
+                                    isScanned:(((msg.status & (1 << 24)) !== 0)||msg.transportGuid === "DOC:SCAN:IN"),
+                                    isImported:((msg.status & (1 << 25)) !== 0)
+                                }}))
+                            .catch(()=>msg)
+
+                    }))
+                        .then(messagesLinkedToDocuments => Promise.all(_.map(messagesLinkedToDocuments, msg => {
+                            const targetDocument = _.get(_.find(contactsAndDocuments, {documentId:_.get(msg,"linkedDocumentId","")}),"document", {})
+                            const targetMessageDocumentList = _.find(_.get(msg,"metas.documentList",[]), {id:_.get(msg,"linkedDocumentId","")})
+                            return !_.trim(_.get(targetMessageDocumentList,"comment","")) ? Promise.resolve(msg) : this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, targetDocument, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(targetMessageDocumentList,"comment",""))))).then(uaDecryptedContent => msg.metas.documentList = _.merge(targetMessageDocumentList, {decryptedComment: this.api.crypto().utils.ua2text(uaDecryptedContent)})).then(()=>msg).catch(()=>msg)
+                        })))
+                        .then(decryptedMessages => _.map(contactsAndDocuments, it => _.merge({}, it, {message:_.find(decryptedMessages,{linkedDocumentId:_.get(it,"documentId")})})))
+                        .catch(e=>{ console.log("ERROR _getMessages", e); return promResolve; })
+
+                ))
+            .then(datas => this._getPrettifiedHcps(_.uniq(_.compact(_.map(datas, data => _.trim(_.get(data,"contact.responsible","")))))).then(hcps=>([datas,hcps])))
+            .then(([datas,hcps]) => _.map(datas, data => {
+
+                const documentTypeFromSubContactsStatus = !_.get(data,"isFromMigration",false) ? null :
+                    ((_.get(data,"contact.subContacts[0].status",0) & (1 << 0)) !== 0 ) ? this.localize("cd-transaction-labresult", "Laboratory result", this.language) :
+                        ((_.get(data,"contact.subContacts[0].status",0) & (1 << 5)) !== 0 ) ? this.localize("prot", "Protocol", this.language) :
+                            null
+
+                const transactionCodeLabelHr = !!_.get(data,"isFromMigration",false) && !!_.trim(documentTypeFromSubContactsStatus) ? _.trim(documentTypeFromSubContactsStatus) :
+                    !!_.get(data,"isLabResultOrProtocol",false) || !!_.get(data,"isFromMigration",false) ?
+                        _.trim(_.get(_.find(_.get(this,"_data.codes['CD-TRANSACTION']",[]), {code:_.get(_.find(_.get(data,"contact.tags",[]), {type:"CD-TRANSACTION"}),"code","")}), "labelHr","")) :
+                        _.trim(_.get(data,"message.transportGuid")) === "PRESCRIPTION:ITT:ARCHIVE" ? this.localize("medicalCertificate","Medical certificate",this.language) :
+                            _.trim(_.get(data,"message.transportGuid")) === "PRESCRIPTION:KINE:ARCHIVE" ? this.localize("requestForKineCare_header1","Kinesitherapy prescription",this.language) :
+                                _.trim(_.get(data,"message.transportGuid")) === "PRESCRIPTION:NURSE:ARCHIVE" ? this.localize("requestForNurseCare_header1","Nursing prescription",this.language) :
+                                    _.trim(_.get(data,"message.transportGuid")) === "PRESCRIPTION:IMAGING:ARCHIVE" ? this.localize("requestForImagingExam","Medical imaging exam",this.language) :
+                                        _.trim(_.get(data,"message.transportGuid")) === "MEDEX:OUT:PDF" ? this.localize("medicalCertificate","Medical certificate",this.language) + " Medex" :
+                                            _.trim(_.get(data,"message.transportGuid")) === "MEDEX:OUT:KHMER" ? "KHMER - " + this.localize("medicalCertificate","Medical certificate",this.language) + " Medex" :
+                                                !!_.size(_.get(data,"service.tags",[])) ? _.trim(_.get(_.find(_.get(this,"_data.codes['CD-TRANSACTION']",[]), {code:_.get(_.find(_.get(data,"service.tags",[]), {type:"CD-TRANSACTION"}),"code","")}), "labelHr","")) :
+                                                    !!_.size(_.get(data,"contact.tags",[])) ? _.trim(_.get(_.find(_.get(this,"_data.codes['BE-CONTACT-TYPE']",[]), {code:_.get(_.find(_.get(data,"contact.tags",[]), {type:"BE-CONTACT-TYPE"}),"code","")}), "labelHr","")) :
+                                                        ""
+
+                const inComingOrOutGoing = !!_.get(data,"isFromMigration",false) ? "inComing" :
+                    ( _.trim(_.get(_.find(_.get(data,"service.tags",[]),{type:"HUB-TRANSACTION"}),"code","")).toLowerCase() === "download" || _.trim(_.get(data,"message.transportGuid","")).indexOf("HUB:IN:") > -1 ) ? 'inComing' :
+                        (_.trim(_.get(_.find(_.get(data,"service.tags",[]),{type:"HUB-TRANSACTION"}),"code","")).toLowerCase() === "upload" || _.trim(_.get(data,"message.transportGuid","")).indexOf("HUB:OUT:") > -1 )? 'outGoing' :
+                            _.trim(_.get(data, "service.label")).toLowerCase().indexOf("imported document") > -1 ? 'inComing' :
+                                !!_.size(_.find(_.get(data,"service.tags",[]), {type:"originalEhBoxMessageId"})) ? 'inComing' :
+                                    !!_.size(_.find(_.get(data,"service.tags",[]), {type:"outgoingDocument"})) ? 'outGoing' :
+                                        (!!_.get(data,"isLabResultOrProtocol",false) || !!_.trim(_.get(data,"message.fromAddress","")) || !!_.get(data,"isFromMigration",false)) ? 'inComing' :
+                                            'outGoing'
+
+                const documentOrigin = (!!_.size(_.find(_.get(data,"service.tags",[]),{type:"HUB-TRANSACTION"})) || _.trim(_.get(data,"message.transportGuid","")).indexOf("HUB:") > -1 ) ? 'hub' :
+                    (!!parseInt(_.get(data,"message.metas.documentList.scanned",0)) || !!_.get(data,"message.metas.isScanned",false) || _.trim(_.get(data,"message.transportGuid","")) === "DOC:SCAN:IN") ? 'scannedDoc' :
+                        _.trim(_.get(data, "service.label")).toLowerCase().indexOf("imported document") > -1 ? 'importedDoc' :
+                            !!_.size(_.find(_.get(data,"service.tags",[]), {type:"originalEhBoxMessageId"})) ? 'eHealthbox' :
+                                (!!_.get(data,"isLabResultOrProtocol",false) || !!_.trim(_.get(data,"message.fromAddress",""))) ? 'eHealthbox' :
+                                    !!_.size(_.find(_.get(data,"service.tags",[]), {type:"outgoingDocument"})) ? 'patientFile' :
+                                        'patientFile'
+
+                return _.merge({},data, {
+                    description: (!!_.get(data,"isLabResultOrProtocol",false) || !!_.get(data,"isFromMigration",false)) && !!_.trim(_.get(data,"contact.descr","")) ? _.trim(_.get(data,"contact.descr","")) :
+                        (!!_.get(data,"isFromMigration",false) && !_.trim(_.get(data,"contact.descr","")) && !!_.trim(_.get(data,"contact.subContacts[0].descr",""))) ? _.trim(_.get(data,"contact.subContacts[0].descr","")) :
+                            (!!_.get(data,"isFromMigration",false) && !_.trim(_.get(data,"contact.descr","")) && !!_.trim(_.get(data,"contact.subContacts[0].protocol",""))) ? this.localize("prot", "Protocol", this.language) + " " + _.trim(_.get(data,"contact.subContacts[0].protocol","")) :
+                                !!_.trim(_.get(data,"message.metas.documentList.decryptedComment","")) ? _.trim(_.get(data,"message.metas.documentList.decryptedComment","")) :
+                                    !!_.trim(_.get(data,"document.name","")) ? _.trim(_.get(data,"document.name","")) :
+                                        _.trim(_.get(data,"documentId","")),
+                    typeHr: !!_.trim(transactionCodeLabelHr) ? _.trim(transactionCodeLabelHr) : _.trim(_.get(data, "serviceTitle")),
+                    inComingOutGoingHr: this.localize(inComingOrOutGoing, inComingOrOutGoing, this.language),
+                    originHr: this.localize("documentsDirectoryOrigin_" + documentOrigin, documentOrigin, this.language) + (!!_.trim(_.get(data,"message.fromAddress","")) ? " - " + _.trim(_.get(data,"message.fromAddress","")) : ""),
+                    authorHr: _.get(_.find(hcps, {id:_.trim(_.get(data,"contact.responsible",""))}),"lastName","") + " " + _.get(_.find(hcps, {id:_.trim(_.get(data,"contact.responsible",""))}),"firstName",""),
+                    authorSpecialitiesHr: _.get(_.find(hcps, {id:_.trim(_.get(data,"contact.responsible",""))}),"specialitiesHr",""),
+                    // recipientHr: "Dr. Maxime Mennechet", /* Only available in eHealthbox while sent item is not deleted yet */
+                })
+            }))
+            .catch(e=>{ console.log("ERROR _getDirectoryDocuments", e); return promResolve; })
 
     }
 }
