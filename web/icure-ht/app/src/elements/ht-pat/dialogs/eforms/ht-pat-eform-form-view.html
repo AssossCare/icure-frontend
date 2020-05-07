@@ -79,9 +79,7 @@
             <page>
                 <div class="pageContent">
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
-                    <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                        <template is="dom-if" if="[[embededFormDomIf]]"><embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/></template>
-                    </template>
+                    <template is="dom-if" if="[[embededFormDomIf]]" restamp="true"><embed id="embededForm" src="[[selectedFormInfo.clientUrl]]" class="formContainer"/></template>
                 </div>
             </page>
             <page>
@@ -428,17 +426,20 @@
                     .then(() => this._getFormAdr())
                     .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
                         .then(parsedXml => {
+                            this.set('isLoading', true)
                             const pdf = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/pdf"))
                             return this._importDocumentIntoPatient(_.head(_.get(pdf, 'Content', [])), _.head(_.get(pdf, 'Name', [])), _.head(_.get(pdf, 'MimeType', []))).then(() => parsedXml).catch(() => parsedXml)
                         })
                     )
-                    .then(parsedXml => {
-                        console.log("parsedXml", parsedXml)
-                        const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
-                        const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
-                        return this._sendFormUsingEhBox(parsedXml)
-                    })
-                    .finally(() => (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
+
+                    // console.log("parsedXml", parsedXml)
+                    // const eform = _.get(parsedXml, 'ADR.Attachment', []).find(att => _.get(att, 'MimeType', []).find(mt => mt === "application/xml"))
+                    // const recipient = _.get(this.selectedForm, 'fixedRecipient',[])
+
+                    .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
+                        .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
+                        .then(sendMessageResponse => !sendMessageResponse ? this.set('isLoading', false) : (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
+                    )
 
             }
 
@@ -511,6 +512,12 @@
                 return (this.currentContact.rev ? this.api.contact().modifyContactWithUser(this.user, this.currentContact) : this.api.contact().createContactWithUser(this.user, this.currentContact)).then(c=>this.api.register(c,'contact')).then(c => (this.currentContact.rev = c.rev) && c);
             }
 
+            _arrayBufferToByteArray(arrayBuffer) {
+                let fileByteArray = [];
+                new Uint8Array(arrayBuffer).forEach(int8 => fileByteArray.push(int8));
+                return fileByteArray;
+            }
+
             _sendFormUsingEhBox(parsedXml) {
 
                 const promResolve = Promise.resolve()
@@ -523,13 +530,13 @@
                 const subject = _.trim(_.get(parsedXml, "ADR.Subject[0]", ""))
                 const annexes = _.compact(_.map(_.get(parsedXml, "ADR.Attachment", []), it => {
                     const filename = _.trim(_.get(it, "Name[0]", this.api.crypto().randomUuid()))
-                    const attachmentByteArray = this.api.crypto().utils.base64toByteArray(_.get(it, "Content[0]"))
+                    const attachmentContent = this._arrayBufferToByteArray(this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(Base64.decode(_.get(it, "Content[0]")))))
                     return !_.trim(_.get(it, "Content[0]")) ? false : {
-                        content: attachmentByteArray,
-                        filename: filename,
-                        mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain")),
                         title: filename,
-                        // size: _.size(attachmentByteArray)
+                        filename: filename,
+                        content: attachmentContent,
+                        mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain")),
+                        size: _.get(attachmentContent,"byteLength",0)
                     }
                 }))
 
@@ -562,7 +569,7 @@
                         }
                     }))
                     .then(recipients => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp => [currentHcp, recipients]))
-                    .then(([currentHcp, recipients]) => [currentHcp, recipients, {
+                    .then(([currentHcp, recipients]) => _.merge({}, {
                         id: this.api.crypto().randomUuid(),
                         publicationId: publicationId,
                         publicationDateTime: parseInt(moment().format('YYYYMMDD')),
@@ -576,7 +583,7 @@
                             "CM-AuthorName": (!_.trim(_.get(currentHcp, "lastName", "")) && !_.trim(_.get(currentHcp, "firstName", ""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
                             "CM-RecipientID": _.trim(_.get(recipients, "[0].id", "")),
                             "CM-RecipientIDType": _.trim(_.get(recipients, "[0].type", "NIHII")),
-                            "CM-RecipientName": recipientsName,
+                            "CM-RecipientName": _.get(recipients,"[0].name", null),
                             "CM-EhrMessage": false,
                             "CM-EhrMessageType": "Functionnal",
                             "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
@@ -612,23 +619,20 @@
                         },
                         fromHealthcarePartyId: _.get(currentHcp, "id", ""),
                         status: messageStatus
-                    }])
-                    .then(([currentHcp, recipients, message]) => {
-
-                        // EhBox won't allow for empty values
+                    }))
+                    .then(message => _.merge({}, message, {customMetas:{
+                        "CM-SenderID": _.get(message, "customMetas.CM-AuthorID",""),
+                        "CM-SenderIDType": _.get(message, "customMetas.CM-AuthorIDType",""),
+                        "CM-SenderType": _.get(message, "customMetas.CM-AuthorType",""),
+                        "CM-SenderLastName": _.get(message, "customMetas.CM-AuthorLastName",""),
+                        "CM-SenderFirstName": _.get(message, "customMetas.CM-AuthorFirstName",""),
+                        "CM-SenderName": _.get(message, "customMetas.CM-AuthorName","")
+                    }}))
+                    .then(message => {
                         Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
-
-                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, usePublicationReceipt, useReceivedReceipt, useReadReceipt)
-                            .then(x => sendMessageResponse = x)
-                            .catch(x => sendMessageResponse = x)
-                            .finally(() => {
-                                console.log("sendMessageResponse", sendMessageResponse);
-                                // return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
-                                return this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))
-                            })
-
+                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, usePublicationReceipt, useReceivedReceipt, useReadReceipt).catch(e => null)
                     })
-                    .catch(e => this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:this.localize("sen_error", "Message could not be sent", this.language)}})))
+                    .catch(e => null)
 
             }
 
