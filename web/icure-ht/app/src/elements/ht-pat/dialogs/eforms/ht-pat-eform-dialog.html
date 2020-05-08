@@ -445,14 +445,14 @@
             _initialize(){
                 this._reset()
 
-                // this.set('eformsHost.healthConnect', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.healthconnect.be" : "https://healthconnect.be")
-                // this.set('eformsHost.healthConnect', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.healthconnect.be" : "https://services.healthconnect.be/iamWeb")
-                this.set('eformsHost.healthConnect', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.healthconnect.be" : "https://services.healthconnect.be")
+                // Could be https://healthconnect.be for prod
+                this.set('eformsHost.healthConnect', _.get(_.get(this, 'user.properties', []).find(p => _.get(p, 'type.identifier', null) === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.healthconnect.be" : "https://services.healthconnect.be")
 
-                this.set('eformsHost.eForms', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc.e-forms.be" : "https://e-forms.be")
+                // Could be https://acc.e-forms.be (acc) and https://e-forms.be (prod)
                 //this.set('eformsHost.eForms', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://acc-services.e-forms.be" : "https://services.e-forms.be")
 
-                this.set('eformsHost.credentials', _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? 'ZmlnYWM6bjdFLjJbWVBRakAiOFc2Slc7NGM=' : "ZmlnYWM6bW5IN1h6THhZY016V25Dcg==")
+                this.set('eformsHost.credentials', _.get(_.get(this, 'user.properties', []).find(p => _.get(p, 'type.identifier', null) === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? 'ZmlnYWM6bjdFLjJbWVBRakAiOFc2Slc7NGM=' : "ZmlnYWM6bW5IN1h6THhZY016V25Dcg==")
+
 
             }
 
