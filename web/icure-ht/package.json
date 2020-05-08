@@ -1,6 +1,6 @@
 {
   "name": "icure-cloud",
-  "version": "0.0.471",
+  "version": "0.0.476",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
@@ -148,7 +148,6 @@
     "uti": "^3.1.2",
     "vaadin-split-layout": "^3.0.0-alpha2",
     "web-animations-js": "^2.3.1",
-    "webpack-loader": "0.0.1",
-    "xml2js": "^0.4.23"
+    "webpack-loader": "0.0.1"
   }
 }
