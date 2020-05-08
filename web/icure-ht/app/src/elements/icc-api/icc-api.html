@@ -1227,10 +1227,10 @@
 
         }
 
-        executeFetchRequest(url, data){
+        executeFetchRequest(url, data, getAs=false){
             const fetchImpl = typeof window !== "undefined" ? window.fetch : typeof self !== "undefined" ? self.fetch : fetch
 
-            return fetchImpl(url, data).then(response => Promise.all([response, response.text()]))
+            return fetchImpl(url, data).then(response => Promise.all([response, getAs === "application/octet-stream" ? response.arrayBuffer() : response.text()]))
                 .then(([res, content]) => Promise.resolve({
                     response: res,
                     content: this.isJson(content) ? JSON.parse(content) : content
