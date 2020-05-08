@@ -173,6 +173,7 @@
                         </template>
                         <p>If you already have a database in the cloud. You can copy your cloud key below and start using Topaz. </p>
                         <paper-input label="Cloud key" value="{{cloudKey}}"></paper-input>
+                        <paper-input label="Cluster" value="{{cluster}}"></paper-input>
                     </div>
                 </div>
                 <div class="middle">
@@ -253,6 +254,10 @@ class HtAppWelcomeTz extends Polymer.TkLocalizerMixin(Polymer.Element) {
             specialities: {
 			    type: Array,
                 value: [{id:'003',descr:'general practitioner'}, {id:'690',descr:'pediatrics'}, {id:'055',descr:'dermatology'}, {id:'055',descr:'gastroenterology'}, {id:'340',descr:'gynecologyobstetrics'}]
+            },
+            cluster:{
+                type : String,
+                value: "couch.prd.icure.cloud"
             }
 		};
 	}
@@ -389,7 +394,7 @@ class HtAppWelcomeTz extends Polymer.TkLocalizerMixin(Polymer.Element) {
             headers: {
                 "Content-Type" : "application/json; charset=utf-8"
             },
-            body: JSON.stringify( { cloudKey: this.get('cloudKey').trim() } )
+            body: JSON.stringify( { cloudKey: _.get(this,'cloudKey',"").trim(), cluster : _.get(this,"cluster","couch.prd.icure.cloud") } )
         }).then( response => {
             this.set('hidden',true);
         }).catch( error => {
