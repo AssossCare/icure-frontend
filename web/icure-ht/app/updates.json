@@ -1,10 +1,37 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.478",
+		  "updateDate": "2020-05-09",
+		  "startDate" : "2020-05-09",
+		  "endDate" : "2020-05-30",
+		  "mainType" : "News",
+		  "mainTitle" : "Encore des nouveautés pour TOPAZ",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Encore des nouveautés pour TOPAZ",
+					  "nl" : "eForms nu ook in TOPAZ"
+				  },
+				  "description": {
+					  "fr": "<b><i><u>E-forms</u></i></b><br/>Comme nous vous l’avions promis l’ensemble des E-Forms (Medex, Evaluation du handicap, Prescription labos, …) et les formulaires spécial COVID sont dès à présent disponibles dans votre logiciel Topaz. Vous pouvez trouver ces documents dans le volet 3 <div style='width: 96%; display: flex; padding: 2%;'><img src='http://src.topaz.care/img/20200509_img_1.png' style='height: 50%; width: 50%; margin: auto;'></img></div> <br/><i>Attention:</i><ul><li>Pour utiliser les E-Forms, vous devez disposer d’une connexion eHealth valide.</li><li>Nous avons testé cette nouvelle fonctionnalité en mode « acceptance » mais il nous a été impossible de tester celle-ci en mode « production ». Si vous rencontriez la moindre difficulté, prenez immédiatement contact avec notre support au 02/319.22.41.</li></ul><div style='width: 96%; display: flex; padding: 2%;'><img src='http://src.topaz.care/img/20200509_img_2.png' style='height: 50%; width: 50%; margin: auto;'></img></div>Vous souhaitez plus d’informations, rendez-vous sur le site HealthConnect via <a href='https://www.healthconnect.be/fr/healthlink' target='_blank'>ce lien.</a><br/>Nous tenons à vous rappeler que l’utilisation de ces formulaires n’était pas requise pour la labellisation compte tenu que c’est un format propriétaire.<br/>Néanmoins comme l’état nous impose leur utilisation, nous avons décidé d’intégrer en urgence ceux-ci. Nous profitons de l’occasion pour remercier Medispring pour l’aide qui nous a été apportée pour la mise en production rapide de ces formulaires.<br/><br/><i><u><b>Corona Tracing System – PCR Prescription validation</b></u></i><br/>Les autorités publiques nous ont informé ce 7 mai de l’obligation d’implanter au plus vite un nouveau webservice relatif au suivi des patient atteints du Coronavirus. Cela est chose faite.<br/>PCR Prescription validation est une application Web dédiée à la vérification du code, délivré par le Centre de Contact au citoyen concerné, de la prescription prioritaire pour un PCR test.<br/>Vous pouvez trouver également ce service dans le volet 3<br/><div style='width: 96%; display: flex; padding: 2%;'><img src='http://src.topaz.care/img/20200509_img_3.png' style='height: 50%; width: 50%; margin: auto;'></img></div><div style='width: 96%; display: flex; padding: 2%;'><img src='http://src.topaz.care/img/20200509_img_4.png' style='height: 50%; width: 50%; margin: auto;'></img></div>Vous souhaitez plus d’informations, rendez-vous sur le site Corona-tracking.info ou via <a href='https://www.corona-tracking.info/wp-content/uploads/2020/05/Verification-PCR-Test-Prescription-Manuel-utilisateur-.pdf' target='_blank'>ce lien.</a><br/><br/><i><b><u>Une bonne nouvelle pour les utilisateurs MAC</u></b></i><br/>L’Electron MAC (applicatif à installer sur votre ordinateur permettant notamment la configuration des imprimantes, la lecture de la carte d’identité électronique, …) est maintenant accessible. Si vous souhaitez utiliser celui-ci, vous pouvez le télécharger via <a href='https://github.com/AssossCare/electron-mac/releases' target='_blank'>ce lien</a> ou prendre contact avec notre support.<br/><br/><i><b><u>Remote Desktop Protocol – RDP est en test.</u></b></i><br/>Ce mode de connexion à Topaz sera en test à partir de ce lundi 11 mai. Nous espérons que ceux-ci seront concluants et que ce nouveau mode de connexion pourra être implanté au plus tard à la fin de ce mois de mai.<br/>Bonne journée à vous.<br/><br/>Gaëtan DE LAEVER<br/>Coordinateur général<br/><br/>PS : Une question, un conseil, adressez-vous à notre support par mail : support@topaz.care ou par téléphone au 02/319.22.41 du lundi au vendredi de 8h à 20h et le samedi de 9h à 13h.",
+					  "nl": "<b><i>E-forms</i></b><br/>Alle e-formulieren (Medex, Disability assessment, labo voorschriften, …) inclusief de speciale COVID-formulieren zullen uiterlijk aanstaande vrijdag beschikbaar zijn. Een pop-up zal u informeren u over deze beschikbaarheid. De lijst met beschikbare formulieren vindt u via <a href='https://www.healthconnect.be/healthlink' target='_blank'>deze link.</a><br/>Wij willen u erop wijzen dat het gebruik van deze formulieren niet vereist was voor de labeling, aangezien het de integratie betreft van een dienst eigen aan een commerciële firma (en dus geen officiële eHealth dienst).<br/>Toch hebben we besloten om ze met spoed te integreren, aangezien de overheid er nu het gebruik van oplegt. Wij willen van de gelegenheid gebruik maken om Medispring te bedanken voor de hulp die zij ons hebben geboden voor de snelle integratie in topaz.<br/>Met vriendelijke groeten,<br/><br/>Gaëtan DE LAEVER<br/>Algemeen coördinator<br/><br/>PS: Een vraag, een advies, neem contact op met onze support via e-mail: support@topaz.care of telefonisch op 02/319.22.41 van maandag tot vrijdag van 8 tot 20 uur en zaterdag van 9 tot 13 uur"
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.468",
 		  "updateDate": "2020-05-05",
 		  "startDate" : "2020-05-05",
-		  "endDate" : "2020-05-30",
+		  "endDate" : "2020-05-08",
 		  "mainType" : "News",
 		  "mainTitle" : "Deux nouveautés pour TOPAZ",
 		  "mainLink" : null,
