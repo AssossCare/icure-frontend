@@ -726,7 +726,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         </style>
 
-        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" electron-host="[[electronUrl]]" headers="[[headers]]" credentials="[[credentials]]"></icc-api>
+        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" electron-host="[[electronUrl]]" headers="[[headers]]" credentials="[[credentials]]" ></icc-api>
 
         <paper-item id="noehealth" class="notification-panel noehealth">[[localize('no_ehe_con','No Ehealth connection ',language)]]
             <iron-icon icon="icons:warning"></iron-icon>
@@ -1444,17 +1444,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 },2000)
             }
 
-            _getDefaultElectronUrl() {
-
-                return _.trim(_.get(this,"electronUrl")) ? _.trim(_.get(this,"electronUrl")) : "http://127.0.0.1:16042"
-
-            }
-
             setUrls() {
                 const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
                 this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
                 this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhcpr.icure.cloud' : 'https://fhcpr.icure.cloud'))
-                this.set('electronUrl', _.trim(_.get(params,"electronUrl")) ? _.trim(_.get(params,"electronUrl")) : this._getDefaultElectronUrl())
+                this.set('electronUrl', params.electronUrl || (params.icureUrl && !params.icureUrl.includes(":16043") && !params.icureUrl.includes("https") && _.replace(params.icureUrl,"/rest/v1","")) || "http://127.0.0.1:16042")
                 this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
                 this.set('defaultIcureUrl', this.icureUrl)
@@ -1516,7 +1510,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.api.isElectronAvailable().then(electron => {
                     this.set("isElectron",electron)
                     if (electron) {
-                        this.set("socket",io(this._getDefaultElectronUrl()))
+                        this.set("socket",io(this.electronUrl))
 
                         this.socket.on("connect", () => {
                             console.log("connection avec le socket de electron")
@@ -1539,32 +1533,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         })
 
-                        fetch(this._getDefaultElectronUrl() + "/checkDrugs",{
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json; charset=utf-8"
+                        this.api.electron().checkDrugs()
+
+                        this.notifyPath("socket");
+
+                        this.api.electron().getVersion().then(res => {
+                            if (res.version) {
+                                this.set("electronVersion", res.version)
+                                this.set("electronVersionOk",this.versions.electron.includes(res.version))
                             }
                         })
 
-                        this.notifyPath("socket");
-                    }
-
-                    if(this.isElectron){
-                        fetch(this._getDefaultElectronUrl() + "/getVersion")
-                            .then((response) => {
-                                return response.json()
-                            })
-                            .then(res => {
-                                if (res.version) {
-                                    this.set("electronVersion", res.version)
-                                    this.set("electronVersionOk",this.versions.electron.includes(res.version))
-                                }
-                            })
-
-                        fetch(this._getDefaultElectronUrl() + "/getConnexionData")
-                            .then((response) => {
-                                return response.json()
-                            })
+                        this.api.electron().getConnexionData()
                             .then(res => {
                                 if(res.ok){
                                     this.set("api.isMH",res.tokenData.isMH)
@@ -1748,7 +1728,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
                             this.loginAndRedirect(page)
                         } else {
-                            fetch(this._getDefaultElectronUrl() + "/logout")
+                            this.api && this.api.electron().logout()
                             this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
                         }
                     } else {
@@ -1887,11 +1867,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         this.api.isElectronAvailable().then(electron =>{
                             if(electron){
-                                fetch(this._getDefaultElectronUrl() + "/tokenFHC", {
-                                    method: "POST",
-                                    headers: {"Content-Type": "application/json"},
-                                    body: !isMH ? JSON.stringify({isMH:false,tokenId:this.api.tokenId, token:this.api.token}) : JSON.stringify({isMH:true,keystoreIdMH:this.api.keystoreIdMH, tokenIdMH:this.api.tokenIdMH, tokenMH:this.api.tokenMH, nihiiMH:this.api.nihiiMH})
-                                }).then(response => response.json()).then(rep => {
+                                this.api.electron().tokenFHC(isMH, isMH ? this.api.tokenIdMH : this.api.tokenId, isMH ? this.api.tokenMH :this.api.token, isMH ? this.api.nihiiMH : null)
+                               .then(rep => {
                                     if(rep.ok){
                                         this.set('routeData.page', "diary")
                                         setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
@@ -1987,17 +1964,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             this.set("isElectron",electron)
                             if (electron === true) {
                                 //request electron tc.
-                                fetch(this._getDefaultElectronUrl() + "/tc", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json; charset=utf-8"
-                                    },
-                                    body: JSON.stringify({
-                                        "userId": this.user.id,
-                                        "token": this.user.applicationTokens.MIKRONO || this.user.applicationTokens.tmp || this.user.applicationTokens.tmpFirstLogin,
-                                        "credential": this.api.credentials
-                                    })
-                                })
+                                this.api.electron().topazCredential(this.user,this.api.credentials)
                             }
                         })
 
@@ -2421,11 +2388,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 if(electron === false){
                                     window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut?id="+this.user.id+"&locale="+this.language, '_blank')
                                 }else{
-                                    fetch(this._getDefaultElectronUrl() + "/mc", {
-                                        method: "POST",
-                                        headers: {"Content-Type": "application/json"},
-                                        body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                                    }).then(response => response.json()).then(rep => {
+                                    this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword)
+                                   .then(rep => {
                                         if(rep.ok){
                                             this.set('routeData.page', "diary")
                                             setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)

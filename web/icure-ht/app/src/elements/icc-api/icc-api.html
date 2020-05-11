@@ -28,6 +28,7 @@
     import {IccInvoiceXApi} from 'icc-api/dist/icc-x-api/icc-invoice-x-api'
     import {IccMessageXApi} from 'icc-api/dist/icc-x-api/icc-message-x-api'
     import {IccClassificationXApi} from 'icc-api/dist/icc-x-api/icc-classification-x-api'
+    import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 
     import heic2any from 'heic2any'
 
@@ -125,7 +126,7 @@
         }
 
         static get observers() {
-            return ["refresh(headers, headers.*, host, fhcHost)"]
+            return ["refresh(headers, headers.*, host, fhcHost, electronHost)"]
         }
 
         constructor() {
@@ -185,6 +186,8 @@
             this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
 
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
+
+            this.desktopApi = new ElectronApi(this.electronHost)
 
 
             const toObserve = [
@@ -389,6 +392,10 @@
         }
         medex(){
             return this.medexicc
+        }
+
+        electron(){
+            return this.desktopApi
         }
 
         localize(e, lng) {

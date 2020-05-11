@@ -42,6 +42,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
 
 <link rel="import" href="account/ht-admin-account-preferences.html">
+<link rel="import" href="account/ht-admin-account-electron.html">
 <link rel="import" href="account/ht-admin-account-bank.html">
 <link rel="import" href="account/ht-admin-account-delegations.html">
 <link rel="import" href="account/ht-admin-account-edmg.html">
@@ -87,6 +88,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <template is="dom-if" if="[[preferencesLayout]]">
             <ht-admin-account-preferences id="admin-account-preferences" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-account-preferences>
+        </template>
+
+        <template is="dom-if" if="[[configurationElectronLayout]]">
+            <ht-admin-account-electron id="admin-account-electron" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" socket="[[socket]]"></ht-admin-account-electron>
         </template>
 
         <template is="dom-if" if="[[edmgInformationLayout]]">
@@ -170,6 +175,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     socket : {
                         type : Object,
                         value: {}
+                    },
+                    configurationElectronLayout:{
+                        type: Boolean,
+                        value: false
                     }
 
                 }
@@ -198,6 +207,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "edmgInformationSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', true)
@@ -207,6 +217,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if (this.selectedSubMenu === "printersInformationSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -216,6 +227,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "accountInformationSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -225,6 +237,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "bankInformationsSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -234,6 +247,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "myDelegationsSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -243,6 +257,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', true)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "agendaSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -252,6 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', true)
                     this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', false)
                 }else if(this.selectedSubMenu === "invoiceSubMenu"){
                     this.set('preferencesLayout', false)
                     this.set('edmgInformationLayout', false)
@@ -261,6 +277,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.set('delegationLayout', false)
                     this.set('agendaLayout', false)
                     this.set('invoiceLayout', true)
+                    this.set('configurationElectronLayout', false)
+                }else if(this.selectedSubMenu === "configurationElectronSubMenu"){
+                    this.set('preferencesLayout', false)
+                    this.set('edmgInformationLayout', false)
+                    this.set('printersInformationLayout', false)
+                    this.set('accountInformationsLayout', false)
+                    this.set('bankInformationsLayout', false)
+                    this.set('delegationLayout', false)
+                    this.set('agendaLayout', false)
+                    this.set('invoiceLayout', false)
+                    this.set('configurationElectronLayout', true)
                 }
             }
 
