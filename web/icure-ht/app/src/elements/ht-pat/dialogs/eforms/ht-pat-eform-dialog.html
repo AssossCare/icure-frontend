@@ -599,6 +599,7 @@
 
             _selectedFormChanged(){
                 _.get(this, 'selectedForm.id.name', null) ? this.set('isSelectedForm', true) : this.set('isSelectedForm', false)
+                this.set('availableDocumentList', _.get(this, 'availableDocumentList', []).map(doc => _.omit(doc, ['uploadedDocumentId'])))
                 this.set("unlinkBtnAvailable", false)
                 this.set("linkBtnAvailable", false)
             }

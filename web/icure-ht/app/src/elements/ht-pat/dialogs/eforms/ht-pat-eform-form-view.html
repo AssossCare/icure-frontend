@@ -204,6 +204,7 @@
 
                 return promResolve
                     .then(() => {
+                        this.set('tabs', 0)
                         this.set('isLoading', true)
                         this.set('attachmentAvailable', false)
                     })
