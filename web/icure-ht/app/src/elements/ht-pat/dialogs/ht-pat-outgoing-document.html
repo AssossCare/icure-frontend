@@ -1472,7 +1472,7 @@
                     "certificat-administration-biens",
                     "covid19-mutuelle",
                     "evax",
-                    "covid19-quarrantaine",
+                    "covid19-quarantaine",
                 ]
 
                 return promResolve
@@ -1509,14 +1509,14 @@
                             _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}),
                             _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {isBold:true}),
                             _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-mutuelle"), {isBold:true}),
-                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-quarrantaine"), {isBold:true, hrAfter: true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-quarantaine"), {isBold:true, hrAfter: true}),
                             _.filter(foundTemplates, it => (
                                 _.trim(_.get(it,"guid","")) !== "new-doc" &&
                                 _.trim(_.get(it,"guid","")) !== "covid19" &&
                                 _.trim(_.get(it,"guid","")) !== "covid19-patient" &&
                                 _.trim(_.get(it,"guid","")) !== "covid19-employer" &&
                                 _.trim(_.get(it,"guid","")) !== "covid19-mutuelle" &&
-                                _.trim(_.get(it,"guid","")) !== "covid19-quarrantaine"
+                                _.trim(_.get(it,"guid","")) !== "covid19-quarantaine"
                             )),
                             _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "new-doc" ), {isLast: true})
                         )
