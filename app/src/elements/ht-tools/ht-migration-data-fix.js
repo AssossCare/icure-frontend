@@ -694,8 +694,37 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     startLabImportFix(){
         //per patient
-        //per contact (optional ?)
+        //per contact
         //per doc
+        let iPos = 0
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(response =>{
+            this.set("hcp",response);
+            let hcpId = this.hcp.parentId ? this.hcp.parentId : this.hcp.id;
+            this.getPatientsByHcp(hcpId).then(myPatients => {
+                console.log("# patients", myPatients.length)
+                this.set("numPats", myPatients.length)
+                let prom = Promise.resolve([])
+                _.map(myPatients, pat => {
+                    prom = prom
+                        .then(promiseCarrier => this.api.patient().getPatientWithUser(this.user, pat.id).then(pat =>{
+                            this._getDirectoryDocuments(pat).then(doclist => {
+                                console.log("doclist", doclist)
+                                let docs = doclist.map(dl => dl.document)
+                                return docs.map(doc => this._doLabImport(doc, pat))
+                            })
+                        }))
+                })
+                prom.then(resList =>{
+                    Promise.all(resList).then(res => console.log(res))
+                })
+            })
+        })
+    }
+
+    _doLabImport(doc, pat){
+        console.log("do labimport of doc from pat", doc, pat)
+
+
     }
 
     _YYYYMMDDHHmmssToDDMMYYYY(inputValue) {
