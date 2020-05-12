@@ -677,21 +677,42 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         console.log("recreate doc for pat", doc, pat)
         return this.api.document().getAttachment(doc.id, doc.attachmentId, null)
             .then(att => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, att))
-            .then(decryptedAttachment =>{
-                return this.api.document().newInstance(this.user, pat, _.omit(doc, ["attachmentId", "deletionDate", "created", "modified",
-                    "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
-                    "encryptedSelf"])).then(ndoc => {
-                        return this.api.document().modifyDocument(ndoc)
-                    }).then(mdoc => {
-                        //setattachment
+            .then(decryptedAttachment => this.api.document().newInstance(this.user, pat, _.omit(doc, [
+                    "attachmentId",
+                    "deletionDate",
+                    "created",
+                    "modified",
+                    "secretForeignKeys",
+                    "cryptedForeignKeys",
+                    "delegations",
+                    "encryptionKeys",
+                    "encryptedSelf"
+                ]))
+                .then(ndoc => this.api.document().modifyDocument(ndoc))
+                .then(mdoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, mdoc, decryptedAttachment).then(encryptedFileContent => this.api.document().setAttachment(mdoc.id, null, encryptedFileContent)))
+            )
+        // return this.api.document().newInstance(this.user, pat, _.omit(doc, ["deletionDate", "created", "modified",
+        //     "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
+        //     "encryptedSelf"])).then(ndoc => this.api.document().modifyDocument(ndoc)).then(doc => {
+        //         console.log("modified document", doc)
+        //         return doc
+        //     })
+    }
 
-                        return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, mdoc, decryptedAttachment)
-                            .then(encryptedFileContent => {
-                                return this.api.document().setAttachment(mdoc.id, null, encryptedFileContent).then(x=>x)
-                            })
-
-                })
-            })
+    _recreateInvoice(){
+        if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)) {
+            this.api.invoice().newInstance(this.user, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
+                "deletionDate",
+                "created",
+                "modified",
+                "secretForeignKeys",
+                "cryptedForeignKeys",
+                "delegations",
+                "encryptionKeys",
+                "encryptedSelf"
+            ]))
+            .then(ninv => this.api.invoice().modifyInvoice(ninv))
+        }
     }
 
     startLabImportFix(){
