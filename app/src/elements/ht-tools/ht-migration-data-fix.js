@@ -688,35 +688,45 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, mdoc, decryptedAttachment)
                             .then(encryptedFileContent => {
                                 return this.api.document().setAttachment(mdoc.id, null, encryptedFileContent).then(x=>x)
-                                // console.log("modified document", mdoc)
-                                // return mdoc
                             })
 
                 })
             })
-        // return this.api.document().newInstance(this.user, pat, _.omit(doc, ["deletionDate", "created", "modified",
-        //     "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
-        //     "encryptedSelf"])).then(ndoc => this.api.document().modifyDocument(ndoc)).then(doc => {
-        //         console.log("modified document", doc)
-        //         return doc
-        //     })
-    }
-
-    _recreateInvoice(){
-        if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
-            this.api.invoice().newInstance(this.user, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
-                "deletionDate", "created", "modified",
-                "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
-                "encryptedSelf"]))
-        .then(ninv => this.api.invoice().modifyInvoice(ninv))
-                .then(inv => console.log(inv))
-        }
     }
 
     startLabImportFix(){
         //per patient
-        //per contact (optional ?)
+        //per contact
         //per doc
+        let iPos = 0
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(response =>{
+            this.set("hcp",response);
+            let hcpId = this.hcp.parentId ? this.hcp.parentId : this.hcp.id;
+            this.getPatientsByHcp(hcpId).then(myPatients => {
+                console.log("# patients", myPatients.length)
+                this.set("numPats", myPatients.length)
+                let prom = Promise.resolve([])
+                _.map(myPatients, pat => {
+                    prom = prom
+                        .then(promiseCarrier => this.api.patient().getPatientWithUser(this.user, pat.id).then(pat =>{
+                            this._getDirectoryDocuments(pat).then(doclist => {
+                                console.log("doclist", doclist)
+                                let docs = doclist.map(dl => dl.document)
+                                return docs.map(doc => this._doLabImport(doc, pat))
+                            })
+                        }))
+                })
+                prom.then(resList =>{
+                    Promise.all(resList).then(res => console.log(res))
+                })
+            })
+        })
+    }
+
+    _doLabImport(doc, pat){
+        console.log("do labimport of doc from pat", doc, pat)
+
+
     }
 
     _YYYYMMDDHHmmssToDDMMYYYY(inputValue) {
