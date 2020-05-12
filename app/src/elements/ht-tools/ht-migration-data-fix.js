@@ -645,32 +645,31 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     }
 
     startDocSfkFix(){
-       //per patient
-       //per contact
-       //per doc
-        let iPos = 0
-        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(response =>{
-            this.set("hcp",response);
-            let hcpId = this.hcp.parentId ? this.hcp.parentId : this.hcp.id;
-            this.getPatientsByHcp(hcpId).then(myPatients => {
-                console.log("# patients", myPatients.length)
-                this.set("numPats", myPatients.length)
-                let prom = Promise.resolve([])
+
+        //per patient
+        //per contact
+        //per doc
+
+        return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
+            .then(hcp => this.set("hcp",hcp))
+            .then(() => this.getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
+            .then(myPatients => {
+
+                this.set("numPats", _.size(myPatients))
+                let promPat = Promise.resolve([])
+                let promDoc = Promise.resolve([])
+
                 _.map(myPatients, pat => {
-                    prom = prom
-                        .then(promiseCarrier => this.api.patient().getPatientWithUser(this.user, pat.id).then(pat =>{
-                            this._getDirectoryDocuments(pat).then(doclist => {
-                                console.log("doclist", doclist)
-                                let docs = doclist.map(dl => dl.document)
-                                return docs.map(doc => this._recreateDocument(doc, pat))
-                            })
-                        }))
+                    promPat = promPat.then(promiseCarrierPat => this._getDirectoryDocuments(pat).then(doclist => {
+                        _.map(_.compact(_.map(doclist, "document")), doc => { promDoc = promDoc.then(promiseCarrierDoc => this._recreateDocument(doc, pat).then(x => _.concat(promiseCarrierDoc, x)).catch(x => _.concat(promiseCarrierDoc, null))) })
+                        return promDoc.then(x => _.concat(promiseCarrierPat, x)).catch(x => _.concat(promiseCarrierPat, null))
+                    }))
                 })
-                prom.then(resList =>{
-                    Promise.all(resList).then(res => console.log(res))
-                })
+
+                promPat.then(resList => _.map(resList, res => console.log(res)))
+
             })
-        })
+
     }
 
     _recreateDocument(doc, pat){
@@ -691,28 +690,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 .then(ndoc => this.api.document().modifyDocument(ndoc))
                 .then(mdoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, mdoc, decryptedAttachment).then(encryptedFileContent => this.api.document().setAttachment(mdoc.id, null, encryptedFileContent)))
             )
-        // return this.api.document().newInstance(this.user, pat, _.omit(doc, ["deletionDate", "created", "modified",
-        //     "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
-        //     "encryptedSelf"])).then(ndoc => this.api.document().modifyDocument(ndoc)).then(doc => {
-        //         console.log("modified document", doc)
-        //         return doc
-        //     })
-    }
-
-    _recreateInvoice(){
-        if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)) {
-            this.api.invoice().newInstance(this.user, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
-                "deletionDate",
-                "created",
-                "modified",
-                "secretForeignKeys",
-                "cryptedForeignKeys",
-                "delegations",
-                "encryptionKeys",
-                "encryptedSelf"
-            ]))
-            .then(ninv => this.api.invoice().modifyInvoice(ninv))
-        }
     }
 
     startLabImportFix(){
@@ -883,6 +860,7 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .catch(e=>{ console.log("ERROR _getDirectoryDocuments", e); return promResolve; })
 
     }
+
 }
 
 customElements.define(HtMigrationDataFix.is, HtMigrationDataFix);
