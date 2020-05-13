@@ -468,7 +468,7 @@ Bien à vous,`
                     })
                     .then(sendMailResults => {
                         const success = _.size(_.filter(sendMailResults , it => !!_.trim(_.get(it,"Sent[0].MessageUUID")))) === _.size(sendMailResults)
-                        this.dispatchEvent(new CustomEvent("mailer-message", {composed: true, bubbles: true, detail: {message:success ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))
+                        this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:success ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))
                         return success ? this._closeComponent() : null
                     })
                     .catch(e => console.log("ERROR when sending mail", e))

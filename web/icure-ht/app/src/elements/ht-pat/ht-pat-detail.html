@@ -106,7 +106,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="./dialogs/care-path/ht-pat-care-path-detail-dialog.html">
 <link rel="import" href="./dialogs/care-path/ht-pat-care-path-list-dialog.html">
 <link rel="import" href="./dialogs/ht-pat-other-form-dialog.html">
-
+<link rel="import" href="./dialogs/eforms/ht-pat-eform-dialog.html">
 
 
 <dom-module id="ht-pat-detail">
@@ -2497,11 +2497,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 on-close-contact="_closeContact"
                                 on-change="formsChanged"
                                 on-must-save-contact="_saveContact"
-                                on-medications-selection="_selectMultiMedication"
-                                on-medications-validation="_medicationDetailValueChanged"
-                                on-medication-selection="_selectMedication"
-                                on-medication-detail="_medicationDetail"
-                                on-medications-detail="_medicationsDetail"
+                                on-call-medication-dialog="openMedicationDialog"
                                 contact-type-list="[[contactTypeList]]"
                                 on-contact-saved="contactChanged"
                                 on-open-charts-dialog="_openChartsDialog"
@@ -2520,7 +2516,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 on-trigger-export-sumehr="_exportSumehrDialog"
                                 on-open-care-path-list="_openCarePathList"
                                 on-send-sub-form-via-emediattest="_sendSubformViaEmediattest"
-                                on-upload-document="_hubUpload">
+                                on-upload-document="_hubUpload"
+                                on-open-eforms-dialog="_openEformDialog">
                             </ht-pat-detail-ctc-detail-panel>
                     </template>
                     <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]" restamp>
@@ -2831,14 +2828,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-dialog>
         <ht-pat-preventive-acts-dialog id="preventiveActs" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" contacts="[[contacts]]" on-open-action="openActionDialog" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" services-refresher="[[servicesRefresher]]"></ht-pat-preventive-acts-dialog>
         <ht-pat-action-plan-dialog id="planActionForm" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" current-contact="[[currentContact]]" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" readonly="false"></ht-pat-action-plan-dialog>
+        <!--todo julien checker la diff entre medications et existingMedications ??????-->
         <medication-prescription-dialog
                 id="medication-prescription"
                 api="[[api]]" user="[[user]]" patient="[[patient]]"
                 i18n="[[i18n]]" language="[[language]]"
-                medications="[[existingMedications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]"
-                on-save-medications="_saveMedications" on-new-medications="_createNewMedications">
+                medications="[[existingMedications]]" treatment-history="[[treatmentHistory]]" resources="[[resources]]">
         </medication-prescription-dialog>
-        <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}" on-value-changed="_medicationDetailValueChanged"></medication-details-dialog>
+        <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}"></medication-details-dialog>
         <medication-plan-dialog id="medication-plan" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" user="[[user]]" patient="[[patient]]" on-print-prescription="onPrintPrescription"></medication-plan-dialog>
         <!--<ht-pat-mcn-chapteriv-agreement id="chapterivdialog" api="[[api]]" user="[[user]]" patient="[[patient]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" on-create-service="_createService" on-update-services="_updateServices"></ht-pat-mcn-chapteriv-agreement>-->
         <ht-pat-edmg-dialog id="edmgDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-edmg-dialog>
@@ -2985,7 +2982,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <ht-pat-care-path-detail-dialog id="htPatCarePathDetailDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" contacts="[[contacts]]" current-contact="[[currentContact]]" resources="[[resources]]" selected-care-path-info="[[selectedCarePathInfo]]" active-health-elements="[[activeHealthElements]]" on-save-care-path="_refreshFromServices" on-closing-care-path="refreshPatient"></ht-pat-care-path-detail-dialog>
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
-
+        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
     </template>
     <script>
         import moment from 'moment/src/moment';
@@ -4252,6 +4249,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.saveContact(this.currentContact)
             }
 
+            //todo julien useless ??
             updateMedication(svc) {
                 if (!svc.id) return;
                 svc.modified = +new Date();
@@ -4648,7 +4646,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     const combinedHes = (this.activeHealthElements || []).concat(this.inactiveHealthElements || []).concat(this.archivedHealthElements || []).concat(this.allergies || []).concat(this.risks || []).concat(this.familyrisks || []).concat(this.surgicalHealthElements || [])
                     const idServicesInHes = combinedHes.map(he => he.idService)
 
-                    const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
+                    const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['medication','healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
                     const svcHes = hesAsServices.map(svc => this._makeHeFromSvc(svc))
 
                     const now = moment()
@@ -4675,12 +4673,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.set('risks', (this.risks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk'))))
                         this.set('familyrisks', (this.familyrisks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
                         this.set('surgicalHealthElements', (this.surgicalHealthElements || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
+
+                        this.set('medications',_.sortBy(_.uniqBy(svcHes.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication')).map(m =>m.svc).concat(this.medications),'id').filter(s =>!s.endOfLife && (!(this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
+                            return Object.assign(m, {
+                                colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
+                            })
+                        }),sorter))
+
                         this.set("allHealthElements",{
                             activeHealthElements: this.activeHealthElements,
                             inactiveHealthElements: this.inactiveHealthElements,
                             archivedHealthElements: this.archivedHealthElements,
                             allergies: this.allergies,
-                            medications: this.existingMedications,
+                            medications: this.existingMedications,//todo julien ?????? pourquoi pas medications ????
                             risks: this.risks,
                             familyrisks: this.familyrisks,
                             surgicalHealthElements: this.surgicalHealthElements
@@ -4811,15 +4816,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
                         const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
-                        const oneWeekAgo = moment().subtract(7, 'days')
-
-                        //s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication' && !_.values(s.content).some(c => c && c.medicationValue && c.medicationValue.endMomentAsString && this.api.moment(c.medicationValue.endMomentAsString).isBefore(oneWeekAgo)))
-                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && !(this.api.contact().medicationValue(s, this.language) || {}).endMoment).map(m => {
+                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
                             return Object.assign(m, {
                                 colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
                             })
                         }), sorter))
 
+                        //todo julien voir avec le prochain/prochain todo celui des prescriptions a la fin de refresh patient
+                        //this.set("treatmentHistory", svcs);
+                        //this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
+
+                        //todo julien a quoi ca sert cette merde je te jure ???????
                         this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
 
                         const combinedHes = _.sortBy(_.concat(svcHes, hes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
@@ -4855,7 +4862,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 inactiveHealthElements: this.inactiveHealthElements,
                                 archivedHealthElements: this.archivedHealthElements,
                                 allergies: this.allergies,
-                                medications: this.existingMedications,
+                                medications: this.existingMedications,//todo julien ?????? pourquoi pas medications ????
                                 risks: this.risks,
                                 familyrisks: this.familyrisks,
                                 surgicalHealthElements: this.surgicalHealthElements
@@ -5008,6 +5015,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }).finally(()=>this.set("SpinnerActive",false))
                     })
 
+                        //todo julien here tout remonter un peu plus haut
                         .then(() => this.api.contact().filterServices(ctcs, s => s.tags.find(t => (t.type === 'ICURE' && t.code === "PRESC" || t.type === 'CD-ITEM' && t.code === "medication") && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now)))))
                         .then(svcs => {
                             this.set("treatmentHistory", svcs);
@@ -6128,26 +6136,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _addMedication(e) {
-                // const id = this.api.crypto().randomUuid();
-                // const medicationValue = { regimen: [] }
-                // const newMedication =  {
-                //     label: this.localize('medication','medication',this.language), id: id,
-                //     content: _.fromPairs([[this.language, { medicationValue: medicationValue }]]),
-                //     tags: (e.target.dataset.tags ? e.target.dataset.tags.split(',') : []).map(c => ({ id: c, type: c.split('|')[0], code: c.split('|')[1], version: c.split('|')[2] }))
-                // };
-
-                this.currentSelectMedicationEventDetail = null
-                // this.$['medication-prescription'].open(newMedication, { id: id, medicationValue: medicationValue, isNew: true } );
-                this.$['medication-prescription'].open(e.detail.service, {isPrescription: false});
-
+                this.$['medication-prescription'].open(e.detail.service, {isPrescription: false}, (medications) => {this._createNewMedications({detail : {medications}})});
             }
 
             _editMedication(e) {
                 const id = e.target.id.substr("med-edit-btn-edit_".length)
                 const medicationService = this.medications.find(s => s.id === id)
-                this.currentSelectMedicationEventDetail = null
-                this.currentMedicationDetailEventDetail = null
-                this.$['medication-detail'].open(medicationService, {
+                this.$['medication-detail'].open(medication => this._medicationDetailValueChanged({detail : {medication}}),medicationService, {
                         id: medicationService.id,
                         medicationValue: (this.api.contact().preferredContent(medicationService, this.language) || (medicationService.content[this.language] = {medicationValue: {regimen: []}})).medicationValue,
                         isNew: false,
@@ -6155,30 +6150,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     });
             }
 
-            _selectMedication(e) {
-                this.currentSelectMedicationEventDetail = e.detail
-                this.$['medication-selection'].open(e.detail.service, e.detail.content );
-            }
+            /**
+             * Partie medication
+             * */
 
-            // _selectMultiMedication(e) {
-            //     this.currentSelectMedicationEventDetail = e.detail
-            //     this.$['medication-prescription'].open(e.detail.service, {isPrescription: true});
-            // }
-
-            _selectMultiMedication(e) {
-                this.currentMedicationDetailEventDetail = e.detail;
-                this.$['medication-prescription'].open(e.detail.service, {isPrescription: true});
-            }
-
-            _saveMedications(e) {
-                if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onCreate) {
-                    this.currentMedicationDetailEventDetail.onCreate(e);
+            openMedicationDialog(e){
+                //e.detail.service, {isPrescription: false}
+                if(e.detail.isNew) {
+                    this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+                }else{
+                    this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
                 }
-            }
-
-            _medicationDetail(e) {
-                this.currentMedicationDetailEventDetail = e.detail
-                this.$['medication-detail'].open(e.detail.service, e.detail.content);
             }
 
             _medicationsDetail(e) {
@@ -6997,6 +6979,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
             }
 
+            _eformsDownload(e){
+                this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
+            }
+
             // _saveDoc(e){
             //     this.shadowRoot.querySelector('#ctcDetailPanel').saveDoc(e)
             //     // this.root.querySelector('ht-pat-detail-ctc-detail-panel')._saveDoc(e)
@@ -7136,6 +7122,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _openCarePathList(){
                 this.$['htPatCarePathListDialog'].open()
+            }
+
+            _openEformDialog(){
+                if(this._checkForEhealthSession() === true){
+                    this.$['htPatEformDialog'].openDialog()
+                }else{
+                    this._ehealthErrorNotification()
+                }
             }
 
             _openCarePathDetail(e){
@@ -7559,14 +7553,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _medicationDetailValueChanged(e) {
-                //In case we get here coming from the prescription dialog by checking the checkbox
-                if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onValueChanged) {
-                    this.currentMedicationDetailEventDetail.onValueChanged(e)
-                    this._createNewMedications(e);
-                } else {
-                    //Standard behaviour: create from medication button in left panel
-                    this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
-                }
+                this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
             }
 
             _isSpecialist(hcp){

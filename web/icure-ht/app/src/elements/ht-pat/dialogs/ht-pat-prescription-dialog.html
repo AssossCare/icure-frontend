@@ -342,8 +342,7 @@
                     </template>
                 </div>
                 <div class="buttons">
-                    <!-- <vaadin-date-picker id="deliveryDate" label="Date de délivrance" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker> -->
-                    <dynamic-date-field id="deliveryDate" class="deliveryDate" label="Date de délivrance" value="{{deliveryDateString}}" i18n="[[i18n]]"></dynamic-date-field>
+                    <vaadin-date-picker id="deliveryDate" class="deliveryDate" label="[[localize('deliver_date','Date de délivrance',language)]]" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker>
                     <div class="printButton">
                         <paper-button class="button" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_printAndSendByEmail" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>

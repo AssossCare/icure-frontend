@@ -1234,6 +1234,26 @@
 
         }
 
+        executeFetchRequest(url, data, getAs=false){
+            const fetchImpl = typeof window !== "undefined" ? window.fetch : typeof self !== "undefined" ? self.fetch : fetch
+
+            return fetchImpl(url, data).then(response => Promise.all([response, getAs === "application/octet-stream" ? response.arrayBuffer() : response.text()]))
+                .then(([res, content]) => Promise.resolve({
+                    response: res,
+                    content: this.isJson(content) ? JSON.parse(content) : content
+                })).catch(err => console.log(err))
+        }
+
+        isJson(str){
+            try{
+                JSON.parse(str)
+            }catch(e){
+                return false
+            }
+
+            return true
+        }
+
     }
 
     customElements.define(IccApi.is, IccApi)
