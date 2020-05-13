@@ -2419,11 +2419,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                     if(electron === false){
                                                         window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut?id="+this.user.id+"&locale="+this.language, '_blank')
                                                     }else{
-                                                        fetch(this._getDefaultElectronUrl() + "/mc", {
-                                                            method: "POST",
-                                                            headers: {"Content-Type": "application/json"},
-                                                            body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                                                        }).then(response => response.json()).then(rep => {
+                                                        this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword)
+                                                        .then(rep => {
                                                             if(rep.ok){
                                                                 this.set('routeData.page', "diary")
                                                                 setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
