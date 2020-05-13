@@ -437,7 +437,7 @@
                     padding: 0 12px;
                     text-transform: capitalize;
                     background: transparent;
-                    box-sizing: border-box; 
+                    box-sizing: border-box;
                     border-radius: 3px;
                 };
                 --vaadin-upload-file-progress: {
@@ -1619,6 +1619,7 @@
                     if (tpl.item.addressUrl) {
                         const url = `${this.api.fhcHost}/chap4/sam/docpreview/IV/${pi.paragraphName}/${tpl.item.verseSeq}/${tpl.item.documentSeq}/${this.language}`
                         var a = document.createElement('a')
+                        //todo julien check if need electron
                         return fetch(url, {
                             method: 'GET'
                         }).then((resp) => {

@@ -828,6 +828,7 @@
                             }else if(_.get(this.selectedReminderType, 'code', null) === "sms"){
                                 _.compact(listOfContact).map(ctc => {
                                     const mobilePhone = ctc.patient.addresses.map(a => (a.addressType === 'home' || a.addressType === 'work') && a.telecoms.map(t=>t.telecomType === 'mobile' && t.telecomNumber).filter(x=>x)[0]).filter(x=>x)[0]
+                                   //todo julien call newWindows explorer
                                     _.get(this.prevention, 'remindType', null) === 'sms' ? (mobilePhone && fetch(`https://msg-gw.svcacc.icure.cloud/luta/sms/to/${mobilePhone}`,{
                                         method: "POST",
                                         headers: { "Content-Type" : "application/json", "Authorization": `Basic ${btoa('luta:@dv@nc3dPl@nn1ng')}` },

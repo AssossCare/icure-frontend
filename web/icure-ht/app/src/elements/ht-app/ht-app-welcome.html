@@ -173,6 +173,7 @@
                         </template>
                         <p>If you already have a database in the cloud. You can copy your cloud key below and start using iCure. </p>
                         <paper-input label="Cloud key" value="{{cloudKey}}"></paper-input>
+                        <paper-input label="Cluster" value="{{cluster}}"></paper-input>
                     </div>
                 </div>
                 <div class="middle">
@@ -253,7 +254,11 @@ class HtAppWelcome extends Polymer.TkLocalizerMixin(Polymer.Element) {
             specialities: {
 			    type: Array,
                 value: [{id:'003',descr:'general practitioner'}, {id:'690',descr:'pediatrics'}, {id:'055',descr:'dermatology'}, {id:'055',descr:'gastroenterology'}, {id:'340',descr:'gynecologyobstetrics'}]
-			}
+			},
+            cluster:{
+                type : String,
+                value: "couch.prd.icure.cloud"
+            }
 		};
 	}
 
@@ -379,7 +384,7 @@ class HtAppWelcome extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     replicate() {
 
-	    this.api.electron().replication(this.get('cloudKey').trim())
+	    this.api.electron().replication(_.get(this,'cloudKey',"").trim(),_.get(this,"cluster","couch.prd.icure.cloud").trim())
         .then( response => {
             this.set('hidden',true);
         }).catch( error => {

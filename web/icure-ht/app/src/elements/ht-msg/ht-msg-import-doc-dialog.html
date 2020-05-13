@@ -378,22 +378,8 @@
 
             _hasElectronChanged(){
                 if(!this.hasElectron)return;
-                Promise.all([fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/scanning`,{
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        request : "list"
-                    })
-                }), fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json; charset=utf-8"
-                    },
-                    body: JSON.stringify({
-                        userId: this.user.id
-                    })
-                })
-                ]).then(response => Promise.all(response.map(rep=>rep.json()))).then(([data, settings])=>{
+                Promise.all([this.api.electron().scanning("list",null,null,null,null),this.api.electron().getPrinterSetting(this.user.id)])
+                .then(([data, settings])=>{
                     if(!data.ok)return;
                     const scanner = settings && settings.data && settings.data !== 'error' && JSON.parse(settings.data).find(set => set.type==="scanner")
                     this.set("selectedScanner", scanner && data.data.all.find(scan => scan.id===scanner.printer || scan.label===scanner.printer) ? scanner.printer :data.data.default.id)
@@ -543,14 +529,8 @@
             }
 
             _launchScan(){
-                fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/scanning`,{
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        request : "scan",
-                        scanner : this.selectedScanner
-                    })
-                }).then(response => response.json()).then(response => {
+                this.api.electron().scanning( "scan",this.selectedScanner,null,null,null)
+                .then(response => {
                     if (!response.ok) return;
 
                     let document = {

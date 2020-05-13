@@ -2,6 +2,8 @@ import * as fhcApi from 'fhc-api/dist/fhcApi'
 import * as iccApi from 'icc-api/dist/icc-api/iccApi'
 import * as iccXApi from 'icc-api/dist/icc-x-api/index'
 import {UtilsClass} from "icc-api/dist/icc-x-api/crypto/utils"
+import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
+
 
 import moment from 'moment/src/moment'
 import levenshtein from 'js-levenshtein'
@@ -17,6 +19,7 @@ onmessage = e => {
 
         const fhcHost               = e.data.fhcHost
         const fhcHeaders            = JSON.parse(e.data.fhcHeaders)
+		const electronHost			= e.data.electronHost
 
         const tokenId               = e.data.tokenId
         const keystoreId            = e.data.keystoreId
@@ -39,6 +42,8 @@ onmessage = e => {
         const icureApi              = new iccApi.iccIcureApi(iccHost, iccHeaders)
         const iccEntityrefApi       = new iccApi.iccEntityrefApi(iccHost, iccHeaders)
         const iccInsuranceApi       = new iccApi.iccInsuranceApi(iccHost, iccHeaders)
+
+		const electronApi			= new ElectronApi(electronHost)
 
         //Avoid hitting local storage when loading key pairs
         Object.keys(e.data.keyPairs).forEach( k => iccCryptoXApi.cacheKeyPair(e.data.keyPairs[k], k) )
@@ -527,9 +532,9 @@ onmessage = e => {
 
         icureApi.getVersion()
         .then(icureVersion => appVersions.backend = _.trim(icureVersion))
-        .then(() => fetch("http://localhost:16042/ok", {method:"GET"}).then(() => true).catch(() => false))
+        .then(() => electronApi.isAvailable().then(() => true).catch(() => false))
         .then(isElectron => appVersions.isElectron = !!isElectron)
-        .then(() => fetch("http://localhost:16042/getVersion", {method:"GET"}).then((response) => response.json()).catch(() => false))
+        .then(() => electronApi.getVersion().catch(() => false))
         .then(electronVersion => appVersions.electron = _.trim(_.get(electronVersion,"version","-")))
         .then(() => autoDeleteMessages())
         .finally(()=>{

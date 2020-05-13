@@ -1863,6 +1863,7 @@
                                                 this.set('labOrProtocolContent', res)
                                                 this.set('labOrProtocolContentFirstItem', _.head(res))
                                                 this.set('labOrProtocolTotalPatients', _.size(res))
+                                                //todo julien look if we need the electron app
                                                 return !!_.size(_.get(res,"[0].services",[])) ? null : this.api.shortLivedCache(dataUrl, () => fetch(dataUrl, {credentials: 'include'}).then(response => response.text())).then(attachmentContent => this.set('attachmentContent', attachmentContent))
                                             })
                                     } else {
