@@ -674,13 +674,7 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     getPatientsByHcp( hcpId ) {
 
-        // Todo: remove this
-        console.log("REMOVE THIS CODE IN getPatientsByHcp");
-        // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["31aa6216-aafc-497f-aa62-16aafc697f20","512a9a1e-a4a8-4b5f-aa9a-1ea4a83b5fc1"]}))
-        return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["31aa6216-aafc-497f-aa62-16aafc697f20"]}))
-
-
-
+        // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["ee2743be-8c29-4e33-a743-be8c29be3390","ba0e7498-ee59-41bf-8e74-98ee5991bf9f"]}))
 
         return this.api.getRowsUsingPagination(
             (key,docId) =>
@@ -740,6 +734,40 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
+    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription, documentDate) {
+
+        const promResolve = Promise.resolve()
+        const documentId = _.trim(_.get(document,"id",""))
+        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
+        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
+        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
+
+        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
+            .then(patientObject => this.api.contact().newInstance(this.user, patientObject,{
+                groupId: this.api.crypto().randomUuid(),
+                created: documentDate,
+                modified: +new Date,
+                author: _.trim(_.get(this,"user.id","")),
+                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                openingDate:_.get(contact,"openingDate",""),
+                closingDate: _.get(contact,"closingDate",""),
+                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
+                descr: importDescription,
+                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
+                subContacts: []
+            }).then(contactInstance => [patientObject,contactInstance]))
+            .then(([patientObject,contactInstance]) => this.api.contact().createContactWithUser(this.user, contactInstance).then(createdContact => [patientObject,createdContact]))
+            .then(([patientObject,createdContact]) => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
+            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
+            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
+            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
+                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>e).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>e).then(()=>null))) :
+                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => _.trim(_.get(contact,"id"))) /* Return original ctc id (we just re-imported) when successful -> will be deleted */
+            )
+            .catch(e => null)
+
+    }
+
     _fixLabResultsProtocols(documentsByPatient) {
 
         const promResolve = Promise.resolve()
@@ -750,21 +778,13 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         // Foreach PAT && each PAT's DOCS, check if BE can handle file format (to be then imported as SVC collection rather than simple file (documentId) in CTC)
         return promResolve
             .then(() => {
-
                 _.map(documentsByPatient, (docs, patientId) => {
-
                     let promDocs = Promise.resolve([])
-
                     promPats = promPats.then(promiseCarrierPat => {
 
                         _.map(docs, doc => {
-
-                            const contactId = _.trim(_.get(doc, "contact.id"))
-                            const serviceId = _.trim(_.get(doc, "service.id"))
                             const documentId = _.trim(_.get(doc, "document.id"))
-
-                            // Todo: remove filter on contact.id (testing purposes)
-                            promDocs = promDocs.then(promiseCarrierDoc => contactId !== "136dcc03-55e3-45e5-adcc-0355e355e5d0" || !contactId || !serviceId || !documentId || !_.trim(_.get(doc, "document.attachmentId")) || (!_.size(_.get(doc, "document.encryptionKeys")) && !_.size(_.get(doc, "document.delegations "))) ?
+                            promDocs = promDocs.then(promiseCarrierDoc => !_.trim(_.get(doc, "contact.id")) || !_.trim(_.get(doc, "service.id")) || !documentId || !_.trim(_.get(doc, "document.attachmentId")) || (!_.size(_.get(doc, "document.encryptionKeys")) && !_.size(_.get(doc, "document.delegations "))) ?
                                 promiseCarrierDoc :
                                 (this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), documentId, _.size(_.get(doc, "document.encryptionKeys", [])) ? _.get(doc, "document.encryptionKeys", []) : _.get(doc, "document.delegations", [])).then(({extractedKeys: enckeys}) => enckeys).catch(() => []))
                                     .then(enckeys => this.api.beresultimport().canHandle(documentId, enckeys.join(',')).then(canHandle => [enckeys, !!canHandle]).catch(e => [enckeys, false]))
@@ -777,74 +797,37 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                         return promDocs.then(documentsToFix => _.merge(promiseCarrierPat, _.fromPairs([[patientId, _.compact(documentsToFix)]]))).catch(e => promiseCarrierPat)
 
                     })
-
                 })
-
                 return promPats
-
             })
             .then(documentsToFixByPatient => {
-
                 _.map(documentsToFixByPatient, (docs, patientId) => {
                     let promDocs = Promise.resolve([])
+                    let promDelCtc = Promise.resolve([])
                     promPatsFixed = promPatsFixed.then(promiseCarrierPat => {
-                        _.map(docs, doc => { promDocs = promDocs.then(promiseCarrierDoc => this._importLabResultOrProtocolAsSvcCollection(patientId, _.get(doc, "contact"), _.get(doc, "document"), _.get(_.find(_.get(doc,"document.docInfos.codes", []), {type:"CD-TRANSACTION"}), "code", "result"), _.get(doc, "description")).then(x => _.concat(promiseCarrierDoc, [x])).catch(e => promiseCarrierDoc))})
-                        return promDocs.then(x => _.concat(promiseCarrierPat, x)).catch(e => promiseCarrierPat)
+
+                        _.map(docs, doc => { promDocs = promDocs.then(promiseCarrierDoc => this._importLabResultOrProtocolAsSvcCollection(
+                            patientId,
+                            _.get(doc, "contact"),
+                            _.get(doc, "document"),
+                            _.get(_.find(_.get(doc,"document.docInfos.codes", []), {type:"CD-TRANSACTION"}), "code", "result"),
+                            _.get(doc, "description"),
+                            (parseInt(_.get(doc,"service.valueDate"))||0 ? parseInt(_.get(doc,"service.valueDate")) : parseInt(_.get(doc, "openingDate")))
+                        ).then(x => _.concat(promiseCarrierDoc, [x])).catch(e => promiseCarrierDoc))})
+
+                        promDocs.then(contactsToDelete => {
+                            _.map(_.uniq(_.compact(contactsToDelete)), ctcId => { promDelCtc = promDelCtc.then(promisesCarrier => this.api.contact().deleteContacts(ctcId).then(x=>_.concat(promisesCarrier,[x])).catch(e=>promisesCarrier)) })
+                            return promDelCtc.then(x => _.concat(promiseCarrierPat, x))
+                        })
+                        return promDocs
+
                     })
                 })
-
                 return promPatsFixed
-
             })
+            .then(promisesCarrier=>console.log("- DONE -"))
 
     }
-
-    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription) {
-
-        const promResolve = Promise.resolve()
-        const documentId = _.trim(_.get(document,"id",""))
-        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
-        const importDescription = (!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : documentTypeLabel ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : " " )
-
-        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
-            .then(patientObject => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(contact,"id","")), descr: importDescription}))
-            .then(formInstance => this.api.form().createForm(formInstance))
-            .then(createdForm => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, _.trim(_.get(document,"docInfos.protocol","")), _.trim(_.get(createdForm,"id","")), null, _.get(document,"enckeys",[]).join(','), contact).then(updatedContactAfterImport => [_.trim(_.get(createdForm,"id","")), updatedContactAfterImport]).catch(e=>[_.trim(_.get(createdForm,"id","")), null]))
-            .then(([createdFormId, updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ? promResolve : promResolve
-                .then(() => {
-
-                    const CLONE_updatedContactAfterImport = _.cloneDeep(updatedContactAfterImport)
-                    console.log("CLONE_updatedContactAfterImport", CLONE_updatedContactAfterImport);
-
-                    const originalServiceIdsToDrop = _.uniq(_.compact(_.map(_.get(contact,"services",[]), "id")))
-
-                    console.log("UPDATE CTC", _
-                        .chain(CLONE_updatedContactAfterImport)
-                        .assign({subContacts: _.filter(_.get(CLONE_updatedContactAfterImport, "subContacts",[]), sctc => _.trim(_.get(sctc,"formId")) === createdFormId)})
-                        .merge({subContacts: [{ tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }], descr: importDescription }]})
-                        .assign({services: _.filter(_.get(contact,"services",[]), svc => originalServiceIdsToDrop.indexOf(_.trim(_.get(svc,"id",""))) === -1) })
-                        .value()
-                    )
-
-                    // .then(updatedContactAfterImport => this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{
-                    //     tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],
-                    //     descr: importDescription
-                    // }]})))
-
-                })
-            )
-            .catch(e => null)
-
-    }
-
-    // Todo
-    /*
-
-        Delete / read "Todo"
-        Bien sauvegarder le original documentid
-        Supprimer le documentId du svc / subctc du ctc (puisqu'importé comme svc collection)
-
-    */
 
 }
 

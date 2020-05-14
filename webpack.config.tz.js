@@ -103,6 +103,8 @@ module.exports = {
     ],
 	devServer: {
 		contentBase: path.join(__dirname,'dist-tz'),
+        // Handy for heavy & long processes like migration (default value should be true)
+        // liveReload: false,
 		compress: true,
 		overlay: true,
 		port: 9000,
