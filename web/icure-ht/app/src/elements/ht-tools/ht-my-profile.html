@@ -1084,9 +1084,9 @@
                     });
                 this.set('userIBAN', propIBAN.typedValue.stringValue);
 
-                const ehboxEmailReception = this.user.properties.find(p => p.type && p.type.identifier === 'be.topaz.disableEhboxEmailReception') ||
+                const ehboxEmailReception = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception') ||
                     (this.user.properties[this.user.properties.length] = {
-                        type: {identifier: 'be.topaz.disableEhboxEmailReception', localized: false, unique: true},
+                        type: {identifier: 'org.taktik.icure.user.disableEhboxEmailReception', localized: false, unique: false},
                         typedValue: {type: 'BOOLEAN', booleanValue: false}
                     });
                 this.set('disableEhboxEmailReception', !!_.get(ehboxEmailReception,"typedValue.booleanValue",false));
@@ -1607,7 +1607,7 @@
                     let propMHNihii = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.medicalHouse.nihii')
                     propMHNihii.typedValue.stringValue = this.userMedicalHouseNihii;
 
-                    let disableEhboxEmailReception = this.user.properties.find(p=>p.type && p.type.identifier === 'be.topaz.disableEhboxEmailReception')
+                    let disableEhboxEmailReception = this.user.properties.find(p=>p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception')
                     disableEhboxEmailReception.typedValue.booleanValue = !!_.get(this,"disableEhboxEmailReception",false)
 
                     // Only save if we actually have data

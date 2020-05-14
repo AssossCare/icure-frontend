@@ -2230,65 +2230,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             }
 
-            checkEhboxMessage() {
-                if (!this.user) { return }
-                const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
-                const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
-                if ( /*localStorage.getItem('receiveMailAuto') === 'true' && */ shouldLoad) {
-                    localStorage.setItem('lastEhboxRefresh', Date.now())
-
-                    const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
-                        keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
-                        if (hcp.parentId) {
-                            return getParents(hcp.parentId, keyPairs)
-                        }
-                        return ([hcp, keyPairs])
-                    })
-
-                    this.$.ehBoxMessage.classList.remove('notification')
-                    if (!this.worker) { this.worker = new Worker() }
-
-                    getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
-                        this.worker.postMessage({
-                            action: "loadEhboxMessage",
-                            hcpartyBaseApi: this.api.hcpartyLight(),
-                            fhcHost: this.api.fhc().host,
-                            fhcHeaders: JSON.stringify(this.api.fhc().headers),
-                            language: this.language,
-                            iccHost: this.api.host,
-                            iccHeaders: JSON.stringify(this.api.headers),
-                            tokenId: this.api.tokenId,
-                            keystoreId: this.api.keystoreId,
-                            user: this.user,
-                            ehpassword: this.credentials.ehpassword,
-                            boxId: ["INBOX","SENTBOX"],
-                            alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
-                            keyPairs: kp,
-                            parentHcp: hcp
-                        })
-				    }))
-
-                    this.worker.onmessage = e => {
-
-                        const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
-                        if(parseInt(totalNewMessages)) {
-                            this.set("_forceEhBoxRefresh", true)
-                            this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
-                            this.$['ehBoxMessage'].classList.add('notification');
-                            setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                            setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
-                        }
-
-                        if(!!_.get(e,"data.forceRefresh",false)) {
-                            this.set("_forceEhBoxRefresh", true);
-                            setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                        }
-
-                    }
-
-                }
-            }
-
             getMHKeystore(){
                 const healthcarePartyId =this.user.healthcarePartyId;
                 // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
@@ -2753,6 +2694,66 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('mailerMessage', _.trim(_.get(e,"detail.message")))
                 this.$['mailerMessage'].classList.add('notification');
                 setTimeout(() => { this.$['mailerMessage'].classList.remove('notification'); }, 10000);
+            }
+
+            checkEhboxMessage() {
+                if (!this.user) { return }
+                const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
+                const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
+                const disableEhboxEmailReception = _.get(_.find(_.get(this,"user.properties",[]), it=> _.trim(_.get(it, "type.identifier")) === "org.taktik.icure.user.disableEhboxEmailReception"),"typedValue.booleanValue",false)
+                if (shouldLoad && !disableEhboxEmailReception) {
+                    localStorage.setItem('lastEhboxRefresh', Date.now())
+
+                    const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
+                        keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
+                        if (hcp.parentId) {
+                            return getParents(hcp.parentId, keyPairs)
+                        }
+                        return ([hcp, keyPairs])
+                    })
+
+                    this.$.ehBoxMessage.classList.remove('notification')
+                    if (!this.worker) { this.worker = new Worker() }
+
+                    getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
+                        this.worker.postMessage({
+                            action: "loadEhboxMessage",
+                            hcpartyBaseApi: this.api.hcpartyLight(),
+                            fhcHost: this.api.fhc().host,
+                            fhcHeaders: JSON.stringify(this.api.fhc().headers),
+                            language: this.language,
+                            iccHost: this.api.host,
+                            iccHeaders: JSON.stringify(this.api.headers),
+                            tokenId: this.api.tokenId,
+                            keystoreId: this.api.keystoreId,
+                            user: this.user,
+                            ehpassword: this.credentials.ehpassword,
+                            boxId: ["INBOX","SENTBOX"],
+                            alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
+                            keyPairs: kp,
+                            parentHcp: hcp
+                        })
+                    }))
+
+                    this.worker.onmessage = e => {
+
+                        const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
+                        if(parseInt(totalNewMessages)) {
+                            this.set("_forceEhBoxRefresh", true)
+                            this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
+                            this.$['ehBoxMessage'].classList.add('notification');
+                            setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
+                            setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
+                        }
+
+                        if(!!_.get(e,"data.forceRefresh",false)) {
+                            this.set("_forceEhBoxRefresh", true);
+                            setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
+                        }
+
+                    }
+
+                }
             }
 
         }
