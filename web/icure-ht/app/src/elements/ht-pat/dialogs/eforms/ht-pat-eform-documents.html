@@ -465,6 +465,7 @@
             }
 
             _refreshLinkedAndAvailableDocuments() {
+                this.set('selectedDocument', {})
                 this._getUnLinkedDocument()
                 this._getLinkedDocument()
                 return setTimeout(() => {
