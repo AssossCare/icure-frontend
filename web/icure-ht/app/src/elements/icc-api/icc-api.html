@@ -706,7 +706,7 @@
                 const optionsString = _.toPairs(options).map(([k, v]) => `${k}=${v}`).join('&')
                 if(!optionsString.length) option.type="doc-big-format"
 
-                return (!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id)
+                return (!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id))
                     .then( data => {
                         const printersPrefs = electron && data && data.ok ? JSON.parse(data.data) : JSON.parse(localStorage.getItem('selectedPrinter') || '{}')
                         const stickersPrefs = electron && data && data.ok ? _.find(printersPrefs, pref => pref.type === "sticker-mut") || {} : _.get(printersPrefs,"stickers")
@@ -721,10 +721,9 @@
 
                         return (printerName ? Promise.resolve(printerName) : this.printers().then(printers => printers.find(p => p.isDefault)).then(p => p && p.name))
                             .then(printerName =>
-                                this.api.electron().print(html,printerName)
+                                this.electron().print(html,printerName)
                             )
                     })
-
             })
         }
 
@@ -943,7 +942,7 @@
         }
 
         isElectronAvailable() {
-            return this.api.electron().isAvailable()
+            return this.electron().isAvailable() ? Promise.resolve(this.electron().isAvailable()) : this.electron().checkAvailable()
         }
 
         _powRoundFloatByPrecision(inputNumber,decimalPlaces=2){

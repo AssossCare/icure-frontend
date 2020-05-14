@@ -4334,10 +4334,7 @@
             }
 
             _readEidCard(){
-                fetch('http://127.0.0.1:16042/read')
-                    .then((response) => {
-                        return response.json()
-                    })
+                this.api.electron().read()
                     .then(res => {
                         if (res.cards[0]) {
                             this.set("selectedInvoice.idDocument",{})
