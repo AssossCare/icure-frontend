@@ -1021,7 +1021,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                   documentId: _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")),
               }),
               // Target ehealthbox message
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+              ((!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) && !_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}))) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
                   contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
@@ -1031,7 +1031,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                   isLabResultOrProtocol: true,
               }),
               // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
                   contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
