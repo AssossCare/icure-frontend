@@ -2699,7 +2699,8 @@
 		"sendDocumentByEmail": "Send a document by email",
 		"recipientsEmailAddresses": "Recipient(s) email address(es)",
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
-		"sendByEmail": "Send by email"
+		"sendByEmail": "Send by email",
+		"disableEhbox": "Disable eHealth box"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5493,7 +5494,8 @@
 		"sendDocumentByEmail": "Envoyer un document par email",
 		"recipientsEmailAddresses": "Adresse(s) email du/des destinataire(s)",
 		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible.",
-		"sendByEmail": "Envoyer par email"
+		"sendByEmail": "Envoyer par email",
+		"disableEhbox": "Désactiver l'eHealth box"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8243,6 +8245,7 @@
 		"sendDocumentByEmail": "Send a document by email",
 		"recipientsEmailAddresses": "Recipient(s) email address(es)",
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
-		"sendByEmail": "Send by email"
+		"sendByEmail": "Send by email",
+		"disableEhbox": "Disable eHealth box"
 	}
 }
