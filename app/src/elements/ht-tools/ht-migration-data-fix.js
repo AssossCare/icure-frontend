@@ -654,7 +654,7 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     }
 
     _recreateDocument(doc, pat) {
-        return !_.size(doc) || !_.size(pat) || !_.size(doc.attachmentId) ? null : this.api.document().getAttachmentAs(doc.id, doc.attachmentId, "pplication/octet-stream", null)
+        return !_.size(doc) || !_.size(pat) || !_.size(doc.attachmentId) ? null : this.api.document().getAttachmentAs(doc.id, doc.attachmentId, "application/octet-stream", null)
             .then(attachment => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment))
             .then(decryptedAttachment => this.api.document().newInstance(this.user, pat, _.omit(doc, [
                 "attachmentId",
