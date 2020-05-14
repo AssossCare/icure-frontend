@@ -466,7 +466,8 @@
                         return this._getDocuments()
                     }).then(availableDocument => {
                         this.set("availableDocumentList", availableDocument.map(ad => ad.document))
-                        return this._generateSumehrV2()
+                        //return this._generateSumehrV2()
+                        return this._generateSimplifiedSumehr()
                     }).then(sumehr => {
                         this.set('patientSumehr', sumehr)
                         return this._requestOAuthToken()
@@ -620,6 +621,78 @@
 
             _removeFormAttachment(){
                 this.$['htPatEformFormView']._removeFormAttachment(_.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', null)))
+            }
+
+            _generateSimplifiedSumehr(){
+                const promResolve = Promise.resolve()
+                return promResolve.then(() => {
+                    const xml = '<?xml version="1.0" encoding="utf-8"?>' +
+                        '<kmehrmessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.ehealth.fgov.be/standards/kmehr/schema/v1" xsi:schemaLocation="http://www.ehealth.fgov.be/standards/kmehr/schema/v1 kmehr_elements.xsd">' +
+                        '   <header>' +
+                        '       <standard>' +
+                        '         <cd S="CD-STANDARD" SV="1.0">20161201</cd>' +
+                        '       </standard>' +
+                        '       <id S="ID-KMEHR" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'.'+this.api.crypto().randomUuid()+'</id>' +
+                        '       <date>'+this.api.moment(new Date()).format('YYYY-MM-DD')+'</date>' +
+                        '       <time>'+this.api.moment(new Date()).format('HH:mm:ss')+'</time>' +
+                        '       <sender>' +
+                        '           <hcparty>' +
+                        '               <id S="ID-HCPARTY" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'</id>' +
+                        '               <cd S="CD-HCPARTY" SV="1.10">persphysician</cd>' +
+                        '               <firstname>'+_.get(this, 'hcp.firstName', null)+'</firstname>' +
+                        '               <familyname>'+_.get(this, 'hcp.lastName', null)+'</familyname>' +
+                        '               <telecom>' +
+                        '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
+                        '                   <cd S="CD-TELECOM" SV="1.0">mobile</cd>' +
+                        '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', '')+'</telecomnumber>' +
+                        '               </telecom>' +
+                        '               <telecom>' +
+                        '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
+                        '                   <cd S="CD-TELECOM" SV="1.0">email</cd>' +
+                        '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'email' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'email'), 'telecomNumber', '')+'</telecomnumber>' +
+                        '               </telecom>' +
+                        '               <telecom>' +
+                        '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
+                        '                   <cd S="CD-TELECOM" SV="1.0">phone</cd>' +
+                        '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'phone' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'phone'), 'telecomNumber', '')+'</telecomnumber>' +
+                        '               </telecom>' +
+                        '           </hcparty>' +
+                        '       </sender>' +
+                        '   </header>' +
+                        '   <folder>' +
+                        '       <id S="ID-KMEHR" SV="1.0">1</id>' +
+                        '       <patient>' +
+                        '           <id S="INSS" SV="1.0">'+_.get(this, 'patient.ssin', null)+'</id>' +
+                        '           <firstname>'+_.get(this, 'patient.firstName', null)+'</firstname>' +
+                        '           <familyname>'+_.get(this, 'patient.lastName', null)+'</familyname>' +
+                        '           <birthdate>' +
+                        '               <date>'+(_.get(this, 'patient.dateOfBirth', null) ? this.api.moment(_.get(this, 'patient.dateOfBirth', null)).format('YYYY-MM-DD') : null)+'</date>' +
+                        '           </birthdate>' +
+                        '           <sex>' +
+                        '               <cd S="CD-SEX" SV="1.1">'+_.get(this, 'patient.gender', null)+'</cd>' +
+                        '           </sex>' +
+                        '           <address>' +
+                        '               <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
+                        '               <country>' +
+                        '                   <cd S="CD-FED-COUNTRY" SV="1.2">be</cd>' +
+                        '               </country>' +
+                        '               <zip>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'postalCode', null))  && _.trim(_.get(adr, 'postalCode', null)) !== ""), 'postalCode', null)+'</zip>' +
+                        '               <city>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'city', null))  && _.trim(_.get(adr, 'city', null)) !== ""), 'city', null)+'</city>' +
+                        '               <street>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'street', null))  && _.trim(_.get(adr, 'street', null)) !== ""), 'street', null)+'</street>' +
+                        '               <housenumber>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'houseNumber', null))  && _.trim(_.get(adr, 'houseNumber', null)) !== ""), 'houseNumber', null)+'</housenumber>' +
+                        '           </address>' +
+                        '           <telecom>' +
+                        '               <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
+                        '               <cd S="CD-TELECOM" SV="1.0">phone</cd>' +
+                        '               <telecomnumber>'+_.get(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', '')+'</telecomnumber>' +
+                        '           </telecom>' +
+                        '           <usuallanguage>'+_.get(this, 'language', 'fr')+'</usuallanguage>' +
+                        '       </patient>' +
+                        '   </folder>' +
+                        '</kmehrmessage>'
+
+                    return xml
+                })
             }
 
         }
