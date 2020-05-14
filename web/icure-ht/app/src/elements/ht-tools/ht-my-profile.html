@@ -31,7 +31,9 @@
 <link rel="import" href="../../styles/shared-styles.html">
 
 <dom-module id="ht-my-profile">
+    
 	<template>
+        
 		<style include="dialog-style buttons-style scrollbar-style paper-tabs-style shared-styles">
 
 			#dialog{
@@ -463,7 +465,9 @@
 </style>
 
 		<paper-dialog id="dialog" class="myProfileDialog" opened="{{opened}}">
+
             <div class="administrative-panel">
+
 				<paper-tabs selected="{{tabs}}">
                     <paper-tab id="tab-access" class="adm-tab"><iron-icon icon="icons:lock" class="marginRight10"></iron-icon><span class="nomobile">[[localize('my_access','Mes accès',language)]]</span></paper-tab>
                     <paper-tab id="tab-details" class="adm-tab"><iron-icon icon="icons:account-circle" class="marginRight10"></iron-icon><span class="nomobile">[[localize('my_details','Mes coordonnées',language)]]</span></paper-tab>
@@ -473,6 +477,7 @@
                         <paper-tab id="tab-printer" class="adm-tab"><iron-icon icon="icons:print" class="marginRight10"></iron-icon><span class="nomobile">[[localize('def_printer','Default Printers',language)]]</span></paper-tab>
                     </template>
 				</paper-tabs>
+
                 <div class="onlymobile">
                     <paper-tooltip position="bottom" for="tab-access">[[localize('my_access','My access',language)]]</paper-tooltip>
                     <paper-tooltip position="bottom" for="tab-details">[[localize('my_details','My details',language)]]</paper-tooltip>
@@ -482,10 +487,13 @@
                 </div>
 
                 <iron-pages selected="[[tabs]]" class="panel-content">
+
                     <page>
 
                         <div class="horizontal" style="margin-top:10px">
+
                             <vaadin-form-layout>
+
                                 <div class="col-lg-6 tile">
                                     <h2><iron-icon icon="communication:vpn-key"></iron-icon> [[localize('login_opt','Login option',language)]]</h2>
                                     <paper-input label="Login*" value="{{user.login}}"></paper-input>
@@ -592,9 +600,9 @@
                                             <paper-radio-button name="prd">[[localize('prd','Production',language)]]</paper-radio-button>
                                         </paper-radio-group>
                                     </div>
-
                                     <div class="horizontal line p8">
-                                        <vaadin-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</vaadin-checkbox>
+                                        <!--<vaadin-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</vaadin-checkbox>-->
+                                        <vaadin-checkbox checked="{{disableEhboxEmailReception}}">[[localize('disableEhbox','Disable eHealth box',language)]]</vaadin-checkbox>
                                     </div>
                                 </div>
 
@@ -661,7 +669,6 @@
                     <page>
                         <dynamic-bank-account opened="{{opened}}" api="[[api]]" user="{{user}}" hcp="{{hcp}}" i18n="[[i18n]]" language="[[language]]"></dynamic-bank-account>
                     </page>
-
 
                     <page>
 
@@ -775,9 +782,10 @@
 
                     </page>
 
-
                 </iron-pages>
+
 			</div>
+
 			<div class="buttons">
 				<paper-button class="button" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[_isEdmgRegitrationAvailable(allEDmgregistered, tabs)]]">
@@ -790,12 +798,18 @@
                     <paper-button class="button button--save" disabled>[[localize('save','Save',language)]]</paper-button>
                 </template>
 			</div>
+
 		</paper-dialog>
+
 	</template>
+
 	<script>
+
         import * as models from 'icc-api/dist/icc-api/model/models';
         import iban from 'iban'
+
         class HtExportKey extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+
             static get is() {
                 return 'ht-my-profile';
             }
@@ -931,6 +945,10 @@
                         type: Boolean,
                         value: localStorage.getItem('receiveMailAuto') ? localStorage.getItem('receiveMailAuto') : true
                     },
+                    disableEhboxEmailReception: {
+                        type: Boolean,
+                        value: false
+                    },
                     printers: {
                         type: Array,
                         value: []
@@ -994,7 +1012,15 @@
             }
 
             static get observers() {
-                return ['apiReady(api,user,opened)', '_userChanged(user)', '_autoMailChanged(receiveMailAuto)', '_selectedPrinterChanged(selectedPrinter.*)', '_isValidLogin(user, user.login)', '_isValidEmailPro(adr, adr.proMail)', '_canSaveInfo(emailProVerification, loginVerification)'];
+                return [
+                    'apiReady(api,user,opened)',
+                    '_userChanged(user)',
+                    '_autoMailChanged(receiveMailAuto)',
+                    '_selectedPrinterChanged(selectedPrinter.*)',
+                    '_isValidLogin(user, user.login)',
+                    '_isValidEmailPro(adr, adr.proMail)',
+                    '_canSaveInfo(emailProVerification, loginVerification)'
+                ];
             }
 
             ready() {
@@ -1022,8 +1048,7 @@
                 propAr.typedValue = {type: 'BOOLEAN', booleanValue: ev.detail.value === 'wide'}
             }
 
-            showEHPreferrences(user)
-            {
+            showEHPreferrences(user) {
                 const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
                     (this.user.properties[this.user.properties.length] = {
                         type: {identifier: 'org.taktik.icure.user.preferredhub'},
@@ -1058,6 +1083,13 @@
                         typedValue: {type: 'STRING', stringValue: ''}
                     });
                 this.set('userIBAN', propIBAN.typedValue.stringValue);
+
+                const ehboxEmailReception = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception') ||
+                    (this.user.properties[this.user.properties.length] = {
+                        type: {identifier: 'org.taktik.icure.user.disableEhboxEmailReception', localized: false, unique: false},
+                        typedValue: {type: 'BOOLEAN', booleanValue: false}
+                    });
+                this.set('disableEhboxEmailReception', !!_.get(ehboxEmailReception,"typedValue.booleanValue",false));
             }
 
             _getOARegStatus(reg){
@@ -1134,7 +1166,6 @@
 
                 return regs;
             }
-
 
             registerToEDMGbyOA(reg) {
                 if (this.api.tokenId) {
@@ -1283,7 +1314,6 @@
                 this.set("hcp.contactPersonHcpId",this.contactPersonHcpId)
             }
 
-
             qrCode(login, secret) {
                 return login && secret ? `otpauth://totp/${login}:iCure-cloud?secret=${secret}&issuer=icure-cloud` : '';
             }
@@ -1319,40 +1349,6 @@
                 this.$.dialog.close();
             }
 
-            confirm() {
-                if ((!this.userPassword || this.userPassword.length > 7) && this.userPassword === this.userConfirmation) {
-                    this.user.passwordHash = this.userPassword || this.user.passwordHash
-                    let propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub')
-                    propHub.typedValue.stringValue = this.userPreferredHub;
-                    let propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv')
-                    propEnv.typedValue.stringValue = this.userEHealthEnv;
-
-                    let propMHNihii = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.medicalHouse.nihii')
-                    propMHNihii.typedValue.stringValue = this.userMedicalHouseNihii;
-
-                    // Only save if we actually have data
-                    if( this.hcp && this.hcp.financialInstitutionInformation ) this.hcp.financialInstitutionInformation =  _.filter( this.hcp.financialInstitutionInformation, 'bankAccount' );
-
-                    // this.api.user().modifyUser(this.user)
-                    //     .then(user => this.api.register(user,"user"))
-                    //     .then(user => this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true})))
-                    //     .then(() => this.api.hcparty().modifyHealthcareParty(this.hcp))
-                    //     .then(hcp => this.api.register(hcp,"hcp"))
-                    //     .then(hcp => this.hcp = hcp)
-                    //     .finally(() => this.$.dialog.close())
-                    if(!_.isEmpty(this.adr))this.addressProChanged();
-                    Promise.all([this.api.user().modifyUser(this.user), this.api.hcparty().modifyHealthcareParty(this.hcp)])
-                    .then(([user,hcp]) => {
-                        this.api.register(hcp,'hcp');
-                        this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
-                        this.$.dialog.close()
-                    })
-                    .catch(err => console.error(err))
-
-                }
-            }
-
-            // Resolve and assign BIC based on IBAN
             _evalBic( event, fieldObject ) {
 
                 // Could be a click event / we wouldn't have any value here
@@ -1546,8 +1542,9 @@
                 }
             }
 
-
-            _isMedicalHouse(hcpType) {return hcpType && hcpType.toLowerCase() === "medicalhouse";}
+            _isMedicalHouse(hcpType) {
+                return _.trim(hcpType) && _.trim(hcpType).toLowerCase() === "medicalhouse"
+            }
 
             addressProChanged(){
                 if(!this.hcp)return;
@@ -1591,11 +1588,50 @@
                 setTimeout(() => this.api._isValidMail(_.get(this.adr, 'proMail', null)) ? this.set('emailProVerification', true) : this.set('emailProVerification', false), 1000)
             }
 
-            _canSaveInfo(){
+            _canSaveInfo() {
                return _.get(this, 'emailProVerification', false) && _.get(this, 'loginVerification', false)
             }
+
+            confirm() {
+
+                if ((!this.userPassword || this.userPassword.length > 7) && this.userPassword === this.userConfirmation) {
+
+                    this.user.passwordHash = this.userPassword || this.user.passwordHash
+
+                    let propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub')
+                    propHub.typedValue.stringValue = this.userPreferredHub;
+
+                    let propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv')
+                    propEnv.typedValue.stringValue = this.userEHealthEnv;
+
+                    let propMHNihii = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.medicalHouse.nihii')
+                    propMHNihii.typedValue.stringValue = this.userMedicalHouseNihii;
+
+                    let disableEhboxEmailReception = this.user.properties.find(p=>p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception')
+                    disableEhboxEmailReception.typedValue.booleanValue = !!_.get(this,"disableEhboxEmailReception",false)
+
+                    // Only save if we actually have data
+                    if( this.hcp && this.hcp.financialInstitutionInformation ) this.hcp.financialInstitutionInformation =  _.filter( this.hcp.financialInstitutionInformation, 'bankAccount' );
+
+                    if(!_.isEmpty(this.adr)) this.addressProChanged();
+
+                    Promise.all([this.api.user().modifyUser(this.user), this.api.hcparty().modifyHealthcareParty(this.hcp)])
+                        .then(([user,hcp]) => {
+                            this.api.register(hcp,'hcp');
+                            this.api.register(user,'user');
+                            this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
+                            this.$.dialog.close()
+                        })
+                        .catch(err => console.error(err))
+
+                }
+            }
+
+
         }
 
         customElements.define(HtExportKey.is, HtExportKey);
+        
 	</script>
+    
 </dom-module>
