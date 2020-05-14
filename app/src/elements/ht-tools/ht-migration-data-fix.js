@@ -672,6 +672,40 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .then(([mdoc,encryptedFileContent]) => this.api.document().setAttachment(mdoc.id, null, encryptedFileContent)))
     }
 
+    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription, documentDate) {
+
+        const promResolve = Promise.resolve()
+        const documentId = _.trim(_.get(document,"id",""))
+        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
+        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
+        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
+
+        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
+            .then(patientObject => this.api.contact().newInstance(this.user, patientObject,{
+                groupId: this.api.crypto().randomUuid(),
+                created: documentDate,
+                modified: +new Date,
+                author: _.trim(_.get(this,"user.id","")),
+                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                openingDate:_.get(contact,"openingDate",""),
+                closingDate: _.get(contact,"closingDate",""),
+                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
+                descr: importDescription,
+                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
+                subContacts: []
+            }).then(contactInstance => [patientObject,contactInstance]))
+            .then(([patientObject,contactInstance]) => this.api.contact().createContactWithUser(this.user, contactInstance).then(createdContact => [patientObject,createdContact]))
+            .then(([patientObject,createdContact]) => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
+            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
+            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
+            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
+                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>e).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>e).then(()=>null))) :
+                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => _.trim(_.get(contact,"id"))) /* Return original ctc id (we just re-imported) when successful -> will be deleted */
+            )
+            .catch(e => null)
+
+    }
+
     getPatientsByHcp( hcpId ) {
 
         // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["ee2743be-8c29-4e33-a743-be8c29be3390","ba0e7498-ee59-41bf-8e74-98ee5991bf9f"]}))
@@ -731,40 +765,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
             })
             .then(() => this._fixLabResultsProtocols(documentsByPatient))
-
-    }
-
-    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription, documentDate) {
-
-        const promResolve = Promise.resolve()
-        const documentId = _.trim(_.get(document,"id",""))
-        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
-        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
-        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
-
-        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
-            .then(patientObject => this.api.contact().newInstance(this.user, patientObject,{
-                groupId: this.api.crypto().randomUuid(),
-                created: documentDate,
-                modified: +new Date,
-                author: _.trim(_.get(this,"user.id","")),
-                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
-                openingDate:_.get(contact,"openingDate",""),
-                closingDate: _.get(contact,"closingDate",""),
-                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
-                descr: importDescription,
-                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
-                subContacts: []
-            }).then(contactInstance => [patientObject,contactInstance]))
-            .then(([patientObject,contactInstance]) => this.api.contact().createContactWithUser(this.user, contactInstance).then(createdContact => [patientObject,createdContact]))
-            .then(([patientObject,createdContact]) => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
-            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
-            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
-            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
-                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>e).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>e).then(()=>null))) :
-                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => _.trim(_.get(contact,"id"))) /* Return original ctc id (we just re-imported) when successful -> will be deleted */
-            )
-            .catch(e => null)
 
     }
 
@@ -828,6 +828,8 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .then(promisesCarrier=>console.log("- DONE -"))
 
     }
+
+    // Todo: threat patients one by one (recreate docs && doImport) and not the whole collection of pats at once
 
 }
 
