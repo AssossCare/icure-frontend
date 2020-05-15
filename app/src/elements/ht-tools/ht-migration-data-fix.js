@@ -15,6 +15,7 @@ import {Base64} from "js-base64";
 import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
 class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement))  {
+
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style">
@@ -453,17 +454,21 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     <div class="hub-submenu-container">
                         <ht-spinner active="[[isLoading]]"></ht-spinner>
                        <paper-button on-tap="doPatientTelFix" class="button" >Patient tel fix</paper-button>
-                       <paper-button on-tap="doDocSfkFix" class="button" >Document sfk fix</paper-button>
+                       <paper-button on-tap="doDocSfkFix" class="button" >Lab results fix</paper-button>
                     </div>
                 </div>
                 <div class="mig-menu-view">
                     <!-- content here -->
                     <template is="dom-if" if="[[patientTelFix]]">
-                        <paper-button on-tap="startPatientTelFix" class="button" >Fix patients</paper-button>
+                        <br />
+                        <paper-button on-tap="startPatientTelFix" class="button button--save" >RUN NOW</paper-button>
+                        <br />
                         <div>Processing [[posPat]] of [[numPats]]</div>
                     </template>
                     <template is="dom-if" if="[[docSfkFix]]">
-                        <paper-button on-tap="startDocSfkFix" class="button" >Fix sfk docs</paper-button>
+                        <br />
+                        <paper-button on-tap="startDocSfkFix_v2" class="button button--save" >RUN NOW</paper-button>
+                        <br />
                         <div>Processing [[posFix]] of [[numFix]]</div>
                     </template>
                 </div>
@@ -672,40 +677,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .then(([mdoc,encryptedFileContent]) => this.api.document().setAttachment(mdoc.id, null, encryptedFileContent)))
     }
 
-    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription, documentDate) {
-
-        const promResolve = Promise.resolve()
-        const documentId = _.trim(_.get(document,"id",""))
-        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
-        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
-        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
-
-        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
-            .then(patientObject => this.api.contact().newInstance(this.user, patientObject,{
-                groupId: this.api.crypto().randomUuid(),
-                created: documentDate,
-                modified: +new Date,
-                author: _.trim(_.get(this,"user.id","")),
-                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
-                openingDate:_.get(contact,"openingDate",""),
-                closingDate: _.get(contact,"closingDate",""),
-                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
-                descr: importDescription,
-                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
-                subContacts: []
-            }).then(contactInstance => [patientObject,contactInstance]))
-            .then(([patientObject,contactInstance]) => this.api.contact().createContactWithUser(this.user, contactInstance).then(createdContact => [patientObject,createdContact]))
-            .then(([patientObject,createdContact]) => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
-            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
-            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
-            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
-                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>e).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>e).then(()=>null))) :
-                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => _.trim(_.get(contact,"id"))) /* Return original ctc id (we just re-imported) when successful -> will be deleted */
-            )
-            .catch(e => null)
-
-    }
-
     getPatientsByHcp( hcpId ) {
 
         // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["ee2743be-8c29-4e33-a743-be8c29be3390","ba0e7498-ee59-41bf-8e74-98ee5991bf9f"]}))
@@ -829,9 +800,180 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-    // Todo: threat patients one by one (recreate docs && doImport) and not the whole collection of pats at once
-    // Split les pats / diviser d'office par chuncks de 100 / 500 ?
-    // Trouver un moyen de retenir les pats déjà traités pat -> codes / tags / parameters / properties
+    _importLabResultOrProtocolAsSvcCollection(patientId, contact, document, documentType, documentDescription, documentDate) {
+
+        const promResolve = Promise.resolve()
+        const documentId = _.trim(_.get(document,"id",""))
+        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
+        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
+        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
+
+        return (!documentId || !patientId || !_.size(document)) ? promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
+            .then(patientObject => this.api.contact().newInstance(this.user, patientObject,{
+                groupId: this.api.crypto().randomUuid(),
+                created: documentDate,
+                modified: +new Date,
+                author: _.trim(_.get(this,"user.id","")),
+                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                openingDate:_.get(contact,"openingDate",""),
+                closingDate: _.get(contact,"closingDate",""),
+                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
+                descr: importDescription,
+                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
+                subContacts: []
+            }).then(contactInstance => [patientObject,contactInstance]))
+            .then(([patientObject,contactInstance]) => this.api.contact().createContactWithUser(this.user, contactInstance).then(createdContact => [patientObject,createdContact]))
+            .then(([patientObject,createdContact]) => this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
+            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
+            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
+            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
+                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>null).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>null).then(()=>null))) :
+                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => _.trim(_.get(contact,"id"))) /* Return original ctc id (we just re-imported) when successful -> will be deleted */
+            )
+            .catch(e => null)
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    _importLabResultOrProtocolAsSvcCollection_v2(patient, contact, document, documentType, documentDescription, documentDate) {
+
+        const promResolve = Promise.resolve()
+        const documentId = _.trim(_.get(document,"id",""))
+        const documentTypeLabel = _.trim(documentDescription) ? _.trim(documentDescription) : _.trim(_.get(document,"name"))
+        const laboAndProtocol = _.trim((!!_.trim(_.get(document,"docInfos.labo","")) ? _.trim(_.get(document,"docInfos.labo","")) : "" ) + ( !!_.trim(_.get(document,"docInfos.protocol","")) ? " (Protocole #" + _.trim(_.get(document,"docInfos.protocol","")) + ")" : "" ))
+        const importDescription = _.trim(laboAndProtocol + (_.trim(laboAndProtocol) && _.trim(documentTypeLabel) ? " - " : "") + _.trim(documentTypeLabel))
+
+        return !documentId || !_.trim(_.get(patient,"id")) || !_.size(document) ? promResolve : promResolve
+            .then(() => this.api.contact().newInstance(this.user, patient,{
+                groupId: this.api.crypto().randomUuid(),
+                created: documentDate,
+                modified: +new Date,
+                author: _.trim(_.get(this,"user.id","")),
+                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                openingDate:_.get(contact,"openingDate",""),
+                closingDate: _.get(contact,"closingDate",""),
+                encounterType: {type: "CD-TRANSACTION", version: "1", code: documentType},
+                descr: importDescription,
+                tags: _.uniq(_.compact([{type:'CD-TRANSACTION', code:documentType},{type:"originalEhBoxDocumentId", id:documentId}, _.find(_.get(contact,"tags"), {type:"BE-CONTACT-TYPE"})])),
+                subContacts: []
+            }))
+            .then(contactInstance => this.api.contact().createContactWithUser(this.user, contactInstance))
+            .then(createdContact => this.api.form().newInstance(this.user, patient, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription}).then(formInstance=>[createdContact,formInstance]))
+            .then(([createdContact,formInstance]) => this.api.form().createForm(formInstance).then(createdForm=>[createdContact,_.trim(_.get(createdForm,"id",""))]))
+            .then(([createdContact,createdFormId]) => this.api.beresultimport().doImport(documentId, _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(document,"docInfos.protocol",""))), createdFormId, null, _.get(document,"enckeys",[]).join(','), createdContact).then(updatedContactAfterImport => [createdContact,createdFormId,updatedContactAfterImport]).catch(e=>[createdContact,createdFormId, null]))
+            .then(([createdContact,createdFormId,updatedContactAfterImport]) => !_.size(updatedContactAfterImport) ?
+                promResolve.then(()=>this.api.form().deleteForms(createdFormId).catch(e=>null).then(()=>this.api.contact().deleteContacts(_.get(createdContact,"id")).catch(e=>null).then(()=>null))) :
+                this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{tags:[{ type: 'CD-TRANSACTION', code: documentType },{ type: "originalEhBoxDocumentId", id: documentId }],descr: importDescription}]})).then(() => this.api.contact().deleteContacts(_.trim(_.get(contact,"id"))))
+            )
+            .catch(e => null)
+
+    }
+
+    _fixLabResultsProtocols_v2(pat, doc) {
+
+        const promResolve = Promise.resolve()
+        const documentId = _.trim(_.get(doc, "document.id"))
+
+        return this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), documentId, _.size(_.get(doc, "document.encryptionKeys", [])) ? _.get(doc, "document.encryptionKeys", []) : _.get(doc, "document.delegations", []))
+            .then(({extractedKeys: enckeys}) => enckeys)
+            .then(enckeys => this.api.beresultimport().canHandle(documentId, enckeys.join(',')).then(canHandle => [enckeys, !!canHandle]).catch(e => [enckeys, false]))
+            .then(([enckeys, canHandle]) => !canHandle ? [enckeys, canHandle, null] : this.api.beresultimport().getInfos(documentId, false, null, enckeys.join(',')).then(docInfos => [enckeys, canHandle, docInfos]).catch(e => [enckeys, canHandle, null]))
+            .then(([enckeys, canHandle, docInfos]) => !canHandle ? null : _.merge({}, doc, {document: {enckeys: enckeys, docInfos: _.pick(_.head(docInfos), ["protocol", "labo", "codes"])}}))
+            .then(doc => !_.size(doc) ? promResolve : promResolve.then(() => this._importLabResultOrProtocolAsSvcCollection_v2(
+                pat,
+                _.get(doc, "contact"),
+                _.get(doc, "document"),
+                _.get(_.find(_.get(doc,"document.docInfos.codes", []), {type:"CD-TRANSACTION"}), "code", "result"),
+                _.get(doc, "description"),
+                (parseInt(_.get(doc,"service.valueDate"))||0 ? parseInt(_.get(doc,"service.valueDate")) : parseInt(_.get(doc, "openingDate")))
+            )))
+
+    }
+
+    _getPatientsByHcp_v2( hcpId ) {
+
+        // Todo: remove this
+        // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["2708da20-597e-4c86-88da-20597e8c8637", "e61880b2-d802-40fc-9880-b2d80240fc8c"]}))
+
+        return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+            .then(pl => {
+                pl.rows = _
+                    .chain(pl.rows)
+                    .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:"labResultsAndProtocolsGotReImported"})))
+                    .value()
+                return {
+                    rows:pl.rows,
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }
+            })
+            .catch(()=>null)
+        )||[];
+
+    }
+
+    startDocSfkFix_v2() {
+
+        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+        this.api.setPreventLogging();
+
+        return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
+            .then(hcp => this.set("hcp",hcp))
+            .then(() => this._getPatientsByHcp_v2(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
+            .then(myPatients => {
+
+                let promPat = Promise.resolve([])
+                let promDoc = Promise.resolve([])
+
+                this.set("numFix", _.size(myPatients))
+                this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)
+
+                _.map(myPatients, pat => {
+
+                    promPat = promPat.then(promisesCarrierPat => this._getDirectoryDocuments(pat).then(doclist => {
+
+                        _.map(_.compact(doclist), doc => {
+
+                            promDoc = promDoc.then(promiseCarrierDoc => (
+                                (!_.size(_.get(doc, "document.delegations")) && !_.size(_.get(doc, "document.encryptionKeys"))) ||
+                                !_.trim(_.get(doc, "contact.id")) ||
+                                !_.trim(_.get(doc, "service.id")) ||
+                                !_.trim(_.get(doc, "document.id")) ||
+                                !_.trim(_.get(doc, "document.attachmentId")) ||
+                                ["pdf","jpg","jpeg","png","gif","rtf"].indexOf(((_.trim(_.get(doc, "document.name")).split(".")||[]).pop()).toLowerCase()) > -1 ||
+                                ["com.adobe.pdf", "public.jpeg", "public.png", "public.rtf", "public.tiff"].indexOf(_.trim(_.get(doc, "document.mainUti")).toLowerCase()) > -1
+                            ) ? promiseCarrierDoc||[] : this._fixLabResultsProtocols_v2(pat, doc).then(x => _.concat(promiseCarrierDoc, [x])).catch(x => _.concat(promiseCarrierDoc, [null])))
+
+                        })
+
+                        return promDoc
+                            .then(x => _.concat(promisesCarrierPat, x))
+                            .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReImported"}]})))
+                            .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
+                            .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+
+                    }))
+
+                })
+
+                return promPat
+
+            })
+            .then(promPat => {})
+
+    }
 
 }
 
