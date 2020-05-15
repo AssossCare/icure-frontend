@@ -283,7 +283,7 @@
                 </div>
             </div>
             <div class="panel-button">
-
+                <!--<paper-button class="button button--other" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>-->
             </div>
         </div>
 
@@ -405,6 +405,23 @@
                 if(_.get(e, 'currentTarget.dataset.item', null)){
                     this.dispatchEvent(new CustomEvent('open-invoice-detail-panel', {bubbles: true, composed: true, detail: {selectedInv: JSON.parse(_.get(e, 'currentTarget.dataset.item', null))}}))
                 }
+            }
+
+            _correctAllInvoice(){
+                let prom = Promise.resolve()
+
+                _.get(this, 'listOfInvoice', []).map(inv => {
+                    _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
+                        ic.pending = true
+                        ic.resent = false
+                    })
+                    inv.printedDate = this.api.moment(new Date).format('YYYYMMDD')
+                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+                })
+
+                prom.then(listOfModifiedInv => {
+                    console.log(listOfModifiedInv)
+                })
             }
 
         }
