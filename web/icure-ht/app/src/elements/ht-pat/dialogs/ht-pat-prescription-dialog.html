@@ -839,8 +839,11 @@
                         const key = Object.keys(this._reimbursementReasonToInstructions).find(key => key === medicationValue.reimbursementReason.code);
                         medicationValue.instructionsForReimbursement = key && this._reimbursementReasonToInstructions[key] || this._reimbursementReasonToInstructions.notreimbursable;
                     }
+
+                    medicationValue.temporality = null
                  });
-                return medsDup;
+
+                return this.api.deleteRecursivelyNullValues(medsDup);
             }
 
             _printPrescriptions(e) {
