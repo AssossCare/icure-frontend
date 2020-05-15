@@ -830,6 +830,8 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     }
 
     // Todo: threat patients one by one (recreate docs && doImport) and not the whole collection of pats at once
+    // Split les pats / diviser d'office par chuncks de 100 / 500 ?
+    // Trouver un moyen de retenir les pats déjà traités pat -> codes / tags / parameters / properties
 
 }
 
