@@ -1247,6 +1247,17 @@
             return true
         }
 
+        deleteRecursivelyNullValues(obj){
+            const ithis = this
+            return _.transform(obj, function (o, v, k) {
+                if (v && typeof v === 'object') {
+                    o[k] = ithis.deleteRecursivelyNullValues(v);
+                } else if (v !== null) {
+                    o[k] = v;
+                }
+            });
+        }
+
     }
 
     customElements.define(IccApi.is, IccApi)
