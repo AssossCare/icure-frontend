@@ -460,16 +460,13 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 <div class="mig-menu-view">
                     <!-- content here -->
                     <template is="dom-if" if="[[patientTelFix]]">
-                        <br />
-                        <paper-button on-tap="startPatientTelFix" class="button button--save" >RUN NOW</paper-button>
-                        <br />
-                        <div>Processing [[posPat]] of [[numPats]]</div>
+                        <br /><paper-button on-tap="startPatientTelFix" class="button button--save" >RUN NOW</paper-button>
+                        <br /><div>Processing [[posPat]] of [[numPats]]</div>
                     </template>
                     <template is="dom-if" if="[[docSfkFix]]">
-                        <br />
-                        <paper-button on-tap="startDocSfkFix_v2" class="button button--save" >RUN NOW</paper-button>
-                        <br />
-                        <div>Processing [[posFix]] of [[numFix]]</div>
+                        <br /><paper-button on-tap="startDocSfkFix_v2" class="button button--save" >RUN NOW</paper-button>
+                        <br /><div><b>Total patients: [[numFix]]</b><br />Processing patient [[posFix]]/[[numFix]] : [[patientData]]</div>
+                        <br /><div><b>Total documents: [[totalDocumentCount]]</b><br />Processing document [[processedDocumentCount]]/[[totalDocumentCount]] : [[documentData]]</div>
                     </template>
                 </div>
             </div>
@@ -520,6 +517,18 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             posFix:{
                 type: Number,
                 value:0
+            },
+            processedDocumentCount:{
+                type: Number,
+                value: 0
+            },
+            totalDocumentCount:{
+                type: Number,
+                value:0
+            },
+            documentData:{
+                type: String,
+                value:""
             }
         };
     }
@@ -906,11 +915,14 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         // Todo: remove this
         // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["2708da20-597e-4c86-88da-20597e8c8637", "e61880b2-d802-40fc-9880-b2d80240fc8c"]}))
 
+        const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
+
         return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
             .then(pl => {
                 pl.rows = _
                     .chain(pl.rows)
                     .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:"labResultsAndProtocolsGotReImported"})))
+                    .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
                     .value()
                 return {
                     rows:pl.rows,
@@ -942,29 +954,40 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                 _.map(myPatients, pat => {
 
-                    promPat = promPat.then(promisesCarrierPat => this._getDirectoryDocuments(pat).then(doclist => {
+                    promPat = promPat
+                        .then(promisesCarrierPat => (this.set("patientData", _.trim(_.get(pat,"firstName")) + " " + _.trim(_.get(pat,"lastName")) + " - " +_.trim(_.get(pat,"dateOfBirth")).substring(6,8) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(4,6) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(0,4))||true) && promisesCarrierPat)
+                        .then(promisesCarrierPat => this._getDirectoryDocuments(pat).then(doclist => {
 
-                        _.map(_.compact(doclist), doc => {
+                            this.set("totalDocumentCount", _.size(doclist))
+                            this.set("processedDocumentCount", 0)
 
-                            promDoc = promDoc.then(promiseCarrierDoc => (
-                                (!_.size(_.get(doc, "document.delegations")) && !_.size(_.get(doc, "document.encryptionKeys"))) ||
-                                !_.trim(_.get(doc, "contact.id")) ||
-                                !_.trim(_.get(doc, "service.id")) ||
-                                !_.trim(_.get(doc, "document.id")) ||
-                                !_.trim(_.get(doc, "document.attachmentId")) ||
-                                ["pdf","jpg","jpeg","png","gif","rtf"].indexOf(((_.trim(_.get(doc, "document.name")).split(".")||[]).pop()).toLowerCase()) > -1 ||
-                                ["com.adobe.pdf", "public.jpeg", "public.png", "public.rtf", "public.tiff"].indexOf(_.trim(_.get(doc, "document.mainUti")).toLowerCase()) > -1
-                            ) ? promiseCarrierDoc||[] : this._fixLabResultsProtocols_v2(pat, doc).then(x => _.concat(promiseCarrierDoc, [x])).catch(x => _.concat(promiseCarrierDoc, [null])))
+                            _.map(_.compact(doclist), doc => {
 
-                        })
+                                promDoc = promDoc
+                                    .then(promiseCarrierDoc => {
+                                        this.set("processedDocumentCount", (parseInt(_.get(this,"processedDocumentCount",0))||0)+1)
+                                        this.set("documentData", _.get(doc, "description"))
+                                        return promiseCarrierDoc
+                                    })
+                                    .then(promiseCarrierDoc => (
+                                        (!_.size(_.get(doc, "document.delegations")) && !_.size(_.get(doc, "document.encryptionKeys"))) ||
+                                        !_.trim(_.get(doc, "contact.id")) ||
+                                        !_.trim(_.get(doc, "service.id")) ||
+                                        !_.trim(_.get(doc, "document.id")) ||
+                                        !_.trim(_.get(doc, "document.attachmentId")) ||
+                                        ["pdf","jpg","jpeg","png","gif","rtf"].indexOf(((_.trim(_.get(doc, "document.name")).split(".")||[]).pop()).toLowerCase()) > -1 ||
+                                        ["com.adobe.pdf", "public.jpeg", "public.png", "public.rtf", "public.tiff"].indexOf(_.trim(_.get(doc, "document.mainUti")).toLowerCase()) > -1
+                                    ) ? promiseCarrierDoc||[] : this._fixLabResultsProtocols_v2(pat, doc).then(x => _.concat(promiseCarrierDoc, [x])).catch(x => _.concat(promiseCarrierDoc, [null])))
 
-                        return promDoc
-                            .then(x => _.concat(promisesCarrierPat, x))
-                            .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReImported"}]})))
-                            .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
-                            .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+                            })
 
-                    }))
+                            return promDoc
+                                .then(x => _.concat(promisesCarrierPat, x))
+                                .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReImported"}]})))
+                                .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
+                                .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+
+                        }))
 
                 })
 
