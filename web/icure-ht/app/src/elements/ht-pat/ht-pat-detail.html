@@ -3436,8 +3436,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             hub: ["physician", "specialist"],
                             therLink: ["physician", "specialist"],
                             consent: ["physician", "specialist"],
-                            mda: ["physician"],
-                            insurability: ["medicalHouse", "specialist"]
+                            mda: ["physician", "medicalHouse"],
+                            insurability: ["specialist"]
                         }
                     }
                 };
@@ -5273,12 +5273,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             if(out && out.length){
                                 //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
                                 let insuFound = false;
-                                insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
+                                insuFound = _.get(this, 'patient.insurabilities', []).filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
                                 if(insuFound && insuFound.length){
                                     insuFound.map(p => {
                                         //1 if found: check if CT1/2 is changed
                                         if (
-                                            (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
+                                            (_.get(ins, 'ct1', null) && (!p.parameters || p.parameters.tc1 !== ins.ct1))
                                             || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
                                             || ins.period.periodStart < p.startDate
                                         ){
