@@ -894,7 +894,10 @@
                 const promResolve = Promise.resolve()
 
                 return this._getProseEditorTemplates()
-                    .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId).then(attachmentFileContent => _.merge({}, template, {attachmentFileContent:attachmentFileContent})) )))
+                    .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId)
+                        .then(attachmentFileContent => _.merge({}, template, {attachmentFileContent:attachmentFileContent}))
+                        .catch(e=>{})
+                    )))
                     .catch(e=>{ console.log("[ERROR] _getProseEditorTemplatesAndAttachment", e); return promResolve; })
 
             }
