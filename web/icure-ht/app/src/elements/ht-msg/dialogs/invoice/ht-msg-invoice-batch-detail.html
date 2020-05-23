@@ -675,7 +675,7 @@
                         })
                     }).finally(()=>{
                     this._batchCanBeArchived()
-                    this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(this.selectedInvoiceForDetail.message.status & (1 << 21))) || (!!(this.selectedInvoiceForDetail.message.status & (1 << 17))) || (!!(this.selectedInvoiceForDetail.message.status & (1 << 16))) || (!!(this.selectedInvoiceForDetail.message.status & (1 << 12)))))
+                    this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 21))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 17))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 16))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 12)))))
                     this.set('filteredInvoicesFormBatch', _.get(this, 'invoicesFromBatch', []))
                     this.set('batchCanBeResent', _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) ? _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) : false)
                     this.set('isLoading', false)
