@@ -555,7 +555,8 @@
                         title: filename,
                         filename: filename,
                         content: attachmentContent,
-                        mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain"))
+                        mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain")),
+                        FunctionalType: _.trim(_.get(it, "FunctionalType[0]")),
                     }
                 }))
 
@@ -596,6 +597,8 @@
                             "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
                             "CM-Requestnumber": publicationId,
                             "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
+                            "CM-FunctionalType": _.uniq(_.compact(_.map(annexes, "FunctionalType"))).join(","),
+                            "FunctionalType": _.uniq(_.compact(_.map(annexes, "FunctionalType"))).join(","),
                         },
                         document: {title: subject, textContent: "", mimeType: 'text/plain', filename: subject},
                         freeText: "",
