@@ -1213,7 +1213,7 @@
                     )
                 )
                 .then(decryptedContent => [this.getImageType(decryptedContent), new Blob([decryptedContent])])
-                .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
+                .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : !imageBlobContent ? null : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
                 .then(imageBlobContent => !imageBlobContent ? null : this.blobToBase64(imageBlobContent).catch(() => null))
                 .catch(() => null)
 
@@ -1248,6 +1248,10 @@
                     o[k] = v;
                 }
             });
+        }
+
+        sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
         }
 
     }
