@@ -106,7 +106,7 @@
     "define-properties": "^1.1.3",
     "electron-tabs": "^0.9.5",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
-    "electron-topaz-api": "git+https://github.com/AssossCare/topaz-electron-api.git#47cea04a0aa76d61b1fef1550e706076f023536f",
+    "electron-topaz-api": "git+https://github.com/AssossCare/topaz-electron-api.git#c5a78002b75778905f82119ff9af2e1f3289d7fc",
     "fhc-api": "1.0.54",
     "global": "^4.3.2",
     "heic2any": "0.0.3",
