@@ -1862,7 +1862,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
                 {
                     const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, this._getQuality(hcp)).then(res => {
+                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
                         this.set('api.fhcTokenInfo', res)
                         this.$.eHealthStatus.classList.remove('pending')
                         this.$.eHealthStatus.classList.remove('disconnected')

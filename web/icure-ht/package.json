@@ -106,7 +106,7 @@
     "define-properties": "^1.1.3",
     "electron-tabs": "^0.9.5",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
-    "fhc-api": "1.0.54",
+    "fhc-api": "1.0.55",
     "global": "^4.3.2",
     "heic2any": "0.0.3",
     "iban": "0.0.11",
