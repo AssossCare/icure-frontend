@@ -1878,7 +1878,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
                 {
                     const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
+                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
                         this.set('api.fhcTokenInfo', res)
                         this.$.eHealthStatus.classList.remove('pending')
                         this.$.eHealthStatus.classList.remove('disconnected')
@@ -1929,6 +1929,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     })
                 }
                 )
+            }
+
+            _isOtherInstitutionWithNihii(hcp){
+                if(_.get(hcp, 'nihii', null)){
+                    return _.size(_.get(hcp, 'nihii', null)) === 8 && parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 ? true : false
+                }else{
+                    return false
+                }
+            }
+
+            _getQuality(hcp){
+                return _.get(hcp, 'type', null) && _.get(hcp, 'type', null).toLowerCase() === 'medicalhouse' ? 'medicalhouse' : this._isOtherInstitutionWithNihii(hcp) ? 'sortingcenter' : 'doctor'
             }
 
             _versionOk(a,b) {
