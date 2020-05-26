@@ -1400,6 +1400,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     fhcTokenInfo:{
                         type: Object,
                         value: () => {}
+                    },
+                    timeLaunched:{
+                        type: Boolean,
+                        value : false
                     }
                 }
             }
@@ -1681,42 +1685,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
             }
 
-            _timeCheck(period = 30000) {
+            _timeCheck(period = 30000, iteration = 0) {
                 setTimeout(() => {
                     if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                             if (!isTokenValid) {
+                                //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                                this.set('api.isMH', null)
+                                this.set('api.tokenIdMH', null)
+                                this.set('api.tokenMH', null)
+                                this.set('api.tokenId', null)
+                                this.set('api.token', null)
+                                this.set('api.MHContactPersonName',null)
+                                this.set('api.MHContactPersonSsin', null)
                                 this.uploadKeystoreAndCheckToken().then(() => {
                                     this._timeCheck()
-                                }).catch(() => this._timeCheck(10000))
+                                }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
                             } else {
                                 this._timeCheck()
                             }
-                        }).catch(() => this._timeCheck(10000))
+                        }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
                     } else {
                         this.uploadKeystoreAndCheckToken().then(() => {
                             this._timeCheck()
-                        }).catch(() => this._timeCheck(10000))
+                        }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
                     }
                 }, period)
             }
 
-            _timeCheckMH(period = 30000){
+            _timeCheckMH(period = 30000, iteration = 0 ){
                 setTimeout(() => {
                     if (this.api.tokenIdMH) {
                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                             if (!isTokenValid) {
+                                //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                                this.set('api.tokenIdMH', null)
+                                this.set('api.tokenMH', null)
+                                this.set('api.nihiiMH', null)
                                 this.uploadMHKeystoreAndCheckToken().then(() => {
                                     this._timeCheckMH()
-                                }).catch(() => this._timeCheckMH(10000))
+                                }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
                             } else {
                                 this._timeCheckMH()
                             }
-                        }).catch(() => this._timeCheckMH(10000))
+                        }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
                     } else {
                         this.uploadMHKeystoreAndCheckToken().then(() => {
                             this._timeCheckMH()
-                        }).catch(() => this._timeCheckMH(10000))
+                        }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
                     }
                 }, period)
             }
@@ -2048,8 +2064,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 }
                             })
                         }
-                        this._timeCheck()
-                        this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
+                        
+                        //only 1 instance
+                        if(!this.timeLaunched){
+                            this.set("timeLaunched",true)
+                            this._timeCheck()
+                            this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
+                        }
                         this._inboxMessageCheck()
                         this._checkForUpdateMessage()
                         //this._correctionGenderPatients();
