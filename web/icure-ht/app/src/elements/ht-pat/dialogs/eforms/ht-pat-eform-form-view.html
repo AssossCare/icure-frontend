@@ -453,9 +453,9 @@
                     .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
                         .then(parsedXml => this._getFormPdf().then(formPdf => ([parsedXml, formPdf])).catch(e=>([parsedXml, null])))
                         .then(([parsedXml, formPdf]) => (this.set('isLoading', true)||true) && [parsedXml, formPdf])
-                        .then(([parsedXml, formPdf]) => !_.get(formPdf, "content", null) instanceof ArrayBuffer || !(parseInt(_.get(formPdf, "content.byteLength", 0)) || 0) ? [parsedXml, formPdf] : this._importDocumentIntoPatient(_.get(formPdf, "content", null), [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf", "application/pdf").then(() => ([parsedXml, formPdf])).catch(() => ([parsedXml, formPdf])))
+                        .then(([parsedXml, formPdf]) => !_.get(formPdf, "content", null) instanceof ArrayBuffer || !(parseInt(_.get(formPdf, "content.byteLength", 0)) || 0) ? [parsedXml, formPdf] : this._importDocumentIntoPatient(_.get(formPdf, "content", null), [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf", "application/pdf").then(() => parsedXml).catch(() => parsedXml))
                     )
-                    .then(([parsedXml, formPdf]) => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml, formPdf)
+                    .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
                         .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
                         .then(sendMessageResponse => !sendMessageResponse ? this.set('isLoading', false) : (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
                     )
@@ -537,7 +537,7 @@
                 return fileByteArray;
             }
 
-            _sendFormUsingEhBox(parsedXml, formPdf) {
+            _sendFormUsingEhBox(parsedXml) {
 
                 const promResolve = Promise.resolve()
                 const patternsValidation = {
@@ -546,7 +546,19 @@
                     elevenDigits: /^([0-9]){11}$/i
                 }
                 const publicationId = +new Date
-                const pdfName = [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf"
+                const additionalCustomMetas = _
+                    .chain(_.get(parsedXml,"ADR.MetaData",[]))
+                    // All ADR metas
+                    .reduce((acc, it) => _.merge(acc, _.fromPairs([[_.get(it,"Key[0]"),_.get(it,"Value[0]")]])), {})
+                    // First attachment - name
+                    .merge(_.fromPairs([["HC-AttachmentFilename",_.get(parsedXml,"ADR.Attachment[0].Name[0]")]]))
+                    // First attachment - type
+                    .merge(_.fromPairs([["HC-FunctionalType",_.get(parsedXml,"ADR.Attachment[0].FunctionalType[0]")]]))
+                    // All OTHER attachments - name
+                    .merge(_.reduce(_.get(parsedXml, "ADR.Attachment", []).slice(1), (acc, it, index) => _.merge(acc, _.fromPairs([["HC-AttachmentFilename-" + _.trim(index+1), _.get(it,"Name[0]")]])), {}))
+                    // All OTHER attachments - type
+                    .merge(_.reduce(_.get(parsedXml, "ADR.Attachment", []).slice(1), (acc, it, index) => _.merge(acc, _.fromPairs([["HC-FunctionalType-" + _.trim(index+1), _.get(it,"FunctionalType[0]")]])), {}))
+                    .value()
                 const subject = _.trim(_.get(parsedXml, "ADR.Subject[0]", ""))
                 const annexes = _.compact(_.map(_.get(parsedXml, "ADR.Attachment", []), it => {
                     const filename = _.trim(_.get(it, "Name[0]", this.api.crypto().randomUuid()))
@@ -556,7 +568,6 @@
                         filename: filename,
                         content: attachmentContent,
                         mimeType: _.trim(_.get(it, "MimeType[0]", "text/plain")),
-                        FunctionalType: _.trim(_.get(it, "FunctionalType[0]")),
                     }
                 }))
 
@@ -597,8 +608,8 @@
                             "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
                             "CM-Requestnumber": publicationId,
                             "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
-                            "CM-FunctionalType": _.uniq(_.compact(_.map(annexes, "FunctionalType"))).join(","),
-                            "FunctionalType": _.uniq(_.compact(_.map(annexes, "FunctionalType"))).join(","),
+                            "CM-AttachmentTransportType": "EFORMS",
+                            "HC-publicationDate": moment().format('YYYY-MM-DD HH:mm:ss'),
                         },
                         document: {title: subject, textContent: "", mimeType: 'text/plain', filename: subject},
                         freeText: "",
@@ -630,14 +641,15 @@
                         fromHealthcarePartyId: _.get(currentHcp, "id", ""),
                         status: (((1 << 1) | 1 << 3) | 1 << 4) // 1 << 1 (unread) | 1 << 3 (is encrypted) | 1 << 4 (has annexes)
                     }))
-                    .then(message => _.merge({}, message, {customMetas:{
+                    .then(message => _.merge({}, message, {customMetas:_.extend({
                         "CM-SenderID": _.get(message, "customMetas.CM-AuthorID",""),
                         "CM-SenderIDType": _.get(message, "customMetas.CM-AuthorIDType",""),
                         "CM-SenderType": _.get(message, "customMetas.CM-AuthorType",""),
                         "CM-SenderLastName": _.get(message, "customMetas.CM-AuthorLastName",""),
                         "CM-SenderFirstName": _.get(message, "customMetas.CM-AuthorFirstName",""),
-                        "CM-SenderName": _.get(message, "customMetas.CM-AuthorName","")
-                    }}))
+                        "CM-SenderName": _.get(message, "customMetas.CM-AuthorName",""),
+                        "HC-SenderMainIdentifier": _.get(message, "customMetas.CM-AuthorID",""),
+                    }, additionalCustomMetas)}))
                     .then(message => {
                         Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
                         return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, _.get(message,"usePublicationReceipt",false), _.get(message,"useReceivedReceipt",true), _.get(message,"useReadReceipt",false)).catch(e => null)
