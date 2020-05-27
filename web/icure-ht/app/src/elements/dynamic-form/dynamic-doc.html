@@ -1935,7 +1935,7 @@
 
                 const promResolve = Promise.resolve()
 
-                return document && promResolve
+                return document && this._heicMimeType(document) && promResolve
                     .then(() => this.set("isLoadingHeic", true))
                     .then(() => this.api.heicToJpg(document))
                     .then(base64Image => !base64Image ? null : this.set("heicToJpgImgSrc",base64Image))
