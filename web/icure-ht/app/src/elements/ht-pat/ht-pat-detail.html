@@ -4589,9 +4589,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.root.querySelector('#cb_frhelb').opened = true
                     this.root.querySelector('#cb_biom').opened = true
                     this.root.querySelector('#cb_pwhelb').opened = true
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = true
+                    this.root.querySelector('#cb_alhelb').opened = true
+                    this.root.querySelector('#cb_rhelb').opened = true
                     // 20190612 for labellisation -> must all be opened
                 }else{
-                    // Default values = all closed
+                    // Default values = all closed excepted activeES
                     this.root.querySelector('#cb_ahelb').opened = false
                     this.root.querySelector('#cb_ihelb').opened = false
                     this.root.querySelector('#cb_alhelb').opened = false
@@ -4602,6 +4606,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.root.querySelector('#cb_frhelb').opened = false
                     this.root.querySelector('#cb_biom').opened = false
                     this.root.querySelector('#cb_pwhelb').opened = false
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = false
+                    this.root.querySelector('#cb_alhelb').opened = false
+                    this.root.querySelector('#cb_rhelb').opened = false
                 }
 
 
@@ -4873,10 +4881,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             })
 
                             // Default values
-                            this.activeHealthElements.length && (this.root.querySelector('#cb_ahelb').opened = true)
+                            /*this.activeHealthElements.length && (this.root.querySelector('#cb_ahelb').opened = true)
                             this.inactiveHealthElements.length && (this.root.querySelector('#cb_ihelb').opened = false)
                             this.allergies.length && (this.root.querySelector('#cb_alhelb').opened = false)
-                            this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)
+                            this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)*/
 
 
                             // 20190612 for labellisation -> must all be opened
