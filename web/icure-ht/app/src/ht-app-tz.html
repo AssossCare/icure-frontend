@@ -1685,7 +1685,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
             }
 
-            _timeCheck(period = 30000, iteration = 0) {
+            _timeCheck(period = 14400000) {
                 setTimeout(() => {
                     if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
@@ -1700,20 +1700,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 this.set('api.MHContactPersonSsin', null)
                                 this.uploadKeystoreAndCheckToken().then(() => {
                                     this._timeCheck()
-                                }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
+                                })
                             } else {
                                 this._timeCheck()
                             }
-                        }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
+                        })
                     } else {
                         this.uploadKeystoreAndCheckToken().then(() => {
                             this._timeCheck()
-                        }).catch(() => iteration<3 ? this._timeCheck(10000, ++iteration) : this._timeCheck(5*60*1000,0))
+                        })
                     }
                 }, period)
             }
 
-            _timeCheckMH(period = 30000, iteration = 0 ){
+            _timeCheckMH(period = 14400000){
                 setTimeout(() => {
                     if (this.api.tokenIdMH) {
                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
@@ -1724,15 +1724,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 this.set('api.nihiiMH', null)
                                 this.uploadMHKeystoreAndCheckToken().then(() => {
                                     this._timeCheckMH()
-                                }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
+                                })
                             } else {
                                 this._timeCheckMH()
                             }
-                        }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
+                        })
                     } else {
                         this.uploadMHKeystoreAndCheckToken().then(() => {
                             this._timeCheckMH()
-                        }).catch(() => iteration<3 ? this._timeCheckMH(10000, ++iteration) : this._timeCheckMH(5*60*1000,0))
+                        })
                     }
                 }, period)
             }
@@ -2067,6 +2067,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                             loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
                                 if (success) {
+                                    this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
                                     const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
                                     if (!this.routeData || destPage !== this.routeData.page) {
                                         this.set('routeData.page', destPage)
@@ -2076,7 +2077,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 }
                             })
                         }
-                        
+
                         //only 1 instance
                         if(!this.timeLaunched){
                             this.set("timeLaunched",true)
@@ -2102,7 +2103,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             this.set("keyHcpId", hcp.id)
                             if (ok) {
                                 this.api.loadUsersAndHcParties()
-                                this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
                                 resolve([true, page])
                             } else {
                                 this.registerKeyPairDialogMessage = "The key registered in your browser is invalid"
@@ -2111,6 +2111,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         })
                     } else {
+                        //todo julien revoir le changement avec les nouvelles RSA keys et les anciennes (sans besoin de vider le local storage)
                         this.set("keyHcpId", hcp.id)
                         if (hcp.publicKey) {
                             this.registerKeyPairDialogMessage = ""
