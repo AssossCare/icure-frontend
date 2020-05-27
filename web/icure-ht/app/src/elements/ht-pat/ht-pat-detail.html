@@ -4576,7 +4576,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('sumehrContentOnPatientLoad', null);
                 this.set('sumehrContentOnPatientRefresh', null);
 
-                const openAll = user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+                const openAll = _.get(user,"properties",[]).find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
                 if(openAll && openAll.typedValue.stringValue==="full"){
                     // 20190612 for labellisation -> must all be opened
                     this.root.querySelector('#cb_ahelb').opened = true
