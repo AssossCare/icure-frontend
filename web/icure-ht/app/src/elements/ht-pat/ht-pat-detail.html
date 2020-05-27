@@ -5237,6 +5237,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _isAvailableForHcp(hcpType, wsType){
+                //override hcpType when only MH token is present
+                //explanation:
+                //An user can have 1 or 2 tokens(ehaelthsessions)
+                //   a personal token related to the users hcpType
+                //   an organisational token, for now only medicalhouse tokens are supported
+                //   if an user has only a medicalhouse token the users hcpType must be overridden to 'medicalhouse'
+                if(!(_.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)){
+                    hcpType = "medicalHouse"
+                }
                 return !!_.get(this, "matrixByHcpType."+wsType, []).find(hcp => hcp === hcpType)
             }
 
