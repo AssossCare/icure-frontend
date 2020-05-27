@@ -5262,7 +5262,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 if (!dlg.opened) this.set('curGenInsResp', null)
                 console.log("getGeneralInsurabilityUsingGET on date", dStart);
-                this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(this.cleanNiss(_.get(this.patient, 'ssin', null)), _.get(this.api, "tokenIdMH", null), _.get(this.api, 'keystoreIdMH', null), _.get(this.api, 'credentials.ehpasswordMH', null), _.get(this.api, 'nihiiMH', null), _.get(this.api, 'MHContactPersonSsin', null), _.get(this.api, 'MHContactPersonName', null), "medicalhouse", dStart, null)
+                this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+                    this.cleanNiss(_.get(this.patient, 'ssin', null)),
+                    _.get(this.api, "tokenIdMH", null),
+                    _.get(this.api, 'keystoreIdMH', null),
+                    _.get(this.api, 'credentials.ehpasswordMH', null),
+                    _.get(this.api, 'nihiiMH', null),
+                    _.get(this.api, 'MHContactPersonSsin', _.get(hcp, 'ssin', null)),
+                    _.get(this.api, 'MHContactPersonName', _.get(hcp, 'name', _.get(hcp, 'lastName', null))),
+                    "medicalhouse", dStart, null)
                 .then(gi => {
                     const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
                     const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
