@@ -4576,30 +4576,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('sumehrContentOnPatientLoad', null);
                 this.set('sumehrContentOnPatientRefresh', null);
 
-                // Default values = all closed
-                this.root.querySelector('#cb_ahelb').opened = false
-                this.root.querySelector('#cb_ihelb').opened = false
-                this.root.querySelector('#cb_alhelb').opened = false
-                this.root.querySelector('#cb_rhelb').opened = false
-                this.root.querySelector('#cb_gmhelb').opened = false
-                this.root.querySelector('#cb_archhelb').opened = false
-                this.root.querySelector('#cb_ishelb').opened = false
-                this.root.querySelector('#cb_frhelb').opened = false
-                this.root.querySelector('#cb_biom').opened = false
-                this.root.querySelector('#cb_pwhelb').opened = false
+                const openAll = user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+                if(openAll && openAll.typedValue.stringValue==="full"){
+                    // 20190612 for labellisation -> must all be opened
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = true
+                    this.root.querySelector('#cb_alhelb').opened = true
+                    this.root.querySelector('#cb_rhelb').opened = true
+                    this.root.querySelector('#cb_gmhelb').opened = true
+                    this.root.querySelector('#cb_archhelb').opened = true
+                    this.root.querySelector('#cb_ishelb').opened = true
+                    this.root.querySelector('#cb_frhelb').opened = true
+                    this.root.querySelector('#cb_biom').opened = true
+                    this.root.querySelector('#cb_pwhelb').opened = true
+                    // 20190612 for labellisation -> must all be opened
+                }else{
+                    // Default values = all closed
+                    this.root.querySelector('#cb_ahelb').opened = false
+                    this.root.querySelector('#cb_ihelb').opened = false
+                    this.root.querySelector('#cb_alhelb').opened = false
+                    this.root.querySelector('#cb_rhelb').opened = false
+                    this.root.querySelector('#cb_gmhelb').opened = false
+                    this.root.querySelector('#cb_archhelb').opened = false
+                    this.root.querySelector('#cb_ishelb').opened = false
+                    this.root.querySelector('#cb_frhelb').opened = false
+                    this.root.querySelector('#cb_biom').opened = false
+                    this.root.querySelector('#cb_pwhelb').opened = false
+                }
 
-                // 20190612 for labellisation -> must all be opened
-                // this.root.querySelector('#cb_ahelb').opened = true
-                // this.root.querySelector('#cb_ihelb').opened = true
-                // this.root.querySelector('#cb_alhelb').opened = true
-                // this.root.querySelector('#cb_rhelb').opened = true
-                // this.root.querySelector('#cb_gmhelb').opened = true
-                // this.root.querySelector('#cb_archhelb').opened = true
-                // this.root.querySelector('#cb_ishelb').opened = true
-                // this.root.querySelector('#cb_frhelb').opened = true
-                // this.root.querySelector('#cb_biom').opened = true
-                // this.root.querySelector('#cb_pwhelb').opened = true
-                // 20190612 for labellisation -> must all be opened
 
                 this.root.querySelector('#medication-plan').reset()
 

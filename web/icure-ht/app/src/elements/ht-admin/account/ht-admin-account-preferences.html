@@ -45,21 +45,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="ht-admin-account-preferences">
 
     <template>
-
-        <style include="shared-styles">
+        <style include="shared-styles dropdown-style paper-input-style buttons-style">
             :host {
                 display: block;
+                height: 100%;
             }
 
             :host *:focus{
                 outline:0!important;
             }
 
-            .users-panel{ 
+            .users-panel{
                 width: 100%;
                 height: 100%;
                 padding: 0 24px;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .section-title{
@@ -275,15 +276,75 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 width: 100%;
             }
 
+
+            .buttons{
+                display: flex;
+                flex-flow: row-reverse;
+                margin-bottom: 12px;
+            }
+
+            #savedIndicator{
+                position: fixed;
+                top:50%;
+                right: 0;
+                z-index:1000;
+                color: white;
+                font-size: 13px;
+                background:rgba(0,0,0,0.42);
+                height: 24px;
+                padding: 0 8px 0 12px;
+                border-radius: 3px 0 0 3px;
+                width: 0;
+                opacity: 0;
+            }
+            .saved{
+                animation: savedAnim 2.5s ease-in;
+            }
+            .saved iron-icon{
+                margin-left: 4px;
+                padding: 4px;
+            }
+
+            @keyframes savedAnim {
+                0%{
+                    width: 0;
+                    opacity: 0;
+                }
+                20%{
+                    width: 114px;
+                    opacity: 1;
+                }
+                25%{
+                    width: 96px;
+                    opacity: 1;
+                }
+                75%{
+                    width: 96px;
+                    opacity: 1;
+                }
+                100%{
+                    width: 0;
+                    opacity: 0;
+                }
+            }
+
+
         </style>
 
         <div class="users-panel">
+
+            <paper-item id="savedIndicator">[[localize('sav','SAVED',language)]]
+                <iron-icon icon="icons:check"></iron-icon>
+            </paper-item>
+
             <h4 class="section-title">[[localize('my_pro', 'My profil', language)]] - [[localize('acc_prefs', 'Preferences', language)]]</h4>
 
             <div class="card dossier">
                 <h5 class="header">Dossier patient</h5>
                 <div class="content">
                     <paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>
+                    <paper-checkbox checked="{{showAllHE}}">[[localize('show-all-HE','don t hide actif health element before january 2018',language)]]</paper-checkbox>
+                    <paper-checkbox checked="{{openFirstVoletAuto}}">[[localize('open_first_volet','Open all elements of the first volet with patient folder',language)]]</paper-checkbox>
                 </div>
             </div>
 
@@ -306,7 +367,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             <paper-item name="vitalink">[[localize('vitalink','Vitalink',language)]]</paper-item>
                         </paper-listbox>
                     </paper-dropdown-menu>
-    
+
                     <paper-radio-group selected="{{userEHealthEnv}}">
                         <paper-radio-button name="acc">[[localize('acceptance','Acceptance',language)]]</paper-radio-button>
                         <paper-radio-button name="prd">[[localize('prd','Production',language)]]</paper-radio-button>
@@ -325,7 +386,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-input label="OA 500" value="{{_getBatchNumber(500)}}"></paper-input>
                     <paper-input label="OA 600" value="{{_getBatchNumber(600)}}"></paper-input>
                     <paper-input label="OA 900" value="{{_getBatchNumber(900)}}"></paper-input>
-                </div> 
+                </div>
+            </div>
+
+            <div class="buttons">
+                <paper-button on-tap="_save" class="button button--save"><iron-icon icon="save"></iron-icon>[[localize('save','Save',language)]]</paper-button>
             </div>
         </div>
 
@@ -361,13 +426,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Boolean,
                         value: false
                     },
-                    assignMailAuto:{
+                    assignMailAuto: {
                         type: Boolean,
                         value: false
                     },
-                    listOfEfactBatchNumbers:{
+                    listOfEfactBatchNumbers: {
                         type: Array,
                         value: () => []
+                    },
+                    openFirstVoletAuto: {
+                        type: Boolean,
+                        value: false
+                    },
+                    showAllHE: {
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -384,15 +457,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 super.ready()
             }
 
-            _preferencesDataProvider(){
+            _preferencesDataProvider() {
                 const prefixTab = [
-                    'efact:'+this.user.healthcarePartyId+':100:',
-                    'efact:'+this.user.healthcarePartyId+':200:',
-                    'efact:'+this.user.healthcarePartyId+':300:',
-                    'efact:'+this.user.healthcarePartyId+':400:',
-                    'efact:'+this.user.healthcarePartyId+':500:',
-                    'efact:'+this.user.healthcarePartyId+':600:',
-                    'efact:'+this.user.healthcarePartyId+':900:'
+                    'efact:' + this.user.healthcarePartyId + ':100:',
+                    'efact:' + this.user.healthcarePartyId + ':200:',
+                    'efact:' + this.user.healthcarePartyId + ':300:',
+                    'efact:' + this.user.healthcarePartyId + ':400:',
+                    'efact:' + this.user.healthcarePartyId + ':500:',
+                    'efact:' + this.user.healthcarePartyId + ':600:',
+                    'efact:' + this.user.healthcarePartyId + ':900:'
                 ]
 
                 Promise.all(prefixTab.map(prefix => ({
@@ -402,17 +475,64 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }))).then(batchNumbers => this.set('listOfEfactBatchNumbers', batchNumbers))
                     .finally(() => console.log(this.listOfEfactBatchNumbers))
 
+                this.set("showAllHE",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHE")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))
+                this.set("openFirstVoletAuto",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))
+
             }
 
-            _getBatchNumber(oa){
-                const batchNumber = this.listOfEfactBatchNumbers.find(batch => batch.prefix === 'efact:'+this.user.healthcarePartyId+':'+oa+':')
+            _getBatchNumber(oa) {
+                const batchNumber = this.listOfEfactBatchNumbers.find(batch => batch.prefix === 'efact:' + this.user.healthcarePartyId + ':' + oa + ':')
                 //return batchNumber.nextBatchNumber
             }
 
-            _getValueLabel(label){
+            _getValueLabel(label) {
                 return label[this.language]
             }
 
+            _save() {
+                const propShowAllHe = this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHE")
+                if(propShowAllHe){
+                    propShowAllHe.typedValue.type="STRING"
+                    propShowAllHe.type.type="STRING"
+                    propShowAllHe.typedValue.stringValue= !!this.showAllHE
+                }else{
+                    this.push("user.properties",{
+                        type : {
+                            identifier : "be.topaz.preferred.showAllHE",
+                            type: "STRING",
+                            unique : false,
+                            localized : false
+                        },
+                        typedValue:{
+                            type : "STRING",
+                            stringValue : !!this.showAllHE ? "full" : "none"
+                        }
+                    })
+                }
+
+                const openFirstVoletAuto = this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+                if(openFirstVoletAuto){
+                    openFirstVoletAuto.typedValue.type="STRING"
+                    openFirstVoletAuto.type.type="STRING"
+                    openFirstVoletAuto.typedValue.stringValue= !!this.openFirstVoletAuto
+                }else{
+                    this.push("user.properties",{
+                        type : {
+                            identifier : "be.topaz.preferred.openFirstPanelAuto",
+                            type: "STRING",
+                            unique : false,
+                            localized : false
+                        },
+                        typedValue:{
+                            type : "STRING",
+                            stringValue : !!this.openFirstVoletAuto ? "full" : "none"
+                        }
+                    })
+                }
+
+                //this.api.user().modifyProperties(this.user.id,this.user.properties).then(u=> this.api.register(u,"user")).then(u=>this.set("user",u))
+                this.api.user().modifyUser(this.user).then(u=> this.api.register(u,"user")).then(u=>this.set("user",u))
+            }
         }
 
         customElements.define(HtAdminAccountPreferences.is, HtAdminAccountPreferences)
