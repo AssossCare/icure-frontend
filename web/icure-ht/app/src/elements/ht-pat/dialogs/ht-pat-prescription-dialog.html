@@ -841,6 +841,7 @@
                     }
 
                     medicationValue.temporality = null
+                    _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
 
                 });
 
