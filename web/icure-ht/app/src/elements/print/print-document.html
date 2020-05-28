@@ -886,6 +886,9 @@
             }
 
             _getPdfContent() {
+
+                const maxSvcPerPage = 32
+
                 return "" +
                     this._getPdfHeader() +
                     (
@@ -918,7 +921,7 @@
                                         '<div class="resultsNormalValue">' + _.trim(_.get(it,"normalValue","")) + '</div>' +
                                         '<!--<div class="resultsAuthor">' + _.trim(_.get(it,"author",""))  + '</div>-->' +
                                         '<div class="resultsDate">' + (!!_.trim(_.get(it,"date","")) ? _.trim(_.get(it,"date","")) : _.trim(_.get(this,"_data.content.dateHr",""))) + '</div>' +
-                                    "</div>"
+                                    "</div>" + ( !(k % maxSvcPerPage) && k > 0 ? '</div></div><br /><div class="page"><div class="resultLines">' : "")
                                 ).join("") +
                             "</div>" :
 
