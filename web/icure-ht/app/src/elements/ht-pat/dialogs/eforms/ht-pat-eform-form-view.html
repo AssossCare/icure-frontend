@@ -38,7 +38,7 @@
 
     <template>
 
-        <style include="dialog-style scrollbar-style buttons-style shared-style paper-tabs-style notification-style">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style notification-style">
 
             .formContainer{
                 height: calc(98% - 20px);
@@ -62,6 +62,23 @@
                 height: calc(100% - 50px);
             }
 
+            .modalDialog {
+                height: 240px;
+                width: 600px;
+                padding:0px;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .modal-title {
+                justify-content: flex-start;
+            }
+
+            .modal-title iron-icon{
+                margin-right: 8px;
+            }
 
         </style>
 
@@ -88,6 +105,18 @@
                 </div>
             </page>
         </iron-pages>
+
+        <paper-dialog class="modalDialog" id="etkNotRetrievedDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter">
+                <p class="fw700">[[localize('ehboxMissingEtkLine1','Your recipient does not support message encryption.',language)]]</p>
+                <p class="">[[localize('ehboxMissingEtkLine2','Its ETK could not be found within the public keys repository.',language)]]</p>
+                <p class="">[[localize('ehboxMissingEtkLine3','Please get in touch with the support and/or with your recipient.',language)]]</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon>[[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
 
     </template>
 
@@ -440,26 +469,8 @@
                 })
             }
 
-            _selectedTabChanged(){
+            _selectedTabChanged() {
                 _.get(this, 'tabs', 0) === 1 ?  this.$["htPatEformFormDocuments"]._refreshLinkedAndAvailableDocuments() : null
-            }
-
-            _sendForm() {
-
-                const promResolve = Promise.resolve()
-
-                return promResolve
-                    .then(() => this._getFormAdr())
-                    .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
-                        .then(parsedXml => this._getFormPdf().then(formPdf => ([parsedXml, formPdf])).catch(e=>([parsedXml, null])))
-                        .then(([parsedXml, formPdf]) => (this.set('isLoading', true)||true) && [parsedXml, formPdf])
-                        .then(([parsedXml, formPdf]) => !_.get(formPdf, "content", null) instanceof ArrayBuffer || !(parseInt(_.get(formPdf, "content.byteLength", 0)) || 0) ? [parsedXml, formPdf] : this._importDocumentIntoPatient(_.get(formPdf, "content", null), [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf", "application/pdf").then(() => parsedXml).catch(() => parsedXml))
-                    )
-                    .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
-                        .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
-                        .then(sendMessageResponse => !sendMessageResponse ? this.set('isLoading', false) : (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
-                    )
-
             }
 
             xmlStringToObject(xml){
@@ -535,6 +546,96 @@
                 let fileByteArray = [];
                 new Uint8Array(arrayBuffer).forEach(int8 => fileByteArray.push(int8));
                 return fileByteArray;
+            }
+
+            _sendForm() {
+
+                const promResolve = Promise.resolve()
+
+                return promResolve
+                    .then(() => this._getFormAdr())
+                    .then(adrResponse => _.parseInt(_.get(adrResponse, 'response.status', 0)) !== 200 ? this._showErrorNotification(_.get(adrResponse, 'response', 0), _.get(adrResponse, 'content', {})) : this.xmlStringToObject(_.get(adrResponse, 'content', null))
+                        .then(parsedXml => this._getFormPdf().then(formPdf => ([parsedXml, formPdf])).catch(e=>([parsedXml, null])))
+                        .then(([parsedXml, formPdf]) => (this.set('isLoading', true)||true) && [parsedXml, formPdf])
+                        .then(([parsedXml, formPdf]) => !_.get(formPdf, "content", null) instanceof ArrayBuffer || !(parseInt(_.get(formPdf, "content.byteLength", 0)) || 0) ? [parsedXml, formPdf] : this._importDocumentIntoPatient(_.get(formPdf, "content", null), [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf", "application/pdf").then(() => parsedXml).catch(() => parsedXml))
+                    )
+
+                    // .then(parsedXml => {
+                    //     console.log("parsedXml", parsedXml)
+                    //     this._checkRecipientIsValid().then(x => console.log("_checkRecipientIsValid RESPONSE", x))
+                    //     /* todo: call sur adr book vérifier has valid ehbox. Si pas: isLoading false && this.$["etkNotRetrievedDialog"].open() si a : laisser aller */
+                        // return parsedXml
+                    // })
+
+                    // Todo: restore this
+                    .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
+                        .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
+                        .then(sendMessageResponse => !sendMessageResponse ? this.set('isLoading', false) : (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
+                    )
+
+            }
+
+            _checkRecipientIsValid() {
+
+                console.log("_checkRecipientIsValid");
+
+                return
+
+                const newMsgTo = this.shadowRoot.querySelector('#newMsg-To')||false;
+                if(!newMsgTo || !_.get(newMsgTo,"selectedItem",false) || !_.size(newMsgTo,"selectedItem",false)) return false
+
+                const multipleEHealthBoxesDialog = this.shadowRoot.querySelector('#recipientWithMultipleEHealthBoxesDialog')||false
+                const recipientWithoutEHealthBoxDialog = this.shadowRoot.querySelector('#recipientWithoutEHealthBoxDialog')||false
+                const patternsValidation = { heightDigits: /^([0-9]){8}$/i, tenDigits: /^([0-9]){10}$/i, elevenDigits: /^([0-9]){11}$/i}
+
+                this.set('_isLoading', true)
+
+                // Cobra sometimes returns cbe, ehp, nihii, ssin with hyphens, spaces or dots
+                const keysToClean = ["cbe","ehp","nihii","ssin"]
+                _.map(keysToClean, k => !_.trim(_.get(newMsgTo.selectedItem, k, "")) ? false : newMsgTo.selectedItem[k] = _.trim(newMsgTo.selectedItem[k].replace(/[^0-9]*/g,"")))
+
+                const getValue = !!_.trim(_.get(newMsgTo,"selectedItem.cbe", "")) ? _.trim(_.get(newMsgTo,"selectedItem.cbe", "")) : !!_.trim(_.get(newMsgTo,"selectedItem.ehp", "")) ? _.trim(_.get(newMsgTo,"selectedItem.ehp", "")) : !!_.trim(_.get(newMsgTo,"selectedItem.nihii", "")) ? _.trim(_.get(newMsgTo,"selectedItem.nihii", "")) : _.trim(_.get(newMsgTo,"selectedItem.ssin", ""))
+
+                const isValidCbe = !!patternsValidation.tenDigits.test(getValue)
+                const isValidEhp = !!patternsValidation.tenDigits.test(getValue)
+                const isValidSsin = !!patternsValidation.elevenDigits.test(getValue) && this.api.patient().isValidSsin(getValue)
+                const isValidNihii = !!patternsValidation.heightDigits.test(getValue) || !!patternsValidation.elevenDigits.test(getValue)
+
+                const getProms = _.compact([
+                    (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
+                    (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
+                    (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
+                    (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
+                    (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([]))
+                ])
+
+                this.set("_recipientWithMultipleEHealthBoxes",{})
+
+                return (
+                    !!_.size(_.get(newMsgTo,"selectedItem.ehealthBoxes",[])) ?
+                        Promise.resolve(_.get(newMsgTo,"selectedItem",{})) :
+                        Promise.all(getProms).then(searchResults => _.chain(searchResults).flatMap().filter(sr => !!_.size(_.get(sr,"ehealthBoxes"))).compact().uniq().head().value()||newMsgTo.selectedItem)
+                )
+                    .then(recipientAndEhealthBoxes => _.assign(newMsgTo.selectedItem, {
+                        type: !!_.trim(_.get(recipientAndEhealthBoxes,"cbe")) ? "CBE" : !!_.trim(_.get(recipientAndEhealthBoxes,"ehp")) ? "EHP" : !!_.trim(_.get(recipientAndEhealthBoxes,"ssin")) ? "SSIN" : "NIHII",
+                        ehealthBoxes: _
+                            .chain(_.get(recipientAndEhealthBoxes, "ehealthBoxes", []))
+                            .filter(x => !!_.trim(_.get(x, "id", "")))
+                            .map(x => _.assign(x, {
+                                qualityHr: this.localize("ehBoxQuality_" + _.trim(_.get(x, "quality")), _.trim(_.get(x, "quality")), this.language),
+                                typeHr: _.trim(_.get(x,"type")).toLowerCase() === "nihii" ? this.localize("cs-nihii", "Nihii", this.language) : _.trim(_.get(x,"type")).toLowerCase() === "inss" ? this.localize("cs-inss", "Inss", this.language) : _.upperFirst(_.trim(_.get(x,"type")).toLowerCase())
+                            }))
+                            .orderBy(['qualityHr','quality'],['asc','asc'])
+                            .value()
+                    }))
+                    .then(recipientAndEhealthBoxes => !_.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) ? (recipientWithoutEHealthBoxDialog && recipientWithoutEHealthBoxDialog.open()) :
+                        (_.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) === 1 && !!this._notAlreadyInRecipients(recipientAndEhealthBoxes)) ? this.push('newMessage.recipients', recipientAndEhealthBoxes) :
+                            _.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) > 1 ? (this.set("_recipientWithMultipleEHealthBoxes", recipientAndEhealthBoxes)||true) && multipleEHealthBoxesDialog && multipleEHealthBoxesDialog.open() :
+                                false
+                    )
+                    .catch(e=>console.log("Error with get org/hcp", e))
+                    .finally(()=>(newMsgTo._clear()||true) && this.set('_isLoading', false))
+
             }
 
             _sendFormUsingEhBox(parsedXml) {
