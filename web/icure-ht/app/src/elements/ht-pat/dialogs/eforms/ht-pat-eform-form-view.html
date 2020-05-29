@@ -117,6 +117,17 @@
                 <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon>[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
+        <paper-dialog class="modalDialog" id="recipientWithoutEHealthBoxDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter">
+                <p class="fw700">[[localize('ehBox_recipientHasNoEhbox_1','We encountered a problem with your recipient.',language)]]</p>
+                <p class="">[[localize('ehBox_recipientHasNoEhbox_2','Even though found in the address book, it does not have a valid e-Health box.',language)]]</p>
+                <p class="">[[localize('ehBox_recipientHasNoEhbox_3','Therefore, your message can not be sent to that recipient.',language)]]</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon>[[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
 
     </template>
 
@@ -548,6 +559,32 @@
                 return fileByteArray;
             }
 
+            _checkRecipientIsValid(recipientId, recipientQuality) {
+
+                // Cobra sometimes returns cbe, ehp, nihii, ssin with hyphens, spaces or dots
+                recipientId = _.trim(recipientId).replace(/[^0-9]*/g,"")
+                const isOrg = ["hospital","institution","labo","institution_ehp","sorting_center"].indexOf(_.trim(recipientQuality).toLowerCase()) > -1
+
+                const patternsValidation = { heightDigits: /^([0-9]){8}$/i, tenDigits: /^([0-9]){10}$/i, elevenDigits: /^([0-9]){11}$/i}
+                const isValidCbe = !!patternsValidation.tenDigits.test(recipientId)
+                const isValidEhp = !!patternsValidation.tenDigits.test(recipientId)
+                const isValidSsin = !!patternsValidation.elevenDigits.test(recipientId) && this.api.patient().isValidSsin(recipientId)
+                const isValidNihii = !!patternsValidation.heightDigits.test(recipientId) || !!patternsValidation.elevenDigits.test(recipientId)
+
+                const getProms = _.compact([
+                    (!isOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+                    (!isOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+                    (!isOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+                    (isOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+                    (isOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([]))
+                ])
+
+                return !_.trim(recipientId) ? Promise.resolve(true) : Promise.all(getProms)
+                    .then(searchResults => !!_.size(_.get(_.chain(searchResults).flatMap().filter(sr => !!_.size(_.get(sr,"ehealthBoxes"))).compact().uniq().head().value(), "ehealthBoxes")))
+                    .catch(() => true)
+
+            }
+
             _sendForm() {
 
                 const promResolve = Promise.resolve()
@@ -559,82 +596,11 @@
                         .then(([parsedXml, formPdf]) => (this.set('isLoading', true)||true) && [parsedXml, formPdf])
                         .then(([parsedXml, formPdf]) => !_.get(formPdf, "content", null) instanceof ArrayBuffer || !(parseInt(_.get(formPdf, "content.byteLength", 0)) || 0) ? [parsedXml, formPdf] : this._importDocumentIntoPatient(_.get(formPdf, "content", null), [(_.trim(_.get(this, "selectedFormInfo.formId")) ? _.trim(_.get(this, "selectedFormInfo.formId")) : this.api.crypto().randomUuid()), moment().format("YYYYMMDDHHmmss")].join("-") + ".pdf", "application/pdf").then(() => parsedXml).catch(() => parsedXml))
                     )
-
-                    // .then(parsedXml => {
-                    //     console.log("parsedXml", parsedXml)
-                    //     this._checkRecipientIsValid().then(x => console.log("_checkRecipientIsValid RESPONSE", x))
-                    //     /* todo: call sur adr book vérifier has valid ehbox. Si pas: isLoading false && this.$["etkNotRetrievedDialog"].open() si a : laisser aller */
-                        // return parsedXml
-                    // })
-
-                    // Todo: restore this
+                    .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._checkRecipientIsValid(_.trim(_.get(_.get(parsedXml,"ADR.Addressee[0]",{}), "Identifier[0]")), _.trim(_.get(_.get(parsedXml,"ADR.Addressee[0]",{}), "Quality[0]"))).then(recipientIsValid => recipientIsValid ? parsedXml : (this.set('isLoading', false)||true) && this.$["recipientWithoutEHealthBoxDialog"].open()))
                     .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
                         .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
-                        .then(sendMessageResponse => !sendMessageResponse ? this.set('isLoading', false) : (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})))
+                        .then(sendMessageResponse => (sendMessageResponse===true) ? (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})) : (this.set('isLoading', false)||true) && (["api-errorundefined","api-error403"].indexOf(_.trim(_.get(sendMessageResponse,"message",""))) > -1 ? this.$["etkNotRetrievedDialog"].open() : null))
                     )
-
-            }
-
-            _checkRecipientIsValid() {
-
-                console.log("_checkRecipientIsValid");
-
-                return
-
-                const newMsgTo = this.shadowRoot.querySelector('#newMsg-To')||false;
-                if(!newMsgTo || !_.get(newMsgTo,"selectedItem",false) || !_.size(newMsgTo,"selectedItem",false)) return false
-
-                const multipleEHealthBoxesDialog = this.shadowRoot.querySelector('#recipientWithMultipleEHealthBoxesDialog')||false
-                const recipientWithoutEHealthBoxDialog = this.shadowRoot.querySelector('#recipientWithoutEHealthBoxDialog')||false
-                const patternsValidation = { heightDigits: /^([0-9]){8}$/i, tenDigits: /^([0-9]){10}$/i, elevenDigits: /^([0-9]){11}$/i}
-
-                this.set('_isLoading', true)
-
-                // Cobra sometimes returns cbe, ehp, nihii, ssin with hyphens, spaces or dots
-                const keysToClean = ["cbe","ehp","nihii","ssin"]
-                _.map(keysToClean, k => !_.trim(_.get(newMsgTo.selectedItem, k, "")) ? false : newMsgTo.selectedItem[k] = _.trim(newMsgTo.selectedItem[k].replace(/[^0-9]*/g,"")))
-
-                const getValue = !!_.trim(_.get(newMsgTo,"selectedItem.cbe", "")) ? _.trim(_.get(newMsgTo,"selectedItem.cbe", "")) : !!_.trim(_.get(newMsgTo,"selectedItem.ehp", "")) ? _.trim(_.get(newMsgTo,"selectedItem.ehp", "")) : !!_.trim(_.get(newMsgTo,"selectedItem.nihii", "")) ? _.trim(_.get(newMsgTo,"selectedItem.nihii", "")) : _.trim(_.get(newMsgTo,"selectedItem.ssin", ""))
-
-                const isValidCbe = !!patternsValidation.tenDigits.test(getValue)
-                const isValidEhp = !!patternsValidation.tenDigits.test(getValue)
-                const isValidSsin = !!patternsValidation.elevenDigits.test(getValue) && this.api.patient().isValidSsin(getValue)
-                const isValidNihii = !!patternsValidation.heightDigits.test(getValue) || !!patternsValidation.elevenDigits.test(getValue)
-
-                const getProms = _.compact([
-                    (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
-                    (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
-                    (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
-                    (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([])),
-                    (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(()=>Promise.resolve([]))
-                ])
-
-                this.set("_recipientWithMultipleEHealthBoxes",{})
-
-                return (
-                    !!_.size(_.get(newMsgTo,"selectedItem.ehealthBoxes",[])) ?
-                        Promise.resolve(_.get(newMsgTo,"selectedItem",{})) :
-                        Promise.all(getProms).then(searchResults => _.chain(searchResults).flatMap().filter(sr => !!_.size(_.get(sr,"ehealthBoxes"))).compact().uniq().head().value()||newMsgTo.selectedItem)
-                )
-                    .then(recipientAndEhealthBoxes => _.assign(newMsgTo.selectedItem, {
-                        type: !!_.trim(_.get(recipientAndEhealthBoxes,"cbe")) ? "CBE" : !!_.trim(_.get(recipientAndEhealthBoxes,"ehp")) ? "EHP" : !!_.trim(_.get(recipientAndEhealthBoxes,"ssin")) ? "SSIN" : "NIHII",
-                        ehealthBoxes: _
-                            .chain(_.get(recipientAndEhealthBoxes, "ehealthBoxes", []))
-                            .filter(x => !!_.trim(_.get(x, "id", "")))
-                            .map(x => _.assign(x, {
-                                qualityHr: this.localize("ehBoxQuality_" + _.trim(_.get(x, "quality")), _.trim(_.get(x, "quality")), this.language),
-                                typeHr: _.trim(_.get(x,"type")).toLowerCase() === "nihii" ? this.localize("cs-nihii", "Nihii", this.language) : _.trim(_.get(x,"type")).toLowerCase() === "inss" ? this.localize("cs-inss", "Inss", this.language) : _.upperFirst(_.trim(_.get(x,"type")).toLowerCase())
-                            }))
-                            .orderBy(['qualityHr','quality'],['asc','asc'])
-                            .value()
-                    }))
-                    .then(recipientAndEhealthBoxes => !_.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) ? (recipientWithoutEHealthBoxDialog && recipientWithoutEHealthBoxDialog.open()) :
-                        (_.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) === 1 && !!this._notAlreadyInRecipients(recipientAndEhealthBoxes)) ? this.push('newMessage.recipients', recipientAndEhealthBoxes) :
-                            _.size(_.get(recipientAndEhealthBoxes,"ehealthBoxes",[])) > 1 ? (this.set("_recipientWithMultipleEHealthBoxes", recipientAndEhealthBoxes)||true) && multipleEHealthBoxesDialog && multipleEHealthBoxesDialog.open() :
-                                false
-                    )
-                    .catch(e=>console.log("Error with get org/hcp", e))
-                    .finally(()=>(newMsgTo._clear()||true) && this.set('_isLoading', false))
 
             }
 
@@ -753,7 +719,7 @@
                     }, additionalCustomMetas)}))
                     .then(message => {
                         Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
-                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, _.get(message,"usePublicationReceipt",false), _.get(message,"useReceivedReceipt",true), _.get(message,"useReadReceipt",false)).catch(e => null)
+                        return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, _.get(message,"usePublicationReceipt",false), _.get(message,"useReceivedReceipt",true), _.get(message,"useReadReceipt",false)).catch(e => e)
                     })
                     .catch(e => null)
 
