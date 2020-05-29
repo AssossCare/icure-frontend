@@ -454,14 +454,16 @@
             }
 
             _print(e) {
-
-                return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { service: _.get(_.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id")), "service") }, bubbles:true, composed:true }))
+                const pres = _.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id",false))
+                const listServices = _.uniqBy( _.compact(pres.rid ? this.prescriptions.filter(p => p.rid === pres.rid).map(p => _.get(p,"service",{})) : [_.get(pres,"service",{})]),"id")
+                return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { rid : pres.rid, services:  listServices}, bubbles:true, composed:true }))
 
             }
 
             _printAndSendByEmail(e) {
-
-                return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { service: _.get(_.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id")), "service"), sendDocumentByEmail:true }, bubbles:true, composed:true }))
+                const pres = _.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id",false))
+                const listServices = _.uniqBy( _.compact(pres.rid ? this.prescriptions.filter(p => p.rid === pres.rid).map(p => _.get(p,"service",{})) : [_.get(pres,"service",{})]),"id")
+                return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { rid : pres.rid, services: listServices, sendDocumentByEmail:true }, bubbles:true, composed:true }))
 
             }
 
