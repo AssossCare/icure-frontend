@@ -666,7 +666,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                                       index: container.index,
                                       content: _.cloneDeep(container.content),
                                       codes: container.codes && container.codes.map(_.cloneDeep),
-                                      tags: _.unionBy(createdSvc.tags, container.tags && container.tags.map(_.cloneDeep), "type")
+                                      tags: _.union(createdSvc.tags, container.tags && container.tags.map(_.cloneDeep))
                                   }));
                           return true;
                       }

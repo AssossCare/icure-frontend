@@ -95,6 +95,7 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             .statusIcon{
                 height: 8px;
                 width: 8px;
+                background: transparent !important
             }
             .statusIcon.invoice-status--orangeStatus {
                 color: var(--app-status-color-pending);
@@ -188,6 +189,10 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             .fg2{
                 flex-grow: 2;
             }  
+            
+            .fg4{
+                flex-grow: 4.2;
+            }
                        
             .status{
                 display: block;
@@ -218,6 +223,75 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 cursor: pointer;
             }
             
+            .modalDialog{
+                height: 350px;
+                width: 600px;
+            }
+
+             .modalDialogContent{
+                  height: calc(100% - 69px);
+                  width: auto;
+                  margin: 0;
+                  background-color: white;
+                  position: relative;
+                  padding: 10px;
+             }
+             
+             #checkBeforeSendingDialog{
+                    height: 500px;
+                    width: 800px;
+             }
+
+             .unsentInvoice{
+                 height: 250px;
+                 width: auto;
+             }
+
+             previousCheck{
+                 height: 100px;
+                 width: auto;
+             }
+
+             .errorBeforeSendInvoice{
+                 color: var(--app-status-color-nok);
+                 font-weight: bold;
+             }
+
+             #patientsWithoutAssurabilityGrid{
+                 max-height: 200px;
+                 overflow: auto;
+             }
+             
+             .sendingSpinner{
+                height: 100px!important;
+                width: 100px!important;
+                margin: auto;
+             }
+             
+             .prossessList{
+                height: calc(100% - 100px);
+                width: auto;
+                padding: 4px;
+             }
+             
+             .content-container{
+                padding: 4px;
+                width: auto;
+             }
+             
+             .previousCheckContainer{
+             
+             }
+             
+             .listOfUnsentInvoiceContainer{
+             
+             }
+             
+             .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+                }
+   
         </style>
         
         <div class="panel">
@@ -247,123 +321,155 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
-                        <template is="dom-repeat" items="[[_sortInvoiceListByOa(filteredListOfInvoice)]]" as="inv">
-                            <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
-                                <div class="td fg02">
-                                    <template is="dom-if" if="[[inv.realizedByTrainee]]">
-                                        <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
-                                    </template>
-                                </div>
-                                <div class="td fg05">[[inv.insuranceCode]]</div>
-                                <div class="td fg1">[[inv.invoiceReference]]</div>
-                                <div class="td fg2">
-                                    <template is="dom-if" if="[[!inv.insurabilityCheck]]">
-                                         <iron-icon icon="vaadin:circle" class="assurability--redStatus"></iron-icon>
-                                    </template>
-                                    <template is="dom-if" if="[[inv.insurabilityCheck]]">
-                                         <iron-icon icon="vaadin:circle" class="assurability--greenStatus"></iron-icon>
-                                    </template>
-                                    [[inv.patientName]]
-                                </div>
-                                <div class="td fg1">[[inv.patientSsin]]</div>
-                                <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>                         
-                                <div class="td fg1">[[inv.reimbursement]]€</div>
-                                <div class="td fg1">[[inv.patientIntervention]]€</div>
-                                <div class="td fg1">[[inv.doctorSupplement]]€</div>
-                                <div class="td fg1">[[inv.totalAmount]]€</div>
-                                <div class="td fg1">
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group" id="invoiceList">
+                            <div class="tr tr-group">
+                                <div class="td fg4">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'oa')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'pat')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ext')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'tot')]]€</div>
+                                <div class="td fg1"></div>
+                            </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoInvoicePanel">
+                                    <div class="td fg02"><vaadin-checkbox checked="[[inv.sendingFlag]]" id="[[inv.uuid]]" on-checked-changed="_selectedSendingFlagChanged" on-tap="_stopPropagation"></vaadin-checkbox></div>
+                                    <div class="td fg02">
+                                        <template is="dom-if" if="[[inv.realizedByTrainee]]">
+                                            <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
+                                        </template>
+                                    </div>
+                                    <div class="td fg05">[[inv.insuranceCode]]</div>
+                                    <div class="td fg1">[[inv.invoiceReference]]</div>
+                                    <div class="td fg2">
+                                        <template is="dom-if" if="[[!inv.insurabilityCheck]]">
+                                            <iron-icon icon="vaadin:circle" class="assurability--redStatus"></iron-icon>
+                                        </template>
+                                        <template is="dom-if" if="[[inv.insurabilityCheck]]">
+                                            <iron-icon icon="vaadin:circle" class="assurability--greenStatus"></iron-icon>
+                                        </template>
+                                        [[inv.patientName]]
+                                    </div>
+                                    <div class="td fg1">[[inv.patientSsin]]</div>
+                                    <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>
+                                    <div class="td fg1">[[inv.reimbursement]]€</div>
+                                    <div class="td fg1">[[inv.patientIntervention]]€</div>
+                                    <div class="td fg1">[[inv.doctorSupplement]]€</div>
+                                    <div class="td fg1">[[inv.totalAmount]]€</div>
+                                    <div class="td fg1">
                                     <span class="invoice-status invoice-status--orangeStatus">
                                         <iron-icon icon="vaadin:circle" class="statusIcon invoice-status--orangeStatus"></iron-icon>
                                         [[inv.statut]]
                                      </span>
-                                </div>                    
-                            </div>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
-                    </template>                  
+                    </template>              
                 </div>
             </div>
             <div class="panel-button">
-                <template is="dom-if" if="[[api.tokenId]]">                    
-                    <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
-                </template>
-                <template is="dom-if" if="[[!api.tokenId]]">                   
-                    <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
+                <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
+                    <template is="dom-if" if="[[api.tokenId]]" restamp="true">
+                        <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
+                    </template>
+                    <template is="dom-if" if="[[!api.tokenId]]" restamp="true">                   
+                        <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
+                    </template> 
                 </template>
             </div>
         </div>  
         
-        <paper-dialog id="warningBeforeSend">
+        <paper-dialog id="checkBeforeSendingDialog">
             <h2 class="modal-title">[[localize('pre_chk_bef_inv','Pre check before invoice',language)]]</h2>
-
-            <div class="previousCheck">
-                <h4>[[localize('pr_ctr_block_inv','Prior control(s) blocking(s)',language)]]</h4>
-                <template is="dom-if" if="[[checkBeforeSendEfact.inamiCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_nihii_inv','- Nihii invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.ssinCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv','- Ssin invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.bceCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_cbe_inv','- Cbe invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.ibanCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_iban_inv','- Iban invalid',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[checkBeforeSendEfact.bicCheck]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_bic_inv','- Bic invalid',language)]]</div>
-                </template>
-
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck100]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA100_inv','- Anomaly detected on the invoiceNumber for OA100. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck200]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA200_inv','- Anomaly detected on the invoiceNumber for OA200. Please contact helpdesk',language)]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck300]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA300_inv','- Anomaly detected on the invoiceNumber for OA300. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck306]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA306_inv','- Anomaly detected on the invoiceNumber for OA306. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck400]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA400_inv','- Anomaly detected on the invoiceNumber for OA400. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck500]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA500_inv','- Anomaly detected on the invoiceNumber for OA500. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck600]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA600_inv','- Anomaly detected on the invoiceNumber for OA600. Please contact helpdesk',language)]]</div>
-                </template>
-                <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck900]]">
-                    <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA900_inv','- Anomaly detected on the invoiceNumber for OA900. Please contact helpdesk',language)]]</div>
-                </template>
-            </div>
-            <template is="dom-if" if="[[patientWithoutMutuality.length]]">
-                <div class="unsentInvoice">
-                    <h4>[[localize('pr_don_send_inv','Next invoice don't be send',language)]]</h4>
-                    <vaadin-grid id="patientsWithoutAssurabilityGrid" items="[[patientWithoutMutuality]]">
-                        <vaadin-grid-column class="recipient-col">
-                            <template class="header">
-                                <vaadin-grid-sorter path="patientName">[[localize('pr_pat_inv','Patient',language)]]</vaadin-grid-sorter>
-                            </template>
-                            <template>[[item.patientName]]</template>
-                        </vaadin-grid-column>
-                        <vaadin-grid-column class="recipient-col">
-                            <template class="header">
-                                <vaadin-grid-sorter>Cause</vaadin-grid-sorter>
-                            </template>
-                            <template>[[localize('pr_pat_ass_inf_inv','Patient without assurability information',language)]]</template>
-                        </vaadin-grid-column>
-                    </vaadin-grid>
+            <div class="content"> 
+                <div class="content-container">
+                    <div class="previousCheckContainer">
+                    <h4>[[localize('pr_ctr_block_inv','Prior control(s) blocking(s)',language)]]</h4>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.inamiCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_nihii_inv','- Nihii invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.ssinCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv','- Ssin invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.bceCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_cbe_inv','- Cbe invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.ibanCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_iban_inv','- Iban invalid',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[checkBeforeSendEfact.bicCheck]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_bic_inv','- Bic invalid',language)]]</div>
+                    </template>
+    
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck100]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA100_inv','- Anomaly detected on the invoiceNumber for OA100. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck200]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA200_inv','- Anomaly detected on the invoiceNumber for OA200. Please contact helpdesk',language)]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck300]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA300_inv','- Anomaly detected on the invoiceNumber for OA300. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck306]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA306_inv','- Anomaly detected on the invoiceNumber for OA306. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck400]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA400_inv','- Anomaly detected on the invoiceNumber for OA400. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck500]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA500_inv','- Anomaly detected on the invoiceNumber for OA500. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck600]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA600_inv','- Anomaly detected on the invoiceNumber for OA600. Please contact helpdesk',language)]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!checkBeforeSendEfact.invoiceCheck900]]">
+                        <div class="errorBeforeSendInvoice">[[localize('pr_inv_numb_OA900_inv','- Anomaly detected on the invoiceNumber for OA900. Please contact helpdesk',language)]]</div>
+                    </template>
                 </div>
-            </template>
+                <template is="dom-if" if="[[patientWithoutMutuality.length]]">
+                    <div class="listOfUnsentInvoiceContainer">
+                        <h4>[[localize("pr_don_send_inv","Next invoice don't be send",language)]]</h4>
+                        <div class="table">
+                            <div class="tr th">
+                                <div class="td fg2">[[localize('pr_pat_inv','Patient',language)]]</div>
+                                <div class="td fg2">[[localize('pr_pat_inv_rea','Reason',language)]]</div>
+                            </div>
+                            <template is="dom-repeat" items="[[patientWithoutMutuality]]" as="p">
+                                 <div class="tr">
+                                    <div class="td fg2">[[p.patientName]]</div>
+                                    <div class="td fg2">[[localize('pr_pat_ass_inf_inv','Patient without assurability information',language)]]</div>
+                                </div>
+                            </template>
+                        </div>                       
+                    </div>
+                </template>
+                </div>            
+            </div>
             <div class="buttons">
-                <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--other" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[patientWithoutMutuality.length]]">
                     <paper-button class="button button--save" on-tap="sendInvoices">[[localize('continue','Continue',language)]]</paper-button>
                 </template>
             </div>
-        </paper-dialog>  
+        </paper-dialog>
+        
+      
+         <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <div class="sendingSpinner">
+                    <ht-spinner active="[[isSending]]"></ht-spinner>
+                </div>
+                <div class="prossessList">
+                   <template is="dom-repeat" items="[[progressItem]]" as="pi">
+                      <div>[[pi]]</div>
+                   </template>
+                </div>     
+            </div>        
+        </paper-dialog>
 `
     }
 
@@ -429,6 +535,14 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            isSending:{
+                type: Boolean,
+                value: false
+            },
+            progressItem:{
+                type: Array,
+                value: () => []
             }
         }
     }
@@ -446,15 +560,26 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _initialize(){
-        this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
+        if(_.size(_.get(this, 'listOfInvoice', [])) > 0) {
+            this.set('filteredListOfInvoice', _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'parentInsuranceDto.code'), inv => inv))
 
-        const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
-        const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
-        this.set('cannotSend',!maySend)
+            const lastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? this.api.moment(parseInt(localStorage.getItem('lastInvoicesSent'))).format('YYYY-MM-DD') : '2000-01-01'
+            const maySend =  this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
+            this.set('cannotSend',maySend)
+
+        }
+
     }
 
-    _sortInvoiceListByOa(listOfInvoice) {
-        return _.sortBy(listOfInvoice, ['insuranceCode'], ['asc'])
+    _getGroupInformation(group){
+        return _.get(_.head(group), 'parentInsuranceDto.code', null)+": "+_.get(_.head(group), 'parentInsuranceDto.name.'+this.language, null)
+    }
+
+    _getTotalOfGroup(group, type){
+        return type === "oa" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'reimbursement', 0.00))}, 0).toFixed(2) :
+            type === "pat" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'patientIntervention', 0.00))}, 0).toFixed(2) :
+                type === "ext" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'doctorSupplement', 0.00))}, 0).toFixed(2) :
+                    type === "tot" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'totalAmount', 0.00))}, 0).toFixed(2) : 0.00
     }
 
     _forceZeroNum(num) {
@@ -499,23 +624,25 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         .uniq()
                         .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                         .value()
-                        this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
+
                 }else{
-                    this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
                 }
             }, 100)
+        }else{
+            this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
         }
     }
 
     _checkBeforeSend(){
 
-        this.set('checkBeforeSendEfact.inamiCheck', !!_.get(this.hcp, 'nihii', null))
-        this.set('checkBeforeSendEfact.ssinCheck', !!_.get(this.hcp, 'ssin', null))
-        this.set('checkBeforeSendEfact.bceCheck', !!_.get(this.hcp, 'cbe', null))
+        this.set('checkBeforeSendEfact.inamiCheck', !_.get(this.hcp, 'nihii', null))
+        this.set('checkBeforeSendEfact.ssinCheck', !_.get(this.hcp, 'ssin', null))
+        this.set('checkBeforeSendEfact.bceCheck', !_.get(this.hcp, 'cbe', null))
 
-        this.set('checkBeforeSendEfact.ibanCheck', !!_.get(this.hcp, 'bankAccount', null) || !!_.get(this.hcp, 'financialInstitutionInformation[0].bankAccount', null))
-        this.set('checkBeforeSendEfact.bicCheck', !!_.get(this.hcp, 'bic', null) || !!_.get(this.hcp, 'financialInstitutionInformation[0].bic', null))
-
+        this.set('checkBeforeSendEfact.ibanCheck', !((this.hcp && this.hcp.bankAccount && this.hcp.nihii.bankAccount) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bankAccount)))
+        this.set('checkBeforeSendEfact.bicCheck', !((this.hcp && this.hcp.bic && this.hcp.bic.length) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bic)))
         this.set('patientWithoutMutuality', _.get(this, 'listOfInvoice', []).filter(inv => inv.insurabilityCheck === false) || [])
 
         this.set('checkBeforeSendEfact.invoiceCheck100',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 100, 200))
@@ -532,42 +659,63 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             _.get(this, 'checkBeforeSendEfact.invoiceCheck100', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck200', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck300', null) === false ||
             _.get(this, 'checkBeforeSendEfact.invoiceCheck306', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck400', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck500', null) === false ||
             _.get(this, 'checkBeforeSendEfact.invoiceCheck600', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck900', null) === false){
-            this.$['warningBeforeSend'].open()
+            this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
         }else{
             this.sendInvoices()
         }
     }
 
+    checkIfDoubleInvoiceNumber(invoices, startOfRange, endOfRange){
+        if(startOfRange === 300 && endOfRange === 400){
+            return _.uniq(_.sortBy(invoices.filter(i => i.insuranceCode >= startOfRange && i.insuranceCode < endOfRange && i.insuranceCode !== "306").map( i => parseInt(i.invoiceReference)))).length === _.sortBy(invoices.filter(i => i.insuranceCode >= startOfRange && i.insuranceCode < endOfRange && i.insuranceCode !== "306").map( i => parseInt(i.invoiceReference))).length
+        }else{
+            return _.uniq(_.sortBy(invoices.filter(i => i.insuranceCode >= startOfRange && i.insuranceCode < endOfRange).map( i => parseInt(i.invoiceReference)))).length === _.sortBy(invoices.filter(i => i.insuranceCode >= startOfRange && i.insuranceCode < endOfRange).map( i => parseInt(i.invoiceReference))).length
+        }
+    }
+
     sendInvoices(){
         //todo
-        const LastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? parseInt(localStorage.getItem('lastInvoicesSent')) : -1
-        const maySend = (LastSend < Date.now() + 24*60*60000 || LastSend===-1)
+        this.shadowRoot.querySelector('#checkBeforeSendingDialog') ? this.shadowRoot.querySelector('#checkBeforeSendingDialog').close() : null
+        this.set('progressItem', [])
+
+        const lastSend = parseInt(localStorage.getItem('lastInvoicesSent')) ? this.api.moment(parseInt(localStorage.getItem('lastInvoicesSent'))).format('YYYY-MM-DD') : '2000-01-01'
+        const maySend =  !this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
+
         if (maySend) {
             this.set('cannotSend',true)
             localStorage.setItem('lastInvoicesSent', Date.now())
+            this.shadowRoot.querySelector('#sendingDialog').open()
+            this.set('isSending', true)
+            this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
 
             let prom = Promise.resolve()
-            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => inv.insurabilityCheck === true), 500)))
+            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true), 100)))
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:iv.patient})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
+                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
                         undefined,
                         (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`))
-                    ).then(message => this.api.register(message,'message'))
+                    ).then(message => {
+                        this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
+                        this.api.register(message,'message')
+                    })
                 })
 
             return prom.then(() => {
                 this.set('isSending',false)
-                this.set("isMessagesLoaded",false)
-                this.getMessage()
+                this.shadowRoot.querySelector('#sendingDialog').close()
+                this.getMessage(true)
             })
         }
-
     }
 
-    getMessage(){
-        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+    getMessage(refreshAll){
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: refreshAll}}))
+    }
+
+    _refreshInvoiceList(){
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
     }
 
     _displayInfoInvoicePanel(e){
@@ -575,6 +723,23 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.dispatchEvent(new CustomEvent('open-invoice-detail-panel', {bubbles: true, composed: true, detail: {selectedInv: JSON.parse(_.get(e, 'currentTarget.dataset.item', null))}}))
         }
     }
+
+    _selectedSendingFlagChanged(e){
+        e.stopPropagation()
+        if(_.get(e, 'target.id', null)){
+            let inv = _.get(this, 'listOfInvoice', []).find(inv => _.get(inv, 'uuid', null) === _.get(e, 'target.id', ''))
+            inv.sendingFlag = _.get(e, 'target.checked', false)
+        }
+    }
+
+    _stopPropagation(e){
+        e.stopPropagation()
+    }
+
+    _getGroupId(group){
+        return _.get(_.head(group), 'parentInsuranceDto.id', null)
+    }
+
 
 }
 

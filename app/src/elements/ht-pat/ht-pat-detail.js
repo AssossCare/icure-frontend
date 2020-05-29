@@ -560,9 +560,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             .contact .contact-text-row:first-child, .contact .contact-text-row:last-child{
                 height:24px;
             }
-            /*.contact .contact-text-row:nth-child(2){
-\t\t\t\theight:48px;
-\t\t\t}*/
 
             .contact-text-row p {
                 width: 100%;
@@ -1309,7 +1306,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
             #genInsDialog a {
                 text-decoration: none;
-                color:\tvar(--app-secondary-color);
+                color:  var(--app-secondary-color);
             }
 
             #therLinkDialog .content, #consentDialog .content, #genInsDialog .content {
@@ -1649,11 +1646,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             }
 
             vaadin-upload{
-\t\t\t\tmargin:16px;
-\t\t\t\theight: 280px;
+                margin:16px;
+                height: 280px;
                 overflow-y: auto;
-\t\t\t\tbackground: var(--app-background-color);
-\t\t\t\t--vaadin-upload-buttons-primary: {
+                background: var(--app-background-color);
+                --vaadin-upload-buttons-primary: {
                     height: 28px;
                 };
                 --vaadin-upload-button-add: {
@@ -1669,14 +1666,14 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     box-sizing: border-box;
                     border-radius: 3px;
                 };
-\t\t\t\t--vaadin-upload-file-progress: {
-\t\t\t\t\t--paper-progress-active-color:var(--app-secondary-color);
-\t\t\t\t};
-\t\t\t\t--vaadin-upload-file-commands: {
-\t\t\t\t\tcolor: var(--app-primary-color);
-\t\t\t\t}
+                --vaadin-upload-file-progress: {
+                    --paper-progress-active-color:var(--app-secondary-color);
+                };
+                --vaadin-upload-file-commands: {
+                    color: var(--app-primary-color);
+                }
 
-\t\t\t}
+            }
 
             #pat-admin-card{
                 overflow-y: initial;
@@ -1818,8 +1815,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
         </style>
 
-        <template is="dom-if" if="[[_bodyOverlay]]">
-<!--            <div class="loadingContainer"></div>-->
+        <template is="dom-if" if="[[_bodyOverlay]]"><!--todo julien useless things-->
         </template>
 
         <ht-pat-fusion-dialog id="fusion-dialog" api="[[api]]" language="[[language]]" user="[[user]]" i18n="[[i18n]]" resources="[[resources]]" on-patient-merged="_patientMerged"></ht-pat-fusion-dialog>
@@ -2468,7 +2464,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact" on-medications-selection="_selectMultiMedication" on-medications-validation="_medicationDetailValueChanged" on-medication-selection="_selectMedication" on-medication-detail="_medicationDetail" on-medications-detail="_medicationsDetail" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError">
+                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError">
                             </ht-pat-detail-ctc-detail-panel>
                             </template>
                             <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]">
@@ -2777,11 +2773,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             language="[[language]]" 
             medications="[[existingMedications]]" 
             treatment-history="[[treatmentHistory]]" 
-            resources="[[resources]]"
-            on-save-medications="_saveMedications" 
-            on-new-medications="_createNewMedications">
+            resources="[[resources]]">
         </medication-prescription-dialog>
-        <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}" on-value-changed="_medicationDetailValueChanged"></medication-details-dialog>
+        <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}"></medication-details-dialog>
         <medication-plan-dialog id="medication-plan" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" user="[[user]]" patient="[[patient]]" on-print-prescription="onPrintPrescription"></medication-plan-dialog>
         <!--<ht-pat-mcn-chapteriv-agreement id="chapterivdialog" api="[[api]]" user="[[user]]" patient="[[patient]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" on-create-service="_createService" on-update-services="_updateServices"></ht-pat-mcn-chapteriv-agreement>-->
         <ht-pat-edmg-dialog id="edmgDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]"></ht-pat-edmg-dialog>
@@ -4130,6 +4124,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.saveContact(this.currentContact)
     }
 
+    //todo julien useless ???
     updateMedication(svc) {
         if (!svc.id) return
         svc.modified = +new Date()
@@ -4571,7 +4566,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             const combinedHes = (this.activeHealthElements || []).concat(this.inactiveHealthElements || []).concat(this.archivedHealthElements || []).concat(this.allergies || []).concat(this.risks || []).concat(this.familyrisks || []).concat(this.surgicalHealthElements || [])
             const idServicesInHes = combinedHes.map(he => he.idService)
 
-            const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
+            const hesAsServices = this.currentContact.services.filter(s => s.tags.find(c => c.type === 'CD-ITEM' && ['medication','healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'allergy'].includes(c.code)) && !idServicesInHes.includes(s.id))
             const svcHes = hesAsServices.map(svc => this._makeHeFromSvc(svc))
 
             const now = moment()
@@ -4598,6 +4593,13 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this.set('risks', (this.risks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk'))))
                 this.set('familyrisks', (this.familyrisks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
                 this.set('surgicalHealthElements', (this.surgicalHealthElements || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
+
+                this.set('medications',_.sortBy(_.uniqBy(svcHes.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication')).map(m =>m.svc).concat(this.medications),'id').filter(s =>!s.endOfLife && (!(this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
+                    return Object.assign(m, {
+                        colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
+                    })
+                }),sorter))
+
                 this.set("allHealthElements", {
                     activeHealthElements: this.activeHealthElements,
                     inactiveHealthElements: this.inactiveHealthElements,
@@ -4748,6 +4750,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     })
                 }), sorter))
 
+                //todo julien voir avec le prochain/prochain todo celui des prescriptions a la fin de refresh patient
+                //this.set("treatmentHistory", svcs);
+                //this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
+
+                //todo julien a quoi ca sert cette merde je te jure ???????
                 this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
 
                 const combinedHes = _.sortBy(_.concat(svcHes, hes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
@@ -4941,6 +4948,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     }).finally(() => this.set("SpinnerActive", false))
             })
 
+                //todo julien here tout remonter un peu plus haut
                 .then(() => this.api.contact().filterServices(ctcs, s => s.tags.find(t => (t.type === 'ICURE' && t.code === "PRESC" || t.type === 'CD-ITEM' && t.code === "medication") && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now)))))
                 .then(svcs => {
                     this.set("treatmentHistory", svcs)
@@ -5928,26 +5936,13 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _addMedication(e) {
-        // const id = this.api.crypto().randomUuid();
-        // const medicationValue = { regimen: [] }
-        // const newMedication =  {
-        //     label: this.localize('medication','medication',this.language), id: id,
-        //     content: _.fromPairs([[this.language, { medicationValue: medicationValue }]]),
-        //     tags: (e.target.dataset.tags ? e.target.dataset.tags.split(',') : []).map(c => ({ id: c, type: c.split('|')[0], code: c.split('|')[1], version: c.split('|')[2] }))
-        // };
-
-        this.currentSelectMedicationEventDetail = null
-        // this.$['medication-prescription'].open(newMedication, { id: id, medicationValue: medicationValue, isNew: true } );
-        this.$['medication-prescription'].open(e.detail.service, {isPrescription: false})
-
+        this.$['medication-prescription'].open(e.detail.service, {isPrescription: false}, (medications) => {this._createNewMedications({detail : {medications}})});
     }
 
     _editMedication(e) {
         const id = e.target.id.substr("med-edit-btn-edit_".length)
         const medicationService = this.medications.find(s => s.id === id)
-        this.currentSelectMedicationEventDetail = null
-        this.currentMedicationDetailEventDetail = null
-        this.$['medication-detail'].open(medicationService, {
+        this.$['medication-detail'].open(medication => this._medicationDetailValueChanged({detail : {medication}}),medicationService, {
             id: medicationService.id,
             medicationValue: (this.api.contact().preferredContent(medicationService, this.language) || (medicationService.content[this.language] = {medicationValue: {regimen: []}})).medicationValue,
             isNew: false,
@@ -5955,110 +5950,19 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         })
     }
 
-    _selectMedication(e) {
-        this.currentSelectMedicationEventDetail = e.detail
-        this.$['medication-selection'].open(e.detail.service, e.detail.content)
-    }
 
-    // _selectMultiMedication(e) {
-    //     this.currentSelectMedicationEventDetail = e.detail
-    //     this.$['medication-prescription'].open(e.detail.service, {isPrescription: true});
-    // }
-
-    _selectMultiMedication(e) {
-        this.currentMedicationDetailEventDetail = e.detail
-        this.$['medication-prescription'].open(e.detail.service, {isPrescription: true})
-    }
-
-    _saveMedications(e) {
-        if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onCreate) {
-            this.currentMedicationDetailEventDetail.onCreate(e)
+    openMedicationDialog(e){
+        if(e.detail.isNew) {
+            this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+        }else{
+            this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
         }
-    }
-
-    _medicationDetail(e) {
-        this.currentMedicationDetailEventDetail = e.detail
-        this.$['medication-detail'].open(e.detail.service, e.detail.content)
     }
 
     _medicationsDetail(e) {
         this.currentMedicationDetailEventDetail = e.detail
         this.$['medication-detail'].openList(e.detail.services)
     }
-
-    // _medicationCreated(e) {
-    //     if (this.currentSelectMedicationEventDetail && this.currentSelectMedicationEventDetail.onCreate) {
-    //         this.currentSelectMedicationEventDetail.onCreate(e)
-    //     } else {
-    //         if (!this.currentContact) {
-    //             return;
-    //         }
-    //         this._displayMedicationDetails(e)
-    //     }
-    // }
-
-    // _medicationsCreated(e) {
-    //     if (this.currentSelectMedicationEventDetail && this.currentSelectMedicationEventDetail.onCreate) {
-    //         this.currentSelectMedicationEventDetail.onCreate(e)
-    //     } else {
-    //         if (!this.currentContact) {
-    //             return;
-    //         }
-    //         this._displayMedicationDetails(e)
-    //     }
-    // }
-
-    // _medicationValueChanged(e) {
-    //     if (this.currentSelectMedicationEventDetail && this.currentSelectMedicationEventDetail.onValueChanged) {
-    //         this.currentSelectMedicationEventDetail.onValueChanged(e)
-    //     }
-    // }
-
-    _createNewMedications(e) {
-        const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication]
-        Promise.all(medicationArray.map(m => {
-            if (m.options && (m.options.createMedication || !m.options.isPrescription)) {
-                const newMedication = _.cloneDeep(_.omit(m.newMedication, ["id"]));
-                (this.api.contact().medicationValue(newMedication, this.language) || {endMoment: ""}).endMoment = null
-                newMedication.tags = newMedication.tags && newMedication.tags.filter(tag => !(tag.type === "ICURE" && tag.code === "PRESC")) || [];
-                (newMedication.tags.find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {
-                    type: "CD-ITEM",
-                    version: "1"
-                })).code = "medication"
-                newMedication.label = this.localize('medication', 'medication', this.language)
-                newMedication.id = this.api.crypto().randomUuid()
-                return this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication))
-            }
-            return null
-        }))
-            .then((results) => results.find(r => r) && this.refreshPatient())
-    }
-
-    _medicationDetailValueChanged(e) {
-        //In case we get here coming from the prescription dialog by checking the checkbox
-        if (this.currentMedicationDetailEventDetail && this.currentMedicationDetailEventDetail.onValueChanged) {
-            this.currentMedicationDetailEventDetail.onValueChanged(e)
-            this._createNewMedications(e)
-        } else {
-            //Standard behaviour: create from medication button in left panel
-            this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
-        }
-    }
-
-
-    // _displayMedicationDetails(e) {
-    //     if (this.currentSelectMedicationEventDetail && this.currentSelectMedicationEventDetail.onShowDetails) {
-    //         this.currentSelectMedicationEventDetail.onShowDetails(e)
-    //     } else {
-    //         const medicationService = e.detail.medication
-    //         this.$['medication-detail'].open(e.detail.medication, {
-    //             id: medicationService.id,
-    //             medicationValue: (this.api.contact().preferredContent(medicationService, this.language) || (medicationService.content[this.language] = {medicationValue: {regimen: []}})).medicationValue,
-    //             isNew: true,
-    //             isPrescription: e.detail.isPrescription
-    //         });
-    //     }
-    // }
 
     _healthElementsSelectorColumns() {
         return [{key: 'descr', title: 'Description'}, {key: 'plansOfActionDescr', title: 'Plans of action'}]
@@ -6629,10 +6533,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _readEid() {
-        fetch(`${_.get(this, "api.electronHost", "http://127.0.0.1:16042")}/read`)
-            .then((response) => {
-                return response.json()
-            })
+        this.api.electron().read()
             .then(res => {
                 if (res && res.cards.length && res.cards[0]) {
                     this.set('cardData', res.cards[0])
@@ -7437,6 +7338,30 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         const yesterday = moment().subtract(1, 'days')
         const today = moment()
         return this.medications.filter(s => s.tags.some(c => _.get(c, 'type', null) === 'CD-ITEM' && _.get(c, 'code', null) === 'medication' && !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && (_.get(c, 'medicationValue.endMoment', null) && this.api.moment(_.get(c, 'medicationValue.endMoment', null)).isBefore(yesterday)) || (_.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(today)))))
+    }
+
+
+    _createNewMedications(e) {
+        const medicationArray = e.detail.medications ? e.detail.medications : [e.detail.medication];
+
+        let prom = Promise.resolve([])
+
+        Promise.all(medicationArray.map(m => {
+            const newMedication = _.cloneDeep(_.omit(m.newMedication, ["id"]));
+            (this.api.contact().medicationValue(newMedication, this.language) || {endMoment: ""}).endMoment = null;
+            newMedication.tags = newMedication.tags && newMedication.tags.filter(tag => !(tag.type === "ICURE" && tag.code === "PRESC")) || [];
+            (newMedication.tags.find(tag => tag.type === "CD-ITEM") || (newMedication.tags[newMedication.tags.length] = {type: "CD-ITEM", version: "1"})).code = "medication";
+            newMedication.label = this.localize('medication', 'medication', this.language);
+            newMedication.id = this.api.crypto().randomUuid();
+            prom = prom.then(promiseCarrier => !(m.options && (m.options.createMedication || !m.options.isPrescription)) ? _.concat(promiseCarrier, null) : this.saveNewService(this.api.contact().service().newInstance(this.user, newMedication)).then(x => _.concat(promiseCarrier,x)))
+        }))
+
+        prom.then(results => results.find(r => r) && this.refreshPatient())
+
+    }
+
+    _medicationDetailValueChanged(e) {
+        this.saveNewService(this.api.contact().service().newInstance(this.user, e.detail.medication.newMedication)).then(() => this.refreshPatient())
     }
 
     _isSpecialist(hcp) {

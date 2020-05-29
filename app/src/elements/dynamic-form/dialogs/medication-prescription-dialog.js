@@ -10,12 +10,6 @@ import _ from 'lodash/lodash'
 import accounting from '../../../../scripts/accounting';
 import moment from 'moment/src/moment';
 
-const STATUS_NOT_SENT = 1;
-const STATUS_SENT = 2;
-const STATUS_PENDING = 4;
-const STATUS_DELIVERED = 8;
-const STATUS_REVOKED = 16;
-
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../tk-localizer";
 class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
@@ -911,19 +905,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                                 </template>
                             </vaadin-grid-column>
 
-                            <!-- MASTERLY / TEMPLATE-->
-
-<!--                            <vaadin-grid-column width="40px" flex-grow="0">-->
-<!--                                <template>-->
-<!--                                    <template is="dom-if" if="[[_isMasterly(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:masterly"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                    <template is="dom-if" if="[[_isTemplate(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:template"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                </template>-->
-<!--                            </vaadin-grid-column>-->
-
                             <!-- NAME / DOSAGE-->
 
                             <vaadin-grid-column flex-grow="1">
@@ -1191,19 +1172,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                                 </template>
                             </vaadin-grid-column>
 
-                            <!-- MASTERLY / TEMPLATE-->
-
-<!--                            <vaadin-grid-column width="40px" flex-grow="0">-->
-<!--                                <template>-->
-<!--                                    <template is="dom-if" if="[[_isMasterly(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:masterly"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                    <template is="dom-if" if="[[_isTemplate(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:template"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                </template>-->
-<!--                            </vaadin-grid-column>-->
-
                             <!-- NAME / DOSAGE-->
 
                             <vaadin-grid-column flex-grow="1">
@@ -1224,12 +1192,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                                     <template is="dom-if" if="[[_hasColor(item)]]">
                                         <label class\$="colour-code [[_getStyle('ATC', item.atcCat, 'span')]]"><span></span></label>
                                     </template>
-<!--                                    <div class\$="[[_getStyle('ATC', item.atcCat)]]" id="[[item.atcCat]]_[[item.id]]">-->
-<!--                                        <span class="dot"></span>-->
-<!--                                    </div>-->
-<!--                                    <paper-tooltip z-index="1000" id="tt_[[item.atcCat]]_[[item.id]]"-->
-<!--                                                   for="[[item.atcCat]]_[[item.id]]">[[_atcTooltip(item.atcCat)]]-->
-<!--                                    </paper-tooltip>-->
                                 </template>
 
                             </vaadin-grid-column>
@@ -1338,19 +1300,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                                 </template>
                             </vaadin-grid-column>
 
-                            <!-- MASTERLY / TEMPLATE-->
-
-<!--                            <vaadin-grid-column width="40px" flex-grow="0">-->
-<!--                                <template>-->
-<!--                                    <template is="dom-if" if="[[_isMasterly(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:masterly"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                    <template is="dom-if" if="[[_isTemplate(item.preparation)]]">-->
-<!--                                        <iron-icon icon="medication:template"></iron-icon>-->
-<!--                                    </template>-->
-<!--                                </template>-->
-<!--                            </vaadin-grid-column>-->
-
                             <!-- NAME / DOSAGE-->
 
                             <vaadin-grid-column flex-grow="1">
@@ -1370,14 +1319,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                                         <label class\$="colour-code [[_getStyle('ATC', item.atcCat, 'span')]]"><span></span></label>
                                     </template>
                                 </template>
-<!--                                <template>-->
-<!--                                    <div class\$="[[_getStyle('ATC', item.atcCat)]]" id="[[item.atcCat]]_[[item.id]]">-->
-<!--                                        <span class="dot"></span>-->
-<!--                                    </div>-->
-<!--                                    <paper-tooltip z-index="1000" id="tt_[[item.atcCat]]_[[item.id]]"-->
-<!--                                                   for="[[item.atcCat]]_[[item.id]]">[[_atcTooltip(item.atcCat)]]-->
-<!--                                    </paper-tooltip>-->
-<!--                                </template>-->
 
                             </vaadin-grid-column>
 
@@ -1473,7 +1414,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                             <iron-icon icon="hardware:keyboard-arrow-down"></iron-icon>
                         </div>
 
-<!--                        <vaadin-grid id="compound-list" class\$="sub-list [[_activeListClass('compound', trigger)]]" active-item="{{selectedCompound}}">-->
                         <vaadin-grid id="compound-list" class\$="sub-list [[_activeListClass('compound', trigger)]]">
 
                             <!-- ADD-->
@@ -1529,9 +1469,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                     <paper-button class="button button--other" on-tap="_showSearchPane">[[localize('val-poso','Validate posology',language)]]</paper-button>
                 </template>
                 <paper-button class="button button--save" dialog-confirm="" autofocus="" on-tap="saveMedications" disabled="[[!medicationAccumulator.length]]">[[_saveButtonName(isPrescription)]]</paper-button>
-                <!--                <paper-button class="button button&#45;&#45;save" dialog-confirm autofocus on-tap="saveMedications"-->
-                <!--                              disabled="[[!medicationAccumulator.length]]">[[localize('valid','Validate',language)]]-->
-                <!--                </paper-button>-->
             </div>
         </paper-dialog>
         <paper-dialog id="compound-dialog" always-on-top="" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
@@ -1589,14 +1526,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               type: String,
               value: 'medicinalProduct'
           },
-          // compoundText: {
-          //     type: String,
-          //     value: ""
-          // },
-          // compoundName: {
-          //     type: String,
-          //     value: ""
-          // },
           columnsDefinition: {
               type: Object,
               value: function () {
@@ -1758,6 +1687,10 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           refreshDescription: {
               type: String,
               value: ""
+          },
+          saveAction: {
+              type: Object,
+              value: () =>{console.log("no save Action")}
           }
       }
   }
@@ -1977,7 +1910,8 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       this._updateAccumulatorSelection(idx);
   }
 
-  open(medication, options = {}) {
+  open(medication, options = {}, saveAction) {
+      this.set("saveAction",saveAction)
       // @todo: spinner
       this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
           .then(hes => {
@@ -2024,49 +1958,16 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           });
   }
 
-  _init() {
-      // this.latestSearchValue = this.filterValue;
-      // const bedrugsIcc = this.api.bedrugs();
-
-      // OK
-      // this._initList('ingredient-list', bedrugsIcc.getInnClusters.bind(bedrugsIcc), this._ingredientAdapter.bind(this));
-      // this._initList('ingredient-list', this._ingredientSearch.bind(this), this._ingredientAdapter.bind(this));
-
-      // OK
-      //this._initList('medicine-package-list', bedrugsIcc.getMedecinePackages.bind(bedrugsIcc), this._medicinePackageAdapter.bind(this));
-
-      // OK
-      // this._initList('medicine-package-list', bedrugsIcc.getMedecinePackagesFromIngredients.bind(bedrugsIcc), this._medicinePackageAdapter.bind(this));
-
-      // OK
-      // this._initList('medicine-package-list', this._medecinePackagesSearch.bind(this), this._medicinePackageAdapter.bind(this));
-
-      // OK
-      // this._initList('chronic-list', this._chronicsSearch.bind(this), this._chronicAdapter.bind(this));
-
-      // this.filterNone = this.shadowRoot.querySelector("#filter-none");
-      // this.filterNone.active = true;
-  }
-
   _priceIndexSamV2(info) {
       return info && (info.cheapest ? 0 : (info.cheap ? 1 : 2)) || 0;
   }
 
   _compProhibIcon(info) {
-      // return info.mp && info.mp.dopingcode && info.mp.dopingcode === "N" ? 'cat-doping-prod' : 'void';
       return info.mp && info.mp.dopingcode ? 'cat-doping-prod' : 'void';
   }
 
   _compProhibIconSamV2(vmpGroup) {
       return vmpGroup && vmpGroup.noGenericPrescriptionReason && vmpGroup.noGenericPrescriptionReason.code === "5" ? 'cat-doping-prod' : 'void';
-  }
-
-  _servereRenalInsufIcon(info) {
-      return true ? 'severe-renal-insufficiency' : 'void';
-  }
-
-  _moderateRenalInsufIcon(info) {
-      return true ? 'moderate-renal-insufficiency' : 'void';
   }
 
   _reinfPharmaVigiIcon(info) {
@@ -2162,12 +2063,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _deliveryStatus(status) {
-      return status === STATUS_NOT_SENT ? "notsent" :
-          status === STATUS_SENT ? "sent" :
-              status === STATUS_PENDING ? "pending" :
-                  status === STATUS_DELIVERED ? "delivered" :
-                      status === STATUS_REVOKED ? "revoked" : "hidden";
-      // return (item && item.tags && item.tags.some(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !item.endOfLife && item.tags.find(t => t.type === 'CD-LIFECYCLE') || {code: ""}).code;
+      return status===(1<0) ? "notsent" : status===(1<1) ? "sent" : status===(1<2) ? "pending" : status===(1<3) ? "delivered" : status===(1<4) ? "revoked" : "hidden";
   }
 
   _isDrugAlreadyDelivered(s) {
@@ -2217,8 +2113,8 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           "atcCat": mppInfos.atcCode && mppInfos.atcCode[0] || "",
           "publicPrice": accounting.formatMoney(mppInfos.pubprice / 100, "€", 2, " ", ","),
           "compProhibIcon": this._compProhibIcon(mppInfos),
-          "moderateRenalInsufIcon": this._moderateRenalInsufIcon(mppInfos),
-          "severeRenalInsufIcon": this._servereRenalInsufIcon(mppInfos),
+          "moderateRenalInsufIcon": 'moderate-renal-insufficiency',//todo julien remplacer cette merde inutile
+          "severeRenalInsufIcon": 'severe-renal-insufficiency',
           "rmaPharmaVigiIcon": this._rmaPharmaVigiIcon(mppInfos),
           "reinfPharmaVigiIcon": this._reinfPharmaVigiIcon(mppInfos),
           "narcoticIcon": this._narcoticIcon(mppInfos),
@@ -2246,7 +2142,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   return this._buildListItem(mppInfos);
               })))
               .catch(err => {
-                  console.log("error:", err);
                   return [];
               });
       } else {
@@ -2262,13 +2157,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           };
       }));
   }
-
-  // .then(codes => codes.filter((e, i, a) => a.findIndex(x => x.code === e.code) === i))
-  // .then(codes => this.api.code().getCodes(codes.map(c => this.api.code().normalize(c).id).join(',')))
-  // .then(codes => {
-  //     this.set('entity.codes', _.union(this._stripCodesByTypes(this.entity.codes, ["CD-ATC", "CD-DRUG-CNK"]), codes));
-  //     console.log("entity-codes", this.entity.codes);
-  // })
 
   _getCnkCodes(dmpps) {
       return dmpps.reduce((codes, dmpp) => {
@@ -2291,7 +2179,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       // todo: this must be done only once per search!
       const normSearchValue = searchValue.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
       return new Promise(resolve => {
-          // let results = [];
           resolve(source.reduce((results, service) => {
               const searchField = this._serviceDescription(service);
               const normSearchField = searchField.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
@@ -2336,7 +2223,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   "compoundTitle": result.compoundTitle,
                   "posology": result.posology,
                   "atcCodes": result.atcCodes,
-                  "atcCat": _.get(result, "atcCodes[0][0]", ""),
+                  "atcCat": _.get(result, "atcCodes[0][0]", ""),//todo julien moche a crever ca
                   "allergies": result.allergies,
                   "allergyType": this._getAllergyType(result.allergies),
                   "deliveryStatus": this._deliveryStatus(result.status) || "hidden",
@@ -2346,36 +2233,11 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   "type": result.type,
                   "serviceType": this._getServiceType(result.service)
               };
-              console.log("service item: ", item);
               return item;
           }));
       } else {
           return Promise.resolve([]);
       }
-
-
-      // let data = [];
-      // if (results && results.length) {
-      //     let data = [];
-      //     return Promise.all(results.map(result => {
-      //         let id = ((result.codes || (result.codes = [])).find(c => c.type === 'CD-DRUG-CNK') || {code: ''}).code;
-      //         if (id && !id.includes(':')) {
-      //             return this.api.bedrugs().getMppInfos(id, this.language === 'en' ? 'fr' : this.language || 'fr')
-      //                 .then(mppInfos => this._buildListItem(mppInfos, result));
-      //         } else {
-      //             return {
-      //                 "id": result.id,
-      //                 "intendedName": result.name,
-      //                 "pos": this.api.contact().medication().frequencyToString((this.api.contact().preferredContent(result, this.language) || {}).medicationValue, this.language)
-      //             };
-      //         }}))
-      //         .catch(err => {
-      //             console.log("error:", err);
-      //             return [];
-      //         });
-      // } else {
-      //     return Promise.resolve([]);
-      // }
   }
 
   _ingredientSearch(searchValue, language, type, first, count) {
@@ -2428,7 +2290,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   "noSwitchReason": vmpGroup.noSwitchReason,
                   "type": "substance"
               };
-              console.log("ingredient item: ", item);
               return item;
           }));
       } else {
@@ -2526,10 +2387,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   }
 
                   return finalList
-                      .map(ampp => {
-                          console.log("ampp - ", ampp);
-                          return ampp;
-                      })
               });
   }
 
@@ -2591,7 +2448,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   "intendedName": result.intendedName,
                   "type": result.type
               };
-              console.log("compound item: ", item);
               return item;
           }));
       } else {
@@ -2629,8 +2485,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           let latestSearchValue = this.filterValue && this.filterValue.trim();
           this.latestSearchValue = latestSearchValue;
 
-          // console.log("Starting search for " + this.filterValue + "|" + sort + "|" + search.toString() + "|" + (desc ? "<|" : ">|") + startIndex + ":" + pageSize + ":");
-
           this._setSpinnerBusy();
           const limit = endIndex || grid.pageSize;
           const offset = params.index;
@@ -2643,12 +2497,10 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               })
               .then(function (res) {
                   if (this.filterValue !== latestSearchValue) {
-                      //console.log("Cancelling obsolete search");
                       return;
                   }
 
                   if (res.size === 0) {
-                      console.log("Empty search");
                       this.setGridSize(grid, 0);
                       callback([], 0);
                       return;
@@ -2700,7 +2552,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           'compound-list'
       ];
 
-      this._init();
   }
 
   medicationTypeChanged(name) {
@@ -2711,9 +2562,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   setGridSize(grid, size) {
-      console.log('setSize', size)
       grid.set('size', size)
-      // this.set('busySpinner', false)
   }
 
   _cellContent(item, column) {
@@ -2802,7 +2651,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               this.set(`medicationAccumulator.${currentMedIdx}.boxes`, (this.medicationAccumulator[currentMedIdx].boxes || 1) + 1)
           }
       } else {
-          console.log(med.type);
           const drugType = med.type === "medicine" ? "CD-DRUG-CNK" :
               med.type === "substance" ? "CD-VMPGROUP" : "compoundPrescription";
 
@@ -2814,8 +2662,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               med.unit = _.get(medicationValue, "regimen[0].administratedQuantity.unit", this.localize("uni", "Unités"));
           }
           else {
-              // const unit = med.unit || this.localize('generic_unit', 'unit', this.language);
-              // const unit = (med.unit && med.unit.length < 20) ? med.unit : "";
               const newMedicationContent = {medicationValue: {regimen: [], substitutionAllowed: true}};
 
               newMed = {
@@ -2825,7 +2671,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
 
               if (drugType === "compoundPrescription") {
                   Object.assign(newMedicationContent.medicationValue, {
-                      // compoundPrescription: med.compoundTitle + "\r\n" + med.intendedName
                       compoundPrescription: med.intendedName
                   });
               } else {
@@ -2836,7 +2681,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   };
 
                   Object.assign(newMedicationContent.medicationValue, drugType === "CD-VMPGROUP" ? {substanceProduct: product} : {medicinalProduct: product});
-                  // newMedicationContent.medicationUnit = newMedicationContent.regimen[0].administratedQuantity.unit = med.unit;
 
                   ((newMed.codes || (newMed.codes = [])).find(code => code.type === drugType) || (newMed.codes[newMed.codes.length] = {
                       type: drugType,
@@ -2856,8 +2700,8 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           newMedClone.tags = newMed.tags && newMed.tags.length && newMed.tags.filter(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || [];
           const medicationValueClone = this.api.contact().medicationValue(newMedClone, this.language);
           if (hasMedication) {
-              medicationValueClone.beginMoment = parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10);
-              medicationValueClone.endMoment = null;
+              medicationValueClone.beginMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10) : medicationValueClone.beginMoment;
+              medicationValueClone.endMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? null : medicationValueClone.endMoment
           }
           (this.api.contact().medicationValue(newMedClone, this.language) || {medicationValue: {}}).status = 0;
           newMedClone.beginMoment = null;
@@ -2882,17 +2726,17 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   saveMedications() {
-      this.dispatchEvent(new CustomEvent(this.isPrescription ? 'save-medications' : 'new-medications', {
-          detail: {medications: this.medicationAccumulator},
-          bubbles: true,
-          composed: true
+      this.saveAction(this.medicationAccumulator.map(m => {
+          if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
+              m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
+          }
+          return m;
       }))
   }
 
   click(e) {
       const selected = this.selectedMedicationFromList;
 
-      console.log('selected ', selected, ' - ', this.latestSelected);
       if (this.inDoubleClick && (this._id(this.latestSelected) === this._id(selected) || this.latestSelected && !selected || !this.latestSelected && selected)) {
           this._addCnkDci({target: {id: this._id(this.latestSelected)}})
       } else {
@@ -2914,7 +2758,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   clickChron(e) {
       const selected = this.selectedChronicalMedicationFromList;
 
-      console.log('selected ', selected, ' - ', this.latestSelected);
       if (this.inDoubleClick && (this.latestSelected === selected || this.latestSelected && !selected || !this.latestSelected && selected)) {
           this._addChron({target: {id: this._id(this.latestSelected)}})
       } else {
@@ -2978,16 +2821,11 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           }
           setTimeout(function () {
               if (currentValue === this.filterValue) {
-                  // this.set('busySpinner', true)
-                  console.log("Triggering search for " + this.filterValue);
 
                   this.selectedMedicationFromList = null
                   this.cheapAlternativeSearchSeed = null
                   this._forceSpinnerIdle();
                   this._clearAll();
-              } else {
-                  console.log("Skipping search for " + this.filterValue + " != " + currentValue);
-                  // this.set('busySpinner', false)
               }
           }.bind(this), 500); //Wait for the user to stop typing
       }.bind(this), 100);
@@ -2996,7 +2834,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   skip() {
       this.set('filterValue', '')
       this.set('medicationType', 'medicinalProduct')
-      // this.$['ingredient-list'].clearCache();
       this._clearAll();
   }
 
@@ -3005,20 +2842,10 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           this._setFrequencyList()
       }
       this.set('filterValue', '')
-      // this.$['ingredient-list'].clearCache();
       this._clearAll();
       this.set('customFrequencyTable', false)
       this.set('flagTableFrequency', false)
   }
-
-  // select(item) {
-  //     if (item) {
-  //         this.selectMedicationFromList(item);
-  //         this.set('filterValue', '')
-  //         this.set('medicationType', 'medicinalProduct')
-  //         this.$['ingredient-list'].clearCache();
-  //     }
-  // }
 
   selectChron(med) {
       if (med) {
@@ -3054,10 +2881,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       return this.columnsDefinition[medicationType] || []
   }
 
-  // _isCompoundPrescription(medicationType) {
-  //     return medicationType === 'compoundPrescription';
-  // }
-
   _isMedicinalProduct(medicationType) {
       return medicationType === 'medicinalProduct';
   }
@@ -3078,10 +2901,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       return this.columnsDefinition[medicationType] || []
   }
 
-  // _isCompoundPrescription(medicationType) {
-  //     return medicationType === 'compoundPrescription';
-  // }
-
   _isMedicinalProduct(medicationType) {
       return medicationType === 'medicinalProduct';
   }
@@ -3093,20 +2912,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   _atcTooltip(cat) {
       if (!cat) return "";
       return this.localize('atc-' + cat, '');
-      // return cat === 'A' ? this.localize('ali_trac_meta', 'Alimentary tract and metabolism') :
-      //     cat === 'B' ? this.localize('blo_blo_for', 'Blood and blood forming organs') :
-      //         cat === 'C' ? this.localize('car_sys', 'Cardiovascular system') :
-      //             cat === 'D' ? this.localize('dermatologicals', 'Dermatologicals') :
-      //                 cat === 'G' ? this.localize('gen_uri_sys', 'Genito-urinary system and sex hormones') :
-      //                     cat === 'H' ? this.localize('sys_hor_pre', 'Systemic hormonal preparations, excluding sex hormones and insulins') :
-      //                         cat === 'J' ? this.localize('anti_inf_sys', 'Antiinfectives for systemic use') :
-      //                             cat === 'L' ? this.localize('anti_neo_imm', 'Antineoplastic and immunomodulating agents') :
-      //                                 cat === 'M' ? this.localize('mus_ske_sys', 'Musculo-skeletal system') :
-      //                                     cat === 'N' ? this.localize('ner_sys', 'Nervous system') :
-      //                                         cat === 'P' ? this.localize('Anti_para_pro', 'Antiparasitic products, insecticides and repellents') :
-      //                                             cat === 'R' ? this.localize('res_sys', 'Respiratory system') :
-      //                                                 cat === 'S' ? this.localize('sens_org', 'Sensory organs') :
-      //                                                     cat === 'V' ? this.localize('various', 'Various') : this.localize('unk', 'Unknown')
   }
 
   _getCompoundPrescriptionFields(compoundPrescription) {
@@ -3120,8 +2925,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       if (!medicationValue) return "";
       if (medicationValue.compoundPrescription) {
           return medicationValue.compoundPrescription;
-          // const fields = this._getCompoundPrescriptionFields(medicationValue.compoundPrescription);
-          // return fields.title + ": " + fields.formula;
       } else {
           return this.api.contact().medication().medicationNameToString((this.api.contact().preferredContent(s, this.language) || {}).medicationValue, this.language);
       }
@@ -3136,14 +2939,12 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
 
       this.compoundSearchString = searchString;
       if (!searchString || searchString.length < 2) {
-          //console.log("Cancelling empty search");
           this.set('compoundListItems', []);
           return;
       }
 
       this.api.entitytemplate().findAllEntityTemplates('org.taktik.icure.entities.embed.Medication', searchString, true).then(res => {
           if (searchString !== this.compoundSearchString) {
-              //console.log("Cancelling obsolete search");
               this.set('compoundListItems', []);
           }
           this.set('compoundListItems', res);
@@ -3170,7 +2971,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       // check if patient have adverse drug reaction to this drug
 
       if (!this.user || !this.patient) {
-          console.log("no user or patient, abort")
           return
       }
       if (!med) {
@@ -3178,7 +2978,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       }
       this.set('continueAddMedication', thenfun)
       this.api.helement().findBy(this.user.healthcarePartyId, this.patient).then(hes => {
-          console.log(hes)
           this._fillMedecineCodes(med).then(() => {
 
               const intols = hes
@@ -3206,7 +3005,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   }
                   this.$['checkintol'].open()
               } else {
-                  console.log("no intol")
                   return thenfun()
               }
           })
@@ -3307,11 +3105,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _activePaneClass(key, trigger) {
-      // if (Object.values(this.panes).every(f => !f)) {
-      //     if (Object.keys(this.panes)[0] === key) {
-      //         this.panes[key] = true;
-      //     }
-      // }
       return this.panes[key] ? '' : 'collapsed';
   }
 
@@ -3336,7 +3129,6 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       if (this.busySpinnerCounter > 0) {
           this.set("busySpinner", true);
       }
-      console.log("increasing spinner counter: ", this.busySpinnerCounter);
   }
 
   _setSpinnerIdle() {
@@ -3345,13 +3137,11 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           this.set("busySpinner", false);
           this.busySpinnerCounter = 0;
       }
-      console.log("decreasing spinner counter: ", this.busySpinnerCounter);
   }
 
   _forceSpinnerIdle() {
       this.busySpinnerCounter = 0;
       this.set("busySpinner", false);
-      console.log("resetting spinner counter: ", this.busySpinnerCounter);
   }
 }
 

@@ -367,25 +367,14 @@ class HtAppWelcome extends TkLocalizerMixin(PolymerElement) {
       this.credentials.username = this.user.login;
       this.credentials.password = this.user.passwordHash;
 
-      return fetch('http://127.0.0.1:16042/create-first-user',{
-          method: "POST",
-          headers: {
-              "Content-Type" : "application/json; charset=utf-8"
-          },
-          body: JSON.stringify( [this.healthcareParty,this.user] )
-      })
+      return this.api.electron().createFirstUser(this.healthcareParty,this.user)
 
   }
 
   replicate() {
 
-      fetch('http://127.0.0.1:16042/replicate',{
-          method: "POST",
-          headers: {
-              "Content-Type" : "application/json; charset=utf-8"
-          },
-          body: JSON.stringify( { cloudKey: this.get('cloudKey').trim() } )
-      }).then( response => {
+      this.api.electron().replication(this.get('cloudKey').trim())
+      .then( response => {
           this.set('hidden',true);
       }).catch( error => {
           console.error(error)

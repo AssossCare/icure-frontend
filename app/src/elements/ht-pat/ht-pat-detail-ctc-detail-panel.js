@@ -2987,11 +2987,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
             })
             .then(resourcesObject => this.api.isElectronAvailable().then(isElectron => _.assign({isElectron: isElectron}, resourcesObject)))
-            .then(resourcesObject => resourcesObject.isElectron ? fetch(`${_.get(this, "api.electronHost", "http://127.0.0.1:16042")}/getPrinterSetting`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json; charset=utf-8"},
-                body: JSON.stringify({userId: this.user.id})
-            }).then(response => response && response.status === 200 ? response.json() : Promise.resolve({})).then(data => _.assign({printFormat: data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type === "recipe") ? JSON.parse(data.data).find(x => x.type === "recipe").format : "A4"}, resourcesObject)) : resourcesObject)
+            .then(resourcesObject => resourcesObject.isElectron ? this.api.electron().getPrinterSetting(this.user.id)
+            .then(data => _.assign({printFormat: data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type === "recipe") ? JSON.parse(data.data).find(x => x.type === "recipe").format : "A4"}, resourcesObject)) : resourcesObject)
             .then(resourcesObject => this.api.pdfReport((resourcesObject.isElectron && resourcesObject.printFormat !== "A4" ? this._getDLPdfHeader() : this._getA5PdfHeader()) + _.trim(resourcesObject.pdfContent) + this._getPdfFooter(), {
                 type: "recipe",
                 completionEvent: "pdfDoneRenderingEvent",

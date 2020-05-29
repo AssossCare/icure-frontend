@@ -19,6 +19,7 @@ import {IccUserXApi} from 'icc-api/dist/icc-x-api/icc-user-x-api'
 import {IccInvoiceXApi} from 'icc-api/dist/icc-x-api/icc-invoice-x-api'
 import {IccMessageXApi} from 'icc-api/dist/icc-x-api/icc-message-x-api'
 import {IccClassificationXApi} from 'icc-api/dist/icc-x-api/icc-classification-x-api'
+import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 
 import {PolymerElement, html} from '@polymer/polymer';
 class IccApi extends PolymerElement {
@@ -107,14 +108,6 @@ class IccApi extends PolymerElement {
           tmpLogging:{
               type:Boolean,
               value:false
-          },
-          electronHost: {
-              type: String,
-              value: "http://127.0.0.1:16042"
-          },
-          flatRateEInvoicingDate: {
-              type: Number,
-              value: 202006
           }
       }
   }
@@ -170,16 +163,19 @@ class IccApi extends PolymerElement {
 
       this.receipticc = new IccReceiptXApi(this.host, this.headers, this.cryptoicc)
       this.contacticc = new IccContactXApi(this.host, this.headers, this.cryptoicc)
-      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc, this.authicc)
+      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc)
       this.formicc = new IccFormXApi(this.host, this.headers, this.cryptoicc)
       this.helementicc = new IccHelementXApi(this.host, this.headers, this.cryptoicc)
       this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
       this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc)
       this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
-      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.authicc,this.contacticc, this.helementicc)
+      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
+      this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
-            this.medexicc = new api.iccMedexApi(this.host, this.headers)
+      const hostElectron = this.host.includes(":16042") ? _.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042" : "http://127.0.0.1:16042"
+      this.desktopApi = new ElectronApi(hostElectron)
+
 
 
       const toObserve = [
@@ -383,12 +379,12 @@ class IccApi extends PolymerElement {
       return this.medexicc
   }
 
-  calendaritemtype(){
-      return this.calendaritemtypeicc
+  electron(){
+      return this.desktopApi
   }
 
-  authorizationHeader() {
-      return this.headers.Authorization
+  calendaritemtype(){
+      return this.calendaritemtypeicc
   }
 
   localize(e, lng) {
@@ -699,16 +695,7 @@ class IccApi extends PolymerElement {
           const optionsString = _.toPairs(options).map(([k, v]) => `${k}=${v}`).join('&')
           if(!optionsString.length) option.type="doc-big-format"
 
-          return (!electron || !type ? Promise.resolve(electron) : fetch(`${_.get(this,"electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json; charset=utf-8"
-              },
-              body: JSON.stringify({
-                  userId: user.id
-              })
-          }))
-              .then(response => response && response.status===200 ? response.json() : Promise.resolve({}))
+          return (!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id)
               .then( data => {
                   const printersPrefs = electron && data && data.ok ? JSON.parse(data.data) : JSON.parse(localStorage.getItem('selectedPrinter') || '{}')
                   const stickersPrefs = electron && data && data.ok ? _.find(printersPrefs, pref => pref.type === "sticker-mut") || {} : _.get(printersPrefs,"stickers")
@@ -723,27 +710,26 @@ class IccApi extends PolymerElement {
 
                   return (printerName ? Promise.resolve(printerName) : this.printers().then(printers => printers.find(p => p.isDefault)).then(p => p && p.name))
                       .then(printerName =>
-                          fetch(`${electron && type && printerName ? _.get(this,"electronHost","http://127.0.0.1:16042") + '/print/' + encodeURIComponent(printerName) : 'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`, {
+                          (electron && type && printerName ? this.electron().print(html,encodeURIComponent(printerName)) : fetch(`${'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`, {
                               method: "POST",
                               mode: "cors", // no-cors, cors, *same-origin
                               credentials: "same-origin", // include, same-origin, *omit
                               headers: {"Content-Type": "text/html; charset=utf-8"},
                               redirect: "follow",
                               body: html,
-                          }).then(response => response.arrayBuffer()).then(data => ({
+                          })).then(response => response.arrayBuffer()).then(data => ({
                               pdf: data,
                               printed: electron && type && printerName
                           }))
                       )
-              })
+              }))
 
       })
   }
 
   printers() {
       return this.isElectronAvailable().then(electron =>
-          electron && fetch(`${_.get(this,"electronHost","http://127.0.0.1:16042")}/printers`, { method: "GET" })
-              .then(response => response.json()) || []
+          electron && this.electron().printers() || []
       )
   }
 
@@ -956,9 +942,7 @@ class IccApi extends PolymerElement {
   }
 
   isElectronAvailable() {
-      return fetch('http://127.0.0.1:16042/ok', {
-          method: "GET"
-      })
+      return this.electron().checkAvailable()
           .then(() => true)
           .catch(() => false)
   }

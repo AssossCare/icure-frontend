@@ -382,7 +382,8 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
       return {title: fields.length > 1 ? fields[0] : "", formula: fields.length > 1 ? fields[1] : fields.length > 0 ? fields[0] : ""};
   }
 
-  open(service, medicationContent, boxes) {
+  open(action, service, medicationContent, boxes) {
+      this.set("saveAction",action)
       this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
           .then(hes => {
               const allergies = hes.filter(he => he.tags.some(tag => tag.type === "CD-ITEM" && (tag.code === "allergy" || tag.code === "adr")))
@@ -402,7 +403,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
           .catch(err => console.log(err))
           .finally(() => {
               const preferredContent = this.api.contact().preferredContent(service, this.language);
-              if (!medicationContent || !medicationContent.isNew) { // medicationContent.isNew==false when opening an existing medication
+              if (!medicationContent || !medicationContent.isNew) {
                   // do not set a default date if not defined, for the user to see when a medication has no date
                   const start = (preferredContent && preferredContent.medicationValue && preferredContent.medicationValue.beginMoment)
                       || (service.valueDate)
@@ -434,8 +435,6 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
                   atcCodes: atcCodes,
                   allergies: allergies,
                   boxes: boxes || 1,
-                  // medicPriority: this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
-                  // renewal: !!this.medicationContent.medicationValue.renewal,
                   newMedication: service,
                   options: {
                       createMedication: this.medicationContent.createMedication,
@@ -450,6 +449,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   openList(list) {
+      //todo julien comprendre a quoi sert cette fonction
       // ------------------if we want to create an array even when we have only one medication selected
       // list && list.length > 0 ? this.set('medications', _.clone(list)) : (list.newMedication && this.set('medications',[list])) || this.set('medications', [])
       // ----------------------------------------------------------------------------------------------
@@ -492,8 +492,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _valueChanged() {
-      console.log("_valueChanged()",this.medicationDetail)
-      this.dispatchEvent(new CustomEvent('value-changed', {detail: {medication: this.medicationDetail}, bubbles: true, composed: true}))
+      this.saveAction(this.medicationDetail)
   }
 
   _medicationName(svc) {

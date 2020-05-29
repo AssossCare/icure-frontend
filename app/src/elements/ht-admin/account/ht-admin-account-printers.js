@@ -405,16 +405,7 @@ class HtAdminAccountPrinters extends TkLocalizerMixin(PolymerElement) {
       this.api.printers()
       .then(prt=>{
           this.set('printers',prt)
-          fetch('http://127.0.0.1:16042/getPrinterSetting', {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json; charset=utf-8"
-              },
-              body: JSON.stringify({
-                  userId: this.user.id
-              })
-          })
-          .then(response => response.json())
+          this.api.electron().getPrinterSetting(this.user.id)
           .then((responseParsed) =>{
               let scanSetting= {type:"scanner", isPrinter:false, format:"-"};
               if(responseParsed.ok){
@@ -435,11 +426,7 @@ class HtAdminAccountPrinters extends TkLocalizerMixin(PolymerElement) {
               return scanSetting;
           })
           .then(scanSetting => {
-              fetch("http://127.0.0.1:16042/scanning",{
-                  method: "POST",
-                  headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({request : "list"})
-              }).then(response => response.json())
+              this.api.electron().scanning("list")
                   .then(scns =>{
                       this.set("scanners",scns.data.all)
                       const itemTypeDoc =this.listTypeDocument.findIndex(itemDoc => itemDoc.type===scanSetting.type)
@@ -463,16 +450,7 @@ class HtAdminAccountPrinters extends TkLocalizerMixin(PolymerElement) {
   _savePrinters(){
       const printerSettingComplete = this.listTypeDocument.filter(type => (type.formatSelected || type.formatSelected===0) && (type.printerSelected || type.printerSelected===0))
       .map(x => {return{type:x.type,format : x.formatSelected,printer : x.printerSelected, color: x.color, duplex: x.duplex}})
-      fetch('http://127.0.0.1:16042/setPrinterSetting', {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json; charset=utf-8"
-          },
-          body: JSON.stringify({
-              userId : this.user.id,
-              settings: printerSettingComplete
-          })
-      })
+      this.api.electron().setPrinterSetting(this.user.id,printerSettingComplete)
           .then(answer=>{
               answer = typeof answer === 'string' ? JSON.parse(_.trim(answer))||{} : answer
               if(!!_.get(answer,"ok", false)) { setTimeout(() => this.shadowRoot.querySelector('savedIndicator') ? this.shadowRoot.querySelector('savedIndicator').classList.remove("saved") : null, 2000); this.shadowRoot.querySelector('savedIndicator') ? this.shadowRoot.querySelector('savedIndicator').classList.add("saved") : null; }

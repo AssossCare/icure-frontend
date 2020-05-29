@@ -2471,6 +2471,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
     _closeDialog() {
         this.$.invoiceDialog.close()
+        this.dispatchEvent(new CustomEvent('close-invoicing-dialog', {bubbles: true, composed: true}))
     }
 
     _isTrainee(careProviderType) {
@@ -3653,7 +3654,10 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     a.click()
                     window.URL.revokeObjectURL(url)
                 }
-            }).finally(() => this.set('isLoadingJustif', false))
+            }).finally(() => {
+                this.set('isLoadingJustif', false)
+                this._closeDialog()
+        })
     }
 
     _ifStatusDateExist(date) {

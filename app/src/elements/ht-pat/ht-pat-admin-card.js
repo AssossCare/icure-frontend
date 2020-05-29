@@ -1865,10 +1865,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
   fillWithCard(){
       this.set('cardData', null);
-      fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/read`)
-          .then((response) => {
-              return response.json();
-          })
+      this.api.electron().read()
           .catch(() => {})
           .then(res => {
               if (res && res.cards && res.cards[0]) {

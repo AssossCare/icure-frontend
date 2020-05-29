@@ -205,6 +205,11 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             .fg2{
                 flex-grow: 2;
             }   
+            
+            .fg3{
+                flex-grow: 3;
+            }
+
                     
             .status{
               display: block;
@@ -236,6 +241,38 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 width: 400px;
             }
             
+            .modalDialog{
+                height: 350px;
+                width: 600px;
+            }
+
+            .modalDialogContent{
+                 height: calc(100% - 69px);
+                 width: auto;
+                 margin: 0;
+                 background-color: white;
+                 position: relative;
+                 padding: 10px;
+            }
+            
+            .sendingSpinner{
+               height: 100px!important;
+               width: 100px!important;
+               margin: auto;
+           }
+
+           .prossessList{
+               height: calc(100% - 100px);
+               width: auto;
+               padding: 4px;
+           }
+           
+           .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
+            
         </style>
         
         <div class="panel">
@@ -264,21 +301,34 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     </div>
                      <ht-spinner active="[[isLoading]]"></ht-spinner>
                      <template is="dom-if" if="[[!isLoading]]">
-                         <template is="dom-repeat" items="[[_sortInvoiceListByInvoiceRef(filteredListOfInvoice)]]" as="inv">
-                            <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
-                                <div class="td fg2">[[inv.messageInfo.hcp]]</div>
-                                <div class="td fg1">[[inv.messageInfo.oa]]</div>
-                                <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
-                                <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
-                                <div class="td fg1 right"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
-                                <div class="td fg1 right"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
-                                <div class="td fg1 right"><span class\$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.refusedAmount)]]€</span></div>
-                                <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>                             
-                                <div class="td fg0">
-                                    <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
-                                </div>   
+                        <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group">
+                            <div class="tr tr-group">
+                                <div class="td fg3">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'fact')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'acc')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ref')]]€</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg0"></div>
                             </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <div class="tr tr-item" id="[[inv.invoiceId]]" data-item$="[[inv]]" on-tap="_displayInfoPanel">
+                                    <div class="td fg2">[[inv.messageInfo.hcp]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.oa]]</div>
+                                    <div class="td fg1">[[inv.messageInfo.invoiceNumber]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceMonth,'month')]]</div>
+                                    <div class="td fg1">[[formatDate(inv.messageInfo.invoiceDate,'date')]]</div>
+                                    <div class="td fg1 right"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.invoicedAmount)]]€</span></div>
+                                    <div class="td fg1 right"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.acceptedAmount)]]€</span></div>
+                                    <div class="td fg1 right"><span class$="[[_getTxtStatusColor(_getIconStatusClass(inv.messageInfo.invoiceStatus),inv.messageInfo.refusedAmount)]]">[[_formatAmount(inv.messageInfo.refusedAmount)]]€</span></div>
+                                    <div class="td fg1"><span class$="invoice-status [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(inv.messageInfo.invoiceStatus)]]"></iron-icon> [[inv.messageInfo.invoiceStatus]]</span></div>
+                                    <div class="td fg0">
+                                        <iron-icon icon="vaadin:info-circle" class="info-icon"></iron-icon>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
                     </template>                  
                 </div>
@@ -293,13 +343,18 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             </div>
         </div>   
         
-        <paper-dialog id="processMessage">           
-            <div>
-                <ht-spinner active="[[isProcessing]]"></ht-spinner>
-            </div>
-            <div>
-            
-            </div>
+         <paper-dialog class="modalDialog" id="receivingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <div class="sendingSpinner">
+                    <ht-spinner active="[[isProcessing]]"></ht-spinner>
+                </div>
+                <div class="prossessList">
+                   <template is="dom-repeat" items="[[progressItem]]" as="pi">
+                      <div>[[pi]]</div>
+                   </template>
+                </div>     
+            </div>        
         </paper-dialog>
      
 `;
@@ -343,6 +398,14 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             isProcessing:{
                 type: Boolean,
                 value: false
+            },
+            progressItem:{
+                type: Array,
+                value: () => []
+            },
+            listOfOa: {
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -360,11 +423,12 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
     }
 
     _initialize(){
-        this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
-
-        const LastGet = parseInt(localStorage.getItem('lastInvoicesGet')) ? parseInt(localStorage.getItem('lastInvoicesGet')) : -1
-        const mayGet = (LastGet < Date.now() + 24*60*60000 || LastGet===-1)
-        this.set('cannotGet',!mayGet)
+        if(_.size(_.get(this, 'listOfInvoice', [])) > 0){
+            this.set('filteredListOfInvoice',  _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'message.metas.ioFederationCode'), inv => inv))
+            const LastGet = parseInt(localStorage.getItem('lastInvoicesGet')) ? parseInt(localStorage.getItem('lastInvoicesGet')) : -1
+            const mayGet = (LastGet < Date.now() + 24*60*60000 || LastGet===-1)
+            this.set('cannotGet',!mayGet)
+        }
     }
 
     _sortInvoiceListByInvoiceRef(listOfInvoice) {
@@ -465,26 +529,29 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                         .uniq()
                         .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
                         .value()
-                    this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }else{
-                    this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                    this.set('filteredListOfInvoice', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
                 }
             }, 100)
+        }else{
+            this.set('filteredListOfInvoice',_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv))
         }
     }
 
     receiveInvoices() {
-        this.set('_isLoading', true );
-        //this._setLoadingMessage({ message: "Réception des messages efact", icon:"arrow-forward"});
+
         const LastGet = parseInt(localStorage.getItem('lastInvoicesGet')) ? parseInt(localStorage.getItem('lastInvoicesGet')) : -1
         const mayGet = (LastGet < Date.now() + 60*60000 || LastGet===-1)
         if (mayGet) {
+            this.shadowRoot.querySelector('#receivingDialog').open()
+            this.set('isProcessing', true)
+            this.push('progressItem', this.localize('inv-get-step-1', 'inv-get-step-1', this.language))
             this.set('cannotGet',true)
             localStorage.setItem('lastInvoicesGet', Date.now())
             this.api.fhc().Efactcontroller().loadMessagesUsingGET(this.hcp.nihii, this.language, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName).then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
                 let prom = Promise.resolve()
-                //this._setLoadingMessage({ message: "Traitement des messages efacts", icon:"arrow-forward"});
-
+                this.push('progressItem', this.localize('inv-get-step-2', 'inv-get-step-2', this.language))
                 response.forEach(message => {
                     // console.log(message)
                     prom = prom.then(messages =>
@@ -519,6 +586,7 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
 
                 prom = prom.then(treatedMessages => {
                     console.log(treatedMessages)
+                    this.push('progressItem', this.localize('inv-get-step-3', 'inv-get-step-3', this.language))
 
                     let sprom = Promise.resolve()
                     _.chunk(treatedMessages, 20).forEach(chunk => {
@@ -535,9 +603,10 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 })
 
                 return prom.then(() => {
+                    this.shadowRoot.querySelector('#receivingDialog').close()
+                    this.set('isProcessing', false)
                     this.set('isReceiving',false)
                     this.set("isMessagesLoaded",false)
-                    this.set('_isLoading', false);
                     this.getMessage()
                 })
             })
@@ -545,51 +614,23 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
     }
 
     getMessage(){
-        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true}))
+        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: true}}))
     }
 
     _getRefusedAmount(totalAmount, acceptedAmount){
         return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
     }
 
-    /*
-        _transferInvoicesForResending(){
-          if(this.activeGridItem && this.activeGridItem.message && this.activeGridItem.message.id && this.activeGridItem.message.invoiceIds.length){
-              this.set('_isLoading', true );
-              this._setLoadingMessage({ message:this.localize('tran-inv',this.language), icon:"arrow-forward"});
+    _getGroupInformation(group){
+        const oa = _.get(this, 'listOfOa', []).find(oa => _.get(oa, 'code', null) === _.get(_.head(group), 'message.metas.ioFederationCode', '000'))
+        return _.get(oa, 'code', null)+": "+_.get(oa, 'name.'+this.language, null)
+    }
 
-              let prom = Promise.resolve({})
-              this.api.setPreventLogging()
-              this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: this.activeGridItem.message.invoiceIds.map(id => id)}))
-                .then(invs => {
-                    invs.map(inv => {
-                        inv.invoicingCodes.map(ic => ic.pending = false)
-                        inv.sentDate = null
-                        prom = prom.then(invs => this.api.invoice().modifyInvoice(inv)
-                            .then(() => _.concat(invs, [inv]))
-                            .catch(e => console.log('Erreur lors du traitement de la facture', inv, e))
-                        )
-                    })
-
-                    return prom.then(() => {
-                        return this.api.message().getMessage(this.activeGridItem.message.id).then(msg => {
-                            this._setLoadingMessage({ message:this.localize('arch_mess',this.language), icon:"arrow-forward"});
-                            msg.status = (msg.status | (1 << 21))
-                            this.api.message().modifyMessage(msg)
-                                .then(msg => this.api.register(msg, 'message'))
-                                .then(msg => {
-                                    console.log(msg)
-                                    this.fetchMessageToBeSendOrToBeCorrected()
-                                    this.set('_isLoading', false );
-                                })
-                                .catch(e => console.log("Erreur lors de l'archivage du message", msg, e))
-                        })
-                    })
-                })
-                  .finally(()=>this.api.setPreventLogging(false))
-          }
-      }
-     */
+    _getTotalOfGroup(group, type){
+        return type === "fact" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00))}, 0).toFixed(2) :
+            type === "acc" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00))}, 0).toFixed(2) :
+                type === "ref" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.refusedAmount', 0.00))}, 0).toFixed(2) : 0.00
+    }
 
 }
 
