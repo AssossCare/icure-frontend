@@ -584,7 +584,7 @@
                             })))
                         .then(msgsStructs => {
                             this.set("isMessagesLoaded",true)
-                            this.set('allMessages', msgsStructs)
+                            this.set('allMessages', _.compact(msgsStructs))
                             this.dispatchMessages()
                             this.set("isLoading",false)
                         })
@@ -593,12 +593,12 @@
             }
 
             dispatchMessages() {
-                !!this.set("messagesArchived", this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 21)) !== 0))
-                this.set("messagesProcessed", this.allMessages.filter(m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))))
-                !!this.set("messagesAccepted", this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
-                !!this.set("messagesRejected", this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
+                !!this.set("messagesArchived", _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 21)) !== 0))
+                this.set("messagesProcessed", _.get(this, 'allMessages', []).filter(m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))))
+                !!this.set("messagesAccepted", _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
+                !!this.set("messagesRejected", _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
 
-                !!this.initializeBatchCounter(this.selectedInvoicesToBeSend.length ? this.selectedInvoicesToBeSend.length : 0, this.messagesToBeCorrected.length ? this.messagesToBeCorrected.length : 0 , this.allMessages.filter(m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => (_.get(m, 'message.status', null) & (1 << 21)) !== 0).length)
+                !!this.initializeBatchCounter(this.selectedInvoicesToBeSend.length ? this.selectedInvoicesToBeSend.length : 0, this.messagesToBeCorrected.length ? this.messagesToBeCorrected.length : 0 , _.get(this, 'allMessages', []).filter(m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, _.get(this, 'allMessages', []).filter( m => (_.get(m, 'message.status', null) & (1 << 21)) !== 0).length)
             }
 
             initializeBatchCounter(toBeSend, toBeCorrected, processedCounter, acceptedCounter, rejectedCounter, archivedCounter){
