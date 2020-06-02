@@ -313,7 +313,7 @@ onmessage = e => {
                         .then(createdContact => iccFormXApi.newInstance(user, candidates[0],{ contactId: _.trim(_.get(createdContact,"id","")), descr: "Lab result " + +new Date })
                             .then(formInstance => iccFormXApi.createForm(formInstance)
                                 .then(createdForm => iccCryptoXApi.extractKeysFromDelegationsForHcpHierarchy( _.trim(_.get(user,"healthcarePartyId","")), _.trim(_.get(document,"id","")), _.size(_.get(document,"encryptionKeys",{})) ? _.get(document,"encryptionKeys",{}): _.get(document,"delegations",{}))
-                                    .then(({extractedKeys: enckeys}) => beResultApi.doImport(_.trim(_.get(document,"id","")), _.trim(_.get(user,"healthcarePartyId","")), language, _.trim(_.get(docInfo,"protocol","")), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
+                                    .then(({extractedKeys: enckeys}) => beResultApi.doImport(_.trim(_.get(document,"id","")), _.trim(_.get(user,"healthcarePartyId","")), language, encodeURIComponent(_.trim(_.get(docInfo,"protocol",""))), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
                                     .catch(e=>{console.log("ERROR with extractKeysFromDelegationsForHcpHierarchy: ", e); return Promise.resolve(createdContact);})
                                 )
                                 .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : iccContactXApi.modifyContactWithUser(user, _.merge({},updatedContactAfterImport,{ subContacts: [{
@@ -527,9 +527,9 @@ onmessage = e => {
 
         icureApi.getVersion()
         .then(icureVersion => appVersions.backend = _.trim(icureVersion))
-        .then(() => this.api.electron().ok().then(() => true).catch(() => false))
+        .then(() => fetch("http://localhost:16042/ok", {method:"GET"}).then(() => true).catch(() => false))
         .then(isElectron => appVersions.isElectron = !!isElectron)
-        .then(() => this.api.electron().getVersion().catch(() => false))
+        .then(() => fetch("http://localhost:16042/getVersion", {method:"GET"}).then((response) => response.json()).catch(() => false))
         .then(electronVersion => appVersions.electron = _.trim(_.get(electronVersion,"version","-")))
         .then(() => autoDeleteMessages())
         .finally(()=>{
