@@ -18,9 +18,8 @@ import '../../elements/dynamic-form/validator/ht-email-validator'
 
 import _ from 'lodash/lodash'
 import {Base64} from 'js-base64'
-import moment from 'moment/src/moment'
 import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "./elements/tk-localizer";
+import {TkLocalizerMixin} from "../../elements/tk-localizer";
 
 const runtime = require('offline-plugin/runtime')
 
@@ -321,7 +320,7 @@ class HtMailerDialog extends TkLocalizerMixin(PolymerElement) {
         let htmlCode = `<!doctype html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
                     <head>
                         <title>${replacements.subject}</title>
-                        <!--[if !mso]><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]-->
+                        <!--[if !mso]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
                         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
                         <meta name="viewport" content="width=device-width,initial-scale=1">
                         <style type="text/css">
