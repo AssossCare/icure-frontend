@@ -1933,14 +1933,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _isOtherInstitutionWithNihii(hcp){
                 if(_.get(hcp, 'nihii', null)){
-                    return _.size(_.get(hcp, 'nihii', null)) === 8 && parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 ? true : false
+                    return _.size(_.get(hcp, 'nihii', null)) === 8 && (parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 || parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0)
                 }else{
                     return false
                 }
             }
 
             _getQuality(hcp){
-                return _.get(hcp, 'type', null) && _.get(hcp, 'type', null).toLowerCase() === 'medicalhouse' ? 'medicalhouse' : this._isOtherInstitutionWithNihii(hcp) ? 'sortingcenter' : 'doctor'
+                return _.get(hcp, 'type', null) && _.get(hcp, 'type', null).toLowerCase() === 'medicalhouse' ? 'medicalhouse' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 ? 'sortingcenter' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0 ? 'officedoctors' : 'doctor'
             }
 
             _versionOk(a,b) {
