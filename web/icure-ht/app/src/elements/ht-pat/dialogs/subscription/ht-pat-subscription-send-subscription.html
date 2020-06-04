@@ -1,0 +1,233 @@
+<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../../bower_components/vaadin-icons/vaadin-icons.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-text-field.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-form-layout/vaadin-form-layout.html">
+<link rel="import" href="../../../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../../../bower_components/vaadin-text-field/vaadin-text-area.html">
+<link rel="import" href="../../../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../../dynamic-form/dynamic-link.html">
+<link rel="import" href="../../../dynamic-form/dynamic-pills.html">
+<link rel="import" href="../../../ht-spinner/ht-spinner.html">
+<link rel="import" href="../../../dynamic-form/dynamic-doc.html">
+<link rel="import" href="../../../collapse-button/collapse-button.html">
+<link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
+<link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
+<link rel="import" href="../../../../styles/notification-style.html">
+
+<link rel="import" href="./ht-pat-subscription-mda-medical-house-result.html">
+
+
+<dom-module id="ht-pat-subscription-send-subscription">
+    <template>
+        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+
+            .subscription-container{
+                height: 100%;
+                width: 98%;
+                margin: 1%;
+            }
+
+            .medical-house-result-container{
+                height: 200px;
+                width: auto;
+            }
+
+            .request-container{
+                margin-top: 1%;
+                height: 200px;
+                width: auto;
+            }
+
+            .mhm-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mhm-person-container{
+                height: auto;
+                width: auto;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+            .fw2{
+                width: calc(100% / 2);
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+        </style>
+
+        <div class="subscription-container">
+            <div class="medical-house-result-container">
+                <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
+            </div>
+            <div class="request-container">
+                <div class="mhm-sub-container">
+                    <div class="mhm-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-medicalHouse', 'Medical house', language)]]</div>
+                        <div class="headerInfoLine">
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('mhm-nihii', 'Nihii', language)]]: &nbsp;</span> [[_formatNihiiNumber(mmh.medicalHouse.nihii)]]
+                                </div>
+                                <div class="headerInfoField fw2">
+                                    <span class="headerLabel">[[localize('mhm-name', 'Name', language)]]: &nbsp;</span> [[mmh.medicalHouse.name]]
+                                </div>
+                            </div>
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('mhm-type', 'Type', language)]]: &nbsp;</span> [[mmh.medicalHouse.type]]
+                                </div>
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('mhm-startDate', 'Start date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.startDate)]]
+                                </div>
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('mhm-endDate', 'End date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.endDate)]]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        import moment from 'moment/src/moment';
+
+        class HtPatSubscriptionSendSubscription extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+            static get is() {
+                return 'ht-pat-subscription-send-subscription';
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: null,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        value: null,
+                        noReset: true
+                    },
+                    i18n:{
+                        type: Object,
+                        value: {},
+                        noReset: true
+                    },
+                    resources:{
+                        type: Object,
+                        value: {},
+                        noReset: true
+                    },
+                    language: {
+                        type: String,
+                        noReset: true
+                    },
+                    patient:{
+                        type: Object,
+                        value: () => {},
+                        noReset: true
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {},
+                        noReset: true
+                    },
+                    tabs:{
+                        type: Number,
+                        value: 0
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false,
+                        noReset: true
+                    },
+                    mdaResult:{
+                        type: Object,
+                        value: () => {}
+                    }
+                };
+            }
+
+            static get observers() {
+                return [];
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            _sendSubscription(){
+
+            }
+
+        }
+        customElements.define(HtPatSubscriptionSendSubscription.is, HtPatSubscriptionSendSubscription);
+    </script>
+</dom-module>
