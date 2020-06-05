@@ -105,11 +105,11 @@
 
         </style>
 
-        <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:medicalHouse', mdaResult, mdaResult.*)]]" restamp="true">
-            <template is="dom-repeat" items="[[mdaResult.formatedResponse.medicalHouse]]" as="mmh">
-                <div class="mda-sub-container">
-                    <div class="mda-person-container">
-                        <div class="headerMasterTitle headerLabel">[[localize('mhm-medicalHouse', 'Medical house', language)]]</div>
+        <!--<template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:medicalHouse', mdaResult, mdaResult.*)]]" restamp="true">
+            <template is="dom-repeat" items="[[mdaResult.formatedResponse.medicalHouse]]" as="mmh">-->
+                <div class="mhm-sub-container">
+                    <div class="mhm-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-medicalHouse', 'Medical house result from MDA', language)]]</div>
                         <div class="headerInfoLine">
                             <div class="headerInfoLine">
                                 <div class="headerInfoField">
@@ -134,7 +134,7 @@
                     </div>
                 </div>
             </template>
-        </template>
+        <!--</template>
         <template is="dom-if" if="[[!_isDataAvailable('urn:be:cin:nippin:insurability:medicalHouse', mdaResult, mdaResult.*)]]" restamp="true">
             <template is="dom-if" if="[[_isFacetExeption('insurability', mdaResult, mdaResult.*)]]">
                 <div class="mda-sub-container">
@@ -158,7 +158,7 @@
                     </div>
                 </template>
             </template>
-        </template>
+        </template>-->
 
 
     </template>

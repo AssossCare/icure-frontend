@@ -124,22 +124,22 @@
                         <iron-pages selected="[[tabs]]">
                             <page>
                                 <div class="page-content">
-                                    <ht-pat-subscription-send-subscription id="htPatSubscriptionSendSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]"></ht-pat-subscription-send-subscription>
+                                    <ht-pat-subscription-send-subscription id="htPatSubscriptionSendSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]"></ht-pat-subscription-send-subscription>
                                 </div>
                             </page>
                             <page>
                                 <div class="page-content">
-                                    <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]"></ht-pat-subscription-cancel-subscription>
+                                    <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]"></ht-pat-subscription-cancel-subscription>
                                 </div>
                             </page>
                             <page>
                                 <div class="page-content">
-                                    <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]"></ht-pat-subscription-notify-subscription-closure>
+                                    <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]"></ht-pat-subscription-notify-subscription-closure>
                                 </div>
                             </page>
                             <page>
                                 <div class="page-content">
-                                    <ht-pat-subscription-technical-info id="htPatSubscriptionTechnicalInfo" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]"></ht-pat-subscription-technical-info>
+                                    <ht-pat-subscription-technical-info id="htPatSubscriptionTechnicalInfo" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" hcp="[[hcp]]"></ht-pat-subscription-technical-info>
                                 </div>
                             </page>
                         </iron-pages>
@@ -166,37 +166,30 @@
                 return {
                     api: {
                         type: Object,
-                        value: null,
-                        noReset: true
+                        value: null
                     },
                     user: {
                         type: Object,
-                        value: null,
-                        noReset: true
+                        value: null
                     },
                     i18n:{
                         type: Object,
-                        value: {},
-                        noReset: true
+                        value: {}
                     },
                     resources:{
                         type: Object,
-                        value: {},
-                        noReset: true
+                        value: {}
                     },
                     language: {
-                        type: String,
-                        noReset: true
+                        type: String
                     },
                     patient:{
                         type: Object,
-                        value: () => {},
-                        noReset: true
+                        value: () => {}
                     },
                     hcp:{
                         type: Object,
-                        value: () => {},
-                        noReset: true
+                        value: () => {}
                     },
                     tabs:{
                         type: Number,
@@ -204,18 +197,9 @@
                     },
                     isLoading:{
                         type: Boolean,
-                        value: false,
-                        noReset: true
+                        value: false
                     },
                     mdaResult:{
-                        type: Object,
-                        value: () => {}
-                    },
-                    subscriptionRequest:{
-                        type: Object,
-                        value: () => {}
-                    },
-                    subscriptionResponse:{
                         type: Object,
                         value: () => {}
                     }
@@ -230,21 +214,11 @@
                 super.ready();
             }
 
-            _resetComponentProperties() {
-                const promResolve = Promise.resolve();
-                return promResolve
-                    .then(() => {
-                        const componentProperties = HtPatSubscriptionDetail.properties
-                        Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
-                        return promResolve
-                    })
-            }
 
             _openDialog(){
-                this._resetComponentProperties()
-                    .then(this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)))
+                this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
                     .then(hcp => this.set('hcp', hcp))
-                    .then(() => {
+                    .finally(() => {
                         this.set('tabs', 0)
                         this.$['subscriptionDetailDialog'].open()
                     })

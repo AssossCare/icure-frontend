@@ -43,13 +43,13 @@
             }
 
             .medical-house-result-container{
-                height: 200px;
+                height: 120px;
                 width: auto;
             }
 
             .request-container{
                 margin-top: 1%;
-                height: 200px;
+                height: 300px;
                 width: auto;
             }
 
@@ -63,6 +63,11 @@
             .mhm-person-container{
                 height: auto;
                 width: auto;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mt10{
+                margin-top: 10px;
             }
 
             .headerMasterTitleError{
@@ -118,6 +123,18 @@
                 box-sizing: border-box;
             }
 
+            .mhm-person-container-content{
+                padding: 5px;
+            }
+
+            .w300{
+                width: 300px;
+            }
+
+            .w400{
+                width: 400px;
+            }
+
         </style>
 
         <div class="subscription-container">
@@ -127,25 +144,62 @@
             <div class="request-container">
                 <div class="mhm-sub-container">
                     <div class="mhm-person-container">
-                        <div class="headerMasterTitle headerLabel">[[localize('mhm-medicalHouse', 'Medical house', language)]]</div>
-                        <div class="headerInfoLine">
-                            <div class="headerInfoLine">
-                                <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('mhm-nihii', 'Nihii', language)]]: &nbsp;</span> [[_formatNihiiNumber(mmh.medicalHouse.nihii)]]
-                                </div>
-                                <div class="headerInfoField fw2">
-                                    <span class="headerLabel">[[localize('mhm-name', 'Name', language)]]: &nbsp;</span> [[mmh.medicalHouse.name]]
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
+                        <div class="mhm-person-container-content">
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-pat', 'Patient informations', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientLastName]]
+                                        </div>
+                                        <div class="headerInfoField fw2">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientFirstName]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(sendSubscriptionRequest.patientSsin)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span>
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="headerInfoLine">
-                                <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('mhm-type', 'Type', language)]]: &nbsp;</span> [[mmh.medicalHouse.type]]
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-type', 'Subscription type', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-des-start-date', 'Desired start date ', language)]]" value="{{sendSubscriptionRequest.startSubscriptionDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                        </div>
+                                        <div class="headerInfoField fw2">
+                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-sub-trial', 'Trial period', language)]]" selected-item="{{selectedTrialPeriod}}"  filtered-items="[[trialPeriod]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-actu-start-date', 'Actual start date', language)]]: &nbsp;</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('mhm-startDate', 'Start date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.startDate)]]
-                                </div>
-                                <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('mhm-endDate', 'End date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.endDate)]]
+                            </div>
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-sign', 'Signature', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <vaadin-combo-box class="w33 p4 mw0 w400" label="[[localize('mhm-sub-sign-type', 'Signature type', language)]]" selected-item="{{selectedSignatureType}}"  filtered-items="[[signatureType]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -167,37 +221,30 @@
                 return {
                     api: {
                         type: Object,
-                        value: null,
-                        noReset: true
+                        value: null
                     },
                     user: {
                         type: Object,
-                        value: null,
-                        noReset: true
+                        value: null
                     },
                     i18n:{
                         type: Object,
-                        value: {},
-                        noReset: true
+                        value: {}
                     },
                     resources:{
                         type: Object,
-                        value: {},
-                        noReset: true
+                        value: {}
                     },
                     language: {
-                        type: String,
-                        noReset: true
+                        type: String
                     },
                     patient:{
                         type: Object,
-                        value: () => {},
-                        noReset: true
+                        value: () => {}
                     },
                     hcp:{
                         type: Object,
-                        value: () => {},
-                        noReset: true
+                        value: () => {}
                     },
                     tabs:{
                         type: Number,
@@ -205,10 +252,53 @@
                     },
                     isLoading:{
                         type: Boolean,
-                        value: false,
-                        noReset: true
+                        value: false
                     },
                     mdaResult:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    trialPeriod:{
+                        type: Array,
+                        value: [
+                            {code: true, label: {fr: 'Oui', nl: 'Ya', en:'Yes'}},
+                            {code: false, label: {fr: 'Non', nl: 'Ne', en: 'No'}}
+                        ]
+                    },
+                    selectedTrialPeriod:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    signatureType:{
+                        type: Array,
+                        value: [
+                            {code: "holder-eid", label:{fr: "Signature avec EID du patient", nl: "Handtekening met EID van de patiënt", en: "Signature with patient's EID"}},
+                            {code: "legalrepresentative-eid", label:{fr: "Signature avec EID du représentant légal", nl: "Handtekening met EID van de wettelijke vertegenwoordiger", en: "Signature with EID of the legal representative"}},
+                            {code: "holder-paper", label:{fr: "Signature du patient via le formualaire papier", nl: "Patiënthandtekening via papieren formulier", en: "Patient signature via paper form"}},
+                            {code: "legalrepresentative-paper", label:{fr: "Signature du représentant légal via le formulaire papier", nl: "Handtekening van de wettelijke vertegenwoordiger via het papieren formulier", en: "Signature of the legal representative via the paper form"}}
+                        ]
+                    },
+                    selectedSignatureType:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    sendSubscriptionRequest:{
+                        type: Object,
+                        value: {
+                            patientFirstName: null,
+                            patientLastName: null,
+                            patientGender: null,
+                            patientSsin: null,
+                            patientIo: null,
+                            patientIoMembership: null,
+                            startSubscriptionDate: null,
+                            isTrial: false,
+                            signatureType: null,
+                            isRecovery: false,
+                            isTestForNotify: false
+                        }
+                    },
+                    sendSubscriptionResponse:{
                         type: Object,
                         value: () => {}
                     }
@@ -216,15 +306,82 @@
             }
 
             static get observers() {
-                return [];
+                return ['_initialize(api, user, patient, mdaResult)', '_selectedSignatureTypeChanged(selectedSignatureType, selectedSignatureType.*)', '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)'];
             }
 
             ready() {
                 super.ready();
             }
 
-            _sendSubscription(){
+            _initialize(){
+                this._reset()
+                this.set('sendSubscriptionRequest', {
+                    patientFirstName: _.get(this.patient, 'firstName', null),
+                    patientLastName: _.get(this.patient, 'lastName', null),
+                    patientGender: _.get(this.patient, 'gender', null),
+                    patientSsin: _.get(this.patient, 'ssin', null),
+                    patientIo: null,
+                    patientIoMembership: null,
+                    startSubscriptionDate: moment().format('YYYY-MM-DD'),
+                    isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false), 'code', false),
+                    signatureType: _.get(_.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
+                    isRecovery: false,
+                    isTestForNotify: false
+                })
 
+                this.set('selectedTrialPeriod', _.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false))
+                this.set('selectedSignatureType', _.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === "holder-paper"))
+            }
+
+            _reset(){
+                this.set('sendSubscriptionRequest', {})
+                this.set('sendSubscriptionResponse', {})
+                this.set('selectedTrialPeriod', {})
+                this.set('selectedSignatureType', {})
+            }
+
+            _selectedTrialPeriodChanged(){
+                this.set('sendSubscriptionRequest.isTrial', _.get(_.get(this, 'trialPeriod', []).find(st => _.get(st, 'code', null) === _.get(this.selectedTrialPeriod, 'code', '')), 'code', null))
+            }
+
+            _selectedSignatureTypeChanged(){
+                this.set('sendSubscriptionRequest.signatureType', _.get(_.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === _.get(this.selectedSignatureType, 'code', '')), 'code', null))
+            }
+
+            _sendSubscription(){
+                console.log(this.sendSubscriptionRequest)
+                this.api.fhc().MhmController().sendSubscriptionUsingPOST(
+                    _.get(this.api, "keystoreId", null),
+                    _.get(this.api, "tokenIdMH", null),
+                    _.get(this.api, "credentials.ehpassword", null),
+                    this.cleanData(_.get(this.hcp, "nihii", null)),
+                    _.get(this.hcp, 'name', null),
+                    _.get(this.sendSubscriptionRequest, 'patientFirstName', null),
+                    _.get(this.sendSubscriptionRequest, 'patientLastName', null),
+                    _.get(this.sendSubscriptionRequest, 'patientGender', null),
+                    _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
+                    _.get(this.sendSubscriptionRequest, 'isTrial', false),
+                    _.get(this.sendSubscriptionRequest, 'signatureType', null),
+                    false,
+                    false,
+                    this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
+                    this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)),
+                    this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)))
+                 .then(mhmResponse => {
+                    console.log(mhmResponse)
+                })
+            }
+
+            _formatNiss(niss){
+                return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
+            }
+
+            _getLabel(item){
+                return _.get(item, this.language, null)
+            }
+
+            cleanData(data){
+                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
             }
 
         }
