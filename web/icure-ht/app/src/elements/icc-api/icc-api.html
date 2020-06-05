@@ -387,6 +387,7 @@
         calendaritemtype(){
             return this.calendaritemtypeicc
         }
+
         medex(){
             return this.medexicc
         }
@@ -863,31 +864,23 @@
 
             if(!fileRawContent || !_.trim(mimeType) || !_.trim(downloadFileName) ) return;
 
-            // let aObject = document.createElement("a");
-            // let urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
-            //
-            // (appendTarget?appendTarget:document.body).appendChild( aObject );
-            //
-            // aObject.style = "display: none";
-            // aObject.href = urlObject;
-            // aObject.download = downloadFileName;
-            // aObject.click();
-            // window.URL.revokeObjectURL(urlObject);
-
             const urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
-            try {
-                const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
-                (appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);
-            } catch(e) { window.open(_.trim(urlObject)) }
+            const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
+
+            try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);}
+            catch(e) { window.open(_.trim(urlObject)) }
 
         }
 
-        triggerUrlDownload(downloadUrl, appendTarget = false ) {
+        triggerUrlDownload(downloadUrl, downloadFilename, appendTarget = false ) {
+
             if(!_.trim(downloadUrl)) return
-            try {
-                const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: downloadUrl })
-                (appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(downloadUrl);
-            } catch(e) { window.open(_.trim(downloadUrl)) }
+
+            const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: downloadUrl, download:downloadFilename })
+
+            try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(downloadUrl);}
+            catch(e) { window.open(_.trim(downloadUrl)) }
+
         }
 
         encryptDecryptFileContentByUserHcpIdAndDocumentObject( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
@@ -966,7 +959,6 @@
         _powRoundFloatByPrecision(inputNumber,decimalPlaces=2){
             return parseFloat(Math.round(parseFloat( _.trim(inputNumber).replace(',','.') ) * Math.pow(10, decimalPlaces)) / Math.pow(10,decimalPlaces)).toFixed(decimalPlaces);
         }
-
 
         hrFormatNumber(inputNumber) {
             return parseFloat( _.trim(inputNumber).replace(',','.') ).toLocaleString("de-DE", {maximumFractionDigits:2, minimumFractionDigits:2})
@@ -1221,7 +1213,7 @@
                     )
                 )
                 .then(decryptedContent => [this.getImageType(decryptedContent), new Blob([decryptedContent])])
-                .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
+                .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : !imageBlobContent ? null : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
                 .then(imageBlobContent => !imageBlobContent ? null : this.blobToBase64(imageBlobContent).catch(() => null))
                 .catch(() => null)
 
@@ -1256,6 +1248,10 @@
                     o[k] = v;
                 }
             });
+        }
+
+        sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
         }
 
     }

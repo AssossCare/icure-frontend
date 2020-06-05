@@ -1489,25 +1489,32 @@
             }
 
             _downloadAnnex(){
+
                 const doc = this.document
+
+                const fileExtension = _
+                    .chain(this.api.document().utiExts)
+                    .map((v,k) => _.trim(v) !== _.trim(_.get(doc,"mainUti")) ? null : k)
+                    .compact()
+                    .head()
+                    .trim()
+                    .value()
+
+                const downloadFilename = _.trim(_.get(doc,"name",this.api.crypto().randomUuid())) + ( _.trim(_.get(doc,"name")).toLowerCase().indexOf(fileExtension.toLowerCase()) > -1 ? "" : "." + fileExtension)
+
                 if (doc && (_.size(doc.encryptionKeys) || _.size(doc.delegations))) {
-                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations
-                    ).then(({extractedKeys: enckeys}) => {
-                        const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
-                        const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
-                        const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
-                        const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
-                        let a = document.createElement("a");
-                        document.body.appendChild(a);
-                        this.appendChild(a);
-                        a.style = "display: none";
-                        a.download = doc.name // optional
-                        a.setAttribute('href', url);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    })
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
+                        .then(({extractedKeys: enckeys}) => {
+                            const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
+                            const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
+                            const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
+                            const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
+                            this.api.triggerUrlDownload(_.get(this,"dataUrl"), downloadFilename)
+                        })
                 } else {
-                    if(this.data && this.data.value){
+
+                    if(this.data && this.data.value) {
+
                         let image_data = atob(this.data.value);
                         let arraybuffer = new ArrayBuffer(image_data.length);
                         let view = new Uint8Array(arraybuffer);
@@ -1529,8 +1536,11 @@
                         a.click();
                         this.removeChild(a);
                         window.URL.revokeObjectURL(url);
-                    } else if(this.dataUrl){
-                        console.log("dataUrl : ", this.dataUrl)
+
+                    } else if(_.trim(_.get(this,"dataUrl"))) {
+
+                        this.api.triggerUrlDownload(_.get(this,"dataUrl"), downloadFilename)
+
                     }
                 }
 
@@ -1925,7 +1935,7 @@
 
                 const promResolve = Promise.resolve()
 
-                return document && promResolve
+                return document && this._heicMimeType(document) && promResolve
                     .then(() => this.set("isLoadingHeic", true))
                     .then(() => this.api.heicToJpg(document))
                     .then(base64Image => !base64Image ? null : this.set("heicToJpgImgSrc",base64Image))

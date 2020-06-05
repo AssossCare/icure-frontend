@@ -112,6 +112,7 @@
 
                 <paper-button class="button button--other" on-tap="_print"><iron-icon icon="icons:print"></iron-icon>[[localize('print','Print',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_saveAndAddToPatFile"><iron-icon icon="icons:save"></iron-icon>[[localize('saveToPatFile','Save to patient file',language)]]</paper-button>
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> &nbsp; [[localize('clo','Close',language)]]</paper-button>
 
             </div>
 
@@ -894,7 +895,10 @@
                 const promResolve = Promise.resolve()
 
                 return this._getProseEditorTemplates()
-                    .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId).then(attachmentFileContent => _.merge({}, template, {attachmentFileContent:attachmentFileContent})) )))
+                    .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId)
+                        .then(attachmentFileContent => _.merge({}, template, {attachmentFileContent:attachmentFileContent}))
+                        .catch(e=>{})
+                    )))
                     .catch(e=>{ console.log("[ERROR] _getProseEditorTemplatesAndAttachment", e); return promResolve; })
 
             }
@@ -1438,6 +1442,7 @@
                     "new-doc",
                     "lettre-liaison",
                     "lettre-liaison-avec-es",
+                    "lettre-liaison-avec-es-condenses",
                     "msoap",
                     "amu",
                     "coups-blessures",
@@ -1788,7 +1793,7 @@
                                                                                     {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},
                                                                                     {type:'text', text: " "}
                                                                                 ]},
-                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
+                                                                            // {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
                                                                             {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("pos","Posology", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.regimenHr`}}, {type:'text', text: " "}]},
                                                                             {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("last_update","Last update", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.lastUpdateDateHr`}}, {type:'text', text: " "}]},
                                                                         ]},
@@ -1808,7 +1813,7 @@
 
                 const healthElementVariablesLight = {
                     type:'hesLight',
-                    additionalCssClasses:'largeDivider',
+                    // additionalCssClasses:'largeDivider',
                     name: this.localize('healthcareelements', 'Health elements', this.language) + " (" + this.localize('summary', 'summary', this.language) +")",
                     subVars: _.compact(_.map(_.get(this,"_data.allHealthElements",[]), (hes, heType) => {
 
@@ -1849,14 +1854,15 @@
                                                     ]
                                                 )))},
                                                 ((heType !== "allergies" && heType !== "archivedHealthElements") ? null :
-                                                    {type:'paragraph',content: [
-                                                        {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
-                                                        {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
-                                                    ]}
+                                                    null
+                                                    // {type:'paragraph',content: [
+                                                    //     {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
+                                                    //     {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
+                                                    // ]}
                                                 ),
                                             ]) : [
                                                 {type:'paragraph',content: [{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " (CNK: "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkCode`}}, {type:'text', text: ") - "}, {type:'text', text: this.localize("from2","From", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " "},{type:'text', text: this.localize("till","to", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " - "} ,{type:'text', text: this.localize("substitution","Substitution", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},{type:'text', text: " "}]},
-                                                {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
+                                                // {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
                                             ]
                                     },
                                 }},
@@ -1868,6 +1874,68 @@
                 }
 
                 _.assign(healthElementVariablesLight, {subVars: _.orderBy(_.get(healthElementVariablesLight,"subVars",[]), ['sorting'],['asc'])})
+
+                const healthElementVariablesCondensed = {
+                    type:'hesCondensed',
+                    additionalCssClasses:'largeDivider',
+                    name: this.localize('healthcareelements', 'Health elements', this.language) + " (" + this.localize('condensed', 'Condensed', this.language) +")",
+                    subVars: _.compact(_.map(_.get(this,"_data.allHealthElements",[]), (hes, heType) => {
+
+                        const heTypeLabel = heType === "activeHealthElements" ? this.localize("act_hea_pro","Active Health Problems", this.language) :
+                            heType === "inactiveHealthElements" ? this.localize("med_ant","Medical antecedents", this.language) :
+                                heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
+                                    heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
+                                        heType === "risks" ? this.localize("ris","Risks", this.language) :
+                                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
+                                                heType === "medications" ? this.localize("med","Medication", this.language) :
+                                                    heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
+
+                        return (!_.size(hes) || heType==="archivedHealthElements") ? null : {
+                            name: heTypeLabel,
+                            sorting: heType === "activeHealthElements" ? 1 :
+                                heType === "inactiveHealthElements" ? 2 :
+                                    heType === "surgicalHealthElements" ? 3 :
+                                        heType === "familyrisks" ? 4 :
+                                            heType === "risks" ? 5 :
+                                                heType === "allergies" ? 6 :
+                                                    heType === "medications" ? 7 :
+                                                        heType === "archivedHealthElements" ? 8 : 999,
+
+                            nodes: [
+                                {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'text', text: " "}]},
+                                {type:'template', attrs: {
+                                        expr:`subContextsHes("${heType}")`,
+                                        template: {'default': heType !== "medications" ?
+                                                _.compact([
+                                                    {type:'paragraph', content:_.flatten(_.compact(_.concat(
+                                                            (heType !== "familyrisks" ? [] : [{type:'variable', attrs:{ expr:`dataProvider.form().he.familyLinkHr`}}, {type:'text', text: ": "}]),
+                                                            [
+                                                                {type:'variable', attrs:{ expr:`dataProvider.form().he.descr`}}, {type:'text', text: " "},
+                                                                {type:'text', text: this.localize("from2","From", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " "},
+                                                                {type:'text', text: this.localize("till","to", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}}
+                                                            ]
+                                                        )))},
+                                                    ((heType !== "allergies" && heType !== "archivedHealthElements") ? null :
+                                                            null
+                                                            // {type:'paragraph',content: [
+                                                            //     {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
+                                                            //     {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
+                                                            // ]}
+                                                    ),
+                                                ]) : [
+                                                    {type:'paragraph',content: [{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " - "}, {type:'text', text: this.localize("from2","From", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " "},{type:'text', text: this.localize("till","to", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " "}]},
+                                                    // {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}]},
+                                                ]
+                                        },
+                                    }},
+                                {type:'paragraph',content: [{type:'text', text: " "}]},
+                            ]
+                        }
+
+                    }))
+                }
+
+                _.assign(healthElementVariablesCondensed, {subVars: _.orderBy(_.get(healthElementVariablesCondensed,"subVars",[]), ['sorting'],['asc'])})
 
                 const getterByDataType = {
                     TKDate: "getDateValue",
@@ -2014,6 +2082,7 @@
                         staticVariables,
                         (!!_.size(_.get(healthElementVariables,"subVars")) ? healthElementVariables : []),
                         (!!_.size(_.get(healthElementVariablesLight,"subVars")) ? healthElementVariablesLight : []),
+                        (!!_.size(_.get(healthElementVariablesCondensed,"subVars")) ? healthElementVariablesCondensed : []),
                         formVariables,
                         miscVariables
                     )))

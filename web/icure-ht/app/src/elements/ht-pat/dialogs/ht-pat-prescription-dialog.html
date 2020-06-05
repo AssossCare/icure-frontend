@@ -841,6 +841,7 @@
                     }
 
                     medicationValue.temporality = null
+                    _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
 
                 });
 
@@ -929,20 +930,20 @@
             }
 
             _print(e) {
-                const service = e.detail.service;
-                const medicationValue = service ?
-                    _.get(this.api.contact().preferredContent(service, this.language), "medicationValue", null) : null;
-                const rid = _.get(medicationValue, "prescriptionRID", null);
-                const ids = ((medicationValue.status & STATUS_SENT) && rid) ?
-                    [{ drugIds: service.id, rid: rid }] :
-                    [{ drugIds: service.id }];
-                const drugs = [service];
-                const toPrint = this._formatBody(ids, drugs);
-                this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
-                    .then(() => {
-                        console.log("printed")
-                        //this._markDrugsAsSent(drugsToBePrescribed)
-                    })
+                const services = e.detail.services;
+                if(services.length){
+                    const splitColumns =[{
+                        drugIds : services.map(service => service.id ),
+                        rid : e.detail.rid
+                    }]
+                    const drugs = services;
+                    const toPrint = this._formatBody(splitColumns, drugs);
+                    this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
+                        .then(() => {
+                            console.log("printed")
+                            //this._markDrugsAsSent(drugsToBePrescribed)
+                        })
+                }
             }
 
             _printPrescriptionNoRecipe(e) {
@@ -977,7 +978,7 @@
                 let prescriToPrint = [], allPages = []
                 let prescNum = 0, pageNum = 1
 
-                const inRecipeMode = this.patient.ssin && this.api.tokenId && splitColumns.find(c=>c.rid) // else print good old prescription format
+                const inRecipeMode = this.patient.ssin && splitColumns.find(c=>c.rid) // else print good old prescription format && this.api.tokenId
                 splitColumns.forEach((c, idx) => {
                     const ridOrNihii = c.rid ? c.rid : hcp.nihii;
                     JsBarcode(element, ridOrNihii, {format: "CODE128A", displayValue: false, height: 75});

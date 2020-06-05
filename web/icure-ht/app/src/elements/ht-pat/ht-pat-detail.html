@@ -3443,7 +3443,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             therLink: ["physician", "specialist"],
                             consent: ["physician", "specialist"],
                             mda: ["physician", "medicalHouse"],
-                            insurability: ["specialist"],
+                            insurability: ["specialist", "officedoctors"],
                             subscription: ["medicalHouse"]
                         }
                     }
@@ -4583,30 +4583,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('sumehrContentOnPatientLoad', null);
                 this.set('sumehrContentOnPatientRefresh', null);
 
-                // Default values = all closed
-                this.root.querySelector('#cb_ahelb').opened = false
-                this.root.querySelector('#cb_ihelb').opened = false
-                this.root.querySelector('#cb_alhelb').opened = false
-                this.root.querySelector('#cb_rhelb').opened = false
-                this.root.querySelector('#cb_gmhelb').opened = false
-                this.root.querySelector('#cb_archhelb').opened = false
-                this.root.querySelector('#cb_ishelb').opened = false
-                this.root.querySelector('#cb_frhelb').opened = false
-                this.root.querySelector('#cb_biom').opened = false
-                this.root.querySelector('#cb_pwhelb').opened = false
+                const openAll = _.get(user,"properties",[]).find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+                if(openAll && openAll.typedValue.stringValue==="full"){
+                    // 20190612 for labellisation -> must all be opened
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = true
+                    this.root.querySelector('#cb_alhelb').opened = true
+                    this.root.querySelector('#cb_rhelb').opened = true
+                    this.root.querySelector('#cb_gmhelb').opened = true
+                    this.root.querySelector('#cb_archhelb').opened = true
+                    this.root.querySelector('#cb_ishelb').opened = true
+                    this.root.querySelector('#cb_frhelb').opened = true
+                    this.root.querySelector('#cb_biom').opened = true
+                    this.root.querySelector('#cb_pwhelb').opened = true
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = true
+                    this.root.querySelector('#cb_alhelb').opened = true
+                    this.root.querySelector('#cb_rhelb').opened = true
+                    // 20190612 for labellisation -> must all be opened
+                }else{
+                    // Default values = all closed excepted activeES
+                    this.root.querySelector('#cb_ahelb').opened = false
+                    this.root.querySelector('#cb_ihelb').opened = false
+                    this.root.querySelector('#cb_alhelb').opened = false
+                    this.root.querySelector('#cb_rhelb').opened = false
+                    this.root.querySelector('#cb_gmhelb').opened = false
+                    this.root.querySelector('#cb_archhelb').opened = false
+                    this.root.querySelector('#cb_ishelb').opened = false
+                    this.root.querySelector('#cb_frhelb').opened = false
+                    this.root.querySelector('#cb_biom').opened = false
+                    this.root.querySelector('#cb_pwhelb').opened = false
+                    this.root.querySelector('#cb_ahelb').opened = true
+                    this.root.querySelector('#cb_ihelb').opened = false
+                    this.root.querySelector('#cb_alhelb').opened = false
+                    this.root.querySelector('#cb_rhelb').opened = false
+                }
 
-                // 20190612 for labellisation -> must all be opened
-                // this.root.querySelector('#cb_ahelb').opened = true
-                // this.root.querySelector('#cb_ihelb').opened = true
-                // this.root.querySelector('#cb_alhelb').opened = true
-                // this.root.querySelector('#cb_rhelb').opened = true
-                // this.root.querySelector('#cb_gmhelb').opened = true
-                // this.root.querySelector('#cb_archhelb').opened = true
-                // this.root.querySelector('#cb_ishelb').opened = true
-                // this.root.querySelector('#cb_frhelb').opened = true
-                // this.root.querySelector('#cb_biom').opened = true
-                // this.root.querySelector('#cb_pwhelb').opened = true
-                // 20190612 for labellisation -> must all be opened
 
                 this.root.querySelector('#medication-plan').reset()
 
@@ -4876,10 +4888,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             })
 
                             // Default values
-                            this.activeHealthElements.length && (this.root.querySelector('#cb_ahelb').opened = true)
+                            /*this.activeHealthElements.length && (this.root.querySelector('#cb_ahelb').opened = true)
                             this.inactiveHealthElements.length && (this.root.querySelector('#cb_ihelb').opened = false)
                             this.allergies.length && (this.root.querySelector('#cb_alhelb').opened = false)
-                            this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)
+                            this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)*/
 
 
                             // 20190612 for labellisation -> must all be opened
@@ -5232,6 +5244,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _isAvailableForHcp(hcpType, wsType){
+                //override hcpType when only MH token is present
+                //explanation:
+                //An user can have 1 or 2 tokens(ehaelthsessions)
+                //   a personal token related to the users hcpType
+                //   an organisational token, for now only medicalhouse tokens are supported
+                //   if an user has only a medicalhouse token the users hcpType must be overridden to 'medicalhouse'
+                if(!(_.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)){
+                    hcpType = "medicalHouse"
+                }
                 return !!_.get(this, "matrixByHcpType."+wsType, []).find(hcp => hcp === hcpType)
             }
 
@@ -5257,7 +5278,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 if (!dlg.opened) this.set('curGenInsResp', null)
                 console.log("getGeneralInsurabilityUsingGET on date", dStart);
-                this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(this.cleanNiss(_.get(this.patient, 'ssin', null)), _.get(this.api, "tokenIdMH", null), _.get(this.api, 'keystoreIdMH', null), _.get(this.api, 'credentials.ehpasswordMH', null), _.get(this.api, 'nihiiMH', null), _.get(this.api, 'MHContactPersonSsin', null), _.get(this.api, 'MHContactPersonName', null), "medicalhouse", dStart, null)
+                this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+                    this.cleanNiss(_.get(this.patient, 'ssin', null)),
+                    _.get(this.api, "tokenIdMH", null),
+                    _.get(this.api, 'keystoreIdMH', null),
+                    _.get(this.api, 'credentials.ehpasswordMH', null),
+                    _.get(this.api, 'nihiiMH', null),
+                    _.get(this.api, 'MHContactPersonSsin', _.get(hcp, 'ssin', null)),
+                    _.get(this.api, 'MHContactPersonName', _.get(hcp, 'name', _.get(hcp, 'lastName', null))),
+                    "medicalhouse", dStart, null)
                 .then(gi => {
                     const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
                     const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
