@@ -173,11 +173,31 @@
                                 </div>
                             </div>
                             <div class="mhm-person-container mt10">
-                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-type', 'Subscription info', language)]]</div>
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-rea-clo', 'Reason of closure', language)]]</div>
                                 <div class="headerInfoLine">
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
                                             <paper-input class="" label="[[localize('mhm-sub-num', 'Subscription number', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionReference}}"></paper-input>
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-des-end-date', 'Desired end date ', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-clo-type', 'Closure type', language)]]" selected-item="{{selectedSubscriptionClosureType}}"  filtered-items="[[subscriptionClosureTypeList]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-clo-just', 'Closure justification', language)]]" selected-item="{{selectedSubscriptionClosureJustification}}"  filtered-items="[[subscriptionClosureJustificationList]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-rea-end-date', 'Real end date', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.subscriptionRealEndDate]]
                                         </div>
                                     </div>
                                 </div>
@@ -258,7 +278,8 @@
                             subscriptionReference: null,
                             subscriptionEndDate: null,
                             subscriptionClosureJustification: null,
-                            subscriptionClosureType: null
+                            subscriptionClosureType: null,
+                            subscriptionRealEndDate: null
                         }
                     },
                     notifySubscriptionClosureResponse:{
@@ -271,7 +292,10 @@
                     },
                     subscriptionClosureTypeList:{
                         type: Array,
-                        value: () => []
+                        value: [
+                            {code: "patientdecision", label: {fr: "Patient", nl: "Patiënt", en: "Patient"}},
+                            {code: "healthcarepartydecision", label: {fr: "Maison médicale", nl: "Medisch huis", en: "Medical house"}}
+                        ]
                     },
                     selectedSubscriptionClosureJustification:{
                         type: Object,
@@ -283,7 +307,6 @@
                             return require('./rsrc/listOfSubscriptionClosureJustification.json');
                         }
                     }
-
                 };
             }
 
@@ -292,7 +315,8 @@
                     '_initialize(api, user, patient, mdaResult)',
                     '_selectedSubscriptionClosureJustificationChanged(selectedSubscriptionClosureJustification, selectedSubscriptionClosureJustification.*)',
                     '_selectedSubscriptionClosureTypeChanged(selectedSubscriptionClosureType, selectedSubscriptionClosureType.*)',
-                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)'
+                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)',
+                    '_calculateSubscriptionEndDate(selectedSubscriptionClosureType, selectedSubscriptionClosureType.*, notifySubscriptionClosureRequest.subscriptionEndDate)'
                 ];
             }
 
@@ -310,17 +334,22 @@
                     patientIo: null,
                     patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
                     subscriptionReference: null,
-                    subscriptionEndDate: null,
-                    subscriptionClosureJustification: null,
-                    subscriptionClosureType: null
+                    subscriptionEndDate: moment().format('YYYY-MM-DD'),
+                    subscriptionClosureJustification: _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "201"),
+                    subscriptionClosureType: _.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === "patientdecision"),
+                    subscriptionRealEndDate: null
                 })
+
+                this.set("selectedSubscriptionClosureJustification", _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "201"))
+                this.set("selectedSubscriptionClosureType",_.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === "patientdecision"))
+
             }
 
             _reset(){
                 this.set('notifySubscriptionClosureRequest', {})
                 this.set('notifySubscriptionClosureResponse', {})
-                this.set('subscriptionClosureJustificationList', {})
-                this.set('subscriptionClosureTypeList', {})
+                this.set('selectedSubscriptionClosureType', {})
+                this.set('selectedSubscriptionClosureJustification', {})
             }
 
             _notifySubscriptionClosure(){
@@ -363,11 +392,11 @@
             }
 
             _selectedSubscriptionClosureJustificationChanged(){
-
+                this.set("notifySubscriptionClosureRequest.subscriptionClosureJustification", _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === _.get(this.selectedSubscriptionClosureJustification, 'code', '')), 'code', null))
             }
 
             _selectedSubscriptionClosureTypeChanged(){
-
+                this.set("notifySubscriptionClosureRequest.subscriptionClosureType", _.get(_.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === _.get(this.selectedSubscriptionClosureType, 'code', '')), 'code', null))
             }
 
             _localizeGender(gender){
@@ -380,6 +409,20 @@
 
             _patientIoChanged(){
                 this.set('notifySubscriptionClosureRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
+            }
+
+            _calculateSubscriptionEndDate(){
+
+                const endDate = _.get(this.notifySubscriptionClosureResponse, 'subscriptionEndDate', null)
+                const closureType = _.get(this.notifySubscriptionClosureResponse, 'subscriptionClosureType', false)
+
+                const realEndDate = endDate ? closureType ? this.api.moment(endDate).startOf("month").add(4, 'month').format("YYYY-MM-DD") : this.api.moment(endDate).startOf("month").add(1, 'month').format("YYYY-MM-DD") : null
+
+                this.set('sendSubscriptionRequest.subscriptionRealEndDate', realEndDate)
+            }
+
+            _getLabel(item){
+                return _.get(item, this.language, null)
             }
 
         }
