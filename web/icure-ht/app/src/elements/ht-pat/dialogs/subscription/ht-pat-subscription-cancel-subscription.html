@@ -35,12 +35,157 @@
 <dom-module id="ht-pat-subscription-cancel-subscription">
     <template>
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+            .subscription-container{
+                height: 100%;
+                width: 98%;
+                margin: 1%;
+            }
 
+            .medical-house-result-container{
+                height: 90px;
+                width: auto;
+            }
+
+            .request-container{
+                height: 300px;
+                width: auto;
+            }
+
+            .mhm-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mhm-person-container{
+                height: auto;
+                width: auto;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mt10{
+                margin-top: 10px;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+            .fw2{
+                width: calc(100% / 2);
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-person-container-content{
+                padding: 5px;
+            }
+
+            .w300{
+                width: 300px;
+            }
+
+            .w400{
+                width: 400px;
+            }
 
         </style>
 
-        <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
-
+        <div class="subscription-container">
+            <div class="medical-house-result-container">
+                <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
+            </div>
+            <div class="request-container">
+                <div class="mhm-sub-container">
+                    <div class="mhm-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
+                        <div class="mhm-person-container-content">
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-pat', 'Patient informations', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientLastName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientFirstName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(cancelSubscriptionRequest.patientGender)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(cancelSubscriptionRequest.patientSsin)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientIo]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientIoMembership]]
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-type', 'Subscription info', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <paper-input class="" label="[[localize('mhm-sub-num', 'Subscription number', language)]]" value="{{cancelSubscriptionRequest.subscriptionReference}}"></paper-input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </template>
     <script>
@@ -99,20 +244,104 @@
                     mdaResult:{
                         type: Object,
                         value: () => {}
+                    },
+                    cancelSubscriptionRequest:{
+                        type: Object,
+                        value: {
+                            patientFirstName: null,
+                            patientLastName: null,
+                            patientGender: null,
+                            patientSsin: null,
+                            patientIo: null,
+                            patientIoMembership: null,
+                            reference: null
+                        }
+                    },
+                    cancelSubscriptionResponse:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    patientInsuranceParent:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }
 
             static get observers() {
-                return [];
+                return [
+                    '_initialize(api, user, patient, mdaResult)',
+                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)'
+                ];
             }
 
             ready() {
                 super.ready();
             }
 
-            _cancelSubscription(){
+            _initialize(){
+                this._reset()
+                this.set('cancelSubscriptionRequest', {
+                    patientFirstName: _.get(this.patient, 'firstName', null),
+                    patientLastName: _.get(this.patient, 'lastName', null),
+                    patientGender: _.get(this.patient, 'gender', null),
+                    patientSsin: _.get(this.patient, 'ssin', null),
+                    patientIo: null,
+                    patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
+                    subscriptionReference: null
+                })
+            }
 
+            _reset(){
+                this.set('cancelSubscriptionRequest', {})
+                this.set('cancelSubscriptionResponse', {})
+            }
+
+            _cancelSubscription(){
+                console.log(this.cancelSubscriptionRequest)
+                this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
+                    _.get(this.api, "keystoreId", null),
+                    _.get(this.api, "tokenIdMH", null),
+                    _.get(this.api, "credentials.ehpassword", null),
+                    this.cleanData(_.get(this.hcp, "nihii", null)),
+                    _.get(this.hcp, 'name', null),
+                    _.get(this.cancelSubscriptionRequest, 'patientFirstName', null),
+                    _.get(this.cancelSubscriptionRequest, 'patientLastName', null),
+                    _.get(this.cancelSubscriptionRequest, 'patientGender', null),
+                    _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
+                    this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
+                    this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIo', null)),
+                    this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null))
+                ).then(cancelSubscriptionRespsone => {
+                    console.log(cancelSubscriptionRespsone)
+                    this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
+                }).finally(() => {
+                    this._displayResultTab()
+                })
+            }
+
+            _displayResultTab(){
+                this.dispatchEvent(new CustomEvent("subscription-result", { composed: true, bubbles: true, detail: { subscriptionResultDetail: {commonOutput: _.get(this.cancelSubscriptionResponse, 'commonOutput', {}), mycarenetConversation: _.get(this.cancelSubscriptionResponse, 'mycarenetConversation', {})}} }))
+            }
+
+            cleanData(data){
+                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
+            }
+
+            _formatNiss(niss){
+                return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
+            }
+
+            _localizeGender(gender){
+                return this.localize(gender, gender, this.language)
+            }
+
+            _getIoMembership(patient, mdaResult){
+                return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
+            }
+
+            _patientIoChanged(){
+                this.set('cancelSubscriptionRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
             }
 
         }

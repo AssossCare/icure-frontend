@@ -34,8 +34,45 @@
     <template>
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
 
+            .p4{
+                padding: 4px;
+            }
 
+            .mtm2{
+                margin-top: -2px;
+            }
+
+            .w40{
+                width: 40%;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+
+            .w100{
+                width: 98%;
+            }
         </style>
+
+        <div>
+
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'inputReference', language)]]" value="[[subscriptionResultDetail.commonOutput.inputReference]]"></dynamic-text-field>
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'nipreference', language)]]" value="[[subscriptionResultDetail.commonOutput.nipreference]]"></dynamic-text-field>
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'outputReference', language)]]" value="[[subscriptionResultDetail.commonOutput.outputReference]]"></dynamic-text-field>
+            <div>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapRequest',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.soapRequest]]"></vaadin-text-area>
+            </div>
+            <div>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionRequest',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.transactionRequest]]"></vaadin-text-area>
+            </div>
+            <div>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapResponse',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.soapResponse]]"></vaadin-text-area>
+            </div>
+            <div>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionResponse',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.transactionResponse]]"></vaadin-text-area>
+            </div>
+        </div>
 
     </template>
     <script>
@@ -90,6 +127,10 @@
                         type: Boolean,
                         value: false,
                         noReset: true
+                    },
+                    subscriptionResultDetail:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }

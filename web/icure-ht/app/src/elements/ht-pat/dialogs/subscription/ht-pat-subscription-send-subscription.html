@@ -43,12 +43,11 @@
             }
 
             .medical-house-result-container{
-                height: 120px;
+                height: 90px;
                 width: auto;
             }
 
             .request-container{
-                margin-top: 1%;
                 height: 300px;
                 width: auto;
             }
@@ -153,8 +152,11 @@
                                         <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientLastName]]
                                         </div>
-                                        <div class="headerInfoField fw2">
+                                        <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientFirstName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(sendSubscriptionRequest.patientGender)]]
                                         </div>
                                     </div>
                                     <div class="headerInfoLine">
@@ -162,10 +164,10 @@
                                             <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(sendSubscriptionRequest.patientSsin)]]
                                         </div>
                                         <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span>
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientIo]]
                                         </div>
                                         <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span>
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientIoMembership]]
                                         </div>
                                     </div>
                                 </div>
@@ -185,7 +187,7 @@
                                     </div>
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-actu-start-date', 'Actual start date', language)]]: &nbsp;</span>
+                                            <span class="headerLabel">[[localize('mhm-sub-actu-start-date', 'Actual start date', language)]]: &nbsp;</span> [[_formatDate(sendSubscriptionRequest.realStartSubscriptionDate)]]
                                         </div>
                                     </div>
                                 </div>
@@ -274,7 +276,7 @@
                         value: [
                             {code: "holder-eid", label:{fr: "Signature avec EID du patient", nl: "Handtekening met EID van de patiënt", en: "Signature with patient's EID"}},
                             {code: "legalrepresentative-eid", label:{fr: "Signature avec EID du représentant légal", nl: "Handtekening met EID van de wettelijke vertegenwoordiger", en: "Signature with EID of the legal representative"}},
-                            {code: "holder-paper", label:{fr: "Signature du patient via le formualaire papier", nl: "Patiënthandtekening via papieren formulier", en: "Patient signature via paper form"}},
+                            {code: "holder-paper", label:{fr: "Signature du patient via le formulaire papier", nl: "Patiënthandtekening via papieren formulier", en: "Patient signature via paper form"}},
                             {code: "legalrepresentative-paper", label:{fr: "Signature du représentant légal via le formulaire papier", nl: "Handtekening van de wettelijke vertegenwoordiger via het papieren formulier", en: "Signature of the legal representative via the paper form"}}
                         ]
                     },
@@ -292,6 +294,7 @@
                             patientIo: null,
                             patientIoMembership: null,
                             startSubscriptionDate: null,
+                            realStartSubscriptionDate: null,
                             isTrial: false,
                             signatureType: null,
                             isRecovery: false,
@@ -301,12 +304,22 @@
                     sendSubscriptionResponse:{
                         type: Object,
                         value: () => {}
+                    },
+                    patientInsuranceParent:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }
 
             static get observers() {
-                return ['_initialize(api, user, patient, mdaResult)', '_selectedSignatureTypeChanged(selectedSignatureType, selectedSignatureType.*)', '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)'];
+                return [
+                    '_initialize(api, user, patient, mdaResult)',
+                    '_selectedSignatureTypeChanged(selectedSignatureType, selectedSignatureType.*)',
+                    '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)',
+                    '_calculateSubscriptionStartDate(sendSubscriptionRequest.startSubscriptionDate, selectedTrialPeriod, selectedTrialPeriod.*)',
+                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)'
+                ];
             }
 
             ready() {
@@ -321,9 +334,10 @@
                     patientGender: _.get(this.patient, 'gender', null),
                     patientSsin: _.get(this.patient, 'ssin', null),
                     patientIo: null,
-                    patientIoMembership: null,
+                    patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
                     startSubscriptionDate: moment().format('YYYY-MM-DD'),
-                    isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false), 'code', false),
+                    realStartSubscriptionDate: null,
+                    isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', null) === false), 'code', false),
                     signatureType: _.get(_.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
                     isRecovery: false,
                     isTestForNotify: false
@@ -360,16 +374,23 @@
                     _.get(this.sendSubscriptionRequest, 'patientLastName', null),
                     _.get(this.sendSubscriptionRequest, 'patientGender', null),
                     _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
-                    _.get(this.sendSubscriptionRequest, 'isTrial', false),
+                    _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
                     _.get(this.sendSubscriptionRequest, 'signatureType', null),
                     false,
-                    false,
+                    true,
                     this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
                     this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)),
                     this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)))
                  .then(mhmResponse => {
                     console.log(mhmResponse)
+                     this.set('sendSubscriptionResponse', mhmResponse)
+                }).finally(() => {
+                    this._displayResultTab()
                 })
+            }
+
+            _displayResultTab(){
+                this.dispatchEvent(new CustomEvent("subscription-result", { composed: true, bubbles: true, detail: { subscriptionResultDetail: {commonOutput: _.get(this.sendSubscriptionResponse, 'commonOutput', {}), mycarenetConversation: _.get(this.sendSubscriptionResponse, 'mycarenetConversation', {})}} }))
             }
 
             _formatNiss(niss){
@@ -382,6 +403,31 @@
 
             cleanData(data){
                 return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
+            }
+
+            _calculateSubscriptionStartDate(){
+
+                const startDate = _.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)
+                const isTrial = _.get(this.sendSubscriptionRequest, 'isTrial', false)
+                const realStartDate = startDate ? isTrial ? this.api.moment(startDate).startOf("month").add(4, 'month').format("YYYY-MM-DD") : this.api.moment(startDate).startOf("month").add(1, 'month').format("YYYY-MM-DD") : null
+
+                this.set('sendSubscriptionRequest.realStartSubscriptionDate', realStartDate)
+            }
+
+            _formatDate(date){
+                return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+            }
+
+            _localizeGender(gender){
+                return this.localize(gender, gender, this.language)
+            }
+
+            _getIoMembership(patient, mdaResult){
+                return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
+            }
+
+            _patientIoChanged(){
+                this.set('sendSubscriptionRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
             }
 
         }
