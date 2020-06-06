@@ -369,8 +369,8 @@
                     _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null),
                     _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
                     this.cleanData( _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)),
-                    this.cleanData(_.get(this.notifySubscriptionClosureRequest, 'patientIo', null)),
-                    this.cleanData(_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null))
+                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                    !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
                 ).then(notifySubscriptionClosureResponse => {
                     console.log(notifySubscriptionClosureResponse)
                     this.set('notifySubscriptionClosureResponse', notifySubscriptionClosureResponse)

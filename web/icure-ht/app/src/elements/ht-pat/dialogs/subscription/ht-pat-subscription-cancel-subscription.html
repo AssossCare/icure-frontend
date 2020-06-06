@@ -310,8 +310,8 @@
                     _.get(this.cancelSubscriptionRequest, 'patientGender', null),
                     _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
                     this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
-                    this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIo', null)),
-                    this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null))
+                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
                 ).then(cancelSubscriptionRespsone => {
                     console.log(cancelSubscriptionRespsone)
                     this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
