@@ -42,11 +42,6 @@
                 margin: 1%;
             }
 
-            .medical-house-result-container{
-                height: 90px;
-                width: auto;
-            }
-
             .request-container{
                 height: 300px;
                 width: auto;
@@ -137,9 +132,6 @@
         </style>
 
         <div class="subscription-container">
-            <div class="medical-house-result-container">
-                <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
-            </div>
             <div class="request-container">
                 <div class="mhm-sub-container">
                     <div class="mhm-person-container">
@@ -197,7 +189,7 @@
                                 <div class="headerInfoLine">
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <vaadin-combo-box class="w33 p4 mw0 w400" label="[[localize('mhm-sub-sign-type', 'Signature type', language)]]" selected-item="{{selectedSignatureType}}"  filtered-items="[[signatureType]]" item-label-path="label.fr" >
+                                            <vaadin-combo-box class="w33 p4 mw0 w400" label="[[localize('mhm-sub-sign-type', 'Signature type', language)]]" selected-item="{{selectedSignatureType}}"  filtered-items="[[signatureTypeList]]" item-label-path="label.fr" >
                                                 <template>[[_getLabel(item.label)]]</template>
                                             </vaadin-combo-box>
                                         </div>
@@ -271,13 +263,13 @@
                         type: Object,
                         value: () => {}
                     },
-                    signatureType:{
+                    signatureTypeList:{
                         type: Array,
                         value: [
-                            {code: "holder-eid", label:{fr: "Signature avec EID du patient", nl: "Handtekening met EID van de patiënt", en: "Signature with patient's EID"}},
-                            {code: "legalrepresentative-eid", label:{fr: "Signature avec EID du représentant légal", nl: "Handtekening met EID van de wettelijke vertegenwoordiger", en: "Signature with EID of the legal representative"}},
-                            {code: "holder-paper", label:{fr: "Signature du patient via le formulaire papier", nl: "Patiënthandtekening via papieren formulier", en: "Patient signature via paper form"}},
-                            {code: "legalrepresentative-paper", label:{fr: "Signature du représentant légal via le formulaire papier", nl: "Handtekening van de wettelijke vertegenwoordiger via het papieren formulier", en: "Signature of the legal representative via the paper form"}}
+                            {code: "holder-eid", label:{fr: "Signature électronique par le patient", nl: "Handtekening met EID van de patiënt", en: "Signature with patient's EID"}},
+                            {code: "legalrepresentative-eid", label:{fr: "Signature électronique du représentant légal", nl: "Handtekening met EID van de wettelijke vertegenwoordiger", en: "Signature with EID of the legal representative"}},
+                            {code: "holder-paper", label:{fr: "Contrat papier signé par le patient", nl: "Patiënthandtekening via papieren formulier", en: "Patient signature via paper form"}},
+                            {code: "legalrepresentative-paper", label:{fr: "Contrat papier signé par le représentant légal", nl: "Handtekening van de wettelijke vertegenwoordiger via het papieren formulier", en: "Signature of the legal representative via the paper form"}}
                         ]
                     },
                     selectedSignatureType:{
@@ -338,13 +330,13 @@
                     startSubscriptionDate: moment().format('YYYY-MM-DD'),
                     realStartSubscriptionDate: null,
                     isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', null) === false), 'code', false),
-                    signatureType: _.get(_.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
+                    signatureType: _.get(_.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
                     isRecovery: false,
                     isTestForNotify: false
                 })
 
                 this.set('selectedTrialPeriod', _.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false))
-                this.set('selectedSignatureType', _.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === "holder-paper"))
+                this.set('selectedSignatureType', _.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === "holder-paper"))
             }
 
             _reset(){
@@ -359,7 +351,7 @@
             }
 
             _selectedSignatureTypeChanged(){
-                this.set('sendSubscriptionRequest.signatureType', _.get(_.get(this, 'signatureType', []).find(st => _.get(st, 'code', null) === _.get(this.selectedSignatureType, 'code', '')), 'code', null))
+                this.set('sendSubscriptionRequest.signatureType', _.get(_.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === _.get(this.selectedSignatureType, 'code', '')), 'code', null))
             }
 
             _sendSubscription(){
@@ -389,17 +381,15 @@
                          contractId: _.get(mhmResponse, 'reference', null),
                          mmNihii: _.get(this.hcp, 'nihii', null),
                          hcpId: _.get(this.hcp, 'id', null),
-                         contractChangeType: null,
-                         parentContractId: null,
-                         changedBy: null,
                          startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
                          startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
                          endOfContract: null,
                          endOfCoverage: null,
-                         gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substring(9, 1) === 1 : false,
-                         kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substring(10, 1) === 1 : false,
-                         nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substring(11, 1) === 1 : false,
-                         unsubscriptionReasonId: null
+                         gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
+                         kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
+                         nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
+                         status: 1 << 1,
+                         signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
                      })
 
                      return this.api.patient().modifyPatientWithUser(this.user, this.patient)

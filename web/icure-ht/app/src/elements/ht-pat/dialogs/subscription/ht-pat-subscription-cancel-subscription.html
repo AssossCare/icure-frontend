@@ -41,11 +41,6 @@
                 margin: 1%;
             }
 
-            .medical-house-result-container{
-                height: 90px;
-                width: auto;
-            }
-
             .request-container{
                 height: 300px;
                 width: auto;
@@ -136,9 +131,6 @@
         </style>
 
         <div class="subscription-container">
-            <div class="medical-house-result-container">
-                <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
-            </div>
             <div class="request-container">
                 <div class="mhm-sub-container">
                     <div class="mhm-person-container">
@@ -176,7 +168,7 @@
                                 <div class="headerInfoLine">
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <paper-input class="" label="[[localize('mhm-sub-num', 'Subscription number', language)]]" value="{{cancelSubscriptionRequest.subscriptionReference}}"></paper-input>
+                                            <span class="headerLabel">[[localize('mhm-sub-num', 'Subscription number', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.subscriptionReference]]
                                         </div>
                                     </div>
                                 </div>
@@ -254,7 +246,7 @@
                             patientSsin: null,
                             patientIo: null,
                             patientIoMembership: null,
-                            reference: null
+                            subscriptionReference: null
                         }
                     },
                     cancelSubscriptionResponse:{
@@ -281,6 +273,7 @@
 
             _initialize(){
                 this._reset()
+                const now = moment().format('YYYY-MM-DD')
                 this.set('cancelSubscriptionRequest', {
                     patientFirstName: _.get(this.patient, 'firstName', null),
                     patientLastName: _.get(this.patient, 'lastName', null),
@@ -288,7 +281,7 @@
                     patientSsin: _.get(this.patient, 'ssin', null),
                     patientIo: null,
                     patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
-                    subscriptionReference: null
+                    subscriptionReference: _.get(_.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)), 'contractId', null)
                 })
             }
 
@@ -315,7 +308,16 @@
                 ).then(cancelSubscriptionRespsone => {
                     console.log(cancelSubscriptionRespsone)
                     this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
-                }).finally(() => {
+
+                    let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
+
+                    mhc.endOfContract = _.get(cancelSubscriptionRespsone, 'subscriptionsCancelDate', null)
+                    mhc.status = (1 << 1) | (1 << 2)
+
+                    return this.api.patient().modifyPatientWithUser(this.user, this.patient)
+
+                }).then(pat => this.set('patient', this.api.register(pat, 'patient')))
+                .finally(() => {
                     this._displayResultTab()
                 })
             }
