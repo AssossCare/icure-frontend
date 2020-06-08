@@ -411,19 +411,26 @@
                     console.log(cancelSubscriptionRespsone)
                     this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
 
-                    let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
+                    if(_.get(cancelSubscriptionRespsone, 'decisionReference', null)){
+                        let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
 
-                    mhc.endOfContract = _.get(cancelSubscriptionRespsone, 'subscriptionsCancelDate', null)
-                    mhc.status = (1 << 1) | (1 << 2)
+                        mhc.endOfContract = _.get(cancelSubscriptionRespsone, 'subscriptionsCancelDate', null)
+                        mhc.status = (1 << 1) | (1 << 2)
 
-                    return this.api.patient().modifyPatientWithUser(this.user, this.patient)
+                        this._updatePatient()
+                    }
 
-                }).then(pat => this.set('patient', this.api.register(pat, 'patient')))
-                .finally(() => {
-                    this._displayResultTab()
-                    this._subscriptionChanged()
                 })
             }
+
+            _updatePatient(){
+                this.api.patient().modifyPatientWithUser(this.user, this.patient)
+                    .then(pat => this.set('patient', this.api.register(pat, 'patient')))
+                    .finally(() => {
+                        this._displayResultTab()
+                    })
+            }
+
 
             _displayResultTab(){
                 this.dispatchEvent(new CustomEvent("subscription-result", { composed: true, bubbles: true, detail: { subscriptionResultDetail: {commonOutput: _.get(this.cancelSubscriptionResponse, 'commonOutput', {}), mycarenetConversation: _.get(this.cancelSubscriptionResponse, 'mycarenetConversation', {})}} }))

@@ -333,7 +333,7 @@
                                                                        <div class="headerInfoField">
                                                                            <span class="headerLabel">[[localize('mhm-clo-type', 'Cancellation by', language)]]: &nbsp;</span> [[mhc.hrClosureType]]
                                                                        </div>
-                                                                       <div class="headerInfoField">
+                                                                       <div class="headerInfoField fw2">
                                                                            <span class="headerLabel">[[localize('mhm-rea-clo', 'Reason of cancellation', language)]]: &nbsp;</span> [[mhc.hrClosureReason]]
                                                                        </div>
                                                                    </template>
@@ -592,7 +592,7 @@
             }
 
             _getSubscriptionStatus(mhc){
-                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? this.localize('mhm_stat_closed','Closed',this.language):
+                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? this.localize('mhm_stat_closed','Closed',this.language)+' le '+this._formatContractDate(_.get(mhc, 'endOfCoverage', null)) :
                             !!(_.get(mhc, 'status', null) & (1 << 2)) ? this.localize('mhm_stat_cancelled','Cancelled',this.language):
                                 !!(_.get(mhc, 'status', null) & (1 << 1)) ?  this.localize('mhm_stat_ongoing','On going',this.language):
                                     this.localize('mhm_stat_other','Manual encoding',this.language)
@@ -617,12 +617,12 @@
                 return !!(_.get(mhc, 'status', null) & (1 << 3))
             }
 
-            _getClosureType(){
-                return null
+            _getClosureType(mhc){
+                return this.localize('mhm-'+_.get(_.get(this, 'subscriptionClosureJustificationList', []).find(scj => _.parseInt(_.get(scj, 'code', null)) === _.get(mhc, 'unsubscriptionReasonId', '')), 'closureType', ""), _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(scj => _.parseInt(_.get(scj, 'code', null)) === _.get(mhc, 'unsubscriptionReasonId', '')), 'closureType', ""), this.language)
             }
 
-            _getClosureReason(){
-                return null
+            _getClosureReason(mhc){
+                return _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(scj => _.parseInt(_.get(scj, 'code', null)) === _.get(mhc, 'unsubscriptionReasonId', '')), 'label.'+this.language, "")
             }
 
         }
