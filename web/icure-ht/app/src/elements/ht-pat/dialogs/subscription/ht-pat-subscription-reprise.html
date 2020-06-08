@@ -1,0 +1,501 @@
+<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../../bower_components/vaadin-icons/vaadin-icons.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-text-field.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-form-layout/vaadin-form-layout.html">
+<link rel="import" href="../../../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../../../bower_components/vaadin-text-field/vaadin-text-area.html">
+<link rel="import" href="../../../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../../dynamic-form/dynamic-link.html">
+<link rel="import" href="../../../dynamic-form/dynamic-pills.html">
+<link rel="import" href="../../../ht-spinner/ht-spinner.html">
+<link rel="import" href="../../../dynamic-form/dynamic-doc.html">
+<link rel="import" href="../../../collapse-button/collapse-button.html">
+<link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
+<link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
+<link rel="import" href="../../../../styles/notification-style.html">
+
+<link rel="import" href="./ht-pat-subscription-send-reprise.html">
+
+
+<dom-module id="ht-pat-subscription-reprise">
+    <template>
+        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+            #subscriptionRepriseDialog{
+                height: calc(98% - 12vh);
+                width: 98%;
+                max-height: calc(100% - 64px - 48px - 20px); /* 100% - header - margin - footer*/
+                min-height: 400px;
+                min-width: 800px;
+                top: 64px;
+            }
+
+            .subscriptionRepriseDialog{
+                display: flex;
+                height: calc(100% - 45px);;
+                width: auto;
+                margin: 0;
+                padding: 0;
+            }
+
+            .subscription-content{
+                display: flex;
+                width: 100%;
+                position: relative;
+                height: 100%;
+                background-color: white;
+            }
+
+            .subscription-view{
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+            }
+
+            .page-content{
+                padding: 12px;
+                width: auto;
+                box-sizing: border-box;
+                height: calc(100% - 50px);
+            }
+
+            iron-pages{
+                height: calc(100% - 48px);
+                width: auto;
+                overflow: auto;
+            }
+
+            .subscription-container{
+                height: 100%;
+                width: 98%;
+                margin: 1%;
+            }
+
+            .medical-house-result-container{
+                height: 90px;
+                width: auto;
+            }
+
+            .subscription-history-container{
+
+            }
+
+            .mhm-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mhm-person-container{
+                height: auto;
+                width: auto;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mt10{
+                margin-top: 10px;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+            .fw2{
+                width: calc(100% / 2);
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-person-container-content{
+                padding: 5px;
+            }
+
+            .w300{
+                width: 300px;
+            }
+
+            .w400{
+                width: 400px;
+            }
+
+            .infoBtn{
+                height: 16px;
+                width: 16px;
+                padding: 2px;
+                cursor: pointer;
+                float: right;
+            }
+
+            *.txtcolor--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            *.txtcolor--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            *.txtcolor--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            *.txtcolor--blueStatus {
+                color: var(--paper-blue-400);
+            }
+
+            .statusIcon.subscription-status--orangeStatus,
+            .statusIcon.subscription-status--greenStatus,
+            .statusIcon.subscription-status--redStatus {
+                background: transparent !important;
+            }
+
+            .statusIcon.subscription-status--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            .statusIcon.subscription-status--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            .statusIcon.subscription-status--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            .statusIcon.invoice-status--blueStatus {
+                color: var(--paper-blue-400);
+            }
+
+            .subscription-status--orangeStatus{
+                background: #fcdf354d;
+            }
+            .subscription-status--greenStatus{
+                background: #07f8804d;
+            }
+            .subscription-status--redStatus{
+                background: #ff4d4d4d;
+            }
+            .subscription-status--blueStatus {
+                background: #84c8ff;
+            }
+
+            .statusIcon{
+                height: 8px;
+                width: 8px;
+            }
+
+            .subscription-status {
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+        </style>
+
+        <paper-dialog id="subscriptionRepriseDialog">
+            <div class="subscriptionRepriseDialog">
+                <div class="subscription-content">
+                    <div class="subscription-view">
+                        <paper-tabs selected="{{tabs}}">
+                            <paper-tab>
+                                <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-reprise','Send reprise',language)]]
+                            </paper-tab>
+                            <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
+                                <paper-tab>
+                                    <iron-icon class="tabIcon" icon="vaadin:tools"></iron-icon> [[localize('mhm-technical-info','Technical info',language)]]
+                                </paper-tab>
+                            </template>
+                        </paper-tabs>
+                        <iron-pages selected="[[tabs]]">
+                            <page>
+                                <div class="page-content">
+                                    <ht-pat-subscription-send-reprise id="htPatSubscriptionSendReprise" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-send-reprise>
+                                </div>
+                            </page>
+                            <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
+                                <page>
+                                    <div class="page-content">
+                                        <ht-pat-subscription-technical-info id="htPatSubscriptionTechnicalInfo" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" hcp="[[hcp]]" subscription-result-detail="[[subscriptionResultDetail]]"></ht-pat-subscription-technical-info>
+                                    </div>
+                                </page>
+                            </template>
+                        </iron-pages>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--save" on-tap="_sendReprise"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-reprise','Send reprise',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+    </template>
+    <script>
+        import moment from 'moment/src/moment';
+
+        class HtPatSubscriptionReprise extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+            static get is() {
+                return 'ht-pat-subscription-reprise';
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: null
+                    },
+                    user: {
+                        type: Object,
+                        value: null
+                    },
+                    i18n:{
+                        type: Object,
+                        value: {}
+                    },
+                    resources:{
+                        type: Object,
+                        value: {}
+                    },
+                    language: {
+                        type: String
+                    },
+                    patient:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    tabs:{
+                        type: Number,
+                        value: 0
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    },
+                    mdaResult:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    subscriptionResultDetail:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    patientInsuranceParent:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    medicalHouseList:{
+                        type: Array,
+                        value: function () {
+                            return require('../mda/rsrc/listOfMedicalHouse.json');
+                        }
+                    },
+                    subscriptionClosureJustificationList:{
+                        type: Array,
+                        value: function () {
+                            return require('./rsrc/listOfSubscriptionClosureJustification.json');
+                        }
+                    },
+                    subscriptionClosureTypeList:{
+                        type: Array,
+                        value: [
+                            {code: "patientdecision", label: {fr: "Patient", nl: "Patiënt", en: "Patient"}},
+                            {code: "healthcarepartydecision", label: {fr: "Maison médicale", nl: "Medisch huis", en: "Medical house"}}
+                        ]
+                    },
+                    medicalHouseContracts:{
+                        type: Object,
+                        value: () => {}
+                    }
+                };
+            }
+
+            static get observers() {
+                return [];
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            _reset(){
+                // this.set('isNotifySubscriptionClosure', false)
+                // this.set('isCancelSubscription', false)
+                // this.set('isNewSubscription', false)
+                // this.set('subscriptionResultDetail', {})
+                // this.set('patientInsuranceParent', {})
+                // this.set('medicalHouseContracts', {})
+                // this.set('selectedMedicalHouseContract', {})
+            }
+
+            _openDialog(){
+                this._reset()
+                // const insuranceId = _.get(_.get(this.patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'insuranceId', null)
+                // this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
+                //     .then(hcp => this.set('hcp', hcp))
+                //     .then(() => ( insuranceId ? this.api.insurance().getInsurance(insuranceId) : Promise.resolve({})))
+                //     .then(ins => this.set('patientInsuranceParent', ins))
+                //     .finally(() => {
+                //         this.set('tabs', 0)
+                //         this._initializeMedicalHouseContract()
+                        this.$['subscriptionRepriseDialog'].open()
+                //     })
+            }
+
+            _initializeMedicalHouseContract(){
+                this.set('isNotifySubscriptionClosure', false)
+                this.set('isCancelSubscription', false)
+                this.set('isNewSubscription', false)
+
+                this.set('medicalHouseContracts', _.sortBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => _.assign(mhc, {
+                    medicalHouseName: this._getMedicalHouse(_.get(mhc, 'mmNihii', null)),
+                    hrStatus: this._getSubscriptionStatus(mhc),
+                    hrFlatRateType: this._getFlatRateType(mhc),
+                    hrSignatureType: this._localizeSignatureType(_.get(mhc, 'signatureType', null)),
+                    hrClosureReason: this._getClosureReason(mhc),
+                    hrClosureType: this._getClosureType(mhc)
+                })))
+
+                this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1<<2)) && !(_.get(mhc, 'status', null) & (1<<3))))
+
+                const now = moment().format('YYYY-MM-DD')
+                this.set('isNotifySubscriptionClosure', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                this.set('isNewSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || _.size(_.get(this.patient, 'medicalHouseContracts', []).filter(mhs => (_.get(mhs, 'hrStatus', null) === 'En cours' && _.get(mhs, 'contractId', null)))) === 0)
+            }
+
+            _isTechnicalInfo(subscriptionResultDetail){
+                return !!_.size(subscriptionResultDetail)
+            }
+
+            _canDisplayButton(displayTab, tab){
+                return displayTab && tab !== 0
+            }
+
+            _closeDialog(){
+                this.$['subscriptionRepriseDialog'].close()
+            }
+
+            _sendReprise(){
+                this.shadowRoot.querySelector("#htPatSubscriptionSendReprise")._sendReprise()
+            }
+
+           
+
+            _displaySubscriptionResult(e){
+                if(_.get(e, 'detail.subscriptionResultDetail', null)){
+                    this.set('subscriptionResultDetail', _.get(e, 'detail.subscriptionResultDetail', {}))
+                    this._initializeMedicalHouseContract()
+                    this.set('tabs', 0)
+                }
+
+            }
+
+            _formatContractDate(date){
+                return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+            }
+
+            _getFlatRateType(mhc){
+                const m = _.get(mhc, 'gp', false) ? 'M' : ""
+                const k = _.get(mhc, 'kine', false) ? 'K' : ""
+                const i = _.get(mhc, 'nurse', false) ? 'I' : ""
+
+                return m+''+k+''+i
+            }
+
+            _getSubscriptionStatus(mhc){
+                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? this.localize('mhm_stat_closed','Closed',this.language):
+                    !!(_.get(mhc, 'status', null) & (1 << 2)) ? this.localize('mhm_stat_cancelled','Cancelled',this.language):
+                        !!(_.get(mhc, 'status', null) & (1 << 1)) ?  this.localize('mhm_stat_ongoing','On going',this.language):
+                            this.localize('mhm_stat_other','Manual encoding',this.language)
+            }
+
+            _getIconStatusClass(mhc){
+                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? "subscription-status--orangeStatus" :
+                    !!(_.get(mhc, 'status', null) & (1 << 2)) ? "subscription-status--redStatus":
+                        !!(_.get(mhc, 'status', null) & (1 << 1)) ?  "subscription-status--greenStatus":
+                            "subscription-status--blueStatus"
+            }
+
+            _getMedicalHouse(nihii){
+                return _.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii) ? _.get(_.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii), 'name', null)+' ('+this.api.formatInamiNumber(nihii)+')' : this.api.formatInamiNumber(nihii)
+            }
+
+            _localizeSignatureType(signatureType){
+                return this.localize('mhm-'+signatureType, signatureType, this.language)
+            }
+
+            _isClosure(mhc){
+                return !!(_.get(mhc, 'status', null) & (1 << 3))
+            }
+
+            _getClosureType(){
+                return null
+            }
+
+            _getClosureReason(){
+                return null
+            }
+
+        }
+        customElements.define(HtPatSubscriptionReprise.is, HtPatSubscriptionReprise);
+    </script>
+</dom-module>
