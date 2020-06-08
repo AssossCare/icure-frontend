@@ -259,17 +259,17 @@
                             <paper-tab>
                                 <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-sub-info','Subscription informations',language)]]
                             </paper-tab>
-                            <template is="dom-if" if="[[_isNewSubscription(patient, patient.*)]]" restamp="true">
+                            <template is="dom-if" if="[[isNewSubscription]]" restamp="true">
                                 <paper-tab>
                                     <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-subscription','Send subscription',language)]]
                                 </paper-tab>
                             </template>
-                            <template is="dom-if" if="[[_isCancelSubscription(patient, patient.*)]]" restamp="true">
+                            <template is="dom-if" if="[[isCancelSubscription]]" restamp="true">
                                 <paper-tab>
                                     <iron-icon class="tabIcon" icon="icons:close"></iron-icon> [[localize('mhm-cancel-subscription','Cancel subscription',language)]]
                                 </paper-tab>
                             </template>
-                             <template is="dom-if" if="[[_isNotifySubscriptionClosure(patient, patient.*)]]" restamp="true">
+                             <template is="dom-if" if="[[isNotifySubscriptionClosure]]" restamp="true">
                                 <paper-tab>
                                     <iron-icon class="tabIcon" icon="icons:last-page"></iron-icon> [[localize('mhm-notify-subscription-closure','Notify subscription closure',language)]]
                                 </paper-tab>
@@ -292,12 +292,12 @@
                                                <div class="mhm-person-container">
                                                    <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-history', 'Subscription history', language)]]</div>
                                                    <div class="mhm-person-container-content">
-                                                       <template is="dom-repeat" items="[[patient.medicalHouseContracts]]" as="mhc">
+                                                       <template is="dom-repeat" items="[[medicalHouseContracts]]" as="mhc">
                                                            <div class="mhm-person-container mt10">
                                                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]] <iron-icon icon="icons:info-outline" class="infoBtn"></iron-icon></div>
                                                                <div class="headerInfoLine">
                                                                    <div class="headerInfoField">
-                                                                       <span class="headerLabel">[[localize('mhm-medical-house', 'Medical house', language)]]: &nbsp;</span> [[_getMedicalHouse(mhc.mmNihii)]]
+                                                                       <span class="headerLabel">[[localize('mhm-medical-house', 'Medical house', language)]]: &nbsp;</span> [[mhc.medicalHouseName]]
                                                                    </div>
                                                                </div>
                                                                <div class="headerInfoLine">
@@ -316,25 +316,25 @@
                                                                </div>
                                                                <div class="headerInfoLine">
                                                                    <div class="headerInfoField">
-                                                                       <span class="headerLabel">[[localize('mhm-sub-sign-type', 'Signature type', language)]]: &nbsp;</span> [[_localizeSignatureType(mhc.signatureType)]]
+                                                                       <span class="headerLabel">[[localize('mhm-sub-sign-type', 'Signature type', language)]]: &nbsp;</span> [[mhc.hrSignatureType]]
                                                                    </div>
                                                                    <div class="headerInfoField">
                                                                        <span class="headerLabel">[[localize('mhm-sub-trial', 'Trial period', language)]]: &nbsp;</span>
                                                                    </div>
                                                                    <div class="headerInfoField">
-                                                                       <span class="headerLabel">[[localize('mhm-flatrate-type', 'Flatrate type', language)]]: &nbsp;</span> [[_getFlatRateType(mhc)]]
+                                                                       <span class="headerLabel">[[localize('mhm-flatrate-type', 'Flatrate type', language)]]: &nbsp;</span> [[mhc.hrFlatRateType]]
                                                                    </div>
                                                                </div>
                                                                <div class="headerInfoLine">
                                                                    <div class="headerInfoField">
-                                                                       <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[_getSubscriptionStatus(mhc)]]</span>
+                                                                       <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[mhc.hrStatus]]</span>
                                                                    </div>
                                                                    <template is="dom-if" if="[[_isClosure(mhc)]]">
                                                                        <div class="headerInfoField">
-                                                                           <span class="headerLabel">[[localize('mhm-clo-type', 'Cancellation by', language)]]: &nbsp;</span>
+                                                                           <span class="headerLabel">[[localize('mhm-clo-type', 'Cancellation by', language)]]: &nbsp;</span> [[mhc.hrClosureType]]
                                                                        </div>
                                                                        <div class="headerInfoField">
-                                                                           <span class="headerLabel">[[localize('mhm-rea-clo', 'Reason of cancellation', language)]]: &nbsp;</span>
+                                                                           <span class="headerLabel">[[localize('mhm-rea-clo', 'Reason of cancellation', language)]]: &nbsp;</span> [[mhc.hrClosureReason]]
                                                                        </div>
                                                                    </template>
                                                                </div>
@@ -347,24 +347,24 @@
                                     </div>
                                 </div>
                             </page>
-                            <template is="dom-if" if="[[_isNewSubscription(patient)]]" restamp="true">
+                            <template is="dom-if" if="[[isNewSubscription]]" restamp="true">
                                 <page>
                                     <div class="page-content">
                                         <ht-pat-subscription-send-subscription id="htPatSubscriptionSendSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-send-subscription>
                                     </div>
                                 </page>
                             </template>
-                            <template is="dom-if" if="[[_isCancelSubscription(patient)]]" restamp="true">
+                            <template is="dom-if" if="[[isCancelSubscription]]" restamp="true">
                                 <page>
                                     <div class="page-content">
-                                        <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-cancel-subscription>
+                                        <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-cancel-subscription>
                                     </div>
                                 </page>
                             </template>
-                            <template is="dom-if" if="[[_isNotifySubscriptionClosure(patient)]]" restamp="true">
+                            <template is="dom-if" if="[[isNotifySubscriptionClosure]]" restamp="true">
                                 <page>
                                     <div class="page-content">
-                                        <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" subscription-closure-type-list="[[subscriptionClosureTypeList]]" subscription-closure-justification-list="[[subscriptionClosureJustificationList]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-notify-subscription-closure>
+                                        <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" subscription-closure-type-list="[[subscriptionClosureTypeList]]" subscription-closure-justification-list="[[subscriptionClosureJustificationList]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-notify-subscription-closure>
                                     </div>
                                 </page>
                             </template>
@@ -379,10 +379,16 @@
                     </div>
                 </div>
                 <div class="buttons">
+                    <template is="dom-if" if="[[_canDisplayButton(isNewSubscription, tabs)]]">
+                        <paper-button class="button button--save" on-tap="_sendSubscription"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-subscription','Send subscription',language)]]</paper-button>
+                    </template>
+                    <template is="dom-if" if="[[_canDisplayButton(isCancelSubscription, tabs)]]">
+                        <paper-button class="button button--save" on-tap="_cancelSubscription"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-cancel-subscription','Cancel subscription',language)]]</paper-button>
+                    </template>
+                    <template is="dom-if" if="[[_canDisplayButton(isNotifySubscriptionClosure, tabs)]]">
+                        <paper-button class="button button--save" on-tap="_notifySubscriptionClosure"><iron-icon icon="icons:last-page" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-notify-subscription-closure','Notify subscription closure',language)]]</paper-button>
+                    </template>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_sendSubscription"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-subscription','Send subscription',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_cancelSubscription"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-cancel-subscription','Cancel subscription',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_notifySubscriptionClosure"><iron-icon icon="icons:last-page" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-notify-subscription-closure','Notify subscription closure',language)]]</paper-button>
                 </div>
             </div>
         </paper-dialog>
@@ -462,6 +468,26 @@
                             {code: "patientdecision", label: {fr: "Patient", nl: "Patiënt", en: "Patient"}},
                             {code: "healthcarepartydecision", label: {fr: "Maison médicale", nl: "Medisch huis", en: "Medical house"}}
                         ]
+                    },
+                    medicalHouseContracts:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    selectedMedicalHouseContract:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    isNewSubscription:{
+                        type: Boolean,
+                        value: false
+                    },
+                    isCancelSubscription:{
+                        type: Boolean,
+                        value: false
+                    },
+                    isNotifySubscriptionClosure:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -475,8 +501,13 @@
             }
 
             _reset(){
+                this.set('isNotifySubscriptionClosure', false)
+                this.set('isCancelSubscription', false)
+                this.set('isNewSubscription', false)
                 this.set('subscriptionResultDetail', {})
                 this.set('patientInsuranceParent', {})
+                this.set('medicalHouseContracts', {})
+                this.set('selectedMedicalHouseContract', {})
             }
 
             _openDialog(){
@@ -488,12 +519,39 @@
                     .then(ins => this.set('patientInsuranceParent', ins))
                     .finally(() => {
                         this.set('tabs', 0)
+                        this._initializeMedicalHouseContract()
                         this.$['subscriptionDetailDialog'].open()
-            })
+                    })
+            }
+
+            _initializeMedicalHouseContract(){
+                this.set('isNotifySubscriptionClosure', false)
+                this.set('isCancelSubscription', false)
+                this.set('isNewSubscription', false)
+
+                this.set('medicalHouseContracts', _.sortBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => _.assign(mhc, {
+                    medicalHouseName: this._getMedicalHouse(_.get(mhc, 'mmNihii', null)),
+                    hrStatus: this._getSubscriptionStatus(mhc),
+                    hrFlatRateType: this._getFlatRateType(mhc),
+                    hrSignatureType: this._localizeSignatureType(_.get(mhc, 'signatureType', null)),
+                    hrClosureReason: this._getClosureReason(mhc),
+                    hrClosureType: this._getClosureType(mhc)
+                })))
+
+                this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1<<2)) && !(_.get(mhc, 'status', null) & (1<<3))))
+
+                const now = moment().format('YYYY-MM-DD')
+                this.set('isNotifySubscriptionClosure', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                this.set('isNewSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || _.size(_.get(this.patient, 'medicalHouseContracts', []).filter(mhs => (_.get(mhs, 'hrStatus', null) === 'En cours' && _.get(mhs, 'contractId', null)))) === 0)
             }
 
             _isTechnicalInfo(subscriptionResultDetail){
                 return !!_.size(subscriptionResultDetail)
+            }
+
+            _canDisplayButton(displayTab, tab){
+                return displayTab && tab !== 0
             }
 
             _closeDialog(){
@@ -515,24 +573,10 @@
             _displaySubscriptionResult(e){
                 if(_.get(e, 'detail.subscriptionResultDetail', null)){
                     this.set('subscriptionResultDetail', _.get(e, 'detail.subscriptionResultDetail', {}))
+                    this._initializeMedicalHouseContract()
+                    this.set('tabs', 0)
                 }
 
-            }
-
-            _isNotifySubscriptionClosure(){
-                const now = moment().format('YYYY-MM-DD')
-                return _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null))
-
-            }
-
-            _isCancelSubscription(){
-                const now = moment().format('YYYY-MM-DD')
-                return _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null))
-            }
-
-            _isNewSubscription(){
-                const now = moment().format('YYYY-MM-DD')
-                return _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || !!_.get(this.patient, 'medicalHouseContracts', []).find(mhs => !_.get(mhs, 'contractId', null) || (_.get(mhs, 'contractId', null) && _.get(mhs, 'endOfContract', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'endOfContract', null)).format('YYYY-MM-DD'))))
             }
 
             _formatContractDate(date){
@@ -562,7 +606,7 @@
             }
 
             _getMedicalHouse(nihii){
-                return _.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii) ? _.get(_.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii), 'name', null)+' ('+this.api.formatInamiNumber(nihii)+')' : this.api.formatNihiiNumber(nihii)
+                return _.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii) ? _.get(_.get(this, 'medicalHouseList.medicalHouseList', []).find(mh => _.get(mh, 'nihii', null) === nihii), 'name', null)+' ('+this.api.formatInamiNumber(nihii)+')' : this.api.formatInamiNumber(nihii)
             }
 
             _localizeSignatureType(signatureType){
@@ -571,6 +615,14 @@
 
             _isClosure(mhc){
                 return !!(_.get(mhc, 'status', null) & (1 << 3))
+            }
+
+            _getClosureType(){
+                return null
+            }
+
+            _getClosureReason(){
+                return null
             }
 
         }
