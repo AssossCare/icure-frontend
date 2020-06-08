@@ -1,0 +1,422 @@
+<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../../bower_components/vaadin-icons/vaadin-icons.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-text-field.html">
+<link rel="import" href="../../../../../bower_components/vaadin-material-theme/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-form-layout/vaadin-form-layout.html">
+<link rel="import" href="../../../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../../../bower_components/vaadin-text-field/vaadin-text-area.html">
+<link rel="import" href="../../../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
+<link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../../dynamic-form/dynamic-link.html">
+<link rel="import" href="../../../dynamic-form/dynamic-pills.html">
+<link rel="import" href="../../../ht-spinner/ht-spinner.html">
+<link rel="import" href="../../../dynamic-form/dynamic-doc.html">
+<link rel="import" href="../../../collapse-button/collapse-button.html">
+<link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
+<link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
+<link rel="import" href="../../../../styles/notification-style.html">
+
+<link rel="import" href="./ht-pat-subscription-mda-medical-house-result.html">
+
+
+<dom-module id="ht-pat-subscription-notify-subscription-closure">
+    <template>
+        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+            .subscription-container{
+                height: 100%;
+                width: 98%;
+                margin: 1%;
+            }
+
+            .request-container{
+                height: 300px;
+                width: auto;
+            }
+
+            .mhm-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mhm-person-container{
+                height: auto;
+                width: auto;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mt10{
+                margin-top: 10px;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+            .fw2{
+                width: calc(100% / 2);
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-person-container-content{
+                padding: 5px;
+            }
+
+            .w300{
+                width: 300px;
+            }
+
+            .w400{
+                width: 400px;
+            }
+
+
+        </style>
+
+        <div class="subscription-container">
+            <div class="request-container">
+                <div class="mhm-sub-container">
+                    <div class="mhm-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
+                        <div class="mhm-person-container-content">
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-pat', 'Patient informations', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.patientLastName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.patientFirstName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(notifySubscriptionClosureRequest.patientGender)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(notifySubscriptionClosureRequest.patientSsin)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.patientIo]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.patientIoMembership]]
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-rea-clo', 'Reason of closure', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <paper-input class="" label="[[localize('mhm-sub-num', 'Subscription number', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionReference}}"></paper-input>
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-des-end-date', 'Desired end date ', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-clo-type', 'Closure type', language)]]" selected-item="{{selectedSubscriptionClosureType}}"  filtered-items="[[subscriptionClosureTypeList]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-clo-just', 'Closure justification', language)]]" selected-item="{{selectedSubscriptionClosureJustification}}"  filtered-items="[[subscriptionClosureJustificationList]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-rea-end-date', 'Real end date', language)]]: &nbsp;</span> [[notifySubscriptionClosureRequest.subscriptionRealEndDate]]
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        import moment from 'moment/src/moment';
+
+        class HtPatSubscriptionNotifySubscriptionClosure extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+            static get is() {
+                return 'ht-pat-subscription-notify-subscription-closure';
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: null,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        value: null,
+                        noReset: true
+                    },
+                    i18n:{
+                        type: Object,
+                        value: {},
+                        noReset: true
+                    },
+                    resources:{
+                        type: Object,
+                        value: {},
+                        noReset: true
+                    },
+                    language: {
+                        type: String,
+                        noReset: true
+                    },
+                    patient:{
+                        type: Object,
+                        value: () => {},
+                        noReset: true
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {},
+                        noReset: true
+                    },
+                    tabs:{
+                        type: Number,
+                        value: 0
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false,
+                        noReset: true
+                    },
+                    mdaResult:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    notifySubscriptionClosureRequest:{
+                        type: Object,
+                        value: {
+                            patientFirstName: null,
+                            patientLastName: null,
+                            patientGender: null,
+                            patientSsin: null,
+                            patientIo: null,
+                            patientIoMembership: null,
+                            subscriptionReference: null,
+                            subscriptionEndDate: null,
+                            subscriptionClosureJustification: null,
+                            subscriptionClosureType: null,
+                            subscriptionRealEndDate: null
+                        }
+                    },
+                    notifySubscriptionClosureResponse:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    selectedSubscriptionClosureType:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    subscriptionClosureTypeList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    selectedSubscriptionClosureJustification:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    subscriptionClosureJustificationList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    selectedMedicalHouseContract:{
+                        type: Object,
+                        value: () => {}
+                    }
+                };
+            }
+
+            static get observers() {
+                return [
+                    '_initialize(api, user, patient, mdaResult)',
+                    '_selectedSubscriptionClosureJustificationChanged(selectedSubscriptionClosureJustification, selectedSubscriptionClosureJustification.*)',
+                    '_selectedSubscriptionClosureTypeChanged(selectedSubscriptionClosureType, selectedSubscriptionClosureType.*)',
+                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)',
+                    '_calculateSubscriptionEndDate(selectedSubscriptionClosureType, selectedSubscriptionClosureType.*, notifySubscriptionClosureRequest.subscriptionEndDate)'
+                ];
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            _initialize(){
+                this._reset()
+                this.set('notifySubscriptionClosureRequest', {
+                    patientFirstName: _.get(this.patient, 'firstName', null),
+                    patientLastName: _.get(this.patient, 'lastName', null),
+                    patientGender: _.get(this.patient, 'gender', null),
+                    patientSsin: _.get(this.patient, 'ssin', null),
+                    patientIo: null,
+                    patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
+                    subscriptionReference: null,
+                    subscriptionEndDate: moment().format('YYYY-MM-DD'),
+                    subscriptionClosureJustification: _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "201"),
+                    subscriptionClosureType: _.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === "patientdecision"),
+                    subscriptionRealEndDate: null
+                })
+
+                this.set("selectedSubscriptionClosureJustification", _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "201"))
+                this.set("selectedSubscriptionClosureType",_.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === "patientdecision"))
+
+            }
+
+            _reset(){
+                this.set('notifySubscriptionClosureRequest', {})
+                this.set('notifySubscriptionClosureResponse', {})
+                this.set('selectedSubscriptionClosureType', {})
+                this.set('selectedSubscriptionClosureJustification', {})
+            }
+
+            _notifySubscriptionClosure(){
+                console.log(this.notifySubscriptionClosureRequest)
+
+                this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
+                    _.get(this.api, "keystoreId", null),
+                    _.get(this.api, "tokenIdMH", null),
+                    _.get(this.api, "credentials.ehpassword", null),
+                    this.cleanData(_.get(this.hcp, "nihii", null)),
+                    _.get(this.hcp, 'name', null),
+                    _.get(this.notifySubscriptionClosureRequest, 'patientFirstName', null),
+                    _.get(this.notifySubscriptionClosureRequest, 'patientLastName', null),
+                    _.get(this.notifySubscriptionClosureRequest, 'patientGender', null),
+                    _.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null),
+                    _.parseInt(this.api.moment(_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null)).format('YYYYMMDD')),
+                    _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null),
+                    _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
+                    this.cleanData( _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)),
+                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                    !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
+                ).then(notifySubscriptionClosureResponse => {
+                    console.log(notifySubscriptionClosureResponse)
+                    this.set('notifySubscriptionClosureResponse', notifySubscriptionClosureResponse)
+                }).finally(() => {
+                    this._displayResultTab()
+                })
+            }
+
+            _displayResultTab(){
+                this.dispatchEvent(new CustomEvent("subscription-result", { composed: true, bubbles: true, detail: { subscriptionResultDetail: {commonOutput: _.get(this.notifySubscriptionClosureResponse, 'commonOutput', {}), mycarenetConversation: _.get(this.notifySubscriptionClosureResponse, 'mycarenetConversation', {})}} }))
+            }
+
+            cleanData(data){
+                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
+            }
+
+            _formatNiss(niss){
+                return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
+            }
+
+            _selectedSubscriptionClosureJustificationChanged(){
+                this.set("notifySubscriptionClosureRequest.subscriptionClosureJustification", _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === _.get(this.selectedSubscriptionClosureJustification, 'code', '')), 'code', null))
+            }
+
+            _selectedSubscriptionClosureTypeChanged(){
+                this.set("notifySubscriptionClosureRequest.subscriptionClosureType", _.get(_.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === _.get(this.selectedSubscriptionClosureType, 'code', '')), 'code', null))
+            }
+
+            _localizeGender(gender){
+                return this.localize(gender, gender, this.language)
+            }
+
+            _getIoMembership(patient, mdaResult){
+                return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
+            }
+
+            _patientIoChanged(){
+                this.set('notifySubscriptionClosureRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
+            }
+
+            _calculateSubscriptionEndDate(){
+
+                const endDate = _.get(this.notifySubscriptionClosureResponse, 'subscriptionEndDate', null)
+                const closureType = _.get(this.notifySubscriptionClosureResponse, 'subscriptionClosureType', false)
+
+                const realEndDate = endDate ? closureType ? this.api.moment(endDate).startOf("month").add(4, 'month').format("YYYY-MM-DD") : this.api.moment(endDate).startOf("month").add(1, 'month').format("YYYY-MM-DD") : null
+
+                this.set('sendSubscriptionRequest.subscriptionRealEndDate', realEndDate)
+            }
+
+            _getLabel(item){
+                return _.get(item, this.language, null)
+            }
+
+        }
+        customElements.define(HtPatSubscriptionNotifySubscriptionClosure.is, HtPatSubscriptionNotifySubscriptionClosure);
+    </script>
+</dom-module>

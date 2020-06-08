@@ -269,12 +269,10 @@
                                         <dynamic-date-field label="[[localize('mda-endDate', 'End date', language)]]" value="{{mdaSearch.endDate}}" i18n="[[i18n]]"></dynamic-date-field>
                                     </div>
                                     <div class="mda-menu-search-line">
-                                        <vaadin-combo-box id="contactType" class="w40" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
+                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0 mr1" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
                                             <template>[[_getLabel(item.label)]]</template>
                                         </vaadin-combo-box>
-                                    </div>
-                                    <div class="mda-menu-search-line">
-                                        <vaadin-combo-box id="contactType" class="w40" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
+                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0 mr1" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
                                             <template>[[_getLabel(item.label)]]</template>
                                         </vaadin-combo-box>
                                     </div>
@@ -464,7 +462,7 @@
             }
 
             static get observers() {
-                return ['_selectedMdaConsultTypeChanged(selectedMdaConsultType)', '_selectedMdaContactTypeChanged(selectedMdaContactType)'];
+                return ['_selectedMdaConsultTypeChanged(selectedMdaConsultType)', '_selectedMdaContactTypeChanged(selectedMdaContactType)', '_selectedMdaRequestTypeChanged(selectedMdaRequestType)'];
             }
 
             ready() {
@@ -723,11 +721,11 @@
             }
 
             consultMdaBySsin(){
-                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), _.get(this.hcp, "firstName", null), "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other") : Promise.resolve({})
+                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other",  _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
             }
 
             consultMdaByMemberShip(){
-                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), _.get(this.hcp, "firstName", null), "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').unix() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other") : Promise.resolve({})
+                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').unix() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
             }
 
             _selectedMdaConsultTypeChanged(){
@@ -736,6 +734,10 @@
 
             _selectedMdaContactTypeChanged(){
                 this.set("mdaSearch.contactType", _.get(this.selectedMdaContactType, 'type', "other"))
+            }
+
+            _selectedMdaRequestTypeChanged(){
+                this.set("mdaSearch.requestType", _.get(this.selectedMdaRequestType, 'type', "information"))
             }
 
             _isMdaSearchByNiss(){
