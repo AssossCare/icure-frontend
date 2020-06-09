@@ -715,9 +715,8 @@
                     _.get(mdaResponse, 'formatedResponse.medicalHouse', []).map(mm => {
                        mm.medicalHouse.name = _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'name', null)
                     })
-                }).catch(err => console.log(err)).finally(()=> {
                     return mdaResponse
-                })
+                }).catch(err => console.log(err))
             }
 
             consultMdaBySsin(){
