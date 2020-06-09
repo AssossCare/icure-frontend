@@ -29,13 +29,13 @@
 <link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
 <link rel="import" href="../../../../styles/notification-style.html">
 
-<link rel="import" href="./ht-pat-subscription-send-reprise.html">
+<link rel="import" href="./ht-pat-subscription-send-recovery.html">
 
 
-<dom-module id="ht-pat-subscription-reprise">
+<dom-module id="ht-pat-subscription-recovery">
     <template>
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
-            #subscriptionRepriseDialog{
+            #subscriptionRecoveryDialog{
                 height: calc(98% - 12vh);
                 width: 98%;
                 max-height: calc(100% - 64px - 48px - 20px); /* 100% - header - margin - footer*/
@@ -44,7 +44,7 @@
                 top: 64px;
             }
 
-            .subscriptionRepriseDialog{
+            .subscriptionRecoveryDialog{
                 display: flex;
                 height: calc(100% - 45px);;
                 width: auto;
@@ -248,13 +248,13 @@
 
         </style>
 
-        <paper-dialog id="subscriptionRepriseDialog">
-            <div class="subscriptionRepriseDialog">
+        <paper-dialog id="subscriptionRecoveryDialog">
+            <div class="subscriptionRecoveryDialog">
                 <div class="subscription-content">
                     <div class="subscription-view">
                         <paper-tabs selected="{{tabs}}">
                             <paper-tab>
-                                <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-reprise','Send reprise',language)]]
+                                <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]
                             </paper-tab>
                             <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
                                 <paper-tab>
@@ -265,7 +265,7 @@
                         <iron-pages selected="[[tabs]]">
                             <page>
                                 <div class="page-content">
-                                    <ht-pat-subscription-send-reprise id="htPatSubscriptionSendReprise" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-send-reprise>
+                                    <ht-pat-subscription-send-recovery id="htPatSubscriptionSendRecovery" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-recovery-status="_recoveryStatus"></ht-pat-subscription-send-recovery>
                                 </div>
                             </page>
                             <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
@@ -279,7 +279,9 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <paper-button class="button button--save" on-tap="_sendReprise"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-reprise','Send reprise',language)]]</paper-button>
+                    <template is="dom-if" if="[[canRecovery]]">
+                        <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>
+                    </template>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 </div>
             </div>
@@ -288,9 +290,9 @@
     <script>
         import moment from 'moment/src/moment';
 
-        class HtPatSubscriptionReprise extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class HtPatSubscriptionRecovery extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
             static get is() {
-                return 'ht-pat-subscription-reprise';
+                return 'ht-pat-subscription-recovery';
             }
 
             static get properties() {
@@ -364,12 +366,20 @@
                     medicalHouseContracts:{
                         type: Object,
                         value: () => {}
+                    },
+                    canRecovery:{
+                        type: Boolean,
+                        value: false
+                    },
+                    recoveryStatus:{
+                        type: Object,
+                        value: {}
                     }
                 };
             }
 
             static get observers() {
-                return [];
+                return ['_handleRecoveryStatus(recoveryStatus)'];
             }
 
             ready() {
@@ -377,6 +387,9 @@
             }
 
             _reset(){
+                this.set('canRecovery', false)
+                this.set('recoveryStatus', {})
+                this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._reset();
                 // this.set('isNotifySubscriptionClosure', false)
                 // this.set('isCancelSubscription', false)
                 // this.set('isNewSubscription', false)
@@ -396,7 +409,7 @@
                 //     .finally(() => {
                 //         this.set('tabs', 0)
                 //         this._initializeMedicalHouseContract()
-                        this.$['subscriptionRepriseDialog'].open()
+                        this.$['subscriptionRecoveryDialog'].open()
                 //     })
             }
 
@@ -431,11 +444,11 @@
             }
 
             _closeDialog(){
-                this.$['subscriptionRepriseDialog'].close()
+                this.$['subscriptionRecoveryDialog'].close()
             }
 
-            _sendReprise(){
-                this.shadowRoot.querySelector("#htPatSubscriptionSendReprise")._sendReprise()
+            _sendRecovery(){
+                this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._sendRecovery()
             }
 
            
@@ -495,7 +508,22 @@
                 return null
             }
 
+            _recoveryStatus(e){
+                console.log("eventje",e)
+                if(_.get(e, 'detail.statusDetail', null)){
+                    this.set('recoveryStatus', _.get(e, 'detail.statusDetail', {}))
+                    console.log("_recoveryStatusChanged",  _.get(e, 'detail.statusDetail', {}))
+
+
+                }
+            }
+
+            _handleRecoveryStatus(){
+                console.log("handling observer", this.recoveryStatus)
+                this.set("canRecovery", (!this.recoveryStatus.isRunning && !this.recoveryStatus.isLoading && this.recoveryStatus.hasTodo))
+            }
+
         }
-        customElements.define(HtPatSubscriptionReprise.is, HtPatSubscriptionReprise);
+        customElements.define(HtPatSubscriptionRecovery.is, HtPatSubscriptionRecovery);
     </script>
 </dom-module>

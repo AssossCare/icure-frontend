@@ -32,7 +32,7 @@
 <link rel="import" href="./ht-pat-subscription-mda-medical-house-result.html">
 
 
-<dom-module id="ht-pat-subscription-send-reprise">
+<dom-module id="ht-pat-subscription-send-recovery">
     <template>
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
 
@@ -137,65 +137,14 @@
                     <div class="mhm-person-container">
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
                         <div class="mhm-person-container-content">
-                            <div class="mhm-person-container mt10">
-                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-pat', 'Patient informations', language)]]</div>
-                                <div class="headerInfoLine">
-                                    <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientLastName]]
-                                        </div>
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientFirstName]]
-                                        </div>
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(sendSubscriptionRequest.patientGender)]]
-                                        </div>
-                                    </div>
-                                    <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(sendSubscriptionRequest.patientSsin)]]
-                                        </div>
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientIo]]
-                                        </div>
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span> [[sendSubscriptionRequest.patientIoMembership]]
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mhm-person-container mt10">
-                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-type', 'Subscription type', language)]]</div>
-                                <div class="headerInfoLine">
-                                    <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-des-start-date', 'Desired start date ', language)]]" value="{{sendSubscriptionRequest.startSubscriptionDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
-                                        </div>
-                                        <div class="headerInfoField fw2">
-                                            <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-sub-trial', 'Trial period', language)]]" selected-item="{{selectedTrialPeriod}}"  filtered-items="[[trialPeriod]]" item-label-path="label.fr" >
-                                                <template>[[_getLabel(item.label)]]</template>
-                                            </vaadin-combo-box>
-                                        </div>
-                                    </div>
-                                    <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-actu-start-date', 'Actual start date', language)]]: &nbsp;</span> [[_formatDate(sendSubscriptionRequest.realStartSubscriptionDate)]]
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mhm-person-container mt10">
-                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-sign', 'Signature', language)]]</div>
-                                <div class="headerInfoLine">
-                                    <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <vaadin-combo-box class="w33 p4 mw0 w400" label="[[localize('mhm-sub-sign-type', 'Signature type', language)]]" selected-item="{{selectedSignatureType}}"  filtered-items="[[signatureTypeList]]" item-label-path="label.fr" >
-                                                <template>[[_getLabel(item.label)]]</template>
-                                            </vaadin-combo-box>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <div>Patients to recovery [[numTodo]] of [[numTotal]]</div>
+<!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecovery)]]">-->
+<!--                                <paper-button class="button button&#45;&#45;save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>-->
+<!--                            </template>-->
+                            <template is="dom-if" if="[[isRunning]]">
+                                    <div>running</div>
+                            </template>
+                            <paper-button class="button button--save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Test',language)]]</paper-button>
                         </div>
                     </div>
                 </div>
@@ -206,9 +155,9 @@
     <script>
         import moment from 'moment/src/moment';
 
-        class HtPatSubscriptionSendReprise extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class HtPatSubscriptionSendRecovery extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
             static get is() {
-                return 'ht-pat-subscription-send-reprise';
+                return 'ht-pat-subscription-send-recovery';
             }
 
             static get properties() {
@@ -255,8 +204,8 @@
                     trialPeriod:{
                         type: Array,
                         value: [
-                            {code: true, label: {fr: 'Oui', nl: 'Ya', en:'Yes'}},
-                            {code: false, label: {fr: 'Non', nl: 'Ne', en: 'No'}}
+                            {code: true, label: {fr: 'Oui', nl: 'Ja', en:'Yes'}},
+                            {code: false, label: {fr: 'Non', nl: 'Nee', en: 'No'}}
                         ]
                     },
                     selectedTrialPeriod:{
@@ -297,9 +246,25 @@
                         type: Object,
                         value: () => {}
                     },
-                    patientInsuranceParent:{
-                        type: Object,
-                        value: () => {}
+                    recoverydPatients:{
+                        type: Array,
+                        value : []
+                    },
+                    patientsToRecovery:{
+                        type: Array,
+                        value : []
+                    },
+                    numTodo:{
+                        type: Number,
+                        value : 0
+                    },
+                    numTotal:{
+                      type: Number,
+                      value:  0
+                    },
+                    isRunning:{
+                        type: Boolean,
+                        value : false
                     }
                 };
             }
@@ -310,7 +275,10 @@
                     '_selectedSignatureTypeChanged(selectedSignatureType, selectedSignatureType.*)',
                     '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)',
                     '_calculateSubscriptionStartDate(sendSubscriptionRequest.startSubscriptionDate, selectedTrialPeriod, selectedTrialPeriod.*)',
-                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)'
+                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)',
+                    '_todoCountChanged(patientsToRecovery)',
+                    '_totalCountChanged(patientsToRecovery,recoverydPatients)',
+                    '_sendStatusEvent(patientsToRecovery,isRunning,isLoading)'
                 ];
             }
 
@@ -318,32 +286,21 @@
                 super.ready();
             }
 
+            _loadData(){
+                _loadRecoveryPatients().then(patientsToRecovery => {
+                    
+                })
+            }
+
             _initialize(){
                 this._reset()
-                this.set('sendSubscriptionRequest', {
-                    patientFirstName: _.get(this.patient, 'firstName', null),
-                    patientLastName: _.get(this.patient, 'lastName', null),
-                    patientGender: _.get(this.patient, 'gender', null),
-                    patientSsin: _.get(this.patient, 'ssin', null),
-                    patientIo: null,
-                    patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
-                    startSubscriptionDate: moment().format('YYYY-MM-DD'),
-                    realStartSubscriptionDate: null,
-                    isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', null) === false), 'code', false),
-                    signatureType: _.get(_.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
-                    isRecovery: false,
-                    isTestForNotify: false
-                })
-
-                this.set('selectedTrialPeriod', _.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false))
-                this.set('selectedSignatureType', _.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === "holder-paper"))
             }
 
             _reset(){
-                this.set('sendSubscriptionRequest', {})
-                this.set('sendSubscriptionResponse', {})
-                this.set('selectedTrialPeriod', {})
-                this.set('selectedSignatureType', {})
+                this.set('isLoading', false)
+                this.set('isRunning', false)
+                this.set('recoverydPatients', [])
+                this.set('patientsToRecovery', [])
             }
 
             _selectedTrialPeriodChanged(){
@@ -354,54 +311,13 @@
                 this.set('sendSubscriptionRequest.signatureType', _.get(_.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === _.get(this.selectedSignatureType, 'code', '')), 'code', null))
             }
 
-            _sendSubscription(){
-                console.log(this.sendSubscriptionRequest)
-                this.api.fhc().MhmController().sendSubscriptionUsingPOST(
-                    _.get(this.api, "keystoreId", null),
-                    _.get(this.api, "tokenIdMH", null),
-                    _.get(this.api, "credentials.ehpassword", null),
-                    this.cleanData(_.get(this.hcp, "nihii", null)),
-                    _.get(this.hcp, 'name', null),
-                    _.get(this.sendSubscriptionRequest, 'patientFirstName', null),
-                    _.get(this.sendSubscriptionRequest, 'patientLastName', null),
-                    _.get(this.sendSubscriptionRequest, 'patientGender', null),
-                    _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
-                    _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
-                    _.get(this.sendSubscriptionRequest, 'signatureType', null),
-                    false,
-                    false,
-                    this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
-                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                    !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
-                    .then(mhmResponse => {
-                        console.log(mhmResponse)
-                        this.set('sendSubscriptionResponse', mhmResponse)
-
-                        this.push('patient.medicalHouseContracts', {
-                            contractId: _.get(mhmResponse, 'reference', null),
-                            mmNihii: _.get(this.hcp, 'nihii', null),
-                            hcpId: _.get(this.hcp, 'id', null),
-                            startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
-                            startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
-                            endOfContract: null,
-                            endOfCoverage: null,
-                            gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
-                            kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
-                            nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
-                            status: 1 << 1,
-                            signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                        })
-
-                        return this.api.patient().modifyPatientWithUser(this.user, this.patient)
-
-                    }).then(pat => this.set('patient', this.api.register(pat, 'patient')))
-                    .finally(() => {
-                        this._displayResultTab()
-                    })
-            }
-
             _displayResultTab(){
                 this.dispatchEvent(new CustomEvent("subscription-result", { composed: true, bubbles: true, detail: { subscriptionResultDetail: {commonOutput: _.get(this.sendSubscriptionResponse, 'commonOutput', {}), mycarenetConversation: _.get(this.sendSubscriptionResponse, 'mycarenetConversation', {})}} }))
+            }
+
+            _sendStatusEvent(){
+                console.log("sending event")
+                this.dispatchEvent(new CustomEvent("recovery-status", { composed: true, bubbles: true, detail: {statusDetail: {isLoading: this.isLoading, hasTodo: this._hasTodo(this.patientsToRecovery), isRunning: this.isRunning }} }))
             }
 
             _formatNiss(niss){
@@ -441,7 +357,57 @@
                 this.set('sendSubscriptionRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
             }
 
+            _loadRecoveryPatients(){
+                return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
+                    .then(hcp => this.set("hcp",hcp))
+                    .then(() => this.getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
+                    .then(myPatients => {
+                        const recoverydPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
+                        const patientsToRecovery = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
+                        this.set("recoverydPatients", recoverydPatients);
+                        this.set("patientsToRecovery", patientsToRecovery);
+                        return Promise.resolve(patientsToRecovery);
+                    })
+            }
+
+            _sendRecovery(){
+                this.set("isRunning", true);
+            }
+
+            _patHasRunningSubscription(pat){
+                // 1. get mh subscriptions
+                // 2.
+                return true
+            }
+
+            _patRecoveryDone(pat){
+                return false
+            }
+
+            _numPatsTodo(todo){
+                return todo ? todo.length : 0
+            }
+
+            _numPatsTotal(done, todo){
+                return (done ? done.length : 0) + (todo ? todo.length : 0)
+            }
+
+            _todoCountChanged(patientsToRecovery){
+                this.set("numTodo", this._numPatsTodo(patientsToRecovery))
+            }
+            _totalCountChanged(patientsToRecovery,recoverydPatients){
+                this.set("numTotal", this._numPatsTotal(patientsToRecovery, recoverydPatients))
+            }
+
+            _hasTodo(todo){
+                return !!(todo && todo.length > 0)
+            }
+
+            _test(){
+                this.set("recoverydPatients", [{a:1}]);
+                this.set("patientsToRecovery", [{b:1}]);
+            }
         }
-        customElements.define(HtPatSubscriptionSendReprise.is, HtPatSubscriptionSendReprise);
+        customElements.define(HtPatSubscriptionSendRecovery.is, HtPatSubscriptionSendRecovery);
     </script>
 </dom-module>
