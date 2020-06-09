@@ -369,35 +369,39 @@
                     _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
                     _.get(this.sendSubscriptionRequest, 'signatureType', null),
                     false,
-                    false,
+                    true,
                     this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
                     !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                     !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
                  .then(mhmResponse => {
                     console.log(mhmResponse)
                      this.set('sendSubscriptionResponse', mhmResponse)
+                        if(_.get(mhmResponse, 'reference', null)) {
+                            this.push('patient.medicalHouseContracts', {
+                                contractId: _.get(mhmResponse, 'reference', null),
+                                mmNihii: _.get(this.hcp, 'nihii', null),
+                                hcpId: _.get(this.hcp, 'id', null),
+                                startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
+                                startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
+                                endOfContract: null,
+                                endOfCoverage: null,
+                                gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
+                                kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
+                                nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
+                                status: 1 << 1,
+                                signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
+                            })
+                            this._updatePatient()
+                        }
+                  })
+            }
 
-                     this.push('patient.medicalHouseContracts', {
-                         contractId: _.get(mhmResponse, 'reference', null),
-                         mmNihii: _.get(this.hcp, 'nihii', null),
-                         hcpId: _.get(this.hcp, 'id', null),
-                         startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
-                         startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
-                         endOfContract: null,
-                         endOfCoverage: null,
-                         gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
-                         kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
-                         nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
-                         status: 1 << 1,
-                         signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                     })
-
-                     return this.api.patient().modifyPatientWithUser(this.user, this.patient)
-
-                }).then(pat => this.set('patient', this.api.register(pat, 'patient')))
-                 .finally(() => {
-                    this._displayResultTab()
-                })
+            _updatePatient(){
+                this.api.patient().modifyPatientWithUser(this.user, this.patient)
+                    .then(pat => this.set('patient', this.api.register(pat, 'patient')))
+                    .finally(() => {
+                        this._displayResultTab()
+                    })
             }
 
             _displayResultTab(){
