@@ -5271,6 +5271,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _checkEhealthServiceForMedicalHouse(hcp){
+                this._isAvailableForHcp(this.hcpType, 'mda') ? this._consultMda() : null
+                /*
                 let dlg = this.root.querySelector('#genInsDialog')
                 let dStart = null;
                 const date = new Date(), y = date.getFullYear(), m = date.getMonth();
@@ -5385,7 +5387,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         })
                     }
-                }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null})
+                }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null})*/
             }
 
             _resetEhealthTooltip(){
@@ -7465,20 +7467,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
                 this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
                 this.set('mdaResult',  _.get(e, 'detail.mdaResult', {}))
-
+                this._verifySubscription()
                 !_.isEmpty(_.get(e, 'detail', {})) ?
                     _.get(e, 'detail.medicalHouse', 0) > 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('medicalHouse') : null :
                         _.get(e, 'detail.generalSituation', 0) === 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('insuranceOk'): null :
                             this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null :
                     this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null
-
-                if(!_.isEmpty(_.get(e, 'detail', {})) && _.get(e, 'detail.medicalHouse', 0) > 0){
-                    //medicalhouse contract
-
-
-                }else{
-                    this.shadowRoot.querySelector("#susbcriptionStatus") ? this.shadowRoot.querySelector("#subscriptionStatus").classList.add('subscriptionNoSubscription') : null
-                }
 
                 //set insu pat.
                 if(moment(_.get(e,"detail.mdaRequest.startDate","1900-01-01"),"YYYY-MM-DD").isSame(moment(),"month") && _.get(this,"mdaResult.formatedResponse.period",[]).length===1){
@@ -7517,6 +7511,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 }
 
+            }
+
+            _verifySubscription(){
+                const mhc = _.get(this.patient, 'medicalHouseContracts', [])
+/*
+                _.size(mhc) === 0 && _.get(this.mdaResult, 'detail.medicalHouse', 0)
+
+                if(!_.isEmpty(_.get(e, 'detail', {})) && _.get(e, 'detail.medicalHouse', 0) > 0){
+                    //medicalhouse contract
+                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
+                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
+                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
+
+                }else{
+                    this.shadowRoot.querySelector("#susbcriptionStatus") ? this.shadowRoot.querySelector("#subscriptionStatus").classList.add('subscriptionNoSubscription') : null
+                }*/
             }
 
 
