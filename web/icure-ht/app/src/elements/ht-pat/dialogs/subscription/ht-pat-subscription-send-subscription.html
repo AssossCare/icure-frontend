@@ -391,23 +391,62 @@
                             console.log(mhmResponse)
                             this.set('sendSubscriptionResponse', mhmResponse)
                             if(_.get(mhmResponse, 'reference', null)) {
-                                this.push('patient.medicalHouseContracts', {
-                                    contractId: _.get(mhmResponse, 'reference', null),
-                                    mmNihii: _.get(this.hcp, 'nihii', null),
-                                    hcpId: _.get(this.hcp, 'id', null),
-                                    startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
-                                    startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
-                                    endOfContract: null,
-                                    endOfCoverage: null,
-                                    gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
-                                    kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
-                                    nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
-                                    status: 1 << 1,
-                                    signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                                })
-                                this._updatePatient()
+                                return Promise.all([
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"xades"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"soapResponse"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionRequest"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionResponse"
+                                    })
+                                ])
+                                    .then(([xades,soap,request,response]) => Promise.all([
+                                        _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
+                                        _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(xades.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                        _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(xades.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                        _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(xades.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                    ]))
+                                    .then(([xades,soap,request,response]) => {
+                                        this.push('patient.medicalHouseContracts', {
+                                            contractId: _.get(mhmResponse, 'reference', null),
+                                            mmNihii: _.get(this.hcp, 'nihii', null),
+                                            hcpId: _.get(this.hcp, 'id', null),
+                                            startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
+                                            startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
+                                            endOfContract: null,
+                                            endOfCoverage: null,
+                                            gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
+                                            kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
+                                            nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
+                                            status: 1 << 1,
+                                            signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null)),
+                                            receipts: _.compact([xades.id &&  {xadesCreation: xades.id} || {},
+                                                soap.id && {soapCreation: soap.id} || {},
+                                                request.id && {requestCreation: request.id} || {},
+                                                response.id && {responseCreation: response.id} || {}])
+                                        })
+                                        this._updatePatient()
+                                    })
                             }
                         })
+
                 }
 
             }
