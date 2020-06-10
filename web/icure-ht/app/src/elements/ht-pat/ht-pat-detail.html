@@ -7520,12 +7520,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 const mhc = _.get(this.patient, 'medicalHouseContracts', [])
 
-                if((_.size(mhc) === 0 && !!_.get(this.mdaResult, 'detail.medicalHouse', 0)) || !!mhc.find(m => (m.status | 1 << 2) || (m.status | 1 << 3))){
+                if((_.size(mhc) === 0 && !!_.get(this.mdaResult, 'detail.medicalHouse', 0)) || !!mhc.find(m => (m.status & (1 << 2)) || (m.status & (1 << 3)))){
                     this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionNoSubscription') : null
                 }
 
                 if(!!_.size(mhc) || !!_.size(_.get(this.mdaResult, 'detail.medicalHouse', 0))){
-                    if(mhc.find(m => (m.status | 1 << 1) && (!(m.status | 1 << 2) || !(m.status | 1 << 3)))){
+                    if(mhc.find(m => (m.status & (1 << 1)) && !(m.status & (1 << 2)) && !(m.status & (1 << 3)))){
                         this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionSubscriptionOk') : null
                     }
                 }

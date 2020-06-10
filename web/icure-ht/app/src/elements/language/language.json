@@ -2769,7 +2769,9 @@
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
-		"condensed": "condensed"
+		"condensed": "condensed",
+		"exportUsersMda": "Export users (MDA)",
+		"exportData": "Export data"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5634,7 +5636,9 @@
 		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible.",
 		"sendByEmail": "Envoyer par email",
 		"disableEhbox": "Désactiver l'eHealth box",
-		"condensed": "condensé"
+		"condensed": "condensé",
+		"exportUsersMda": "Export utilisateurs (MDA)",
+		"exportData": "Exporter les données"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8454,6 +8458,8 @@
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
-		"condensed": "condensed"
+		"condensed": "condensed",
+		"exportUsersMda": "Export users (MDA)",
+		"exportData": "Export data"
 	}
 }

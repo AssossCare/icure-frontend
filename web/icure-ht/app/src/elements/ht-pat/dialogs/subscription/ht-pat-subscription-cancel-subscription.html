@@ -323,13 +323,13 @@
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
+            <template is="dom-if" if="[[_isRequestError(cancelSubscriptionResponse.errors)]]" restamp="true">
                 <div class="error-container">
                     <div class="mhm-error-container-content">
                         <div class="mhm-sub-container-error">
                             <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
                             <div class="mhm-container-error p4">
-                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                <template is="dom-repeat" items="[[cancelSubscriptionResponse.errors]]" as="error">
                                     <div>- [[_getMcnErrorMessage(error)]]</div>
                                 </template>
                             </div>
@@ -552,7 +552,7 @@
                 !_.get(this.cancelSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
                 !_.get(this.cancelSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
                 !_.get(this.cancelSubscriptionRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
-                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                //!_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
                 _.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
@@ -613,7 +613,7 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
         }

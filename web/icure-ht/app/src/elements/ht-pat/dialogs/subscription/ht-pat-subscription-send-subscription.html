@@ -201,7 +201,8 @@
                                 <div class="headerInfoLine">
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-des-start-date', 'Desired start date ', language)]]" value="{{sendSubscriptionRequest.startSubscriptionDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-start-contract', 'Start of contract', language)]]" value="{{sendSubscriptionRequest.startSubscriptionDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                            <vaadin-checkbox on-checked-changed="_subscriptionInPastFlagChanged"></vaadin-checkbox>
                                         </div>
                                         <div class="headerInfoField fw2">
                                             <vaadin-combo-box class="w33 p4 mw0 w300" label="[[localize('mhm-sub-trial', 'Trial period', language)]]" selected-item="{{selectedTrialPeriod}}"  filtered-items="[[trialPeriod]]" item-label-path="label.fr" >
@@ -440,8 +441,8 @@
                         _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
                         _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
                         _.get(this.sendSubscriptionRequest, 'signatureType', null),
-                        false,
-                        true,
+                        _.get(this.sendSubscriptionRequest, 'isRecovery', false),
+                        _.get(this.sendSubscriptionRequest, 'isTestForNotify', false),
                         this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
                         !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                         !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
@@ -598,7 +599,13 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+            }
+
+            _subscriptionInPastFlagChanged(e){
+                if(_.get(e, 'target', null)){
+                    this.set('sendSubscriptionRequest.isTestForNotify', _.get(e, 'target.checked', false))
+                }
             }
 
         }

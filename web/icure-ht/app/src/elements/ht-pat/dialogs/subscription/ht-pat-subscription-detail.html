@@ -303,9 +303,12 @@
                             <page>
                                <div class="page-content">
                                    <div class="subscription-container">
-                                        <div class="medical-house-result-container">
-                                            <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
-                                        </div>
+                                       <template is="dom-if" if="[[_isMedicalHouseContractFromMda(mdaResult, mdaResult.*)]]">
+                                           <div class="medical-house-result-container">
+                                               <ht-pat-subscription-mda-medical-house-result id="htPatSubscriptionMdaMedicalHouseResult" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" mda-result="[[mdaResult]]"></ht-pat-subscription-mda-medical-house-result>
+                                           </div>
+                                       </template>
+
                                        <div class="subscription-history-container">
                                            <div class="mhm-sub-container">
                                                <div class="mhm-person-container">
@@ -664,11 +667,15 @@
                 return _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(scj => _.parseInt(_.get(scj, 'code', null)) === _.get(mhc, 'unsubscriptionReasonId', '')), 'label.'+this.language, "")
             }
 
+            _isMedicalHouseContractFromMda(){
+                return !!_.get(this.mdaResult, 'formatedResponse.medicalHouse', 0)
+            }
+
             _getReceiptsList(mhc){
                 return Object.entries(mhc.receipts).map(([key,value]) => {return {id: value,descr:key}})
             }
 
-            _download(e){
+            _download(e) {
                 e.stopPropagation();
                 e.preventDefault();
 
@@ -690,6 +697,7 @@
                     })
                     .finally(() => a.remove())
             }
+
 
         }
         customElements.define(HtPatSubscriptionDetail.is, HtPatSubscriptionDetail);
