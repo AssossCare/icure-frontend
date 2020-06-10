@@ -138,11 +138,20 @@
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
                         <div class="mhm-person-container-content">
                             <div>Patients to recovery [[numTodo]] of [[numTotal]]</div>
-<!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecovery)]]">-->
+<!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecover)]]">-->
 <!--                                <paper-button class="button button&#45;&#45;save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>-->
 <!--                            </template>-->
+                            <template is="dom-if" if="[[isLoading]]">
+                                <div>loading</div>
+                            </template>
                             <template is="dom-if" if="[[isRunning]]">
                                     <div>running</div>
+                            </template>
+                            <template is="dom-if" if="[[isValidDate]]">
+                                <div>ok to run</div>
+                            </template>
+                            <template is="dom-if" if="[[!isValidDate]]">
+                                <div>invalid date to run</div>
                             </template>
                             <paper-button class="button button--save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Test',language)]]</paper-button>
                         </div>
@@ -246,11 +255,11 @@
                         type: Object,
                         value: () => {}
                     },
-                    recoverydPatients:{
+                    recoveredPatients:{
                         type: Array,
                         value : []
                     },
-                    patientsToRecovery:{
+                    patientsToRecover:{
                         type: Array,
                         value : []
                     },
@@ -265,6 +274,18 @@
                     isRunning:{
                         type: Boolean,
                         value : false
+                    },
+                    dateRecoveryStart:{
+                        type: Date,
+                        value: null
+                    },
+                    dateRecoveryEnd:{
+                        type: Date,
+                        value: null
+                    },
+                    isValidDate:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -276,9 +297,9 @@
                     '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)',
                     '_calculateSubscriptionStartDate(sendSubscriptionRequest.startSubscriptionDate, selectedTrialPeriod, selectedTrialPeriod.*)',
                     '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)',
-                    '_todoCountChanged(patientsToRecovery)',
-                    '_totalCountChanged(patientsToRecovery,recoverydPatients)',
-                    '_sendStatusEvent(patientsToRecovery,isRunning,isLoading)'
+                    '_todoCountChanged(patientsToRecover)',
+                    '_totalCountChanged(patientsToRecover,recoveredPatients)',
+                    '_sendStatusEvent(patientsToRecover,isRunning,isLoading)'
                 ];
             }
 
@@ -287,20 +308,28 @@
             }
 
             _loadData(){
-                _loadRecoveryPatients().then(patientsToRecovery => {
-                    
+                console.log("loadData")
+                this.set("isLoading", true )
+                this._loadRecoveryPatients().then(patientsToRecover => {
+                    this.set("isLoading", false)
                 })
             }
 
             _initialize(){
                 this._reset()
+                this._loadData()
             }
 
             _reset(){
                 this.set('isLoading', false)
                 this.set('isRunning', false)
-                this.set('recoverydPatients', [])
-                this.set('patientsToRecovery', [])
+                this.set('recoveredPatients', [])
+                this.set('patientsToRecover', [])
+                //TODO DEFINE fixed dates for start and end of recovery
+                this.dateRecoveryStart = Date.parse("2020-06-01")
+                this.dateRecoveryEnd = Date.parse("2020-07-01")
+                console.log("date limits", this.dateRecoveryStart, this.dateRecoveryEnd)
+                this.set("isValidDate", this.api.moment(now).isSameOrAfter(this.api.moment(this.dateRecoveryStart).format('YYYY-MM-DD')) && this.api.moment(now).isSameOrBefore(this.api.moment(this.dateRecoveryEnd).format('YYYY-MM-DD')))
             }
 
             _selectedTrialPeriodChanged(){
@@ -317,7 +346,7 @@
 
             _sendStatusEvent(){
                 console.log("sending event")
-                this.dispatchEvent(new CustomEvent("recovery-status", { composed: true, bubbles: true, detail: {statusDetail: {isLoading: this.isLoading, hasTodo: this._hasTodo(this.patientsToRecovery), isRunning: this.isRunning }} }))
+                this.dispatchEvent(new CustomEvent("recovery-status", { composed: true, bubbles: true, detail: {statusDetail: {isLoading: this.isLoading, hasTodo: this._hasTodo(this.patientsToRecover), isRunning: this.isRunning }} }))
             }
 
             _formatNiss(niss){
@@ -360,13 +389,13 @@
             _loadRecoveryPatients(){
                 return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
                     .then(hcp => this.set("hcp",hcp))
-                    .then(() => this.getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
+                    .then(() => this._getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
                     .then(myPatients => {
-                        const recoverydPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
-                        const patientsToRecovery = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
-                        this.set("recoverydPatients", recoverydPatients);
-                        this.set("patientsToRecovery", patientsToRecovery);
-                        return Promise.resolve(patientsToRecovery);
+                        const recoveredPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
+                        const patientsToRecover = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
+                        this.set("recoveredPatients", recoveredPatients);
+                        this.set("patientsToRecover", patientsToRecover);
+                        return Promise.resolve(patientsToRecover);
                     })
             }
 
@@ -376,12 +405,26 @@
 
             _patHasRunningSubscription(pat){
                 // 1. get mh subscriptions
-                // 2.
-                return true
+                _.sortBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => {
+
+                })
+                return _.size(_.get(this.patient, 'medicalHouseContracts', []))
+                    && _.get(this.patient, 'medicalHouseContracts', []).find(mhs =>
+                        _.get(mhs, 'startOfCoverage', null)
+                        && this.api.moment(now).isAfter(this.api.moment(_.get(mhs, 'startOfContract', null)).format('YYYY-MM-DD'))
+                        && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfContract', null)).format('YYYY-MM-DD'))
+                    )
             }
 
             _patRecoveryDone(pat){
-                return false
+                return _.size(_.get(this.patient, 'medicalHouseContracts', []))
+                    && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null)
+                        && _.get(mhs, 'status', null) & (1 << 1)
+                        && _.get(mhs, 'startOfCoverage', null)
+                        && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD'))
+                        && !_.get(mhs, 'endOfCoverage', null)
+                        && !_.get(mhs, 'endOfContract', null)
+                    )
             }
 
             _numPatsTodo(todo){
@@ -392,11 +435,11 @@
                 return (done ? done.length : 0) + (todo ? todo.length : 0)
             }
 
-            _todoCountChanged(patientsToRecovery){
-                this.set("numTodo", this._numPatsTodo(patientsToRecovery))
+            _todoCountChanged(patientsToRecover){
+                this.set("numTodo", this._numPatsTodo(patientsToRecover))
             }
-            _totalCountChanged(patientsToRecovery,recoverydPatients){
-                this.set("numTotal", this._numPatsTotal(patientsToRecovery, recoverydPatients))
+            _totalCountChanged(patientsToRecover,recoveredPatients){
+                this.set("numTotal", this._numPatsTotal(patientsToRecover, recoveredPatients))
             }
 
             _hasTodo(todo){
@@ -404,8 +447,34 @@
             }
 
             _test(){
-                this.set("recoverydPatients", [{a:1}]);
-                this.set("patientsToRecovery", [{b:1}]);
+                this.set("recoveredPatients", [{a:1}]);
+                this.set("patientsToRecover", [{b:1}]);
+            }
+
+            _getPatientsByHcp( hcpId ) {
+
+                // Todo: remove this
+                // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["2708da20-597e-4c86-88da-20597e8c8637", "e61880b2-d802-40fc-9880-b2d80240fc8c"]}))
+
+                const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
+
+                return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+                    .then(pl => {
+                        pl.rows = _
+                            .chain(pl.rows)
+                            .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:"labResultsAndProtocolsGotReImported"})))
+                            .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
+                            .value()
+                        return {
+                            rows:pl.rows,
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(()=>null)
+                )||[];
+
             }
         }
         customElements.define(HtPatSubscriptionSendRecovery.is, HtPatSubscriptionSendRecovery);
