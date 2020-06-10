@@ -42,7 +42,7 @@
             }
 
             .request-container{
-                height: 300px;
+                height: 430px;
                 width: auto;
             }
 
@@ -577,16 +577,16 @@
                 !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
                 !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
                 !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+                !_.get(this.notifySubscriptionClosureRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+                !_.get(this.notifySubscriptionClosureRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+                !_.get(this.notifySubscriptionClosureRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null) ? error.push("mhm-subscription-end-date-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null) ? error.push("mhm-subscription-closure-justification-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null) ? error.push("mhm-subscription-closure-type-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
                 this.set("requestError", error)
             }

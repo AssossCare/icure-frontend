@@ -483,14 +483,14 @@
                         this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
                         !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                         !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
-                    ).then(cancelSubscriptionRespsone => {
-                        console.log(cancelSubscriptionRespsone)
-                        this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
+                    ).then(cancelSubscriptionResponse => {
+                        console.log(cancelSubscriptionResponse)
+                        this.set('cancelSubscriptionResponse', cancelSubscriptionResponse)
 
-                        if(_.get(cancelSubscriptionRespsone, 'decisionReference', null)){
+                        if(_.get(cancelSubscriptionResponse, 'decisionReference', null)){
                             let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
 
-                            mhc.endOfContract = _.get(cancelSubscriptionRespsone, 'subscriptionsCancelDate', null)
+                            mhc.endOfContract = _.get(cancelSubscriptionResponse, 'subscriptionsCancelDate', null)
                             mhc.status = (1 << 1) | (1 << 2)
 
                             this._updatePatient()
@@ -509,13 +509,13 @@
                 !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
                 !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
                 !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
-                !_.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                !_.get(this.cancelSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
                 this.set("requestError", error)
             }
