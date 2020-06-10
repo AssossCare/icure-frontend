@@ -1,20 +1,21 @@
-import './elements/icc-api/icc-api.js';
-import './styles/shared-styles.js';
-import './styles/scrollbar-style.js';
-import './elements/ht-spinner/ht-spinner.js';
-import './styles/dialog-style.js';
-import moment from 'moment/src/moment';
-import _ from 'lodash/lodash';
+import './elements/icc-api/icc-api.js'
+import './styles/shared-styles.js'
+import './styles/scrollbar-style.js'
+import './elements/ht-spinner/ht-spinner.js'
+import './styles/dialog-style.js'
+import moment from 'moment/src/moment'
+import _ from 'lodash/lodash'
 
 import "@polymer/iron-icon/iron-icon"
 import "@polymer/paper-button/paper-button"
 import "@polymer/paper-dialog/paper-dialog"
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "./elements/tk-localizer";
-class HtUpdateDialog extends TkLocalizerMixin(PolymerElement)  {
-  static get template() {
-    return html`
+import {PolymerElement, html} from '@polymer/polymer'
+import {TkLocalizerMixin} from "./elements/tk-localizer"
+
+class HtUpdateDialog extends TkLocalizerMixin(PolymerElement) {
+    static get template() {
+        return html`
         <style include="shared-styles scrollbar-style dialog-style">
             :host {
                 display: block;
@@ -127,7 +128,7 @@ class HtUpdateDialog extends TkLocalizerMixin(PolymerElement)  {
             <div class="loadingContainer"></div>
         </template>
 
-        <paper-dialog class="modalDialog" id="updateMessageDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+        <paper-dialog class="modalDialog" id="updateMessageDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title"><iron-icon icon="icons:speaker-notes"></iron-icon> [[localize('upd-info','Informations',language)]]</h2>
             <div class="content">
 
@@ -135,7 +136,7 @@ class HtUpdateDialog extends TkLocalizerMixin(PolymerElement)  {
                     <template is="dom-if" if="[[_isNews(news)]]">
                         <div class="blockNews">
                             <div class="newsTitle bold">
-                                [[news.mainTitle]]
+                                [[_localizeTitle(news)]]
                             </div>
                             <div class="newsContent">
                                 <template is="dom-repeat" items="[[news.modules]]" as="module">
@@ -172,93 +173,100 @@ class HtUpdateDialog extends TkLocalizerMixin(PolymerElement)  {
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="check-circle"></iron-icon> [[localize('read-later','Read later',language)]]</paper-button>
             </div>
         </paper-dialog>
-`;
-  }
+`
+    }
 
-  static get is() {
-      return 'ht-update-dialog';
-  }
+    static get is() {
+        return 'ht-update-dialog'
+    }
 
-  static get properties() {
-      return {
-          api: {
-              type: Object,
-              noReset: true
-          },
-          user: {
-              type: Object
-          },
-          _bodyOverlay: {
-              type: Boolean,
-              value: false
-          },
-          updateVersion:{
-              type: String,
-              value: ""
-          },
-          updates: {
-              type: Object,
-              value: function () {
-                  return require('../updates.json');
-              }
-          },
-          displayedUpdate:{
-              type: Object,
-              value: () => {}
-          }
-      };
-  }
+    static get properties() {
+        return {
+            api: {
+                type: Object,
+                noReset: true
+            },
+            user: {
+                type: Object
+            },
+            _bodyOverlay: {
+                type: Boolean,
+                value: false
+            },
+            updateVersion: {
+                type: String,
+                value: ""
+            },
+            updates: {
+                type: Object,
+                value: function () {
+                    return require('../updates.json')
+                }
+            },
+            displayedUpdate: {
+                type: Object,
+                value: () => {
+                }
+            }
+        }
+    }
 
-  static get observers() {
-      return [];
-  }
+    static get observers() {
+        return []
+    }
 
-  constructor() {
-      super();
-  }
+    constructor() {
+        super()
+    }
 
-  ready() {
-      super.ready();
-  }
+    ready() {
+        super.ready()
+    }
 
-  _openDialog(){
-      this.set('displayedUpdate', _.orderBy(this.updates.updates.filter(u => moment().isBetween(u.startDate, u.endDate) === true), ['startDate'], ['desc']))
-      const dateOfNewUpdate = _.get(this, 'displayedUpdate[0].updateDate', moment().format('YYYY-MM-DD'))
+    _openDialog() {
+        this.set('displayedUpdate', _.orderBy(this.updates.updates.filter(u => moment().isBetween(u.startDate, u.endDate) === true), ['startDate'], ['desc']))
+        const dateOfNewUpdate = _.get(this, 'displayedUpdate[0].updateDate', moment().format('YYYY-MM-DD'))
 
-      if((localStorage && !localStorage.getItem('last_update_confirm')) || (localStorage && localStorage.getItem('last_update_confirm') && (moment(localStorage.getItem('last_update_confirm')).format("YYYY-MM-DD") < moment(dateOfNewUpdate).format("YYYY-MM-DD")))){
-          this.set('_bodyOverlay', true)
-          this.$['updateMessageDialog'].open()
-      }
+        if ((localStorage && !localStorage.getItem('last_update_confirm')) || (localStorage && localStorage.getItem('last_update_confirm') && (moment(localStorage.getItem('last_update_confirm')).format("YYYY-MM-DD") < moment(dateOfNewUpdate).format("YYYY-MM-DD")))) {
+            this.set('_bodyOverlay', true)
+            this.$['updateMessageDialog'].open()
+        }
 
-  }
+    }
 
-  _closeDialog(){
-      this.set('_bodyOverlay', false)
-      this.$['updateMessageDialog'].close()
-  }
+    _closeDialog() {
+        this.set('_bodyOverlay', false)
+        this.$['updateMessageDialog'].close()
+    }
 
 
-  _localizeContent(content){
-      return content && content[this.language] ? content[this.language] : null
-  }
+    _localizeContent(content) {
+        return content && content[this.language] ? content[this.language] : null
+    }
 
-  _confirmUpdate(){
-      localStorage.setItem('last_update_confirm', _.get(this, 'displayedUpdate[0].updateDate', moment().format('YYYY-MM-DD')))
-      this.set('_bodyOverlay', false)
-      this.$['updateMessageDialog'].close()
-  }
+    _confirmUpdate() {
+        localStorage.setItem('last_update_confirm', _.get(this, 'displayedUpdate[0].updateDate', moment().format('YYYY-MM-DD')))
+        this.set('_bodyOverlay', false)
+        this.$['updateMessageDialog'].close()
+    }
 
-  _isNews(news){
-      return news && news.mainType && news.mainType === "News" ? true : false
-  }
+    _isNews(news) {
+        return _.get(news, 'mainType', null) === "News"
+    }
 
-  _isUpdate(news){
-      return news && news.mainType && news.mainType === "Update" ? true : false
-  }
+    _isUpdate(news) {
+        return _.get(news, 'mainType', null) === "Update"
+    }
 
-  _isLink(news){
-      return news && news.mainLink ? true : false
-  }
+    _isLink(news) {
+        return _.get(news, 'mainLink', null)
+    }
+
+    _localizeTitle(news) {
+        return _.get(_.head(_.get(news, 'modules', [])), 'title.' + this.language, null)
+    }
+
+
 }
 
-customElements.define(HtUpdateDialog.is, HtUpdateDialog);
+customElements.define(HtUpdateDialog.is, HtUpdateDialog)
