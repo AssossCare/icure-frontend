@@ -247,14 +247,14 @@
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_isMcnError(mcnError)]]" restamp="true">
+            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
                 <div class="error-container">
                     <div class="mhm-error-container-content">
                         <div class="mhm-sub-container-error">
                             <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
                             <div class="mhm-container-error p4">
-                                <template is="dom-repeat" items="[[mcnError]]" as="error">
-                                    <div>- [[_getMcnErrorMessage(mcnError)]]</div>
+                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                    <div>- [[_getMcnErrorMessage(error)]]</div>
                                 </template>
                             </div>
                         </div>
@@ -369,10 +369,6 @@
                     requestError:{
                         type: Array(),
                         value: () => []
-                    },
-                    mcnError:{
-                        type: Array,
-                        value: () => []
                     }
                 };
             }
@@ -447,8 +443,8 @@
                         false,
                         true,
                         this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
-                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                        !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
+                        !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                        !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
                         .then(mhmResponse => {
                             console.log(mhmResponse)
                             this.set('sendSubscriptionResponse', mhmResponse)
@@ -530,10 +526,12 @@
                 !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? error.push("mhm-start-subscription-date-error") : null
                 _.get(this.sendSubscriptionRequest, 'isTrial', false) === true || _.get(this.sendSubscriptionRequest, 'isTrial', false) === false ? null : error.push("mhm-is-trial-error")
                 !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? error.push("mhm-signature-type-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
 
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                //!_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                _.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.sendSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
+
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
                 this.set("requestError", error)
             }
@@ -595,8 +593,8 @@
                 return !!_.size(errorList)
             }
 
-            _getMcnErrorMessage(error){
-
+            _getMcnErrorMessage(errorMessage){
+                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
         }
