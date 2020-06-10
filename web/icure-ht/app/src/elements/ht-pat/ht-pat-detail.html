@@ -7514,19 +7514,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _verifySubscription(){
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
+
                 const mhc = _.get(this.patient, 'medicalHouseContracts', [])
-/*
-                _.size(mhc) === 0 && _.get(this.mdaResult, 'detail.medicalHouse', 0)
 
-                if(!_.isEmpty(_.get(e, 'detail', {})) && _.get(e, 'detail.medicalHouse', 0) > 0){
-                    //medicalhouse contract
-                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
-                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
-                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
+                if((_.size(mhc) === 0 && !!_.get(this.mdaResult, 'detail.medicalHouse', 0)) || !!mhc.find(m => (m.status | 1 << 2) || (m.status | 1 << 3))){
+                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionNoSubscription') : null
+                }
 
-                }else{
-                    this.shadowRoot.querySelector("#susbcriptionStatus") ? this.shadowRoot.querySelector("#subscriptionStatus").classList.add('subscriptionNoSubscription') : null
-                }*/
+                if(!!_.size(mhc) || !!_.size(_.get(this.mdaResult, 'detail.medicalHouse', 0))){
+                    if(mhc.find(m => (m.status | 1 << 1) && (!(m.status | 1 << 2) || !(m.status | 1 << 3)))){
+                        this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionSubscriptionOk') : null
+                    }
+                }
+                //this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
             }
 
 

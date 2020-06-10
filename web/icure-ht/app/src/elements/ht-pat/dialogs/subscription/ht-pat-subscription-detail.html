@@ -350,21 +350,21 @@
                             <template is="dom-if" if="[[isNewSubscription]]" restamp="true">
                                 <page>
                                     <div class="page-content">
-                                        <ht-pat-subscription-send-subscription id="htPatSubscriptionSendSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-send-subscription>
+                                        <ht-pat-subscription-send-subscription id="htPatSubscriptionSendSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" date-range="[[dateRange]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-send-subscription>
                                     </div>
                                 </page>
                             </template>
                             <template is="dom-if" if="[[isCancelSubscription]]" restamp="true">
                                 <page>
                                     <div class="page-content">
-                                        <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-cancel-subscription>
+                                        <ht-pat-subscription-cancel-subscription id="htPatSubscriptionCancelSubscription" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" date-range="[[dateRange]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-cancel-subscription>
                                     </div>
                                 </page>
                             </template>
                             <template is="dom-if" if="[[isNotifySubscriptionClosure]]" restamp="true">
                                 <page>
                                     <div class="page-content">
-                                        <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" subscription-closure-type-list="[[subscriptionClosureTypeList]]" subscription-closure-justification-list="[[subscriptionClosureJustificationList]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-notify-subscription-closure>
+                                        <ht-pat-subscription-notify-subscription-closure id="htPatSubscriptionNotifySubscriptionClosure" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" subscription-closure-type-list="[[subscriptionClosureTypeList]]" subscription-closure-justification-list="[[subscriptionClosureJustificationList]]" date-range="[[dateRange]]" selected-medical-house-contract="[[selectedMedicalHouseContract]]" on-subscription-result="_displaySubscriptionResult"></ht-pat-subscription-notify-subscription-closure>
                                     </div>
                                 </page>
                             </template>
@@ -488,6 +488,10 @@
                     isNotifySubscriptionClosure:{
                         type: Boolean,
                         value: false
+                    },
+                    dateRange:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }
@@ -518,6 +522,10 @@
                     .then(() => ( insuranceId ? this.api.insurance().getInsurance(insuranceId) : Promise.resolve({})))
                     .then(ins => this.set('patientInsuranceParent', ins))
                     .finally(() => {
+                        this.set('dateRange', {
+                            minDate : moment().format("YYYY-MM-DD"),
+                            maxDate: moment().add(1, 'years').format("YYYY-MM-DD")
+                        })
                         this.set('tabs', 0)
                         this._initializeMedicalHouseContract()
                         this.$['subscriptionDetailDialog'].open()
