@@ -512,6 +512,7 @@
                 !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                _.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
 
                 this.set("requestError", error)
             }

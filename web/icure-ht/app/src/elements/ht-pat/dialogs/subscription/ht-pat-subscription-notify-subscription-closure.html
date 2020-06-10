@@ -581,6 +581,7 @@
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null) ? error.push("mhm-subscription-closure-justification-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null) ? error.push("mhm-subscription-closure-type-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
