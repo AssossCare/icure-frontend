@@ -463,9 +463,51 @@
                                     status: 1 << 1,
                                     signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
                                 })
-                                this._updatePatient()
+                                Promise.all([
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"xades"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"soapResponse"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionRequest"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionResponse"
+                                    })
+                                ])
+                                    .then(([xades,soap,request,response]) => Promise.all([
+                                        _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
+                                        _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(xades.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                        _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(xades.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                        _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(xades.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                    ]))
+                                    .then(([xades,soap,request,response]) => {
+                                        const mhc=this.patient.medicalHouseContracts.find(m => m.contractId== _.get(mhmResponse, 'reference', null))
+                                        _.get(xades,"id",false) &&  _.assign(mhc.receipts.xadesCreation,xades.id)
+                                        _.get(soap,"id",false) && _.assign(mhc.receipts.soapCreation,soap.id)
+                                        _.get(request,"id",false) && _.assign(mhc.receipts.requestCreation,request.id)
+                                        _.get(response,"id",false) && _.assign(mhc.receipts.responseCreation,response.id)
+                                    })
+                                    .finally(()=>{
+                                        this._updatePatient()
+                                    })
                             }
                         })
+
                 }
 
             }
