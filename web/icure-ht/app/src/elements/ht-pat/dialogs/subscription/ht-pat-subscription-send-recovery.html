@@ -413,8 +413,7 @@
                     prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
                     .then(pat =>{
                         this.curPat = pat.lastName + " " + pat.firstName
-
-                        return this._sleep(1000)
+                        return this._sendSubscription(pat).then(res => this._sleep(1000))
                     }).then(x => _.concat(promiseCarrier,x))
                         .catch(() => _.concat(promiseCarrier,null)))
 
@@ -423,9 +422,6 @@
                 prom.then(res => {
                     this.set("isRunning", false);
                 })
-                // this._sleep(50).then(() => {
-                //     this.set("curPat", pat)
-                // })
             }
 
             _sleep (time) {
@@ -434,6 +430,13 @@
 
             _patHasRunningSubscription(pat){
                 // 1. get mh subscriptions
+
+                const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')
+
+                if(_.size(_.get(pat, 'medicalHouseContracts', []))) {
+                    console.log("mhc",mhc)
+                }
+
                 const now = moment().format('YYYY-MM-DD')
                 return _.size(_.get(pat, 'medicalHouseContracts', []))
                     && _.get(pat, 'medicalHouseContracts', []).find(mhs =>
@@ -487,9 +490,6 @@
 
             _getPatientsByHcp( hcpId ) {
 
-                // Todo: remove this
-                // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["2708da20-597e-4c86-88da-20597e8c8637", "e61880b2-d802-40fc-9880-b2d80240fc8c"]}))
-
                 const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
 
                 return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
@@ -511,10 +511,40 @@
 
             }
 
+            _makeSubscriptionRequest(pat){
+                return {
+                    patientFirstName: _.get(pat, 'firstName', null),
+                    patientLastName: _.get(pat, 'lastName', null),
+                    patientGender: _.get(pat, 'gender', null),
+                    patientSsin: _.get(pat, 'ssin', null),
+                    patientIo: this._getIo(pat),
+                    patientIoMembership: this._getIoMembership(pat),
+                    startSubscriptionDate: moment().format('YYYY-MM-DD'),
+                    realStartSubscriptionDate: null,
+                    isTrial: false,
+                    signatureType: "holder-paper",
+                    isRecovery: true,
+                    isTestForNotify: false
+                }
+            }
+
+            _getIo(patient){
+                return null
+            }
+
+            _getIoMembership(patient){
+                return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
+            }
+
             _sendSubscription(pat){
+                this.set("sendSubscriptionRequest", this._makeSubscriptionRequest(pat))
                 console.log(this.sendSubscriptionRequest)
-                this._checkBeforeSend()
-                if(!_.size(_.get(this, 'requestError', []))){
+                //TODO add the errors to an array
+                const requestError = this._checkBeforeSend()
+                //keep original mhc values
+                //const orMhc = _.cloneDeep(pat.)
+
+                if(!_.size(requestError)){
                     this.api.fhc().MhmController().sendSubscriptionUsingPOST(
                         _.get(this.api, "keystoreId", null),
                         _.get(this.api, "tokenIdMH", null),
@@ -530,59 +560,54 @@
                         false,
                         true,
                         this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
-                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                        !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
+                        !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                        !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
                         .then(mhmResponse => {
                             console.log(mhmResponse)
+                            //TODO, create an array of responses
                             this.set('sendSubscriptionResponse', mhmResponse)
-                            if(_.get(mhmResponse, 'reference', null)) {
-                                this.push('patient.medicalHouseContracts', {
-                                    contractId: _.get(mhmResponse, 'reference', null),
-                                    mmNihii: _.get(this.hcp, 'nihii', null),
-                                    hcpId: _.get(this.hcp, 'id', null),
-                                    startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
-                                    startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
-                                    endOfContract: null,
-                                    endOfCoverage: null,
-                                    gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
-                                    kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
-                                    nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
-                                    status: 1 << 1,
-                                    signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                                })
-                                this._updatePatient()
-                            }
+                            //TODO: update existing MHC instead
+                            const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')[0]
+                            mhc.contractId = _.get(mhmResponse, 'reference', null)
+                            mhc.mmNihii = _.get(this.hcp, 'nihii', null)
+                            mhc.signatureType = _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
+                            mhc.statuc = 1 << 1
+                            pat.medicalHouseContracts = []
+                            pat.medicalHouseContracts.push(mhc)
+                            return this._updatePatient(pat)
                         })
+                } else {
+                    return Promise.resolve(null)
                 }
-
             }
 
             _checkBeforeSend(){
-                this.set("requestError", [])
 
-                !_.get(this.api, "keystoreId", null) ? this.push("requestError", "mhm-keystore-error") : null
-                !_.get(this.api, "tokenIdMH", null) ? this.push("requestError", "mhm-token-id-error") : null
-                !_.get(this.api, "credentials.ehpassword", null) ? this.push("requestError", "mhm-ehpassword-error") : null
-                !_.get(this.hcp, "nihii", null) ? this.push("requestError", "mhm-nihii-error") : null
-                !_.get(this.hcp, 'name', null) ? this.push("requestError", "mhm-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? this.push("requestError", "mhm-patient-first-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? this.push("requestError", "mhm-patient-last-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? this.push("requestError", "mhm-patient-gender-error") : null
-                !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? this.push("requestError", "mhm-start-subscription-date-error") : null
-                !_.get(this.sendSubscriptionRequest, 'isTrial', false) ? this.push("requestError", "mhm-is-trial-error") : null
-                !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? this.push("requestError", "mhm-signature-type-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.push("requestError", "mhm-patient-ssin-error") : null
+                let error = []
+                !_.get(this.api, "keystoreId", null) ? error.push("mhm-keystore-error") : null
+                !_.get(this.api, "tokenIdMH", null) ? error.push("mhm-token-id-error") : null
+                !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
+                !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
+                !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+                !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? error.push("mhm-start-subscription-date-error") : null
+                _.get(this.sendSubscriptionRequest, 'isTrial', false) === true || _.get(this.sendSubscriptionRequest, 'isTrial', false) === false ? null : error.push("mhm-is-trial-error")
+                !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? error.push("mhm-signature-type-error") : null
 
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? this.push("requestError", "mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? this.push("requestError", "mhm-patient-io-membership-error") : null : null
+                //!_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                _.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.sendSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
+
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+
+               return error
             }
 
-            _updatePatient(){
-                this.api.patient().modifyPatientWithUser(this.user, this.patient)
-                    .then(pat => this.set('patient', this.api.register(pat, 'patient')))
-                    .finally(() => {
-                        //this._displayResultTab()
-                    })
+            _updatePatient(pat){
+                return this.api.patient().modifyPatientWithUser(this.user, pat)
+                    .then(pat => this.api.register(pat, 'patient'))
             }
 
             cleanData(data){
