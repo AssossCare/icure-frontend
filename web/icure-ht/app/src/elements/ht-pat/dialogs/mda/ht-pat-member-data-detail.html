@@ -693,7 +693,7 @@
                                             Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii}))) :
                              _.get(nihii, 'type', null) === 'pha' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.pharmacyList, 'pharmacyList', []).find(pha => _.get(pha, 'authorizationNumber', null) === _.get(nihii, 'nihii', '').substr(2)), {initialSearch: nihii}))) :
                                     Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii})))
-                        ).then(adrResp => _.concat(nihiiList, _.assign(adrResp, {initialSearch: nihii})))
+                        ).then(adrResp => _.concat(nihiiList, _.assign(adrResp, {initialSearch: nihii}))).catch(err => console.log(err)).finally(() => nihiiList)
                     )
                 })
 
@@ -715,9 +715,8 @@
                     _.get(mdaResponse, 'formatedResponse.medicalHouse', []).map(mm => {
                        mm.medicalHouse.name = _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'name', null)
                     })
-
                     return mdaResponse
-                })
+                }).catch(err => console.log(err))
             }
 
             consultMdaBySsin(){
