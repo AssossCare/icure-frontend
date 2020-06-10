@@ -498,6 +498,7 @@
                                     ]))
                                     .then(([xades,soap,request,response]) => {
                                         const mhc=this.patient.medicalHouseContracts.find(m => m.contractId=== _.get(mhmResponse, 'reference', null))
+                                        if(!_.get(mhc,'receipts',false))mhc.receipts={}
                                         if(_.get(xades,"id",false))
                                             mhc.receipts.xadesCreation=xades.id
                                         if(_.get(soap,"id",false))
