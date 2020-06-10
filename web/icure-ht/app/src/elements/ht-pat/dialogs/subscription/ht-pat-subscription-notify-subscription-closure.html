@@ -542,7 +542,7 @@
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null),
                         _.parseInt(this.api.moment(_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null)).format('YYYYMMDD')),
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null),
-                        "oa", //_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
+                        _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
                         this.cleanData( _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)),
                         !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                         !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
