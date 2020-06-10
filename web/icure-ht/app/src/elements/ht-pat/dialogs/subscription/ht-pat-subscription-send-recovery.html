@@ -407,13 +407,17 @@
 
             _sendRecovery(){
                 this.set("isRunning", true);
+                //TODO remove : limit patients
+                if(_.size(this.patientsToRecover) > 3){
+                    this.patientsToRecover = this.patientsToRecover.slice(0, 50)
+                }
 
                 let prom = Promise.resolve([])
                 _.map(this.patientsToRecover, pat => {
                     prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
                     .then(pat =>{
                         this.curPat = pat.lastName + " " + pat.firstName
-                        return this._sendSubscription(pat).then(res => this._sleep(1000))
+                        return this._sendSubscription(pat).then(res => this._sleep(5000))
                     }).then(x => _.concat(promiseCarrier,x))
                         .catch(() => _.concat(promiseCarrier,null)))
 
@@ -545,7 +549,7 @@
                 //const orMhc = _.cloneDeep(pat.)
 
                 if(!_.size(requestError)){
-                    this.api.fhc().MhmController().sendSubscriptionUsingPOST(
+                    return this.api.fhc().MhmController().sendSubscriptionUsingPOST(
                         _.get(this.api, "keystoreId", null),
                         _.get(this.api, "tokenIdMH", null),
                         _.get(this.api, "credentials.ehpassword", null),
@@ -569,14 +573,66 @@
                             //TODO: update existing MHC instead
                             const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')[0]
                             mhc.contractId = _.get(mhmResponse, 'reference', null)
+                            if(!mhc.contractId){
+                                console.log("no contractid for", pat)
+                            }
                             mhc.mmNihii = _.get(this.hcp, 'nihii', null)
                             mhc.signatureType = _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
                             mhc.statuc = 1 << 1
                             pat.medicalHouseContracts = []
                             pat.medicalHouseContracts.push(mhc)
-                            return this._updatePatient(pat)
+
+                            return Promise.all([
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(mhmResponse, 'reference', null),
+                                    references: Object.values(mhmResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"xades"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(mhmResponse, 'reference', null),
+                                    references: Object.values(mhmResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"soapResponse"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(mhmResponse, 'reference', null),
+                                    references: Object.values(mhmResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"transactionRequest"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(mhmResponse, 'reference', null),
+                                    references: Object.values(mhmResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"transactionResponse"
+                                })
+                            ]).then(([xades,soap,request,response]) => Promise.all([
+                                _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
+                                _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                            ])).then(([xades,soap,request,response]) => {
+                                const mhc = pat.medicalHouseContracts.find(m => m.contractId=== _.get(mhmResponse, 'reference', null))
+                                if(!_.get(mhc,'receipts',false))mhc.receipts={}
+                                if(_.get(xades,"id",false))
+                                    mhc.receipts.xadesCreation=xades.id
+                                if(_.get(soap,"id",false))
+                                    mhc.receipts.soapCreation=soap.id
+                                if(_.get(request,"id",false))
+                                    mhc.receipts.requestCreation=request.id
+                                if(_.get(response,"id",false))
+                                    mhc.receipts.responseCreation=response.id
+                            }).finally(()=>{
+                                return this._updatePatient(pat)
+                            })
+                            //return this._updatePatient(pat)
+                        }).catch(() => {
+                            console.log("error for patient", pat)
+                            return Promise.resolve(null)
                         })
                 } else {
+                    console.log("pre-send errors for patient", pat, requestError)
                     return Promise.resolve(null)
                 }
             }
