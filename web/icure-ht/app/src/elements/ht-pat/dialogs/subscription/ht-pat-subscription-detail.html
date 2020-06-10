@@ -672,7 +672,7 @@
             }
 
             _getReceiptsList(mhc){
-                return Object.entries(mhc.receipts).map(([key,value]) => {return {id: value,descr:key}})
+                return Object.entries(_.get(mhc, 'receipts', [])).map(([key,value]) => {return {id: value,descr:key}})
             }
 
             _download(e) {
