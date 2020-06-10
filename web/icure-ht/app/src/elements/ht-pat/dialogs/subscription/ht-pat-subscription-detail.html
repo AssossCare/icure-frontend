@@ -249,6 +249,25 @@
                 overflow: hidden;
             }
 
+            paper-menu-button {
+                padding:0;
+            }
+
+            paper-menu-button paper-listbox {
+                padding:0!important;
+            }
+
+            paper-menu-button paper-listbox paper-item {
+                padding:0 8px!important;
+                font-size: var(--font-size-normal);
+            }
+
+            .btn-20{
+                height: 20px;
+                width: 20px;
+                float: right;
+            }
+
         </style>
 
         <paper-dialog id="subscriptionDetailDialog">
@@ -294,7 +313,18 @@
                                                    <div class="mhm-person-container-content">
                                                        <template is="dom-repeat" items="[[medicalHouseContracts]]" as="mhc">
                                                            <div class="mhm-person-container mt10">
-                                                               <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]] <iron-icon icon="icons:info-outline" class="infoBtn"></iron-icon></div>
+                                                               <div class="headerMasterTitle headerLabel">
+                                                                   [[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]]
+                                                                   <paper-tooltip position="bottom" for="dl-master"></paper-tooltip>
+                                                                   <paper-menu-button class="btn-20" horizontal-align="right" dynamic-align="true" vertical-offset="26">
+                                                                       <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                                                                       <paper-listbox slot="dropdown-content">
+                                                                           <template is="dom-repeat" items="[[mhc.receiptsList]]" as="rc">
+                                                                               <paper-item id="[[rc.id]]" on-tap="_download">[[localize(rc.descr,rc.descr,language)]]</paper-item>
+                                                                           </template>
+                                                                       </paper-listbox>
+                                                                   </paper-menu-button>
+                                                               </div>
                                                                <div class="headerInfoLine">
                                                                    <div class="headerInfoField">
                                                                        <span class="headerLabel">[[localize('mhm-medical-house', 'Medical house', language)]]: &nbsp;</span> [[mhc.medicalHouseName]]
@@ -543,7 +573,8 @@
                     hrFlatRateType: this._getFlatRateType(mhc),
                     hrSignatureType: this._localizeSignatureType(_.get(mhc, 'signatureType', null)),
                     hrClosureReason: this._getClosureReason(mhc),
-                    hrClosureType: this._getClosureType(mhc)
+                    hrClosureType: this._getClosureType(mhc),
+                    receiptsList : this._getReceiptsList(mhc)
                 })))
 
                 this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1<<2)) && !(_.get(mhc, 'status', null) & (1<<3))))
@@ -631,6 +662,33 @@
 
             _getClosureReason(mhc){
                 return _.get(_.get(this, 'subscriptionClosureJustificationList', []).find(scj => _.parseInt(_.get(scj, 'code', null)) === _.get(mhc, 'unsubscriptionReasonId', '')), 'label.'+this.language, "")
+            }
+
+            _getReceiptsList(mhc){
+                return Object.entries(mhc.receipts).map(([key,value]) => {return {id: value,descr:key}})
+            }
+
+            _download(e){
+                e.stopPropagation();
+                e.preventDefault();
+
+                const idAttachment = e.target.id
+                let mhc = this.medicalHouseContracts.find(m => m.receiptsList.find(rc => rc.id === idAttachment))
+
+                var a = document.createElement('a')
+
+                this.api.receipt().getReceipt(idAttachment)
+                    .then(receipt => {
+                        const key = Object.keys(receipt.attachmentIds)[0]
+                        return this.api.receipt().getAttachment(receipt.id, receipt.attachmentIds[key])
+                    })
+                    .then(attach => {
+                        a.href = window.URL.createObjectURL(new Blob([new Uint8Array(attach)]))
+                        a.download = `${mhc.contractId}_${mhc.receiptsList.find(rc => rc.id === idAttachment).descr}_${+new Date()}.xml`
+                        a.click()
+                        return null
+                    })
+                    .finally(() => a.remove())
             }
 
         }

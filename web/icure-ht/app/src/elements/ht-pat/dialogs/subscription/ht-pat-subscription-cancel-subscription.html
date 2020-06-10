@@ -522,10 +522,14 @@
                                 _.get(response,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
                             ]))
                             .then(([xades,soap,request,response]) => {
-                                _.get(xades,"id",false) &&  _.assign(mhc.receipts.xadesCancel,xades.id)
-                                _.get(soap,"id",false) && _.assign(mhc.receipts.soapCancel,soap.id)
-                                _.get(request,"id",false) && _.assign(mhc.receipts.requestCancel,request.id)
-                                _.get(response,"id",false) && _.assign(mhc.receipts.responseCancel,response.id)
+                                if(_.get(xades,"id",false))
+                                    mhc.receipts.xadesCancel=xades.id
+                                if(_.get(soap,"id",false))
+                                    mhc.receipts.soapCancel=soap.id
+                                if(_.get(request,"id",false))
+                                    mhc.receipts.requestCancel=request.id
+                                if(_.get(response,"id",false))
+                                    mhc.receipts.responseCancel=response.id
                             }).finally(()=>{
                                 this._updatePatient()
                             })
