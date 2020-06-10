@@ -410,6 +410,10 @@
                     selectedMedicalHouseContract:{
                         type: Object,
                         value: () => {}
+                    },
+                    dateRange:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }
@@ -480,7 +484,7 @@
                     this.set('notifySubscriptionClosureResponse', notifySubscriptionClosureResponse)
 
                     if(_.get(notifySubscriptionClosureResponse, 'reference', null)){
-                        let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
+                        let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.notifySubscriptionClosureRequest, 'reference', null))
 
                         mhc.endOfContract = _.parseInt(this.api.moment(_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null)).format('YYYYMMDD'))
                         mhc.endOfCoverage = _.get(notifySubscriptionClosureResponse, 'subscriptionsEndDate', null)
