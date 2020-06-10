@@ -190,6 +190,38 @@
                 overflow: hidden;
             }
 
+            .error-container{
+                height: 150px;
+                width: auto;
+            }
+
+            .p4{
+                padding: 4px;
+            }
+
+            .mhm-container-error{
+                height: auto;
+                width: auto;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-sub-container-error{
+                height: auto;
+                width: auto;
+                margin: 5px;
+                border: 1px solid var(--app-status-color-nok);
+            }
+
+            .mhm-error-container-content{
+                padding: 5px;
+            }
+
         </style>
 
         <div class="subscription-container">
@@ -276,6 +308,35 @@
                     </div>
                 </div>
             </div>
+            <template is="dom-if" if="[[_isRequestError(requestError)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-error-ctn', 'Error before send', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[requestError]]" as="error">
+                                    <div>- [[_getErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                    <div>- [[_getMcnErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
 
     </template>
@@ -363,6 +424,10 @@
                     dateRange:{
                         type: Object,
                         value: () => {}
+                    },
+                    requestError:{
+                        type: Array,
+                        value: () => []
                     }
                 };
             }
@@ -398,33 +463,58 @@
 
             _cancelSubscription(){
                 console.log(this.cancelSubscriptionRequest)
-                this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
-                    _.get(this.api, "keystoreId", null),
-                    _.get(this.api, "tokenIdMH", null),
-                    _.get(this.api, "credentials.ehpassword", null),
-                    this.cleanData(_.get(this.hcp, "nihii", null)),
-                    _.get(this.hcp, 'name', null),
-                    _.get(this.cancelSubscriptionRequest, 'patientFirstName', null),
-                    _.get(this.cancelSubscriptionRequest, 'patientLastName', null),
-                    _.get(this.cancelSubscriptionRequest, 'patientGender', null),
-                    _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
-                    this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
-                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                    !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
-                ).then(cancelSubscriptionRespsone => {
-                    console.log(cancelSubscriptionRespsone)
-                    this.set('cancelSubscriptionResponse', cancelSubscriptionRespsone)
 
-                    if(_.get(cancelSubscriptionRespsone, 'decisionReference', null)){
-                        let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
+                this._checkBeforeSend()
+                if(!_.size(_.get(this, 'requestError', []))){
+                    this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
+                        _.get(this.api, "keystoreId", null),
+                        _.get(this.api, "tokenIdMH", null),
+                        _.get(this.api, "credentials.ehpassword", null),
+                        this.cleanData(_.get(this.hcp, "nihii", null)),
+                        _.get(this.hcp, 'name', null),
+                        _.get(this.cancelSubscriptionRequest, 'patientFirstName', null),
+                        _.get(this.cancelSubscriptionRequest, 'patientLastName', null),
+                        _.get(this.cancelSubscriptionRequest, 'patientGender', null),
+                        _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
+                        this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
+                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
+                    ).then(cancelSubscriptionResponse => {
+                        console.log(cancelSubscriptionResponse)
+                        this.set('cancelSubscriptionResponse', cancelSubscriptionResponse)
 
-                        mhc.endOfContract = _.get(cancelSubscriptionRespsone, 'subscriptionsCancelDate', null)
-                        mhc.status = (1 << 1) | (1 << 2)
+                        if(_.get(cancelSubscriptionResponse, 'decisionReference', null)){
+                            let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
 
-                        this._updatePatient()
-                    }
+                            mhc.endOfContract = _.get(cancelSubscriptionResponse, 'subscriptionsCancelDate', null)
+                            mhc.status = (1 << 1) | (1 << 2)
 
-                })
+                            this._updatePatient()
+                        }
+
+                    })
+                }
+
+            }
+
+            _checkBeforeSend(){
+                this.set("requestError", [])
+                let error = []
+                !_.get(this.api, "keystoreId", null) ? error.push("mhm-keystore-error") : null
+                !_.get(this.api, "tokenIdMH", null) ? error.push("mhm-token-id-error") : null
+                !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
+                !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
+                !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
+                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                _.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
+
+                this.set("requestError", error)
             }
 
             _updatePatient(){
@@ -469,6 +559,18 @@
                     !!(_.get(mhc, 'status', null) & (1 << 2)) ? "subscription-status--redStatus":
                         !!(_.get(mhc, 'status', null) & (1 << 1)) ?  "subscription-status--greenStatus":
                             "subscription-status--blueStatus"
+            }
+
+            _getErrorMessage(error){
+                return this.localize(error, error, this.language)
+            }
+
+            _isRequestError(errorList){
+                return !!_.size(errorList)
+            }
+
+            _getMcnErrorMessage(errorMessage){
+                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
         }
