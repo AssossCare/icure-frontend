@@ -1,0 +1,220 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-input-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../styles/shared-styles.html">
+<link rel="import" href="../../../styles/spinner-style.html">
+
+<dom-module id="ht-admin-management-export-users-mda">
+
+    <template>
+
+
+
+        <style include="shared-styles dialog-style buttons-style paper-input-style paper-tabs-style">
+
+            .content{
+                padding: 0 12px;
+            }
+
+            .overlaySpinnerContainer {
+                position:absolute;
+                width:100%;
+                height:100%;
+                z-index:10;
+                background:rgba(255, 255, 255, .8);
+                top:0;
+                left:0;
+            }
+            .overlaySpinner {
+                max-width:80px;
+                margin:100px auto
+            }
+
+        </style>
+
+
+
+        <template is="dom-if" if="[[_isBusy]]"><div class="overlaySpinnerContainer"><div class="overlaySpinner"><ht-spinner active></ht-spinner></div></div></template>
+
+
+
+        <div class="users-panel p10">
+            <h4 class="panel-title">[[localize('exportUsersMda','Export users (MDA)',language)]]</h4>
+            <div class="mt30"><paper-button class="button button--save" style="width:180px" on-tap="_doExportUsersForMda"><iron-icon icon="icons:cloud-download"></iron-icon> &nbsp; [[localize('exportData','Export data',language)]]</paper-button></div>
+        </div>
+
+
+
+    </template>
+
+
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import jsZip from "jszip/dist/jszip.js";
+
+        class HtAdminManagementExportUsersMda extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-management-export-users-mda'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true
+                    },
+                    resources: {
+                        type: Object,
+                        noReset: true,
+                        value: () => {}
+                    },
+                    language: {
+                        type: String,
+                        noReset: true,
+                        value: "fr"
+                    },
+                    _isBusy: {
+                        type: Boolean,
+                        value: false,
+                        noReset: true
+                    },
+                }
+            }
+
+            static get observers() {
+                return [];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _resetComponentProperties() {
+                const promResolve = Promise.resolve();
+                return promResolve
+                    .then(() => {
+                        const componentProperties = HtAdminManagementExportUsersMda.properties
+                        Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
+                        return promResolve
+                    })
+            }
+
+            _getPatients(mhNihii) {
+
+                return this.api.getRowsUsingPagination(
+                    (key,docId) =>
+                        this.api.patient().listPatientsByHcPartyWithUser(this.user, _.trim(_.get(this,"user.healthcarePartyId","")), null, key && JSON.stringify(key), docId, 1000)
+                            .then(pl => {
+                                pl.rows = _
+                                    .chain(pl.rows)
+                                    .map(it => _.assign(it, {validMhc: _
+                                            .chain(_.get(it, "medicalHouseContracts",[]))
+                                            .filter(mhc => mhc
+                                                && _.trim(_.get(mhc,"hcpId"))
+                                                && _.trim(_.get(mhc,"hcpId")) === _.trim(_.get(this,"user.healthcarePartyId"))
+                                                && _.trim(_.get(mhc,"mmNihii")) === mhNihii
+                                                && _.trim(_.get(mhc,"contractId"))
+                                                && (_.get(mhc,"status",0) & (1 << 1))
+                                                && !(_.get(mhc,"status",0) & (1 << 2))
+                                                && !(_.get(mhc,"status",0) & (1 << 3))
+                                            )
+                                            .orderBy(['startOfContract'],['desc'])
+                                            .head()
+                                            .value()
+                                    }))
+                                    .filter(it=> _.get(it,"active", true) && _.trim(_.get(it,"ssin", "")) && _.size(_.get(it,"validMhc", null)))
+                                    .map(it => ({
+                                        ssin: _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,""),
+                                        contractId: _.trim(_.get(it, "validMhc.contractId")),
+                                        startOfContract: _.trim(_.get(it, "validMhc.startOfContract")),
+                                        lastInvoicing : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoicing"}), "code", "")),
+                                    }))
+                                    .value()
+                                return {
+                                    rows:pl.rows,
+                                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                                    done: !pl.nextKeyPair
+                                }
+                            })
+                            .catch(()=>{ return Promise.resolve(); })
+                )||[];
+
+            }
+
+            _doExportUsersForMda() {
+
+                const promResolve = Promise.resolve()
+                const zipArchive = new jsZip();
+                const filename = moment().format("YYYY-MM-DD") + "-patients-export-mda";
+
+                return this._isBusy ? promResolve : promResolve
+                    .then(() => this._resetComponentProperties())
+                    .then(() => this.set("_isBusy",true))
+                    .then(() => this.api.hcparty().getCurrentHealthcareParty().then(hcp => _.trim(_.get(hcp,"nihii","")).replace(/[^\d]/gmi,"")))
+                    .then(mhNihii => !_.trim(mhNihii) ? promResolve : this._getPatients(mhNihii))
+                    .then(patients => !_.size(patients) ? promResolve : zipArchive.file(filename + ".json", JSON.stringify(patients)).generateAsync({type:"arraybuffer",mimeType: "application/zip",compression: "DEFLATE",compressionOptions: { level: 9 }}))
+                    .then(zipFile => !zipFile ? promResolve : this.api.triggerFileDownload(zipFile, "application/zip", filename + ".zip"))
+                    .finally(() => this.set("_isBusy",false))
+
+            }
+
+        }
+
+        customElements.define(HtAdminManagementExportUsersMda.is, HtAdminManagementExportUsersMda)
+    </script>
+</dom-module>
