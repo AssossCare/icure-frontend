@@ -485,11 +485,11 @@
                 _.get(this.sendSubscriptionRequest, 'isTrial', false) === true || _.get(this.sendSubscriptionRequest, 'isTrial', false) === false ? null : error.push("mhm-is-trial-error")
                 !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? error.push("mhm-signature-type-error") : null
 
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                //!_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 _.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.sendSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
 
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
                 this.set("requestError", error)
             }
