@@ -594,7 +594,7 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
         }

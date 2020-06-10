@@ -354,13 +354,13 @@
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
+            <template is="dom-if" if="[[_isRequestError(notifySubscriptionClosureResponse.errors)]]" restamp="true">
                 <div class="error-container">
                     <div class="mhm-error-container-content">
                         <div class="mhm-sub-container-error">
                             <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
                             <div class="mhm-container-error p4">
-                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                <template is="dom-repeat" items="[[notifySubscriptionClosureResponse.errors]]" as="error">
                                     <div>- [[_getMcnErrorMessage(error)]]</div>
                                 </template>
                             </div>
@@ -542,7 +542,7 @@
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null),
                         _.parseInt(this.api.moment(_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null)).format('YYYYMMDD')),
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null),
-                        _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
+                        "oa", //_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
                         this.cleanData( _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)),
                         !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                         !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
@@ -621,7 +621,7 @@
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null) ? error.push("mhm-subscription-end-date-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null) ? error.push("mhm-subscription-closure-justification-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null) ? error.push("mhm-subscription-closure-type-error") : null
-                !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                //!_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
@@ -709,7 +709,7 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
 
