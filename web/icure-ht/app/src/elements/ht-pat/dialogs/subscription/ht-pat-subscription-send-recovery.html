@@ -146,14 +146,17 @@
                             </template>
                             <template is="dom-if" if="[[isRunning]]">
                                     <div>running</div>
+                                    <div>Processing patient : [[curPat]]</div>
                             </template>
-                            <template is="dom-if" if="[[isValidDate]]">
-                                <div>ok to run</div>
+                            <template is="dom-if" if="[[!isRunning]]">
+                                <template is="dom-if" if="[[isValidDate]]">
+                                    <div>ok to run</div>
+                                </template>
+                                <template is="dom-if" if="[[!isValidDate]]">
+                                    <div>invalid date to run</div>
+                                </template>
                             </template>
-                            <template is="dom-if" if="[[!isValidDate]]">
-                                <div>invalid date to run</div>
-                            </template>
-                            <paper-button class="button button--save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Test',language)]]</paper-button>
+                            <paper-button class="button button--save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>
                         </div>
                     </div>
                 </div>
@@ -286,17 +289,16 @@
                     isValidDate:{
                         type: Boolean,
                         value: false
+                    },
+                    curPat:{
+                        type: Object,
+                        value: null
                     }
                 };
             }
 
             static get observers() {
                 return [
-                    '_initialize(api, user, patient, mdaResult)',
-                    '_selectedSignatureTypeChanged(selectedSignatureType, selectedSignatureType.*)',
-                    '_selectedTrialPeriodChanged(selectedTrialPeriod, selectedTrialPeriod.*)',
-                    '_calculateSubscriptionStartDate(sendSubscriptionRequest.startSubscriptionDate, selectedTrialPeriod, selectedTrialPeriod.*)',
-                    '_patientIoChanged(patientInsuranceParent, patientInsuranceParent.*)',
                     '_todoCountChanged(patientsToRecover)',
                     '_totalCountChanged(patientsToRecover,recoveredPatients)',
                     '_sendStatusEvent(patientsToRecover,isRunning,isLoading)'
@@ -311,6 +313,7 @@
                 console.log("loadData")
                 this.set("isLoading", true )
                 this._loadRecoveryPatients().then(patientsToRecover => {
+                    console.log("patientsToRecover", patientsToRecover)
                     this.set("isLoading", false)
                 })
             }
@@ -329,6 +332,7 @@
                 this.dateRecoveryStart = Date.parse("2020-06-01")
                 this.dateRecoveryEnd = Date.parse("2020-07-01")
                 console.log("date limits", this.dateRecoveryStart, this.dateRecoveryEnd)
+                const now = moment().format('YYYY-MM-DD')
                 this.set("isValidDate", this.api.moment(now).isSameOrAfter(this.api.moment(this.dateRecoveryStart).format('YYYY-MM-DD')) && this.api.moment(now).isSameOrBefore(this.api.moment(this.dateRecoveryEnd).format('YYYY-MM-DD')))
             }
 
@@ -391,39 +395,67 @@
                     .then(hcp => this.set("hcp",hcp))
                     .then(() => this._getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
                     .then(myPatients => {
-                        const recoveredPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
+//                        const recoveredPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
+                        const recoveredPatients = myPatients.filter(pat => this._patRecoveryDone(pat));
                         const patientsToRecover = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
                         this.set("recoveredPatients", recoveredPatients);
                         this.set("patientsToRecover", patientsToRecover);
+                        console.log("recoveredPatients", recoveredPatients)
                         return Promise.resolve(patientsToRecover);
                     })
             }
 
             _sendRecovery(){
                 this.set("isRunning", true);
+
+                let prom = Promise.resolve([])
+                _.map(this.patientsToRecover, pat => {
+                    prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
+                    .then(pat =>{
+                        this.curPat = pat.lastName + " " + pat.firstName
+
+                        return this._sleep(1000)
+                    }).then(x => _.concat(promiseCarrier,x))
+                        .catch(() => _.concat(promiseCarrier,null)))
+
+                })
+
+                prom.then(res => {
+                    this.set("isRunning", false);
+                })
+                // this._sleep(50).then(() => {
+                //     this.set("curPat", pat)
+                // })
+            }
+
+            _sleep (time) {
+                return new Promise((resolve) => setTimeout(resolve, time));
             }
 
             _patHasRunningSubscription(pat){
                 // 1. get mh subscriptions
-                _.sortBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => {
-
-                })
-                return _.size(_.get(this.patient, 'medicalHouseContracts', []))
-                    && _.get(this.patient, 'medicalHouseContracts', []).find(mhs =>
+                const now = moment().format('YYYY-MM-DD')
+                return _.size(_.get(pat, 'medicalHouseContracts', []))
+                    && _.get(pat, 'medicalHouseContracts', []).find(mhs =>
                         _.get(mhs, 'startOfCoverage', null)
-                        && this.api.moment(now).isAfter(this.api.moment(_.get(mhs, 'startOfContract', null)).format('YYYY-MM-DD'))
-                        && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfContract', null)).format('YYYY-MM-DD'))
+                        && this.api.moment(this.dateRecoveryStart).isAfter(this.api.moment(_.get(mhs, 'startOfContract', null)).format('YYYY-MM-DD'))
+                        && (!_.get(mhs, 'endOfCoverage', null) || this.api.moment(this.dateRecoveryEnd).isBefore(this.api.moment(_.get(mhs, 'endOfCoverage', null)).format('YYYY-MM-DD')))
+                        && _.get(mhs, "hcpId", null)
+                        && (_.get(mhs, "kine", false) || _.get(mhs, "gp", false) || _.get(mhs, "nurse", false))
                     )
             }
 
             _patRecoveryDone(pat){
-                return _.size(_.get(this.patient, 'medicalHouseContracts', []))
-                    && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null)
-                        && _.get(mhs, 'status', null) & (1 << 1)
-                        && _.get(mhs, 'startOfCoverage', null)
-                        && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD'))
-                        && !_.get(mhs, 'endOfCoverage', null)
-                        && !_.get(mhs, 'endOfContract', null)
+                if(_.size(_.get(pat, 'medicalHouseContracts', []))){
+                    _.get(pat, 'medicalHouseContracts', []).forEach(mhs => {
+                        console.log(_.get(mhs, 'startOfCoverage', null), _.get(mhs, "contractId", null), _.get(mhs, "mmNihii", null))
+                    })
+                }
+                return _.size(_.get(pat, 'medicalHouseContracts', []))
+                    && _.get(pat, 'medicalHouseContracts', []).find(mhs =>
+                        _.get(mhs, 'startOfCoverage', null)
+                        && _.get(mhs, "contractId", null)
+                        && _.get(mhs, "mmNihii", null)
                     )
             }
 
@@ -447,8 +479,10 @@
             }
 
             _test(){
-                this.set("recoveredPatients", [{a:1}]);
-                this.set("patientsToRecover", [{b:1}]);
+                // this.set("recoveredPatients", [{a:1}]);
+                // this.set("patientsToRecover", [{b:1}]);
+                //
+                this._loadData()
             }
 
             _getPatientsByHcp( hcpId ) {
@@ -475,6 +509,84 @@
                     .catch(()=>null)
                 )||[];
 
+            }
+
+            _sendSubscription(pat){
+                console.log(this.sendSubscriptionRequest)
+                this._checkBeforeSend()
+                if(!_.size(_.get(this, 'requestError', []))){
+                    this.api.fhc().MhmController().sendSubscriptionUsingPOST(
+                        _.get(this.api, "keystoreId", null),
+                        _.get(this.api, "tokenIdMH", null),
+                        _.get(this.api, "credentials.ehpassword", null),
+                        this.cleanData(_.get(this.hcp, "nihii", null)),
+                        _.get(this.hcp, 'name', null),
+                        _.get(this.sendSubscriptionRequest, 'patientFirstName', null),
+                        _.get(this.sendSubscriptionRequest, 'patientLastName', null),
+                        _.get(this.sendSubscriptionRequest, 'patientGender', null),
+                        _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
+                        _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
+                        _.get(this.sendSubscriptionRequest, 'signatureType', null),
+                        false,
+                        true,
+                        this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
+                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
+                        !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
+                        .then(mhmResponse => {
+                            console.log(mhmResponse)
+                            this.set('sendSubscriptionResponse', mhmResponse)
+                            if(_.get(mhmResponse, 'reference', null)) {
+                                this.push('patient.medicalHouseContracts', {
+                                    contractId: _.get(mhmResponse, 'reference', null),
+                                    mmNihii: _.get(this.hcp, 'nihii', null),
+                                    hcpId: _.get(this.hcp, 'id', null),
+                                    startOfContract: _.get(mhmResponse, 'inscriptionDate', null),
+                                    startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
+                                    endOfContract: null,
+                                    endOfCoverage: null,
+                                    gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
+                                    kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
+                                    nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
+                                    status: 1 << 1,
+                                    signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
+                                })
+                                this._updatePatient()
+                            }
+                        })
+                }
+
+            }
+
+            _checkBeforeSend(){
+                this.set("requestError", [])
+
+                !_.get(this.api, "keystoreId", null) ? this.push("requestError", "mhm-keystore-error") : null
+                !_.get(this.api, "tokenIdMH", null) ? this.push("requestError", "mhm-token-id-error") : null
+                !_.get(this.api, "credentials.ehpassword", null) ? this.push("requestError", "mhm-ehpassword-error") : null
+                !_.get(this.hcp, "nihii", null) ? this.push("requestError", "mhm-nihii-error") : null
+                !_.get(this.hcp, 'name', null) ? this.push("requestError", "mhm-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? this.push("requestError", "mhm-patient-first-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? this.push("requestError", "mhm-patient-last-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? this.push("requestError", "mhm-patient-gender-error") : null
+                !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? this.push("requestError", "mhm-start-subscription-date-error") : null
+                !_.get(this.sendSubscriptionRequest, 'isTrial', false) ? this.push("requestError", "mhm-is-trial-error") : null
+                !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? this.push("requestError", "mhm-signature-type-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.push("requestError", "mhm-patient-ssin-error") : null
+
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? this.push("requestError", "mhm-patient-io-error") : null : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? this.push("requestError", "mhm-patient-io-membership-error") : null : null
+            }
+
+            _updatePatient(){
+                this.api.patient().modifyPatientWithUser(this.user, this.patient)
+                    .then(pat => this.set('patient', this.api.register(pat, 'patient')))
+                    .finally(() => {
+                        //this._displayResultTab()
+                    })
+            }
+
+            cleanData(data){
+                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
             }
         }
         customElements.define(HtPatSubscriptionSendRecovery.is, HtPatSubscriptionSendRecovery);

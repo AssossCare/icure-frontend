@@ -389,7 +389,7 @@
             _reset(){
                 this.set('canRecovery', false)
                 this.set('recoveryStatus', {})
-                this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._initialize();
+
                 // this.set('isNotifySubscriptionClosure', false)
                 // this.set('isCancelSubscription', false)
                 // this.set('isNewSubscription', false)
@@ -401,6 +401,7 @@
 
             _openDialog(){
                 this._reset()
+                this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._initialize();
                 // const insuranceId = _.get(_.get(this.patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'insuranceId', null)
                 // this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
                 //     .then(hcp => this.set('hcp', hcp))
