@@ -966,7 +966,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 display: block;
             }
 
-            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse #subscriptionStatus.subscriptionPending{
+            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse, #subscriptionStatus.subscriptionPending{
                 --paper-fab-background: var(--app-status-color-pending);
             }
 
@@ -7514,22 +7514,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _verifySubscription(){
-                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
-                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
-                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
 
-                const mhc = _.get(this.patient, 'medicalHouseContracts', [])
+                const promResolve = Promise.resolve()
+                const mdaDidRespond = _.size(_.get(this,"mdaResult",null))
+                const patientMhcs = _.get(this, 'patient.medicalHouseContracts', [])
+                const mdaResult = _.map(_.get(this,"mdaResult.formatedResponse.medicalHouse",[]), it => _.get(it,"medicalHouse"))
 
-                if((_.size(mhc) === 0 && !!_.get(this.mdaResult, 'detail.medicalHouse', 0)) || !!mhc.find(m => (m.status & (1 << 2)) || (m.status & (1 << 3)))){
-                    this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionNoSubscription') : null
-                }
+                return promResolve
+                    .then(() => {
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription')
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk')
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending')
+                    })
+                    .then(() => mdaDidRespond ?
+                        this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
+                            !_.size(mdaResult) ? 'subscriptionNoSubscription' :
+                            !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
+                            _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
+                            'subscriptionPending'
+                        ) : this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription")
+                    )
 
-                if(!!_.size(mhc) || !!_.size(_.get(this.mdaResult, 'detail.medicalHouse', 0))){
-                    if(mhc.find(m => (m.status & (1 << 1)) && !(m.status & (1 << 2)) && !(m.status & (1 << 3)))){
-                        this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add('subscriptionSubscriptionOk') : null
-                    }
-                }
-                //this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
             }
 
 
