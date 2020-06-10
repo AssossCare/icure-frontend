@@ -43,7 +43,7 @@
             }
 
             .request-container{
-                height: 300px;
+                height: 350px;
                 width: auto;
             }
 
@@ -129,6 +129,38 @@
                 width: 400px;
             }
 
+            .error-container{
+                height: 150px;
+                width: auto;
+            }
+
+            .p4{
+                padding: 4px;
+            }
+
+            .mhm-container-error{
+                height: auto;
+                width: auto;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-sub-container-error{
+                height: auto;
+                width: auto;
+                margin: 5px;
+                border: 1px solid var(--app-status-color-nok);
+            }
+
+            .mhm-error-container-content{
+                padding: 5px;
+            }
+
         </style>
 
         <div class="subscription-container">
@@ -197,12 +229,38 @@
                                 </div>
                             </div>
                         </div>
-
-
-
                     </div>
                 </div>
             </div>
+            <template is="dom-if" if="[[_isRequestError(requestError)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-error-ctn', 'Error before send', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[requestError]]" as="error">
+                                    <div>- [[_getErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_isMcnError(mcnError)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[mcnError]]" as="error">
+                                    <div>- [[_getMcnErrorMessage(mcnError)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
 
     </template>
@@ -311,6 +369,10 @@
                     requestError:{
                         type: Array(),
                         value: () => []
+                    },
+                    mcnError:{
+                        type: Array,
+                        value: () => []
                     }
                 };
             }
@@ -414,22 +476,24 @@
 
             _checkBeforeSend(){
                 this.set("requestError", [])
+                let error = []
+                !_.get(this.api, "keystoreId", null) ? error.push("mhm-keystore-error") : null
+                !_.get(this.api, "tokenIdMH", null) ? error.push("mhm-token-id-error") : null
+                !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
+                !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
+                !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+                !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? error.push("mhm-start-subscription-date-error") : null
+                _.get(this.sendSubscriptionRequest, 'isTrial', false) === true || _.get(this.sendSubscriptionRequest, 'isTrial', false) === false ? null : error.push("mhm-is-trial-error")
+                !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? error.push("mhm-signature-type-error") : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
 
-                !_.get(this.api, "keystoreId", null) ? this.push("requestError", "mhm-keystore-error") : null
-                !_.get(this.api, "tokenIdMH", null) ? this.push("requestError", "mhm-token-id-error") : null
-                !_.get(this.api, "credentials.ehpassword", null) ? this.push("requestError", "mhm-ehpassword-error") : null
-                !_.get(this.hcp, "nihii", null) ? this.push("requestError", "mhm-nihii-error") : null
-                !_.get(this.hcp, 'name', null) ? this.push("requestError", "mhm-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientFirstName', null) ? this.push("requestError", "mhm-patient-first-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientLastName', null) ? this.push("requestError", "mhm-patient-last-name-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientGender', null) ? this.push("requestError", "mhm-patient-gender-error") : null
-                !_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null) ? this.push("requestError", "mhm-start-subscription-date-error") : null
-                !_.get(this.sendSubscriptionRequest, 'isTrial', false) ? this.push("requestError", "mhm-is-trial-error") : null
-                !_.get(this.sendSubscriptionRequest, 'signatureType', null) ? this.push("requestError", "mhm-signature-type-error") : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.push("requestError", "mhm-patient-ssin-error") : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
 
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? this.push("requestError", "mhm-patient-io-error") : null : null
-                !_.get(this.hcp, "nihii", null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? this.push("requestError", "mhm-patient-io-membership-error") : null : null
+                this.set("requestError", error)
             }
 
             _updatePatient(){
@@ -479,6 +543,18 @@
 
             _patientIoChanged(){
                 this.set('sendSubscriptionRequest.patientIo', _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')))
+            }
+
+            _getErrorMessage(error){
+                return this.localize(error, error, this.language)
+            }
+
+            _isRequestError(errorList){
+                return !!_.size(errorList)
+            }
+
+            _getMcnErrorMessage(error){
+
             }
 
         }
