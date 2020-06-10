@@ -562,7 +562,48 @@
                             mhc.status = (1 << 1) | (1 << 3)
                             mhc.unsubscriptionReasonId =  _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null)
 
-                            this._updatePatient()
+                            Promise.all([
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(notifySubscriptionClosureResponse, 'reference', null),
+                                    references: Object.values(notifySubscriptionClosureResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"xades"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(notifySubscriptionClosureResponse, 'reference', null),
+                                    references: Object.values(notifySubscriptionClosureResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"soapResponse"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(notifySubscriptionClosureResponse, 'reference', null),
+                                    references: Object.values(notifySubscriptionClosureResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"transactionRequest"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(notifySubscriptionClosureResponse, 'reference', null),
+                                    references: Object.values(notifySubscriptionClosureResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"transactionResponse"
+                                })
+                            ])
+                            .then(([xades,soap,request,response]) => Promise.all([
+                                _.get(xades,"id",false) && _.get(notifySubscriptionClosureResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(notifySubscriptionClosureResponse.xades))))) || Promise.resolve(xades),
+                                _.get(soap,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(xades.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                _.get(request,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(xades.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                _.get(response,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(xades.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                            ]))
+                            .then(([xades,soap,request,response]) => {
+                                _.get(xades,"id",false) &&  _.assign(mhc.receipts.xadesClosure,xades.id)
+                                _.get(soap,"id",false) && _.assign(mhc.receipts.soapClosure,soap.id)
+                                _.get(request,"id",false) && _.assign(mhc.receipts.requestClosure,request.id)
+                                _.get(response,"id",false) && _.assign(mhc.receipts.responseClosure,response.id)
+                            }).finally(()=>{
+                                this._updatePatient()
+                            })
+
+
                         }
                     })
                 }
