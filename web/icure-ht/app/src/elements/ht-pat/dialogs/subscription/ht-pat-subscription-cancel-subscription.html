@@ -323,13 +323,13 @@
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
+            <template is="dom-if" if="[[_isRequestError(cancelSubscriptionResponse.errors)]]" restamp="true">
                 <div class="error-container">
                     <div class="mhm-error-container-content">
                         <div class="mhm-sub-container-error">
                             <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
                             <div class="mhm-container-error p4">
-                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                <template is="dom-repeat" items="[[cancelSubscriptionResponse.errors]]" as="error">
                                     <div>- [[_getMcnErrorMessage(error)]]</div>
                                 </template>
                             </div>
@@ -517,15 +517,20 @@
                             ])
                             .then(([xades,soap,request,response]) => Promise.all([
                                 _.get(xades,"id",false) && _.get(cancelSubscriptionResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(cancelSubscriptionResponse.xades))))) || Promise.resolve(xades),
-                                _.get(soap,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(xades.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
-                                _.get(request,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(xades.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                _.get(response,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(xades.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                _.get(soap,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                _.get(request,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                _.get(response,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
                             ]))
                             .then(([xades,soap,request,response]) => {
-                                _.get(xades,"id",false) &&  _.assign(mhc.receipts.xadesCancel,xades.id)
-                                _.get(soap,"id",false) && _.assign(mhc.receipts.soapCancel,soap.id)
-                                _.get(request,"id",false) && _.assign(mhc.receipts.requestCancel,request.id)
-                                _.get(response,"id",false) && _.assign(mhc.receipts.responseCancel,response.id)
+                                if(!_.get(mhc,'receipts',false))mhc.receipts={}
+                                if(_.get(xades,"id",false))
+                                    mhc.receipts.xadesCancel=xades.id
+                                if(_.get(soap,"id",false))
+                                    mhc.receipts.soapCancel=soap.id
+                                if(_.get(request,"id",false))
+                                    mhc.receipts.requestCancel=request.id
+                                if(_.get(response,"id",false))
+                                    mhc.receipts.responseCancel=response.id
                             }).finally(()=>{
                                 this._updatePatient()
                             })
@@ -548,7 +553,7 @@
                 !_.get(this.cancelSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
                 !_.get(this.cancelSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
                 !_.get(this.cancelSubscriptionRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
-                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                //!_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
                 _.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
@@ -609,7 +614,7 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
         }

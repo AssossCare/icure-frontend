@@ -354,13 +354,13 @@
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.errors)]]" restamp="true">
+            <template is="dom-if" if="[[_isRequestError(notifySubscriptionClosureResponse.errors)]]" restamp="true">
                 <div class="error-container">
                     <div class="mhm-error-container-content">
                         <div class="mhm-sub-container-error">
                             <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
                             <div class="mhm-container-error p4">
-                                <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
+                                <template is="dom-repeat" items="[[notifySubscriptionClosureResponse.errors]]" as="error">
                                     <div>- [[_getMcnErrorMessage(error)]]</div>
                                 </template>
                             </div>
@@ -586,15 +586,20 @@
                             ])
                             .then(([xades,soap,request,response]) => Promise.all([
                                 _.get(xades,"id",false) && _.get(notifySubscriptionClosureResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(notifySubscriptionClosureResponse.xades))))) || Promise.resolve(xades),
-                                _.get(soap,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(xades.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
-                                _.get(request,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(xades.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                _.get(response,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(xades.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                _.get(soap,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                _.get(request,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                _.get(response,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
                             ]))
                             .then(([xades,soap,request,response]) => {
-                                _.get(xades,"id",false) &&  _.assign(mhc.receipts.xadesClosure,xades.id)
-                                _.get(soap,"id",false) && _.assign(mhc.receipts.soapClosure,soap.id)
-                                _.get(request,"id",false) && _.assign(mhc.receipts.requestClosure,request.id)
-                                _.get(response,"id",false) && _.assign(mhc.receipts.responseClosure,response.id)
+                                if(!_.get(mhc,'receipts',false))mhc.receipts={}
+                                if(_.get(xades,"id",false))
+                                    mhc.receipts.xadesClosure=xades.id
+                                if(_.get(soap,"id",false))
+                                    mhc.receipts.soapClosure=soap.id
+                                if(_.get(request,"id",false))
+                                    mhc.receipts.requestClosure=request.id
+                                if(_.get(response,"id",false))
+                                    mhc.receipts.responseClosure=response.id
                             }).finally(()=>{
                                 this._updatePatient()
                             })
@@ -621,7 +626,7 @@
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null) ? error.push("mhm-subscription-end-date-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null) ? error.push("mhm-subscription-closure-justification-error") : null
                 !_.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null) ? error.push("mhm-subscription-closure-type-error") : null
-                !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+                //!_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
                 !_.get(this.hcp, "nihii", null) ? !_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
@@ -709,7 +714,7 @@
             }
 
             _getMcnErrorMessage(errorMessage){
-                return _.get(errorMessage, "uid", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+                return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
             }
 
 
