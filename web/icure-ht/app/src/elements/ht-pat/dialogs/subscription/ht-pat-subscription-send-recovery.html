@@ -629,7 +629,9 @@
                             if(!mhc.contractId){
                                 console.log("sendSubscriptionLog no contractid for", pat)
                                 recoveryLogItem.sendSubscriptionResponseErrpr = "no contractid"
-                                recoveryLogItem.status = "Erreur: " + _.map(mhmResponse.errors, err => err.msgFr ).join(", ")
+
+                                recoveryLogItem.status = "Erreur: " + _.map(mhmResponse.errors, err => err.msgFr ).join(", ") + _.map(mhmResponse.genericErrors, err => this._getGenericErrorMessage(err)).join(", ")
+
                                 //TODO: extract error
                             }
                             else
@@ -707,7 +709,7 @@
                 } else {
                     console.log("sendSubscriptionLog pre-send errors for patient", pat, requestError)
                     recoveryLogItem.requestError = requestError
-                    recoveryLogItem.status = "Erreur : " +  _.map(requestError, err => err).join(", ")
+                    recoveryLogItem.status = "Erreur : " +  _.map(requestError, err => this.localize(err, err, this.language)).join(", ")
                     return Promise.resolve(pat)
                 }
             }
@@ -730,8 +732,8 @@
                 //!_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
                 _.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.sendSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
 
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-ssin-error", "mhm-patient-io-error") : null : null
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? !_.get(this.sendSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-ssin-error", "mhm-patient-io-membership-error") : null : null
 
                return error
             }
@@ -744,6 +746,10 @@
 
             _getLogReport(){
                this.exportToCsv()
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
             exportToCsv() {
