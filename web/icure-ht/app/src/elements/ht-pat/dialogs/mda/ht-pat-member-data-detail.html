@@ -554,7 +554,7 @@
                                 medicalHouse: {
                                     nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" "),
                                     name: null,
-                                    type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" "),
+                                    type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" ") || this._getFlatRateType( _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" ")),
                                     startDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:start"), 'attributeValues', []).join(" "),
                                     endDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:end"), 'attributeValues', []).join(" ")
                                 }
@@ -761,6 +761,14 @@
 
             _isSpecialist(){
                 return !!(_.get(this.hcp, 'nihii', null) && _.startsWith(_.get(this.hcp, 'nihii', null), "1", 0) && _.size(_.get(this.hcp, 'nihii', null)) === 11 && (_.get(this.hcp, 'nihii', null).substr(_.size(_.get(this.hcp, 'nihii', null)) - 3) >= 10))
+            }
+
+            _getFlatRateType(nihii){
+                const m = _.size(nihii) === 11 && nihii.substr(8, 1) === "1" ? "M" : ""
+                const k = _.size(nihii) === 11 && nihii.substr(9, 1) === "1" ? "K" : ""
+                const i = _.size(nihii) === 11 && nihii.substr(10, 1) === "1" ? "I" : ""
+
+                return m+''+k+''+i
             }
 
         }
