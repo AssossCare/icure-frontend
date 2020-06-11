@@ -143,10 +143,7 @@
                     <div class="mhm-person-container">
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
                         <div class="mhm-person-container-content">
-                            <div>Patient à reprendre [[numTodo]] de [[numTotal]] patients avec contract MM </div>
-<!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecover)]]">-->
-<!--                                <paper-button class="button button&#45;&#45;save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>-->
-<!--                            </template>-->
+                            <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contract MM </div>
                             <template is="dom-if" if="[[isLoading]]">
                                 <div>Chargement en cours</div>
                             </template>
@@ -166,7 +163,6 @@
                                     </template>
                                 </template>
                             </template>
-<!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
                         </div>
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-rep-log', 'Log', language)]]</div>
                         <div class="mhm-log-container-content">
@@ -175,7 +171,6 @@
                                     <div>[[logitem.timestamp]]: [[logitem.patient]] --> [[logitem.status]]</div>
                                 </div>
                             </template>
-                            <!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
                         </div>
                     </div>
                 </div>
