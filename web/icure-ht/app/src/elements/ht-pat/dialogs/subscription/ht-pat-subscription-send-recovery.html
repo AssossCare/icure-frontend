@@ -634,7 +634,7 @@
                             {
                                 mhc.mmNihii = _.get(this.hcp, 'nihii', null)
                                 mhc.signatureType = _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                                mhc.statuc = 1 << 1
+                                mhc.status = 1 << 1
                                 pat.medicalHouseContracts = []
                                 pat.medicalHouseContracts.push(mhc)
 
