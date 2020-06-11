@@ -143,7 +143,7 @@
                     <div class="mhm-person-container">
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
                         <div class="mhm-person-container-content">
-                            <div>Patient à reprendre [[numTodo]] de patients avec contract MM [[numTotal]]</div>
+                            <div>Patient à reprendre [[numTodo]] de [[numTotal]] patients avec contract MM </div>
 <!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecover)]]">-->
 <!--                                <paper-button class="button button&#45;&#45;save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>-->
 <!--                            </template>-->
@@ -157,7 +157,9 @@
                             <template is="dom-if" if="[[!isLoading]]">
                                 <template is="dom-if" if="[[!isRunning]]">
                                     <template is="dom-if" if="[[isValidDate]]">
-                                        <div>Prêt pour lancer reprise.</div>
+                                        <template is="dom-if" if="[[!hasRunned]]">
+                                            <div>Prêt pour lancer reprise.</div>
+                                        </template>
                                     </template>
                                     <template is="dom-if" if="[[!isValidDate]]">
                                         <div>invalid date to run</div>
