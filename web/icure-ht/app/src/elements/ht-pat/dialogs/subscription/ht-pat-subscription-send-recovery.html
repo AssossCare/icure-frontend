@@ -135,28 +135,39 @@
             <div class="request-container">
                 <div class="mhm-sub-container">
                     <div class="mhm-person-container">
-                        <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
                         <div class="mhm-person-container-content">
-                            <div>Patients to recovery [[numTodo]] of [[numTotal]]</div>
+                            <div>Patient à reprendre [[numTodo]] de patients avec contract MM [[numTotal]]</div>
 <!--                            <template is="dom-if" if="[[_hasTodo(patientsToRecover)]]">-->
 <!--                                <paper-button class="button button&#45;&#45;save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Send recovery',language)]]</paper-button>-->
 <!--                            </template>-->
                             <template is="dom-if" if="[[isLoading]]">
-                                <div>loading</div>
+                                <div>Chargement en cours</div>
                             </template>
                             <template is="dom-if" if="[[isRunning]]">
-                                    <div>running</div>
-                                    <div>Processing patient : [[curPat]]</div>
+                                    <div>Reprise en cours ...</div>
+                                    <div>Patient en cours: [[curPat]]</div>
                             </template>
-                            <template is="dom-if" if="[[!isRunning]]">
-                                <template is="dom-if" if="[[isValidDate]]">
-                                    <div>ok to run</div>
-                                </template>
-                                <template is="dom-if" if="[[!isValidDate]]">
-                                    <div>invalid date to run</div>
+                            <template is="dom-if" if="[[!isLoading]]">
+                                <template is="dom-if" if="[[!isRunning]]">
+                                    <template is="dom-if" if="[[isValidDate]]">
+                                        <div>Prêt pour lancer reprise.</div>
+                                    </template>
+                                    <template is="dom-if" if="[[!isValidDate]]">
+                                        <div>invalid date to run</div>
+                                    </template>
                                 </template>
                             </template>
-                            <paper-button class="button button--save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>
+<!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
+                        </div>
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-rep-log', 'Log', language)]]</div>
+                        <div class="mhm-person-container-content">
+                            <template is="dom-repeat" items="[[recoveryLog]]" as="logitem">
+                                <div>
+                                    <div>Log: [[logitem.patient]]</div>
+                                </div>
+                            </template>
+                            <!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
                         </div>
                     </div>
                 </div>
@@ -293,6 +304,10 @@
                     curPat:{
                         type: Object,
                         value: null
+                    },
+                    recoveryLog:{
+                        type: Array,
+                        value: []
                     }
                 };
             }
@@ -328,6 +343,7 @@
                 this.set('isRunning', false)
                 this.set('recoveredPatients', [])
                 this.set('patientsToRecover', [])
+                this.set('recoveryLog', [])
                 //TODO DEFINE fixed dates for start and end of recovery
                 this.dateRecoveryStart = Date.parse("2020-06-01")
                 this.dateRecoveryEnd = Date.parse("2020-07-01")
@@ -362,7 +378,8 @@
             }
 
             cleanData(data){
-                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
+                return _.trim(data).replace(/[^\d]/gmi,"")
+                //return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
             }
 
             _calculateSubscriptionStartDate(){
@@ -395,9 +412,15 @@
                     .then(hcp => this.set("hcp",hcp))
                     .then(() => this._getPatientsByHcp(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
                     .then(myPatients => {
+                        const patientSendLimit = _.trim(_.trim(_.get(document,"location.href")).match(/patientSendLimit=([^&#]*)/gi)).split("=").pop()
+                        console.log("url parametes patientSendLimit", patientSendLimit)
+
 //                        const recoveredPatients = myPatients.filter(pat => this._patHasRunningSubscription(pat) && this._patRecoveryDone(pat));
                         const recoveredPatients = myPatients.filter(pat => this._patRecoveryDone(pat));
-                        const patientsToRecover = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
+                        let patientsToRecover = myPatients.filter(pat => this._patHasRunningSubscription(pat) && !this._patRecoveryDone(pat));
+
+                        if(!!_.trim(patientSendLimit)) patientsToRecover = patientsToRecover.slice(0, parseInt(patientSendLimit))
+
                         this.set("recoveredPatients", recoveredPatients);
                         this.set("patientsToRecover", patientsToRecover);
                         console.log("recoveredPatients", recoveredPatients)
@@ -407,6 +430,8 @@
 
             _sendRecovery(){
                 this.set("isRunning", true);
+                this.set("recoveryLog", []);
+
                 //TODO remove : limit patients
                 if(_.size(this.patientsToRecover) > 3){
                     this.patientsToRecover = this.patientsToRecover.slice(0, 50)
@@ -417,13 +442,18 @@
                     prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
                     .then(pat =>{
                         this.curPat = pat.lastName + " " + pat.firstName
-                        return this._sendSubscription(pat).then(res => this._sleep(5000))
+                        let recoveryLogItem = {patient: pat.lastName + " " + pat.firstName}
+                        this.push("recoveryLog", recoveryLogItem)
+                        return this._sendSubscription(pat, recoveryLogItem).then(res => this._sleep(5000))
                     }).then(x => _.concat(promiseCarrier,x))
                         .catch(() => _.concat(promiseCarrier,null)))
 
                 })
 
                 prom.then(res => {
+                    //this.set("recoveryLog", this.patientsToRecover.map(pat => pat.recoveryLogItem))
+                    console.log("recoveryLog", this.recoveryLog)
+                    //this._loadData()
                     this.set("isRunning", false);
                 })
             }
@@ -495,13 +525,17 @@
             _getPatientsByHcp( hcpId ) {
 
                 const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
+                const patientNameStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientNameStartsWith=([^&#]*)/gi)).split("=").pop()
+
+
+                console.log("url parametes", patientIdStartsWith, patientNameStartsWith)
 
                 return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
                     .then(pl => {
                         pl.rows = _
                             .chain(pl.rows)
-                            .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:"labResultsAndProtocolsGotReImported"})))
                             .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
+                            .filter(pat => !_.trim(patientNameStartsWith) ? true : _.trim(_.get(pat,"lastName")).toLowerCase().startsWith(patientNameStartsWith.toLowerCase()))
                             .value()
                         return {
                             rows:pl.rows,
@@ -540,7 +574,7 @@
                 return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
             }
 
-            _sendSubscription(pat){
+            _sendSubscription(pat, recoveryLogItem){
                 this.set("sendSubscriptionRequest", this._makeSubscriptionRequest(pat))
                 console.log(this.sendSubscriptionRequest)
                 //TODO add the errors to an array
@@ -567,73 +601,82 @@
                         !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
                         !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
                         .then(mhmResponse => {
-                            console.log(mhmResponse)
+                            console.log("sendSubscriptionLog ", mhmResponse)
                             //TODO, create an array of responses
                             this.set('sendSubscriptionResponse', mhmResponse)
-                            //TODO: update existing MHC instead
+
                             const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')[0]
                             mhc.contractId = _.get(mhmResponse, 'reference', null)
+                            recoveryLogItem.sendSubscriptionRespone = mhmResponse
                             if(!mhc.contractId){
-                                console.log("no contractid for", pat)
+                                console.log("sendSubscriptionLog no contractid for", pat)
+                                recoveryLogItem.sendSubscriptionResponseErrpr = "no contractid"
+                                //TODO: extract error
                             }
-                            mhc.mmNihii = _.get(this.hcp, 'nihii', null)
-                            mhc.signatureType = _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
-                            mhc.statuc = 1 << 1
-                            pat.medicalHouseContracts = []
-                            pat.medicalHouseContracts.push(mhc)
+                            else
+                            {
+                                mhc.mmNihii = _.get(this.hcp, 'nihii', null)
+                                mhc.signatureType = _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
+                                mhc.statuc = 1 << 1
+                                pat.medicalHouseContracts = []
+                                pat.medicalHouseContracts.push(mhc)
 
-                            return Promise.all([
-                                this.api.receipticc.createReceipt({
-                                    documentId: _.get(mhmResponse, 'reference', null),
-                                    references: Object.values(mhmResponse.commonOutput),
-                                    category: "subscription",
-                                    subCategory:"xades"
-                                }),
-                                this.api.receipticc.createReceipt({
-                                    documentId: _.get(mhmResponse, 'reference', null),
-                                    references: Object.values(mhmResponse.commonOutput),
-                                    category: "subscription",
-                                    subCategory:"soapResponse"
-                                }),
-                                this.api.receipticc.createReceipt({
-                                    documentId: _.get(mhmResponse, 'reference', null),
-                                    references: Object.values(mhmResponse.commonOutput),
-                                    category: "subscription",
-                                    subCategory:"transactionRequest"
-                                }),
-                                this.api.receipticc.createReceipt({
-                                    documentId: _.get(mhmResponse, 'reference', null),
-                                    references: Object.values(mhmResponse.commonOutput),
-                                    category: "subscription",
-                                    subCategory:"transactionResponse"
+                                return Promise.all([
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"xades"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"soapResponse"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionRequest"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"transactionResponse"
+                                    })
+                                ]).then(([xades,soap,request,response]) => Promise.all([
+                                    _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
+                                    _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                                    _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                                    _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                ])).then(([xades,soap,request,response]) => {
+                                    const mhc = pat.medicalHouseContracts.find(m => m.contractId=== _.get(mhmResponse, 'reference', null))
+                                    if(!_.get(mhc,'receipts',false))mhc.receipts={}
+                                    if(_.get(xades,"id",false))
+                                        mhc.receipts.xadesCreation=xades.id
+                                    if(_.get(soap,"id",false))
+                                        mhc.receipts.soapCreation=soap.id
+                                    if(_.get(request,"id",false))
+                                        mhc.receipts.requestCreation=request.id
+                                    if(_.get(response,"id",false))
+                                        mhc.receipts.responseCreation=response.id
+                                }).finally(()=>{
+                                    recoveryLogItem.requestSucceeded = true
+                                    return this._updatePatient(pat)
                                 })
-                            ]).then(([xades,soap,request,response]) => Promise.all([
-                                _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
-                                _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
-                                _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
-                            ])).then(([xades,soap,request,response]) => {
-                                const mhc = pat.medicalHouseContracts.find(m => m.contractId=== _.get(mhmResponse, 'reference', null))
-                                if(!_.get(mhc,'receipts',false))mhc.receipts={}
-                                if(_.get(xades,"id",false))
-                                    mhc.receipts.xadesCreation=xades.id
-                                if(_.get(soap,"id",false))
-                                    mhc.receipts.soapCreation=soap.id
-                                if(_.get(request,"id",false))
-                                    mhc.receipts.requestCreation=request.id
-                                if(_.get(response,"id",false))
-                                    mhc.receipts.responseCreation=response.id
-                            }).finally(()=>{
-                                return this._updatePatient(pat)
-                            })
+                            }
                             //return this._updatePatient(pat)
-                        }).catch(() => {
-                            console.log("error for patient", pat)
-                            return Promise.resolve(null)
+                        }).catch((error) => {
+                            console.log("sendSubscriptionLog error for patient", pat, error)
+                            recoveryLogItem.sendSubscriptionError = error
+                            return Promise.resolve(pat)
                         })
                 } else {
-                    console.log("pre-send errors for patient", pat, requestError)
-                    return Promise.resolve(null)
+                    console.log("sendSubscriptionLog pre-send errors for patient", pat, requestError)
+                    recoveryLogItem.requestError = requestError
+                    return Promise.resolve(pat)
                 }
             }
 
@@ -662,6 +705,7 @@
             }
 
             _updatePatient(pat){
+                console.log("sendSubscriptionLog updating patient", pat)
                 return this.api.patient().modifyPatientWithUser(this.user, pat)
                     .then(pat => this.api.register(pat, 'patient'))
             }
