@@ -43,7 +43,7 @@
             }
 
             .request-container{
-                height: 350px;
+                height: auto;
                 width: auto;
             }
 
@@ -212,7 +212,7 @@
                                     </div>
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <span class="headerLabel">[[localize('mhm-sub-actu-start-date', 'Actual start date', language)]]: &nbsp;</span> [[_formatDate(sendSubscriptionRequest.realStartSubscriptionDate)]]
+                                            <span class="headerLabel">[[localize('mhm-sub-start-coverage', 'Actual start date', language)]]: &nbsp;</span> [[_formatDate(sendSubscriptionRequest.realStartSubscriptionDate)]]
                                         </div>
                                     </div>
                                 </div>
@@ -256,6 +256,21 @@
                             <div class="mhm-container-error p4">
                                 <template is="dom-repeat" items="[[sendSubscriptionResponse.errors]]" as="error">
                                     <div>- [[_getMcnErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.genericErrors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[sendSubscriptionResponse.genericErrors]]" as="error">
+                                    <div>- [[_getGenericErrorMessage(error)]]</div>
                                 </template>
                             </div>
                         </div>
@@ -488,15 +503,22 @@
                                         references: Object.values(mhmResponse.commonOutput),
                                         category: "subscription",
                                         subCategory:"transactionResponse"
+                                    }),
+                                    this.api.receipticc.createReceipt({
+                                        documentId: _.get(mhmResponse, 'reference', null),
+                                        references: Object.values(mhmResponse.commonOutput),
+                                        category: "subscription",
+                                        subCategory:"soapRequest"
                                     })
                                 ])
-                                    .then(([xades,soap,request,response]) => Promise.all([
+                                    .then(([xades,soap,request,response, soapRequest]) => Promise.all([
                                         _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
                                         _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
                                         _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                        _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                        _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response),
+                                        _.get(soapRequest,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapRequest",false) && this.api.receipt().setAttachment(soapRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapRequest)))) || Promise.resolve(soapRequest)
                                     ]))
-                                    .then(([xades,soap,request,response]) => {
+                                    .then(([xades,soap,request,response, soapRequest]) => {
                                         const mhc=this.patient.medicalHouseContracts.find(m => m.contractId=== _.get(mhmResponse, 'reference', null))
                                         if(!_.get(mhc,'receipts',false))mhc.receipts={}
                                         if(_.get(xades,"id",false))
@@ -507,6 +529,8 @@
                                             mhc.receipts.requestCreation=request.id
                                         if(_.get(response,"id",false))
                                             mhc.receipts.responseCreation=response.id
+                                        if(_.get(soapRequest,"id",false))
+                                            mhc.receipts.soapRequestCreation=soapRequest.id
                                     })
                                     .finally(()=>{
                                         this._updatePatient()
@@ -607,6 +631,10 @@
                 if(_.get(e, 'target', null)){
                     this.set('sendSubscriptionRequest.isTestForNotify', _.get(e, 'target.checked', false))
                 }
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
         }

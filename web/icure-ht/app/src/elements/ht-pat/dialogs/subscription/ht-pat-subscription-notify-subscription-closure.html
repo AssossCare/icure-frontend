@@ -42,7 +42,7 @@
             }
 
             .request-container{
-                height: 430px;
+                height: auto;
                 width: auto;
             }
 
@@ -368,7 +368,25 @@
                     </div>
                 </div>
             </template>
+
+            <template is="dom-if" if="[[_isRequestError(notifySubscriptionClosureResponse.genericErrors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[notifySubscriptionClosureResponse.genericErrors]]" as="error">
+                                    <div>- [[_getGenericErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
         </div>
+
+
 
     </template>
     <script>
@@ -544,14 +562,14 @@
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureJustification', null),
                         _.get(this.notifySubscriptionClosureRequest, 'subscriptionClosureType', null),
                         this.cleanData( _.get(this.notifySubscriptionClosureRequest, 'patientSsin', null)),
-                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                        !_.get(this.hcp, "nihii", null) ?this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
+                        !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ? this.cleanData(_.get(this.notifySubscriptionClosureRequest, 'patientIo', null)) : null,
+                        !_.get(this.notifySubscriptionClosureRequest, 'patientSsin', null) ?this.cleanData(_.get(this.notifySubscriptionClosureRequest, 'patientIoMembership', null)) : null
                     ).then(notifySubscriptionClosureResponse => {
                         console.log(notifySubscriptionClosureResponse)
                         this.set('notifySubscriptionClosureResponse', notifySubscriptionClosureResponse)
 
                         if(_.get(notifySubscriptionClosureResponse, 'reference', null)){
-                            let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.notifySubscriptionClosureRequest, 'reference', null))
+                            let mhc = _.get(this.patient,'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.notifySubscriptionClosureRequest, 'subscriptionReference', null))
 
                             mhc.endOfContract = _.parseInt(this.api.moment(_.get(this.notifySubscriptionClosureRequest, 'subscriptionEndDate', null)).format('YYYYMMDD'))
                             mhc.endOfCoverage = _.get(notifySubscriptionClosureResponse, 'subscriptionsEndDate', null)
@@ -582,15 +600,22 @@
                                     references: Object.values(notifySubscriptionClosureResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"transactionResponse"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(notifySubscriptionClosureResponse, 'reference', null),
+                                    references: Object.values(notifySubscriptionClosureResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"soapRequest"
                                 })
                             ])
-                            .then(([xades,soap,request,response]) => Promise.all([
+                            .then(([xades,soap,request,response, soapRequest]) => Promise.all([
                                 _.get(xades,"id",false) && _.get(notifySubscriptionClosureResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(notifySubscriptionClosureResponse.xades))))) || Promise.resolve(xades),
                                 _.get(soap,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
                                 _.get(request,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                _.get(response,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                _.get(response,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response),
+                                _.get(soapRequest,"id",false) && _.get(notifySubscriptionClosureResponse,"mycarenetConversation.soapRequest",false) && this.api.receipt().setAttachment(soapRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(notifySubscriptionClosureResponse.mycarenetConversation.soapRequest)))) || Promise.resolve(soapRequest)
                             ]))
-                            .then(([xades,soap,request,response]) => {
+                            .then(([xades,soap,request,response, soapRequest]) => {
                                 if(!_.get(mhc,'receipts',false))mhc.receipts={}
                                 if(_.get(xades,"id",false))
                                     mhc.receipts.xadesClosure=xades.id
@@ -600,6 +625,8 @@
                                     mhc.receipts.requestClosure=request.id
                                 if(_.get(response,"id",false))
                                     mhc.receipts.responseClosure=response.id
+                                if(_.get(soapRequest,"id",false))
+                                    mhc.receipts.soapRequestClosure=soapRequest.id
                             }).finally(()=>{
                                 this._updatePatient()
                             })
@@ -715,6 +742,10 @@
 
             _getMcnErrorMessage(errorMessage){
                 return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+            }
+
+            _isClosure(mhc){
+                return !!(_.get(mhc, 'status', null) & (1 << 3))
             }
 
 

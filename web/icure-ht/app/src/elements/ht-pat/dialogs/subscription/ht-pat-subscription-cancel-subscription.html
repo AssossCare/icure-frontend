@@ -42,7 +42,7 @@
             }
 
             .request-container{
-                height: 300px;
+                height: auto;
                 width: auto;
             }
 
@@ -337,6 +337,21 @@
                     </div>
                 </div>
             </template>
+
+            <template is="dom-if" if="[[_isRequestError(cancelSubscriptionResponse.genericErrors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[cancelSubscriptionResponse.genericErrors]]" as="error">
+                                    <div>- [[_getGenericErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
 
     </template>
@@ -477,8 +492,8 @@
                         _.get(this.cancelSubscriptionRequest, 'patientGender', null),
                         _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
                         this.cleanData( _.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
-                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                        !_.get(this.hcp, "nihii", null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null
+                        !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIo', null)) : null,
+                        !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null)) : null
                     ).then(cancelSubscriptionResponse => {
                         console.log(cancelSubscriptionResponse)
                         this.set('cancelSubscriptionResponse', cancelSubscriptionResponse)
@@ -491,37 +506,44 @@
 
                             Promise.all([
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"xades"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"soapResponse"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"transactionRequest"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"transactionResponse"
+                                }),
+                                this.api.receipticc.createReceipt({
+                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    references: Object.values(cancelSubscriptionResponse.commonOutput),
+                                    category: "subscription",
+                                    subCategory:"soapRequest"
                                 })
                             ])
-                            .then(([xades,soap,request,response]) => Promise.all([
+                            .then(([xades,soap,request,response, soapRequest]) => Promise.all([
                                 _.get(xades,"id",false) && _.get(cancelSubscriptionResponse,"xades",false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(cancelSubscriptionResponse.xades))))) || Promise.resolve(xades),
                                 _.get(soap,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
                                 _.get(request,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
-                                _.get(response,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response)
+                                _.get(response,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response),
+                                _.get(soapRequest,"id",false) && _.get(cancelSubscriptionResponse,"mycarenetConversation.soapRequest",false) && this.api.receipt().setAttachment(soapRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapRequest)))) || Promise.resolve(soapRequest)
                             ]))
-                            .then(([xades,soap,request,response]) => {
+                            .then(([xades,soap,request,response, soapRequest]) => {
                                 if(!_.get(mhc,'receipts',false))mhc.receipts={}
                                 if(_.get(xades,"id",false))
                                     mhc.receipts.xadesCancel=xades.id
@@ -531,6 +553,8 @@
                                     mhc.receipts.requestCancel=request.id
                                 if(_.get(response,"id",false))
                                     mhc.receipts.responseCancel=response.id
+                                if(_.get(soapRequest,"id",false))
+                                    mhc.receipts.soapRequestCancel=soapRequest.id
                             }).finally(()=>{
                                 this._updatePatient()
                             })
@@ -615,6 +639,10 @@
 
             _getMcnErrorMessage(errorMessage){
                 return _.get(errorMessage, "code", null)+' - '+(this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
         }

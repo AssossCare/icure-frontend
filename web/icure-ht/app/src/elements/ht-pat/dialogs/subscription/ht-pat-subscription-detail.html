@@ -89,7 +89,7 @@
             }
 
             .medical-house-result-container{
-                height: 90px;
+                height: auto;
                 width: auto;
             }
 
@@ -323,7 +323,7 @@
                                                                        <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
                                                                        <paper-listbox slot="dropdown-content">
                                                                            <template is="dom-repeat" items="[[mhc.receiptsList]]" as="rc">
-                                                                               <paper-item id="[[rc.id]]" on-tap="_download">[[localize(rc.descr,rc.descr,language)]]</paper-item>
+                                                                               <paper-item id="[[rc.id]]" on-tap="_download">[[_localizeReceipts(rc.descr)]]</paper-item>
                                                                            </template>
                                                                        </paper-listbox>
                                                                    </paper-menu-button>
@@ -352,7 +352,7 @@
                                                                        <span class="headerLabel">[[localize('mhm-sub-sign-type', 'Signature type', language)]]: &nbsp;</span> [[mhc.hrSignatureType]]
                                                                    </div>
                                                                    <div class="headerInfoField">
-                                                                       <span class="headerLabel">[[localize('mhm-sub-trial', 'Trial period', language)]]: &nbsp;</span>
+                                                                       <span class="headerLabel">[[localize('mhm-sub-trial', 'Trial period', language)]]: &nbsp;</span> [[_isTrialPeriod(mhc)]]
                                                                    </div>
                                                                    <div class="headerInfoField">
                                                                        <span class="headerLabel">[[localize('mhm-flatrate-type', 'Flatrate type', language)]]: &nbsp;</span> [[mhc.hrFlatRateType]]
@@ -696,6 +696,22 @@
                         return null
                     })
                     .finally(() => a.remove())
+            }
+
+            _isTrialPeriod(mhc){
+                const startOfContract = _.get(mhc, 'startOfContract', null)
+                const startOfCoverage = _.get(mhc, 'startOfCoverage', null)
+                const isTrialPeriod = startOfContract && startOfCoverage ? this.api.moment(this.api.moment(startOfContract).startOf("month").add(2, 'month').format('YYYY-MM-DD')).isBefore(this.api.moment(startOfCoverage).format('YYYY-MM-DD')) : null
+
+                return isTrialPeriod ? this.localize('mhm-yes', 'Yes', this.language) : this.localize('mhm-no', 'No', this.language)
+            }
+
+            _localizeReceipts(descr){
+                return this.localize('mhm-'+descr, descr, this.language)
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
 
