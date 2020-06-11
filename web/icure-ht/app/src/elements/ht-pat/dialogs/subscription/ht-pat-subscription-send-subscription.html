@@ -262,6 +262,21 @@
                     </div>
                 </div>
             </template>
+
+            <template is="dom-if" if="[[_isRequestError(sendSubscriptionResponse.genericErrors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[sendSubscriptionResponse.genericErrors]]" as="error">
+                                    <div>- [[_getGenericErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
 
     </template>
@@ -607,6 +622,10 @@
                 if(_.get(e, 'target', null)){
                     this.set('sendSubscriptionRequest.isTestForNotify', _.get(e, 'target.checked', false))
                 }
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
         }

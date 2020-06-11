@@ -323,7 +323,7 @@
                                                                        <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
                                                                        <paper-listbox slot="dropdown-content">
                                                                            <template is="dom-repeat" items="[[mhc.receiptsList]]" as="rc">
-                                                                               <paper-item id="[[rc.id]]" on-tap="_download">[[localize(rc.descr,rc.descr,language)]]</paper-item>
+                                                                               <paper-item id="[[rc.id]]" on-tap="_download">[[_localizeReceipts(rc.descr)]]</paper-item>
                                                                            </template>
                                                                        </paper-listbox>
                                                                    </paper-menu-button>
@@ -704,6 +704,14 @@
                 const isTrialPeriod = startOfContract && startOfCoverage ? this.api.moment(this.api.moment(startOfContract).startOf("month").add(2, 'month').format('YYYY-MM-DD')).isBefore(this.api.moment(startOfCoverage).format('YYYY-MM-DD')) : null
 
                 return isTrialPeriod ? this.localize('mhm-yes', 'Yes', this.language) : this.localize('mhm-no', 'No', this.language)
+            }
+
+            _localizeReceipts(descr){
+                return this.localize('mhm-'+descr, descr, this.language)
+            }
+
+            _getGenericErrorMessage(e){
+                return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
             }
 
 
