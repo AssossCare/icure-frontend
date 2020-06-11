@@ -43,19 +43,19 @@
             }
 
             .request-container{
-                height: 300px;
+                height: 100%;
                 width: auto;
             }
 
             .mhm-sub-container{
-                height: auto;
+                height: 100%;
                 width: auto;
                 margin: 10px;
                 border: 1px solid var(--app-background-color-dark);
             }
 
             .mhm-person-container{
-                height: auto;
+                height: 100%;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
             }
@@ -121,6 +121,12 @@
                 padding: 5px;
             }
 
+            .mhm-log-container-content{
+                padding: 5px;
+                overflow: auto;
+                height: calc(100% - 100px);
+            }
+
             .w300{
                 width: 300px;
             }
@@ -161,7 +167,7 @@
 <!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
                         </div>
                         <div class="headerMasterTitle headerLabel">[[localize('mhm-rep-log', 'Log', language)]]</div>
-                        <div class="mhm-person-container-content">
+                        <div class="mhm-log-container-content">
                             <template is="dom-repeat" items="[[recoveryLog]]" as="logitem">
                                 <div>
                                     <div>[[logitem.timestamp]]: [[logitem.patient]] --> [[logitem.status]]</div>
