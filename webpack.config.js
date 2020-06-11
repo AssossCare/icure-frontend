@@ -72,6 +72,8 @@ module.exports = {
         new OfflinePlugin({
             // Unless specified in webpack's configuration itself
             publicPath: '/',
+            // Handy for heavy & long processes like migration (default values should be 30)
+            // autoUpdate: 1000*60*3000,
             autoUpdate: 1000*60*30,
             appShell: '/',
             externals: [
@@ -99,6 +101,8 @@ module.exports = {
     ],
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
+        // Handy for heavy & long processes like migration (default values should be true)
+        // liveReload: false,
         compress: true,
         overlay: true,
         port: 9000,

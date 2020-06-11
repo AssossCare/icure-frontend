@@ -453,21 +453,30 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     </div>
                     <div class="hub-submenu-container">
                         <ht-spinner active="[[isLoading]]"></ht-spinner>
-                       <paper-button on-tap="doPatientTelFix" class="button" >Patient tel fix</paper-button>
-                       <paper-button on-tap="doDocSfkFix" class="button" >Lab results fix</paper-button>
+                       <paper-button on-tap="doPatientTelFix" class="button" >1. Patient tel fix</paper-button>
+                       <paper-button on-tap="doDocSfkFix" class="button" >2. Lab results fix (import as svc list)</paper-button>
+                       <paper-button on-tap="doLabResultAndProtocolReconcile" class="button" >3. Lab results fix (reconcile P/C)</paper-button>
                     </div>
                 </div>
                 <div class="mig-menu-view">
-                    <!-- content here -->
+                    
                     <template is="dom-if" if="[[patientTelFix]]">
                         <br /><paper-button on-tap="startPatientTelFix" class="button button--save" >RUN NOW</paper-button>
                         <br /><div>Processing [[posPat]] of [[numPats]]</div>
                     </template>
+                    
                     <template is="dom-if" if="[[docSfkFix]]">
                         <br /><paper-button on-tap="startDocSfkFix_v2" class="button button--save" >RUN NOW</paper-button>
                         <br /><div><b>Total patients: [[numFix]]</b><br />Processing patient [[posFix]]/[[numFix]] : [[patientData]]</div>
                         <br /><div><b>Total documents: [[totalDocumentCount]]</b><br />Processing document [[processedDocumentCount]]/[[totalDocumentCount]] : [[documentData]]</div>
                     </template>
+                    
+                    <template is="dom-if" if="[[labResultAndProtocolReconcile]]">
+                        <br /><paper-button on-tap="startLabResultAndProtocolReconcileFix_v2" class="button button--save" >RUN NOW</paper-button>
+                        <br /><div><b>Total patients: [[numFix]]</b><br />Processing patient [[posFix]]/[[numFix]] : [[patientData]]</div>
+                        <br /><div><b>Total contacts with lab result / protocols to reconcile: [[totalDocumentCount]]</b><br />Processing contact [[processedDocumentCount]]/[[totalDocumentCount]] : [[documentData]]</div>
+                    </template>
+                    
                 </div>
             </div>
             <div class="buttons">
@@ -499,6 +508,10 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 value: false
             },
             docSfkFixFix:{
+                type: Boolean,
+                value: false
+            },
+            labResultAndProtocolReconcile:{
                 type: Boolean,
                 value: false
             },
@@ -553,11 +566,19 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
     doPatientTelFix() {
         this.set('patientTelFix', true)
         this.set('docSfkFix', false)
+        this.set('labResultAndProtocolReconcile', false)
     }
 
     doDocSfkFix() {
         this.set('patientTelFix', false)
         this.set('docSfkFix', true)
+        this.set('labResultAndProtocolReconcile', false)
+    }
+
+    doLabResultAndProtocolReconcile() {
+        this.set('patientTelFix', false)
+        this.set('docSfkFix', false)
+        this.set('labResultAndProtocolReconcile', true)
     }
 
     startPatientTelFix() {
@@ -843,18 +864,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     _importLabResultOrProtocolAsSvcCollection_v2(patient, contact, document, documentType, documentDescription, documentDate) {
 
         const promResolve = Promise.resolve()
@@ -910,32 +919,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-    _getPatientsByHcp_v2( hcpId ) {
-
-        // Todo: remove this
-        // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["2708da20-597e-4c86-88da-20597e8c8637", "e61880b2-d802-40fc-9880-b2d80240fc8c"]}))
-
-        const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
-
-        return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
-            .then(pl => {
-                pl.rows = _
-                    .chain(pl.rows)
-                    .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:"labResultsAndProtocolsGotReImported"})))
-                    .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
-                    .value()
-                return {
-                    rows:pl.rows,
-                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                    done: !pl.nextKeyPair
-                }
-            })
-            .catch(()=>null)
-        )||[];
-
-    }
-
     startDocSfkFix_v2() {
 
         this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
@@ -943,7 +926,7 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
         return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
             .then(hcp => this.set("hcp",hcp))
-            .then(() => this._getPatientsByHcp_v2(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id",""))))
+            .then(() => this._getPatientsByHcp_v2(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id","")), "labResultsAndProtocolsGotReImported"))
             .then(myPatients => {
 
                 let promPat = Promise.resolve([])
@@ -988,6 +971,147 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                 .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
 
                         }))
+
+                })
+
+                return promPat
+
+            })
+            .then(promPat => {})
+
+    }
+
+    _getPatContactsByProtocols(patientObject) {
+
+        const promResolve = Promise.resolve();
+
+        return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), patientObject )
+            .then(patientContacts => _
+                .chain(patientContacts)
+                .map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
+                    ctcId: _.trim(_.get(ctc,"id")),
+                    protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
+                    formId: _.trim(_.get(ctc,"subContacts[0].formId")),
+                    complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
+                    totalSubCtc: _.size(_.get(ctc,"subContacts"))
+                })
+                .compact()
+                .reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
+                .value()
+            )
+            .catch(e=>{ console.log("ERROR _getPatContacts", e); return promResolve; })
+
+    }
+
+    _getPatientsByHcp_v2( hcpId, tagCodeToExclude ) {
+
+        // Todo: remove this
+        return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["5a7d605a-f3e2-43aa-a91b-84618113b624"]}))
+
+        const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
+
+        return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+            .then(pl => {
+                pl.rows = _
+                    .chain(pl.rows)
+                    .filter(pat => !_.size(_.find(_.get(pat,"tags",[]), {code:tagCodeToExclude})))
+                    .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
+                    .value()
+                return {
+                    rows:pl.rows,
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }
+            })
+            .catch(()=>null)
+        )||[];
+
+    }
+
+
+
+
+
+    startLabResultAndProtocolReconcileFix_v2() {
+
+        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+        this.api.setPreventLogging();
+
+        return this.api.hcparty().getHealthcareParty(_.get(this,"user.healthcarePartyId",""))
+            .then(hcp => this.set("hcp",hcp))
+            .then(() => this._getPatientsByHcp_v2(_.trim(_.get(this,"hcp.parentId","")) ? _.trim(_.get(this,"hcp.parentId","")) : _.trim(_.get(this,"hcp.id","")), "labResultsAndProtocolsGotReconciled"))
+            .then(myPatients => {
+
+                let promPat = Promise.resolve([])
+                let promContacts = Promise.resolve([])
+
+                this.set("numFix", _.size(myPatients))
+                this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)
+
+                _.map(myPatients, pat => {
+
+                    promPat = promPat
+                        .then(promisesCarrierPat => (this.set("patientData", _.trim(_.get(pat,"firstName")) + " " + _.trim(_.get(pat,"lastName")) + " - " +_.trim(_.get(pat,"dateOfBirth")).substring(6,8) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(4,6) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(0,4))||true) && promisesCarrierPat)
+                        .then(promisesCarrierPat => this._getPatContactsByProtocols(pat)
+                            .then(contactsByProtocols => {
+
+                                this.set("totalDocumentCount", _.size(contactsByProtocols))
+                                this.set("processedDocumentCount", 0)
+
+                                _.map(contactsByProtocols, (contacts, protocol) => {
+
+                                    promContacts = promContacts
+                                        .then(promiseCarrierContacts => {
+                                            this.set("processedDocumentCount", (parseInt(_.get(this,"processedDocumentCount",0))||0)+1)
+                                            this.set("documentData", "protocole = " + protocol)
+                                            return promiseCarrierContacts
+                                        })
+
+
+
+
+
+
+
+                                        // .then(promiseCarrierContacts => should NOT exec ? promiseCarrierContacts||[] : this._fixLabResultsProtocols_v2(pat, doc).then(x => _.concat(promiseCarrierContacts, [x])).catch(x => _.concat(promiseCarrierContacts, [null])))
+                                        .then(promiseCarrierContacts => {
+
+                                            const completeResults = _.filter(contacts, {complete:true})
+                                            const incompleteResults = _.filter(contacts, {complete:false})
+
+                                            if(_.size(contacts) > 1 && _.size(completeResults) && _.size(incompleteResults)) {
+
+                                                console.log("--------------------------------");
+                                                console.log("pat", pat);
+                                                console.log("protocol", protocol);
+                                                console.log("contacts", contacts);
+
+                                                // Todo: refaire un map avec accumulation d'un promiseCarrier sur les contactsAndFormsToDelete => boucler tout cela et do delete forms && ctc && catch / concact
+                                                // Todo: injecter ceci dans ehboxworker && msg-list && continue barvaux
+
+                                            }
+
+                                            // Todo: update this
+                                            return _.size(contacts) < 2 ? promiseCarrierContacts||[] : _.concat(promiseCarrierContacts, [null])
+
+                                        })
+
+
+
+
+
+
+                                })
+
+                                return promContacts
+                                    .then(x => _.concat(promisesCarrierPat, x))
+                                    // .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReconciled"}]})))
+                                    .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
+                                    .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+
+                            })
+                        )
 
                 })
 
