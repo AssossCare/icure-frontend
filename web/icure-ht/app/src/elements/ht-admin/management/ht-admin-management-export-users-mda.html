@@ -181,6 +181,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         ssin: _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,""),
                                         contractId: _.trim(_.get(it, "validMhc.contractId")),
                                         startOfContract: _.trim(_.get(it, "validMhc.startOfContract")),
+                                        startOfCoverage: _.trim(_.get(it, "validMhc.startOfCoverage")),
+                                        signatureType: _.trim(_.get(it, "validMhc.signatureType")),
                                         lastInvoicing : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoicing"}), "code", "")),
                                     }))
                                     .value()

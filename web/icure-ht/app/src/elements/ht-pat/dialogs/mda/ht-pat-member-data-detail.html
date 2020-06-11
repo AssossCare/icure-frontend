@@ -236,6 +236,11 @@
                 margin-right: 1%;
             }
 
+            .io{
+                width: 200px;
+                --dynamic-field-width-percent: 0!important;
+            }
+
 
         </style>
 
@@ -259,7 +264,7 @@
                                         <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-niss', 'Niss', language)]]" value="{{mdaSearch.ssin}}" required error-message="This field is required"></dynamic-text-field>
                                     </template>
                                     <template is="dom-if" if="[[!_isMdaSearchByNiss(selectedMdaConsultType)]]">
-                                        <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-mutuality', 'Mutuality', language)]]" value="{{mdaSearch.mutuality}}" required error-message="This field is required"></dynamic-text-field>
+                                        <dynamic-text-field class="w100 p4 mtm2 mw0 io" label="[[localize('mda-mutuality', 'Mutuality', language)]]" value="{{mdaSearch.mutuality}}" required error-message="This field is required"></dynamic-text-field>
                                         <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-identification-number', 'Identification number', language)]]" value="{{mdaSearch.identificationNumber}}" required error-message="This field is required"></dynamic-text-field>
                                     </template>
                                 </div>
@@ -554,7 +559,7 @@
                                 medicalHouse: {
                                     nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" "),
                                     name: null,
-                                    type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" "),
+                                    type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" ") || this._getFlatRateType( _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" ")),
                                     startDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:start"), 'attributeValues', []).join(" "),
                                     endDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:end"), 'attributeValues', []).join(" ")
                                 }
@@ -687,8 +692,8 @@
                     prom = prom.then(nihiiList =>
                         (
                             this.api.patient().checkInami(_.get(nihii, 'nihii', null))  ?
-                                _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
-                                    _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
+                                _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
+                                    _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null),this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
                                         _.get(nihii, 'type', null) === 'mm' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.medicalHouseList, 'medicalHouseList', []).find(mm => _.get(mm, 'nihii', null) === _.get(nihii, 'nihii', '')), {initialSearch: nihii}))) :
                                             Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii}))) :
                              _.get(nihii, 'type', null) === 'pha' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.pharmacyList, 'pharmacyList', []).find(pha => _.get(pha, 'authorizationNumber', null) === _.get(nihii, 'nihii', '').substr(2)), {initialSearch: nihii}))) :
@@ -724,7 +729,7 @@
             }
 
             consultMdaByMemberShip(){
-                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').unix() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
+                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
             }
 
             _selectedMdaConsultTypeChanged(){
@@ -761,6 +766,14 @@
 
             _isSpecialist(){
                 return !!(_.get(this.hcp, 'nihii', null) && _.startsWith(_.get(this.hcp, 'nihii', null), "1", 0) && _.size(_.get(this.hcp, 'nihii', null)) === 11 && (_.get(this.hcp, 'nihii', null).substr(_.size(_.get(this.hcp, 'nihii', null)) - 3) >= 10))
+            }
+
+            _getFlatRateType(nihii){
+                const m = _.size(nihii) === 11 && nihii.substr(8, 1) === "1" ? "M" : ""
+                const k = _.size(nihii) === 11 && nihii.substr(9, 1) === "1" ? "K" : ""
+                const i = _.size(nihii) === 11 && nihii.substr(10, 1) === "1" ? "I" : ""
+
+                return m+''+k+''+i
             }
 
         }
