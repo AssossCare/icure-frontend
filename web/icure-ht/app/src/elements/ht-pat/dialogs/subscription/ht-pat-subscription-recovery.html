@@ -282,6 +282,9 @@
                     <template is="dom-if" if="[[canRecovery]]">
                         <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
                     </template>
+                    <template is="dom-if" if="[[canDownload]]">
+                        <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
+                    </template>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 </div>
             </div>
@@ -371,6 +374,10 @@
                         type: Boolean,
                         value: false
                     },
+                    canDownload:{
+                        type: Boolean,
+                        value: false
+                    },
                     recoveryStatus:{
                         type: Object,
                         value: {}
@@ -388,6 +395,7 @@
 
             _reset(){
                 this.set('canRecovery', false)
+                this.set('canDownload', false)
                 this.set('recoveryStatus', {})
 
                 // this.set('isNotifySubscriptionClosure', false)
@@ -452,7 +460,9 @@
                 this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._sendRecovery()
             }
 
-           
+            _getLogReport(){
+                this.shadowRoot.querySelector("#htPatSubscriptionSendRecovery")._getLogReport()
+            }
 
             _displaySubscriptionResult(e){
                 if(_.get(e, 'detail.subscriptionResultDetail', null)){
@@ -521,7 +531,9 @@
 
             _handleRecoveryStatus(){
                 console.log("handling observer", this.recoveryStatus)
-                this.set("canRecovery", (!this.recoveryStatus.isRunning && !this.recoveryStatus.isLoading && this.recoveryStatus.hasTodo))
+                this.set("canRecovery", (!this.recoveryStatus.isRunning && !this.recoveryStatus.isLoading && this.recoveryStatus.hasTodo && !this.recoveryStatus.hasRunned))
+                this.set("canDownload", (this.recoveryStatus.hasRunned))
+                console.log("canRecovery", this.canRecovery, (!this.recoveryStatus.isRunning && !this.recoveryStatus.isLoading && this.recoveryStatus.hasTodo), "canDownload", this.canDownload)
             }
 
         }

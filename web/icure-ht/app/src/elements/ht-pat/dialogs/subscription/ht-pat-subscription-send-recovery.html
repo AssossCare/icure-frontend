@@ -164,7 +164,7 @@
                         <div class="mhm-person-container-content">
                             <template is="dom-repeat" items="[[recoveryLog]]" as="logitem">
                                 <div>
-                                    <div>Log: [[logitem.patient]]</div>
+                                    <div>[[logitem.timestamp]]: [[logitem.patient]] --> [[logitem.status]]</div>
                                 </div>
                             </template>
                             <!--                            <paper-button class="button button&#45;&#45;save" on-tap="_test"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery-test','Reload',language)]]</paper-button>-->
@@ -177,6 +177,7 @@
     </template>
     <script>
         import moment from 'moment/src/moment';
+        const XLSX = require('../../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class HtPatSubscriptionSendRecovery extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
             static get is() {
@@ -289,6 +290,10 @@
                         type: Boolean,
                         value : false
                     },
+                    hasRunned:{
+                        type: Boolean,
+                        value : false
+                    },
                     dateRecoveryStart:{
                         type: Date,
                         value: null
@@ -316,7 +321,7 @@
                 return [
                     '_todoCountChanged(patientsToRecover)',
                     '_totalCountChanged(patientsToRecover,recoveredPatients)',
-                    '_sendStatusEvent(patientsToRecover,isRunning,isLoading)'
+                    '_sendStatusEvent(patientsToRecover,isRunning,isLoading,hasRunned)'
                 ];
             }
 
@@ -341,6 +346,7 @@
             _reset(){
                 this.set('isLoading', false)
                 this.set('isRunning', false)
+                this.set('hasRunned', false)
                 this.set('recoveredPatients', [])
                 this.set('patientsToRecover', [])
                 this.set('recoveryLog', [])
@@ -366,7 +372,7 @@
 
             _sendStatusEvent(){
                 console.log("sending event")
-                this.dispatchEvent(new CustomEvent("recovery-status", { composed: true, bubbles: true, detail: {statusDetail: {isLoading: this.isLoading, hasTodo: this._hasTodo(this.patientsToRecover), isRunning: this.isRunning }} }))
+                this.dispatchEvent(new CustomEvent("recovery-status", { composed: true, bubbles: true, detail: {statusDetail: {isLoading: this.isLoading, hasTodo: this._hasTodo(this.patientsToRecover), isRunning: this.isRunning, hasRunned: this.hasRunned }} }))
             }
 
             _formatNiss(niss){
@@ -436,25 +442,29 @@
                 if(_.size(this.patientsToRecover) > 3){
                     this.patientsToRecover = this.patientsToRecover.slice(0, 50)
                 }
-
+                let tmpLog = []
                 let prom = Promise.resolve([])
                 _.map(this.patientsToRecover, pat => {
                     prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
                     .then(pat =>{
                         this.curPat = pat.lastName + " " + pat.firstName
-                        let recoveryLogItem = {patient: pat.lastName + " " + pat.firstName}
-                        this.push("recoveryLog", recoveryLogItem)
-                        return this._sendSubscription(pat, recoveryLogItem).then(res => this._sleep(5000))
+                        let recoveryLogItem = {patient: pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
+                        return this._sendSubscription(pat, recoveryLogItem).then(res => {
+                            recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
+                            this.push("recoveryLog", recoveryLogItem)
+                            return this._sleep(5000)
+                        })
                     }).then(x => _.concat(promiseCarrier,x))
                         .catch(() => _.concat(promiseCarrier,null)))
-
                 })
 
                 prom.then(res => {
                     //this.set("recoveryLog", this.patientsToRecover.map(pat => pat.recoveryLogItem))
                     console.log("recoveryLog", this.recoveryLog)
                     //this._loadData()
+                    //this.exportToCsv()
                     this.set("isRunning", false);
+                    this.set("hasRunned", true);
                 })
             }
 
@@ -611,6 +621,7 @@
                             if(!mhc.contractId){
                                 console.log("sendSubscriptionLog no contractid for", pat)
                                 recoveryLogItem.sendSubscriptionResponseErrpr = "no contractid"
+                                recoveryLogItem.status = "Erreur: " + _.map(mhmResponse.errors, err => err.msgFr ).join(", ")
                                 //TODO: extract error
                             }
                             else
@@ -664,6 +675,7 @@
                                         mhc.receipts.responseCreation=response.id
                                 }).finally(()=>{
                                     recoveryLogItem.requestSucceeded = true
+                                    recoveryLogItem.status = "OK: ContractId" + mhc.contractId
                                     return this._updatePatient(pat)
                                 })
                             }
@@ -671,11 +683,13 @@
                         }).catch((error) => {
                             console.log("sendSubscriptionLog error for patient", pat, error)
                             recoveryLogItem.sendSubscriptionError = error
+                            recoveryLogItem.status = "Erreur : " + error
                             return Promise.resolve(pat)
                         })
                 } else {
                     console.log("sendSubscriptionLog pre-send errors for patient", pat, requestError)
                     recoveryLogItem.requestError = requestError
+                    recoveryLogItem.status = "Erreur : " +  _.map(requestError, err => err).join(", ")
                     return Promise.resolve(pat)
                 }
             }
@@ -710,8 +724,58 @@
                     .then(pat => this.api.register(pat, 'patient'))
             }
 
-            cleanData(data){
-                return data && data.replace(/ /g, "").replace(/-/g,"").replace(/\./g,"").replace(/_/g,"").replace(/\//g,"")
+            _getLogReport(){
+               this.exportToCsv()
+            }
+
+            exportToCsv() {
+                let items = null
+                items = this.recoveryLog
+                this.generateXlsFile(items.map(inv => {
+                    const xllog = JSON.parse(JSON.stringify(inv));
+                    return xllog
+                }))
+            }
+
+            generateXlsFile(data) {
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: "Recovery", Author: "Topaz"}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'Recovery log')
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = "mhm_recovery_log_" + moment().format("YYYYMMDD-HHmmss") + ".xls"
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+                return
             }
         }
         customElements.define(HtPatSubscriptionSendRecovery.is, HtPatSubscriptionSendRecovery);
