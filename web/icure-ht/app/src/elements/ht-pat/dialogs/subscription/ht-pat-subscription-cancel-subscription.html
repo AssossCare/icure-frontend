@@ -491,25 +491,25 @@
 
                             Promise.all([
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"xades"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"soapResponse"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"transactionRequest"
                                 }),
                                 this.api.receipticc.createReceipt({
-                                    documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                                    documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
                                     references: Object.values(cancelSubscriptionResponse.commonOutput),
                                     category: "subscription",
                                     subCategory:"transactionResponse"
