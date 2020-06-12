@@ -254,7 +254,7 @@
                     <div class="subscription-view">
                         <paper-tabs selected="{{tabs}}">
                             <paper-tab>
-                                <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-recovery','Envoyer reprise',language)]]
+                                <iron-icon class="tabIcon" icon="communication:business"></iron-icon> [[localize('mhm-send-recovery','Envoyer reprise',language)]]
                             </paper-tab>
                             <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
                                 <paper-tab>
@@ -280,10 +280,10 @@
                 </div>
                 <div class="buttons">
                     <template is="dom-if" if="[[canRecovery]]">
-                        <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="communication:business" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
                     </template>
                     <template is="dom-if" if="[[canDownload]]">
-                        <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="vaadin:download" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
                     </template>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 </div>
