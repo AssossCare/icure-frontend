@@ -1907,6 +1907,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             }
 
+            _getPatContactsByProtocols(hcpId, patientObject) {
+
+                const promResolve = Promise.resolve();
+
+                return this.api.contact().findBy(hcpId,patientObject)
+                    .then(patientContacts => _
+                        .chain(patientContacts)
+                        .map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
+                            ctcId: _.trim(_.get(ctc,"id")),
+                            protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
+                            formId: _.trim(_.get(ctc,"subContacts[0].formId")),
+                            complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
+                            totalSubCtc: _.size(_.get(ctc,"subContacts"))
+                        })
+                        .compact()
+                        .reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
+                        .value()
+                    )
+                    .catch(e=>{ console.log("ERROR _getPatContactsByProtocols", e); return promResolve; })
+
+            }
+
+            _reconcilePartialAndIncompleteResults(patientIds) {
+
+                const promResolve = Promise.resolve()
+
+                return !_.size(_.uniq(_.compact(patientIds))) ? promResolve : this.api.patient().getPatientsWithUser(_.get(this,"user",{}),{ids:_.uniq(_.compact(patientIds))})
+                    .then(myPatients => {
+
+                        let promPat = Promise.resolve([])
+                        let promContacts = Promise.resolve([])
+
+                        _.map(myPatients, pat => {
+                            promPat = promPat
+                                .then(promisesCarrierPat => this._getPatContactsByProtocols(_.trim(_.get(this,"user.healthcarePartyId","")), pat).then(contactsByProtocols => {
+                                    _.map(contactsByProtocols, contacts => {
+                                        promContacts = promContacts
+                                            .then(promiseCarrierContacts => {
+                                                const completeResults = _.filter(contacts, {complete:true})
+                                                const incompleteResults = _.filter(contacts, {complete:false})
+                                                const formIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"formId"))).join(",")
+                                                const contactIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"ctcId"))).join(",")
+                                                return  _.size(contacts) < 2 || !_.size(completeResults) || !_.size(incompleteResults) ? promiseCarrierContacts||[] : this.api.form().deleteForms(formIdsToDelete).catch(e=>null).then(x=>this.api.contact().deleteContacts(contactIdsToDelete).catch(e=>null).then(x=>_.concat(promiseCarrierContacts, [x])))
+                                            })
+                                    })
+                                    return promContacts.then(x => _.concat(promisesCarrierPat, x)).then(x => _.concat(promisesCarrierPat, null))
+                                }))
+                        })
+
+                        return promPat
+
+                    })
+                    .then(promPat => null)
+                    .catch(e => null)
+
+            }
+
             _saveAssignment(givenMessage, additionalParameters) {
 
                 const promResolve = Promise.resolve()
@@ -2043,6 +2100,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             .then(()=> this.set("_vaadinGridMessagesActiveItem", _.find(_.flatMap(_.get(this,"_cachedMessagesData",[])), {id:_.trim(_.get(modifiedMessage,"id",""))})))
                         )
                     )
+                    .then(() => this._reconcilePartialAndIncompleteResults([patientId]))
                     .then(() => this.dispatchEvent(new CustomEvent("refresh-patient",{bubbles:true,composed:true})))
                     .catch(e=>{ console.log(e); return promResolve; })
                     .finally(()=>promResolve)
