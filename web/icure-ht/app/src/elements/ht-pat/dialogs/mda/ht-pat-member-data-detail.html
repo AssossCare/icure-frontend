@@ -241,6 +241,11 @@
                 --dynamic-field-width-percent: 0!important;
             }
 
+            .fa{
+                width: 100%!important;
+                flex: auto;
+            }
+
 
         </style>
 
@@ -270,8 +275,8 @@
                                 </div>
                                 <template is="dom-if" if="[[_isMedicalHouse(hcp)]]">
                                     <div class="mda-menu-search-line">
-                                        <dynamic-date-field label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]"></dynamic-date-field>
-                                        <dynamic-date-field label="[[localize('mda-endDate', 'End date', language)]]" value="{{mdaSearch.endDate}}" i18n="[[i18n]]"></dynamic-date-field>
+                                        <vaadin-date-picker class="fa mtm2 mw0 mr1" label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]"></vaadin-date-picker>
+                                        <vaadin-date-picker class="fa mtm2 mw0 mr1" label="[[localize('mda-endDate', 'End date', language)]]" value="{{mdaSearch.endDate}}" i18n="[[i18n]]"></vaadin-date-picker>
                                     </div>
                                     <div class="mda-menu-search-line">
                                         <vaadin-combo-box id="contactType" class="w100 mtm2 mw0 mr1" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
@@ -539,18 +544,25 @@
                                     deceasedDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:deceasedDate"), 'attributeValues', []).join(" ")
                                 }
                             })),
-                            period: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:period").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
+                            period: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:period").map(ass => {
+                                return {
+                                    statementsAndAuthnStatementsAndAuthzDecisionStatements: _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []),
+                                    subject: _.get(ass, 'subject', {})
+                                }
+                            })).map(stat => ({
                                 careReceiver: {
-                                    registrationNumber: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:registrationNumber"), 'attributeValues', []).join(" "),
+                                    registrationNumber: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:registrationNumber"), 'attributeValues', []).join(" "),
                                     mutuality: {
-                                        code: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:mutuality"), 'attributeValues', []).join(" "),
+                                        code: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:mutuality"), 'attributeValues', []).join(" "),
                                         name: null,
                                         address: {}
                                     }
                                 },
-                                cb1: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb1"), 'attributeValues', []).join(" "),
-                                cb2: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb2"), 'attributeValues', []).join(" "),
-                                communicationDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:communicationDate"), 'attributeValues', []).join(" ")
+                                cb1: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb1"), 'attributeValues', []).join(" "),
+                                cb2: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb2"), 'attributeValues', []).join(" "),
+                                communicationDate: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:communicationDate"), 'attributeValues', []).join(" "),
+                                startDate: _.get(_.get(_.get(stat, 'subject', {}), 'subjectConfirmations', []).find(sc => _.get(sc, 'method', null) === "urn:be:cin:nippin:memberIdentification"), 'subjectConfirmationData.notBefore', null),
+                                endDate: _.get(_.get(_.get(stat, 'subject', {}), 'subjectConfirmations', []).find(sc => _.get(sc, 'method', null) === "urn:be:cin:nippin:memberIdentification"), 'subjectConfirmationData.notOnOrAfter', null)
                             })),
                             payment: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:payment").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                                 paymentByIO: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:payment:byIO"), 'attributeValues', []).join(" ")
@@ -725,11 +737,11 @@
             }
 
             consultMdaBySsin(){
-                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other",  _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
+                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other",  _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
             }
 
             consultMdaByMemberShip(){
-                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
+                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
             }
 
             _selectedMdaConsultTypeChanged(){
