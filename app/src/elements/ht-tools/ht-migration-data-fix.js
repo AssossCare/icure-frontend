@@ -981,32 +981,10 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-    _getPatContactsByProtocols(patientObject) {
-
-        const promResolve = Promise.resolve();
-
-        return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), patientObject )
-            .then(patientContacts => _
-                .chain(patientContacts)
-                .map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
-                    ctcId: _.trim(_.get(ctc,"id")),
-                    protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
-                    formId: _.trim(_.get(ctc,"subContacts[0].formId")),
-                    complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
-                    totalSubCtc: _.size(_.get(ctc,"subContacts"))
-                })
-                .compact()
-                .reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
-                .value()
-            )
-            .catch(e=>{ console.log("ERROR _getPatContacts", e); return promResolve; })
-
-    }
-
     _getPatientsByHcp_v2( hcpId, tagCodeToExclude ) {
 
         // Todo: remove this
-        return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["5a7d605a-f3e2-43aa-a91b-84618113b624"]}))
+        // return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: ["5a7d605a-f3e2-43aa-a91b-84618113b624"]}))
 
         const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
 
@@ -1029,10 +1007,6 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-
-
-
-
     startLabResultAndProtocolReconcileFix_v2() {
 
         this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
@@ -1053,65 +1027,36 @@ class HtMigrationDataFix extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                     promPat = promPat
                         .then(promisesCarrierPat => (this.set("patientData", _.trim(_.get(pat,"firstName")) + " " + _.trim(_.get(pat,"lastName")) + " - " +_.trim(_.get(pat,"dateOfBirth")).substring(6,8) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(4,6) + "/" + _.trim(_.get(pat,"dateOfBirth")).substring(0,4))||true) && promisesCarrierPat)
-                        .then(promisesCarrierPat => this._getPatContactsByProtocols(pat)
-                            .then(contactsByProtocols => {
+                        .then(promisesCarrierPat => this.api.getPatContactsByProtocols(_.trim(_.get(this,"user.healthcarePartyId","")), pat).then(contactsByProtocols => {
 
-                                this.set("totalDocumentCount", _.size(contactsByProtocols))
-                                this.set("processedDocumentCount", 0)
+                            this.set("totalDocumentCount", _.size(contactsByProtocols))
+                            this.set("processedDocumentCount", 0)
 
-                                _.map(contactsByProtocols, (contacts, protocol) => {
+                            _.map(contactsByProtocols, (contacts, protocol) => {
 
-                                    promContacts = promContacts
-                                        .then(promiseCarrierContacts => {
-                                            this.set("processedDocumentCount", (parseInt(_.get(this,"processedDocumentCount",0))||0)+1)
-                                            this.set("documentData", "protocole = " + protocol)
-                                            return promiseCarrierContacts
-                                        })
-
-
-
-
-
-
-
-                                        // .then(promiseCarrierContacts => should NOT exec ? promiseCarrierContacts||[] : this._fixLabResultsProtocols_v2(pat, doc).then(x => _.concat(promiseCarrierContacts, [x])).catch(x => _.concat(promiseCarrierContacts, [null])))
-                                        .then(promiseCarrierContacts => {
-
-                                            const completeResults = _.filter(contacts, {complete:true})
-                                            const incompleteResults = _.filter(contacts, {complete:false})
-
-                                            if(_.size(contacts) > 1 && _.size(completeResults) && _.size(incompleteResults)) {
-
-                                                console.log("--------------------------------");
-                                                console.log("pat", pat);
-                                                console.log("protocol", protocol);
-                                                console.log("contacts", contacts);
-
-                                                // Todo: refaire un map avec accumulation d'un promiseCarrier sur les contactsAndFormsToDelete => boucler tout cela et do delete forms && ctc && catch / concact
-                                                // Todo: injecter ceci dans ehboxworker && msg-list && continue barvaux
-
-                                            }
-
-                                            // Todo: update this
-                                            return _.size(contacts) < 2 ? promiseCarrierContacts||[] : _.concat(promiseCarrierContacts, [null])
-
-                                        })
-
-
-
-
-
-
-                                })
-
-                                return promContacts
-                                    .then(x => _.concat(promisesCarrierPat, x))
-                                    // .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReconciled"}]})))
-                                    .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
-                                    .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+                                promContacts = promContacts
+                                    .then(promiseCarrierContacts => {
+                                        this.set("processedDocumentCount", (parseInt(_.get(this,"processedDocumentCount",0))||0)+1)
+                                        this.set("documentData", protocol)
+                                        return promiseCarrierContacts
+                                    })
+                                    .then(promiseCarrierContacts => {
+                                        const completeResults = _.filter(contacts, {complete:true})
+                                        const incompleteResults = _.filter(contacts, {complete:false})
+                                        const formIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"formId"))).join(",")
+                                        const contactIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"ctcId"))).join(",")
+                                        return  _.size(contacts) < 2 || !_.size(completeResults) || !_.size(incompleteResults) ? promiseCarrierContacts||[] : this.api.form().deleteForms(formIdsToDelete).catch(e=>null).then(x=>this.api.contact().deleteContacts(contactIdsToDelete).catch(e=>null).then(x=>_.concat(promiseCarrierContacts, [x])))
+                                    })
 
                             })
-                        )
+
+                            return promContacts
+                                .then(x => _.concat(promisesCarrierPat, x))
+                                .then(() => this.api.patient().modifyPatientWithUser(this.user, _.merge(pat, {tags: [{type:"pricareMigrationStatus", code:"labResultsAndProtocolsGotReconciled"}]})))
+                                .then(() => this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1))
+                                .catch(x => (this.set("posFix", (parseInt(_.get(this,"posFix",0))||0)+1)||true) && _.concat(promisesCarrierPat, null))
+
+                        }))
 
                 })
 

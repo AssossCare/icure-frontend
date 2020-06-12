@@ -1146,6 +1146,29 @@ class IccApi extends PolymerElement {
   _isValidMail(email){
       return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(email))
   }
+
+    getPatContactsByProtocols(hcpId, patientObject) {
+
+        const promResolve = Promise.resolve();
+
+        return this.contact().findBy(hcpId,patientObject)
+            .then(patientContacts => _
+                .chain(patientContacts)
+                .map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
+                    ctcId: _.trim(_.get(ctc,"id")),
+                    protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
+                    formId: _.trim(_.get(ctc,"subContacts[0].formId")),
+                    complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
+                    totalSubCtc: _.size(_.get(ctc,"subContacts"))
+                })
+                .compact()
+                .reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
+                .value()
+            )
+            .catch(e=>{ console.log("ERROR _getPatContactsByProtocols", e); return promResolve; })
+
+    }
+
 }
 
 customElements.define(IccApi.is, IccApi)
