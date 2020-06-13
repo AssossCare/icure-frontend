@@ -297,6 +297,9 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="usersManagementSubMenu">
                             <iron-icon class="sub-menu-icon" icon="social:group"></iron-icon> [[localize('users','Users',language)]]
                         </paper-item>
+                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="exportUsersMdaSubMenu">
+                            <iron-icon class="sub-menu-icon" icon="social:group"></iron-icon> [[localize('exportUsersMda','Export users (MDA)',language)]]
+                        </paper-item>
                         <!--
                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="delegationsManagementSubMenu">
                             <iron-icon class="sub-menu-icon" icon="vaadin:key"></iron-icon> [[localize('deleg','My delegations',language)]]

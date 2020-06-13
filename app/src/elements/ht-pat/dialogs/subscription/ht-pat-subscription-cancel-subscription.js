@@ -1,0 +1,670 @@
+import '@vaadin/vaadin-icons/vaadin-icons'
+import '@vaadin/vaadin-date-picker/vaadin-date-picker'
+import '@vaadin/vaadin-text-field/vaadin-text-field'
+import '@vaadin/vaadin-checkbox/vaadin-checkbox'
+import '@vaadin/vaadin-combo-box/vaadin-combo-box'
+import '@vaadin/vaadin-text-field/vaadin-text-area'
+import '@polymer/paper-dialog/paper-dialog'
+import '@polymer/paper-button/paper-button'
+import '@polymer/paper-card/paper-card'
+import '@polymer/paper-listbox/paper-listbox'
+import '@polymer/paper-item/paper-icon-item'
+import '@polymer/paper-fab/paper-fab'
+import '@polymer/paper-icon-button/paper-icon-button'
+import '@polymer/paper-styles/shadow'
+import '@polymer/iron-resizable-behavior/iron-resizable-behavior'
+
+import '../../../dynamic-form/dynamic-link.js'
+import '../../../dynamic-form/dynamic-pills.js'
+import '../../../ht-spinner/ht-spinner.js'
+import '../../../dynamic-form/dynamic-doc.js'
+import '../../../collapse-button/collapse-button.js'
+import '../../../../styles/dialog-style.js'
+import '../../../../styles/scrollbar-style.js'
+import '../../../../styles/buttons-style.js'
+import '../../../../styles/paper-tabs-style.js'
+import '../../../dynamic-form/dynamic-text-field.js'
+import '../../../../styles/notification-style.js'
+
+import './ht-pat-subscription-mda-medical-house-result'
+
+import moment from 'moment/src/moment'
+import {TkLocalizerMixin} from "../../../tk-localizer"
+import {PolymerElement, html} from '@polymer/polymer'
+
+class HtPatSubscriptionCancelSubscription extends TkLocalizerMixin(PolymerElement) {
+    static get template() {
+        return html`
+        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+            .subscription-container{
+                height: 100%;
+                width: 98%;
+                margin: 1%;
+            }
+
+            .request-container{
+                height: auto;
+                width: auto;
+            }
+
+            .mhm-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mhm-person-container{
+                height: auto;
+                width: auto;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .mt10{
+                margin-top: 10px;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .m5{
+                margin: 5px;
+            }
+            .fw2{
+                width: calc(100% / 2);
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-person-container-content{
+                padding: 5px;
+            }
+
+            .w300{
+                width: 300px;
+            }
+
+            .w400{
+                width: 400px;
+            }
+
+            *.txtcolor--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            *.txtcolor--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            *.txtcolor--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            *.txtcolor--blueStatus {
+                color: var(--paper-blue-400);
+            }
+
+            .statusIcon.subscription-status--orangeStatus,
+            .statusIcon.subscription-status--greenStatus,
+            .statusIcon.subscription-status--redStatus {
+                background: transparent !important;
+            }
+
+            .statusIcon.subscription-status--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            .statusIcon.subscription-status--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            .statusIcon.subscription-status--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            .statusIcon.invoice-status--blueStatus {
+                color: var(--paper-blue-400);
+            }
+
+            .subscription-status--orangeStatus{
+                background: #fcdf354d;
+            }
+            .subscription-status--greenStatus{
+                background: #07f8804d;
+            }
+            .subscription-status--redStatus{
+                background: #ff4d4d4d;
+            }
+            .subscription-status--blueStatus {
+                background: #84c8ff;
+            }
+
+            .statusIcon{
+                height: 8px;
+                width: 8px;
+            }
+
+            .subscription-status {
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .error-container{
+                height: 150px;
+                width: auto;
+            }
+
+            .p4{
+                padding: 4px;
+            }
+
+            .mhm-container-error{
+                height: auto;
+                width: auto;
+            }
+
+            .headerMasterTitleError{
+                font-size: var(--font-size-large);
+                background: var(--app-status-color-nok);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .mhm-sub-container-error{
+                height: auto;
+                width: auto;
+                margin: 5px;
+                border: 1px solid var(--app-status-color-nok);
+            }
+
+            .mhm-error-container-content{
+                padding: 5px;
+            }
+
+        </style>
+        
+        <div class="subscription-container">
+            <div class="request-container">
+                <div class="mhm-sub-container">
+                    <div class="mhm-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]</div>
+                        <div class="mhm-person-container-content">
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-pat', 'Patient informations', language)]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-name', 'Name', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientLastName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-firstName', 'First name', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientFirstName]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(cancelSubscriptionRequest.patientGender)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-inss', 'Ssin', language)]]: &nbsp;</span> [[_formatNiss(cancelSubscriptionRequest.patientSsin)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-io', 'Io', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientIo]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-sub-pat-iomembership', 'Io membership', language)]]: &nbsp;</span> [[cancelSubscriptionRequest.patientIoMembership]]
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mhm-person-container mt10">
+                                <div class="headerMasterTitle headerLabel">[[localize('mhm-sub', 'Subscription', language)]]: [[selectedMedicalHouseContract.contractId]]</div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-medical-house', 'Medical house', language)]]: &nbsp;</span> [[selectedMedicalHouseContract.medicalHouseName]]
+                                    </div>
+                                </div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-start-contract', 'Start of contract', language)]]: &nbsp;</span> [[_formatContractDate(selectedMedicalHouseContract.startOfContract)]]
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-start-coverage', 'Start of coverage', language)]]: &nbsp;</span> [[_formatContractDate(selectedMedicalHouseContract.startOfCoverage)]]
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-end-contract', 'End of contract', language)]]: &nbsp;</span> [[_formatContractDate(selectedMedicalHouseContract.endOfContract)]]
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-end-coverage', 'End of coverage', language)]]: &nbsp;</span> [[_formatContractDate(selectedMedicalHouseContract.endOfCoverage)]]
+                                    </div>
+                                </div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-sign-type', 'Signature type', language)]]: &nbsp;</span> [[selectedMedicalHouseContract.hrSignatureType]]
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-trial', 'Trial period', language)]]: &nbsp;</span>
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-flatrate-type', 'Flatrate type', language)]]: &nbsp;</span> [[selectedMedicalHouseContract.hrFlatRateType]]
+                                    </div>
+                                </div>
+                                <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class\$="subscription-status [[_getIconStatusClass(selectedMedicalHouseContract)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(selectedMedicalHouseContract)]]"></iron-icon> [[selectedMedicalHouseContract.hrStatus]]</span>
+                                    </div>
+                                    <template is="dom-if" if="[[_isClosure(selectedMedicalHouseContract)]]">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-clo-type', 'Cancellation by', language)]]: &nbsp;</span> [[selectedMedicalHouseContract.hrClosureType]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mhm-rea-clo', 'Reason of cancellation', language)]]: &nbsp;</span> [[selectedMedicalHouseContract.hrClosureReason]]
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <template is="dom-if" if="[[_isRequestError(requestError)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-error-ctn', 'Error before send', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[requestError]]" as="error">
+                                    <div>- [[_getErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_isRequestError(cancelSubscriptionResponse.errors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[cancelSubscriptionResponse.errors]]" as="error">
+                                    <div>- [[_getMcnErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_isRequestError(cancelSubscriptionResponse.genericErrors)]]" restamp="true">
+                <div class="error-container">
+                    <div class="mhm-error-container-content">
+                        <div class="mhm-sub-container-error">
+                            <div class="headerMasterTitleError headerLabel">[[localize('mhm-mcn-error', 'Mcn error', language)]]</div>
+                            <div class="mhm-container-error p4">
+                                <template is="dom-repeat" items="[[cancelSubscriptionResponse.genericErrors]]" as="error">
+                                    <div>- [[_getGenericErrorMessage(error)]]</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        
+        `
+    }
+
+    static get is() {
+        return 'ht-pat-subscription-cancel-subscription'
+    }
+
+    static get properties() {
+        return {
+            api: {
+                type: Object,
+                value: null,
+                noReset: true
+            },
+            user: {
+                type: Object,
+                value: null,
+                noReset: true
+            },
+            i18n: {
+                type: Object,
+                value: {},
+                noReset: true
+            },
+            resources: {
+                type: Object,
+                value: {},
+                noReset: true
+            },
+            language: {
+                type: String,
+                noReset: true
+            },
+            patient: {
+                type: Object,
+                value: () => {
+                },
+                noReset: true
+            },
+            hcp: {
+                type: Object,
+                value: () => {
+                },
+                noReset: true
+            },
+            tabs: {
+                type: Number,
+                value: 0
+            },
+            isLoading: {
+                type: Boolean,
+                value: false,
+                noReset: true
+            },
+            mdaResult: {
+                type: Object,
+                value: () => {
+                }
+            },
+            cancelSubscriptionRequest: {
+                type: Object,
+                value: {
+                    patientFirstName: null,
+                    patientLastName: null,
+                    patientGender: null,
+                    patientSsin: null,
+                    patientIo: null,
+                    patientIoMembership: null,
+                    subscriptionReference: null
+                }
+            },
+            cancelSubscriptionResponse: {
+                type: Object,
+                value: () => {
+                }
+            },
+            patientInsuranceParent: {
+                type: Object,
+                value: () => {
+                }
+            },
+            selectedMedicalHouseContract: {
+                type: Object,
+                value: () => {
+                }
+            },
+            dateRange: {
+                type: Object,
+                value: () => {
+                }
+            },
+            requestError: {
+                type: Array,
+                value: () => []
+            }
+        }
+    }
+
+    static get observers() {
+        return [
+            '_initialize(api, user, patient, patientInsuranceParent)'
+        ]
+    }
+
+    constructor() {
+        super()
+    }
+
+    ready() {
+        super.ready()
+    }
+
+    _initialize() {
+        this._reset()
+        const now = moment().format('YYYY-MM-DD')
+        this.set('cancelSubscriptionRequest', {
+            patientFirstName: _.get(this.patient, 'firstName', null),
+            patientLastName: _.get(this.patient, 'lastName', null),
+            patientGender: _.get(this.patient, 'gender', null),
+            patientSsin: _.get(this.patient, 'ssin', null),
+            patientIo: _.head(_.split(_.get(this.patientInsuranceParent, 'code', ''), ',')),
+            patientIoMembership: this._getIoMembership(this.patient, this.mdaResult),
+            subscriptionReference: _.get(this, 'selectedMedicalHouseContract.contractId', null)
+        })
+    }
+
+    _reset() {
+        this.set('cancelSubscriptionRequest', {})
+        this.set('cancelSubscriptionResponse', {})
+    }
+
+    _cancelSubscription() {
+        console.log(this.cancelSubscriptionRequest)
+
+        this._checkBeforeSend()
+        if (!_.size(_.get(this, 'requestError', []))) {
+            this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
+                _.get(this.api, "keystoreId", null),
+                _.get(this.api, "tokenIdMH", null),
+                _.get(this.api, "credentials.ehpassword", null),
+                this.cleanData(_.get(this.hcp, "nihii", null)),
+                _.get(this.hcp, 'name', null),
+                _.get(this.cancelSubscriptionRequest, 'patientFirstName', null),
+                _.get(this.cancelSubscriptionRequest, 'patientLastName', null),
+                _.get(this.cancelSubscriptionRequest, 'patientGender', null),
+                _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null),
+                this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)),
+                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIo', null)) : null,
+                !_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null)) : null
+            ).then(cancelSubscriptionResponse => {
+                console.log(cancelSubscriptionResponse)
+                this.set('cancelSubscriptionResponse', cancelSubscriptionResponse)
+
+                if (_.get(cancelSubscriptionResponse, 'decisionReference', null)) {
+                    let mhc = _.get(this.patient, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) === _.get(this.cancelSubscriptionRequest, 'subscriptionReference', null))
+
+                    mhc.endOfContract = _.get(cancelSubscriptionResponse, 'subscriptionsCancelDate', null)
+                    mhc.status = (1 << 1) | (1 << 2)
+
+                    Promise.all([
+                        this.api.receipticc.createReceipt({
+                            documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
+                            references: Object.values(cancelSubscriptionResponse.commonOutput),
+                            category: "subscription",
+                            subCategory: "xades"
+                        }),
+                        this.api.receipticc.createReceipt({
+                            documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
+                            references: Object.values(cancelSubscriptionResponse.commonOutput),
+                            category: "subscription",
+                            subCategory: "soapResponse"
+                        }),
+                        this.api.receipticc.createReceipt({
+                            documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
+                            references: Object.values(cancelSubscriptionResponse.commonOutput),
+                            category: "subscription",
+                            subCategory: "transactionRequest"
+                        }),
+                        this.api.receipticc.createReceipt({
+                            documentId: _.get(cancelSubscriptionResponse, 'decisionReference', null),
+                            references: Object.values(cancelSubscriptionResponse.commonOutput),
+                            category: "subscription",
+                            subCategory: "transactionResponse"
+                        }),
+                        this.api.receipticc.createReceipt({
+                            documentId: _.get(cancelSubscriptionResponse, 'reference', null),
+                            references: Object.values(cancelSubscriptionResponse.commonOutput),
+                            category: "subscription",
+                            subCategory: "soapRequest"
+                        })
+                    ])
+                        .then(([xades, soap, request, response, soapRequest]) => Promise.all([
+                            _.get(xades, "id", false) && _.get(cancelSubscriptionResponse, "xades", false) && this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(cancelSubscriptionResponse.xades))))) || Promise.resolve(xades),
+                            _.get(soap, "id", false) && _.get(cancelSubscriptionResponse, "mycarenetConversation.soapResponse", false) && this.api.receipt().setAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                            _.get(request, "id", false) && _.get(cancelSubscriptionResponse, "mycarenetConversation.transactionRequest", false) && this.api.receipt().setAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                            _.get(response, "id", false) && _.get(cancelSubscriptionResponse, "mycarenetConversation.transactionResponse", false) && this.api.receipt().setAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response),
+                            _.get(soapRequest, "id", false) && _.get(cancelSubscriptionResponse, "mycarenetConversation.soapRequest", false) && this.api.receipt().setAttachment(soapRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(cancelSubscriptionResponse.mycarenetConversation.soapRequest)))) || Promise.resolve(soapRequest)
+                        ]))
+                        .then(([xades, soap, request, response, soapRequest]) => {
+                            if (!_.get(mhc, 'receipts', false)) mhc.receipts = {}
+                            if (_.get(xades, "id", false))
+                                mhc.receipts.xadesCancel = xades.id
+                            if (_.get(soap, "id", false))
+                                mhc.receipts.soapCancel = soap.id
+                            if (_.get(request, "id", false))
+                                mhc.receipts.requestCancel = request.id
+                            if (_.get(response, "id", false))
+                                mhc.receipts.responseCancel = response.id
+                            if (_.get(soapRequest, "id", false))
+                                mhc.receipts.soapRequestCancel = soapRequest.id
+                        }).finally(() => {
+                        this._updatePatient()
+                    })
+                }
+
+            })
+        }
+
+    }
+
+    _checkBeforeSend() {
+        this.set("requestError", [])
+        let error = []
+        !_.get(this.api, "keystoreId", null) ? error.push("mhm-keystore-error") : null
+        !_.get(this.api, "tokenIdMH", null) ? error.push("mhm-token-id-error") : null
+        !_.get(this.api, "credentials.ehpassword", null) ? error.push("mhm-ehpassword-error") : null
+        !_.get(this.hcp, "nihii", null) ? error.push("mhm-nihii-error") : null
+        !_.get(this.hcp, 'name', null) ? error.push("mhm-name-error") : null
+        !_.get(this.cancelSubscriptionRequest, 'patientFirstName', null) ? error.push("mhm-patient-first-name-error") : null
+        !_.get(this.cancelSubscriptionRequest, 'patientLastName', null) ? error.push("mhm-patient-last-name-error") : null
+        !_.get(this.cancelSubscriptionRequest, 'patientGender', null) ? error.push("mhm-patient-gender-error") : null
+        !_.get(this.cancelSubscriptionRequest, 'subscriptionReference', null) ? error.push("mhm-subscription-reference-error") : null
+        //!_.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? error.push("mhm-patient-ssin-error") : null
+        !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIo', null) ? error.push("mhm-patient-io-error") : null : null
+        !_.get(this.hcp, "nihii", null) ? !_.get(this.cancelSubscriptionRequest, 'patientIoMembership', null) ? error.push("mhm-patient-io-membership-error") : null : null
+        _.get(this.cancelSubscriptionRequest, 'patientSsin', null) ? !this.api.patient().isValidSsin(_.get(this.cancelSubscriptionRequest, 'patientSsin', null)) ? error.push("mhm-patient-ssin-format-error") : null : null
+
+        this.set("requestError", error)
+    }
+
+    _updatePatient() {
+        this.api.patient().modifyPatientWithUser(this.user, this.patient)
+            .then(pat => this.set('patient', this.api.register(pat, 'patient')))
+            .finally(() => {
+                this._displayResultTab()
+            })
+    }
+
+
+    _displayResultTab() {
+        this.dispatchEvent(new CustomEvent("subscription-result", {
+            composed: true,
+            bubbles: true,
+            detail: {
+                subscriptionResultDetail: {
+                    commonOutput: _.get(this.cancelSubscriptionResponse, 'commonOutput', {}),
+                    mycarenetConversation: _.get(this.cancelSubscriptionResponse, 'mycarenetConversation', {})
+                }
+            }
+        }))
+    }
+
+    _subscriptionChanged() {
+        this.dispatchEvent(new CustomEvent("subscription-changed", {composed: true, bubbles: true}))
+    }
+
+    cleanData(data) {
+        return data && data.replace(/ /g, "").replace(/-/g, "").replace(/\./g, "").replace(/_/g, "").replace(/\//g, "")
+    }
+
+    _formatNiss(niss) {
+        return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
+    }
+
+    _localizeGender(gender) {
+        return this.localize(gender, gender, this.language)
+    }
+
+    _getIoMembership(patient, mdaResult) {
+        return _.get(_.get(patient, 'insurabilities', []).find(ass => _.get(ass, 'startDate', null) && !_.get(ass, 'endDate', null)), 'identificationNumber', null)
+    }
+
+    _formatContractDate(date) {
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+    }
+
+    _getIconStatusClass(mhc) {
+        return !!(_.get(mhc, 'status', null) & (1 << 3)) ? "subscription-status--orangeStatus" :
+            !!(_.get(mhc, 'status', null) & (1 << 2)) ? "subscription-status--redStatus" :
+                !!(_.get(mhc, 'status', null) & (1 << 1)) ? "subscription-status--greenStatus" :
+                    "subscription-status--blueStatus"
+    }
+
+    _getErrorMessage(error) {
+        return this.localize(error, error, this.language)
+    }
+
+    _isRequestError(errorList) {
+        return !!_.size(errorList)
+    }
+
+    _getMcnErrorMessage(errorMessage) {
+        return _.get(errorMessage, "code", null) + ' - ' + (this.language === "fr" ? _.get(errorMessage, "msgFr", null) : this.language === "nl" ? _.get(errorMessage, "msgNl", null) : _.get(errorMessage, "msgEn", null))
+    }
+
+    _getGenericErrorMessage(e) {
+        return _.get(e, 'faultSource', null) + ' ' + _.get(e, 'faultCode', null)
+    }
+
+
+}
+
+customElements.define(HtPatSubscriptionCancelSubscription.is, HtPatSubscriptionCancelSubscription)

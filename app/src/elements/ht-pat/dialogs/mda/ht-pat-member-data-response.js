@@ -325,6 +325,16 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                         <span class="headerLabel">[[localize('mda-com-date', 'Communication date', language)]]: &nbsp;</span> [[_formatDate(p.communicationDate)]]
                                     </div>
                                 </div>
+                                <template is="dom-if" if="[[_isContractDateAvailable(p, p.*)]]">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-startDate', 'Start date', language)]]: &nbsp;</span> [[_formatDate(p.startDate)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-endDate', 'End date', language)]]: &nbsp;</span> [[_formatEndDate(p.endDate)]]
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </template>
@@ -795,6 +805,10 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
         return date ? moment(parseInt(date)).format("DD/MM/YYYY"): null
     }
 
+    _formatEndDate(date){
+        return date ? moment(parseInt(date)).subtract(1, 'days').format("DD/MM/YYYY"): null
+    }
+
     _formatNissNumber(niss) {
         return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
     }
@@ -867,6 +881,10 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _isAssertion(mdaResult){
         return _.size(_.get(mdaResult, 'assertions', []))
+    }
+
+    _isContractDateAvailable(period){
+        return !!(_.get(period, 'startDate', null) || _.get(period, 'endDate', null))
     }
 }
 customElements.define(HtPatMemberDataResponse.is, HtPatMemberDataResponse);

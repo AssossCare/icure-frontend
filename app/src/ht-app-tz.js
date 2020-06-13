@@ -1,28 +1,28 @@
 /**
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-import './styles/app-theme-tz.js';
-import './styles/atc-styles';
-import './styles/buttons-style';
-import './styles/dialog-style';
-import './styles/dropdown-style';
-import './styles/icd-styles';
-import './styles/icpc-styles';
-import './styles/notification-style';
-import './styles/paper-input-style';
-import './styles/paper-tabs-style';
-import './styles/scrollbar-style';
-import './styles/shared-styles';
-import './styles/spinner-style';
-import './styles/table-style';
-import './styles/tk-token-field-style';
-import './styles/vaadin-icure-theme';
+ @license
+ Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+ This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ Code distributed by Google as part of the polymer project is also
+ subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+import './styles/app-theme-tz.js'
+import './styles/atc-styles'
+import './styles/buttons-style'
+import './styles/dialog-style'
+import './styles/dropdown-style'
+import './styles/icd-styles'
+import './styles/icpc-styles'
+import './styles/notification-style'
+import './styles/paper-input-style'
+import './styles/paper-tabs-style'
+import './styles/scrollbar-style'
+import './styles/shared-styles'
+import './styles/spinner-style'
+import './styles/table-style'
+import './styles/tk-token-field-style'
+import './styles/vaadin-icure-theme'
 
 import "@polymer/app-layout/app-drawer-layout/app-drawer-layout"
 import "@polymer/app-layout/app-header/app-header"
@@ -36,19 +36,22 @@ import './elements/ht-app/ht-app-first-login-dialog'
 import './elements/ht-app/ht-app-login-dialog'
 import './elements/ht-app/ht-app-register-keypair-dialog'
 import './elements/ht-app/ht-app-setup-prompt'
-import './elements/ht-app/ht-app-welcome-tz';
+import './elements/ht-app/ht-app-welcome-tz'
 import './elements/ht-spinner/ht-spinner'
 import './elements/ht-tools/ht-access-log'
 import './elements/ht-tools/ht-export-key'
 import './elements/ht-tools/ht-import-keychain'
 import './elements/ht-tools/ht-my-profile'
-import './elements/icc-api/icc-api';
-import './elements/icons/icure-icons';
-import './elements/menu-bar/menu-bar';
+import './elements/icc-api/icc-api'
+import './elements/icons/icure-icons'
+import './elements/menu-bar/menu-bar'
 import './elements/splash-screen/splash-screen'
-import './elements/tk-localizer';
+import './elements/tk-localizer'
 import './ht-view404'
 import './ht-update-dialog'
+import './elements/mta/ht-mailer-dialog'
+import './elements/ht-pat/dialogs/subscription/ht-pat-subscription-recovery'
+
 
 import "@polymer/iron-icon/iron-icon"
 import "@polymer/iron-icons/iron-icons"
@@ -103,16 +106,17 @@ import "@vaadin/vaadin-grid/vaadin-grid-tree-toggle"
 
 import moment from 'moment/src/moment'
 import Worker from 'worker-loader!./workers/ehboxWebworker.js'
-const runtime = require('offline-plugin/runtime');
 
-import io from 'socket.io-client';
-import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "./elements/tk-localizer";
-import _ from "lodash";
+const runtime = require('offline-plugin/runtime')
+
+import io from 'socket.io-client'
+import {PolymerElement, html} from '@polymer/polymer'
+import {TkLocalizerMixin} from "./elements/tk-localizer"
+import _ from "lodash"
 
 class HtAppTz extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
+    static get template() {
+        return html`
         <style include="shared-styles dialog-style notification-style buttons-style">
             :host {
                 display: block;
@@ -726,6 +730,19 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                 overflow:hidden
             }
 
+
+            #mailerMessage {
+                cursor: pointer;
+            }
+
+            #mailerMessage .notification-msg {
+                grid-column:1/span 3;
+            }
+
+            #mailerMessage.notification-container .notification-btn.single-btn{
+                grid-column: 4 / span 1!important;
+            }
+
             #iconCloseErrorEID{
                 width:100%;
                 height: 100%;
@@ -862,6 +879,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                     <paper-item class="extra-menu-item" on-tap="_inviteHCP">[[localize('inviteHCP','Invite a colleague ',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_logList">[[localize('acc_log','Access Log',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_tuto">[[localize('tutorial','Tutorial',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="mmhSendRecoveryDialog">[[localize('mmh_send_recovery','Reprise des contrats MM',language)]]</paper-item>                                 
                                     <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_myProfile">
                                         <iron-icon icon="icons:account-circle"></iron-icon>
@@ -1019,6 +1037,11 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
             </div>
         </paper-dialog>
 
+        <paper-item id="mailerMessage" class="notification-container electron-notification-panel">
+            <div class="notification-msg" on-tap="_closeNotif"><iron-icon class="notification-icn ml10" icon="communication:email" on-tap="_closeNotif"></iron-icon>[[mailerMessage]]</div>
+            <paper-button class="notification-btn single-btn" on-tap="_closeNotif">[[localize('clo','Close', language)]]</paper-button>
+        </paper-item>
+
         <paper-item id="ehBoxMessage" class="notification-container electron-notification-panel">
             <iron-icon class="notification-icn" icon="communication:email" on-tap="_gotoEhBox"></iron-icon>
             <div class="notification-msg" on-tap="_gotoEhBox">[[ehBoxWebWorkerTotalNewMessages]] [[localize('ehb.newMessages','new message(s)', language)]]</div>
@@ -1095,1589 +1118,1728 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[showKeystoreExpiresSoonLabel]]">
             <div class="warningLabel displayNotification" id="keystoreExpiresSoonLabel"><iron-icon icon="alarm"></iron-icon> [[localize('keystoreExpiresSoonLabel','Votre keystore va bientôt expirer',language)]] : [[keyStoreValidityLabel]]</div>
         </template>
-`;
-  }
-
-  static get is() {
-      return 'ht-app-tz'
-  }
-
-  static get properties() {
-      return {
-          versions: {
-              type: Object,
-              value: function () {
-                  return require('../versions.json');
-              }
-          },
-          api: {
-              type: Object,
-              noReset: true,
-              value: null
-          },
-          user: {
-              type: Object,
-              value: null
-          },
-          keyHcpId: {
-              type: Object,
-              value: null,
-          },
-          language: {
-              type: String,
-              noReset: true,
-              value: 'fr'
-          },
-          i18n: {
-              Type: Object,
-              noReset: true,
-              value() {
-                  moment.locale('fr', {
-                      months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
-                      monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
-                      monthsParseExact : true,
-                      weekdays : 'dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi'.split('_'),
-                      weekdaysShort : 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
-                      weekdaysMin : 'Di_Lu_Ma_Me_Je_Ve_Sa'.split('_'),
-                      weekdaysParseExact : true,
-                      longDateFormat : {
-                          LT : 'HH:mm',
-                          LTS : 'HH:mm:ss',
-                          L : 'DD/MM/YYYY',
-                          LL : 'D MMMM YYYY',
-                          LLL : 'D MMMM YYYY HH:mm',
-                          LLLL : 'dddd D MMMM YYYY HH:mm'
-                      },
-                      calendar : {
-                          sameDay : '[Aujourd’hui à] LT',
-                          nextDay : '[Demain à] LT',
-                          nextWeek : 'dddd [à] LT',
-                          lastDay : '[Hier à] LT',
-                          lastWeek : 'dddd [dernier à] LT',
-                          sameElse : 'L'
-                      },
-                      relativeTime : {
-                          future : 'dans %s',
-                          past : 'il y a %s',
-                          s : 'quelques secondes',
-                          m : 'une minute',
-                          mm : '%d minutes',
-                          h : 'une heure',
-                          hh : '%d heures',
-                          d : 'un jour',
-                          dd : '%d jours',
-                          M : 'un mois',
-                          MM : '%d mois',
-                          y : 'un an',
-                          yy : '%d ans'
-                      },
-                      week : {
-                          dow :1
-                      }
-                  });
-                  const res = {
-                      monthNames: moment.months(),
-                      weekdays: moment.weekdays(),
-                      weekdaysShort: moment.weekdaysShort(),
-                      firstDayOfWeek: 0,
-                      week: 'Semaine',
-                      calendar: 'Calendrier',
-                      clear: 'Effacer',
-                      today: 'Aujourd\'hui',
-                      thisMonth: 'mois courant',
-                      thisYear: moment().format("YYYY"),
-                      cancel: 'Annuler',
-                      formatDate: (d, acc) => {
-                          const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y);
-                          const tab = [yearStr];
-                          acc !== 'year' && tab.unshift((d.month + 1));
-                          acc === 'day' && tab.unshift(d.day);
-                          return tab.join('/');
-                      },
-                      parseDate: text => {
-                          const parts = text.split('/');
-                          let day, month, year;
-
-                          if (parts.length === 3) {
-                              year = parts[2];
-                              month = parts[1];
-                              day = parts[0];
-                          } else if (parts.length === 2) {
-                              year = parts[1];
-                              month = parts[0];
-                              day = '1';
-                          } else if (parts.length === 1) {
-                              year = parts[0];
-                              day = '1';
-                              month = '1';
-                          }
-
-                          if (day !== undefined) {
-                              return {day, month, year};
-                          }
-                      },
-                      formatTitle: (monthName, fullYear) => {
-                          return fullYear;
-                      }
-                  }
-                  return res
-              }
-          },
-          view: {
-              type: String,
-              reflectToAttribute: true,
-              observer: '_viewChanged',
-              noReset: true
-          },
-          headers: {
-              type: Object,
-              value: {"Content-Type": "application/json"}
-          },
-          credentials: {
-              type: Object,
-              value: {logout: false}
-          },
-          lazyPages: {
-              type: Object,
-              noReset: true,
-
-              value: {
-                  main() {
-                      import(/* webpackChunkName: "ht-main" */ './ht-main.js')
-                  },
-                  pat() {
-                      import(/* webpackChunkName: "ht-pat" */ './ht-pat.js')
-                  },
-                  hcp() {
-                      import(/* webpackChunkName: "ht-hcp" */ './ht-hcp.js')
-                  },
-                  msg() {
-                      import(/* webpackChunkName: "ht-msg" */ './ht-msg.js')
-                  },
-                  diary(){
-                      import(/* webpackChunkName: "ht-diary" */ './ht-diary.js')
-                  },
-                  admin(){
-                      import(/* webpackChunkName: "ht-admin" */ './ht-admin.js')
-                  },
-                  view404() {
-                      import(/* webpackChunkName: "ht-view404" */ './ht-view404.js')
-                  }
-              }
-          },
-          resources: {
-              value() {
-                  return require('./elements/language/language.json')
-              },
-              noReset: true
-          },
-          invitedHcpLink: {
-              type: String,
-              value: ""
-          },
-          disconnectionTimer: {
-              type: Number,
-              value: 240,
-              noReset: true
-          },
-          connectionTime: {
-              type: Number,
-              noReset: true
-          },
-          ehBoxWebWorkerTotalNewMessages: {
-              type: Number,
-              value: 0
-          },
-          EhboxCheckingActive: {
-              type: Boolean,
-              value: false
-          },
-          worker: {
-              type: Worker,
-              noReset: true
-          },
-          timeOutId: {
-              type: String
-          },
-          keyPairKeystore:{
-              type: Array,
-              value: () => []
-          },
-          showWelcomePage: {
-              type: Boolean,
-              value: false
-          },
-          entities:{
-              type: Array,
-              value: () => []
-          },
-          isMultiUser : {
-              type: Boolean,
-              value: true
-          },
-          mikronoError:{
-              type: Object,
-              value : () => {}
-          },
-          migrationItems:{
-              type: Array,
-              value: () => []
-          },
-          busySpinner: {
-              type: Boolean,
-              value: false
-          },
-          updateMessage: {
-              type: String,
-              value: null
-          },
-          updateAction: {
-              type: String,
-              value: null
-          },
-          validInvite: {
-              type: Boolean,
-              value: false
-          },
-          warn: {
-              type: String
-          },
-          validMail: {
-              type: Boolean,
-              value: null
-          },
-          isElectron :{
-              type: Boolean,
-              value: false
-          },
-          electronVersion : {
-              type : String,
-              value : ""
-          },
-          electronVersionOk : {
-              type : Boolean,
-              value : true
-          },
-          backendVersionOk : {
-              type : Boolean,
-              value : true
-          },
-          socket: {
-              type : Object,
-              value : null
-          },
-          _forceEhBoxRefresh: {
-              type : Boolean,
-              value : false
-          },
-          patientOpened:{
-              type: String,
-              value : ""
-          },
-          electronErrorMessage:{
-              type:String,
-              value:""
-          },
-          keyStoreValidityLabel : {
-              type : String,
-              value : ""
-          },
-          showKeystoreExpiresSoonLabel: {
-              type : Boolean,
-              value : false
-          },
-          showKeystoreExpiredLabel: {
-              type : Boolean,
-              value : false
-          },
-          showKeystoreExpiresSoonStatusIcon: {
-              type : Boolean,
-              value : false
-          },
-          showKeystoreExpiredStatusIcon: {
-              type : Boolean,
-              value : false
-          },
-          mikronoProxy: {
-              type: String
-          },
-          phone:{
-              type: String
-          },
-          lang:{
-              type: String
-          }
-
-  }
-  }
-
-  static get observers() {
-      return [
-          '_routePageChanged(routeData.page)',
-          '_isValidInvite(lastName,firstName,validMail)',
-          'isMailValid(email)',
-          'resourceAndLanguageChanged(resources,language)'
-      ]
-  }
-
-  constructor() {
-      super()
-  }
-
-  _closeNotif(e){
-      e.target.parentElement.classList.remove('notification');
-  }
-
-  _gotoEhBox(e){
-      if(!!_.size(_.get(e,"target.parentElement",{}))) e.target.parentElement.classList.remove('notification');
-      this.$['ehBoxMessage'] && this.$['ehBoxMessage'].classList && this.$['ehBoxMessage'].classList.remove('notification')
-      this.set('routeData.page', "msg")
-      this._triggerMenu()
-  }
-
-  _isValidInvite() {
-      this.set('validInvite', this.lastName && this.firstName && this.lastName.length && this.firstName.length && this.validMail)
-  }
-
-  isMailValid(str) {
-      setTimeout(()=>{
-          if (str.length) {
-              const filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-
-              if (filter.test(str)) {
-                  this.set('warn','')
-                  this.set('validMail',true)
-              } else {
-                  this.set('warn',this.localize('please_valid_mail','Please enter valid email',this.language))
-                  this.set('validMail',false)
-              }
-          }
-      },2000)
-  }
-
-  setUrls() {
-      const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
-      this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
-      this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhctz.icure.cloud' : 'https://fhctz.icure.cloud'))
-      this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
-
-      this.set('defaultIcureUrl', this.icureUrl)
-      this.set('defaultFhcUrl', this.fhcUrl)
-  }
-
-  _updateServerUrl(icureurl, fhcurl) {
-      if(icureurl) this.set('icureUrl',icureurl)
-      if(fhcurl) this.set('fhcUrl',fhcurl)
-  }
-
-  reset() {
-      const props = HtAppTz.properties
-      Object.keys(props).forEach(k => { if (!props[k].noReset) { this.set(k, (typeof props[k].value === 'function' ? props[k].value() : (props[k].value || null))) }})
-      ;['#ht-main', '#ht-pat', '#ht-hcp', '#ht-msg'].map(x => this.root.querySelector(x)).map(el => el && typeof el.reset === 'function' && el.reset())
-  }
-
-  _checkShowWelcomePage() {
-      this.api.icure().isReady().then(ok => {
-          if (ok === 'false') {
-              this.set('showWelcomePage', true)
-              this.$["loginDialog"].disable()
-              this.$["setupPrompt"].close()
-          } else if (ok !== 'true') {
-              this.$["setupPrompt"].close()
-              this.$["loginDialog"].disable()
-              setTimeout(() => this._checkShowWelcomePage(), 10000)
-          }else {
-              localStorage.setItem('last_app_startup', Date.now().toString())
-              this.$["loginDialog"].enable()
-              this.$["setupPrompt"].close()
-          }
-      }).catch(() => {
-          if (!localStorage.getItem('last_app_startup')) this.$["setupPrompt"].open()
-          this.$["loginDialog"].disable()
-          setTimeout(() => this._checkShowWelcomePage(), 10000)
-      })
-  }
-
-  ready() {
-      super.ready()
-
-      this.set("isMultiUser",true)
-
-      const url = new URL(window.location.href)
-      if (!url.hash || !url.hash.startsWith('#/')) {
-          url.hash = '#/'
-          window.location.replace(url.toString())
-      }
-
-      window.app = this
-
-      if (!this.icureUrl) { this.setUrls() }
-
-      this.set('api', this.$.api)
-
-      //init socket io
-      this.set("socket",null)
-      this.api && this.api.electron().checkAvailable().then(electron => {
-          this.set("isElectron",electron)
-          if (electron) {
-             this.set("socket",io(_.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042"))
-
-              this.socket.on("connect", () => {
-                  console.log("connection avec le socket de electron")
-              })
-
-              this.socket.on("update-downloaded", msg => {
-                  console.log(msg)
-                  this.$['electronMessage'].classList.add('notification');
-                  setTimeout(() => {
-                      this.$['electronMessage'].classList.remove('notification');
-                  }, 7500);
-              })
-
-              this.socket.on("auto-read-card-eid", cards =>{
-                  if(typeof cards==="string" && cards.includes("Error"))return;
-                  if(this.route.path.includes("/pat")){
-                      this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid ==="function" && this.$["ht-pat"].autoReadCardEid(cards)
-                  }else if(this.route.path.includes("/main") && !this.route.path.includes("/auth")){
-                      this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid ==="function" && this.$["htmain"].autoReadCardEid(cards)
-                  }
-              })
-
-              this.notifyPath("socket");
-              this.api && this.api.electron().checkDrugs()
-              this.api.electron().getVersion()
-                  .then(res => {
-                      if (res.version) {
-                          this.set("electronVersion", res.version)
-                          this.set("electronVersionOk",this.versions.electron.includes(res.version))
-                      }
-                  })
-
-              this.api && this.api.electron().getConnexionData()
-                  .then(res => {
-                      if(res.ok && !(_.get(this,"credentials.userId",false) || _.get(this,"credentials.password",false))){
-                          this.set("api.isMH",res.tokenData.isMH)
-                          if(res.tokenData.isMH){
-                              this.set('api.tokenIdMH', res.tokenData.tokenId)
-                              this.set('api.tokenMH', res.tokenData.token)
-                              this.set('api.nihiiMH',res.tokenData.nihiiMH)
-                          }
-                          else{
-                              this.set('api.tokenId', res.tokenData.tokenId)
-                              this.set('api.token', res.tokenData.token)
-                          }
-                          if(res.credential){
-                              this.set("credentials",res.credential)
-                          }
-                      }
-                  })
-          } else {
-              this.set("electronVersionOk", true)
-          }
-
-      })
-
-      document.onmousemove = this.resetTimer.bind(this)
-      document.onkeypress = this.resetTimer.bind(this)
-
-      runtime.install({
-          onUpdating: () => {
-              console.log('SW Event: ', 'onUpdating');
-              this.set('updateMessage', this.localize('new_upd_det','New update detected.',this.language))
-              this.set('updateAction', null)
-          },
-          onUpdateReady: () => {
-              console.log('SW Event: ', 'onUpdateReady');
-              this.set('updateMessage', this.localize('new_upd_rea','New update ready',this.language))
-              this.set('updateAction', this.localize('upd','Update'))
-          },
-          onUpdated: () => {
-              console.log('SW Event: ', 'onUpdated');
-              window.location.reload();
-          },
-
-          onUpdateFailed: () => {
-              console.log('SW Event: ', 'onUpdateFailed');
-              this.set('updateMessage', this.localize('upd_fail','Update failed, please refresh.'))
-          }
-      });
-
-      this.api.icure().getVersion().then(v => {
-          this.set("backendVersion", v.substring(0, v.indexOf('-')))
-          this.set("backendVersionOk",this.versions.backend.includes(v))
-      })
-
-      this._checkShowWelcomePage()
-      this._startCheckInactiveTimer()
-  }
-
-  doUpdate() {
-      this.set('updateMessage', this.localize('upd_ing','Updating...'))
-      this.set('updateAction', null)
-      runtime.applyUpdate();
-  }
-
-  resetTimer() {
-      this.set('connectionTime', +new Date())
-  }
-
-  _userSaved(e) {
-      this.set('user', e.detail)
-  }
-
-  _debugPostUser() {
-      return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-          console.log("user:", this.user)
-          console.log("hcp:", hcp)
-          if(hcp.parentId) {
-              return this.$.api.hcparty().getHealthcareParty(hcp.parentId).then(hcp => {
-                  console.log("parentHcp:", hcp)
-              })
-          }
-      })
-  }
-
-  _openUtility(e) {
-      if (e.detail && e.detail.panel === 'my-profile') {
-          this._myProfile(e.detail.tab)
-      } else if (e.detail && e.detail.panel === 'import-keychain') {
-          this._importKeychain()
-      }
-  }
-
-  _startCheckInactiveTimer() {
-      clearInterval(this.interval)
-      this.interval = setInterval(() => {
-          const timeBeforeDeconnection = Math.floor(240 - (+new Date() - this.connectionTime) / 1000 / 60)
-          if (timeBeforeDeconnection > 0) {
-              this.set('disconnectionTimer', timeBeforeDeconnection)
-          } else {
-              const creds = _.clone(this.credentials)
-              this.set("isMultiUser",true)
-              this.set('routeData.page', 'logout')
-              this.credentials.username = creds.username
-              this.credentials.ehpassword = creds.ehpassword
-              this._triggerMenu()
-          }
-      }, 10000)
-
-
-      this.sessionInterval && clearInterval(this.sessionInterval)
-      this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
-  }
-
-  _timeCheck(period = 30000) {
-      setTimeout(() => {
-          if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
-                  if (!isTokenValid) {
-                      this.uploadKeystoreAndCheckToken().then(() => {
-                          this._timeCheck()
-                      }).catch(() => this._timeCheck(10000))
-                  } else {
-                      this._timeCheck()
-                  }
-              }).catch(() => this._timeCheck(10000))
-          } else {
-              this.uploadKeystoreAndCheckToken().then(() => {
-                  this._timeCheck()
-              }).catch(() => this._timeCheck(10000))
-          }
-      }, period)
-  }
-
-  _timeCheckMH(period = 30000){
-      setTimeout(() => {
-          if (this.api.tokenIdMH) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
-                  if (!isTokenValid) {
-                      this.uploadMHKeystoreAndCheckToken().then(() => {
-                          this._timeCheckMH()
-                      }).catch(() => this._timeCheckMH(10000))
-                  } else {
-                      this._timeCheckMH()
-                  }
-              }).catch(() => this._timeCheckMH(10000))
-          } else {
-              this.uploadMHKeystoreAndCheckToken().then(() => {
-                  this._timeCheckMH()
-              }).catch(() => this._timeCheckMH(10000))
-          }
-      }, period)
-  }
-
-  _inboxMessageCheck(period = 20000) {
-      this.timeOutId && clearInterval(this.timeOutId)
-      this.timeOutId = setInterval(() => {
-          this.api.tokenId && this.checkEhboxMessage()
-      }, period)
-  }
-
-  _routePageChanged(page) {
-      if (page === 'logout') {
-
-          this.route.__queryParams.oldToken=this.route.__queryParams.token
-          this.route.__queryParams.token=""
-          this.route.__queryParams.oldUserId=this.route.__queryParams.userId
-          this.route.__queryParams.userId=""
-
-          sessionStorage.removeItem('auth')
-          this.authenticated = false
-
-          this.worker && this.worker.terminate()
-
-          if(this.view!=="auth")this.reset()
-          this.set('routeData.page', '/')
-          //setTimeout(() => window.location.reload(), 100) // don't reload at logout
-      } else {
-          console.log("page is -> " + page)
-          if (!this.icureUrl) { this.setUrls() }
-
-          if (!this.authenticated && (!page || !page.startsWith('auth'))) {
-              if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
-                  this.loginAndRedirect(page)
-              } else {
-                  this.api && this.api.electron().logout()
-                  this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
-              }
-          } else {
-              const dest = page ? page.replace(/\/$/, '') : 'main'
-              //keep patient opened
-              if(dest==="pat" && this.subroute.path!=="/"){
-                  this.set('patientOpened',this.subroute.path)
-              }else if(dest==="pat" && this.view!=="pat" && this.patientOpened){
-                  this.set("subroute.path",this.patientOpened)
-              }else if(dest==="pat" && this.view==="pat" && this.patientOpened){
-                  this.set('patientOpened',null)
-              }
-
-              if (dest !== this.view) { this.set('view', dest) }
-          }
-          this._startCheckInactiveTimer('refresh')
-      }
-  }
-
-  _triggerMenu() {
-      let menu = this.$.mobileMenu
-      let overlay = this.$.overlayMenu
-
-      overlay.classList.toggle('open')
-      menu.classList.toggle('open')
-  }
-
-  _viewChanged(view) {
-      if (view.startsWith('auth')) {
-          this.$.loginDialog.open()
-          return
-      }
-      if (this.lazyPages[view]) {
-          this.lazyPages[view]()
-      } else {
-          this._showPage404()
-      }
-
-      if(this.view==="main"){
-          this.$["htmain"].apiReady && this.$["htmain"].apiReady()
-      }
-  }
-
-  _showPage404() {
-      this.view = 'view404'
-  }
-
-  doRoute(e) {
-      const routeTo = _.get(_.filter(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.name",""))),"[0].dataset.name","main") + "/"
-      this.set('routeData.page', routeTo)
-      this._triggerMenu()
-  }
-
-  _openExportKey() {
-      this.$['export-key'].open()
-  }
-
-  _importKeychain() {
-      this.$['ht-import-keychain'].open()
-  }
-
-  _inviteHCP() {
-      this.set('firstName','')
-      this.set('lastName','')
-      this.set('email','')
-      this.set('warn','')
-      this.$['ht-invite-hcp'].open()
-  }
-
-  _myProfile(tab) {
-      this.$['ht-my-profile'].open(tab)
-  }
-
-  _selectEntities(){
-      this.$['ht-app-account-selector'].open()
-  }
-
-  _showToasterMessage(id) {
-      this.set(id, true)
-      setTimeout(() => { this.set(id, false) }, 5000*2)
-  }
-
-  _checkKeystoreValidity() {
-      //console.log("_checkKeystoreValidity: ", this.showKeystoreExpiredLabel, this.showKeystoreExpiresSoonLabel)
-      const monthLimit = 2 // number of remaining months when to start warning the user
-
-      this.api.fhc().Stscontroller().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
-          if(info.validity && info.validity - moment().valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
-              this._showToasterMessage("showKeystoreExpiredLabel")
-              this.set("showKeystoreExpiredStatusIcon", true)
-              this.set("showKeystoreExpiresSoonStatusIcon", false)
-          } else if(info.validity && info.validity - moment().add(monthLimit, 'months').valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
-              this._showToasterMessage("showKeystoreExpiresSoonLabel")
-              this.set("showKeystoreExpiresSoonStatusIcon", true)
-              this.set("showKeystoreExpiredStatusIcon", false)
-          } else {
-              this.set("showKeystoreExpiredStatusIcon", false)
-              this.set("showKeystoreExpiresSoonStatusIcon", false)
-          }
-      })
-
-  }
-
-  _getToken() {
-      return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-      {
-          const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('disconnected')
-
-              !_.isEmpty(res) ? this.$.eHealthStatus.classList.add('connected') : this.$.eHealthStatus.classList.add('disconnected')
-
-              this.set('api.isMH', isMH)
-              if(isMH){
-                  this.credentials.ehpasswordMH = this.credentials.ehpassword
-
-                  this.set('api.keystoreIdMH', this.api.keystoreId)
-                  this.set('api.tokenIdMH', res.tokenId)
-                  this.set('api.tokenMH', res.token)
-                  this.set('api.nihiiMH', hcp.nihii)
-
-                  if(hcp.contactPersonHcpId){
-                      this.$.api.hcparty().getHealthcareParty(hcp.contactPersonHcpId).then(hcpCt =>{
-                          this.set('api.MHContactPersonName', hcpCt.lastName + ' ' + hcpCt.firstName)
-                          this.set('api.MHContactPersonSsin', hcpCt.ssin)
-                      });
-                  }
-
-              }else {
-                  this.set('api.tokenId', res.tokenId)
-                  this.set('api.token', res.token)
-              }
-
-
-              this.api && this.api.electron().tokenFHC(isMH,!isMH?this.api.tokenId:this.api.tokenIdMH,!isMH ? this.api.token :this.api.tokenMH, isMH ? this.api.keystoreIdMH : null , isMH ? this.api.nihiiMH : null)
-                  .then(rep => {
-                      if(rep.ok){
-                          this.set('routeData.page', "diary")
-                          setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                      }
-                  })
-
-              return res.tokenId
-          }).catch((e) => {
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('connected')
-              this.$.eHealthStatus.classList.add('disconnected')
-              throw(e)
-          })
-      }
-      )
-  }
-
-  _versionOk(a,b) {
-      return a && b ? 'ok' : 'nok'
-  }
-
-  _getMHToken() {
-      //TODO: change the request for MH
-      //this.api.fhc().Stscontroller().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
-      //get the password from local storage
-      //let mhPassword= "";
-      return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-          .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
-          .then(hcpMH => {
-              this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH && hcpMH.nihii ? hcpMH.nihii.substr(0, 8) : "", this.api.keystoreIdMH, true).then(res => {
-                  if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
-                  if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
-                  !_.isEmpty(res) ? this.root.getElementById('eHealthMHStatus') ? this.root.getElementById('eHealthMHStatus').classList.add('connected') : null : this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
-
-                  this.set('api.tokenIdMH', res.tokenId)
-                  this.set('api.tokenMH', res.token)
-                  this.set('api.nihiiMH', hcpMH.nihii)
-                  return res.tokenId
-              })
-          }).catch((e) => {
-              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
-              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
-              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
-              throw(e)
-          })
-  }
-
-  loginAndRedirect(page) {
-      const sAuth = JSON.parse(sessionStorage.getItem('auth'))
-      if (!this.credentials || (!this.credentials.password && sAuth && sAuth.password) || (!this.credentials.appToken && sAuth && sAuth.appToken)) {
-          this.set('credentials', sAuth)
-      }
-
-      if (this.route.__queryParams.token && this.route.__queryParams.userId) {
-          this.set('headers', _.assign(_.assign({}, this.headers),
-              {Authorization: 'Basic ' + btoa(this.route.__queryParams.userId + ':' + this.route.__queryParams.token)}))
-      } else if ((this.credentials.userId && this.credentials.appToken)) {
-          this.set('headers', _.assign(_.assign({}, this.headers),
-              {Authorization: 'Basic ' + btoa(this.credentials.userId + ':' + this.credentials.appToken)}))
-      }
-      // else if ((this.credentials.username && this.credentials.password)) {
-      else this.set('headers', _.assign(_.assign({}, this.headers),
-              {Authorization: 'Basic ' + btoa(this.credentials.username + ':' + this.credentials.password + (this.credentials.twofa ? '|' + this.credentials.twofa : ''))}))
-      // }
-
-      //Be careful not to use this.api here as it might not have been defined yet
-      //TODD debounce here
-      this.$.api.user().getCurrentUser().then(u => {
-          if(this.isMultiUser) {
-              this._selectEntities()
-          }
-
-          this.api.user().getCurrentSession().then(sessionId => this.api.set('sessionId', sessionId))
-
-          this.set('user', u)
-          this.user.roles && this.user.roles.find(r => r === 'ADMIN' || r === 'MS-ADMIN' || r === 'MS_ADMIN') ? this.set('isAdmin', true) : this.set('isAdmin', false)
-          this.set('connectionTime', +new Date())
-
-          this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
-              const language = (hcp.languages || ['fr']).find(lng => lng && lng.length === 2)
-              language && this.set('language', language)
-
-              this.$.loginDialog.opened = false
-
-              if(this.route.__queryParams.oldToken && Object.keys(this.user.applicationTokens).find(key =>this.user.applicationTokens[key]===this.route.__queryParams.oldToken) && this.route.__queryParams.oldUserId && this.route.__queryParams.oldUserId===this.user.id){
-                  this.route.__queryParams.token = this.route.__queryParams.oldToken
-                  this.route.__queryParams.userId =this.route.__queryParams.oldUserId
-              }
-
-              this.api.electron().topazCredential(this.user,this.api.credentials)
-
-              this.set('credentials.twofa', null)
-              u.groupId ? this.set('credentials.userId', u.groupId+"/"+u.id) : this.set('credentials.userId', u.id)
-              this.set('credentials.appToken', u.applicationTokens && u.applicationTokens.ICC)
-
-              if ((this.credentials.userId && this.credentials.appToken)) {
-                  this.set('credentials.password', null)
-                  this.set('headers.Authorization', 'Basic ' + btoa(this.credentials.userId + ':' + this.credentials.appToken))
-              }
-              sessionStorage.setItem('auth', JSON.stringify(this.credentials))
-              localStorage.setItem('last_connection',this.credentials.username)
-
-              if (!this.authenticated) {
-                  this.authenticated = true
-
-                  const loadKeysForParent = (parentId, prom) => {
-                      if (parentId) {
-                          return prom.then(([success, destPage]) => {
-                              if (success) {
-                                  return this.api.hcparty().getHealthcareParty(parentId).then(hcp =>
-                                      loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, destPage))
-                                  )
-                              } else {
-                                  return Promise.resolve([success, destPage])
-                              }
-                          })
-                      } else {
-                          return prom
-                      }
-                  }
-
-                  loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
-                      if (success) {
-                          const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
-                          if (!this.routeData || destPage !== this.routeData.page) {
-                              this.set('routeData.page', destPage)
-                          } else {
-                              this._routePageChanged(destPage)
-                          }
-                      }
-                  })
-              }
-              this._timeCheck()
-              this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
-              this._inboxMessageCheck()
-              this._checkForUpdateMessage()
-              //this._correctionGenderPatients();
-
-          })
-      }).catch(function (e) {
-          this.authenticated = false
-          sessionStorage.removeItem('auth')
-          this.set("credentials.error", "Wrong user or password")
-      }.bind(this))
-  }
-
-  loadOrImportRSAKeys(u, hcp, page) {
-      return new Promise((resolve, reject) => {
-          if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcp.id)) {
-              this.$.api.crypto().checkPrivateKeyValidity(hcp).then(ok => {
-                  this.set("keyHcpId", hcp.id)
-                  if (ok) {
-                      this.api.loadUsersAndHcParties()
-                      this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
-                      resolve([true, page])
-                  } else {
-                      this.registerKeyPairDialogMessage = "The key registered in your browser is invalid"
-                      this.registerKeyPairDialogResolution = ([resolve,reject])
-                      this.$.registerKeyPairDialog.opened = true
-                  }
-              })
-          } else {
-              this.set("keyHcpId", hcp.id)
-              if (hcp.publicKey) {
-                  this.registerKeyPairDialogMessage = ""
-                  this.registerKeyPairDialogResolution = ([resolve,reject])
-                  this.$.registerKeyPairDialog.opened = true
-              } else {
-                  console.log("HCP public key is " + hcp.publicKey, hcp)
-                  this.registerKeyPairDialogResolution = ([resolve,reject])
-                  this.$.firstConnectionDialog.opened = true
-              }
-          }
-
-      })
-  }
-
-  uploadKeystoreAndCheckToken() {
-      if (this.credentials.ehpassword) {
-          const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
-          if (ehKeychain) {
-              return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
-                  this.$.api.keystoreId = res.uuid
-                  this._checkKeystoreValidity()
-                  return this._getToken()
-              }).catch((e) => {
-                  this.$.eHealthStatus.classList.remove('pending')
-                  this.$.eHealthStatus.classList.remove('connected')
-                  this.$.eHealthStatus.classList.add('disconnected')
-                  throw(e)
-              })
-          } else {
-              this.$.noehealth.classList.add("notification")
-
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('connected')
-              this.$.eHealthStatus.classList.add('disconnected')
-          }
-      } else {
-          this.$.eHealthStatus.classList.remove('pending')
-          this.$.eHealthStatus.classList.remove('connected')
-          this.$.eHealthStatus.classList.add('disconnected')
-      }
-      return Promise.resolve(null);
-  }
-
-  uploadMHKeystoreAndCheckToken() {
-      if(!_.get(this, "user.healthcarePartyId", false)) return Promise.resolve()
-      const ksKey  = "org.taktik.icure.ehealth.keychain.MMH."+ this.user.healthcarePartyId;
-      Object.keys(localStorage).filter(k => k === ksKey).map(kM => {
-          const val = localStorage.getItem(kM);
-          Object.keys(localStorage).map(kA => {
-              if(localStorage.getItem(kA) === val){
-                  this.getDecryptedValueFromLocalstorage(this.user.healthcarePartyId, kA.replace("keychain.","keychain.password."))
-                      .then( password => {
-                          if (password) {
-                              this.credentials.ehpasswordMH = password
-                              const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH."+ this.user.healthcarePartyId)
-                              if (ehKeychain) {
-                                  return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
-                                      this.$.api.keystoreIdMH = res.uuid
-                                      return this._getMHToken()
-                                  }).catch((e) => {
-                                      if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
-                                      if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
-                                      if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
-                                      throw(e)
-                                  })
-                              } else {
-                                  //TODO: notif for no MH session
-                                  //this.$.noehealth.classList.add("notification")
-                                  if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
-                                  if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
-                                  if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
-                              }
-                          } else {
-                              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
-                              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
-                              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
-                          }
-                          return Promise.resolve()
-                      });
-              }
-          })
-      })
-      return Promise.resolve(null);
-  }
-
-  login(event, loginObject) { /* this is called from mouseDown with 2 arguments */
-      this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl )
-
-      this.set('credentials', loginObject && loginObject.credentials)
-
-
-      this.loginAndRedirect(loginObject && loginObject.page)
-  }
-
-  importPrivateKey(e, selectedRsaFile) {
-      let hcpId;
-      if(this.keyHcpId == null) {
-          hcpId = this.user.healthcarePartyId
-      } else {
-          hcpId = this.keyHcpId
-      }
-      selectedRsaFile && selectedRsaFile.name && this.api.crypto().loadKeyPairsInBrowserLocalStorage(hcpId, selectedRsaFile).then(function () {
-          if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcpId)) {
-              this.$.registerKeyPairDialog.opened = false
-              this.set("registerKeyPairDialogMessage", "")
-
-              this.registerKeyPairDialogResolution[0]([true, 'main/'])
-          } else {
-              this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
-          }
-      }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
-  }
-
-  importScannedPrivateKey(e, jwkKey) {
-      let hcpId;
-      if(this.keyHcpId == null) {
-          hcpId = this.user.healthcarePartyId
-      } else {
-          hcpId = this.keyHcpId
-      }
-      this.api.crypto().loadKeyPairsAsJwkInBrowserLocalStorage(hcpId, jwkKey).then(function () {
-          if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcpId)) {
-              this.$.registerKeyPairDialog.opened = false
-              this.set("registerKeyPairDialogMessage", "")
-              this.registerKeyPairDialogResolution[0]([true, 'main/'])
-          } else {
-              this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
-          }
-      }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
-  }
-
-  togglePanel(e) {
-  }
-
-  confirmUserInvitation() {
-      if (this.validInvite) {
-          // See if user exists first, based on email address
-          this.api.user().getUserByEmail(this.email).then(existingUserDto => {
-              if (existingUserDto && existingUserDto.id) {
-                  this.$['ht-invite-hcp-user-already-exists'].open()
-              } else {
-                  this.createAndInviteUser();
-              }
-          }).catch( error=> {
-              this.createAndInviteUser();
-          })
-      }
-  }
-
-  checkEhboxMessage() {
-      if (!this.user) { return }
-      const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
-      const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
-      if ( /*localStorage.getItem('receiveMailAuto') === 'true' && */ shouldLoad) {
-          localStorage.setItem('lastEhboxRefresh', Date.now())
-
-          const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
-              keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
-              if (hcp.parentId) {
-                  return getParents(hcp.parentId, keyPairs)
-              }
-              return ([hcp, keyPairs])
-          })
-
-          this.$.ehBoxMessage.classList.remove('notification')
-          if (!this.worker) { this.worker = new Worker() }
-
-          getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
-              this.worker.postMessage({
-                  action: "loadEhboxMessage",
-                  hcpartyBaseApi: this.api.hcpartyLight(),
-                  fhcHost: this.api.fhc().host,
-                  fhcHeaders: JSON.stringify(this.api.fhc().headers),
-                  language: this.language,
-                  iccHost: this.api.host,
-                  iccHeaders: JSON.stringify(this.api.headers),
-                  tokenId: this.api.tokenId,
-                  keystoreId: this.api.keystoreId,
-                  user: this.user,
-                  ehpassword: this.credentials.ehpassword,
-                  boxId: ["INBOX","SENTBOX"],
-                  alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
-                  keyPairs: kp,
-                  parentHcp: hcp
-              })
-          }))
-
-          this.worker.onmessage = e => {
-
-              const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
-              if(parseInt(totalNewMessages)) {
-                  this.set("_forceEhBoxRefresh", true)
-                  this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
-                  this.$['ehBoxMessage'].classList.add('notification');
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                  setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
-              }
-
-              if(!!_.get(e,"data.forceRefresh",false)) {
-                  this.set("_forceEhBoxRefresh", true);
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-              }
-
-          }
-
-      }
-  }
-
-  getMHKeystore(){
-      const healthcarePartyId =this.user.healthcarePartyId;
-      // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
-
-  }
-
-  getAlternateKeystores(){
-      const healthcarePartyId =this.user.healthcarePartyId;
-
-      return Promise.all(
-      Object.keys(localStorage).filter(k => k.includes(this.api.crypto().keychainLocalStoreIdPrefix + healthcarePartyId + ".") === true)
-          .map(fk => this.getDecryptedValueFromLocalstorage(healthcarePartyId, fk.replace("keychain.","keychain.password."))
-					    .then( password =>
-                  (this.keyPairKeystore[fk])?
-                      // Get fhc keystore UUID in cache
-                      new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))):
-                      // Upload new keystore
-                      this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
-                          .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
-
-              )
-          )
-      )
-  }
-
-  addUUIDKeystoresInCache(key, uuid, password){
-      return new Promise(x =>{
-					this.keyPairKeystore[key] = uuid;
-          x(({uuid: uuid, passPhrase: password}))
-      })
-
-  }
-
-  getDecryptedValueFromLocalstorage(healthcarePartyId, key){
-      let item = localStorage.getItem(key);
-
-      return this.api.crypto().hcpartyBaseApi.getHcPartyKeysForDelegate(healthcarePartyId)
-          .then(encryptedHcPartyKey =>
-              this.api.crypto().decryptHcPartyKey(healthcarePartyId, healthcarePartyId, encryptedHcPartyKey[healthcarePartyId], true)
-          )
-          .then(importedAESHcPartyKey =>
-              (item)?this.api.crypto().AES.decrypt(importedAESHcPartyKey.key, this.api.crypto().utils.text2ua(item)):null
-          )
-          .then(data =>
-              (data)?this.api.crypto().utils.ua2text(data):null
-          );
-  }
-
-  _logList() {
-      this.$['ht-access-log'].open()
-  }
-
-  _patientChanged(e) {
-      this.set("patient", e.detail.patient);
-  }
-
-  _timeFormat(date) {
-      return date ? this.api.moment(date).format(date > 99991231 ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY') : '';
-  }
-
-  _ageFormat(date) {
-      return date ? this.api.getCurrentAgeFromBirthDate(date,( e , s ) => this.localize(e, s, this.language)) : '';
-  }
-
-  getGender(gender){
-      if(gender==="male")return "M.";
-      if(gender==="female")return "Mme";
-      else return "";
-  }
-
-  picture(pat) {
-      if (!pat) {
-          return require('../images/male-placeholder.png');
-      }
-      return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0,1).toLowerCase() === 'f') ? require('../images/female-placeholder.png') : require('../images/male-placeholder.png');
-  }
-
-  createAndInviteUser(){
-      this.api.hcparty().createHealthcareParty({
-          "name": this.lastName + " " + this.firstName,
-          "lastName": this.lastName,
-          "firstName": this.firstName,
-          "nihii": this.nihii,
-          "ssin": this.ssin
-      }).then(hcp => {
-          this.api.user().createUser({
-              "healthcarePartyId": hcp.id,
-              "name": this.lastName + " " + this.firstName,
-              "email": this.email,
-              "applicationTokens": {"tmpFirstLogin": this.api.crypto().randomUuid()},
-              "status": "ACTIVE",
-              "type": "database"
-          }).then(usr => {
-              this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
-              this.$['ht-invite-hcp-link'].open()
-          })
-      })
-  }
-
-  _redirectToAnotherEntity(e){
-      if(e.detail){
-          this.set("isMultiUser",false)
-          this.$['ht-app-account-selector'].close()
-          this.login(e, {credentials: e.detail})
-      }
-  }
-
-  _tuto(){
-      // this.$['tutorialDialog'].open()
-      window.open("https://www.topaz.care/fr/support/");
-  }
-
-  checkAndLoadMikrono(){
-      if(this.user){
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-
-              const applicationTokens = this.user.applicationTokens
-              const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
-              const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
-              const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
-
-
-              if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-                  if(!this.api.electron().isAvailable()){
-                      window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
-                  }else{
-                      this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword)
-                          .then(rep => {
-                              if(rep.ok){
-                                  this.set('routeData.page', "diary")
-                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                              }
-                          })
-                  }
-              }else{
-                  const addresses = hcp && hcp.addresses || null
-                  const workAddresses = addresses.find(adr => adr.addressType === "work") || null
-                  const telecoms = workAddresses && workAddresses.telecoms
-                  const workMobile = telecoms && telecoms.find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone") || null
-                  const workEmail = telecoms && telecoms.find(tel => tel.telecomType === "email") || null
-
-                  if(workMobile && workMobile.telecomNumber !== "" && workEmail && workEmail.telecomNumber !== ""){
-                      this.api.onlinebemikrono().register(this.user.id, {}).then(user => {
-                          if(user === true){
-                              this.api.user().getUser(this.user.id).then(u => {
-                                  this.set('user', u)
-                                  const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
-                                  const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
-                                  const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
-
-                                  if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-                                      if(!this.api.electron().isAvailable()){
-                                          window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
-                                      }else{
-                                          this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
-                                              if(rep.ok){
-                                                  this.set('routeData.page', "diary")
-                                                  setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
-                                              }
-                                          })
-                                      }
-                                  }else{
-                                      this.set("mikronoError", {
-                                          addresses: false,
-                                          workAddresses : false,
-                                          workMobile: false,
-                                          workEmail : false,
-                                          token: applicationTokens.MIKRONO ? true : false,
-                                          error: true
-                                      })
-                                  }
-                              })
-                          }else{
-                              this.set("mikronoError", {
-                                  addresses: addresses ? true : false,
-                                  workAddresses : workAddresses ? true : false,
-                                  workMobile: workMobile ? true : false,
-                                  workEmail : workEmail ? true : false,
-                                  token: applicationTokens.MIKRONO ? true : false,
-                                  error: true
-                              })
-                          }
-
-                      })
-                  }else{
-                      this.set("mikronoError", {
-                          addresses: addresses ? true : false,
-                          workAddresses : workAddresses ? true : false,
-                          workMobile: workMobile ? true : false,
-                          workEmail : workEmail ? true : false,
-                          token: applicationTokens.MIKRONO ? true : false,
-                          error: false
-                      })
-
-                      this.$['mikronoErrorDialog'].open()
-                  }
-              }
-
-          })
-      }
-  }
-
-  mikronoAppointmentsMigration(){
-
-      const applicationTokens = _.get(this.user, "applicationTokens", "" )
-      const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
-      const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
-      const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
-
-      if(mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO){
-          this.busySpinner = true;
-          this.set("migrationItems", [])
-          this.$["appointmentsMigrationDialog"].open()
-          this.push("migrationItems", {status: "", item: "Récupération de vos rendez-vous en cours..."})
-
-          let appointments = []
-
-          // TODO: Restore me
-          // this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(1, 'months').format('YYYYMMDDHHmmss'), moment().add(3, 'months').format('YYYYMMDDHHmmss'), this.user.healthcarePartyId).then(items => {
-          this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
-              return Promise.all([this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(15, 'days').format('YYYYMMDDHHmmss'), moment().add(6, 'months').format('YYYYMMDDHHmmss'), this.user.healthcarePartyId)].concat(
-                  hcp.parentId ? [this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(15, 'days').format('YYYYMMDDHHmmss'), moment().add(6, 'months').format('YYYYMMDDHHmmss'), hcp.parentId)] : []
-              )).then(([a, b]) => {
-                  const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
-                  this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
-                  return items.filter(item => parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
-                      comments: _.trim(_.get(item, "details", "")) || null,
-                      externalCustomerId: _.trim(_.get(item, "patientId", "")) || null,
-                      customerComments: _.trim(_.get(item, "details", "")) || null,
-                      title: _.trim(_.get(item, "title", "")) || null,
-                      startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
-                      endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
-                      type: null,
-                      street: _.trim(_.get(item, "addressText", "")) || null,
-                      originalObject: _.merge({wasMigrated: true}, item)
-                  }))
-              })
-          }).then(apps => {
-
-              console.log(apps);
-
-              this.push("migrationItems", {status: "", item: "Migration de vos rendez-vous en cours..."})
-              if(apps && apps.length !== 0){
-                  let prom = Promise.resolve([])
-                  _.chunk(apps, 100).forEach(chunkOfAppointments => {
-                      prom = prom.then(prevResults => this.api.bemikrono().createAppointments(chunkOfAppointments).then(() => {
-
-                          // TODO: make this evolve and pass appointments by batches
-                          _.forEach( chunkOfAppointments, (i=>{ this.api.calendaritem().modifyCalendarItem(_.get(i, "originalObject")).then(() => { /*this.push("migrationItems", { status: "", item: "Migration terminée"})*/ }) }))
-
-                      }).then(res => {
-                          this.push("migrationItems", {status: "", item: "100 rendez-vous (de plus) migrés..."})
-                          return prevResults.concat(res)
-                      }))
-                  })
-                  prom = prom.then(results => {
-                      this.$["appointmentsMigrationDialog"].close()
-                      this.busySpinner = false;
-                      window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
-                  }).catch((e)=>{this.busySpinner = false;})
-              }else{
-                  this.busySpinner = false;
-                  window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank');
-              }
-          }).catch((e)=>{this.busySpinner = false;})
-      }
-
-  }
-
-  _triggerOpenMyProfile(e) {
-      this._myProfile(parseInt(_.get(e,"detail.tabIndex",1)));
-  }
-
-  _triggerOpenAdminGroupsManagementSubMenu(e) {
-      this.set('routeData.page', "admin"); this._triggerMenu();
-      this.$['htAdmin'] && typeof this.$['htAdmin'].handleMenuChange === "function" && this.$['htAdmin'].handleMenuChange({detail:{selection:{item: 'management',submenu:'facturationFlatRateManagementSubMenu'}}});
-  }
-
-  _checkForUpdateMessage(){
-      if(this.user){
-          this.$['htUpdateDialog']._openDialog()
-      }
-  }
-
-  setElectronErrorMessage(e){
-      this.set("electronErrorMessage",e.detail.message)
-      this.$["electronErrorMessage"].classList.add('notification')
-      setTimeout(() => this.closeNotifElectron(), 5000)
-  }
-
-  closeNotifElectron(e){
-      this.$["electronErrorMessage"].classList.remove('notification')
-      this.set("electronErrorMessage","")
-  }
-
-  //Deprecated - restore date of brith of patients with the ssin of patient
-  _correctionDateOfBirth() {
-
-      if( !this.user || !this.api || !!this.busyCorrectingDatesOfBirth || moment().format("YYYYMMDD") > "20190901" ) return;
-      this.busyCorrectingDatesOfBirth = true;
-
-      this._getPatientsByHcp(_.get(this, "user.healthcarePartyId",""),this.filterForDate)
-          .then(myPatients=>_.chain(myPatients).filter(p => [6,8,11,13].indexOf(_.trim(p.ssin).length) > -1 && !(parseInt(p.dateOfBirth)||null)).value())
-          .then(patients => {
-
-              let prom = Promise.resolve([])
-
-              _.map(patients, pat => {
-                  prom = prom.then(promisesCarrier => {
-                      const patSsin = _.trim(_.get(pat,"ssin"))
-                      const patSsinLength = parseInt(patSsin.length)||0
-                      const evaluatedDateOfBirth = !!(patSsinLength === 6 && /^\d{2}(1[0-2])|(0[1-9])([0-2]\d)|(3[0-1])$/.test(patSsin)) ? (/^[0-1]/.test(patSsin) ? '20' : '19') + patSsin :
-                          !!(patSsinLength === 8 && /^\d{4}(1[0-2])|(0[1-9])([0-2]\d|3[0-1])$/.test(patSsin)) ? patSsin :
-                          !!(patSsinLength === 11 && this.api.patient().isValidSsin(patSsin)) ? (/^[0-1]/.test(patSsin) ? '20' : '19') + patSsin.substring(0, 6) :
-                          !!(patSsinLength === 13 && this.api.patient().isValidSsin(patSsin.substring(2))) ? patSsin.substring(0, 8) :
-                          false
-                      return !evaluatedDateOfBirth ?
-                          Promise.resolve() :
-                          this.api.patient().modifyPatientWithUser(this.user,_.merge({},pat,{dateOfBirth:parseInt(evaluatedDateOfBirth)||null}))
-                              .then(p=>this.api.register(p,"patient"))
-                              .then(p=>_.concat(promisesCarrier, p))
-                              .catch(()=>Promise.resolve())
-                  })
-              })
-
-              return prom
-                  .then(() => {
-                      this.busyCorrectingDatesOfBirth = false
-                      setTimeout(() => { this._correctionDateOfBirth() }, 3600000)
-                  })
-
-          })
-
-  }
-
-  // - restore gender of patients with the ssin of patient
-  _correctionGenderPatients(){
-      const isChecked = localStorage.getItem("checked_gender_"+_.get(this,"user.healthcarePartyId","0")) || false;
-      if( !this.user || isChecked || !!this.busyCorrectingGender || !this.api || moment().format("YYYYMMDD") > "20191201" ) return;
-      this.busyCorrectingGender = true;
-
-      this._getPatientsByHcp(_.get(this, "user.healthcarePartyId",""),this.filterForGender)
-          .then(patients => _.chain(patients).filter(p => this.api.patient().isValidSsin(p.ssin)).value())
-          .then(patients => {
-              let prom = Promise.resolve([])
-              let number = 1;
-              _.map(patients, pat => {
-                  prom = prom.then(promisesCarrier => {
-                      const gender = pat.ssin.slice(6, 9) % 2 === 1 ? "male" : "female";
-                      console.log("patient n°"+number+"/"+patients.length+" with ssin n°"+pat.ssin+" : gender de base ==="+pat.gender+" | nouveau gender ==="+gender)
-                      number+=1;
-                      if (gender !== pat.gender) {
-                          return this.api.patient().modifyPatientWithUser(this.user,_.merge({},pat,{gender : gender || "unknow"}))
-                              .then(p=>this.api.register(p,"patient"))
-                              .then(p=>_.concat(promisesCarrier, p))
-                              .catch(()=>Promise.resolve())
-                      }else{
-                          return Promise.resolve([])
-                      }
-                  })
-              })
-
-              return prom
-                  .then(() => {
-                      this.busyCorrectingGender = false
-                      console.log("fini")
-                      localStorage.setItem("checked_gender_"+_.get(this,"user.healthcarePartyId","0"),true);
-                  })
-          })
-  }
-
-  filterForDate(pl){
-      return _.filter( pl.rows, i => !_.trim(_.get(i,"dateOfBirth", "")) && !!_.trim(_.get(i,"ssin", "")) && parseInt(_.get(i,"ssin", "")) )
-  }
-
-  filterForGender(pl){
-      return _.filter( pl.rows, i => parseInt(_.get(i,"ssin", "0")))
-  }
-
-  _getPatientsByHcp(hcpId,filterFunction) {
-      return this.api.getRowsUsingPagination(
-          (key,docId) =>
-              this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
-                  .then(pl => {
-                      return {
-                          rows: filterFunction(pl),
-                          nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                          nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                          done: !pl.nextKeyPair
-                      }
-                  })
-                  .catch(()=>{ return Promise.resolve(); })
-      )||[];
-  }
-
-  _refreshPatient() {
-      const htPat = this.shadowRoot.querySelector("#ht-pat") || this.$['ht-pat'] || null
-      return !htPat || typeof _.get(htPat, "_refreshPatient", false) !== "function" ? null : htPat._refreshPatient()
-  }
-
-  forceReloadPatient(e){
-      if(e.detail && e.detail.origin && e.detail.origin.includes("ht-auto-read-eid-opening")){
-          this._refreshPatient();
-      }
-  }
-
-  resourceAndLanguageChanged(){
-      if(!this.resources || !this.language)return;
-      const months =  Array.from(Array(12).keys()).map(month =>this.localize("month_"+(month+1),month+1,this.language || "en"))
-      const weeks = Array.from(Array(7).keys()).map(month =>this.localize("weekDay_"+(month+1),"un jour",this.language || "en"))
-      weeks.unshift(weeks[6])
-      weeks.pop()
-      this.set("i18n.monthNames",months)
-      this.set("i18n.monthNamesShort",months.map(month => month.substr(0,3)))
-      this.set("i18n.weekdays",weeks)
-      this.set("i18n.weekdaysShort",weeks.map(day => day.substr(0,3)))
-      this.set("i18n.week",this.localize('week','Semaine',this.language));
-      this.set("i18n.calendar",this.localize('calendar','Calendrier',this.language))
-      this.set("i18n.clear",this.localize('clear','Clear',this.language))
-      this.set("i18n.today",this.localize("sel_tod",'Aujourd\'hui',this.language))
-      this.set("i18n.thisMonth",this.localize("this_month","ce mois-ci",this.language))
-      this.set("i18n.cancel",this.localize("can",'Annuler',this.language))
-  }
-
-  _isPatientView(){
-      return this.route.path.includes("/pat")
-  }
+        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
+        <ht-pat-subscription-recovery id="htPatSubscriptionRecovery" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-subscription-recovery>
+`
+    }
+
+    static get is() {
+        return 'ht-app-tz'
+    }
+
+    static get properties() {
+        return {
+            versions: {
+                type: Object,
+                value: function () {
+                    return require('../versions.json')
+                }
+            },
+            api: {
+                type: Object,
+                noReset: true,
+                value: null
+            },
+            user: {
+                type: Object,
+                value: null
+            },
+            keyHcpId: {
+                type: Object,
+                value: null,
+            },
+            language: {
+                type: String,
+                noReset: true,
+                value: 'fr'
+            },
+            i18n: {
+                Type: Object,
+                noReset: true,
+                value() {
+                    moment.locale('fr', {
+                        months: 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
+                        monthsShort: 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
+                        monthsParseExact: true,
+                        weekdays: 'dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi'.split('_'),
+                        weekdaysShort: 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
+                        weekdaysMin: 'Di_Lu_Ma_Me_Je_Ve_Sa'.split('_'),
+                        weekdaysParseExact: true,
+                        longDateFormat: {
+                            LT: 'HH:mm',
+                            LTS: 'HH:mm:ss',
+                            L: 'DD/MM/YYYY',
+                            LL: 'D MMMM YYYY',
+                            LLL: 'D MMMM YYYY HH:mm',
+                            LLLL: 'dddd D MMMM YYYY HH:mm'
+                        },
+                        calendar: {
+                            sameDay: '[Aujourd’hui à] LT',
+                            nextDay: '[Demain à] LT',
+                            nextWeek: 'dddd [à] LT',
+                            lastDay: '[Hier à] LT',
+                            lastWeek: 'dddd [dernier à] LT',
+                            sameElse: 'L'
+                        },
+                        relativeTime: {
+                            future: 'dans %s',
+                            past: 'il y a %s',
+                            s: 'quelques secondes',
+                            m: 'une minute',
+                            mm: '%d minutes',
+                            h: 'une heure',
+                            hh: '%d heures',
+                            d: 'un jour',
+                            dd: '%d jours',
+                            M: 'un mois',
+                            MM: '%d mois',
+                            y: 'un an',
+                            yy: '%d ans'
+                        },
+                        week: {
+                            dow: 1
+                        }
+                    })
+                    const res = {
+                        monthNames: moment.months(),
+                        weekdays: moment.weekdays(),
+                        weekdaysShort: moment.weekdaysShort(),
+                        firstDayOfWeek: 0,
+                        week: 'Semaine',
+                        calendar: 'Calendrier',
+                        clear: 'Effacer',
+                        today: 'Aujourd\'hui',
+                        thisMonth: 'mois courant',
+                        thisYear: moment().format("YYYY"),
+                        cancel: 'Annuler',
+                        formatDate: (d, acc) => {
+                            const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y)
+                            const tab = [yearStr]
+                            acc !== 'year' && tab.unshift((d.month + 1))
+                            acc === 'day' && tab.unshift(d.day)
+                            return tab.join('/')
+                        },
+                        parseDate: text => {
+                            const parts = text.split('/')
+                            let day, month, year
+
+                            if (parts.length === 3) {
+                                year = parts[2]
+                                month = parts[1]
+                                day = parts[0]
+                            } else if (parts.length === 2) {
+                                year = parts[1]
+                                month = parts[0]
+                                day = '1'
+                            } else if (parts.length === 1) {
+                                year = parts[0]
+                                day = '1'
+                                month = '1'
+                            }
+
+                            if (day !== undefined) {
+                                return {day, month, year}
+                            }
+                        },
+                        formatTitle: (monthName, fullYear) => {
+                            return fullYear
+                        }
+                    }
+                    return res
+                }
+            },
+            view: {
+                type: String,
+                reflectToAttribute: true,
+                observer: '_viewChanged',
+                noReset: true
+            },
+            headers: {
+                type: Object,
+                value: {"Content-Type": "application/json"}
+            },
+            credentials: {
+                type: Object,
+                value: {logout: false}
+            },
+            lazyPages: {
+                type: Object,
+                noReset: true,
+
+                value: {
+                    main() {
+                        import(/* webpackChunkName: "ht-main" */ './ht-main.js')
+                    },
+                    pat() {
+                        import(/* webpackChunkName: "ht-pat" */ './ht-pat.js')
+                    },
+                    hcp() {
+                        import(/* webpackChunkName: "ht-hcp" */ './ht-hcp.js')
+                    },
+                    msg() {
+                        import(/* webpackChunkName: "ht-msg" */ './ht-msg.js')
+                    },
+                    diary() {
+                        import(/* webpackChunkName: "ht-diary" */ './ht-diary.js')
+                    },
+                    admin() {
+                        import(/* webpackChunkName: "ht-admin" */ './ht-admin.js')
+                    },
+                    view404() {
+                        import(/* webpackChunkName: "ht-view404" */ './ht-view404.js')
+                    }
+                }
+            },
+            resources: {
+                value() {
+                    return require('./elements/language/language.json')
+                },
+                noReset: true
+            },
+            invitedHcpLink: {
+                type: String,
+                value: ""
+            },
+            disconnectionTimer: {
+                type: Number,
+                value: 240,
+                noReset: true
+            },
+            connectionTime: {
+                type: Number,
+                noReset: true
+            },
+            ehBoxWebWorkerTotalNewMessages: {
+                type: Number,
+                value: 0
+            },
+            EhboxCheckingActive: {
+                type: Boolean,
+                value: false
+            },
+            worker: {
+                type: Worker,
+                noReset: true
+            },
+            timeOutId: {
+                type: String
+            },
+            keyPairKeystore: {
+                type: Array,
+                value: () => []
+            },
+            showWelcomePage: {
+                type: Boolean,
+                value: false
+            },
+            entities: {
+                type: Array,
+                value: () => []
+            },
+            isMultiUser: {
+                type: Boolean,
+                value: true
+            },
+            mikronoError: {
+                type: Object,
+                value: () => {
+                }
+            },
+            migrationItems: {
+                type: Array,
+                value: () => []
+            },
+            busySpinner: {
+                type: Boolean,
+                value: false
+            },
+            updateMessage: {
+                type: String,
+                value: null
+            },
+            updateAction: {
+                type: String,
+                value: null
+            },
+            validInvite: {
+                type: Boolean,
+                value: false
+            },
+            warn: {
+                type: String
+            },
+            validMail: {
+                type: Boolean,
+                value: null
+            },
+            isElectron: {
+                type: Boolean,
+                value: false
+            },
+            electronVersion: {
+                type: String,
+                value: ""
+            },
+            electronVersionOk: {
+                type: Boolean,
+                value: true
+            },
+            backendVersionOk: {
+                type: Boolean,
+                value: true
+            },
+            socket: {
+                type: Object,
+                value: null
+            },
+            _forceEhBoxRefresh: {
+                type: Boolean,
+                value: false
+            },
+            patientOpened: {
+                type: String,
+                value: ""
+            },
+            electronErrorMessage: {
+                type: String,
+                value: ""
+            },
+            keyStoreValidityLabel: {
+                type: String,
+                value: ""
+            },
+            showKeystoreExpiresSoonLabel: {
+                type: Boolean,
+                value: false
+            },
+            showKeystoreExpiredLabel: {
+                type: Boolean,
+                value: false
+            },
+            showKeystoreExpiresSoonStatusIcon: {
+                type: Boolean,
+                value: false
+            },
+            showKeystoreExpiredStatusIcon: {
+                type: Boolean,
+                value: false
+            },
+            mikronoProxy: {
+                type: String
+            },
+            phone: {
+                type: String
+            },
+            lang: {
+                type: String
+            },
+            fhcTokenInfo: {
+                type: Object,
+                value: () => {
+                }
+            },
+            timeLaunched: {
+                type: Boolean,
+                value: false
+            }
+
+        }
+    }
+
+    static get observers() {
+        return [
+            '_routePageChanged(routeData.page)',
+            '_isValidInvite(lastName,firstName,validMail)',
+            'isMailValid(email)',
+            'resourceAndLanguageChanged(resources,language)'
+        ]
+    }
+
+    constructor() {
+        super()
+    }
+
+    _closeNotif(e) {
+        e.target.parentElement.classList.remove('notification')
+    }
+
+    _gotoEhBox(e) {
+        if (!!_.size(_.get(e, "target.parentElement", {}))) e.target.parentElement.classList.remove('notification')
+        this.$['ehBoxMessage'] && this.$['ehBoxMessage'].classList && this.$['ehBoxMessage'].classList.remove('notification')
+        this.set('routeData.page', "msg")
+        this._triggerMenu()
+    }
+
+    _isValidInvite() {
+        this.set('validInvite', this.lastName && this.firstName && this.lastName.length && this.firstName.length && this.validMail)
+    }
+
+    isMailValid(str) {
+        setTimeout(() => {
+            if (str.length) {
+                const filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/
+
+                if (filter.test(str)) {
+                    this.set('warn', '')
+                    this.set('validMail', true)
+                } else {
+                    this.set('warn', this.localize('please_valid_mail', 'Please enter valid email', this.language))
+                    this.set('validMail', false)
+                }
+            }
+        }, 2000)
+    }
+
+    _getDefaultElectronUrl() {
+
+        return _.trim(_.get(this, "electronUrl")) ? _.trim(_.get(this, "electronUrl")) : "http://127.0.0.1:16042"
+
+    }
+
+    setUrls() {
+        const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
+        this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
+        this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhcpr.icure.cloud' : 'https://fhcpr.icure.cloud'))
+        this.set('electronUrl', _.trim(_.get(params, "electronUrl")) ? _.trim(_.get(params, "electronUrl")) : this._getDefaultElectronUrl())
+        this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041')
+
+        this.set('defaultIcureUrl', this.icureUrl)
+        this.set('defaultFhcUrl', this.fhcUrl)
+    }
+
+    _updateServerUrl(icureurl, fhcurl) {
+        if (icureurl) this.set('icureUrl', icureurl)
+        if (fhcurl) this.set('fhcUrl', fhcurl)
+    }
+
+    reset() {
+        const props = HtAppTz.properties
+        Object.keys(props).forEach(k => {
+            if (!props[k].noReset) {
+                this.set(k, (typeof props[k].value === 'function' ? props[k].value() : (props[k].value || null)))
+            }
+        })
+        ;['#ht-main', '#ht-pat', '#ht-hcp', '#ht-msg'].map(x => this.root.querySelector(x)).map(el => el && typeof el.reset === 'function' && el.reset())
+    }
+
+    _checkShowWelcomePage() {
+        this.api.icure().isReady().then(ok => {
+            if (ok === 'false') {
+                this.set('showWelcomePage', true)
+                this.$["loginDialog"].disable()
+                this.$["setupPrompt"].close()
+            } else if (ok !== 'true') {
+                this.$["setupPrompt"].close()
+                this.$["loginDialog"].disable()
+                setTimeout(() => this._checkShowWelcomePage(), 10000)
+            } else {
+                localStorage.setItem('last_app_startup', Date.now().toString())
+                this.$["loginDialog"].enable()
+                this.$["setupPrompt"].close()
+            }
+        }).catch(() => {
+            if (!localStorage.getItem('last_app_startup')) this.$["setupPrompt"].open()
+            this.$["loginDialog"].disable()
+            setTimeout(() => this._checkShowWelcomePage(), 10000)
+        })
+    }
+
+    ready() {
+        super.ready()
+
+        this.set("isMultiUser", true)
+
+        const url = new URL(window.location.href)
+        if (!url.hash || !url.hash.startsWith('#/')) {
+            url.hash = '#/'
+            window.location.replace(url.toString())
+        }
+
+        window.app = this
+
+        if (!this.icureUrl) {
+            this.setUrls()
+        }
+
+        this.set('api', this.$.api)
+
+        //init socket io
+        this.set("socket", null)
+        this.api && this.api.electron().checkAvailable().then(electron => {
+            this.set("isElectron", electron)
+            if (electron) {
+                this.set("socket", io(_.replace(this.host, "/rest/v1", "") || "http://127.0.0.1:16042"))
+
+                this.socket.on("connect", () => {
+                    console.log("connection avec le socket de electron")
+                })
+
+                this.socket.on("update-downloaded", msg => {
+                    console.log(msg)
+                    this.$['electronMessage'].classList.add('notification')
+                    setTimeout(() => {
+                        this.$['electronMessage'].classList.remove('notification')
+                    }, 7500)
+                })
+
+                this.socket.on("auto-read-card-eid", cards => {
+                    if (typeof cards === "string" && cards.includes("Error")) return
+                    if (this.route.path.includes("/pat")) {
+                        this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid === "function" && this.$["ht-pat"].autoReadCardEid(cards)
+                    } else if (this.route.path.includes("/main") && !this.route.path.includes("/auth")) {
+                        this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid === "function" && this.$["htmain"].autoReadCardEid(cards)
+                    }
+                })
+
+                this.notifyPath("socket")
+                this.api && this.api.electron().checkDrugs()
+                this.api.electron().getVersion()
+                    .then(res => {
+                        if (res.version) {
+                            this.set("electronVersion", res.version)
+                            this.set("electronVersionOk", this.versions.electron.includes(res.version))
+                        }
+                    })
+
+                this.api && this.api.electron().getConnexionData()
+                    .then(res => {
+                        if (res.ok && !(_.get(this, "credentials.userId", false) || _.get(this, "credentials.password", false))) {
+                            this.set("api.isMH", res.tokenData.isMH)
+                            if (res.tokenData.isMH) {
+                                this.set('api.tokenIdMH', res.tokenData.tokenId)
+                                this.set('api.tokenMH', res.tokenData.token)
+                                this.set('api.nihiiMH', res.tokenData.nihiiMH)
+                            } else {
+                                this.set('api.tokenId', res.tokenData.tokenId)
+                                this.set('api.token', res.tokenData.token)
+                            }
+                            if (res.credential && !(_.get(this, "credentials.userId", false) || _.get(this, "credentials.password", false))) {
+                                this.set("credentials", res.credential)
+                            }
+                        }
+                    })
+            } else {
+                this.set("electronVersionOk", true)
+            }
+
+        })
+
+        document.onmousemove = this.resetTimer.bind(this)
+        document.onkeypress = this.resetTimer.bind(this)
+
+        runtime.install({
+            onUpdating: () => {
+                console.log('SW Event: ', 'onUpdating')
+                this.set('updateMessage', this.localize('new_upd_det', 'New update detected.', this.language))
+                this.set('updateAction', null)
+            },
+            onUpdateReady: () => {
+                console.log('SW Event: ', 'onUpdateReady')
+                this.set('updateMessage', this.localize('new_upd_rea', 'New update ready', this.language))
+                this.set('updateAction', this.localize('upd', 'Update'))
+            },
+            onUpdated: () => {
+                console.log('SW Event: ', 'onUpdated')
+                window.location.reload()
+            },
+
+            onUpdateFailed: () => {
+                console.log('SW Event: ', 'onUpdateFailed')
+                this.set('updateMessage', this.localize('upd_fail', 'Update failed, please refresh.'))
+            }
+        })
+
+        this.api.icure().getVersion().then(v => {
+            this.set("backendVersion", v.substring(0, v.indexOf('-')))
+            this.set("backendVersionOk", this.versions.backend.includes(v))
+        })
+
+        this._checkShowWelcomePage()
+        this._startCheckInactiveTimer()
+    }
+
+    doUpdate() {
+        this.set('updateMessage', this.localize('upd_ing', 'Updating...'))
+        this.set('updateAction', null)
+        runtime.applyUpdate()
+    }
+
+    resetTimer() {
+        this.set('connectionTime', +new Date())
+    }
+
+    _userSaved(e) {
+        this.set('user', e.detail)
+    }
+
+    _debugPostUser() {
+        return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+            console.log("user:", this.user)
+            console.log("hcp:", hcp)
+            if (hcp.parentId) {
+                return this.$.api.hcparty().getHealthcareParty(hcp.parentId).then(hcp => {
+                    console.log("parentHcp:", hcp)
+                })
+            }
+        })
+    }
+
+    _openUtility(e) {
+        if (e.detail && e.detail.panel === 'my-profile') {
+            this._myProfile(e.detail.tab)
+        } else if (e.detail && e.detail.panel === 'import-keychain') {
+            this._importKeychain()
+        }
+    }
+
+    _startCheckInactiveTimer() {
+        clearInterval(this.interval)
+        this.interval = setInterval(() => {
+            const timeBeforeDeconnection = Math.floor(240 - (+new Date() - this.connectionTime) / 1000 / 60)
+            if (timeBeforeDeconnection > 0) {
+                this.set('disconnectionTimer', timeBeforeDeconnection)
+            } else {
+                const creds = _.clone(this.credentials)
+                this.set("isMultiUser", true)
+                this.set('routeData.page', 'logout')
+                this.credentials.username = creds.username
+                this.credentials.ehpassword = creds.ehpassword
+                this._triggerMenu()
+            }
+        }, 10000)
+
+
+        this.sessionInterval && clearInterval(this.sessionInterval)
+        this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
+    }
+
+    _timeCheck(period = 14400000) {
+        setTimeout(() => {
+            if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
+                this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
+                    if (!isTokenValid) {
+                        //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                        this.set('api.isMH', null)
+                        this.set('api.tokenIdMH', null)
+                        this.set('api.tokenMH', null)
+                        this.set('api.tokenId', null)
+                        this.set('api.token', null)
+                        this.set('api.MHContactPersonName', null)
+                        this.set('api.MHContactPersonSsin', null)
+                        this.uploadKeystoreAndCheckToken().then(() => {
+                            this._timeCheck()
+                        })
+                    } else {
+                        this._timeCheck()
+                    }
+                })
+            } else {
+                this.uploadKeystoreAndCheckToken().then(() => {
+                    this._timeCheck()
+                })
+            }
+        }, period)
+    }
+
+    _timeCheckMH(period = 14400000) {
+        setTimeout(() => {
+            if (this.api.tokenIdMH) {
+                this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
+                    if (!isTokenValid) {
+                        //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                        this.set('api.tokenIdMH', null)
+                        this.set('api.tokenMH', null)
+                        this.set('api.nihiiMH', null)
+                        this.uploadMHKeystoreAndCheckToken().then(() => {
+                            this._timeCheckMH()
+                        })
+                    } else {
+                        this._timeCheckMH()
+                    }
+                })
+            } else {
+                this.uploadMHKeystoreAndCheckToken().then(() => {
+                    this._timeCheckMH()
+                })
+            }
+        }, period)
+    }
+
+    _inboxMessageCheck(period = 20000) {
+        this.timeOutId && clearInterval(this.timeOutId)
+        this.timeOutId = setInterval(() => {
+            this.api.tokenId && this.checkEhboxMessage()
+        }, period)
+    }
+
+    _routePageChanged(page) {
+        if (page === 'logout') {
+
+            this.route.__queryParams.oldToken = this.route.__queryParams.token
+            this.route.__queryParams.token = ""
+            this.route.__queryParams.oldUserId = this.route.__queryParams.userId
+            this.route.__queryParams.userId = ""
+
+            sessionStorage.removeItem('auth')
+            this.authenticated = false
+
+            this.worker && this.worker.terminate()
+
+            if (this.view !== "auth") this.reset()
+            this.set('routeData.page', '/')
+            //setTimeout(() => window.location.reload(), 100) // don't reload at logout
+        } else {
+            console.log("page is -> " + page)
+            if (!this.icureUrl) {
+                this.setUrls()
+            }
+
+            if (!this.authenticated && (!page || !page.startsWith('auth'))) {
+                if (sessionStorage.getItem('auth') || (this.route.__queryParams.token && this.route.__queryParams.userId)) {
+                    this.loginAndRedirect(page)
+                } else {
+                    this.api && this.api.electron().logout()
+                    this.set('routeData.page', 'auth/' + (!page ? 'main' : page.startsWith('logout') ? 'main' : page))
+                }
+            } else {
+                const dest = page ? page.replace(/\/$/, '') : 'main'
+                //keep patient opened
+                if (dest === "pat" && this.subroute.path !== "/") {
+                    this.set('patientOpened', this.subroute.path)
+                } else if (dest === "pat" && this.view !== "pat" && this.patientOpened) {
+                    this.set("subroute.path", this.patientOpened)
+                } else if (dest === "pat" && this.view === "pat" && this.patientOpened) {
+                    this.set('patientOpened', null)
+                }
+
+                if (dest !== this.view) {
+                    this.set('view', dest)
+                }
+            }
+            this._startCheckInactiveTimer('refresh')
+        }
+    }
+
+    _triggerMenu() {
+        let menu = this.$.mobileMenu
+        let overlay = this.$.overlayMenu
+
+        overlay.classList.toggle('open')
+        menu.classList.toggle('open')
+    }
+
+    _viewChanged(view) {
+        if (view.startsWith('auth')) {
+            this.$.loginDialog.open()
+            return
+        }
+        if (this.lazyPages[view]) {
+            this.lazyPages[view]()
+        } else {
+            this._showPage404()
+        }
+
+        if (this.view === "main") {
+            this.$["htmain"].apiReady && this.$["htmain"].apiReady()
+        }
+    }
+
+    _showPage404() {
+        this.view = 'view404'
+    }
+
+    doRoute(e) {
+        const routeTo = _.get(_.filter(_.get(e, "path", []), nodePath => !!_.trim(_.get(nodePath, "dataset.name", ""))), "[0].dataset.name", "main") + "/"
+        this.set('routeData.page', routeTo)
+        this._triggerMenu()
+    }
+
+    _openExportKey() {
+        this.$['export-key'].open()
+    }
+
+    _importKeychain() {
+        this.$['ht-import-keychain'].open()
+    }
+
+    _inviteHCP() {
+        this.set('firstName', '')
+        this.set('lastName', '')
+        this.set('email', '')
+        this.set('warn', '')
+        this.$['ht-invite-hcp'].open()
+    }
+
+    _myProfile(tab) {
+        this.$['ht-my-profile'].open(tab)
+    }
+
+    _selectEntities() {
+        this.$['ht-app-account-selector'].open()
+    }
+
+    _showToasterMessage(id) {
+        this.set(id, true)
+        setTimeout(() => {
+            this.set(id, false)
+        }, 5000 * 2)
+    }
+
+    _checkKeystoreValidity() {
+        //console.log("_checkKeystoreValidity: ", this.showKeystoreExpiredLabel, this.showKeystoreExpiresSoonLabel)
+        const monthLimit = 2 // number of remaining months when to start warning the user
+
+        this.api.fhc().Stscontroller().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
+            if (info.validity && info.validity - moment().valueOf() <= 0) {
+                this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+                this._showToasterMessage("showKeystoreExpiredLabel")
+                this.set("showKeystoreExpiredStatusIcon", true)
+                this.set("showKeystoreExpiresSoonStatusIcon", false)
+            } else if (info.validity && info.validity - moment().add(monthLimit, 'months').valueOf() <= 0) {
+                this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+                this._showToasterMessage("showKeystoreExpiresSoonLabel")
+                this.set("showKeystoreExpiresSoonStatusIcon", true)
+                this.set("showKeystoreExpiredStatusIcon", false)
+            } else {
+                this.set("showKeystoreExpiredStatusIcon", false)
+                this.set("showKeystoreExpiresSoonStatusIcon", false)
+            }
+        })
+
+    }
+
+    _getToken() {
+        return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+            {
+                const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
+                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
+                    this.set('api.fhcTokenInfo', res)
+                    this.$.eHealthStatus.classList.remove('pending')
+                    this.$.eHealthStatus.classList.remove('disconnected')
+
+                    !_.isEmpty(res) ? this.$.eHealthStatus.classList.add('connected') : this.$.eHealthStatus.classList.add('disconnected')
+
+                    this.set('api.isMH', isMH)
+                    if(isMH){
+                        this.credentials.ehpasswordMH = this.credentials.ehpassword
+
+                        this.set('api.keystoreIdMH', this.api.keystoreId)
+                        this.set('api.tokenIdMH', res.tokenId)
+                        this.set('api.tokenMH', res.token)
+                        this.set('api.nihiiMH', hcp.nihii)
+
+                        if(hcp.contactPersonHcpId){
+                            this.$.api.hcparty().getHealthcareParty(hcp.contactPersonHcpId).then(hcpCt =>{
+                                this.set('api.MHContactPersonName', hcpCt.lastName + ' ' + hcpCt.firstName)
+                                this.set('api.MHContactPersonSsin', hcpCt.ssin)
+                            });
+                        }
+
+                    }else {
+                        this.set('api.tokenId', res.tokenId)
+                        this.set('api.token', res.token)
+                    }
+
+                    this.api.isElectronAvailable().then(electron =>{
+                        if(electron){
+                            fetch(this._getDefaultElectronUrl() + "/tokenFHC", {
+                                method: "POST",
+                                headers: {"Content-Type": "application/json"},
+                                body: !isMH ? JSON.stringify({isMH:false,tokenId:this.api.tokenId, token:this.api.token}) : JSON.stringify({isMH:true,keystoreIdMH:this.api.keystoreIdMH, tokenIdMH:this.api.tokenIdMH, tokenMH:this.api.tokenMH, nihiiMH:this.api.nihiiMH})
+                            }).then(response => response.json()).then(rep => {
+                                if(rep.ok){
+                                    this.set('routeData.page', "diary")
+                                    setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
+                                }
+                            })
+                        }
+                    })
+                    return res.tokenId
+                }).catch((e) => {
+                    this.$.eHealthStatus.classList.remove('pending')
+                    this.$.eHealthStatus.classList.remove('connected')
+                    this.$.eHealthStatus.classList.add('disconnected')
+                    throw(e)
+                })
+            }
+        )
+    }
+
+    _isOtherInstitutionWithNihii(hcp) {
+        if (_.get(hcp, 'nihii', null)) {
+            return _.size(_.get(hcp, 'nihii', null)) === 8 && (parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 || parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0)
+        } else {
+            return false
+        }
+    }
+
+    _getQuality(hcp) {
+        return _.get(hcp, 'type', null) && _.get(hcp, 'type', null).toLowerCase() === 'medicalhouse' ? 'medicalhouse' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 ? 'sortingcenter' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0 ? 'officedoctors' : 'doctor'
+    }
+
+    _versionOk(a, b) {
+        return a && b ? 'ok' : 'nok'
+    }
+
+    _getMHToken() {
+        //TODO: change the request for MH
+        //this.api.fhc().Stscontroller().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
+        //get the password from local storage
+        //let mhPassword= "";
+        return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+            .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
+            .then(hcpMH => {
+                this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
+                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
+                    this.set('api.fhcTokenInfo', res)
+                    if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
+                    if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
+                    !_.isEmpty(res) ? this.root.getElementById('eHealthMHStatus') ? this.root.getElementById('eHealthMHStatus').classList.add('connected') : null : this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
+
+                    this.set('api.tokenIdMH', res.tokenId)
+                    this.set('api.tokenMH', res.token)
+                    this.set('api.nihiiMH', hcpMH.nihii)
+                    return res.tokenId
+                })
+            }).catch((e) => {
+                if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
+                if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
+                if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
+                throw(e)
+            })
+    }
+
+    loginAndRedirect(page) {
+        const sAuth = JSON.parse(sessionStorage.getItem('auth'))
+        if (!this.credentials || (!this.credentials.password && sAuth && sAuth.password) || (!this.credentials.appToken && sAuth && sAuth.appToken)) {
+            this.set('credentials', sAuth)
+        }
+
+        if (this.route.__queryParams.token && this.route.__queryParams.userId) {
+            this.set('headers', _.assign(_.assign({}, this.headers),
+                {Authorization: 'Basic ' + btoa(this.route.__queryParams.userId + ':' + this.route.__queryParams.token)}))
+        } else if ((this.credentials.userId && this.credentials.appToken)) {
+            this.set('headers', _.assign(_.assign({}, this.headers),
+                {Authorization: 'Basic ' + btoa(this.credentials.userId + ':' + this.credentials.appToken)}))
+        }
+        // else if ((this.credentials.username && this.credentials.password)) {
+        else this.set('headers', _.assign(_.assign({}, this.headers),
+                {Authorization: 'Basic ' + btoa(this.credentials.username + ':' + this.credentials.password + (this.credentials.twofa ? '|' + this.credentials.twofa : ''))}))
+        // }
+
+        //Be careful not to use this.api here as it might not have been defined yet
+        //TODD debounce here
+        this.$.api.user().getCurrentUser().then(u => {
+            if (this.isMultiUser) {
+                this._selectEntities()
+            }
+
+            this.api.user().getCurrentSession().then(sessionId => this.api.set('sessionId', sessionId))
+
+            this.set('user', u)
+            this.user.roles && this.user.roles.find(r => r === 'ADMIN' || r === 'MS-ADMIN' || r === 'MS_ADMIN') ? this.set('isAdmin', true) : this.set('isAdmin', false)
+            this.set('connectionTime', +new Date())
+
+            this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
+                const language = (hcp.languages || ['fr']).find(lng => lng && lng.length === 2)
+                language && this.set('language', language)
+
+                this.$.loginDialog.opened = false
+
+                if (this.route.__queryParams.oldToken && Object.keys(this.user.applicationTokens).find(key => this.user.applicationTokens[key] === this.route.__queryParams.oldToken) && this.route.__queryParams.oldUserId && this.route.__queryParams.oldUserId === this.user.id) {
+                    this.route.__queryParams.token = this.route.__queryParams.oldToken
+                    this.route.__queryParams.userId = this.route.__queryParams.oldUserId
+                }
+
+                this.api.electron().topazCredential(this.user, this.api.credentials)
+
+                this.set('credentials.twofa', null)
+                u.groupId ? this.set('credentials.userId', u.groupId + "/" + u.id) : this.set('credentials.userId', u.id)
+                this.set('credentials.appToken', u.applicationTokens && u.applicationTokens.ICC)
+
+                if ((this.credentials.userId && this.credentials.appToken)) {
+                    this.set('credentials.password', null)
+                    this.set('headers.Authorization', 'Basic ' + btoa(this.credentials.userId + ':' + this.credentials.appToken))
+                }
+                sessionStorage.setItem('auth', JSON.stringify(this.credentials))
+                localStorage.setItem('last_connection', this.credentials.username)
+
+                if (!this.authenticated) {
+                    this.authenticated = true
+
+                    const loadKeysForParent = (parentId, prom) => {
+                        if (parentId) {
+                            return prom.then(([success, destPage]) => {
+                                if (success) {
+                                    return this.api.hcparty().getHealthcareParty(parentId).then(hcp =>
+                                        loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, destPage))
+                                    )
+                                } else {
+                                    return Promise.resolve([success, destPage])
+                                }
+                            })
+                        } else {
+                            return prom
+                        }
+                    }
+
+                    loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
+                        if (success) {
+                            this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
+                            const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
+                            if (!this.routeData || destPage !== this.routeData.page) {
+                                this.set('routeData.page', destPage)
+                            } else {
+                                this._routePageChanged(destPage)
+                            }
+                        }
+                    })
+                }
+
+                //only 1 instance
+                if (!this.timeLaunched) {
+                    this.set("timeLaunched", true)
+                    this._timeCheck()
+                    this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
+                }
+                this._inboxMessageCheck()
+                this._checkForUpdateMessage()
+                //this._correctionGenderPatients();
+
+            })
+        }).catch(function (e) {
+            this.authenticated = false
+            sessionStorage.removeItem('auth')
+            this.set("credentials.error", "Wrong user or password")
+        }.bind(this))
+    }
+
+    loadOrImportRSAKeys(u, hcp, page) {
+        return new Promise((resolve, reject) => {
+            if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcp.id)) {
+                this.$.api.crypto().checkPrivateKeyValidity(hcp).then(ok => {
+                    this.set("keyHcpId", hcp.id)
+                    if (ok) {
+                        this.api.loadUsersAndHcParties()
+                        this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
+                        resolve([true, page])
+                    } else {
+                        this.registerKeyPairDialogMessage = "The key registered in your browser is invalid"
+                        this.registerKeyPairDialogResolution = ([resolve, reject])
+                        this.$.registerKeyPairDialog.opened = true
+                    }
+                })
+            } else {
+                //todo julien revoir le changement avec les nouvelles RSA keys et les anciennes (sans besoin de vider le local storage)
+                this.set("keyHcpId", hcp.id)
+                if (hcp.publicKey) {
+                    this.registerKeyPairDialogMessage = ""
+                    this.registerKeyPairDialogResolution = ([resolve, reject])
+                    this.$.registerKeyPairDialog.opened = true
+                } else {
+                    console.log("HCP public key is " + hcp.publicKey, hcp)
+                    this.registerKeyPairDialogResolution = ([resolve, reject])
+                    this.$.firstConnectionDialog.opened = true
+                }
+            }
+
+        })
+    }
+
+    uploadKeystoreAndCheckToken() {
+        if (this.credentials.ehpassword) {
+            const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
+            if (ehKeychain) {
+                return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                    this.$.api.keystoreId = res.uuid
+                    this._checkKeystoreValidity()
+                    return this._getToken()
+                }).catch((e) => {
+                    this.$.eHealthStatus.classList.remove('pending')
+                    this.$.eHealthStatus.classList.remove('connected')
+                    this.$.eHealthStatus.classList.add('disconnected')
+                    throw(e)
+                })
+            } else {
+                this.$.noehealth.classList.add("notification")
+
+                this.$.eHealthStatus.classList.remove('pending')
+                this.$.eHealthStatus.classList.remove('connected')
+                this.$.eHealthStatus.classList.add('disconnected')
+            }
+        } else {
+            this.$.eHealthStatus.classList.remove('pending')
+            this.$.eHealthStatus.classList.remove('connected')
+            this.$.eHealthStatus.classList.add('disconnected')
+        }
+        return Promise.resolve(null)
+    }
+
+    uploadMHKeystoreAndCheckToken() {
+        if (!_.get(this, "user.healthcarePartyId", false)) return Promise.resolve()
+        const ksKey = "org.taktik.icure.ehealth.keychain.MMH." + this.user.healthcarePartyId
+        Object.keys(localStorage).filter(k => k === ksKey).map(kM => {
+            const val = localStorage.getItem(kM)
+            Object.keys(localStorage).map(kA => {
+                if (localStorage.getItem(kA) === val) {
+                    this.getDecryptedValueFromLocalstorage(this.user.healthcarePartyId, kA.replace("keychain.", "keychain.password."))
+                        .then(password => {
+                            if (password) {
+                                this.credentials.ehpasswordMH = password
+                                const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH." + this.user.healthcarePartyId)
+                                if (ehKeychain) {
+                                    return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                                        this.$.api.keystoreIdMH = res.uuid
+                                        return this._getMHToken()
+                                    }).catch((e) => {
+                                        if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
+                                        if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
+                                        if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
+                                        throw(e)
+                                    })
+                                } else {
+                                    //TODO: notif for no MH session
+                                    //this.$.noehealth.classList.add("notification")
+                                    if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
+                                    if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
+                                    if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
+                                }
+                            } else {
+                                if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
+                                if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('connected')
+                                if (this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
+                            }
+                            return Promise.resolve()
+                        })
+                }
+            })
+        })
+        return Promise.resolve(null)
+    }
+
+    login(event, loginObject) { /* this is called from mouseDown with 2 arguments */
+        this._updateServerUrl(loginObject.icureurl, loginObject.fhcurl)
+
+        this.set('credentials', loginObject && loginObject.credentials)
+
+
+        this.loginAndRedirect(loginObject && loginObject.page)
+    }
+
+    importPrivateKey(e, selectedRsaFile) {
+        let hcpId
+        if (this.keyHcpId == null) {
+            hcpId = this.user.healthcarePartyId
+        } else {
+            hcpId = this.keyHcpId
+        }
+        selectedRsaFile && selectedRsaFile.name && this.api.crypto().loadKeyPairsInBrowserLocalStorage(hcpId, selectedRsaFile).then(function () {
+            if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcpId)) {
+                this.$.registerKeyPairDialog.opened = false
+                this.set("registerKeyPairDialogMessage", "")
+
+                this.registerKeyPairDialogResolution[0]([true, 'main/'])
+            } else {
+                this.set("registerKeyPairDialogMessage", "Invalid key file")
+                this.$.registerKeyPairDialog.reset()
+            }
+        }.bind(this)).catch(e => {
+            console.log(e)
+            this.registerKeyPairDialogResolution[1](e)
+        })
+    }
+
+    importScannedPrivateKey(e, jwkKey) {
+        let hcpId
+        if (this.keyHcpId == null) {
+            hcpId = this.user.healthcarePartyId
+        } else {
+            hcpId = this.keyHcpId
+        }
+        this.api.crypto().loadKeyPairsAsJwkInBrowserLocalStorage(hcpId, jwkKey).then(function () {
+            if (this.$.api.crypto().RSA.loadKeyPairNotImported(hcpId)) {
+                this.$.registerKeyPairDialog.opened = false
+                this.set("registerKeyPairDialogMessage", "")
+                this.registerKeyPairDialogResolution[0]([true, 'main/'])
+            } else {
+                this.set("registerKeyPairDialogMessage", "Invalid key file")
+                this.$.registerKeyPairDialog.reset()
+            }
+        }.bind(this)).catch(e => {
+            console.log(e)
+            this.registerKeyPairDialogResolution[1](e)
+        })
+    }
+
+    togglePanel(e) {
+    }
+
+    confirmUserInvitation() {
+        if (this.validInvite) {
+            // See if user exists first, based on email address
+            this.api.user().getUserByEmail(this.email).then(existingUserDto => {
+                if (existingUserDto && existingUserDto.id) {
+                    this.$['ht-invite-hcp-user-already-exists'].open()
+                } else {
+                    this.createAndInviteUser()
+                }
+            }).catch(error => {
+                this.createAndInviteUser()
+            })
+        }
+    }
+
+    getMHKeystore() {
+        const healthcarePartyId = this.user.healthcarePartyId
+        // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
+
+    }
+
+    getAlternateKeystores() {
+        const healthcarePartyId = this.user.healthcarePartyId
+
+        return Promise.all(
+            Object.keys(localStorage).filter(k => k.includes(this.api.crypto().keychainLocalStoreIdPrefix + healthcarePartyId + ".") === true)
+                .map(fk => this.getDecryptedValueFromLocalstorage(healthcarePartyId, fk.replace("keychain.", "keychain.password."))
+                    .then(password =>
+                        (this.keyPairKeystore[fk]) ?
+                            // Get fhc keystore UUID in cache
+                            new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))) :
+                            // Upload new keystore
+                            this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
+                                .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
+                    )
+                )
+        )
+    }
+
+    addUUIDKeystoresInCache(key, uuid, password) {
+        return new Promise(x => {
+            this.keyPairKeystore[key] = uuid
+            x(({uuid: uuid, passPhrase: password}))
+        })
+
+    }
+
+    getDecryptedValueFromLocalstorage(healthcarePartyId, key) {
+        let item = localStorage.getItem(key)
+
+        return this.api.crypto().hcpartyBaseApi.getHcPartyKeysForDelegate(healthcarePartyId)
+            .then(encryptedHcPartyKey =>
+                this.api.crypto().decryptHcPartyKey(healthcarePartyId, healthcarePartyId, encryptedHcPartyKey[healthcarePartyId], true)
+            )
+            .then(importedAESHcPartyKey =>
+                (item) ? this.api.crypto().AES.decrypt(importedAESHcPartyKey.key, this.api.crypto().utils.text2ua(item)) : null
+            )
+            .then(data =>
+                (data) ? this.api.crypto().utils.ua2text(data) : null
+            )
+    }
+
+    _logList() {
+        this.$['ht-access-log'].open()
+    }
+
+    _patientChanged(e) {
+        this.set("patient", e.detail.patient)
+    }
+
+    _timeFormat(date) {
+        return date ? this.api.moment(date).format(date > 99991231 ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY') : ''
+    }
+
+    _ageFormat(date) {
+        return date ? this.api.getCurrentAgeFromBirthDate(date, (e, s) => this.localize(e, s, this.language)) : ''
+    }
+
+    getGender(gender) {
+        if (gender === "male") return "M."
+        if (gender === "female") return "Mme"
+        else return ""
+    }
+
+    picture(pat) {
+        if (!pat) {
+            return require('../images/male-placeholder.png')
+        }
+        return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0, 1).toLowerCase() === 'f') ? require('../images/female-placeholder.png') : require('../images/male-placeholder.png')
+    }
+
+    createAndInviteUser() {
+        this.api.hcparty().createHealthcareParty({
+            "name": this.lastName + " " + this.firstName,
+            "lastName": this.lastName,
+            "firstName": this.firstName,
+            "nihii": this.nihii,
+            "ssin": this.ssin,
+            "languages": [_.get(this, "lang.id", "fr")],
+            "addresses": [{
+                "addressType": "work",
+                "telecoms": [{
+                    "telecomType": "phone",
+                    "telecomNumber": this.phone
+                }, {
+                    "telecomType": "email",
+                    "telecomNumber": this.email
+                }]
+            }]
+        }).then(hcp => {
+            this.api.user().createUser({
+                "healthcarePartyId": hcp.id,
+                "name": this.lastName + " " + this.firstName,
+                "email": this.email,
+                "applicationTokens": {"tmpFirstLogin": this.api.crypto().randomUuid()},
+                "status": "ACTIVE",
+                "type": "database"
+            }).then(usr => {
+                this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
+                this.$['ht-invite-hcp-link'].open()
+            })
+        })
+    }
+
+    _redirectToAnotherEntity(e) {
+        if (e.detail) {
+            this.set("isMultiUser", false)
+            this.$['ht-app-account-selector'].close()
+            this.login(e, {credentials: e.detail})
+        }
+    }
+
+    _tuto() {
+        // this.$['tutorialDialog'].open()
+        window.open("https://www.topaz.care/fr/support/")
+    }
+
+    checkAndLoadMikrono() {
+        if (this.user) {
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+
+                const applicationTokens = this.user.applicationTokens
+                const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+                const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+                const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+
+
+                if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
+                    if (!this.api.electron().isAvailable()) {
+                        window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
+                    } else {
+                        this.api.electron().setMikronoCredentials(mikronoUser, mikronoPassword)
+                            .then(rep => {
+                                if (rep.ok) {
+                                    this.set('routeData.page', "diary")
+                                    setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
+                                }
+                            })
+                    }
+                } else {
+                    const addresses = hcp && hcp.addresses || null
+                    const workAddresses = addresses.find(adr => adr.addressType === "work") || null
+                    const telecoms = workAddresses && workAddresses.telecoms
+                    const workMobile = telecoms && telecoms.find(tel => tel.telecomType === "mobile" || tel.telecomType === "phone") || null
+                    const workEmail = telecoms && telecoms.find(tel => tel.telecomType === "email") || null
+
+                    if (_.get(workMobile, 'telecomNumber', null) && _.get(workEmail, 'telecomNumber', null) && this.api._isValidMail(_.get(workEmail, 'telecomNumber', null))) {
+                        this.api.onlinebemikrono().register(this.user.id, {}).then(user => {
+                            if (user === true) {
+                                this.api.user().getUser(this.user.id).then(u => {
+                                    this.set('user', u)
+                                    const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+                                    const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+                                    const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+
+                                    if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
+                                        if (!this.api.electron().isAvailable()) {
+                                            window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
+                                        } else {
+                                            this.api.electron().setMikronoCredentials(mikronoUser, mikronoPassword).then(rep => {
+                                                if (rep.ok) {
+                                                    this.set('routeData.page', "diary")
+                                                    setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
+                                                }
+                                            })
+                                        }
+                                    } else {
+                                        this.set("mikronoError", {
+                                            addresses: false,
+                                            workAddresses: false,
+                                            workMobile: false,
+                                            workEmail: false,
+                                            token: applicationTokens.MIKRONO ? true : false,
+                                            error: true
+                                        })
+                                    }
+                                })
+                            } else {
+                                this.set("mikronoError", {
+                                    addresses: !!addresses,
+                                    workAddresses: !!_.trim(_.get(workAddresses, 'street', null)) && _.trim(_.get(workAddresses, 'houseNumber', null)) && _.trim(_.get(workAddresses, 'postalCode', null)) && _.trim(_.get(workAddresses, 'city', null)),
+                                    workMobile: !!_.get(workMobile, 'telecomNumber', null),
+                                    workEmail: this.api._isValidMail(_.get(workEmail, 'telecomNumber', null)),
+                                    token: !!_.get(applicationTokens, 'MIKRONO', null),
+                                    error: true
+                                })
+                            }
+
+                        })
+                    } else {
+                        this.set("mikronoError", {
+                            addresses: !!addresses,
+                            workAddresses: !!_.trim(_.get(workAddresses, 'street', null)) && _.trim(_.get(workAddresses, 'houseNumber', null)) && _.trim(_.get(workAddresses, 'postalCode', null)) && _.trim(_.get(workAddresses, 'city', null)),
+                            workMobile: !!_.get(workMobile, 'telecomNumber', null),
+                            workEmail: this.api._isValidMail(_.get(workEmail, 'telecomNumber', null)),
+                            token: !!_.get(applicationTokens, 'MIKRONO', null),
+                            error: false
+                        })
+
+                        this.$['mikronoErrorDialog'].open()
+                    }
+                }
+
+            })
+        }
+    }
+
+    mmhSendRecoveryDialog(e) {
+        //e.stopPropagation()
+        //if(this._checkForEhealthSession() === true){
+        this.$["htPatSubscriptionRecovery"]._openDialog()
+        //}else{
+        //    this._ehealthErrorNotification()
+        //}
+    }
+
+    mikronoAppointmentsMigration() {
+
+        const applicationTokens = _.get(this.user, "applicationTokens", "")
+        const mikronoUrl = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.url").typedValue.stringValue || null
+        const mikronoUser = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.user").typedValue.stringValue || null
+        const mikronoPassword = this.user && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password") && this.user.properties.find(p => p.type.identifier === "org.taktik.icure.be.plugins.mikrono.password").typedValue.stringValue || null
+
+        if (mikronoUrl && mikronoUser && mikronoPassword && applicationTokens && applicationTokens.MIKRONO) {
+            this.busySpinner = true
+            this.set("migrationItems", [])
+            this.$["appointmentsMigrationDialog"].open()
+            this.push("migrationItems", {status: "", item: "Récupération de vos rendez-vous en cours..."})
+
+            let appointments = []
+
+            // TODO: Restore me
+            // this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(1, 'months').format('YYYYMMDDHHmmss'), moment().add(3, 'months').format('YYYYMMDDHHmmss'), this.user.healthcarePartyId).then(items => {
+            this.api.hcparty().getCurrentHealthcareParty().then(hcp => {
+                return Promise.all([this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(15, 'days').format('YYYYMMDDHHmmss'), moment().add(6, 'months').format('YYYYMMDDHHmmss'), this.user.healthcarePartyId)].concat(
+                    hcp.parentId ? [this.api.calendaritem().getCalendarItemsByPeriodAndHcPartyId(moment().subtract(15, 'days').format('YYYYMMDDHHmmss'), moment().add(6, 'months').format('YYYYMMDDHHmmss'), hcp.parentId)] : []
+                )).then(([a, b]) => {
+                    const items = a.concat(b.filter(calItem => calItem.responsible === hcp.id))
+                    this.push("migrationItems", {status: "", item: "Traitement de vos rendez-vous en cours..."})
+                    return items.filter(item => parseInt(_.get(item, "startTime", 0)) && parseInt(_.get(item, "endTime", 0)) && !_.get(item, "wasMigrated", false)).map(item => ({
+                        comments: _.trim(_.get(item, "details", "")) || null,
+                        externalCustomerId: _.trim(_.get(item, "patientId", "")) || null,
+                        customerComments: _.trim(_.get(item, "details", "")) || null,
+                        title: _.trim(_.get(item, "title", "")) || null,
+                        startTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "startTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                        endTime: (parseInt(_.get(item, "startTime", 0)) ? moment(_.trim(_.get(item, "endTime", "")), "YYYYMMDDHHmmss").format("YYYY-MM-DDTHH:mm:ss") + "Z" : null),
+                        type: null,
+                        street: _.trim(_.get(item, "addressText", "")) || null,
+                        originalObject: _.merge({wasMigrated: true}, item)
+                    }))
+                })
+            }).then(apps => {
+
+                console.log(apps)
+
+                this.push("migrationItems", {status: "", item: "Migration de vos rendez-vous en cours..."})
+                if (apps && apps.length !== 0) {
+                    let prom = Promise.resolve([])
+                    _.chunk(apps, 100).forEach(chunkOfAppointments => {
+                        prom = prom.then(prevResults => this.api.bemikrono().createAppointments(chunkOfAppointments).then(() => {
+
+                            // TODO: make this evolve and pass appointments by batches
+                            _.forEach(chunkOfAppointments, (i => {
+                                this.api.calendaritem().modifyCalendarItem(_.get(i, "originalObject")).then(() => { /*this.push("migrationItems", { status: "", item: "Migration terminée"})*/
+                                })
+                            }))
+
+                        }).then(res => {
+                            this.push("migrationItems", {status: "", item: "100 rendez-vous (de plus) migrés..."})
+                            return prevResults.concat(res)
+                        }))
+                    })
+                    prom = prom.then(results => {
+                        this.$["appointmentsMigrationDialog"].close()
+                        this.busySpinner = false
+                        window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
+                    }).catch((e) => {
+                        this.busySpinner = false
+                    })
+                } else {
+                    this.busySpinner = false
+                    window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
+                }
+            }).catch((e) => {
+                this.busySpinner = false
+            })
+        }
+
+    }
+
+    _triggerOpenMyProfile(e) {
+        this._myProfile(parseInt(_.get(e, "detail.tabIndex", 1)))
+    }
+
+    _triggerOpenAdminGroupsManagementSubMenu(e) {
+        this.set('routeData.page', "admin")
+        this._triggerMenu()
+        this.$['htAdmin'] && typeof this.$['htAdmin'].handleMenuChange === "function" && this.$['htAdmin'].handleMenuChange({
+            detail: {
+                selection: {
+                    item: 'management',
+                    submenu: 'facturationFlatRateManagementSubMenu'
+                }
+            }
+        })
+    }
+
+    _checkForUpdateMessage() {
+        if (this.user) {
+            this.$['htUpdateDialog']._openDialog()
+        }
+    }
+
+    setElectronErrorMessage(e) {
+        this.set("electronErrorMessage", e.detail.message)
+        this.$["electronErrorMessage"].classList.add('notification')
+        setTimeout(() => this.closeNotifElectron(), 5000)
+    }
+
+    closeNotifElectron(e) {
+        this.$["electronErrorMessage"].classList.remove('notification')
+        this.set("electronErrorMessage", "")
+    }
+
+    //Deprecated - restore date of brith of patients with the ssin of patient
+    _correctionDateOfBirth() {
+
+        if (!this.user || !this.api || !!this.busyCorrectingDatesOfBirth || moment().format("YYYYMMDD") > "20190901") return
+        this.busyCorrectingDatesOfBirth = true
+
+        this._getPatientsByHcp(_.get(this, "user.healthcarePartyId", ""), this.filterForDate)
+            .then(myPatients => _.chain(myPatients).filter(p => [6, 8, 11, 13].indexOf(_.trim(p.ssin).length) > -1 && !(parseInt(p.dateOfBirth) || null)).value())
+            .then(patients => {
+
+                let prom = Promise.resolve([])
+
+                _.map(patients, pat => {
+                    prom = prom.then(promisesCarrier => {
+                        const patSsin = _.trim(_.get(pat, "ssin"))
+                        const patSsinLength = parseInt(patSsin.length) || 0
+                        const evaluatedDateOfBirth = !!(patSsinLength === 6 && /^\d{2}(1[0-2])|(0[1-9])([0-2]\d)|(3[0-1])$/.test(patSsin)) ? (/^[0-1]/.test(patSsin) ? '20' : '19') + patSsin :
+                            !!(patSsinLength === 8 && /^\d{4}(1[0-2])|(0[1-9])([0-2]\d|3[0-1])$/.test(patSsin)) ? patSsin :
+                                !!(patSsinLength === 11 && this.api.patient().isValidSsin(patSsin)) ? (/^[0-1]/.test(patSsin) ? '20' : '19') + patSsin.substring(0, 6) :
+                                    !!(patSsinLength === 13 && this.api.patient().isValidSsin(patSsin.substring(2))) ? patSsin.substring(0, 8) :
+                                        false
+                        return !evaluatedDateOfBirth ?
+                            Promise.resolve() :
+                            this.api.patient().modifyPatientWithUser(this.user, _.merge({}, pat, {dateOfBirth: parseInt(evaluatedDateOfBirth) || null}))
+                                .then(p => this.api.register(p, "patient"))
+                                .then(p => _.concat(promisesCarrier, p))
+                                .catch(() => Promise.resolve())
+                    })
+                })
+
+                return prom
+                    .then(() => {
+                        this.busyCorrectingDatesOfBirth = false
+                        setTimeout(() => {
+                            this._correctionDateOfBirth()
+                        }, 3600000)
+                    })
+
+            })
+
+    }
+
+    // - restore gender of patients with the ssin of patient
+    _correctionGenderPatients() {
+        const isChecked = localStorage.getItem("checked_gender_" + _.get(this, "user.healthcarePartyId", "0")) || false
+        if (!this.user || isChecked || !!this.busyCorrectingGender || !this.api || moment().format("YYYYMMDD") > "20191201") return
+        this.busyCorrectingGender = true
+
+        this._getPatientsByHcp(_.get(this, "user.healthcarePartyId", ""), this.filterForGender)
+            .then(patients => _.chain(patients).filter(p => this.api.patient().isValidSsin(p.ssin)).value())
+            .then(patients => {
+                let prom = Promise.resolve([])
+                let number = 1
+                _.map(patients, pat => {
+                    prom = prom.then(promisesCarrier => {
+                        const gender = pat.ssin.slice(6, 9) % 2 === 1 ? "male" : "female"
+                        console.log("patient n°" + number + "/" + patients.length + " with ssin n°" + pat.ssin + " : gender de base ===" + pat.gender + " | nouveau gender ===" + gender)
+                        number += 1
+                        if (gender !== pat.gender) {
+                            return this.api.patient().modifyPatientWithUser(this.user, _.merge({}, pat, {gender: gender || "unknow"}))
+                                .then(p => this.api.register(p, "patient"))
+                                .then(p => _.concat(promisesCarrier, p))
+                                .catch(() => Promise.resolve())
+                        } else {
+                            return Promise.resolve([])
+                        }
+                    })
+                })
+
+                return prom
+                    .then(() => {
+                        this.busyCorrectingGender = false
+                        console.log("fini")
+                        localStorage.setItem("checked_gender_" + _.get(this, "user.healthcarePartyId", "0"), true)
+                    })
+            })
+    }
+
+    filterForDate(pl) {
+        return _.filter(pl.rows, i => !_.trim(_.get(i, "dateOfBirth", "")) && !!_.trim(_.get(i, "ssin", "")) && parseInt(_.get(i, "ssin", "")))
+    }
+
+    filterForGender(pl) {
+        return _.filter(pl.rows, i => parseInt(_.get(i, "ssin", "0")))
+    }
+
+    _getPatientsByHcp(hcpId, filterFunction) {
+        return this.api.getRowsUsingPagination(
+            (key, docId) =>
+                this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+                    .then(pl => {
+                        return {
+                            rows: filterFunction(pl),
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(() => {
+                        return Promise.resolve()
+                    })
+        ) || []
+    }
+
+    _refreshPatient() {
+        const htPat = this.shadowRoot.querySelector("#ht-pat") || this.$['ht-pat'] || null
+        return !htPat || typeof _.get(htPat, "_refreshPatient", false) !== "function" ? null : htPat._refreshPatient()
+    }
+
+    forceReloadPatient(e) {
+        if (e.detail && e.detail.origin && e.detail.origin.includes("ht-auto-read-eid-opening")) {
+            this._refreshPatient()
+        }
+    }
+
+    resourceAndLanguageChanged() {
+        if (!this.resources || !this.language) return
+        const months = Array.from(Array(12).keys()).map(month => this.localize("month_" + (month + 1), month + 1, this.language || "en"))
+        const weeks = Array.from(Array(7).keys()).map(month => this.localize("weekDay_" + (month + 1), "un jour", this.language || "en"))
+        weeks.unshift(weeks[6])
+        weeks.pop()
+        this.set("i18n.monthNames", months)
+        this.set("i18n.monthNamesShort", months.map(month => month.substr(0, 3)))
+        this.set("i18n.weekdays", weeks)
+        this.set("i18n.weekdaysShort", weeks.map(day => day.substr(0, 3)))
+        this.set("i18n.week", this.localize('week', 'Semaine', this.language))
+        this.set("i18n.calendar", this.localize('calendar', 'Calendrier', this.language))
+        this.set("i18n.clear", this.localize('clear', 'Clear', this.language))
+        this.set("i18n.today", this.localize("sel_tod", 'Aujourd\'hui', this.language))
+        this.set("i18n.thisMonth", this.localize("this_month", "ce mois-ci", this.language))
+        this.set("i18n.thisYear", this.localize("this_year", "cette année", this.language))
+        this.set("i18n.cancel", this.localize("can", 'Annuler', this.language))
+    }
+
+    _isPatientView() {
+        return this.route.path.includes("/pat")
+    }
+
+    _openMailer(e) {
+        const mailerDialog = this.shadowRoot.querySelector("#htMailerDialog")
+        return mailerDialog && typeof _.get(mailerDialog, "open") === "function" && mailerDialog.open(_.assign({}, _.get(e, "detail", {}), _.get(this, "headers", {})))
+    }
+
+    _feedbackMessage(e) {
+        if (!_.trim(_.get(e, "detail.message"))) return
+        this.set('mailerMessage', _.trim(_.get(e, "detail.message")))
+        this.$['mailerMessage'].classList.add('notification')
+        setTimeout(() => {
+            this.$['mailerMessage'].classList.remove('notification')
+        }, 10000)
+    }
+
+    checkEhboxMessage() {
+        if (!this.user) {
+            return
+        }
+        const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
+        const shouldLoad = (lastLoad + (10 * 60000) <= Date.now() || lastLoad === -1)
+        const disableEhboxEmailReception = _.get(_.find(_.get(this, "user.properties", []), it => _.trim(_.get(it, "type.identifier")) === "org.taktik.icure.user.disableEhboxEmailReception"), "typedValue.booleanValue", false)
+        if (shouldLoad && !disableEhboxEmailReception) {
+            localStorage.setItem('lastEhboxRefresh', Date.now())
+
+            const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
+                keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
+                if (hcp.parentId) {
+                    return getParents(hcp.parentId, keyPairs)
+                }
+                return ([hcp, keyPairs])
+            })
+
+            this.$.ehBoxMessage.classList.remove('notification')
+            if (!this.worker) {
+                this.worker = new Worker()
+            }
+
+            getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
+                this.worker.postMessage({
+                    action: "loadEhboxMessage",
+                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    fhcHost: this.api.fhc().host,
+                    fhcHeaders: JSON.stringify(this.api.fhc().headers),
+                    language: this.language,
+                    iccHost: this.api.host,
+                    iccHeaders: JSON.stringify(this.api.headers),
+                    tokenId: this.api.tokenId,
+                    keystoreId: this.api.keystoreId,
+                    user: this.user,
+                    ehpassword: this.credentials.ehpassword,
+                    boxId: ["INBOX", "SENTBOX"],
+                    alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
+                    keyPairs: kp,
+                    parentHcp: hcp
+                })
+            }))
+
+            this.worker.onmessage = e => {
+
+                const totalNewMessages = parseInt(_.get(e, "data.totalNewMessages", 0))
+                if (parseInt(totalNewMessages)) {
+                    this.set("_forceEhBoxRefresh", true)
+                    this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
+                    this.$['ehBoxMessage'].classList.add('notification')
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000)
+                    setTimeout(() => {
+                        this.$['ehBoxMessage'].classList.remove('notification')
+                    }, 15000)
+                }
+
+                if (!!_.get(e, "data.forceRefresh", false)) {
+                    this.set("_forceEhBoxRefresh", true)
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000)
+                }
+
+            }
+
+        }
+    }
+
 }
 
 customElements.define(HtAppTz.is, HtAppTz)

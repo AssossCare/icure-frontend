@@ -227,98 +227,106 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                 margin-right: 1%;
             }
 
+            .io{
+                width: 200px;
+                --dynamic-field-width-percent: 0!important;
+            }
+
+            .fa{
+                width: 100%!important;
+                flex: auto;
+            }
+
 
         </style>
 
         <paper-dialog id="mdaDetailDialog">
-            <div class="mdaDetailDialog">
-                <div class="mda-content">
-                    <div class="mda-menu-list">
-                        <div class="mda-menu-list-header">
-                            <div class="mda-menu-list-header-info">
-                                <div class="mda-name">
-                                    [[localize('mda-mda','Member data',language)]]
+                <div class="mdaDetailDialog">
+                    <div class="mda-content">
+                        <div class="mda-menu-list">
+                            <div class="mda-menu-list-header">
+                                <div class="mda-menu-list-header-info">
+                                    <div class="mda-name">
+                                        [[localize('mda-mda','Member data',language)]]
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="mda-menu-list-search">
-                            <div class="mda-menu-search-line">
-                                <vaadin-combo-box id="consultType" class="w40" label="[[localize('mda-consult-type', 'Consultation type', language)]]" filter="{{mdaTypeFilter}}" selected-item="{{selectedMdaConsultType}}"  filtered-items="[[mdaConsultType]]" item-label-path="label.fr" >
-                                    <template>[[_getLabel(item.label)]]</template>
-                                </vaadin-combo-box>
-                                <template is="dom-if" if="[[_isMdaSearchByNiss(selectedMdaConsultType)]]">
-                                    <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-niss', 'Niss', language)]]" value="{{mdaSearch.ssin}}" required error-message="This field is required"></dynamic-text-field>
-                                </template>
-                                <template is="dom-if" if="[[!_isMdaSearchByNiss(selectedMdaConsultType)]]">
-                                    <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-mutuality', 'Mutuality', language)]]" value="{{mdaSearch.mutuality}}" required error-message="This field is required"></dynamic-text-field>
-                                    <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-identification-number', 'Identification number', language)]]" value="{{mdaSearch.identificationNumber}}" required error-message="This field is required"></dynamic-text-field>
-                                </template>
-                            </div>
-                            <template is="dom-if" if="[[_isMedicalHouse(hcp)]]">
+                            <div class="mda-menu-list-search">
                                 <div class="mda-menu-search-line">
-                                    <dynamic-date-field label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]"></dynamic-date-field>
-                                    <dynamic-date-field label="[[localize('mda-endDate', 'End date', language)]]" value="{{mdaSearch.endDate}}" i18n="[[i18n]]"></dynamic-date-field>
-                                </div>
-                                <div class="mda-menu-search-line">
-                                    <vaadin-combo-box id="contactType" class="w40" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
+                                    <vaadin-combo-box id="consultType" class="w40" label="[[localize('mda-consult-type', 'Consultation type', language)]]" filter="{{mdaTypeFilter}}" selected-item="{{selectedMdaConsultType}}"  filtered-items="[[mdaConsultType]]" item-label-path="label.fr" >
                                         <template>[[_getLabel(item.label)]]</template>
                                     </vaadin-combo-box>
-                                </div>
-                                <div class="mda-menu-search-line">
-                                    <vaadin-combo-box id="contactType" class="w40" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
-                                        <template>[[_getLabel(item.label)]]</template>
-                                    </vaadin-combo-box>
-                                </div>
-                            </template>
-                            <template is="dom-if" if="[[!_isMedicalHouse(hcp)]]">
-                                <div class="mda-menu-search-line">
-                                    <vaadin-date-picker class="w100 mtm2 mw0 mr1" label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
-                                    <vaadin-combo-box id="contactType" class="w100 mtm2 mw0" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
-                                        <template>[[_getLabel(item.label)]]</template>
-                                    </vaadin-combo-box>
-                                    <template is="dom-if" if="[[_isSpecialist(hcp)]]">
-                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
-                                            <template>[[_getLabel(item.label)]]</template>
-                                        </vaadin-combo-box>
+                                    <template is="dom-if" if="[[_isMdaSearchByNiss(selectedMdaConsultType)]]">
+                                        <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-niss', 'Niss', language)]]" value="{{mdaSearch.ssin}}" required error-message="This field is required"></dynamic-text-field>
+                                    </template>
+                                    <template is="dom-if" if="[[!_isMdaSearchByNiss(selectedMdaConsultType)]]">
+                                        <dynamic-text-field class="w100 p4 mtm2 mw0 io" label="[[localize('mda-mutuality', 'Mutuality', language)]]" value="{{mdaSearch.mutuality}}" required error-message="This field is required"></dynamic-text-field>
+                                        <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('mda-identification-number', 'Identification number', language)]]" value="{{mdaSearch.identificationNumber}}" required error-message="This field is required"></dynamic-text-field>
                                     </template>
                                 </div>
-                            </template>
+                                <template is="dom-if" if="[[_isMedicalHouse(hcp)]]">
+                                    <div class="mda-menu-search-line">
+                                        <vaadin-date-picker class="fa mtm2 mw0 mr1" label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]"></vaadin-date-picker>
+                                        <vaadin-date-picker class="fa mtm2 mw0 mr1" label="[[localize('mda-endDate', 'End date', language)]]" value="{{mdaSearch.endDate}}" i18n="[[i18n]]"></vaadin-date-picker>
+                                    </div>
+                                    <div class="mda-menu-search-line">
+                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0 mr1" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
+                                            <template>[[_getLabel(item.label)]]</template>
+                                        </vaadin-combo-box>
+                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0 mr1" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
+                                            <template>[[_getLabel(item.label)]]</template>
+                                        </vaadin-combo-box>
+                                    </div>
+                                </template>
+                                <template is="dom-if" if="[[!_isMedicalHouse(hcp)]]">
+                                    <div class="mda-menu-search-line">
+                                        <vaadin-date-picker class="w100 mtm2 mw0 mr1" label="[[localize('mda-startDate', 'Start date', language)]]" value="{{mdaSearch.startDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                        <vaadin-combo-box id="contactType" class="w100 mtm2 mw0" label="[[localize('mda-contactType', 'Contact type', language)]]" filter="{{mdaContactTypeFilter}}" selected-item="{{selectedMdaContactType}}"  filtered-items="[[mdaContactType]]" item-label-path="label.fr" >
+                                            <template>[[_getLabel(item.label)]]</template>
+                                        </vaadin-combo-box>
+                                        <template is="dom-if" if="[[_isSpecialist(hcp)]]">
+                                            <vaadin-combo-box id="contactType" class="w100 mtm2 mw0" label="[[localize('mda-requestType', 'Request type', language)]]" filter="{{mdaRequestTypeFilter}}" selected-item="{{selectedMdaRequestType}}"  filtered-items="[[mdaRequestType]]" item-label-path="label.fr" >
+                                                <template>[[_getLabel(item.label)]]</template>
+                                            </vaadin-combo-box>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="mda-btn-left">
+                                <paper-button class="button button--other" on-tap="consultMda"><iron-icon icon="icons:refresh" class="mr5 smallIcon" ></iron-icon> [[localize('mda-consult','Consulter mda',language)]]</paper-button>
+                            </div>
                         </div>
-                        <div class="mda-btn-left">
-                            <paper-button class="button button--other" on-tap="consultMda"><iron-icon icon="icons:refresh" class="mr5 smallIcon" ></iron-icon> [[localize('mda-consult','Consulter mda',language)]]</paper-button>
-                        </div>
-                    </div>
-                    <div class="mda-view">
-                        <paper-tabs selected="{{tabs}}" >
-                            <paper-tab>
-                                <iron-icon class="tabIcon" icon="vaadin:male"></iron-icon> [[localize('mda-response','Response',language)]]
-                            </paper-tab>
-                            <template is="dom-if" if="[[_isTechnicalInfo(mdaResult, mdaResult.*)]]">
+                        <div class="mda-view">
+                            <paper-tabs selected="{{tabs}}" >
                                 <paper-tab>
-                                    <iron-icon class="tabIcon" icon="vaadin:tools"></iron-icon> [[localize('mda-technical-info','Technical info',language)]]
+                                    <iron-icon class="tabIcon" icon="vaadin:male"></iron-icon> [[localize('mda-response','Response',language)]]
                                 </paper-tab>
-                            </template>
-                        </paper-tabs>
-                        <iron-pages selected="[[tabs]]">
-                            <page>
-                                <div class="page-content">
-                                    <ht-pat-member-data-response id="htPatMemberDataResponse" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" hcp="[[hcp]]" mda-search="[[mdaSearch]]" i18n="[[i18n]]" resources="[[resources]]" selected-mda-contact-type="[[selectedMdaContactType]]" selected-mda-request-type="[[selectedMdaRequestType]]" mda-result="[[mdaResult]]" is-loading="[[isLoading]]" general-error="[[generalError]]"></ht-pat-member-data-response>
-                                </div>
-                            </page>
-                            <page>
-                                <div class="page-content">
-                                    <ht-pat-member-data-technical-info id="htPatMemberDataTechnicalInfo" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" hcp="[[hcp]]" mda-search="[[mdaSearch]]" i18n="[[i18n]]" resources="[[resources]]" selected-mda-contact-type="[[selectedMdaContactType]]" selected-mda-request-type="[[selectedMdaRequestType]]" mda-result="[[mdaResult]]"></ht-pat-member-data-technical-info>
-                                </div>
-                            </page>
-                        </iron-pages>
+                                <template is="dom-if" if="[[_isTechnicalInfo(mdaResult, mdaResult.*)]]">
+                                    <paper-tab>
+                                        <iron-icon class="tabIcon" icon="vaadin:tools"></iron-icon> [[localize('mda-technical-info','Technical info',language)]]
+                                    </paper-tab>
+                                </template>
+                            </paper-tabs>
+                            <iron-pages selected="[[tabs]]">
+                                <page>
+                                    <div class="page-content">
+                                        <ht-pat-member-data-response id="htPatMemberDataResponse" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" hcp="[[hcp]]" mda-search="[[mdaSearch]]" i18n="[[i18n]]" resources="[[resources]]" selected-mda-contact-type="[[selectedMdaContactType]]" selected-mda-request-type="[[selectedMdaRequestType]]" mda-result="[[mdaResult]]" is-loading="[[isLoading]]" general-error="[[generalError]]"></ht-pat-member-data-response>
+                                    </div>
+                                </page>
+                                <page>
+                                    <div class="page-content">
+                                        <ht-pat-member-data-technical-info id="htPatMemberDataTechnicalInfo" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" hcp="[[hcp]]" mda-search="[[mdaSearch]]" i18n="[[i18n]]" resources="[[resources]]" selected-mda-contact-type="[[selectedMdaContactType]]" selected-mda-request-type="[[selectedMdaRequestType]]" mda-result="[[mdaResult]]"></ht-pat-member-data-technical-info>
+                                    </div>
+                                </page>
+                            </iron-pages>
+                        </div>
                     </div>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <div class="buttons">
+                        <paper-button class="button" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </paper-dialog>
+        </paper-dialog>
 `;
   }
 
@@ -453,7 +461,7 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
     }
 
     static get observers() {
-        return ['_selectedMdaConsultTypeChanged(selectedMdaConsultType)', '_selectedMdaContactTypeChanged(selectedMdaContactType)'];
+        return ['_selectedMdaConsultTypeChanged(selectedMdaConsultType)', '_selectedMdaContactTypeChanged(selectedMdaContactType)', '_selectedMdaRequestTypeChanged(selectedMdaRequestType)'];
     }
 
     ready() {
@@ -513,7 +521,7 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
         ;(_.get(this.mdaSearch, 'ssin', null) && _.get(this.mdaSearch, 'consultType', null) === "byNiss"  ? this.consultMdaBySsin() : this.consultMdaByMemberShip()).then(mdaResponse => {
             return _.assign(mdaResponse, {
                 formatedResponse: {
-                    patientData: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:patientData"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    patientData: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:patientData").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         person: {
                             ssin: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:fgov:person:ssin"), 'attributeValues', []).join(" ")
                         },
@@ -525,32 +533,39 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                             deceasedDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:deceasedDate"), 'attributeValues', []).join(" ")
                         }
                     })),
-                    period: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:period"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    period: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:period").map(ass => {
+                        return {
+                            statementsAndAuthnStatementsAndAuthzDecisionStatements: _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []),
+                            subject: _.get(ass, 'subject', {})
+                        }
+                    })).map(stat => ({
                         careReceiver: {
-                            registrationNumber: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:registrationNumber"), 'attributeValues', []).join(" "),
+                            registrationNumber: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:registrationNumber"), 'attributeValues', []).join(" "),
                             mutuality: {
-                                code: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:mutuality"), 'attributeValues', []).join(" "),
+                                code: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:careReceiver:mutuality"), 'attributeValues', []).join(" "),
                                 name: null,
                                 address: {}
                             }
                         },
-                        cb1: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb1"), 'attributeValues', []).join(" "),
-                        cb2: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb2"), 'attributeValues', []).join(" "),
-                        communicationDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:communicationDate"), 'attributeValues', []).join(" ")
+                        cb1: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb1"), 'attributeValues', []).join(" "),
+                        cb2: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:cb2"), 'attributeValues', []).join(" "),
+                        communicationDate: _.get(_.get(_.head(_.get(stat, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', [])), 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:communicationDate"), 'attributeValues', []).join(" "),
+                        startDate: _.get(_.get(_.get(stat, 'subject', {}), 'subjectConfirmations', []).find(sc => _.get(sc, 'method', null) === "urn:be:cin:nippin:memberIdentification"), 'subjectConfirmationData.notBefore', null),
+                        endDate: _.get(_.get(_.get(stat, 'subject', {}), 'subjectConfirmations', []).find(sc => _.get(sc, 'method', null) === "urn:be:cin:nippin:memberIdentification"), 'subjectConfirmationData.notOnOrAfter', null)
                     })),
-                    payment: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:payment"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    payment: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:payment").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         paymentByIO: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:payment:byIO"), 'attributeValues', []).join(" ")
                     })),
-                    medicalHouse: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:medicalHouse"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    medicalHouse:  _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:medicalHouse").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         medicalHouse: {
                             nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" "),
                             name: null,
-                            type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" "),
+                            type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" ") || this._getFlatRateType( _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" ")),
                             startDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:start"), 'attributeValues', []).join(" "),
                             endDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:end"), 'attributeValues', []).join(" ")
                         }
                     })),
-                    hospitalisation: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:hospitalisation"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    hospitalisation: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:hospitalisation").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         hospitalisation: {
                             hospital: {
                                 nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:hospitalisation:hospital:nihii11"), 'attributeValues', []).join(" "),
@@ -560,7 +575,7 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                             admissionDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:hospitalisation:admissionDate"), 'attributeValues', []).join(" ")
                         }
                     })),
-                    generalSituation: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:generalSituation"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    generalSituation: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:insurability:generalSituation").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         generalSituation: {
                             event: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:generalSituation:event"), 'attributeValues', []).join(" "),
                             transfer: {
@@ -570,7 +585,7 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                             }
                         }
                     })),
-                    carePath: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:carePath"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    carePath: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:carePath").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         carePath: {
                             type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:type"), 'attributeValues', []).join(" "),
                             physician: {
@@ -593,12 +608,12 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                             endRightDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:endRightDate"), 'attributeValues', []).join(" ")
                         }
                     })),
-                    chronicCondition: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:chronicCondition"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    chronicCondition: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:chronicCondition").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         chronicCondition: {
                             year: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:chronicCondition:year"), 'attributeValues', []).join(" ")
                         }
                     })),
-                    referencePharmacy: _.get(_.get(mdaResponse, 'assertions', []).find(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:referencePharmacy"), 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []).map(stat => ({
+                    referencePharmacy:  _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:referencePharmacy").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
                         referencePharmacy: {
                             pharmacy: {
                                 nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:referencePharmacy:pharmacy:nihii8"), 'attributeValues', []).join(" "),
@@ -611,14 +626,14 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
             })
         }).then(mdaResponse => {
             let prom = Promise.resolve({})
-            _.uniqBy(_.get(mdaResponse, 'formatedResponse.period', []), 'careReceiver.mutuality.code').map(p => {
+            _.uniqBy(_.flatMap(_.get(mdaResponse, 'formatedResponse.period', [])), 'careReceiver.mutuality.code').map(p => {
                 prom = prom.then(insurancesList => (_.get(p, 'careReceiver.mutuality.code', null) !== "" &&  _.get(p, 'careReceiver.mutuality.code', null) !== null ? this.api.insurance().listInsurancesByCode(_.get(p, 'careReceiver.mutuality.code')) : Promise.resolve({}))
                     .then(ins => _.concat(insurancesList, ins)))
             })
 
             return prom.then(insurancesList => {
                 _.get(mdaResponse, 'formatedResponse.period', []).map(p => {
-                    p.careReceiver.mutuality.name = _.get(_.compact(insurancesList).find(ins => _.split(_.get(ins, 'code', null)).find(c => c === _.get(p, 'careReceiver.mutuality.code', ''))), 'name.'+this.language, null)
+                    p.careReceiver.mutuality.name = _.get(_.compact(insurancesList).find(ins => _.split(_.get(ins, 'code', null)).find(c => c === _.get(p, 'careReceiver.mutuality.code', ''))), 'name.'+this.language, null) ? _.get(_.compact(insurancesList).find(ins => _.split(_.get(ins, 'code', null)).find(c => c === _.get(p, 'careReceiver.mutuality.code', ''))), 'name.'+this.language, null) : _.head(_.values(_.get(_.compact(insurancesList).find(ins => _.split(_.get(ins, 'code', null)).find(c => c === _.get(p, 'careReceiver.mutuality.code', ''))), 'name', null)))
                     p.careReceiver.mutuality.address = _.get(_.compact(insurancesList).find(ins => _.split(_.get(ins, 'code', null)).find(c => c === _.get(p, 'careReceiver.mutuality.code', ''))), 'address', {})
                 })
                 return mdaResponse
@@ -639,8 +654,8 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                     category: "memberData",
                     subCategory:"soapResponse"
                 })]).then(([mdaResponse, receiptRequest, receiptResponse]) => Promise.all([
-                    this.api.receipt().setAttachment(receiptRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapRequest', null))))),
-                    this.api.receipt().setAttachment(receiptResponse.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapResponse', null)))))
+                    _.get(mdaResponse, 'mycarenetConversation.soapRequest', null) ? this.api.receipt().setAttachment(receiptRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapRequest', null))))) : Promise.resolve(),
+                    _.get(mdaResponse, 'mycarenetConversation.soapResponse', null) ? this.api.receipt().setAttachment(receiptResponse.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapResponse', null))))) : Promise.resolve()
                 ])) : Promise.resolve({})
             }).finally(() => {
                 this.set('isLoading',false)
@@ -650,7 +665,8 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                         medicalHouse:  _.size(_.get(this.mdaResult, 'formatedResponse.medicalHouse', [])),
                         chronicCondition: _.size(_.get(this.mdaResult, 'formatedResponse.chronicCondition', [])),
                         generalSituation: _.size(_.get(this.mdaResult, 'formatedResponse.generalSituation', [])),
-                        mdaResult: this.mdaResult
+                        mdaResult: this.mdaResult,
+                        mdaRequest : this.mdaSearch
                     },
                     bubbles: true,
                     composed: true
@@ -677,13 +693,13 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
             prom = prom.then(nihiiList =>
                 (
                     this.api.patient().checkInami(_.get(nihii, 'nihii', null))  ?
-                        _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
-                            _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
+                        _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
+                            _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null),this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
                                 _.get(nihii, 'type', null) === 'mm' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.medicalHouseList, 'medicalHouseList', []).find(mm => _.get(mm, 'nihii', null) === _.get(nihii, 'nihii', '')), {initialSearch: nihii}))) :
                                     Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii}))) :
                         _.get(nihii, 'type', null) === 'pha' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.pharmacyList, 'pharmacyList', []).find(pha => _.get(pha, 'authorizationNumber', null) === _.get(nihii, 'nihii', '').substr(2)), {initialSearch: nihii}))) :
                             Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii})))
-                ).then(adrResp => _.concat(nihiiList, _.assign(adrResp, {initialSearch: nihii})))
+                ).then(adrResp => _.concat(nihiiList, _.assign(adrResp, {initialSearch: nihii}))).catch(err => console.log(err)).finally(() => nihiiList)
             )
         })
 
@@ -705,17 +721,16 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
             _.get(mdaResponse, 'formatedResponse.medicalHouse', []).map(mm => {
                 mm.medicalHouse.name = _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'name', null)
             })
-
             return mdaResponse
-        })
+        }).catch(err => console.log(err))
     }
 
     consultMdaBySsin(){
-        return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, 'name', null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor" , _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other") : Promise.resolve({})
+        return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other",  _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
     }
 
     consultMdaByMemberShip(){
-        return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, 'name', null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor" , _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other") : Promise.resolve({})
+        return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
     }
 
     _selectedMdaConsultTypeChanged(){
@@ -724,6 +739,10 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
     _selectedMdaContactTypeChanged(){
         this.set("mdaSearch.contactType", _.get(this.selectedMdaContactType, 'type', "other"))
+    }
+
+    _selectedMdaRequestTypeChanged(){
+        this.set("mdaSearch.requestType", _.get(this.selectedMdaRequestType, 'type', "information"))
     }
 
     _isMdaSearchByNiss(){
@@ -748,6 +767,14 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
     _isSpecialist(){
         return !!(_.get(this.hcp, 'nihii', null) && _.startsWith(_.get(this.hcp, 'nihii', null), "1", 0) && _.size(_.get(this.hcp, 'nihii', null)) === 11 && (_.get(this.hcp, 'nihii', null).substr(_.size(_.get(this.hcp, 'nihii', null)) - 3) >= 10))
+    }
+
+    _getFlatRateType(nihii){
+        const m = _.size(nihii) === 11 && nihii.substr(8, 1) === "1" ? "M" : ""
+        const k = _.size(nihii) === 11 && nihii.substr(9, 1) === "1" ? "K" : ""
+        const i = _.size(nihii) === 11 && nihii.substr(10, 1) === "1" ? "I" : ""
+
+        return m+''+k+''+i
     }
 }
 customElements.define(HtPatMemberDataDetail.is, HtPatMemberDataDetail);
