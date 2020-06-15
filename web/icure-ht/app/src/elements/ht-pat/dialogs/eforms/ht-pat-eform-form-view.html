@@ -693,7 +693,7 @@
                         hasAnnex: !!_.size(annexes),
                         hasFreeInformations: false,
                         important: false,
-                        encrypted: true,
+                        encrypted: false,
                         destinations: recipients,
                         sender: {
                             identifierType: "NIHII",
@@ -706,7 +706,7 @@
                             personInOrganisation: ""
                         },
                         fromHealthcarePartyId: _.get(currentHcp, "id", ""),
-                        status: (((1 << 1) | 1 << 3) | 1 << 4) // 1 << 1 (unread) | 1 << 3 (is encrypted) | 1 << 4 (has annexes)
+                        status: (((1 << 1) /*| 1 << 3*/) | 1 << 4) // 1 << 1 (unread) | 1 << 3 (is encrypted) | 1 << 4 (has annexes)
                     }))
                     .then(message => _.merge({}, message, {customMetas:_.extend({
                         "CM-SenderID": _.get(message, "customMetas.CM-AuthorID",""),
