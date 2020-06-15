@@ -52,6 +52,7 @@
             <h2 class="modal-title"><iron-icon icon="communication:email"></iron-icon> &nbsp;[[localize('sendDocumentByEmail','Send a document by email',language)]]</h2>
             <div class="content pl20 pr20">
                 <div class=""><paper-input id="recipients" placeholder="[[localize('recipientsEmailAddresses','Recipient(s) email address(es)',language)]]" value="[[_data.mail.recipient]]" validator="ht-email-validator" auto-validate><paper-icon-button slot="prefix" icon="icons:assignment-ind"></paper-icon-button></paper-input></div>
+                <div class="pl8 mt5"><vaadin-checkbox id="copyMe">[[localize('copyMe', 'Send me a copy of message', language)]]</vaadin-checkbox></div>
                 <div class=""><paper-input id="subject" placeholder="[[localize('writeYourSubject', 'Write your subject', language)]]" value="[[_data.mail.subject]]" auto-validate required><paper-icon-button slot="prefix" icon="icons:assignment"></paper-icon-button></paper-input></div>
                 <div class=""><paper-input-container alway-float-label="true"><iron-autogrow-textarea slot="input" class="paper-input-input" id="message" placeholder="[[localize('writeYourMessage', 'Write your message', language)]]"  value="[[_data.mail.message]]" auto-validate required></iron-autogrow-textarea></paper-input-container></div>
                 <div class="mt30"><iron-icon icon="editor:attach-file" class="darkBlue mr5"></iron-icon>[[_data.mail.attachmentName]]</div>
@@ -275,6 +276,7 @@ Bien à vous,`
                     .then(()=> this.shadowRoot.querySelector("#recipients").value="")
                     .then(()=> this.shadowRoot.querySelector("#subject").value="")
                     .then(()=> this.shadowRoot.querySelector("#message").value="")
+                    .then(()=> _.assign(this.shadowRoot.querySelector("#copyMe"), {checked:false}))
                     .then(() => htMailerDialogContent && htMailerDialogContent.close())
 
             }
@@ -445,6 +447,8 @@ Bien à vous,`
                     .then(()=>this.set("_isBusy", true))
                     .then(() =>{
                         const recipients = _.map(_.trim(this.shadowRoot.querySelector("#recipients").value||"").split(/,|;| /), _.trim)
+                        _.get(this.shadowRoot.querySelector("#copyMe"), "checked", false) && _.trim(_.get(this,"_data.currentHcp.email")) ? recipients.push(_.trim(_.get(this,"_data.currentHcp.email"))) : null
+
                         const subject = _.trim(this.shadowRoot.querySelector("#subject").value||"")
                         const message = _.trim(this.shadowRoot.querySelector("#message").value||"").replace(/(\r\n|\n\r|\r|\n)/g, '<br>' + '$1')
                         // https://dev.mailjet.com/email/guides/send-api-V3/

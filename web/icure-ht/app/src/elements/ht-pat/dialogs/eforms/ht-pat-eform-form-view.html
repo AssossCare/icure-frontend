@@ -682,7 +682,8 @@
                         freeText: "",
                         freeInformationTableTitle: null,
                         freeInformationTableRows: {},
-                        patientInss: _.trim(_.get(parsedXml,"ADR.Patient[0].INSS[0]")) ? _.trim(_.get(parsedXml,"ADR.Patient[0].INSS[0]")) : null,
+                        // _.trim(_.get(parsedXml,"ADR.Patient[0].INSS[0]")) ? _.trim(_.get(parsedXml,"ADR.Patient[0].INSS[0]")) : null
+                        patientInss: null,
                         annex: annexes,
                         copyMailTo: [],
                         documentTitle: subject,
