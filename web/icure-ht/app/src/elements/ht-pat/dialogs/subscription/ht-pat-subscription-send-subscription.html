@@ -161,6 +161,14 @@
                 padding: 5px;
             }
 
+            .mhm-checkbox-container{
+                margin-right: 20px;
+            }
+
+            .mhm-checkbox{
+                width: 24px!important;
+            }
+
         </style>
 
         <div class="subscription-container">
@@ -209,10 +217,22 @@
                                                 <template>[[_getLabel(item.label)]]</template>
                                             </vaadin-combo-box>
                                         </div>
-                                    </div>
-                                    <div class="headerInfoLine">
                                         <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mhm-sub-start-coverage', 'Actual start date', language)]]: &nbsp;</span> [[_formatDate(sendSubscriptionRequest.realStartSubscriptionDate)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField fw2">
+                                            <span class="headerLabel">[[localize('mhm-coverage-type', 'Coverage type', language)]]: &nbsp;</span>
+                                            <template is="dom-if" if="[[_isCoverageAvailable('doctor')]]">
+                                                <span class="mhm-checkbox-container"><vaadin-checkbox class="mhm-checkbox" checked="[[sendSubscriptionRequest.doctor]]" id="doctorType" on-checked-changed="_selectedCoverageTypeChanged"></vaadin-checkbox> [[localize('mhm-cov-type-doctor', 'Doctor', language)]]</span>
+                                            </template>
+                                            <template is="dom-if" if="[[_isCoverageAvailable('physio')]]">
+                                                <span class="mhm-checkbox-container"><vaadin-checkbox class="mhm-checkbox" checked="[[sendSubscriptionRequest.physio]]" id="physioType" on-checked-changed="_selectedCoverageTypeChanged"></vaadin-checkbox> [[localize('mhm-cov-type-physio', 'Physiotherapist', language)]]</span>
+                                            </template>
+                                            <template is="dom-if" if="[[_isCoverageAvailable('nurse')]]">
+                                                <span class="mhm-checkbox-container"><vaadin-checkbox class="mhm-checkbox" checked="[[sendSubscriptionRequest.nurse]]" id="nurseType" on-checked-changed="_selectedCoverageTypeChanged"></vaadin-checkbox> [[localize('mhm-cov-type-nurse', 'Nurse' , language)]]</span>
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
@@ -367,7 +387,10 @@
                             isTrial: false,
                             signatureType: null,
                             isRecovery: false,
-                            isTestForNotify: false
+                            isTestForNotify: false,
+                            doctor: false,
+                            nurse: false,
+                            physio: false
                         }
                     },
                     sendSubscriptionResponse:{
@@ -417,7 +440,10 @@
                     isTrial: _.get(_.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', null) === false), 'code', false),
                     signatureType: _.get(_.get(this, 'signatureTypeList', []).find(st => _.get(st, 'code', null) === "holder-paper"), 'code', "holder-paper"),
                     isRecovery: false,
-                    isTestForNotify: false
+                    isTestForNotify: false,
+                    doctor: this._isCoverageAvailable('doctor'),
+                    nurse: this._isCoverageAvailable('nurse'),
+                    physio: this._isCoverageAvailable('physio')
                 })
 
                 this.set('selectedTrialPeriod', _.get(this, 'trialPeriod', []).find(tp => _.get(tp, 'code', false) === false))
@@ -473,9 +499,9 @@
                                     startOfCoverage: _.get(mhmResponse, 'subscriptionsStartDate', null),
                                     endOfContract: null,
                                     endOfCoverage: null,
-                                    gp: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false,
-                                    kine: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false,
-                                    nurse: _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false,
+                                    gp:_.get(this.sendSubscriptionRequest, 'doctor', false),
+                                    kine: _.get(this.sendSubscriptionRequest, 'physio', false),
+                                    nurse: _.get(this.sendSubscriptionRequest, 'nurse', false),
                                     status: 1 << 1,
                                     signatureType: _.camelCase(_.get(this.sendSubscriptionRequest, 'signatureType', null))
                                 })
@@ -635,6 +661,26 @@
 
             _getGenericErrorMessage(e){
                 return _.get(e, 'faultSource', null)+' '+_.get(e, 'faultCode', null)
+            }
+
+            _selectedCoverageTypeChanged(e){
+                if(_.get(e, 'target', null) && _.get(e, 'target.id', null)){
+                    _.get(e, 'target.id', null) === "doctorType" ?
+                        this.set('sendSubscriptionRequest.doctor',  _.get(e, 'target.checked', false)) :
+                    _.get(e, 'target.id', null) === "physioType" ?
+                        this.set("sendSubscriptionRequest.physio",  _.get(e, 'target.checked', false)) :
+                    _.get(e, 'target.id', null) === "nurseType" ?
+                        this.set("sendSubscriptionRequest.nurse",  _.get(e, 'target.checked', false)) :
+                    null
+                }
+            }
+
+            _isCoverageAvailable(coverageType){
+                const doctor = _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(8, 1) === "1" : false
+                const physio = _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(9, 1) === "1" : false
+                const nurse = _.size(_.get(this.hcp, 'nihii', null)) === 11 ? _.get(this.hcp, 'nihii', null).substr(10, 1) === "1" : false
+
+                return coverageType === "doctor" ? doctor : coverageType === "physio" ? physio : coverageType === "nurse" ? nurse : false
             }
 
         }
