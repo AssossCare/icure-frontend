@@ -342,14 +342,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="card dossier">
                 <h5 class="header">Dossier patient</h5>
                 <div class="content">
-                    <paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>
+                    <!--<paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>-->
                     <paper-checkbox checked="{{showAllHE}}">[[localize('show-all-HE','don t hide actif health element before january 2018',language)]]</paper-checkbox>
                     <paper-checkbox checked="{{openFirstVoletAuto}}">[[localize('open_first_volet','Open all elements of the first volet with patient folder',language)]]</paper-checkbox>
                 </div>
             </div>
 
 
-            <div class="card ehbox">
+            <!--<div class="card ehbox">
                 <h5 class="header">Ehbox</h5>
                 <div class="content">
                     <paper-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</paper-checkbox>
@@ -387,7 +387,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-input label="OA 600" value="{{_getBatchNumber(600)}}"></paper-input>
                     <paper-input label="OA 900" value="{{_getBatchNumber(900)}}"></paper-input>
                 </div>
-            </div>
+            </div>-->
 
             <div class="buttons">
                 <paper-button on-tap="_save" class="button button--save"><iron-icon icon="save"></iron-icon>[[localize('save','Save',language)]]</paper-button>
@@ -458,7 +458,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _preferencesDataProvider() {
-                const prefixTab = [
+                /*const prefixTab = [
                     'efact:' + this.user.healthcarePartyId + ':100:',
                     'efact:' + this.user.healthcarePartyId + ':200:',
                     'efact:' + this.user.healthcarePartyId + ':300:',
@@ -473,7 +473,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     prefix: prefix
 
                 }))).then(batchNumbers => this.set('listOfEfactBatchNumbers', batchNumbers))
-                    .finally(() => console.log(this.listOfEfactBatchNumbers))
+                    .finally(() => console.log(this.listOfEfactBatchNumbers))*/
 
                 this.set("showAllHE",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHE")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))
                 this.set("openFirstVoletAuto",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))

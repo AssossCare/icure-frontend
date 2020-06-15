@@ -1,5 +1,7 @@
 {
 	"en": {
+		"show-all-HE": "don't hide actif health element before january 2018",
+		"open_first_volet": "Open all elements of the first volet with patient folder",
 		"eattest_reason_cancel_A": "Patient error",
 		"eattest_reason_cancel_B": "Provider error (doctor B instead of doctor A)",
 		"eattest_reason_cancel_C": "Error in one of the elements of the ASD (ex. : nomenclature code, tooth number, amount of fee / amount to be paid by the patient, …)",
@@ -2706,6 +2708,8 @@
 		"condensed": "condensed"
 	},
 	"fr": {
+		"show-all-HE": "Ne pas cacher les éléments de soin d'avant janvier 2018",
+		"open_first_volet": "Ouvrir tous les éléments du premier volet lors de l'ouverture du dossier",
 		"eattest_reason_cancel_A": "Erreur de patient",
 		"eattest_reason_cancel_B": "Erreur de prestataire (médecin B en lieu et place du médecin A)",
 		"eattest_reason_cancel_C": "Erreur dans un des éléments de l’ASD (ex. : code nomenclature, n° de dent, montant de l’honoraire/montant à payer par le patient, …)",
@@ -5504,6 +5508,8 @@
 		"condensed": "condensé"
 	},
 	"nl": {
+		"show-all-HE": "don't hide actif health element before january 2018",
+		"open_first_volet": "Open all elements of the first volet with patient folder",
 		"eattest_reason_cancel_A": "Patiëntfout",
 		"eattest_reason_cancel_B": "Providerfout (arts B in plaats van arts A)",
 		"eattest_reason_cancel_C": "Fout in een van de elementen van de ASD (bijv. Nomenclatuurcode, tandnummer, bedrag van de vergoeding / bedrag dat door de patiënt moet worden betaald, ...)",
