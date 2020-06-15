@@ -5064,7 +5064,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
                 this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>{
-                    _.get(hcp, 'type', null).toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
+                    _.get(hcp, 'type', '').toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
                         this._isSpecialist(hcp) ? this.set('hcpType', "specialist") :
                             this.set('hcpType', "physician")
 

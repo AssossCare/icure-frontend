@@ -2705,7 +2705,8 @@
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
-		"condensed": "condensed"
+		"condensed": "condensed",
+		"copyMe": "Send me a copy of message"
 	},
 	"fr": {
 		"show-all-HE": "Ne pas cacher les éléments de soin d'avant janvier 2018",
@@ -5505,7 +5506,8 @@
 		"warningSendByEmail": "Attention, l'envoi de données par e-mail n'est PAS sécurisé. Veuillez privilégier l'eHealth box lorsque cela vous est possible.",
 		"sendByEmail": "Envoyer par email",
 		"disableEhbox": "Désactiver l'eHealth box",
-		"condensed": "condensé"
+		"condensed": "condensé",
+		"copyMe": "M'envoyer une copie du message"
 	},
 	"nl": {
 		"show-all-HE": "don't hide actif health element before january 2018",
@@ -8261,6 +8263,7 @@
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
-		"condensed": "condensed"
+		"condensed": "condensed",
+		"copyMe": "Send me a copy of message"
 	}
 }

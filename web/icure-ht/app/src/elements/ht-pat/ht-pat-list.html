@@ -1170,6 +1170,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
                         <template is="dom-if" if="[[!_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
+
+
+
+                            <!--<paper-button class="button button--save" on-tap="_test">TEST</paper-button>-->
+
+
+
                             <paper-button class="button button--save" on-tap="_addPatient">[[localize('add_pat','Add Patient',language)]]</paper-button>
 
                             <template is="dom-if" if=[[!showExportContainer]]>
