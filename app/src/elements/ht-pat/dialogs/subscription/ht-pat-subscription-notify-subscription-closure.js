@@ -315,9 +315,16 @@ class HtPatSubscriptionNotifySubscriptionClosure extends TkLocalizerMixin(Polyme
                                 <div class="headerMasterTitle headerLabel">[[localize('mhm-rea-clo', 'Reason of closure', language)]]</div>
                                 <div class="headerInfoLine">
                                     <div class="headerInfoLine">
-                                        <div class="headerInfoField">
-                                            <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-end-contract', 'End of contract', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
-                                        </div>
+                                        <template is="dom-if" if="[[!isMedicalHouseClosure]]">
+                                            <div class="headerInfoField">
+                                                <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-end-contract', 'End of contract', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                            </div>
+                                        </template>
+                                        <template is="dom-if" if="[[isMedicalHouseClosure]]">
+                                            <div class="headerInfoField">
+                                                <span class="headerLabel">[[localize('mhm-sub-end-contract', 'End of contract', language)]]: &nbsp;</span> [[_formatContractDate(notifySubscriptionClosureRequest.subscriptionEndDate)]]
+                                            </div>
+                                        </template>
                                         <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mhm-sub-end-coverage', 'End of coverage', language)]]: &nbsp;</span> [[_formatContractDate(notifySubscriptionClosureRequest.subscriptionRealEndDate)]]
                                         </div>
@@ -493,6 +500,10 @@ class HtPatSubscriptionNotifySubscriptionClosure extends TkLocalizerMixin(Polyme
             requestError:{
                 type: Array,
                 value: () => []
+            },
+            isMedicalHouseClosure: {
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -541,6 +552,7 @@ class HtPatSubscriptionNotifySubscriptionClosure extends TkLocalizerMixin(Polyme
         this.set('notifySubscriptionClosureResponse', {})
         this.set('selectedSubscriptionClosureType', {})
         this.set('selectedSubscriptionClosureJustification', {})
+        this.set('isMedicalHouseClosure', false)
     }
 
     _notifySubscriptionClosure(){
@@ -686,9 +698,11 @@ class HtPatSubscriptionNotifySubscriptionClosure extends TkLocalizerMixin(Polyme
     }
 
     _selectedSubscriptionClosureTypeChanged(){
+        this.set('isMedicalHouseClosure', false)
         this.set("notifySubscriptionClosureRequest.subscriptionClosureType", _.get(_.get(this, 'subscriptionClosureTypeList', []).find(ctype => _.get(ctype, 'code', null) === _.get(this.selectedSubscriptionClosureType, 'code', '')), 'code', null))
         this.set("filteredSubscriptionClosureJustificationList", _.get(this, 'subscriptionClosureJustificationList', []).filter(sct => _.get(sct, 'closureType', null) === _.get(this, 'notifySubscriptionClosureRequest.subscriptionClosureType', null)))
         this.set("selectedSubscriptionClosureJustification", _.get(this, 'notifySubscriptionClosureRequest.subscriptionClosureType', null) === "patientdecision" ? _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "201") : _.get(this, 'subscriptionClosureJustificationList', []).find(ctype => _.get(ctype, 'code', null) === "101"))
+        _.get(this, 'notifySubscriptionClosureRequest.subscriptionClosureType', null) === "patientdecision" ? this.set('isMedicalHouseClosure', false) : this.set('isMedicalHouseClosure', true)
     }
 
     _localizeGender(gender){

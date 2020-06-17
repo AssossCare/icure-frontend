@@ -1912,7 +1912,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
             {
                 const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
+                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, this._getQuality(hcp)).then(res => {
                     this.set('api.fhcTokenInfo', res)
                     this.$.eHealthStatus.classList.remove('pending')
                     this.$.eHealthStatus.classList.remove('disconnected')
@@ -1990,7 +1990,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
             .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
             .then(hcpMH => {
                 this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
+                return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse").then(res => {
                     this.set('api.fhcTokenInfo', res)
                     if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                     if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
