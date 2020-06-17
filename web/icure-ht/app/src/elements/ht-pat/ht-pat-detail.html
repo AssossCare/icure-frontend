@@ -107,6 +107,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="./dialogs/care-path/ht-pat-care-path-list-dialog.html">
 <link rel="import" href="./dialogs/ht-pat-other-form-dialog.html">
 <link rel="import" href="./dialogs/eforms/ht-pat-eform-dialog.html">
+<link rel="import" href="./dialogs/subscription/ht-pat-subscription-detail.html">
 
 
 <dom-module id="ht-pat-detail">
@@ -965,15 +966,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 display: block;
             }
 
-            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse{
+            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse, #subscriptionStatus.subscriptionPending{
                 --paper-fab-background: var(--app-status-color-pending);
             }
 
-            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance{
+            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance, #subscriptionStatus.subscriptionNoSubscription{
                 --paper-fab-background: var(--app-status-color-nok);
             }
 
-            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk {
+            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk, #subscriptionStatus.subscriptionSubscriptionOk {
                 --paper-fab-background: var(--app-status-color-ok);
             }
 
@@ -1977,6 +1978,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
                                             <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
+                                        </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'subscription')]]">
+                                            <paper-fab id="subscriptionStatus" mini icon="icons:description" on-tap="_openSubscriptionDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="subscriptionStatus">[[localize('mhm-subscription', 'Subscription', language)]]</paper-tooltip>
                                         </template>
                                     </div>
                                 </div>
@@ -2983,6 +2988,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
     </template>
     <script>
         import moment from 'moment/src/moment';
@@ -3436,8 +3442,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             hub: ["physician", "specialist"],
                             therLink: ["physician", "specialist"],
                             consent: ["physician", "specialist"],
-                            mda: ["physician"],
-                            insurability: ["medicalHouse", "specialist", "officedoctors"]
+                            mda: ["physician", "medicalHouse"],
+                            insurability: ["specialist", "officedoctors"],
+                            subscription: ["medicalHouse"]
                         }
                     }
                 };
@@ -5264,6 +5271,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _checkEhealthServiceForMedicalHouse(hcp){
+                this._isAvailableForHcp(this.hcpType, 'mda') ? this._consultMda() : null
+                /*
                 let dlg = this.root.querySelector('#genInsDialog')
                 let dStart = null;
                 const date = new Date(), y = date.getFullYear(), m = date.getMonth();
@@ -5302,12 +5311,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             if(out && out.length){
                                 //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
                                 let insuFound = false;
-                                insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
+                                insuFound = _.get(this, 'patient.insurabilities', []).filter(l => out.some(insu => l.insuranceId===insu.id) && (!l.endDate || l.endDate===""))
                                 if(insuFound && insuFound.length){
                                     insuFound.map(p => {
                                         //1 if found: check if CT1/2 is changed
                                         if (
-                                            (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
+                                            (_.get(ins, 'ct1', null) && (!p.parameters || p.parameters.tc1 !== ins.ct1))
                                             || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
                                             || ins.period.periodStart < p.startDate
                                         ){
@@ -5378,7 +5387,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         })
                     }
-                }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null})
+                }).catch(e => {console.log("genins failed "+e.message); this.set('isLoading', false); return null})*/
             }
 
             _resetEhealthTooltip(){
@@ -5405,6 +5414,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultPending'): null
                 this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultNOk'): null
                 this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultOk'): null
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
             }
 
             showPatientTherLinkState(){
@@ -7455,7 +7467,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
                 this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
                 this.set('mdaResult',  _.get(e, 'detail.mdaResult', {}))
-
+                this._verifySubscription()
                 !_.isEmpty(_.get(e, 'detail', {})) ?
                     _.get(e, 'detail.medicalHouse', 0) > 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('medicalHouse') : null :
                         _.get(e, 'detail.generalSituation', 0) === 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('insuranceOk'): null :
@@ -7498,6 +7510,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             .then(pat => this._patientSaved())
                     }
                 }
+
+            }
+
+            _verifySubscription(){
+
+                const promResolve = Promise.resolve()
+                const mdaDidRespond = _.size(_.get(this,"mdaResult",null))
+                const patientMhcs = _.get(this, 'patient.medicalHouseContracts', [])
+                const mdaResult = _.map(_.get(this,"mdaResult.formatedResponse.medicalHouse",[]), it => _.get(it,"medicalHouse"))
+
+                return promResolve
+                    .then(() => {
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription')
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk')
+                        this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending')
+                    })
+                    .then(() => mdaDidRespond ?
+                        this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
+                            !_.size(mdaResult) ? 'subscriptionNoSubscription' :
+                            !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
+                            _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
+                            'subscriptionPending'
+                        ) : this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription")
+                    )
 
             }
 
@@ -7588,6 +7624,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _isSpecialist(hcp){
                 return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
 
+            }
+
+            _openSubscriptionDialog(e){
+                e.stopPropagation()
+                if(this._checkForEhealthSession() === true){
+                    this.$["htPatSubscriptionDetail"]._openDialog()
+                }else{
+                    this._ehealthErrorNotification()
+                }
             }
 
         }
