@@ -1,0 +1,137 @@
+[
+	{
+		"code": "101",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "101 - Déménagement: le patient n'habite plus dans la zone d'activité",
+			"nl": "101 - Verhuis: de patiënt woont niet meer in de activiteitengebied",
+			"en": "101 - Moving: the patient no longer lives in the activity area"
+		}
+	},
+	{
+		"code": "102",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "102 - Conflit avec le patient ou un membre de la famille du patient",
+			"nl": "102 - Conflict met de patiënt of een familielid van de patiënt",
+			"en": "102 - Conflict with the patient or a family member of the patient"
+		}
+	},
+	{
+		"code": "103",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "103 - Admission dans une institution (soins pédiatriques, soins pour personnes âgées ou autre) en dehors de la zone géographique",
+			"nl": "103 - Opname in een instelling (ouderenzorg of andere) buiten het geografische gebied ",
+			"en": "103 - Admission to an institution (pediatric care, care for the elderly or other) outside the geographic area"
+		}
+	},
+	{
+		"code": "104",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "104 - Non-respect des règles de la maison médicale",
+			"nl": "104 - Niet naleving van de regels van het MH",
+			"en": "104 - Non-compliance with the rules of the medical house"
+		}
+	},
+	{
+		"code": "105",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "105 - Absence prolongée de contact avec le patient",
+			"nl": "105 - Langdurige afwezigheid van contact met de patiënt",
+			"en": "105 - Prolonged absence of contact with the patient"
+		}
+	},
+	{
+		"code": "106",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "106 - Le patient consulte régulièrement et sans accord des dispensateurs de soins extérieurs à la maison médicale et réclame le remboursement de ces frais",
+			"nl": "106 - De patiënt raadpleegt regelmatig en zonder toestemming van externe zorgverleners en vraagt de terugbetaling van zijn kosten",
+			"en": "106 - The patient consults regularly and without agreement from health care providers outside the medical center and claims reimbursement of these costs"
+		}
+	},
+	{
+		"code": "107",
+		"closureType": "healthcarepartydecision",
+		"label": {
+			"fr": "107 - Continuité des soins trop difficile à assumer pour la maison médicale",
+			"nl": "107 - Continuïteit van de zorgen te moeilijk over te nemen voor het MH",
+			"en": "107 - Continuity of care too difficult to assume for the medical home"
+		}
+	},
+	{
+		"code": "201",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "201 - Déménagement: le patient n'habite plus dans la zone d'activité",
+			"nl": "201 - Verhuis : de patiënt woont niet meer in de activiteitengebied",
+			"en": "201 - Moving: the patient no longer lives in the activity area"
+		}
+	},
+	{
+		"code": "202",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "202 - Conflit avec un dispensateur de soins ou un membre du personnel de la MM",
+			"nl": "202 - Conflict met de zorgverlener of een personeelslid van het MM",
+			"en": "202 - Conflict with a caregiver or MM staff member"
+		}
+	},
+	{
+		"code": "203",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "203 - Admission dans une institution (soins pédiatriques, soins pour personnes âgées ou autre)",
+			"nl": "203 - Opname in een instelling (ouderenzorg of andere) ",
+			"en": "203 - Admission to an institution (pediatric care, care for the elderly or other)"
+		}
+	},
+	{
+		"code": "204",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "204 - Désaccord avec les règles de la MM",
+			"nl": "204 - Niet naleving van de regels van het MH",
+			"en": "204 - Disagreement with the rules of the MM"
+		}
+	},
+	{
+		"code": "205",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "205 - Le patient souhaite consulter des dispensateurs de soins autres que ceux de la MM",
+			"nl": "205 - De patiënt wenst andere zorgverleners dan die van het MH raadplegen",
+			"en": "205 - Patient wishes to see health care providers other than MM"
+		}
+	},
+	{
+		"code": "206",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "206 - Prise en charge alternée où l'un des parents n'habite pas dans la zone d'activité",
+			"nl": "206 - Alternatieve ondersteuning waarbij één ouder niet in het activiteitengebied leeft ",
+			"en": "206 - Alternate care where one of the parents does not live in the activity area"
+		}
+	},
+	{
+		"code": "207",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "207 - Le patient souhaite un dispensateur de soins attitré au sein de la MM mais ne parvient pas à l'obtenir",
+			"nl": "207 - De patiënt wenst een aangestelde zorgverlener binnen het MH maar het is niet mogelijk",
+			"en": "207 - Patient wants a dedicated caregiver in the MM but cannot get it"
+		}
+	},
+	{
+		"code": "208",
+		"closureType": "patientdecision",
+		"label": {
+			"fr": "208 - Raisons personnelles",
+			"nl": "208 - Persoonlijke redenen",
+			"en": "208 - Personal reasons"
+		}
+	}
+]
