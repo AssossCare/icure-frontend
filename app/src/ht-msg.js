@@ -12,6 +12,7 @@ import './elements/ht-msg/ht-msg-detail.js';
 import './elements/ht-msg/ht-msg-menu.js';
 import './elements/ht-msg/ht-msg-list.js';
 import './elements/ht-msg/ht-msg-invoice.js';
+import './elements/ht-msg/ht-msg-electronic-flatrate-invoice';
 import './elements/ht-msg/ht-msg-flatrate-invoice.js';
 import './elements/ht-msg/ht-msg-flatrate-report.js';
 import './elements/ht-msg/ht-msg-mycarenet.js';
@@ -343,6 +344,16 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                                  on-selection-messages-change="handleMessageChange"
                                  on-initialize-batch-counter="callInitializeBatchCounter"></ht-msg-invoice>
             </template>
+            
+            <template is="dom-if" if="[[electronicFlatRateInvoicesLayout]]">
+                    <ht-msg-electronic-flatrate-invoice id="msg-electronic-flatrate-invoice" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"
+                                 user="[[user]]"
+                                 select-list="[[selectList]]"
+                                 invoices-status="[[eFlatrateStatus]]"
+                                 route-data="[[routeData]]"
+                                 on-selection-messages-change="handleMessageChange"
+                                 on-initialize-batch-counter="callInitializeBatchCounter"></ht-msg-electronic-flatrate-invoice>
+            </template>
 
             <template is="dom-if" if="[[flatrateinvoicesLayout]]">
                 <ht-msg-flatrate-invoice
@@ -432,6 +443,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 type: Boolean,
                 value: false
             },
+            electronicFlatRateInvoicesLayout:{
+              type: Boolean,
+              value: false
+            },
             documentLayout: {
                 type: Boolean,
                 value: false
@@ -445,6 +460,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 value: false
             },
             invoicesStatus:{
+                type: String,
+                value: null
+            },
+            eFlatrateStatus:{
                 type: String,
                 value: null
             },
@@ -543,16 +562,16 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         const selectedItem = _.trim(_.get(e,"detail.selection.item",""))
         const selectedFolder = _.trim(_.get(e,"detail.selection.folder",""))
         const selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
-        const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox"]
+        const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox", "electronicFlatRateInvoicesLayout"]
 
         availableLayouts.map(i=>this.set(i,false))
         if (selectedItem === 'e_invOut') {
             this.set('invoicesLayout', true)
             this.set('invoicesStatus', selectedStatus)
             setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
-        } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'flatRateeInvoicingMenuItem') {
-            this.set('flatrateinvoicesLayout', true)
-            this.set('flatrateMenuSection', selectedStatus)
+        } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'eflatrateInvocingMenuItem') {
+            this.set('electronicFlatRateInvoicesLayout', true)
+            this.set('eFlatrateStatus', selectedStatus)
         } else if (selectedItem === 'e_flatraterptOut' ){
             this.set('flatrateinvoicesReportLayout', true);
             this.set('flatrateMenuSection', selectedStatus)
