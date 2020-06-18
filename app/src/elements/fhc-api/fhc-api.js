@@ -52,6 +52,7 @@ class FhcApi extends PolymerElement {
       this.therlinkcontrollerfhc = new api.fhcTherlinkcontrollerApi(this.host, this.headers);
       this.rnconsultcontrollerfhc = new api.fhcConsultrncontrollerApi(this.host, this.headers);
       this.memberdatacontrollerfhc = new api.fhcMemberdatacontrollerApi(this.host, this.headers);
+      this.mhmcontrollerfhc = new api.fhcMhmcontrollerApi(this.host, this.headers);
 
       this.dispatchEvent(new CustomEvent('refresh', {detail: {}}))
   }
@@ -76,6 +77,7 @@ class FhcApi extends PolymerElement {
     Therlinkcontroller() { return this.therlinkcontrollerfhc }
     RnConsultController(){return this.rnconsultcontrollerfhc}
     MemberDataController(){return this.memberdatacontrollerfhc}
+    MhmController(){return this.mhmcontrollerfhc}
 }
 
 customElements.define(FhcApi.is, FhcApi);
