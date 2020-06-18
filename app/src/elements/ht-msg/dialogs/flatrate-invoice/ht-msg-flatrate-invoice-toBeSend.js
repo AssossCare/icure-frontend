@@ -1276,7 +1276,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                 archived: false,
                                 dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
                                 id: this.api.crypto().randomUuid(),
-                                logicalId: this.api.crypto().randomUuid()
+                                logicalId: this.api.crypto().randomUuid(),
+                                contractDate: _.get(_.get(pat, "finalMedicalHouseContracts", {startOfContract:0}), "startOfContract", 0)
                             })), ["dateCode"], ["desc"])
                         })
                     }))
