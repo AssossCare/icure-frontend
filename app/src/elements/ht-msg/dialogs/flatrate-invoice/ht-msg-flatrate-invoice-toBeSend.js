@@ -386,6 +386,25 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             </div>
         </div>  
         
+        <paper-dialog class="modalDialog" id="selectMonthDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <div class="textAlignCenter">
+
+                    <div class="exportMonthPicker pb20">
+                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                        <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+
+<!--                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>-->
+<!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
+                    </div>
+
+                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                </div>   
+            </div>        
+        </paper-dialog>
+        
          <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -670,6 +689,14 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing() {
+        this.shadowRoot.querySelector('#selectMonthDialog').open()
+    }
+
+    _exportFlatRateInvoicing_dialogResult() {
+
+    }
+
+    _exportFlatRateInvoicing_step2() {
 
         this.set('isLoading', true );
         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1',this.language), icon:"arrow-forward"});
@@ -1360,7 +1387,36 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         return hasDouble;
     }
 
+    _getExportMonthsList() {
+        let toReturn = [];
+        for(let i=1; i<=12; i++) toReturn.push({id: i, label: this.localize('month_'+i,this.language) })
+        return toReturn
+    }
 
+    _getExportYearsList() {
+        let toReturn = [];
+        for(let i=(parseInt(moment().format('YYYY'))+1); i>=(parseInt(moment().format('YYYY'))-2); i--) toReturn.push({id: i, label: i })
+        return toReturn
+    }
+
+    _getExportCurrentMonth() {
+        return parseInt(moment().format('MM'))
+    }
+
+    _getExportCurrentYear() {
+        return parseInt(moment().format('YYYY'))
+    }
+
+    _setLoadingMessage( messageData ) {
+        if( messageData.updateLastMessage ) { this._loadingMessages.pop(); }
+        this._loadingMessages.push( messageData );
+        let loadingContentTarget = this.shadowRoot.querySelectorAll('#loadingContent')[0];
+        if(loadingContentTarget) { loadingContentTarget.innerHTML = ''; _.each(this._loadingMessages, (v)=>{ loadingContentTarget.innerHTML += "<p><iron-icon icon='"+v.icon+"' class='"+(v.done?"loadingIcon done":"loadingIcon")+"'></iron-icon>" + v.message + "</p>"; }); }
+    }
+
+    _resetLoadingMessage() {
+        this._loadingMessages = [];
+    }
 }
 
 customElements.define(HtMsgFlatrateInvoiceToBeSend.is, HtMsgFlatrateInvoiceToBeSend)
