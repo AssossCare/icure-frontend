@@ -108,6 +108,10 @@ class IccApi extends PolymerElement {
           tmpLogging:{
               type:Boolean,
               value:false
+          },
+          flatRateEInvoicingDate: {
+              type: Number,
+              value: 202009
           }
       }
   }

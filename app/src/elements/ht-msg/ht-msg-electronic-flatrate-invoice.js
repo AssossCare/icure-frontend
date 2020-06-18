@@ -11,6 +11,8 @@ import './dialogs/flatrate-invoice/ht-msg-flatrate-invoice-toBeCorrected';
 import './dialogs/flatrate-invoice/ht-msg-flatrate-invoice-toBeSend';
 import './dialogs/flatrate-invoice/ht-msg-flatrate-invoice-batch-detail';
 import './dialogs/flatrate-invoice/ht-msg-flatrate-invoice-invoice-detail';
+import './dialogs/flatrate-invoice/ht-msg-flatrate-mda';
+import './dialogs/flatrate-invoice/ht-msg-flatrate-mda-history';
 
 
 //TODO import "@polymer/iron-collapse-button/iron-collapse-button"
@@ -34,169 +36,176 @@ import * as models from 'icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
 class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
+
     static get template() {
+
         return html`
-        <custom-style>
-            <style include="shared-styles spinner-style">
 
-                :host {
-                    display: block;
-                    z-index:2;
-                }
-
-                :host *:focus {
-                    outline: 0 !important;
-                }
-                
-                .invoice-panel{
-                    height: 100%;
-                    width: 100%;
-                    padding: 0 20px;
-                    box-sizing: border-box;
-                    z-index: -1;
-                    position: relative;
-                }
-                
-                #htMsgFlatrateInvoiceBatchDetail{
-                    top: 0;
-                    display: block;
-                    position: absolute;
-                    z-index: 100;
-                    height: calc(100% - 8px);                    
-                    width: 98%;
-                }
-                
-                #htMsgFlatrateInvoiceInvoiceDetail{
-                    top: 0;
-                    display: block;
-                    position: absolute;
-                    z-index: 100;
-                    height: calc(100% - 8px);                    
-                    width: 98%;
-                }
-            </style>
-        </custom-style>
-        
-        <div class="invoice-panel">      
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeCorrected')]]">
-                <ht-msg-flatrate-invoice-to-be-corrected 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[messagesToBeCorrected]]"
-                    is-loading="[[isLoading]]"
-                    on-open-invoice-detail-panel="_openInvoiceDetailPanel"
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                ></ht-msg-flatrate-invoice-to-be-corrected>
-            </template>  
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeSend')]]">
-                <ht-msg-flatrate-invoice-to-be-send 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[selectedInvoicesToBeSend]]"
-                    is-loading="[[isLoading]]"
-                    on-open-invoice-detail-panel="_openInvoiceDetailPanel"
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                    >                   
-                </ht-msg-flatrate-invoice-to-be-send>
-            </template>   
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'process')]]">
-                <ht-msg-flatrate-invoice-pending 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[messagesProcessed]]"
-                    list-of-oa="[[listOfOa]]"
-                    on-open-detail-panel="_openDetailPanel"
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                    is-loading="[[isLoading]]"
-                ></ht-msg-flatrate-invoice-pending>
-            </template>   
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'reject')]]">
-                <ht-msg-flatrate-invoice-rejected 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[messagesRejected]]"
-                    message-ids-can-be-auto-archived="[[messageIdsCanBeAutoArchived]]"
-                    list-of-oa="[[listOfOa]]"
-                    on-open-detail-panel="_openDetailPanel"
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                    is-loading="[[isLoading]]"
-                 ></ht-msg-flatrate-invoice-rejected>
-            </template>   
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'accept')]]">
-                <ht-msg-flatrate-invoice-accepted 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[messagesAccepted]]"
-                    list-of-oa="[[listOfOa]]"
-                    on-open-detail-panel="_openDetailPanel"
-                    is-loading="[[isLoading]]"
-                ></ht-msg-flatrate-invoice-accepted>
-            </template>   
-            <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'archive')]]">
-                <ht-msg-flatrate-invoice-archived 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    list-of-invoice="[[messagesArchived]]"
-                    list-of-oa="[[listOfOa]]"
-                    on-open-detail-panel="_openDetailPanel"
-                    is-loading="[[isLoading]]"
-                ></ht-msg-flatrate-invoice-archived>
-            </template>  
-            <template is="dom-if" if="[[isDisplayDetail]]">
-                <ht-msg-flatrate-invoice-batch-detail id="htMsgFlatrateInvoiceBatchDetail" 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    selected-invoice-for-detail="[[selectedBatchForDetail]]"
-                    on-close-detail-panel="_closeDetailPanel"
-                    on-archive-batch="_openArchiveDialog"
-                    on-transfer-invoices-for-resending="_transferInvoicesForResending"
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                 ></ht-msg-flatrate-invoice-batch-detail>      
-            </template>
-            <template is="dom-if" if="[[isDisplayInvoiceDetail]]">
-                <ht-msg-flatrate-invoice-invoice-detail id="htMsgFlatrateInvoiceInvoiceDetail" 
-                    api="[[api]]" 
-                    i18n="[[i18n]]" 
-                    user="[[user]]" 
-                    hcp="[[hcp]]"
-                    language="[[language]]" 
-                    resources="[[resources]]" 
-                    selected-invoice-for-detail="[[selectedInvoiceForDetail]]"
-                    on-close-invoice-detail-panel="_closeInvoiceDetailPanel"     
-                    on-get-message="fetchMessageToBeSendOrToBeCorrected"
-                 ></ht-msg-flatrate-invoice-invoice-detail>      
-            </template>
-        </div> 
-`;
+            <custom-style>
+                <style include="shared-styles spinner-style">
+    
+                    :host {
+                        display: block;
+                        z-index:2;
+                    }
+    
+                    :host *:focus {
+                        outline: 0 !important;
+                    }
+                    
+                    .invoice-panel{
+                        height: 100%;
+                        width: 100%;
+                        padding: 0 20px;
+                        box-sizing: border-box;
+                        z-index: -1;
+                        position: relative;
+                    }
+                    
+                    #htMsgFlatrateInvoiceBatchDetail{
+                        top: 0;
+                        display: block;
+                        position: absolute;
+                        z-index: 100;
+                        height: calc(100% - 8px);                    
+                        width: 98%;
+                    }
+                    
+                    #htMsgFlatrateInvoiceInvoiceDetail{
+                        top: 0;
+                        display: block;
+                        position: absolute;
+                        z-index: 100;
+                        height: calc(100% - 8px);                    
+                        width: 98%;
+                    }
+                </style>
+            </custom-style>
+            
+            <div class="invoice-panel">
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeCorrected')]]">
+                    <ht-msg-flatrate-invoice-to-be-corrected 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[messagesToBeCorrected]]"
+                        is-loading="[[isLoading]]"
+                        on-open-invoice-detail-panel="_openInvoiceDetailPanel"
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                    ></ht-msg-flatrate-invoice-to-be-corrected>
+                </template>  
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeSend')]]">
+                    <ht-msg-flatrate-invoice-to-be-send 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[selectedInvoicesToBeSend]]"
+                        is-loading="[[isLoading]]"
+                        on-open-invoice-detail-panel="_openInvoiceDetailPanel"
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        >                   
+                    </ht-msg-flatrate-invoice-to-be-send>
+                </template>   
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'process')]]">
+                    <ht-msg-flatrate-invoice-pending 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[messagesProcessed]]"
+                        list-of-oa="[[listOfOa]]"
+                        on-open-detail-panel="_openDetailPanel"
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        is-loading="[[isLoading]]"
+                    ></ht-msg-flatrate-invoice-pending>
+                </template>   
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'reject')]]">
+                    <ht-msg-flatrate-invoice-rejected 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[messagesRejected]]"
+                        message-ids-can-be-auto-archived="[[messageIdsCanBeAutoArchived]]"
+                        list-of-oa="[[listOfOa]]"
+                        on-open-detail-panel="_openDetailPanel"
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        is-loading="[[isLoading]]"
+                     ></ht-msg-flatrate-invoice-rejected>
+                </template>   
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'accept')]]">
+                    <ht-msg-flatrate-invoice-accepted 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[messagesAccepted]]"
+                        list-of-oa="[[listOfOa]]"
+                        on-open-detail-panel="_openDetailPanel"
+                        is-loading="[[isLoading]]"
+                    ></ht-msg-flatrate-invoice-accepted>
+                </template>   
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'archive')]]">
+                    <ht-msg-flatrate-invoice-archived 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        list-of-invoice="[[messagesArchived]]"
+                        list-of-oa="[[listOfOa]]"
+                        on-open-detail-panel="_openDetailPanel"
+                        is-loading="[[isLoading]]"
+                    ></ht-msg-flatrate-invoice-archived>
+                </template>  
+                <template is="dom-if" if="[[isDisplayDetail]]">
+                    <ht-msg-flatrate-invoice-batch-detail id="htMsgFlatrateInvoiceBatchDetail" 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        selected-invoice-for-detail="[[selectedBatchForDetail]]"
+                        on-close-detail-panel="_closeDetailPanel"
+                        on-archive-batch="_openArchiveDialog"
+                        on-transfer-invoices-for-resending="_transferInvoicesForResending"
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                     ></ht-msg-flatrate-invoice-batch-detail>      
+                </template>
+                <template is="dom-if" if="[[isDisplayInvoiceDetail]]">
+                    <ht-msg-flatrate-invoice-invoice-detail id="htMsgFlatrateInvoiceInvoiceDetail" 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        hcp="[[hcp]]"
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        selected-invoice-for-detail="[[selectedInvoiceForDetail]]"
+                        on-close-invoice-detail-panel="_closeInvoiceDetailPanel"     
+                        on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                     ></ht-msg-flatrate-invoice-invoice-detail>      
+                </template>
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'ej20_mda')]]"><ht-msg-flatrate-mda api="[[api]]" i18n="[[i18n]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" resources="[[resources]]" id="ht-msg-flatrate-mda"></ht-msg-flatrate-mda></template>
+                <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'ej20_mda_history')]]"><ht-msg-flatrate-mda-history api="[[api]]" i18n="[[i18n]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" resources="[[resources]]" id="ht-msg-flatrate-mda-history"></ht-msg-flatrate-mda-history></template>
+            </div>
+            
+        `;
     }
 
     static get is() {
@@ -631,9 +640,15 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     }
 
     _invoicesStatusChanged(){
-        this._closeDetailPanel()
-    }
 
+        this._closeDetailPanel()
+
+        return setTimeout(() => {
+            const mdaComponent = this.shadowRoot.querySelector('#ht-msg-flatrate-mda')
+            _.trim(_.get(this,"invoicesStatus"))==="ej20_mda" && mdaComponent && typeof _.get(mdaComponent,"_e_loadDataAndGetStep") === "function" && mdaComponent._e_loadDataAndGetStep();
+        },500)
+
+    }
 
 }
 
