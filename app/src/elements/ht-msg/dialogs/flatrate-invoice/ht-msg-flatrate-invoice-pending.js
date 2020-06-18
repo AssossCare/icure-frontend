@@ -549,7 +549,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
             this.push('progressItem', this.localize('inv-get-step-1', 'inv-get-step-1', this.language))
             this.set('cannotGet',true)
             localStorage.setItem('lastInvoicesGet', Date.now())
-            this.api.fhc().Efactcontroller().loadMessagesUsingGET(_.get(this.hcp, 'nihii', null), this.language, _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), "medicalhouse").then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
+            this.api.fhc().Efactcontroller().loadMessagesUsingGET(_.get(this.hcp, 'nihii', null), this.language, _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'name', null), "", "medicalhouse").then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
                 let prom = Promise.resolve()
                 this.push('progressItem', this.localize('inv-get-step-2', 'inv-get-step-2', this.language))
                 response.forEach(message => {
@@ -589,7 +589,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     this.push('progressItem', this.localize('inv-get-step-3', 'inv-get-step-3', this.language))
 
                     let sprom = Promise.resolve()
-                    _.chunk(treatedMessages, 20).forEach(chunk => {
+                    /*_.chunk(treatedMessages, 20).forEach(chunk => {
                         const tacks = chunk.filter(x => x && x.tack)
                         const responses = chunk.filter(x => x && x.detail)
 
@@ -597,7 +597,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                             .then(() =>this.api.fhc().Efactcontroller().confirmAcksUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), "medicalhouse", tacks.map(t => t.hashValue)))
                             .then(() => this.api.fhc().Efactcontroller().confirmMessagesUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), "medicalhouse", responses.map(t => t.hashValue)))
 
-                    })
+                    })*/
                     return sprom
 
                 })
