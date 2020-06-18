@@ -1353,7 +1353,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
                             return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
-                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
+                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
+                                        inv.printedDate =  moment().format("YYYYMMDD")
+                                        inv.careProviderType = "medicalhouse"
+                                        return inv
+                                    }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
                                     Promise.resolve(invoices[0])
                                 )
                                 .then(newInvoice => {
@@ -1363,20 +1367,18 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                         // Drop duplicated codes
                                         pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
                                         newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
-
+                                        newInvoice.printedDate =  moment().format("YYYYMMDD")
+                                        newInvoice.careProviderType = "medicalhouse"
                                         // && Update invoice
                                         return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
                                             .then(newInvoiceMod => {
-                                                newInvoiceMod.printedDate =  moment().format("YYYYMMDD")
-                                                newInvoiceMod.careProviderType = "medicalhouse"
+
                                                 pat.invoices = [newInvoiceMod]
                                                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                                 return _.concat(pats, [pat])
                                             });
 
                                     } else {
-                                        newInvoice.printedDate =  moment().format("YYYYMMDD")
-                                        newInvoice.careProviderType = "medicalhouse"
                                         pat.invoices = [newInvoice]
                                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                         return _.concat(pats, [pat])
