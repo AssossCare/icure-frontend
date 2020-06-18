@@ -400,7 +400,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 <!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
                     </div>
 
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
                 </div>   
             </div>        
         </paper-dialog>
@@ -693,7 +693,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing_dialogResult() {
-
+        //TODO: add cancel possibility
+        this._exportFlatRateInvoicing_step2()
     }
 
     _exportFlatRateInvoicing_step2() {
