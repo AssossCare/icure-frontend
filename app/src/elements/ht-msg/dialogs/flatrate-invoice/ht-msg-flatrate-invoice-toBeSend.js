@@ -1351,9 +1351,13 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             // TOP-435
                             const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
 
-                            return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
+                            return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
-                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
+                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
+                                        inv.printedDate =  moment().format("YYYYMMDD")
+                                        inv.careProviderType = "medicalhouse"
+                                        return inv
+                                    }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
                                     Promise.resolve(invoices[0])
                                 )
                                 .then(newInvoice => {
@@ -1363,17 +1367,18 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                         // Drop duplicated codes
                                         pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
                                         newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
-
+                                        newInvoice.printedDate =  moment().format("YYYYMMDD")
+                                        newInvoice.careProviderType = "medicalhouse"
                                         // && Update invoice
                                         return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
                                             .then(newInvoiceMod => {
+
                                                 pat.invoices = [newInvoiceMod]
                                                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                                 return _.concat(pats, [pat])
                                             });
 
                                     } else {
-
                                         pat.invoices = [newInvoice]
                                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                         return _.concat(pats, [pat])
@@ -1535,7 +1540,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             prom = prom.then(promisesCarrier => this.api.invoice().findBy(_.get(this,"user.healthcarePartyId"), pat)
                 .then(invoices => _.filter(invoices, inv => inv &&
                     inv.sentDate &&
-                    inv.sentMediumType === "cdrom" &&
+                    inv.sentMediumType === "efact" &&
                     _.size(_.filter(inv.invoicingCodes, ic => !ic.lost && !ic.canceled && !ic.resent)) &&
                     _.trim(inv.invoiceDate) === exportedMonth
                 ))
