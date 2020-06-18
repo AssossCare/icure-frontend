@@ -549,7 +549,7 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             this.push('progressItem', this.localize('inv-get-step-1', 'inv-get-step-1', this.language))
             this.set('cannotGet',true)
             localStorage.setItem('lastInvoicesGet', Date.now())
-            this.api.fhc().Efactcontroller().loadMessagesUsingGET(this.hcp.nihii, this.language, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName).then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
+            this.api.fhc().Efactcontroller().loadMessagesUsingGET(this.hcp.nihii, this.language, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, "doctor").then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
                 let prom = Promise.resolve()
                 this.push('progressItem', this.localize('inv-get-step-2', 'inv-get-step-2', this.language))
                 response.forEach(message => {
@@ -594,8 +594,8 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
                         const responses = chunk.filter(x => x && x.detail)
 
                         sprom = sprom
-                            .then(() =>this.api.fhc().Efactcontroller().confirmAcksUsingPUT(this.hcp.nihii, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, tacks.map(t => t.hashValue)))
-                            .then(() => this.api.fhc().Efactcontroller().confirmMessagesUsingPUT(this.hcp.nihii, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, responses.map(t => t.hashValue)))
+                            .then(() =>this.api.fhc().Efactcontroller().confirmAcksUsingPUT(this.hcp.nihii, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, "doctor", tacks.map(t => t.hashValue)))
+                            .then(() => this.api.fhc().Efactcontroller().confirmMessagesUsingPUT(this.hcp.nihii, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, "doctor", responses.map(t => t.hashValue)))
 
                     })
                     return sprom
