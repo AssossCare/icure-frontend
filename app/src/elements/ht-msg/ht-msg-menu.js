@@ -624,7 +624,7 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
         
                             <hr class="menuHr"/>
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[ej20_batchCounter.error]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
+                            <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.toBeSend]]</span></paper-item>
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[ej20_batchCounter.pending]]</span></paper-item>
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[ej20_batchCounter.rejected]]</span></paper-item>
                             <!--<paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[ej20_batchCounter.partiallyAccepted]]</span></paper-item>-->
@@ -701,7 +701,7 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
                 value: () => ({
                     archived: 0,
                     error: 0,
-                    partiallyAccepted: 0,
+                    toBeSend: 0,
                     fullyAccepted: 0,
                     rejected: 0,
                     treated: 0,
@@ -829,9 +829,6 @@ class HtMsgMenu extends TkLocalizerMixin(PolymerElement) {
     assignResolvedObjects(inputObjects) {
         _.map(inputObjects, (v,k)=> this.set(k,v))
     }
-
-
-
 
     _inboxTapped(e) {
         e.stopPropagation()

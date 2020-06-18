@@ -7,6 +7,8 @@ import '../../../../styles/buttons-style'
 import '../../../../styles/dialog-style'
 import '../../../../styles/invoicing-style';
 import '../../../ht-spinner/ht-spinner.js'
+import '../../../ht-pat/dialogs/medicalhouse/ht-pat-flatrate-utils.js';
+
 
 //TODO import "@polymer/iron-collapse-button/iron-collapse-button"
 import "@polymer/iron-icon/iron-icon"
@@ -375,16 +377,35 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('generate','Generate',language)]]</paper-button>
-                    <template is="dom-if" if="[[api.tokenId]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                    <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
-                    <template is="dom-if" if="[[!api.tokenId]]" restamp="true">                   
+                    <template is="dom-if" if="[[!api.tokenIdMH]]" restamp="true">                   
                         <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
                     </template> 
                 </template>
             </div>
         </div>  
+        
+        <paper-dialog class="modalDialog" id="selectMonthDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <div class="textAlignCenter">
+
+                    <div class="exportMonthPicker pb20">
+                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
+                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+                        <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
+
+<!--                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>-->
+<!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
+                    </div>
+
+                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                </div>   
+            </div>        
+        </paper-dialog>
         
          <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
@@ -399,6 +420,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 </div>     
             </div>        
         </paper-dialog>
+        
+        <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
 `
     }
 
@@ -470,6 +493,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 value: false
             },
             progressItem:{
+                type: Array,
+                value: () => []
+            },
+            _loadingMessages: {
                 type: Array,
                 value: () => []
             }
@@ -622,9 +649,9 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
+                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), this.api.fhc().Efactcontroller(),
                         undefined,
-                        (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`))
+                        (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`), "medicalhouse")
                     ).then(message => {
                         this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
                         this.api.register(message,'message')
@@ -670,6 +697,15 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing() {
+        this.shadowRoot.querySelector('#selectMonthDialog').open()
+    }
+
+    _exportFlatRateInvoicing_dialogResult() {
+        //TODO: add cancel possibility
+        this._exportFlatRateInvoicing_step2()
+    }
+
+    _exportFlatRateInvoicing_step2() {
 
         this.set('isLoading', true );
         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1',this.language), icon:"arrow-forward"});
@@ -1286,7 +1322,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 )
             }) //22
             .finally(()=>{
-                console.log(this.flatRateInvoicingDataObject);
+                console.log("finally:flatRateInvoicingDataObject", this.flatRateInvoicingDataObject);
+                console.log(JSON.stringify(this.flatRateInvoicingDataObject));
                 this.flatRateInvoicingDataObject = {}
                 this.set('isLoading', false );
                 this.set('activeGridItem', null );
@@ -1314,9 +1351,13 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             // TOP-435
                             const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
 
-                            return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
+                            return retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
-                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
+                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
+                                        inv.printedDate =  moment().format("YYYYMMDD")
+                                        inv.careProviderType = "medicalhouse"
+                                        return inv
+                                    }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
                                     Promise.resolve(invoices[0])
                                 )
                                 .then(newInvoice => {
@@ -1326,17 +1367,18 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                         // Drop duplicated codes
                                         pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
                                         newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
-
+                                        newInvoice.printedDate =  moment().format("YYYYMMDD")
+                                        newInvoice.careProviderType = "medicalhouse"
                                         // && Update invoice
                                         return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
                                             .then(newInvoiceMod => {
+
                                                 pat.invoices = [newInvoiceMod]
                                                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                                 return _.concat(pats, [pat])
                                             });
 
                                     } else {
-
                                         pat.invoices = [newInvoice]
                                         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
                                         return _.concat(pats, [pat])
@@ -1360,7 +1402,241 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         return hasDouble;
     }
 
+    _getExportMonthsList() {
+        let toReturn = [];
+        for(let i=1; i<=12; i++) toReturn.push({id: i, label: this.localize('month_'+i,this.language) })
+        return toReturn
+    }
 
+    _getExportYearsList() {
+        let toReturn = [];
+        for(let i=(parseInt(moment().format('YYYY'))+1); i>=(parseInt(moment().format('YYYY'))-2); i--) toReturn.push({id: i, label: i })
+        return toReturn
+    }
+
+    _getExportCurrentMonth() {
+        return parseInt(moment().format('MM'))
+    }
+
+    _getExportCurrentYear() {
+        return parseInt(moment().format('YYYY'))
+    }
+
+    _sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
+    getChangeParentCode306(code){
+        return code === "306" ? "300" : code;
+    }
+
+    _setLoadingMessage( messageData ) {
+        if( messageData.updateLastMessage ) { this._loadingMessages.pop(); }
+        this._loadingMessages.push( messageData );
+        let loadingContentTarget = this.shadowRoot.querySelectorAll('#loadingContent')[0];
+        if(loadingContentTarget) { loadingContentTarget.innerHTML = ''; _.each(this._loadingMessages, (v)=>{ loadingContentTarget.innerHTML += "<p><iron-icon icon='"+v.icon+"' class='"+(v.done?"loadingIcon done":"loadingIcon")+"'></iron-icon>" + v.message + "</p>"; }); }
+    }
+
+    _resetLoadingMessage() {
+        this._loadingMessages = [];
+    }
+
+    _getPatientsByHcp( hcpId ) {
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) =>
+                this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+                    .then(pl => {
+                        pl.rows = _
+                            .chain(pl.rows)
+                            .filter((i)=>{return(
+                                !!i
+                                && !!_.get(i,"active", true)
+                                && !!_.trim(_.get(i,"dateOfBirth", ""))
+                                && !!_.trim(_.get(i,"ssin", ""))
+                                && !!_.size(_.get(i,"insurabilities", []))
+
+                                // Make sure there is at least one valid insurance versus exported date
+                                && !!_.size(
+                                    _.chain(i.insurabilities)
+                                        .filter(i=>{return(
+                                            !!i
+                                            // && i.identificationNumber
+                                            && !!_.trim(_.get(i,"insuranceId", ""))
+                                            && _.trim(_.get(i, "parameters.tc1", "")).length === 3
+                                            && _.trim(_.get(i, "parameters.tc2", "")).length === 3
+                                            && ( _.trim(_.get(i, "parameters.tc1", "")) + _.trim(_.get(i, "parameters.tc2", "")) !== "000000" )
+                                            && (
+                                                moment(_.get(i, "startDate"+"", 0), 'YYYYMMDD').isBefore(this.reportCurrentDateMomentObject, 'date') ||
+                                                moment(_.get(i, "startDate"+"", 0), 'YYYYMMDD').isSame(this.reportCurrentDateMomentObject, 'date') ||
+                                                !parseInt(_.get(i, "startDate", 0))
+                                            )
+                                            && (
+                                                moment(_.get(i, "endDate"+"", 0), 'YYYYMMDD').isAfter(this.reportCurrentDateMomentObject, 'date') ||
+                                                moment(_.get(i, "endDate"+"", 0), 'YYYYMMDD').isSame(this.reportCurrentDateMomentObject, 'date') ||
+                                                !parseInt(_.get(i, "endDate", 0))
+                                            )
+                                        )})
+                                        .value()
+                                )
+                                && !!_.size(_.get(i, "medicalHouseContracts", []))
+                                && !!_.size(_.filter(_.get(i, "medicalHouseContracts",[]), i => _.trim(_.get(i,"hcpId", "something")) === _.trim(_.get(this,"user.healthcarePartyId","else"))))
+                            )})
+                            .uniqBy( 'ssin' )
+                            .value()
+                            .map((i) => {
+                                i.ssin = _.trim(_.get(i,"ssin","")).replace(/[^\d]/gmi,"")
+                                i.lastName = (_.get(i,"lastName","")).toUpperCase()
+                                i.firstName = (_.get(i,"firstName","")).toUpperCase()
+                                i.dateOfBirth = (!!_.trim(_.get(i,"dateOfBirth",""))?moment(_.trim(_.get(i,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
+
+                                // Eval "finalInsurability" to be the one corresponding to exported date
+                                i.finalInsurability = _.get(
+                                    _.filter(
+                                        i.insurabilities,
+                                        (ins) => {
+                                            return ins &&
+                                                _.size(ins) &&
+                                                !!_.trim(_.get( ins, "insuranceId", "" )) &&
+                                                _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                                                _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                                                ( _.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000" ) &&
+                                                // !!_.trim(_.get( ins, "identificationNumber", "" ) ) &&
+                                                (
+                                                    moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isBefore(this.reportCurrentDateMomentObject, 'date') ||
+                                                    moment(_.get(ins, "startDate"+"", 0), 'YYYYMMDD').isSame(this.reportCurrentDateMomentObject, 'date') ||
+                                                    !parseInt(_.get(ins, "startDate", 0))
+                                                ) &&
+                                                (
+                                                    moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(this.reportCurrentDateMomentObject, 'date') ||
+                                                    moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(this.reportCurrentDateMomentObject, 'date') ||
+                                                    !parseInt(_.get(ins, "endDate", 0))
+                                                )
+                                        }
+                                    ), "[0]", {}
+                                )
+                                i.insurancePersonType = !_.trim( _.get( i, "finalInsurability.titularyId", "" )) ? "T" : ( moment().diff(moment(_.get(i, "dateOfBirth"+"", "0")+"", "DD/MM/YYYY"), 'years') < 18 ) ? "E" : "C"
+                                i.titularyId = _.trim( _.get( i, "finalInsurability.titularyId", "" ))
+                                return i
+                            })
+                        ;
+                        return {
+                            rows:pl.rows,
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(()=>{ return Promise.resolve(); })
+        )||[];
+
+    }
+
+    _getPatientsWithValidInvoiceForExportedMonth(patients, exportedMonth) {
+
+        let prom = Promise.resolve([])
+
+        _.map(patients, pat => {
+            prom = prom.then(promisesCarrier => this.api.invoice().findBy(_.get(this,"user.healthcarePartyId"), pat)
+                .then(invoices => _.filter(invoices, inv => inv &&
+                    inv.sentDate &&
+                    inv.sentMediumType === "efact" &&
+                    _.size(_.filter(inv.invoicingCodes, ic => !ic.lost && !ic.canceled && !ic.resent)) &&
+                    _.trim(inv.invoiceDate) === exportedMonth
+                ))
+                .then(patValidInvoicesForExportedMonth => !!_.size(patValidInvoicesForExportedMonth) ? _.get(pat,"id",false) : false)
+                .then(patId => _.concat(promisesCarrier, [patId]))
+                .catch(()=>_.concat(promisesCarrier, [false]))
+            )
+        })
+
+        return prom.then(x=>_.compact(x))
+
+    }
+
+    getDestCode(affCode){
+        let destCode = affCode;
+        if (affCode.startsWith("3")) {
+            if (["304", "305", "309", "311", "315", "317", "319", "322", "323", "325"].includes(affCode)) {
+                destCode = "300";
+            } else {
+                destCode ="306";
+            }
+        } else if (affCode.startsWith("4")) {
+            destCode =  "400"
+        }
+        return  destCode;
+    }
+
+    _getInsuranceTitularyInfo(inputPatientsList=false) {
+        return new Promise(resolve =>{
+            const insuranceTitularyIds = _.compact(_.uniq(_.filter( (inputPatientsList?inputPatientsList:this.flatRateAllPatients), (i)=>{ return _.trim(_.get(i, "titularyId", "")) }).map(i=>i.titularyId) ));
+            return !_.size(insuranceTitularyIds) ? resolve((inputPatientsList?inputPatientsList:this.flatRateAllPatients)) : this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ ids: insuranceTitularyIds })).then(results => {
+                //this.api.setPreventLogging(false)
+                return resolve(
+                    _.map((inputPatientsList?inputPatientsList:this.flatRateAllPatients), (i=>{
+                        if(!_.trim(_.get(i,"titularyId", "" ))) return i
+                        let titularyRecord = _.head(_.filter(results,(j=>{ return _.trim(j.id) === _.get(i,"titularyId", "" ) })))
+                        i.titularyLabel = _.upperCase(_.get(titularyRecord, "firstName", "" )) + ' ' + _.upperCase(_.get(titularyRecord, "lastName", "" ))
+                        return i
+                    }))
+                )
+            })
+        })
+    }
+
+    _getInsurancesDataByPatientsList(inputPatientsList) {
+        return new Promise(resolve => {
+            this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : _.chain(inputPatientsList).map(i=> i.insurabilities.map(ins => _.trim(_.get(ins, "insuranceId")))).flattenDeep().uniq().compact().value()}))
+                .then(insurancesData => resolve(
+                    _
+                        .chain(insurancesData)
+                        .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                        .sortBy((i)=>{ return i.code; })
+                        .value()
+                ))
+        })
+    }
+
+    _getInsurancesDataByIds(insurancesIds) {
+        return new Promise(resolve => {
+            this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : insurancesIds}))
+                .then(insurancesData => resolve(
+                    _
+                        .chain(insurancesData)
+                        .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                        .sortBy((i)=>{ return i.code; })
+                        .value()
+                ))
+        })
+    }
+
+    _getInsurancesDataByCode(insurancesCode) {
+        return new Promise(resolve => {
+            this.api.insurance().listInsurancesByCode(insurancesCode)
+                .then(insurancesData => resolve(
+                    _
+                        .chain(insurancesData)
+                        .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                        .sortBy((i)=>{ return i.code; })
+                        .value()
+                ))
+        })
+    }
+
+    _getIOsDataByInsurancesList(inputInsurancesList) {
+
+        return new Promise(resolve => {
+            this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : _.chain(inputInsurancesList).map(i=>_.trim(_.get(i, "parent"))).uniq().compact().value()}))
+                .then(insurancesData => resolve(
+                    _
+                        .chain(insurancesData)
+                        .map((i)=>{ i.finalName = (i && i.name && i.name[this.language]) ? i.name[this.language] : i.name[(this.language==='fr' ? 'nl' : 'fr')]; return i; })
+                        .sortBy((i)=>{ return i.code; })
+                        .value()
+                ))
+        })
+    }
 }
 
 customElements.define(HtMsgFlatrateInvoiceToBeSend.is, HtMsgFlatrateInvoiceToBeSend)
