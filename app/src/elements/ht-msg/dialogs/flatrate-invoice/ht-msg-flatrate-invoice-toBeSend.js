@@ -388,6 +388,88 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             </div>
         </div>  
         
+        <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                    <p class="">[[localize('provideNihiiNumber','Please provide your number',language)]] <b>[[localize('inami','INAMI',language)]]</b>.</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                    <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                    <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                    <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                    <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
+                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+                <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                    <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
+                    <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
+                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+                </div>
+                <div class="buttons">
+                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                </div>
+            </paper-dialog>
+        
         <paper-dialog class="modalDialog" id="selectMonthDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -1401,6 +1483,41 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             if(_.size(ics) > 1) hasDouble = true;
         });
         return hasDouble;
+    }
+
+    _showWarningNoHcpFlatrateTarification() {
+        this.set("_bodyOverlay", true);
+        this.$["missingMedicalHouseValorisations"].open()
+    }
+
+    _showWarningNoDataToExport() {
+        this.set("_bodyOverlay", true);
+        this.$["noDataToExport"].open()
+    }
+
+    _showWarningNoHcpContactPerson() {
+        this.set("_bodyOverlay", true);
+        this.$["noHcpContactPerson"].open()
+    }
+
+    _showWarningNoCbe() {
+        this.set("_bodyOverlay", true);
+        this.$["noHcpBce"].open()
+    }
+
+    _showWarningNoBankAccount() {
+        this.set("_bodyOverlay", true);
+        this.$["noHcpBankAccount"].open()
+    }
+
+    _showWarningExportAlreadyRan() {
+        this.set("_bodyOverlay", true);
+        this.$["exportAlreadyRan"].open()
+    }
+
+    _showWarningNoHcpNihii() {
+        this.set("_bodyOverlay", true);
+        this.$["missingNihiiDialog"].open()
     }
 
     _getExportMonthsList() {
