@@ -358,6 +358,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     {code: "400", name: {"fr": "Union nationale des mutualités libérales", "nl": "Landsbond van liberale mutualiteiten"}},
                     {code: "500", name: {"fr": "Union nationale des mutualités libres", "nl": "Landsbond van de onafhankelijke ziekenfondsen"}},
                     {code: "600", name: {"fr": "Caisse auxiliaire d'assurance maladie-invalidité", "nl": "Hulpkas voor Ziekte-en Invaliditeitsverzekering"}},
+                    {code: "675", name: {"fr": "Caisse auxiliaire d'assurance maladie-invalidité - Marins 675", "nl": "Hulpkas voor Ziekte-en Invaliditeitsverzekering - Zeiler 675"}},
                     {code: "900", name: {"fr": "Caisse des Soins de santé de HR Rail", "nl": "Kas der Geneeskundige Verzorging van HR Rail"}}
                 ]
             }
