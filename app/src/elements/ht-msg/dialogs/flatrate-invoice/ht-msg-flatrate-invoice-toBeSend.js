@@ -1148,17 +1148,9 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                         !!mhc &&
                                         !!_.size(mhc) &&
                                         !!_.get(mhc, 'contractId', null) &&
-                                        // Has to begin in the past
-                                        //TODO: I think it should be: startOfCoverage instead of startOfContract
-                                        moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').isBefore(mhcExportDateOrResentDate) &&
-                                        // Either end of contract is in the future or is not set
-                                        //TODO: I think it should be: endOfCoverage instead of endOfContract
-                                        ( moment(_.trim(_.get(mhc, "endOfContract", "0")), "YYYYMMDD").endOf('month').isAfter(mhcExportDateOrResentDate) || !parseInt(_.get(mhc, "endOfContract", 0)) ) &&
                                         (
-                                            // Either start of coverage is before this month AND set OR
-                                            // Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
-                                            ( parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(mhcExportDateOrResentDate) ) ||
-                                            ( !parseInt(_.get(mhc, "startOfCoverage", 0)) && moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').add(1, 'months').isBefore(mhcExportDateOrResentDate) )
+                                            // Coverage has to begin in previous month or before
+                                            moment(_.trim(_.get(mhc, "startOfCoverage", "0")), "YYYYMMDD").endOf('month').isBefore(mhcExportDateOrResentDate)
                                         )
                                         && //remove suspended contracts also during their time of suspension
                                         (
@@ -1173,7 +1165,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                     )
                                 })
                                 .value(),
-                            ["startOfContract"],
+                            ["startOfCoverage"],
                             ["desc"]
                         ),
                         "[0]", []
