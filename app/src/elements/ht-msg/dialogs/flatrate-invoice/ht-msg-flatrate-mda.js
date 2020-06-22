@@ -2411,7 +2411,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             {members:_.compact(_.map(requestedData, it => _.merge({},{hospitalized:false, ssin: _.trim(_.get(it,"patientSsin")), ioMembership: _.trim(_.get(it,"patientSsin")) ? "" : _.trim(_.get(it,"patientIdentificationNumber")) })))},
             "medicalhouse",
             moment().subtract(24, 'months').valueOf(),
-            moment().valueOf(),
+            moment().endOf("month").valueOf(),
             false,
             ""
         )
@@ -2503,7 +2503,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     // moment(_.trim(_.get(mhc,"startOfContract")), "YYYYMMDD").startOf('month').isBefore(momentExportedDate) &&
 
                                     // Either end of contract is in the future or is not set
-                                    (moment(_.trim(_.get(mhc,"endOfContract","0")), "YYYYMMDD").endOf('month').isAfter(momentExportedDate) || !parseInt(_.get(mhc,"endOfContract",0))) &&
+                                    // 20200601 - Not for electronic invoicing anymore
+                                    // (moment(_.trim(_.get(mhc,"endOfContract","0")), "YYYYMMDD").endOf('month').isAfter(momentExportedDate) || !parseInt(_.get(mhc,"endOfContract",0))) &&
+                                    (moment(_.trim(_.get(mhc,"endOfCoverage","0")), "YYYYMMDD").endOf('month').isAfter(momentExportedDate) || !parseInt(_.get(mhc,"endOfCoverage",0))) &&
 
                                     // Either start of coverage is before this month AND set OR Start of coverage isn't set and start of contract is two month in the past (start of coverage = start of contract + 1 month when no trial period)
                                     // 20200601 - Not for electronic invoicing anymore --> just check on startOfCoverage
@@ -2930,7 +2932,19 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                             console.log("mdaPatient",mdaPatient)
                             console.log("topazPatient",topazPatient)
 
-                            mdaMhc
+                            // const mdaMhcs = _.get(mdaPatient,"mhcs",[])
+                            //
+                            // // None of them exist
+                            // !_.size(mdaMhcs) ||
+                            //
+                            // // None of them belong to me
+                            // !_.chain(mdaMhcs).filter(it => _.trim(_.get(it,"mmNihii")) === _.trim(_.get(currentMh,"nihii"))).size().value() ||
+                            //
+                            // // None of them is still active
+                            // !_.chain(mdaMhcs).filter(it => _.get(it,"endOfCoverage")).size().value()
+                            //
+                            // true => stop current contract
+                            // any other scenario -> let go
 
                             // Continue here en mettant à jour INS && MHC
 
