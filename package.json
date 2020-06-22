@@ -164,6 +164,7 @@
     "electron-topaz-api": "git+https://github.com/AssossCare/topaz-electron-api#caebad23ab078eb68deb411671a8d1b56c6e216a",
     "fhc-api": "^1.0.55",
     "global": "^4.4.0",
+    "heic2any": "0.0.3",
     "iban": "0.0.11",
     "icc-api": "1.0.221",
     "intl-messageformat": "^2.2.0",
