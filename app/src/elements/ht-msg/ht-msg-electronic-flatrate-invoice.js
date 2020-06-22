@@ -83,8 +83,8 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     }
                 </style>
             </custom-style>
-            
-            <div class="invoice-panel">
+
+            <div class$="invoice-panel [[_getCssClassForMda(invoicesStatus)]]">
                 <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeCorrected')]]">
                     <ht-msg-flatrate-invoice-to-be-corrected 
                         api="[[api]]" 
@@ -502,7 +502,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
                         return this.api.document().findByMessage(this.user.healthcarePartyId, msg)
                             .then(docs => {
-                                console.log(docs)
+                                // console.log(docs)
                                 const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
                                 return jsonDoc && jsonDoc.attachmentId ?
                                     (_.size(jsonDoc.encryptionKeys) || _.size(jsonDoc.delegations) ?
@@ -648,6 +648,12 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             const mdaComponent = this.shadowRoot.querySelector('#ht-msg-flatrate-mda')
             _.trim(_.get(this,"invoicesStatus"))==="ej20_mda" && mdaComponent && typeof _.get(mdaComponent,"_e_loadDataAndGetStep") === "function" && mdaComponent._e_loadDataAndGetStep();
         },500)
+
+    }
+
+    _getCssClassForMda(invoicesStatus) {
+
+        return ["ej20_mda","ej20_mda_history"].indexOf(invoicesStatus) > -1 ? "pt30" : ""
 
     }
 
