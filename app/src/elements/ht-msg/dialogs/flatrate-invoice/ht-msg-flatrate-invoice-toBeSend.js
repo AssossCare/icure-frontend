@@ -1147,6 +1147,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                     return (
                                         !!mhc &&
                                         !!_.size(mhc) &&
+                                        !!_.get(mhc, 'contractId', null) &&
                                         // Has to begin in the past
                                         //TODO: I think it should be: startOfCoverage instead of startOfContract
                                         moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').isBefore(mhcExportDateOrResentDate) &&
