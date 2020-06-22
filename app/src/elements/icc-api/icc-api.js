@@ -22,6 +22,9 @@ import {IccClassificationXApi} from 'icc-api/dist/icc-x-api/icc-classification-x
 import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 
 import {PolymerElement, html} from '@polymer/polymer';
+
+import heic2any from 'heic2any'
+
 class IccApi extends PolymerElement {
   static get template() {
     return html`
@@ -1146,9 +1149,111 @@ class IccApi extends PolymerElement {
       this.set("preventLogging",status)
   }
 
-  _isValidMail(email){
-      return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(email))
-  }
+
+    _isValidMail(email){
+
+        // return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(email))
+
+        const values = _.map(_.trim(email).split(/,|;| /), _.trim)
+
+        // RFC 2823
+        const regExp1 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
+
+        // RFC 5322
+        const regExp2 = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/i
+
+        // RFC 2822
+        const regExp3 = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/i
+
+        // RFC 2822
+        const regExp4 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
+
+        // Accepts unicode
+        const regExp5 = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/i
+
+        // Microsoft ASP MVC
+        const regExp6 = /^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/i
+
+        return _.size(_.filter(values, it => _.trim(it) && regExp6.test(it) )) === _.size(values)
+
+    }
+
+    getImageType(buffer) {
+
+        const arr = new Uint8Array(buffer).subarray(0, 4)
+        let header = ""; for (let i = 0; i < arr.length; i++)  header += arr[i].toString(16);
+
+        return header === "89504e47" ? "image/png" :
+            header === "47494638" ? "image/gif" :
+                ["ffd8ffe0","ffd8ffe1","ffd8ffe2","ffd8ffe3","ffd8ffe8"].indexOf(header) > -1 ? "image/jpeg" :
+                    false
+
+    }
+
+    blobToBase64(blob) {
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader;
+            reader.onerror = reject
+            reader.onload = () =>  resolve(reader.result)
+            reader.readAsDataURL(blob)
+        })
+
+    }
+
+    heicToJpg(document, attachmentContent=false) {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(document,"id",null) || (!_.size(_.get(document,"encryptionKeys")) && !_.size(_.get(document,"delegations"))) ? promResolve : promResolve
+            .then(() => attachmentContent ? attachmentContent : this.user().getCurrentUser()
+                .then(currentUser => this.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(currentUser,"healthcarePartyId", null), _.trim(_.get(document,"id","")), _.size(_.get(document,"encryptionKeys",[])) ? _.get(document,"encryptionKeys",[]) : _.get(document,"delegations",[]))
+                    .then(({extractedKeys: enckeys}) => this.document().getAttachmentAs(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), "application/octet-stream", enckeys.join(',')))
+                    .catch(e => console.log("ERROR getting attachment", e))
+                )
+            )
+            .then(decryptedContent => [this.getImageType(decryptedContent), new Blob([decryptedContent])])
+            .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : !imageBlobContent ? null : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
+            .then(imageBlobContent => !imageBlobContent ? null : this.blobToBase64(imageBlobContent).catch(() => null))
+            .catch(() => null)
+
+    }
+
+    executeFetchRequest(url, data, getAs=false){
+        const fetchImpl = typeof window !== "undefined" ? window.fetch : typeof self !== "undefined" ? self.fetch : fetch
+
+        return fetchImpl(url, data).then(response => Promise.all([response, getAs === "application/octet-stream" ? response.arrayBuffer() : response.text()]))
+            .then(([res, content]) => Promise.resolve({
+                response: res,
+                content: this.isJson(content) ? JSON.parse(content) : content
+            })).catch(err => console.log(err))
+    }
+
+    isJson(str){
+        try{
+            JSON.parse(str)
+        }catch(e){
+            return false
+        }
+
+        return true
+    }
+
+    deleteRecursivelyNullValues(obj){
+        const ithis = this
+        return _.transform(obj, function (o, v, k) {
+            if (v && typeof v === 'object') {
+                o[k] = ithis.deleteRecursivelyNullValues(v);
+            } else if (v !== null) {
+                o[k] = v;
+            }
+        });
+    }
+
+    sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
 }
 
 customElements.define(IccApi.is, IccApi)

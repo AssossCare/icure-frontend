@@ -572,7 +572,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'eflatrateInvocingMenuItem' || selectedItem === 'flatRateeInvoicingMenuItem' ) {
             this.set('electronicFlatRateInvoicesLayout', true)
             this.set('eFlatrateStatus', selectedStatus)
-            setTimeout(() =>{this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").getMessage(); },0)
+            selectedItem !== 'flatRateeInvoicingMenuItem' && setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").getMessage(); },0)
         } else if (selectedItem === 'e_flatraterptOut' ){
             this.set('flatrateinvoicesReportLayout', true);
             this.set('flatrateMenuSection', selectedStatus)
