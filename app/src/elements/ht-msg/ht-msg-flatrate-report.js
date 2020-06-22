@@ -1044,12 +1044,12 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
                         <paper-tab class="adm-tab" on-tap="deceasedPage"><iron-icon class="smaller tabIcon" icon="vaadin:family"></iron-icon>[[localize('fr_par_err_deceased','Deceased',language)]]</paper-tab>
                         <paper-tab class="adm-tab" on-tap="contractPage"><iron-icon class="smaller tabIcon" icon="vaadin:family"></iron-icon>[[localize('fr_par_err_mhc','MH Contract',language)]]</paper-tab>
                         <paper-tab class="adm-tab" on-tap="insurabilityPage"><iron-icon class="smaller tabIcon" icon="vaadin:family"></iron-icon>[[localize('fr_par_err_ins','Insurability',language)]]</paper-tab>
-                        <paper-tab class="adm-tab" on-tap="geninsPage"><iron-icon class="smaller tabIcon" icon="vaadin:umbrella"></iron-icon>[[localize('fr_par_err_ins_mcn','Insurability by MyCareNet',language)]]</paper-tab>
+<!--                        <paper-tab class="adm-tab" on-tap="geninsPage"><iron-icon class="smaller tabIcon" icon="vaadin:umbrella"></iron-icon>[[localize('fr_par_err_ins_mcn','Insurability by MyCareNet',language)]]</paper-tab>-->
                         <paper-tab class="adm-tab" on-tap="datesPage"><iron-icon class="smaller tabIcon" icon="vaadin:umbrella"></iron-icon>[[localize('fr_pat_dates','Dates',language)]]</paper-tab>
                     </paper-tabs>
                     <div class="buttons">
-                        <paper-icon-button class="button--icon-btn" id="refreshFRCheck" on-tap="_runFlatRateCheck" icon="vaadin:refresh"></paper-icon-button>
-                        <paper-tooltip for="refreshFRCheck" position="left">[[localize('flatrate-gen-report','Generate report',language)]]</paper-tooltip>
+<!--                        <paper-icon-button class="button&#45;&#45;icon-btn" id="refreshFRCheck" on-tap="_runFlatRateCheck" icon="vaadin:refresh"></paper-icon-button>-->
+<!--                        <paper-tooltip for="refreshFRCheck" position="left">[[localize('flatrate-gen-report','Generate report',language)]]</paper-tooltip>-->
                         <paper-icon-button class="button--icon-btn" id="exportXLSX" on-tap="_exportXLSX" icon="icons:cloud-download"></paper-icon-button>
                         <paper-tooltip for="exportXLSX" position="left">[[localize('export-excel','Export to xlsx',language)]]</paper-tooltip>
                     </div>
@@ -1283,50 +1283,50 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
                             </div>
                         </div>
                     </page>
-                    <page><!--genins-mcn-->
-<!--                        <paper-icon-button class="button&#45;&#45;icon-btn" id="refreshFRCheck" on-tap="_checkAssurabilityInformation" icon="vaadin:refresh"></paper-icon-button>-->
-                        <div class="invoicesGridContainer">
-                            <div class="invoiceContainer">
-                                <div class="invoiceSubContainerMiddle">
-                                    <div class="scrollBox">
-                                        <vaadin-grid id="mcn" items="[[geninsResList]]" active-item="{{activeGridItem}}">
-                                            <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">
-                                                <template class="header">
-                                                    <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>
-                                                </template>
-                                                <template>[[item.pat.lastName]] [[item.pat.firstName]]</template>
-                                            </vaadin-grid-column>
-                                            <vaadin-grid-column flex-grow="0" width="10%" class="ref-col">
-                                                <template class="header">
-                                                    <vaadin-grid-sorter path="pat.ssin">[[localize('niss','Niss',language)]]</vaadin-grid-sorter>
-                                                </template>
-                                                <template>[[item.pat.ssin]]</template>
-                                            </vaadin-grid-column>
-                                            <vaadin-grid-column flex-grow="0" width="15%" class="invoice-col">
-                                                <template class="header">
-                                                    <vaadin-grid-sorter path="flatrateStatus.status">[[localize('status','Status',language)]]</vaadin-grid-sorter>
-                                                </template>
-                                                <template>[[localize(item.flatrateStatus.status, item.flatrateStatus.status)]]</template>
-                                            </vaadin-grid-column>
-                                            <vaadin-grid-column flex-grow="0" width="45%" class="invoice-col">
-                                                <template class="header">
-                                                    [[localize('error','Error',language)]]
-                                                </template>
-                                                <template>[[_join(item.geninsErrors)]]</template>
-                                            </vaadin-grid-column>
-                                            <!--                                                data-id\$="[[access.patient.id]]-->
-                                            <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
-                                                <template class="header">
-                                                    [[localize('open_pat','Open',language)]]
-                                                </template>
-                                                <template><paper-icon-button class="button--icon-btn" id="openPatient" data-id\$="[[item.pat.id]]" on-tap="openPatient" icon="vaadin:edit">Open</paper-icon-button></template>
-                                            </vaadin-grid-column>
-                                        </vaadin-grid>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </page>
+<!--                    <page>&lt;!&ndash;genins-mcn&ndash;&gt;-->
+<!--&lt;!&ndash;                        <paper-icon-button class="button&#45;&#45;icon-btn" id="refreshFRCheck" on-tap="_checkAssurabilityInformation" icon="vaadin:refresh"></paper-icon-button>&ndash;&gt;-->
+<!--                        <div class="invoicesGridContainer">-->
+<!--                            <div class="invoiceContainer">-->
+<!--                                <div class="invoiceSubContainerMiddle">-->
+<!--                                    <div class="scrollBox">-->
+<!--                                        <vaadin-grid id="mcn" items="[[geninsResList]]" active-item="{{activeGridItem}}">-->
+<!--                                            <vaadin-grid-column flex-grow="0" width="20%" class="oa-col">-->
+<!--                                                <template class="header">-->
+<!--                                                    <vaadin-grid-sorter path="pat.lastName">[[localize('pat','Patient',language)]]</vaadin-grid-sorter>-->
+<!--                                                </template>-->
+<!--                                                <template>[[item.pat.lastName]] [[item.pat.firstName]]</template>-->
+<!--                                            </vaadin-grid-column>-->
+<!--                                            <vaadin-grid-column flex-grow="0" width="10%" class="ref-col">-->
+<!--                                                <template class="header">-->
+<!--                                                    <vaadin-grid-sorter path="pat.ssin">[[localize('niss','Niss',language)]]</vaadin-grid-sorter>-->
+<!--                                                </template>-->
+<!--                                                <template>[[item.pat.ssin]]</template>-->
+<!--                                            </vaadin-grid-column>-->
+<!--                                            <vaadin-grid-column flex-grow="0" width="15%" class="invoice-col">-->
+<!--                                                <template class="header">-->
+<!--                                                    <vaadin-grid-sorter path="flatrateStatus.status">[[localize('status','Status',language)]]</vaadin-grid-sorter>-->
+<!--                                                </template>-->
+<!--                                                <template>[[localize(item.flatrateStatus.status, item.flatrateStatus.status)]]</template>-->
+<!--                                            </vaadin-grid-column>-->
+<!--                                            <vaadin-grid-column flex-grow="0" width="45%" class="invoice-col">-->
+<!--                                                <template class="header">-->
+<!--                                                    [[localize('error','Error',language)]]-->
+<!--                                                </template>-->
+<!--                                                <template>[[_join(item.geninsErrors)]]</template>-->
+<!--                                            </vaadin-grid-column>-->
+<!--                                            &lt;!&ndash;                                                data-id\$="[[access.patient.id]]&ndash;&gt;-->
+<!--                                            <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">-->
+<!--                                                <template class="header">-->
+<!--                                                    [[localize('open_pat','Open',language)]]-->
+<!--                                                </template>-->
+<!--                                                <template><paper-icon-button class="button&#45;&#45;icon-btn" id="openPatient" data-id\$="[[item.pat.id]]" on-tap="openPatient" icon="vaadin:edit">Open</paper-icon-button></template>-->
+<!--                                            </vaadin-grid-column>-->
+<!--                                        </vaadin-grid>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </page>-->
                     <page><!--dates-->
                         <div class="page-container">
                             <div class="invoicesGridContainer">
