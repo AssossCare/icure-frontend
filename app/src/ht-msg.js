@@ -352,7 +352,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                                  invoices-status="[[eFlatrateStatus]]"
                                  route-data="[[routeData]]"
                                  on-selection-messages-change="handleMessageChange"
-                                 on-initialize-batch-counter="callInitializeBatchCounter"></ht-msg-electronic-flatrate-invoice>
+                                 on-initialize-batch-counter="initializeFlatrateBatchCounter"></ht-msg-electronic-flatrate-invoice>
             </template>
 
             <template is="dom-if" if="[[flatrateinvoicesLayout]]">
@@ -648,6 +648,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
 
     callInitializeBatchCounterJ20(e){
         this.shadowRoot.querySelector("#msg-menu").initializeBatchCounterJ20(e)
+    }
+
+    initializeFlatrateBatchCounter(e){
+        this.shadowRoot.querySelector("#msg-menu").initializeFlatrateBatchCounter(e)
     }
 
     callPersonalInboxUpdateMenuFoldersTotals(e){

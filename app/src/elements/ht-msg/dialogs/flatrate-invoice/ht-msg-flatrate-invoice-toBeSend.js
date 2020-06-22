@@ -735,6 +735,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         undefined,
                         (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`),"medicalhouse")
                     ).then(message => {
+                        console.log(message)
                         this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
                         this.api.register(message,'message')
                     })
@@ -1146,6 +1147,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                     return (
                                         !!mhc &&
                                         !!_.size(mhc) &&
+                                        !!_.get(mhc, 'contractId', null) &&
                                         // Has to begin in the past
                                         //TODO: I think it should be: startOfCoverage instead of startOfContract
                                         moment(_.trim(_.get(mhc, "startOfContract", 0)), "YYYYMMDD").startOf('month').isBefore(mhcExportDateOrResentDate) &&

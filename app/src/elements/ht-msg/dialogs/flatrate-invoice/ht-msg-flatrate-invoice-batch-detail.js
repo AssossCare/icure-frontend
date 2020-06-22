@@ -286,6 +286,58 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                  text-overflow: ellipsis;
             }
             
+            .btn-dropdown-container {
+                text-align: right;
+                position: absolute;
+                bottom: 53px;
+                margin-top: 8px;             
+                right: 0px;
+                background-color: var(--app-background-color);
+                opacity: 1;
+                border-radius: 2px;
+                z-index: 200;
+                height: auto !important;
+                box-shadow: var(--app-shadow-elevation-2);
+                display: flex;
+                flex-flow: column nowrap;
+                align-items: stretch;
+                border-radius: 3px;
+                overflow: hidden;
+                padding: 0;
+                color: var(--app-text-color);
+            }
+
+            .btn-dropdown-container paper-button{
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: flex-start;
+                align-items: center;
+                text-transform: capitalize;
+                height: 28px;
+                padding: 0 12px 0 8px;
+                font-weight: 400;
+                font-size: var(--font-size-normal);
+                text-align: left;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex-grow: 1;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            .btn-dropdown-container paper-icon-button:hover{
+                background: var(--app-background-color-dark);
+            }
+
+            .btn-dropdown-container paper-button iron-icon{
+                color: var(--app-secondary-color);
+                height: 20px;
+                width: 20px;
+                margin-right: 4px;
+                box-sizing: border-box;
+            }
+            
         </style>
         
         <div class="panel">
@@ -384,7 +436,15 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[batchCanBeResent]]" restamp="true">
                    <paper-button class="button button--other" on-tap="_openResendDialog">[[localize('btn-trans-for-res', 'Transfer for resending', language)]]</paper-button>
                 </template>
-                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>              
+                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>             
+                <paper-icon-button class="button--icon-btn" icon="more-vert" on-tap="_toggleAddActions"></paper-icon-button>
+                <template is="dom-if" if="[[showMoreOptionContainer]]">
+                     <div class="btn-dropdown-container">
+                        <template is="dom-repeat" items="[[listOfProof]]" as="doc">
+                            <paper-button id="[[doc.commonOutput.inputReference]]" on-tap="_getDoc"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[_getDocName(doc)]]</paper-button>
+                        </template>                       
+                     </div>
+                 </template> 
             </div>
         </div>
         
@@ -479,6 +539,14 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             correctiveInvoiceCanBeCreated:{
                 type: Boolean,
                 value: false
+            },
+            showMoreOptionContainer: {
+                type: Boolean,
+                value: false
+            },
+            listOfProof: {
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -517,7 +585,8 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             this.set('batchCanBeArchived', false)
             this.set('batchCanBeResent', false)
             this.set('isLoading', true)
-            this.set('invoicesErrorMsg', []);
+            this.set('invoicesErrorMsg', [])
+            this.set('listOfProof', [])
 
             this.api.setPreventLogging()
 
@@ -554,10 +623,11 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 })))
                 .then(infos => this.set('invoicesFromBatch', infos))
                 .then(() => this.api.message().getChildren(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
-                .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
+                .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900', '931000'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
                 .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
                     this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId)))))
                 .then((attachs) => {
+                    this.set('listOfProof', attachs)
                     this.api.setPreventLogging(false)
                     attachs.forEach( a => {
 
@@ -1336,6 +1406,42 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
 
     _closeRecreationDialog(){
         this.shadowRoot.querySelector("#recreationDialog").close()
+    }
+
+    _toggleAddActions() {
+        this.showMoreOptionContainer = !this.showMoreOptionContainer;
+    }
+
+    _getDocName(doc){
+        return _.get(doc, 'name', null)+' - '+_.get(doc, 'detail', null).substr(0,6)
+    }
+
+    _getDoc(e){
+        if(_.get(e, 'target.id', null)){
+            e.preventDefault()
+
+            const att = _.get(this, 'listOfProof', []).find(pr => _.get(pr, 'commonOutput.inputReference', '') === _.get(e, 'target.id', null))
+
+            if(_.get(att, 'xades', null)){
+                var a = document.createElement('a')
+                var xades = new Blob([Base64.decode(_.get(att, 'xades', null))], {type: 'text/xml'});
+                a.href = window.URL.createObjectURL(xades)
+                a.download = `${_.get(att, 'commonOutput.inputReference', null)}_${_.get(att, 'detail', null).substr(0,6)}_${+new Date()}.xml`
+                a.click()
+
+            }
+
+            if(_.get(att, 'detail', null)){
+                var a = document.createElement('a')
+                var data = new Blob([_.get(att, 'detail', null)], {type: 'text/plain'});
+                a.href = window.URL.createObjectURL(data)
+                a.download = `${_.get(att, 'commonOutput.inputReference', null)}_${_.get(att, 'detail', null).substr(0,6)}_${+new Date()}.txt`
+                a.click()
+            }
+
+            this.set('showMoreOptionContainer', false)
+
+        }
     }
 
 }

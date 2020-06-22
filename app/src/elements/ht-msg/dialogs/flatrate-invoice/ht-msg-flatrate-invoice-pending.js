@@ -589,15 +589,15 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     this.push('progressItem', this.localize('inv-get-step-3', 'inv-get-step-3', this.language))
 
                     let sprom = Promise.resolve()
-                    /*_.chunk(treatedMessages, 20).forEach(chunk => {
+                    _.chunk(treatedMessages, 20).forEach(chunk => {
                         const tacks = chunk.filter(x => x && x.tack)
                         const responses = chunk.filter(x => x && x.detail)
 
                         sprom = sprom
-                            .then(() =>this.api.fhc().Efactcontroller().confirmAcksUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), "medicalhouse", tacks.map(t => t.hashValue)))
-                            .then(() => this.api.fhc().Efactcontroller().confirmMessagesUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), "medicalhouse", responses.map(t => t.hashValue)))
+                            .then(() =>this.api.fhc().Efactcontroller().confirmAcksUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'name', null), _.get(this.hcp, 'lastName', ""), "medicalhouse", tacks.map(t => t.hashValue)))
+                            .then(() => this.api.fhc().Efactcontroller().confirmMessagesUsingPUT(_.get(this.hcp, 'nihii', null), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'name', null), _.get(this.hcp, 'lastName', ""), "medicalhouse", responses.map(t => t.hashValue)))
 
-                    })*/
+                    })
                     return sprom
 
                 })
