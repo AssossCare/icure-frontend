@@ -5765,7 +5765,10 @@
 		"flagAsInValid": "Marquer \"pas en ordre\"",
 		"notVerified": "Non-vérifié",
 		"insured": "Assuré",
-		"saveChangesAndGoToNextStep": "Enregistrer et passer à l'étape suivante"
+		"saveChangesAndGoToNextStep": "Enregistrer et passer à l'étape suivante",
+		"patientIsNowInMhc": "Le patient est désormais dans la Maison Médicale",
+		"patientHasNoMhc": "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
+		"patientHasNoOnGoingMhc": "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
