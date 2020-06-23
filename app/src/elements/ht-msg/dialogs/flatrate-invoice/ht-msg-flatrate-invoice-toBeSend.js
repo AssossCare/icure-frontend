@@ -491,12 +491,13 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
                         <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
                         <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-
+                        <vaadin-combo-box id="exportedOAs" filtered-items="[[_getExportOAsList()]]" item-label-path="label" item-value-path="id" label="[[localize('OA','OA',language)]]" value="[[_getExportOA()]]"></vaadin-combo-box>
 <!--                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>-->
 <!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
                     </div>
 
                     <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                    <paper-button class="button button--other tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-dismiss >[[localize('cancel','Annuler',language)]]</paper-button>
                 </div>   
             </div>        
         </paper-dialog>
@@ -847,6 +848,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     oaTotalPrices: [],
                     batchExportTstamp: +new Date(),
                     exportedDate: _.trim( parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value", this._getExportCurrentYear())) + ((_.trim(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth())).length === 1 ? "0" : "") + parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value", this._getExportCurrentMonth()))) + "01" ),
+                    exportedOA: _.get(this.shadowRoot.getElementById("exportedOAs"), "value", 'all'),
                     generatedFiles: { pdfs: {}, oaPdfs: {}, flatFiles: {}, slips: {} },
                     finalArchiveSpeakingName: { archiveDownloadFileName: _.kebabCase(_.compact([ moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'), "medical house", _.trim(_.get(this.hcp, "name", "")) || _.trim(_.trim(_.get(this.hcp, "firstName", "")) + " " + _.trim(_.get(this.hcp, "lastName", ""))) || _.trim(_.get(this.user, "name", "")), "invoicing export", +new Date() ]).join(" ")) + ".zip" },
                     finalArchive: { archiveDownloadFileName: _.kebabCase(_.compact([ moment().format('YYYY-MM-DD-HH[h]-mm[m]-ss[s]'), "invoicing export", ]).join(" ")) + ".zip" },
@@ -1541,6 +1543,24 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         let toReturn = [];
         for(let i=1; i<=12; i++) toReturn.push({id: i, label: this.localize('month_'+i,this.language) })
         return toReturn
+    }
+
+    _getExportOAsList(){
+        let toReturn= [
+            {id: 'all', label: this.localize('all', 'all', this.language)},
+            {id: '100', label: '100'},
+            {id: '200', label: '200'},
+            {id: '300', label: '300'},
+            {id: '400', label: '400'},
+            {id: '500', label: '500'},
+            {id: '600', label: '600'},
+            {id: '900', label: '900'},
+        ]
+        return toReturn
+    }
+
+    _getExportOA(){
+        return 'all'
     }
 
     _getExportYearsList() {
