@@ -663,7 +663,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
 
                             const zone1and90 = _.get(a, 'message', []).find(enr => _.get(enr, 'zones', []).find(z => z.zone === "1" || z.zone === "90"))
                             let errorString = ''
-                            Object.keys(_.get(zone1and90, 'errorDetail', [])).find(key => {
+                            Object.keys(_.get(zone1and90, 'errorDetail', []) || []).find(key => {
                                 if(key.includes('rejectionCode')) {
                                     if( parseInt(zone1and90.errorDetail[key]) > 0 ){
                                         const index = key.replace('rejectionCode',"")
@@ -692,7 +692,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                             let errorString = ''
                             const zone1and90 = a && a.find(enr => _.get(enr, 'zones', []).find(z => _.get(z, 'zone', null) === "1" || _.get(z, 'zone', null) === "90"))
 
-                            Object.keys(_.get(zone1and90, 'errorDetail', [])).find(key => {
+                            Object.keys(_.get(zone1and90, 'errorDetail', []) || []).find(key => {
                                 if(key.includes('rejectionCode')) {
                                     if( parseInt(zone1and90.errorDetail[key]) > 0 ){
                                         const index = key.replace('rejectionCode',"")
