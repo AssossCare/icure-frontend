@@ -1768,7 +1768,11 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             mdaTotalInvalidPatients: {
                 type:Number,
                 value:0
-            }
+            },
+            medicalHouseList:{
+                type: Array,
+                value: () => require('../../../ht-pat/dialogs/mda/rsrc/listOfMedicalHouse.json')
+            },
         }
     }
 
@@ -2448,7 +2452,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         (moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isAfter(momentInvoiceDate) || moment(_.get(ins, "endDate"+"", 0), 'YYYYMMDD').isSame(momentInvoiceDate) || !parseInt(_.get(ins, "endDate", 0)))
                     )
                     // Make sure patient has a valid INS ("finalInsurability" corresponds to invoice date) for that invoice, otherwise drop (invoice can't be resent when it has nos valid insurance to related to)
-                    return !_.trim(_.get(tempPat,"finalInsurability.insuranceId")) ? false : tempPat
+                    // 20200601 - Not for electronic invoicing anymore -> let MDA call update us
+                    // return !_.trim(_.get(tempPat,"finalInsurability.insuranceId")) ? false : tempPat
+                    return tempPat
                 })
                 .compact()
                 .value()
@@ -2466,8 +2472,13 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     pl.rows = _
                         .chain(pl.rows)
                         .filter(it => _.get(it,"active", true) &&
-                            _.trim(_.get(it,"dateOfBirth", "")) &&
-                            _.size(_.get(it,"insurabilities", [])) &&
+
+                            // 20200601 - Not for electronic invoicing anymore
+                            // _.trim(_.get(it,"dateOfBirth", "")) &&
+
+                            // 20200601 - Not for electronic invoicing anymore
+                            // _.size(_.get(it,"insurabilities", [])) &&
+
                             _.some(_.get(it, "medicalHouseContracts",[]), mhc => _.trim(_.get(mhc,"hcpId")) === _.trim(this.user.healthcarePartyId) && _.trim(_.get(mhc,"contractId"))) &&
                             // Either alive or died "this" month -> still take into account if so
                             (!parseInt(_.get(it, "dateOfDeath", 0)) || (parseInt(_.get(it, "dateOfDeath", 0)) && moment( _.get(it, "dateOfDeath", 0), 'YYYYMMDD').startOf('month').add(1,"month").isAfter(momentExportedDate.startOf('month')))) &&
@@ -2536,7 +2547,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                             // 20200601 - Not for electronic invoicing anymore
                             // _.assign(it.finalMedicalHouseContracts, {startOfCoverage: (parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage")))||0) ? parseInt(_.trim(_.get(it,"finalMedicalHouseContracts.startOfCoverage"))) : parseInt(moment(_.trim(_.get(_.cloneDeep(it), "finalMedicalHouseContracts.startOfContract")), "YYYYMMDD").startOf('month').add(1, 'months').format("YYYYMMDD")) })
 
-                            return !_.trim(_.get(it,"finalInsurability.insuranceId")) || !_.trim(_.get(it,"finalMedicalHouseContracts.hcpId",null)) ? false : it
+                            // 20200601 - Not for electronic invoicing anymore
+                            // return !_.trim(_.get(it,"finalInsurability.insuranceId")) || !_.trim(_.get(it,"finalMedicalHouseContracts.hcpId",null)) ? false : it
+                            return !_.trim(_.get(it,"finalMedicalHouseContracts.hcpId",null)) ? false : it
                         })
                         .compact()
                         .value()
@@ -2578,8 +2591,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         reconcileKey: this.api.crypto().randomUuid()
                     }})
                     .map(it => _.assign(it, {endDate: parseInt(moment(_.get(_.cloneDeep(it),"startDate"),"YYYYMMDD").add(1, 'months').format("YYYYMMDD"))}))
-                    .filter(it => _.trim(it.insuranceId) && (_.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber)))
-                    .filter(it => !_.trim(it.patientSsin) || this.api.patient().isValidSsin(_.trim(it.patientSsin)))
+                    .filter(it => (_.trim(it.patientSsin) && this.api.patient().isValidSsin(_.trim(it.patientSsin))) || _.trim(it.patientIdentificationNumber))
                     .orderBy(["patientSsin","patientId", "startDate"], ["asc","asc","desc"])
                     .value()
                 )
@@ -2905,97 +2917,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
 
 
-    _e_updatePatientInsurabilitiesAndMhcs(currentMh, mdaFormattedResponse) {
 
-        const promResolve = Promise.resolve()
-
-        let prom = Promise.resolve([])
-        let patientCounter = 1
-        const totalPatients = _.size(mdaFormattedResponse)
-        const insuranceCodes = _.chain(mdaFormattedResponse).map(it => _.map(_.get(it,"insurabilities",[]), ins => _.trim(_.get(ins,"code",null)))).flatten().compact().uniq().value()
-
-        return (_.size(currentMh) ? promResolve : this.api.hcparty().getCurrentHealthcareParty().then(hcp => currentMh = hcp))
-            .then(() => this._getInsurancesDataByCodes(insuranceCodes))
-            .then(insurances => {
-
-                _.compact(_.map(mdaFormattedResponse, mdaPatient => {
-
-                    const patientId = _.trim(_.get(mdaPatient,"patient.topazId"))
-
-                    prom = prom.then(promisesCarrier => !patientId ? promisesCarrier : this.api.patient().getPatientWithUser(_.get(this,"user"), patientId)
-                        .then(topazPatient => !_.size(topazPatient) || !_.size(mdaPatient) ? (patientCounter++ && null) : promResolve.then(() => {
-
-                            this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language) + " " + patientCounter + "/" + totalPatients, icon:"arrow-forward", updateLastMessage: true, })
-
-                            console.log("currentMh",currentMh)
-                            console.log("flatRateType",flatRateType)
-                            console.log("mdaPatient",mdaPatient)
-                            console.log("topazPatient",topazPatient)
-
-                            // const mdaMhcs = _.get(mdaPatient,"mhcs",[])
-                            //
-                            // // None of them exist
-                            // !_.size(mdaMhcs) ||
-                            //
-                            // // None of them belong to me
-                            // !_.chain(mdaMhcs).filter(it => _.trim(_.get(it,"mmNihii")) === _.trim(_.get(currentMh,"nihii"))).size().value() ||
-                            //
-                            // // None of them is still active
-                            // !_.chain(mdaMhcs).filter(it => _.get(it,"endOfCoverage")).size().value()
-                            //
-                            // true => stop current contract
-                            // any other scenario -> let go
-
-                            // Continue here en mettant à jour INS && MHC
-
-                            // Mettre à jour INS (Pour assurabilité -> je bute les 24 derniers mois et je ré-injecte SSI reçu de MDA)
-                            // Buter toutes les INS qui sont entre LOWEST date de toutes les INS que je reçois ici && la HIGHEST date de toutes les INS que je reçois ici
-                            // Ensuite mapper les INS et injecter comme suit (code de max)
-
-                            // {
-                            //     startDate: _.parseInt(moment().startOf('month').format("YYYYMMDD")),
-                            //         insuranceId : _.get(respInsu,"0.id",""),
-                            //     identificationNumber: _.get(mdaInsu,"careReceiver.registrationNumber",""),
-                            //     parameters : {
-                            //     tc1 :  _.get(mdaInsu,"cb1",""),
-                            //         tc2 :  _.get(mdaInsu,"cb2",""),
-                            //         preferentialstatus : (_.get(this,"mdaResult.formatedResponse.payment",[]).find(pay => Object.keys(pay).find(key => key.includes("paymentByIO"))) || {paymentByIO : (_.get(mdaInsu,"cb1",0)%2)===1}).paymentByIO
-                            // },
-                            //     ambulatory : true,
-                            //         dental : false
-                            // }
-
-                            // Si patient deceases date -> mettre à jour chez nous
-
-                            // Continuer ensuite avec MHC, bien lire consignes: NE PAS supprimer MHC
-                            // Faire tourner le script de reprise de Sam ?
-                            // Si je vois que current MHC != mon niss de MH => cloturer le mhc existant AJH en db, le cloturer à J-1 de la période renvoyée par MDA ==> foutre endcoverage && endofcontract à MDA (les 2 identiques)
-                            // Quid numéro de contrat / je ne l'ai pas
-
-                            // Cotinuer ensuite avec la réconciliation request / response
-
-                            patientCounter++
-
-                            return topazPatient
-
-                        }))
-                        .then(x => _.concat(promisesCarrier, x))
-                        .catch(() => _.concat(promisesCarrier, null))
-                    )
-
-                }))
-
-                return prom
-
-            })
-            .then(updatedPatients => {
-
-                return console.log("updatedPatients", updatedPatients)
-
-            })
-            .catch(e => console.log("ERROR _e_updatePatientInsurabilitiesAndMhcs", e))
-
-    }
 
     _e_checkForMdaResponses() {
 
@@ -3037,7 +2959,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             .then(mdaResponse => !_.size(mdaResponse) ? promResolve : promResolve.then(() => {
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_11_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12",this.language), icon:"arrow-forward"})
-                const patientIdsByNisses = _.chain(_.get(this,"mdaRequestsData.messages",[])).map(msg => _.map(_.get(msg,"attachment.request",[]), pat => _.merge({}, {ssin: _.trim(_.get(pat,"patientSsin")), id: _.trim(_.get(pat,"patientId"))}))).flatten().uniqWith(_.isEqual).value()
+                const patientIdsByNissOrIns = _.chain(_.get(this,"mdaRequestsData.messages",[])).map(msg => _.map(_.get(msg,"attachment.request",[]), pat => _.merge({}, {id: _.trim(_.get(pat,"patientId")), ssin: _.trim(_.get(pat,"patientSsin")).replace(/[^\d]/gmi,""), insuranceCode: _.trim(_.get(pat,"insuranceCode")), identificationNumber: _.trim(_.get(pat,"patientIdentificationNumber"))}))).flatten().uniqWith(_.isEqual).value()
                 return  _
                     .chain(_.get(mdaResponse,"memberDataMessageList",[]))
                     .filter(it => !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")) && _.size(_.get(it,"reference")))
@@ -3060,6 +2982,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                 firstName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:firstName"}).get("attributeValues").join(" ").trim().value(),
                                 lastName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:name"}).get("attributeValues").join(" ").trim().value(),
                                 ssin: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:fgov:person:ssin"}).get("attributeValues[0]").trim().value().replace(/[^\d]/gmi,""),
+                                gender: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:gender"}).get("attributeValues[0]").trim().value(),
                                 dateOfBirth: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:birthDate"}).get("attributeValues[0]").trim().value(),
                                 dateOfDeath: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:deceasedDate"}).get("attributeValues[0]").trim().value(),
                             }),
@@ -3097,21 +3020,30 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                             // assertions: _.get(it,"assertions")
                         })
 
+                        const insCodes = _.map(_.get(mdaFormattedResponse,"insurabilities",[]), "code",[])
+                        const insIdentificationNumbers = _.map(_.get(mdaFormattedResponse,"insurabilities",[]), "identificationNumber",[])
+
+                        // Reconcile vs SSIN or INS' identification number
+                        const topazIdByNiss = _.trim(_.get(_.find(patientIdsByNissOrIns, {ssin: _.trim(_.get(mdaFormattedResponse,"patient.ssin")).replace(/[^\d]/gmi,"")}),"id",null))
+                        const topazIdByIns = topazIdByNiss || _.trim(_.get(_.find(patientIdsByNissOrIns, pat => insCodes.indexOf(_.trim(_.get(pat,"insuranceCode"))) > -1 && insIdentificationNumbers.indexOf(_.trim(_.get(pat,"identificationNumber"))) > -1),"id",null))
+
                         return _.merge(mdaFormattedResponse, {
                             patient: {
                                 dateOfBirth: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0)).format("YYYYMMDD") : null,
                                 dateOfDeath: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0)).format("YYYYMMDD") : null,
-                                topazId: _.get(_.find(patientIdsByNisses, {ssin: _.trim(_.get(mdaFormattedResponse,"patient.ssin")).replace(/[^\d]/gmi,"")}),"id",null)
+                                topazId: topazIdByNiss ? topazIdByNiss : topazIdByIns
                             },
                             uniqueKey: md5(JSON.stringify({
                                 oa: _.trim(_.get(mdaFormattedResponse,"oa")),
                                 patient: _.get(mdaFormattedResponse,"patient"),
                                 insCode: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].code")),
                                 identificationNumber: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].identificationNumber")),
+                                topazId: topazIdByNiss ? topazIdByNiss : topazIdByIns
                             }))
                         })
 
                     })
+                    .filter(it => _.trim(_.get(it,"patient.topazId")))
                     .orderBy(["tstamp"], ["asc"])
                     .reduce((acc,it) => (!(acc[_.get(it,"uniqueKey")]) ? (acc[_.get(it,"uniqueKey")]=it) : _.get(acc[_.get(it,"uniqueKey")], "insurabilities").push(_.get(it,"insurabilities")) && _.get(acc[_.get(it,"uniqueKey")], "mhcs").push(_.get(it,"mhcs")) ) && acc, {})
                     .map(it => _.omit(it, ["tstamp","uniqueKey"]))
@@ -3123,7 +3055,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             .then(mdaFormattedResponse => !_.size(mdaFormattedResponse) ? promResolve : promResolve.then(() => {
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language), icon:"arrow-forward"})
-                return this._e_updatePatientInsurabilitiesAndMhcs(currentMh, mdaFormattedResponse).then(()=>mdaFormattedResponse)
+                return this._e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponse)
             }))
 
             // 8 - Reconcile MDA requests with MDA responses
@@ -3131,7 +3063,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
 
-                console.log("mdaFormattedResponse", mdaFormattedResponse)
+                console.log("mdaFormattedResponse AFTER _e_updatePatientInsurabilitiesAndMhcs", mdaFormattedResponse)
 
             }))
 
@@ -3236,6 +3168,92 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             .then(requestMessages=>{})
             .catch(()=>{})
             .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndGetStep())
+
+    }
+
+    _e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponse) {
+
+        const promResolve = Promise.resolve()
+
+        let patientCounter = 1
+        let prom = Promise.resolve([])
+        const totalPatients = _.size(mdaFormattedResponse)
+        const exportedDate = moment().format("YYYYMM") + "01"
+        // 20200623 - Don't update INS anymore
+        // const insuranceCodes = _.chain(mdaFormattedResponse).map(it => _.map(_.get(it,"insurabilities",[]), ins => _.trim(_.get(ins,"code",null)))).flatten().compact().uniq().value()
+
+        return this.api.hcparty().getCurrentHealthcareParty()
+            // 20200623 - Don't update INS anymore
+            // .then(currentMh => this._getInsurancesDataByCodes(insuranceCodes).then(insurances=>[currentMh,insurances]))
+            // .then(([currentMh,insurances]) => {
+            .then(currentMh => {
+
+                const currentMhNihii = _.trim(_.get(currentMh,"nihii"))
+                const endOfPreviousMonthYYYYMMDD = parseInt(moment().endOf("month").subtract(1, "month").format("YYYYMMDD"))
+
+                _.compact(_.map(mdaFormattedResponse, mdaPatient => {
+
+                    const patientId = _.trim(_.get(mdaPatient,"patient.topazId"))
+
+                    prom = prom.then(promisesCarrier => !patientId ? promisesCarrier : this.api.patient().getPatientWithUser(_.get(this,"user"), patientId)
+                        .then(topazPatient => !_.size(topazPatient) || !_.size(mdaPatient) ? (patientCounter++ && null) : promResolve.then(() => {
+
+                            this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language) + " " + patientCounter + "/" + totalPatients, icon:"arrow-forward", updateLastMessage: true, })
+
+                            const originalTopazPatient = _.cloneDeep(topazPatient)
+                            const mdaMhcs = _.get(mdaPatient,"mhcs",[])
+                            const mostRecentMhcThatIsNotMine = _.find(_.orderBy(mdaMhcs, ["startOfCoverage"], ["desc"]), it => _.trim(_.get(it,"mmNihii")) !== currentMhNihii && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate ))
+                            const otherMedicalHouseContractBelongsTo = _.find(_.get(this,"medicalHouseList.medicalHouseList",[]), mhIt => _.trim(_.get(mhIt,"nihii")).substr(0,8) === _.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii")).substr(0,8))
+
+                            // Update Medical House contracts
+                            _.assign(topazPatient, {medicalHouseContracts:
+
+                                // There isn't any contracts
+                                !_.size(mdaMhcs) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoMhc", "patientHasNoMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc :  _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+
+                                // None of the contract belongs to me
+                                !_.size(_.filter(mdaMhcs, it => _.trim(_.get(it,"mmNihii")) === currentMhNihii)) ?
+                                    ((_.assign(mdaPatient, {isError:true, errorsData: [{message:
+                                        this.localize("patientIsNowInMhc", "patientIsNowInMhc", this.language) + ": " +
+                                        (!_.size(otherMedicalHouseContractBelongsTo) ?
+                                            this.api.formatInamiNumber(_.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii"))) + " (INAMI)" :
+                                            _.trim(_.get(otherMedicalHouseContractBelongsTo, "name")) + " ("+
+                                            _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.street")) + " - " +
+                                            _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.zip")) + " " +
+                                            _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.city")) + ") - Tel: " +
+                                            _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.telecom.phone"))
+                                        )}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+
+                                // None of my contracts is valid anymore
+                                !_.some(mdaMhcs, it => _.trim(_.get(it,"startOfCoverage")) <= exportedDate && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate)) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoOnGoingMhc", "patientHasNoOnGoingMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+
+                                // Any other scenario: patient's MHC are valid / don't update anything
+                                _.get(topazPatient,"medicalHouseContracts",[])
+
+                            })
+
+                            // Update gender, ssin && dateOfDeath
+                            if(_.trim(_.get(mdaPatient,"patient.ssin"))) _.assign(topazPatient, {ssin:_.trim(_.get(mdaPatient,"patient.ssin"))})
+                            if(_.trim(_.get(mdaPatient,"patient.gender"))) _.assign(topazPatient, {gender:_.trim(_.get(mdaPatient,"patient.gender"))})
+                            if((parseInt(_.get(mdaPatient,"patient.dateOfDeath"))||0)) _.assign(topazPatient, {dateOfDeath:parseInt(_.get(mdaPatient,"patient.dateOfDeath"))})
+
+                            // Only return patients we should update
+                            return patientCounter++ && _.isEqual(originalTopazPatient, topazPatient) ? null : topazPatient
+
+                        }))
+                        .then(patientToUpdate => !patientToUpdate ? promResolve : this.api.patient().modifyPatientWithUser(_.get(this,"user",{}), patientToUpdate))
+                        .then(updatedPatient => _.concat(promisesCarrier, updatedPatient))
+                        .catch(() => _.concat(promisesCarrier, null))
+                    )
+                    .catch(e => console.log("[ERROR] _e_updatePatientInsurabilitiesAndMhcs", e))
+
+                }))
+
+                return prom
+
+            })
+            .then(updatedPatients => mdaFormattedResponse)
+            .catch(e => (console.log("ERROR _e_updatePatientInsurabilitiesAndMhcs", e)||true) && mdaFormattedResponse)
 
     }
 
