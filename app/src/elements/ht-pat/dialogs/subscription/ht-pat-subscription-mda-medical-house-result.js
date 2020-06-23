@@ -131,6 +131,20 @@ class HtPatSubscriptionMdaMedicalHouseResult extends TkLocalizerMixin(PolymerEle
                                     <span class="headerLabel">[[localize('mhm-endDate', 'End date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.endDate)]]
                                 </div>
                             </div>
+                            <div class="headerInfoLine">
+                               <div class="headerInfoField">
+                                   <span class="headerLabel">[[localize('mda-street', 'Street', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.street]]
+                               </div>
+                               <div class="headerInfoField">
+                                   <span class="headerLabel">[[localize('mda-zip', 'Zip', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.zip]]
+                               </div>
+                               <div class="headerInfoField">
+                                   <span class="headerLabel">[[localize('mda-city', 'City', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.city]]
+                               </div>
+                               <div class="headerInfoField">
+                                   <span class="headerLabel">[[localize('mda-phone', 'Phone', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.telecom.phone]]
+                               </div>
+                           </div>
                         </div>
                     </div>
                 </div>
