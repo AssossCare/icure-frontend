@@ -239,7 +239,90 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
                   position: relative;
                   padding: 10px;
              }
+             
+             #correctiveDialog{
+                height: calc(98% - 12vh);
+                width: 98%;
+                max-height: calc(100% - 64px - 48px - 20px); /* 100% - header - margin - footer*/
+                min-height: 400px;
+                min-width: 800px;
+                top: 64px;
+             }
+             
+             .correctiveDialog{               
+                height: calc(100% - 45px);;
+                width: auto;
+                margin: 0;
+                padding: 0;
+             }
+             
+             .content{
+                height: calc(98% - 30px)!important;
+                max-height: 100%;            
+                width: auto;               
+            }
             
+            .title{
+                height: 19px;
+                width: auto;
+                font-size: 18px;
+                padding: 10px;
+            }
+                    
+            .flatrate-person-container{
+                height: auto;
+                width: auto;
+            }
+            
+             .headerInfoLine{
+                width: 100%;
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+
+            .flatrate-result-container{
+                margin-bottom: 12px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+
+            .headerMasterTitle{
+                font-size: var(--font-size-large);
+                background: var(--app-background-color-dark);
+                padding: 0 12px;
+                box-sizing: border-box;
+            }
+
+            .flatrate-sub-container{
+                height: auto;
+                width: auto;
+                margin: 10px;
+                border: 1px solid var(--app-background-color-dark);
+            }
+            
+            .closeBtn{
+                height: 14px;
+                width: 14px;
+                cursor: pointer;
+            }
+                      
         </style>
         
         <div class="panel">
@@ -293,7 +376,7 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
                     <paper-button class="button button--other" on-tap="_openCancelConfirmationDialog" >[[localize('btn-can-inv', 'Cancel invoice', language)]]</paper-button> 
                 </template>
                 <template is="dom-if" if="[[isRejected]]" restamp="true">
-                    <paper-button class="button button--save" on-tap="_openInvoicingDialog" >[[localize('btn-correct', 'Correct', language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_openCorrectiveDialog" >[[localize('btn-correct', 'Correct', language)]]</paper-button>
                 </template>
                 <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>              
             </div>
@@ -324,6 +407,74 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
                 <paper-button class="button button--save" on-tap="_cancelInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
             </div>
         </paper-dialog>
+        
+        <paper-dialog class="" id="correctiveDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <div class="content correctiveDialog">
+                <div class="title">
+                    [[localize('flatrate-correction-invoice', 'Correction of invoice', language)]]
+                </div>
+                <div class="patient-info">
+                    <div class="flatrate-sub-container">
+                        <div class="flatrate-person-container">
+                             <div class="headerMasterTitle headerLabel">[[localize('mda-patientData', 'Patient data', language)]]</div>
+                             <div class="headerInfoLine">
+                                 <div class="headerInfoField">
+                                     <span class="headerLabel">[[localize('mda-name', 'Name', language)]]: &nbsp;</span> [[selectedInvoiceForDetail.patient.lastName]]
+                                 </div>
+                                 <div class="headerInfoField">
+                                     <span class="headerLabel">[[localize('mda-firstName', 'First name', language)]]: &nbsp;</span> [[selectedInvoiceForDetail.patient.firstName]]
+                                 </div>
+                                 <div class="headerInfoField">
+                                     <span class="headerLabel">[[localize('mda-gender', 'Gender', language)]]: &nbsp;</span> [[_localizeGender(selectedInvoiceForDetail.patient.gender)]]
+                                 </div>
+                             </div>
+                             <div class="headerInfoLine">
+                                 <div class="headerInfoField">
+                                     <span class="headerLabel">[[localize('mda-niss', 'Niss', language)]]: &nbsp;</span> [[_formatNissNumber(selectedInvoiceForDetail.patientSsin)]]
+                                 </div>
+                                 <div class="headerInfoField">
+                                     <span class="headerLabel">[[localize('mda-birdthDate', 'Birth date', language)]]: &nbsp;</span> [[_formatDate(selectedInvoiceForDetail.patient.birthDate)]]
+                                 </div>                               
+                             </div>
+                        </div>                   
+                    </div>
+                </div>
+                <div class="invoice-info">
+                    <div class="flatrate-sub-container">
+                        <div class="flatrate-person-container">
+                        <div class="headerMasterTitle headerLabel">[[localize('flatrate-invoice-info', 'Invoice informations', language)]]</div>
+                             <div class="table">
+                                 <div class="tr th">                                             
+                                     <div class="td fg0">[[localize('flatrate-inv-code','Code',language)]]</div>
+                                     <div class="td fg2">[[localize('flatrate-inv-label','Label',language)]]</div>
+                                     <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_oa','Oa',language)]]</div>
+                                     <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_pat','Patient',language)]]</div>
+                                     <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_supp','Extra',language)]]</div>
+                                     <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_tot','Total',language)]]</div>      
+                                     <div class="td fg0">[[localize('','',language)]]</div>                                  
+                                 </div>
+                                 <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                 <template id="invoicingCodeList" is="dom-repeat" items="[[selectedInvoiceForCorrection.invoicingCodes]]" as="nmcl">              
+                                    <div class="tr">                                 
+                                        <div class="td fg0">[[nmcl.code]]</div>
+                                        <div class="td fg2">[[nmcl.label]]</div>
+                                        <div class="td fg1"><span class\$="">[[nmcl.reimbursement]] €</span></div>
+                                        <div class="td fg1"><span class\$="">[[nmcl.patientIntervention]] €</span></div>
+                                        <div class="td fg1"><span class\$="">[[nmcl.doctorSupplement]] €</span></div>
+                                        <div class="td fg1"><span class\$="">[[nmcl.totalAmount]] €</span></div>
+                                        <div class="td fg0 center"><iron-icon icon="vaadin:close" id="[[nmcl.id]]" class="closeBtn" on-tap="_deleteNmcl"></iron-icon></div>
+                                    </div>                                    
+                                 </template>                   
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--save" on-tap="_correctInvoice">[[localize('btn-correct','Correct',language)]]</paper-button>      
+                <paper-button class="button button--other" on-tap="_closeCorrectiveDialog">[[localize('clo','Close',language)]]</paper-button>      
+            </div>
+        </paper-dialog>
 
 `;
     }
@@ -349,6 +500,10 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
             selectedInvoiceForDetail:{
                 type: Object,
                 value : () => {}
+            },
+            selectedInvoiceForCorrection: {
+              type: Object,
+              value: () => {}
             },
             isLoading:{
                 type: Boolean,
@@ -383,6 +538,7 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
     }
 
     _closeDetailPanel(){
+        this.set('selectedInvoiceForCorrection', {})
         this.set('isRejected', false)
         this.set('isLoading', false)
         this.set('selectedInvoiceForDetail', {})
@@ -467,12 +623,6 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
         }
     }
 
-    _openInvoicingDialog(){
-        if(_.get(this, 'selectedInvoiceForDetail.invoice.id', null)){
-            this.shadowRoot.querySelector("#invoicingForm").open({invoicingCodeId: _.get(this, 'selectedInvoiceForDetail.invoice.id', null)})
-        }
-    }
-
     _flagInvoiceAsLostConfirmationDialog() {
         this.shadowRoot.querySelector("#flagInvoiceAsLostConfirmationDialog").open()
     }
@@ -535,6 +685,52 @@ class HtMsgFlatrateInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement)
     _closeInvoicingDialog(){
         this._closeDetailPanel()
         this._getMessage()
+    }
+
+    _openCorrectiveDialog(){
+        this.set("selectedInvoiceForCorrection", _.cloneDeep(_.get(this.selectedInvoiceForDetail, 'invoice', {})))
+        this.shadowRoot.querySelector("#correctiveDialog").open()
+    }
+
+    _closeCorrectiveDialog(){
+        this.shadowRoot.querySelector("#correctiveDialog").close()
+    }
+
+    _localizeGender(gender){
+        return gender ? this.localize('mda-gender-'+_.toLower(gender), gender, this.language) : null
+    }
+
+    _formatNissNumber(niss) {
+        return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
+    }
+
+    _formatDate(date){
+        return date ? moment(parseInt(date)).format("DD/MM/YYYY"): null
+    }
+
+    _deleteNmcl(e){
+        if(_.get(e, 'target.id', null)){
+            _.remove(_.get(this.selectedInvoiceForCorrection, 'invoicingCodes', []), ic => _.get(ic, 'id', null) === _.get(e, 'target.id', ''))
+            this.shadowRoot.querySelector('#invoicingCodeList').render()
+        }
+    }
+
+    _correctInvoice(){
+
+        this.selectedInvoiceForCorrection.printedDate = moment().format('YYYYMMDD')
+        _.get(this, 'selectedInvoiceForCorrection.invoicingCodes', []).map(ic => {
+            ic.pending = false
+            ic.resent = false
+        })
+
+        this.api.invoice().modifyInvoice(this.selectedInvoiceForCorrection)
+            .then(inv => {
+               console.log(inv)
+            }).finally(() => {
+                this._closeDetailPanel()
+                this._closeCorrectiveDialog()
+                this._getMessage()
+            })
     }
 }
 
