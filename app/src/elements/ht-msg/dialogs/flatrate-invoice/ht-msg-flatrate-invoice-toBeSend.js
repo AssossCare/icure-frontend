@@ -388,6 +388,18 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             </div>
         </div>  
         
+        <template is="dom-if" if="[[_bodyOverlay]]">
+                <div id="loadingContainer"></div>
+            </template>
+            <template is="dom-if" if="[[_isGeneratingInvoice]]">
+                <div id="loadingContainer">
+                    <div id="loadingContentContainer">
+                        <div style="max-width:80px; margin:0 auto"><ht-spinner class="spinner" alt="Loading..." active></ht-spinner></div>
+                        <div id="loadingContent"><p><iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon> [[localize("mhListing.spinner.step_1", language)]]</p></div>
+                    </div>
+                </div>
+            </template>
+        
         <paper-dialog class="modalDialog" id="missingNihiiDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
                 <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
                 <div class="content textaligncenter pt20 pb70 pl20 pr20">
@@ -578,10 +590,19 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 type: Array,
                 value: () => []
             },
+            _isGeneratingInvoice: {
+                type: Boolean,
+                value: false,
+                observer: '_loadingStatusChanged'
+            },
+            _bodyOverlay: {
+                type: Boolean,
+                value: false
+            },
             _loadingMessages: {
                 type: Array,
                 value: () => []
-            }
+            },
         }
     }
 
@@ -791,6 +812,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     _exportFlatRateInvoicing_step2() {
 
         this.set('isLoading', true );
+        this.set('_isGeneratingInvoice', true );
         this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1',this.language), icon:"arrow-forward"});
         this.reportCurrentDateString = null;
         const flatRateUtil = this.$.flatrateUtils;
@@ -1403,6 +1425,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 console.log(JSON.stringify(this.flatRateInvoicingDataObject));
                 this.flatRateInvoicingDataObject = {}
                 this.set('isLoading', false );
+                this.set('_isGeneratingInvoice', false );
                 this.set('activeGridItem', null );
                 this.set('messagesCachedData', null );
                 this.set('messagesGridData', [] );
@@ -1748,6 +1771,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         .value()
                 ))
         })
+    }
+
+    _closeDialogs() {
+        this.set("_bodyOverlay", false);
+        _.map( this.shadowRoot.querySelectorAll('.modalDialog'), i=> i && typeof i.close === "function" && i.close() )
     }
 }
 
