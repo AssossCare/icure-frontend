@@ -28,6 +28,8 @@ import "@polymer/paper-icon-button/paper-icon-button"
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
+import _ from "lodash";
+import moment from 'moment/src/moment';
 class HtMsg extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -352,7 +354,9 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                                  invoices-status="[[eFlatrateStatus]]"
                                  route-data="[[routeData]]"
                                  on-selection-messages-change="handleMessageChange"
-                                 on-initialize-batch-counter="initializeFlatrateBatchCounter"></ht-msg-electronic-flatrate-invoice>
+                                 on-initialize-batch-counter="initializeFlatrateBatchCounter"
+                                 on-do-route="_doRouteElectronicFlatRate"
+                             ></ht-msg-electronic-flatrate-invoice>
             </template>
 
             <template is="dom-if" if="[[flatrateinvoicesLayout]]">
@@ -518,6 +522,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             routeData:{
                 type: Object,
                 value: () => {}
+            },
+            mdaRequestsAlreadyRanThisMonth:{
+                type: Boolean,
+                value: false
             }
         }
     }
@@ -526,6 +534,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         return [
             '_setIsConnectedToEhbox(api.tokenId)',
             '_getCurrentAndParentHcps(user)',
+            '_loadMdaRequestsStatus(user)',
             '_forceRefreshList(forceRefresh)'
         ];
     }
@@ -561,8 +570,13 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
 
         const selectedItem = _.trim(_.get(e,"detail.selection.item",""))
         const selectedFolder = _.trim(_.get(e,"detail.selection.folder",""))
-        const selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
+        let selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
         const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox", "electronicFlatRateInvoicesLayout"]
+
+        // Do allow to go for toBeSenT page when mdaRequests weren't place this month yet
+        selectedStatus = selectedItem === "eflatrateInvocingMenuItem" && selectedStatus === "toBeSend" && !_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "ej20_mda" :
+            selectedItem === "flatRateeInvoicingMenuItem" && selectedStatus === "ej20_mda" && !!_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "toBeSend" :
+            selectedStatus
 
         availableLayouts.map(i=>this.set(i,false))
         if (selectedItem === 'e_invOut') {
@@ -661,9 +675,24 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
     _doRouteFlatRate(e){
         this.handleMenuChange({ detail: e.detail })
         _.get(this, "$['msg-menu'].shadowRoot", false)
-        && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
-        && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
-        && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+            && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
+            && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
+            && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+    }
+
+    _doRouteElectronicFlatRate(e){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => _.get(e,"detail.forceRefreshMdaRequestsStatus",false) ? this._loadMdaRequestsStatus() : promResolve)
+            .then(() => {
+                this.handleMenuChange({ detail: e.detail })
+                return _.get(this, "$['msg-menu'].shadowRoot", false)
+                    && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
+                    && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
+                    && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+            })
     }
 
     showErrorMessage(e) {
@@ -754,6 +783,29 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
     _userGotUpdatedFromList(e) {
         const updatedUser = _.get(e,"detail.updatedUser",{})
         return !!_.size(updatedUser) ? typeof _.get(this.shadowRoot.querySelector("#msg-detail"), "_doUpdateUser", false) === "function" && this.shadowRoot.querySelector("#msg-detail")._doUpdateUser(updatedUser) : false
+    }
+
+    _loadMdaRequestsStatus() {
+
+        const promResolve = Promise.resolve()
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000)
+            .then(pl => { return {
+                rows:_.filter(pl.rows, it => it &&
+                    _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                    _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                    _.trim(_.get(it, "metas.requestedDate")) === exportedDate &&
+                    _.trim(_.get(it, "metas.step5Validated")) === "true"
+                ),
+                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                done: !pl.nextKeyPair
+            }})
+            .catch(()=>promResolve)
+        )
+        .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
+
     }
 
 }

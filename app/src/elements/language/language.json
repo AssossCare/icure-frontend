@@ -5768,6 +5768,10 @@
 		"mh_eInvoicing.mda.step_12_done": "Fin de l'analyse des réponses des OA",
 		"mh_eInvoicing.mda.step_13": "Mise à jour des données patient... ",
 		"mh_eInvoicing.mda.step_13_done": "Fin de la mise à jour de la patientelle",
+		"mh_eInvoicing.mda.step_14": "Réconciliation des données MDA",
+		"mh_eInvoicing.mda.step_14_done": "Fin de la réconciliation des données MDA",
+		"mh_eInvoicing.mda.step_15": "Sauvegarde des changements de l'OA",
+		"mh_eInvoicing.mda.step_15_done": "Fin de la sauvegarde de l'OA",
 		"validPats": "Patients en ordre",
 		"invalidPats": "Patients pas en ordre",
 		"details": "Détails",
@@ -5784,7 +5788,8 @@
 		"saveChangesAndGoToNextStep": "Enregistrer et passer à l'étape suivante",
 		"patientIsNowInMhc": "Le patient est désormais dans la Maison Médicale",
 		"patientHasNoMhc": "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
-		"patientHasNoOnGoingMhc": "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale"
+		"patientHasNoOnGoingMhc": "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale",
+		"patientNotFoundInOa": "Le patient n'a pas pu être trouvé chez l'OA"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
