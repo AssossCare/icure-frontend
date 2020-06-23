@@ -562,7 +562,8 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                             name: null,
                             type: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:type"), 'attributeValues', []).join(" ") || this._getFlatRateType( _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:nihii11"), 'attributeValues', []).join(" ")),
                             startDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:start"), 'attributeValues', []).join(" "),
-                            endDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:end"), 'attributeValues', []).join(" ")
+                            endDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:medicalHouse:end"), 'attributeValues', []).join(" "),
+                            address: {}
                         }
                     })),
                     hospitalisation: _.flatten(_.get(mdaResponse, 'assertions', []).filter(assertion => _.get(assertion, 'advice.assertionType', null) === "urn:be:cin:nippin:hospitalisation").map(ass => _.get(ass, 'statementsAndAuthnStatementsAndAuthzDecisionStatements', []))).map(stat => ({
@@ -720,6 +721,15 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
             _.get(mdaResponse, 'formatedResponse.medicalHouse', []).map(mm => {
                 mm.medicalHouse.name = _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'name', null)
+                mm.medicalHouse.address = {
+                    street: _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'address.street', null),
+                    zip: _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'address.zip', null),
+                    city: _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'address.city', null),
+                    country: _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'address.country', null),
+                    telecom: {
+                        phone: _.get(_.compact(nihiiList).find(nihii => _.get(nihii, 'initialSearch.nihii', null) === _.get(mm, 'medicalHouse.nihii', '')), 'address.telecom.phone', null)
+                    }
+                }
             })
             return mdaResponse
         }).catch(err => console.log(err))
