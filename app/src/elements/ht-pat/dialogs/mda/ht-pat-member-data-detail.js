@@ -444,6 +444,12 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                     return require('./rsrc/listOfPharmacy.json');
                 }
             },
+            specialityList: {
+                type: Object,
+                value: function () {
+                    return require('./rsrc/listOfSpeciality.json');
+                }
+            },
             patientInsurance: {
                 type: Object,
                 value: () => {}
@@ -602,7 +608,7 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                 nihii: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:specialist:nihii11"), 'attributeValues', []).join(" "),
                                 firstName: null,
                                 lastName: null,
-                                speciality: null
+                                speciality: this._getSpeciality(_.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:specialist:nihii11"), 'attributeValues', []).join(" "))
                             },
                             startRightDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:startRightDate"), 'attributeValues', []).join(" "),
                             endContractDate: _.get(_.get(stat, 'attributesAndEncryptedAttributes', []).find(att => _.get(att, 'name', null) === "urn:be:cin:nippin:carePath:endContractDate"), 'attributeValues', []).join(" "),
@@ -785,6 +791,10 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
         const i = _.size(nihii) === 11 && nihii.substr(10, 1) === "1" ? "I" : ""
 
         return m+''+k+''+i
+    }
+
+    _getSpeciality(nihii){
+       return _.get(this.specialityList, 'specialityList', []).find(spec => _.parseInt(spec.code) === _.parseInt(nihii.substr(8,3)))
     }
 }
 customElements.define(HtPatMemberDataDetail.is, HtPatMemberDataDetail);
