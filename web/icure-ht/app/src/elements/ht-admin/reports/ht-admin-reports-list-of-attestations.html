@@ -975,7 +975,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     sentDate: sentdate,
                                     cancelDate: canceldate,
                                     cancelReason: invoice.cancelReason || "",
-                                    cancelReasonDet: "eattest_reason_cancel_"+invoice.cancelReason,
+                                    cancelReasonDet: invoice.cancelReason ? "eattest_reason_cancel_"+invoice.cancelReason : "",
                                     dateToSort: dateToSort,
                                     sentDateToSort: sentDateToSort,
                                     cancelDateToSort: cancelDateToSort,
@@ -994,7 +994,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     creditCard: 0,
                                     wired: 0,
                                     totalAmount: 0,
-                                    paid : this.api._powRoundFloatByPrecision(invoice.paid,2),
+                                    paid : this.api._powRoundFloatByPrecision(_.get(invoice,"paid",0),2),
 
                                     invoice: invoice
                                 }
@@ -1196,6 +1196,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     delete xlinv.cancelDateToSort
                     delete xlinv.cancelIndex
                     delete xlinv.cancelReasonDet
+
+                    xlinv.cash = isNaN(inv.cash) || inv.cash==="NaN" ? 0 : parseFloat(inv.cash)
+                    xlinv.conventionAmount = isNaN(inv.conventionAmount) || inv.conventionAmount==="NaN" ? 0 : parseFloat(inv.conventionAmount)
+                    xlinv.creditCard = isNaN(inv.creditCard)|| inv.creditCard==="NaN" ? 0 : parseFloat(inv.creditCard)
+                    xlinv.debitCard = isNaN(inv.debitCard)|| inv.debitCard==="NaN" ? 0 : parseFloat(inv.debitCard)
+                    xlinv.doctorSupplement = isNaN(inv.doctorSupplement)|| inv.doctorSupplement==="NaN" ? 0 : parseFloat(inv.doctorSupplement)
+                    xlinv.paid = isNaN(inv.paid)|| inv.paid==="NaN" ? 0 : parseFloat(inv.paid)
+                    xlinv.reimbursementAmount = isNaN(inv.reimbursementAmount)|| inv.reimbursementAmount==="NaN" ? 0 : parseFloat(inv.reimbursementAmount)
+                    xlinv.round = isNaN(inv.round)|| inv.round==="NaN" ? 0 : parseFloat(inv.round)
+                    xlinv.ticketAmount = isNaN(inv.ticketAmount)|| inv.ticketAmount==="NaN" ? 0 : parseFloat(inv.ticketAmount)
+                    xlinv.totalAmount = isNaN(inv.totalAmount)|| inv.totalAmount==="NaN" ? 0 : parseFloat(inv.totalAmount)
+                    xlinv.totalPatientAmount = isNaN(inv.totalPatientAmount)|| inv.totalPatientAmount==="NaN" ? 0 : parseFloat(inv.totalPatientAmount)
+                    xlinv.wired = isNaN(inv.wired)||inv.wired ==="NaN" ? 0 : parseFloat(inv.wired)
+
+
                     return xlinv
                 }))
             }
