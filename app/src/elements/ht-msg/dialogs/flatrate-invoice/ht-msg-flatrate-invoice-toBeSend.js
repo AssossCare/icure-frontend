@@ -491,13 +491,14 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
                         <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
                         <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
-                        <vaadin-combo-box id="exportedOAs" filtered-items="[[_getExportOAsList()]]" item-label-path="label" item-value-path="id" label="[[localize('OA','OA',language)]]" value="[[_getExportOA()]]"></vaadin-combo-box>
+<!--                        <vaadin-combo-box id="exportedOAs" filtered-items="[[_getExportOAsList()]]" item-label-path="label" item-value-path="id" label="[[localize('OA','OA',language)]]" value="[[_getExportOA()]]"></vaadin-combo-box>-->
 <!--                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>-->
 <!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
                     </div>
-
-                    <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
-                    <paper-button class="button button--other tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-dismiss >[[localize('cancel','Annuler',language)]]</paper-button>
+                    <div class="buttons">
+                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                        <paper-button class="button button--other tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-dismiss >[[localize('cancel','Annuler',language)]]</paper-button>
+                    </div>
                 </div>   
             </div>        
         </paper-dialog>
@@ -818,7 +819,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing_dialogResult() {
-        //TODO: add cancel possibility
         this._exportFlatRateInvoicing_step2()
     }
 
@@ -1445,7 +1445,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 this.set('messagesCachedData', null );
                 this.set('messagesGridData', [] );
                 this.set('messagesGridDataReset', [] );
-
+                this._refreshInvoiceList();
             }) //23
 
     }
@@ -1465,8 +1465,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
                             // TOP-435
                             const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
-                            const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === insParent.code
-                            console.log("includePat", includePat)
+
+                            //TODO re-enable
+                            const includePat = true
+                            // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === insParent.code
+                            // console.log("includePat", includePat)
                             //DIT Updated niet
                             return !includePat ? Promise.resolve(null) : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
