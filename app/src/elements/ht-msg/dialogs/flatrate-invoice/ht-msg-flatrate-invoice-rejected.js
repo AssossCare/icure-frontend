@@ -460,7 +460,7 @@ class HtMsgFlatrateInvoiceRejected extends TkLocalizerMixin(PolymerElement) {
     _getTotalOfGroup(group, type){
         return type === "fact" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00))}, 0).toFixed(2) :
             type === "acc" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00))}, 0).toFixed(2) :
-                type === "ref" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.refusedAmount', 0.00))}, 0).toFixed(2) : 0.00
+                type === "ref" ? group.reduce((tot, mess) => {return tot + Number(Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00)) - Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00)))}, 0).toFixed(2) : 0.00
     }
 
 }
