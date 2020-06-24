@@ -806,7 +806,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing_dialogResult() {
-        //TODO: add cancel possibility
         this._exportFlatRateInvoicing_step2()
     }
 
@@ -1433,7 +1432,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 this.set('messagesCachedData', null );
                 this.set('messagesGridData', [] );
                 this.set('messagesGridDataReset', [] );
-
+                this._refreshInvoiceList();
             }) //23
 
     }
