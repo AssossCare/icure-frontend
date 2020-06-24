@@ -58,8 +58,10 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             
             .panel-error{
                 height: 40px;
+                max-height: 40px;
                 width: auto;
                 font-size: var(--font-size-normal);
+                overflow: auto;
             }
             
             .panel-content{
