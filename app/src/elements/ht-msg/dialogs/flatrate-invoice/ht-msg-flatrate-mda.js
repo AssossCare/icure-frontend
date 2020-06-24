@@ -1355,8 +1355,154 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             paper-menu-button paper-listbox paper-item {
                 padding:0 8px!important;
                 font-size: var(--font-size-normal);
-            }                              
-   
+            }   
+            
+            .container-mdaResponse{
+                height: calc(100% - 120px);
+                width: 100%;             
+            }  
+            
+            .container-mdaResponse-patientList{
+                height: calc(100% - 8px);
+                width: 100%;
+                overflow: auto;
+            }
+            
+             .table{         
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+            
+            .tr{
+                display: flex;
+                height: 22px;               
+                border-bottom: 1px solid var(--app-background-color-dark);   
+                padding: 4px;                
+            }
+            
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+            
+            .tr-item{
+                cursor: pointer;
+            }
+            
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;                           
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;               
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+            
+            .fg0{
+                flex-grow: 0.2;
+            }
+            
+            .fg1{
+                flex-grow: 1;
+            }
+            
+            .fg2{
+                flex-grow: 2;
+            }   
+            
+            .fg3{
+                flex-grow: 3;
+            }
+            
+            .panel-button{
+                height: 32px;
+                width: auto; 
+                padding: 4px; 
+                display: flex;
+                justify-content: flex-end!important;      
+            }
+            
+            .button{
+               display: inline-flex!important;
+               align-items: center!important;
+            }
+            
+               .statusIcon.invoice-status--orangeStatus {
+                    color: var(--app-status-color-pending);
+                }
+                .statusIcon.invoice-status--greenStatus {
+                    color: var(--app-status-color-ok);
+                }
+                .statusIcon.invoice-status--blueStatus {
+                    color: var(--paper-blue-400);
+                }
+                .statusIcon.invoice-status--redStatus {
+                    color: var(--app-status-color-nok);
+                }
+                .statusIcon.invoice-status--purpleStatus {
+                    color: var(--paper-purple-300);
+                }
+                .statusIcon.invoice-status--orangeStatus,
+                .statusIcon.invoice-status--greenStatus,
+                .statusIcon.invoice-status--redStatus,
+                .statusIcon.invoice-status--purpleStatus {
+                    background: transparent !important;
+                }
+
+                *.txtcolor--orangeStatus {
+                    color: var(--app-status-color-pending);
+                }
+                *.txtcolor--greenStatus {
+                    color: var(--app-status-color-ok);
+                }
+                *.txtcolor--blueStatus {
+                    color: var(--paper-blue-400);
+                }
+                *.txtcolor--redStatus {
+                    color: var(--app-status-color-nok);
+                }
+                *.txtcolor--purpleStatus {
+                    color: var(--paper-purple-300)
+                }
+                
+                .mda-status--orangeStatus{
+                    background: #fcdf354d;
+                }
+                .mda-status--greenStatus{
+                    background: #07f8804d;
+                }
+                .mda-status--blueStatus {
+                    background: #84c8ff;
+                }
+                .mda-status--redStatus{
+                    background: #ff4d4d4d;
+                }
+                .mda-status--purpleStatus {
+                    background: #e1b6e6;
+                }
+                
+                .mda-status {
+                    border-radius: 20px;
+                    padding: 1px 12px 1px 8px;
+                    font-size: 12px;
+                    display: block;
+                    width: auto;
+                    max-width: fit-content;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                }
+
         </style>
         
         
@@ -1409,15 +1555,63 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         
         <!-- MDA pending requests -->
         <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponses')]]">
-            <div class="textAlignCenter">
+            
+            <div class="container-mdaResponse">
+                <div class="container-mdaResponse-patientList">
+                    <div class="tr tr-group">                                    
+                         <div class="td fg2">[[localize('mda-async-pat-name', 'Name', language)]]</div>
+                         <div class="td fg1">[[localize('mda-async-niss', 'Ssin', language)]]</div>
+                         <div class="td fg1">[[localize('mda-async-io', 'Io', language)]]</div>
+                         <div class="td fg1">[[localize('mda-async-ioMembership', 'Io membership', language)]]</div>
+                         <div class="td fg1">[[localize('mda-async-period', 'Period', language)]]</div>
+                         <div class="td fg2">[[localize('mda-async-comment', 'Comment', language)]]</div>   
+                         <div class="td fg1">[[localize('mda-async-status', 'Status', language)]]</div>                     
+                     </div>
+                      <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="mess">
+                          <template is="dom-repeat" items="[[mess.attachment.request]]" as="pat">
+                             <div class="tr tr-item" id="[[pat.patientId]]" on-tap="">
+                                 <div class="td fg2">[[pat.nameHr]]</div>
+                                 <div class="td fg1">[[pat.patientSsin]]</div>
+                                 <div class="td fg1">[[pat.parentInsuranceCode]]</div>
+                                 <div class="td fg1">[[pat.patientIdentificationNumber]]</div>
+                                  <div class="td fg1">[[_formatDate(pat.startDate)]] => [[_formatDate(pat.endDate)]]</div>
+                                 <div class="td fg2"></div>
+                                 <div class="td fg1"><span class$="mda-status [[_getIconStatusClass()]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass()]]"></iron-icon> En attente</span></div>
+                              </div>
+                          </template>
+                      </template>
+                </div>
+               <div class="panel-button">
+                <!--Last call for responses > X hours ago, allow to call again-->
+                    <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh1">
+                       <paper-button class="button button--save" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
+                    </template>
+                        
+                        <!--Last call for responses < X hours ago, do not let call again-->
+                    <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh2">
+                       <div id="mdaResponseCheckCtaCountdown">
+                          <div id="mdaResponseCheckCtaCountdownText">[[localize('checkMdaData5','Délai avant la prochaine vérification',language)]]: [[mdaRequestsData.timeToWaitBeforeNextCallHr]]</div>
+                          <paper-button class="button button--other" on-tap=""><iron-icon icon="icons:block"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
+                       </div>
+                    </template>
+                        
+                        <!--Bypass response (only if got checked 1+ times && waiting for next check-->
+                    <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
+                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">
+                          <paper-button class="button button--save" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
+                       </template>                            
+                    </template>          
+                </div>
+            </div>
+            
+            <!--<div class="textAlignCenter">
                 <div class="exportMonthPicker pb20" style="width:90%;max-width:940px;">
                 
                     <div class="exportMonthPickerTitle"><iron-icon icon="icons:verified-user" style="max-width:20px; max-height:20px;"></iron-icon> [[localize('checkMdaData','Vérifier les données patient (Member data)',language)]]</div>
                     <p class="mt30 mb30">[[localize('checkMdaData3','Pour la facturation du forfait électronique',language)]] <b>[[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</b></p>
                     
                     <div id="mdaOasContainer">
-                        <div id="mdaOaHeaders">
-                            <div class="mdaOaContainerCol1">[[localize("inv_oa","OA",language)]]</div>
+                        <div id="mdaOaHeaders">                  
                             <div class="mdaOaContainerCol2">[[localize("pat","Patients",language)]] ([[_e_getTotalPatsInAllMessages(mdaRequestsData.messages)]])</div>
                             <div class="mdaOaContainerCol3">[[localize("askedOn","Demandé le", language)]]</div>
                             <div class="mdaOaContainerCol4">[[localize("lastCheckedOn","Dernière vérification le", language)]]</div>
@@ -1425,15 +1619,14 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                             <div class="mdaOaContainerCol6">[[localize("inv_stat","Status", language)]]</div>
                         </div>                            
                         <template is="dom-repeat" items="[[mdaRequestsData.messages]]" as="item" id="domRepeatMdaRequests">
-                            <div class="mdaOaContainer">
-                                <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
+                            <div class="mdaOaContainer">                           
                                 <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
                                 <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
                                 <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
                                 <div class="mdaOaContainerCol5">
                                     <template is="dom-if" if="[[item.metas.responseDateHr]]" restamp="true">
                                         <paper-menu-button class="mr5" horizontal-align="left" dynamic-align="true" vertical-offset="26">
-                                            <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                                            <paper-icon-button id="dl-master" class="button&#45;&#45;icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
                                             <paper-listbox slot="dropdown-content">
                                                 <paper-item data-oa$="[[item.metas.oa]]" data-download-type="soapRequest" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapRequest","soapRequest",language)]]</paper-item>
                                                 <paper-item data-oa$="[[item.metas.oa]]" data-download-type="soapResponse" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapResponse","soapResponse",language)]]</paper-item>
@@ -1454,30 +1647,33 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     
                     <div id="mdaResponseCheckCtas">
                         
-                        <!-- Last call for responses > X hours ago, allow to call again -->
+                        &lt;!&ndash; Last call for responses > X hours ago, allow to call again &ndash;&gt;
                         <template is="dom-if" if="[[_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh1">
-                            <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
+                            <paper-button class="button button&#45;&#45;save tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap="_e_checkForMdaResponses"><iron-icon icon="icons:verified-user" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
                         </template>
                         
-                        <!-- Last call for responses < X hours ago, do not let call again -->
+                        &lt;!&ndash; Last call for responses < X hours ago, do not let call again &ndash;&gt;
                         <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh2">
                             <div id="mdaResponseCheckCtaCountdown">
                                 <div id="mdaResponseCheckCtaCountdownText">[[localize('checkMdaData5','Délai avant la prochaine vérification',language)]]: [[mdaRequestsData.timeToWaitBeforeNextCallHr]]</div>
-                                <paper-button class="button button--other tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap=""><iron-icon icon="icons:block" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
+                                <paper-button class="button button&#45;&#45;other tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap=""><iron-icon icon="icons:block" class="w30px h30px"></iron-icon> [[localize('checkMdaData4','Récupérer les réponses auprès des OA',language)]]</paper-button>
                             </div>
                         </template>
                         
-                        <!-- Bypass response (only if got checked 1+ times && waiting for next check -->
+                        &lt;!&ndash; Bypass response (only if got checked 1+ times && waiting for next check &ndash;&gt;
                         <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
                             <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">
-                                <paper-button class="button button--save tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
+                                <paper-button class="button button&#45;&#45;save tool-btn f-s-1em bordered mt40 mb15 pt40 pb40" id="largeButton" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning" class="w30px h30px"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
                             </template>                            
                         </template>
                         
                     </div>                            
                     
                 </div>
-            </div>
+            </div>-->
+            
+            
+            
         </template>
         
         
@@ -2404,73 +2600,69 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language), icon:"arrow-forward"})
 
                 let prom = Promise.resolve([]);
-                const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
 
                 // Todo: 20200624 - handle this correctly: drop 675
-                try { delete(mdaRequestedDataByOa[675]); } catch(e) {}
+                //try { delete(mdaRequestedDataByOa[675]); } catch(e) {}
 
-                _.map(mdaRequestedDataByOa, (v,oa) => {
-                    v = _.map((v||[]),it=>_.omit(it,["insuranceId","parentInsuranceId","parentInsuranceCode"]))
                     prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
                         .then(promisesCarrier => this.api.message().newInstance(this.user)
                             .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
-                                transportGuid: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa),
+                                transportGuid: "MH:FLATRATE-MDA-REQUEST:" + moment().valueOf(),
                                 recipientsType: "org.taktik.icure.entities.HealthcareParty",
                                 recipients: [this.user.healthcarePartyId],
                                 toAddresses: [this.user.healthcarePartyId],
                                 metas: {
-                                    oa: _.trim(oa),
-                                    requestId: "oa-" + _.trim(oa) + "-" + exportedDate + "-" + this.api.crypto().randomUuid(),
+                                    requestId: exportedDate + "-" + this.api.crypto().randomUuid(),
                                     requestDate: moment().format("YYYYMMDDHHmmss"),
                                     requestedDate: exportedDate,
                                     mdaInputReference: "",
                                     responseMessageId: "",
                                     responseDate: "",
                                     responseLastCheckDate: "",
-                                    totalPats: _.size(v),
+                                    totalPats: _.size(pats),
                                     overriddenByUserDate: 0
                                 },
                                 status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
-                                subject: "MH:FLATRATE-MDA-REQUEST:" + _.trim(oa)
+                                subject: "MH:FLATRATE-MDA-REQUEST:" + moment().valueOf()
                             }))), 4, 1000, 1.5))
                             .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
                             .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
                             .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
-                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:v})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:v}}))), 4, 1000, 1.5))
+                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:pats})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:pats}}))), 4, 1000, 1.5))
                             .then(createdMessage => this._sleep(200).then(()=>createdMessage)) // Cool down
                             .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
                             .catch(()=>_.concat(promisesCarrier, [false]))
                         )
-                });
 
-                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,promisesCarrier]))
+
+                return prom.then(promisesCarrier=>([pats,promisesCarrier]))
 
             }))
 
             // 9 - Make MDA requests
-            .then(([mdaRequestedDataByOa,createdMessages]) => {
+            .then(([mdaRequestedData,createdMessages]) => {
 
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language), icon:"arrow-forward"})
 
                 let prom = Promise.resolve([]);
-                _.map(mdaRequestedDataByOa, (v,oa) => {
-                    const targetMessage = _.find(createdMessages,m=>_.trim(_.get(m,"metas.oa"))===_.trim(oa))
-                    const documentInfos = _.pick(targetMessage, ["documentId","edKeys","attachmentContent"])
-                    const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
-                    prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+ " " + oa + "...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
-                        .then(promisesCarrier => this._e_getAsyncMemberDataRequest(oa,v,_.get(targetMessage,"metas.requestId"))
-                            .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,targetMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
-                            .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
-                            .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(documentInfos.documentId,(documentInfos.edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(documentInfos.attachmentContent, {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
-                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
-                            .catch(e=> {console.log("ERROR with _e_placeMdaRequests",e); _.concat(promisesCarrier, [false])})
-                        )
-                });
 
-                return prom.then(promisesCarrier=>([mdaRequestedDataByOa,_.compact(promisesCarrier)]))
+                const targetMessage = _.head(mdaRequestedData)
+                const documentInfos = _.pick(targetMessage, ["documentId","edKeys","attachmentContent"])
+                const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
+                prom = prom
+                    .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+                    .then(promisesCarrier => this._e_getAsyncMemberDataRequest(mdaRequestedData,_.get(targetMessage,"metas.requestId"))
+                    .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,targetMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
+                    .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
+                     .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(documentInfos.documentId,(documentInfos.edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(documentInfos.attachmentContent, {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
+                     .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+                     .catch(e=> {console.log("ERROR with _e_placeMdaRequests",e); _.concat(promisesCarrier, [false])})
+                 )
+
+
+                return prom.then(promisesCarrier=>([mdaRequestedData,_.compact(promisesCarrier)]))
 
             })
 
@@ -2480,23 +2672,28 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }    
 
-    _e_getAsyncMemberDataRequest(oa, requestedData, requestId) {
+    _e_getAsyncMemberDataRequest(requestedData, requestId) {
 
         const promResolve = Promise.resolve();
 
-        return !_.trim(oa) || !_.size(requestedData) ? promResolve : this.api.fhc().MemberDataController().sendMemberDataRequestAsyncUsingPOST(
+        return !_.size(requestedData) ? promResolve : this.api.fhc().MemberDataController().sendMemberDataRequestAsyncUsingPOST(
             _.trim(_.get(this,"api.tokenIdMH")),
             _.trim(_.get(this,"api.keystoreId")),
             _.trim(_.get(this,"api.credentials.ehpassword")),
             _.trim(_.get(this,"hcp.nihii")),
             _.trim(_.get(this,"hcp.name")) ? _.trim(_.get(this,"hcp.name")) : _.trim(_.get(this,"hcp.lastName")),
-            _.trim(oa),
-            {members:_.compact(_.map(requestedData, it => _.merge({},{hospitalized:false, ssin: _.trim(_.get(it,"patientSsin")), ioMembership: _.trim(_.get(it,"patientSsin")) ? "" : _.trim(_.get(it,"patientIdentificationNumber")) })))},
+            {members:_.compact(_.map(requestedData, it => _.merge({},{
+                hospitalized:false,
+                ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
+                io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
+                ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
+                uniqId: _.trim(_.get(it, 'patientId', null)+"_"+this.api.crypto().randomUuid())
+            })))},
             "medicalhouse",
             moment().subtract(24, 'months').valueOf(),
             moment().endOf("month").valueOf(),
             false,
-            ""
+            "information"
         )
             .then(mdaResponse => !_.get(mdaResponse, "result",false) || !_.trim(_.get(mdaResponse, "tack.reference")) ? null : _.assign({}, {
                 message: mdaResponse,
@@ -3364,6 +3561,14 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             })
             .then(modifiedMessages => (this.set('_isLoading',false)||true) && this.dispatchEvent(new CustomEvent('do-route', { bubbles: true, composed: true, detail: { forceRefreshMdaRequestsStatus: true, selection : { item : "eflatrateInvocingMenuItem", status: "toBeSend" }}})))
 
+    }
+
+    _getIconStatusClass(){
+        return "invoice-status--blueStatus"
+    }
+
+    _formatDate(date){
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
     }
 
 }
