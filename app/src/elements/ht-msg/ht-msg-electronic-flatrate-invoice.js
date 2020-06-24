@@ -111,6 +111,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         is-loading="[[isLoading]]"
                         on-open-invoice-detail-panel="_openInvoiceDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        id="ht-msg-flatrate-invoice-to-be-sent"
                         >                   
                     </ht-msg-flatrate-invoice-to-be-send>
                 </template>   
@@ -654,6 +655,16 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
     _getCssClassForMda(invoicesStatus) {
 
         return ["ej20_mda","ej20_mda_history"].indexOf(invoicesStatus) > -1 ? "pt30" : ""
+
+    }
+
+    openRewriteRouteDialog(routedPage){
+
+        const mdaComponent = this.shadowRoot.querySelector('#ht-msg-flatrate-mda')
+        const invoicesToBeSentComponent = this.shadowRoot.querySelector('#ht-msg-flatrate-invoice-to-be-sent')
+
+        routedPage === "ej20_mda" && mdaComponent && typeof _.get(mdaComponent,"openRewriteRouteDialog") === "function" && mdaComponent.openRewriteRouteDialog()
+        routedPage === "toBeSend" && invoicesToBeSentComponent && typeof _.get(invoicesToBeSentComponent,"openRewriteRouteDialog") === "function" && invoicesToBeSentComponent.openRewriteRouteDialog()
 
     }
 

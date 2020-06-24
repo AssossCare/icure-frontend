@@ -912,8 +912,8 @@
 		"fax": "fax",
 		"fac_mode": "Billing mode",
 		"fac_type": "Billing type",
-		"fac_ser_fee": "Service fee facturation",
-		"fac_fla_rat": "Flat rate facturation",
+		"fac_ser_fee": "Service fee invoicing",
+		"fac_fla_rat": "Flat rate invoicing",
 		"flat_rat_tar": "Flat rate tarifications",
 		"fam-ris": "Family risks",
 		"fil": "Filter",
@@ -5745,7 +5745,9 @@
 		"mh_eInvoicing.mda.step_5": "Envoi des requêtes de l'OA",
 		"mh_eInvoicing.mda.step_5_done": "Fin de l'envoi des requêtes aux OA",
 		"mh_eInvoicing.mda.text1": "Merci, votre demande de vérification des données patient est en cours de traitement.",
-		"mh_eInvoicing.mda.text2": "Vous pourrez en consulter les résultats d'ici un jour.",
+		"mh_eInvoicing.mda.text2": "Vous pourrez en consulter les résultats d'ici quatre heures.",
+		"mh_eInvoicing.mdaMustRun.text1": "La vérification des données du membre (MDA) n'as pas encore été invoquée ce mois-ci.",
+		"mh_eInvoicing.mdaMustRun.text2": "Veuillez s'il vous plait suivre les instructions à l'écran afin d'y procéder.",
 		"askedOn": "Demandé le",
 		"lastCheckedOn": "Dernière vérification le",
 		"answeredOn": "Réponse obtenue le",
@@ -5789,7 +5791,9 @@
 		"patientIsNowInMhc": "Le patient est désormais dans la Maison Médicale",
 		"patientHasNoMhc": "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
 		"patientHasNoOnGoingMhc": "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale",
-		"patientNotFoundInOa": "Le patient n'a pas pu être trouvé chez l'OA"
+		"patientNotFoundInOa": "Le patient n'a pas pu être trouvé chez l'OA",
+		"mh_eInvoicing.mdaAlreadyRan.text1": "La vérification des données du membre (MDA) a déjà été faite ce mois-ci.",
+		"mh_eInvoicing.mdaAlreadyRan.text2": "Vous pouvez à présent procéder à votre facturation."
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",

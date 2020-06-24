@@ -516,6 +516,18 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             </div>        
         </paper-dialog>
         
+        <!-- Medical Houses - Flatrate MDA calls already took place (this month) -->
+        <paper-dialog class="modalDialog" id="routeGotRewritten" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title" style="justify-content: flex-start;"><iron-icon icon="vaadin:euro" class="mr8"></iron-icon> [[localize('fac_fla_rat','Facturation au forfait',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="">[[localize('mh_eInvoicing.mdaAlreadyRan.text1',"La vérification des données du membre (MDA) a déjà été faite ce mois-ci.",language)]]</p>
+                <p class="fw700">[[localize('mh_eInvoicing.mdaAlreadyRan.text2',"Vous pouvez à présent procéder à votre facturation.",language)]]</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>            
+        
         <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
 `
     }
@@ -1800,6 +1812,13 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         this.set("_bodyOverlay", false);
         _.map( this.shadowRoot.querySelectorAll('.modalDialog'), i=> i && typeof i.close === "function" && i.close() )
     }
+
+    openRewriteRouteDialog() {
+
+        return this.shadowRoot.getElementById("routeGotRewritten") && this.shadowRoot.getElementById("routeGotRewritten").open()
+
+    }
+
 }
 
 customElements.define(HtMsgFlatrateInvoiceToBeSend.is, HtMsgFlatrateInvoiceToBeSend)

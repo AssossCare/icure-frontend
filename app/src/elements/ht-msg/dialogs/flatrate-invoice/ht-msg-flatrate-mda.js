@@ -1570,11 +1570,25 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         <paper-dialog class="modalDialog" id="mdaRequestsSent" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
             <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                <p class="">[[localize('mh_eInvoicing.mda.text1','We could not find any data to export',language)]]</p>
-                <p class="fw700">[[localize('mh_eInvoicing.mda.text2','We could not find any data to export',language)]]</p>
+                <p class="">[[localize('mh_eInvoicing.mda.text1','Merci, votre demande de vérification des données patient est en cours de traitement.',language)]]</p>
+                <p class="fw700">[[localize('mh_eInvoicing.mda.text2',"Vous pourrez en consulter les résultats d'ici quatre heure.",language)]]</p>
             </div>
             <div class="buttons">
                 <paper-button class="button button--other " on-tap="_e_closeMdaRequestsSentDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+
+
+        <!-- Medical Houses - Flatrate MDA calls didn't take place yet (this month) -->
+        <paper-dialog class="modalDialog" id="routeGotRewritten" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="vaadin:euro"></iron-icon> [[localize('fac_fla_rat','Facturation au forfait',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="">[[localize('mh_eInvoicing.mdaMustRun.text1',"La vérification des données du membre (MDA) n'as pas encore été invoquée ce mois-ci.",language)]]</p>
+                <p class="fw700">[[localize('mh_eInvoicing.mdaMustRun.text2',"Veuillez s'il vous plait suivre les instructions à l'écran afin d'y procéder.",language)]]</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>          
         
@@ -1971,6 +1985,12 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                                     !!(status & (1 << 7))  ? "sent" :
                                                         !!(status & (1 << 6))  ? "efact" :
                                                             ""
+
+    }
+
+    openRewriteRouteDialog() {
+
+        return this.shadowRoot.getElementById("routeGotRewritten") && this.shadowRoot.getElementById("routeGotRewritten").open()
 
     }
 

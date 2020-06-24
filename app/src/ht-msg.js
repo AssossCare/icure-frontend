@@ -568,21 +568,27 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
 
     handleMenuChange(e) {
 
-        const selectedItem = _.trim(_.get(e,"detail.selection.item",""))
-        const selectedFolder = _.trim(_.get(e,"detail.selection.folder",""))
+        let selectedItem = _.trim(_.get(e,"detail.selection.item",""))
         let selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
+        const selectedFolder = _.trim(_.get(e,"detail.selection.folder",""))
+        const originalSelectedStatus = _.clone(selectedStatus)
         const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox", "electronicFlatRateInvoicesLayout"]
+
 
         // Do allow to go for toBeSenT page when mdaRequests weren't place this month yet
         selectedStatus = selectedItem === "eflatrateInvocingMenuItem" && selectedStatus === "toBeSend" && !_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "ej20_mda" :
             selectedItem === "flatRateeInvoicingMenuItem" && selectedStatus === "ej20_mda" && !!_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "toBeSend" :
             selectedStatus
 
+        // Did we rewrite the route ? Tip user
+        originalSelectedStatus !== selectedStatus && selectedStatus === "ej20_mda" && (selectedItem="flatRateeInvoicingMenuItem"||true) &&setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").openRewriteRouteDialog("ej20_mda"); },200)
+        originalSelectedStatus !== selectedStatus && selectedStatus === "toBeSend" && (selectedItem="eflatrateInvocingMenuItem"||true) && setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").openRewriteRouteDialog("toBeSend"); },200)
+
         availableLayouts.map(i=>this.set(i,false))
         if (selectedItem === 'e_invOut') {
             this.set('invoicesLayout', true)
             this.set('invoicesStatus', selectedStatus)
-            setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
+            setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice") && this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
         } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'eflatrateInvocingMenuItem' || selectedItem === 'flatRateeInvoicingMenuItem' ) {
             this.set('electronicFlatRateInvoicesLayout', true)
             this.set('eFlatrateStatus', selectedStatus)
