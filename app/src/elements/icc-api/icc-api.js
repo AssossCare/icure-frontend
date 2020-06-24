@@ -852,28 +852,17 @@ class IccApi extends PolymerElement {
 
   }
 
-  triggerFileDownload(fileRawContent, mimeType, downloadFileName, appendTarget = false ) {
+    triggerFileDownload(fileRawContent, mimeType, downloadFileName, appendTarget = false ) {
 
-      if(!fileRawContent || !_.trim(mimeType) || !_.trim(downloadFileName) ) return;
+        if(!fileRawContent || !_.trim(mimeType) || !_.trim(downloadFileName) ) return;
 
-      // let aObject = document.createElement("a");
-      // let urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
-      //
-      // (appendTarget?appendTarget:document.body).appendChild( aObject );
-      //
-      // aObject.style = "display: none";
-      // aObject.href = urlObject;
-      // aObject.download = downloadFileName;
-      // aObject.click();
-      // window.URL.revokeObjectURL(urlObject);
+        const urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
+        const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
 
-      const urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
-      try {
-          const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
-          (appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);
-      } catch(e) { window.open(_.trim(urlObject)) }
+        try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);}
+        catch(e) { window.open(_.trim(urlObject)) }
 
-  }
+    }
 
   triggerUrlDownload(downloadUrl, appendTarget = false ) {
       if(!_.trim(downloadUrl)) return
