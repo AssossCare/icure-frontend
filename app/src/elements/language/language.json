@@ -5792,8 +5792,16 @@
 		"patientHasNoMhc": "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
 		"patientHasNoOnGoingMhc": "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale",
 		"patientNotFoundInOa": "Le patient n'a pas pu être trouvé chez l'OA",
+		"patientDidNotMeetRequirements": "Le patient ne rencontre pas les conditions nécessaires",
 		"mh_eInvoicing.mdaAlreadyRan.text1": "La vérification des données du membre (MDA) a déjà été faite ce mois-ci.",
-		"mh_eInvoicing.mdaAlreadyRan.text2": "Vous pouvez à présent procéder à votre facturation."
+		"mh_eInvoicing.mdaAlreadyRan.text2": "Vous pouvez à présent procéder à votre facturation.",
+		"mh_eInvoicing.soapRequest": "Requête SOAP",
+		"mh_eInvoicing.soapResponse": "Réponse SOAP",
+		"mh_eInvoicing.transactionRequest": "Requête transactionnelle",
+		"mh_eInvoicing.transactionResponse": "Réponse transactionnelle",
+		"mh_eInvoicing.invoicable": "Facturable",
+		"mh_eInvoicing.invoicablePatients": "Patients facturables",
+		"mh_eInvoicing.nonInvoicablePatients": "Patients non-facturables"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",

@@ -1342,7 +1342,20 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         bottom: 30px;
                         display: flex;
                         justify-content: flex-end;
-                    }                
+                    }      
+                    
+            paper-menu-button {
+                padding:0;
+            }
+
+            paper-menu-button paper-listbox {
+                padding:0!important;
+            }
+
+            paper-menu-button paper-listbox paper-item {
+                padding:0 8px!important;
+                font-size: var(--font-size-normal);
+            }                              
    
         </style>
         
@@ -1417,7 +1430,20 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                 <div class="mdaOaContainerCol2">[[item.metas.totalPats]]</div>
                                 <div class="mdaOaContainerCol3">[[item.metas.requestDateHr]]</div>
                                 <div class="mdaOaContainerCol4">[[item.metas.responseLastCheckDateHr]]</div>
-                                <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                <div class="mdaOaContainerCol5">
+                                    <template is="dom-if" if="[[item.metas.responseDateHr]]" restamp="true">
+                                        <paper-menu-button class="mr5" horizontal-align="left" dynamic-align="true" vertical-offset="26">
+                                            <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                                            <paper-listbox slot="dropdown-content">
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-download-type="soapRequest" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapRequest","soapRequest",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-download-type="soapResponse" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapResponse","soapResponse",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-download-type="transactionRequest" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.transactionRequest","transactionRequest",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-download-type="transactionResponse" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.transactionResponse","transactionResponse",language)]]</paper-item>
+                                            </paper-listbox>
+                                        </paper-menu-button> 
+                                    </template>
+                                    [[item.metas.responseDateHr]]                                   
+                                </div>
                                 <div class="mdaOaContainerCol6">
                                     <template is="dom-if" if="[[item.metas.responseMessageId]]"><span class="statusBullet green"></span></template>
                                     <template is="dom-if" if="[[!item.metas.responseMessageId]]"><span class="statusBullet red"></span></template>
@@ -1473,7 +1499,20 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         <template is="dom-repeat" items="[[mdaResponsesData.messages]]" as="item" id="domRepeatMdaRequestsResults">
                             <div class="mdaOaContainer">
                                 <div class="mdaOaContainerCol1">[[item.metas.oa]]</div>
-                                <div class="mdaOaContainerCol5">[[item.metas.responseDateHr]]</div>
+                                <div class="mdaOaContainerCol5">
+                                    <template is="dom-if" if="[[item.metas.responseDateHr]]" restamp="true">
+                                        <paper-menu-button class="mr5" horizontal-align="left" dynamic-align="true" vertical-offset="26">
+                                            <paper-icon-button id="dl-master" class="button--icon-btn" icon="icons:info-outline" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+                                            <paper-listbox slot="dropdown-content">
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-request-type="response" data-download-type="soapRequest" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapRequest","soapRequest",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-request-type="response" data-download-type="soapResponse" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.soapResponse","soapResponse",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-request-type="response" data-download-type="transactionRequest" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.transactionRequest","transactionRequest",language)]]</paper-item>
+                                                <paper-item data-oa$="[[item.metas.oa]]" data-request-type="response" data-download-type="transactionResponse" on-tap="_triggerDownloadRequest">[[localize("mh_eInvoicing.transactionResponse","transactionResponse",language)]]</paper-item>
+                                            </paper-listbox>
+                                        </paper-menu-button> 
+                                    </template>
+                                    [[item.metas.responseDateHr]]
+                                </div>
                                 <div class="mdaOaContainerCol2 fw500 darkGreen">[[item.metas.totalPats]]</div>
                                 <div class$="mdaOaContainerCol3 fw500 [[_e_redOrGreenIfEquals(item.metas.totalPats,item.metas.totalPatsWithValidInsurability)]]">[[item.metas.totalPatsWithValidInsurability]]</div>
                                 <div class="mdaOaContainerCol6"><paper-button class="button button--other buttonCompact"on-tap="_e_gotoMdaLastCallResultsDetails"><iron-icon icon="icons:zoom-in" class="w30px h30px"></iron-icon></paper-button></div>
@@ -1490,8 +1529,8 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResultsDetails')]]">
             
             <paper-tabs selected="[[mdaActiveTab]]" attr-for-selected="name" on-selected-changed="_e_mdaActiveTabChanged" class="mdaTabs">
-                <paper-tab class="dialogTab" name="invalidPatients"><span class="batchNumber mdaBatchNumber batchRed">[[mdaTotalInvalidPatients]]</span>[[localize('invalidPats','Patients pas en ordre',language)]]</paper-tab>
-                <paper-tab class="dialogTab" name="validPatients"><span class="batchNumber mdaBatchNumber batchGreen">[[mdaTotalValidPatients]]</span>[[localize('validPats','Patients en ordre',language)]]</paper-tab>
+                <paper-tab class="dialogTab" name="invalidPatients"><span class="batchNumber mdaBatchNumber batchRed">[[mdaTotalInvalidPatients]]</span>[[localize('mh_eInvoicing.nonInvoicablePatients','Patients non-facturables',language)]]</paper-tab>
+                <paper-tab class="dialogTab" name="validPatients"><span class="batchNumber mdaBatchNumber batchGreen">[[mdaTotalValidPatients]]</span>[[localize('mh_eInvoicing.invoicablePatients','Patients facturables',language)]]</paper-tab>
             </paper-tabs>
             
             <div id="mdaSearchEngine"><paper-input label="[[localize('searchPatients','Search for a patient',language)]]" autofocus on-value-changed="_e_mdaSearchForPat" id="mdaSearchEngineInput"><iron-icon icon="accessibility" slot="prefix" style="margin-right:5px"></iron-icon></paper-input></div>
@@ -1522,8 +1561,8 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     <template>[[item.ssinHr]]</template>
                                 </vaadin-grid-column>
                                 
-                                <vaadin-grid-column flex-grow="0" width="130px">
-                                    <template class="header"><vaadin-grid-sorter path="patientInsurabilityStatusHr">[[localize('insured','Insured',language)]]</vaadin-grid-sorter></template>
+                                <vaadin-grid-column flex-grow="0" width="160px">
+                                    <template class="header"><vaadin-grid-sorter path="patientInsurabilityStatusHr">[[localize('mh_eInvoicing.invoicable','Invoicable',language)]]</vaadin-grid-sorter></template>
                                     <template>
                                         <template is="dom-if" restamp="true" if="[[_isEqual(item.patientInsurabilityStatus,'yes')]]"><span class="statusBullet green"></span></template>
                                         <template is="dom-if" restamp="true" if="[[_isEqual(item.patientInsurabilityStatus,'notVerified')]]"><span class="statusBullet orange"></span></template>
@@ -1541,16 +1580,16 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     <template>
                                         
                                         <template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'false')]]">
-                                            <template is="dom-if" restamp="true" if="[[_isEqual(item.patientMatchedWithMdaResponse,'true')]]">
+                                            <!--<template is="dom-if" restamp="true" if="[[_isEqual(item.patientMatchedWithMdaResponse,'true')]]">-->
                                                 <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="valid"><iron-icon icon="check-circle"></iron-icon> [[localize("flagAsValid","Flag as valid",language)]]</paper-button>
-                                            </template>
+                                            <!--</template>-->
                                         </template>
                                         
-                                        <template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'true')]]">
+                                        <!--<template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'true')]]">-->
                                             <template is="dom-if" restamp="true" if="[[_isEqual(item.patientForcedAsValid,'true')]]">
                                                 <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="invalid"><iron-icon icon="highlight-off"></iron-icon> [[localize("flagAsInValid","Flag as invalid",language)]]</paper-button>
                                             </template>
-                                        </template>
+                                        <!--</template>-->
                                         
                                     </template>
                                 </vaadin-grid-column>
@@ -1994,6 +2033,24 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _triggerDownloadRequest(e) {
+
+        const oa = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.oa",""))), "dataset.oa"))
+        const downloadType = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.downloadType",""))), "dataset.downloadType"))
+        const requestType = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.requestType",""))), "dataset.requestType"))
+
+        const targetContent = requestType === "response" ?
+            _.get(this,"mdaResponseArchiveAttachment", {}) :
+            _.get(_.find(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.oa")) === oa), "attachment.response",{})
+
+        const downloadFileName = downloadType + "-" + (_.trim(_.get(targetContent,"tack.reference")) || this.api.crypto().randomUuid()) + ".xml"
+
+        const fileContent = _.get(targetContent,"mycarenetConversation." + downloadType,"")
+
+        return !oa || !downloadType || !targetContent ? null : this.api.triggerFileDownload(fileContent, "application/xml", downloadFileName)
+
+    }
+
 
 
 
@@ -2348,6 +2405,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
                 let prom = Promise.resolve([]);
                 const mdaRequestedDataByOa = _.reduce(pats, (acc,it) => (acc[it.parentInsuranceCode]||(acc[it.parentInsuranceCode]=[])).push(it) && acc, {})
+
+                // Todo: 20200624 - handle this correctly: drop 675
+                try { delete(mdaRequestedDataByOa[675]); } catch(e) {}
 
                 _.map(mdaRequestedDataByOa, (v,oa) => {
                     v = _.map((v||[]),it=>_.omit(it,["insuranceId","parentInsuranceId","parentInsuranceCode"]))
@@ -2994,7 +3054,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                         return _.assign(_.omit(requestedPat,["nameHr"]), {
                                             patientMatchedWithMdaResponse: !!_.size(responseMatchingPat),
                                             mdaResponsePatientHasValidInsAndMhc: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
-                                            errorMessage: !_.size(responseMatchingPat) ? this.localize("patientNotFoundInOa","patientNotFoundInOa",this.language) : _.trim(_.get(responseMatchingPat,"errorMessage")),
+                                            errorMessage: !_.size(responseMatchingPat) ? this.localize("patientDidNotMeetRequirements","patientDidNotMeetRequirements",this.language) : _.trim(_.get(responseMatchingPat,"errorMessage")),
                                             patientSsin: _.trim(_.get(requestedPat,"patientSsin")) ? requestedPat.patientSsin : _.trim(_.get(responseMatchingPat,"patientSsin")),
                                             patientIdentificationNumber: _.trim(_.get(requestedPat,"patientIdentificationNumber")) ? requestedPat.patientIdentificationNumber : _.trim(_.get(responseMatchingPat,"patientIdentificationNumber"))
                                         })
@@ -3177,6 +3237,26 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 });
                 return prom.then(promisesCarrier=>promisesCarrier)
             }))
+            .then(mdaResponseMessages => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSES:ARCHIVE", null, key, docId, 1000)
+                    .then(pl => { return {
+                        rows:_.filter(pl.rows, it => it &&
+                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
+                        ),
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }})
+                    .catch(()=>promResolve))
+                    .then(archiveMessages => _.chain(archiveMessages).orderBy(["created"],["desc"]).head().value())
+                    .then(archiveMessage => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, archiveMessage).then(document=>_.head(document))), 4, 1000, 1.5)
+                        .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                        .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).catch(()=>null))
+                        .then(attachment => this.set("mdaResponseArchiveAttachment", JSON.parse(attachment)||{}))
+                    )
+                    .then(() => mdaResponseMessages)
+            )
             .then(mdaResponseMessages => (this.set("mdaResponsesData",{
                     originalMessages: _.chain((mdaResponseMessages||[])).cloneDeep().map(it => _.omit(it,["document","edKeys","attachment"])).value(),
                     messages: _.map(mdaResponseMessages||[], it=>_.merge(it,{metas:{responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
@@ -3218,7 +3298,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         patientMatchedWithMdaResponse: _.get(responseMatchingPat,"patientMatchedWithMdaResponse",false),
                         mdaResponsePatientHasValidInsAndMhc: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
                         patientInsurabilityStatus: !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false) ? "yes" : "no",
-                        patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? true : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
+                        patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? false : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
                         patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
                     })
                 }).map(pat => _.assign(pat, {
@@ -3294,9 +3374,6 @@ customElements.define(HtMsgFlatrateMda.is, HtMsgFlatrateMda)
 
 
 
-// Todo: Ajouter btn (juste le crayon ?) "Editer le patient" -> cfr cuisine sam (timeline): (se passer data-patient-id) && on-tap => if (target.dataset.patientId!= '0') location.replace(location.href.replace(/(.+?)#.*/, `$1#/pat/${target.dataset.patientId}`)); ==> juste l'icone devant le nom du pat ?
-// Todo: Re-tester en bypassant certaines réponses oa (pour avoir le status orange)
-// Todo: Repasser sur tout le flux navigation user / bien vérouiller % status / avoir msg clair si clique sur onglet "notExpected" / guider dans interface ==> se baser sur metas.step5Validated === true de n'importe quel message de request
 // Todo for prod: confirm TACK confirmMemberDataAcksAsyncUsingPOST(xFHCTokenId: string, xFHCKeystoreId: string, xFHCPassPhrase: string, hcpNihii: string, hcpName: string, mdaAcksHashes: Array<string>): Promise<boolean | any>;
 
 
