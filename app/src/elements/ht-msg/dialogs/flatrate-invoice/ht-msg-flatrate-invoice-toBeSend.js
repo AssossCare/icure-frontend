@@ -781,7 +781,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
         if (maySend) {
             this.set('cannotSend',true)
-            localStorage.setItem('lastInvoicesSent', Date.now())
+            //localStorage.setItem('lastInvoicesSent', Date.now())
             this.shadowRoot.querySelector('#sendingDialog').open()
             this.set('isSending', true)
             this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
@@ -983,7 +983,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 })
 
                 console.log("this.flatRateInvoicingDataObject.hcpValorisationsByMonth", this.flatRateInvoicingDataObject.hcpValorisationsByMonth)
-                throw "ERREUR FORCEE"
+                //throw "ERREUR FORCEE"
 
                 // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
                 const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
@@ -1368,6 +1368,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         // If is a resent -> pat already exists for exported month, with another INS.
                         // Ie: should NOT be charged for current exported month
                         //TODO: the invDate of PTD
+                        //TODO: Info the ptd will get the price linked to the invoiced month of the MKI
+                        //TODO: to make things simpler we will no insert the correct prices at this point
+                        //TODO: at this point we are only interested in : does the patients needs to be PTD invoiced (new Ptd or Ptd invoiced >= 1yr)
+                        //TODO: we will set the correct price when creating the invoices in _createOrUpdateMedicalHousePatientsInvoices
                         const originalInvoicingCodes = _.get(pat,"isResent",false) ? [] : codesList.filter(code =>
                             parseFloat(code.price) && (
                                 (code.flatRateType === "physician" && pat.finalMedicalHouseContracts.gp === true ) ||
@@ -1508,7 +1512,14 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             const includePat = true
                             // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === insParent.code
                             // console.log("includePat", includePat)
-                            //DIT Updated niet
+
+                            //TODO: PTD:
+                            //TODO: Since the PTD tarification will possibly not have the right price at this point we need to correct it
+                            //TODO: per patient that has PTD invoicing code we will get the date of ptd to be invoiced
+                            //TODO: according to this we will set the correct price + invoicedate
+                            //TODO: the patient needs to be updated at this point also
+                            //TODO: set the latest invoicing date to last invoivincing date +1yr (NOT TODAY !)
+                            //TODO: this way when multiple years need to be recovered they will be spread over multiple batches
                             return !includePat ? Promise.resolve(null) : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
                                     this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
@@ -1877,15 +1888,22 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const propPTD = _.get(pat, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
         const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
         const ptd = ptdValue ? JSON.parse(ptdValue) : null
-        return ptdValue ? (this._isPTDActive(ptd, invDate)) : false
+        //TODO remove true||
+        return true || ptdValue ? (this._isPTDActive(ptd, invDate)) : false
+    }
+
+    _updatePatPTD(pat, newDate){
+        //TODO implement
+        return Promise.resolve(null)
     }
 
     _isPTDActive(ptd, invDate){
-
+        //TODO implement
         return true
     }
 
     _patLastPTDInvoice(pat){
+        //TODO implement
         return "20190501"
     }
 
