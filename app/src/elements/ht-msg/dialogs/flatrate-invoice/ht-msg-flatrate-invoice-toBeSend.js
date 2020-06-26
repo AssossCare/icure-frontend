@@ -617,6 +617,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 type: Array,
                 value: () => []
             },
+            _ptdValorisation: {
+                type: Object,
+                value: () => {}
+            }
         }
     }
 
@@ -641,6 +645,27 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.set('cannotSend',maySend)
 
         }
+
+        this.set("_ptdValorisation", {
+            code: "109594",
+            flatRateType: "ptd",
+            label: {
+                fr: "Suivi d'un patient diabétique de type 2 selon le protocole de soins établi par le Comité de l'assurance",
+                en: "Suivi d'un patient diabétique de type 2 selon le protocole de soins établi par le Comité de l'assurance",
+                nl: "Opvolging van een patiënt met diabetes mellitus type 2 volgens het zorgprotocol opgemaakt door het Verzekeringscomité"
+            },
+            valorisations: [{
+                startOfValidity: 20180101,
+                reimbursement: 20.47
+            }, {
+                startOfValidity: 20190101,
+                reimbursement: 21.15
+            }, {
+                startOfValidity: 20200101,
+                reimbursement: 21.56
+            }
+            ]
+        })
 
     }
 
@@ -900,7 +925,13 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     })
                     .catch((e) => { throw new Error("missing-contact-person"); })
 
-
+                //if hcp doesnt have the PTD valorisations yet:
+                let hcpvals = _.get(this.hcp, "flatRateTarifications", []).find(val => val.code === "109594")
+                if(!hcpvals){
+                    this.hcp.flatRateTarifications.push(this._ptdValorisation)
+                    console.log("this.hcp.flatRateTarifications", this.hcp.flatRateTarifications)
+                }
+                //throw "ERREUR FORCEE"
                 // Get valorisations for last X months - as of export date
                 let valorisationMonths = [];
                 for (let i = 0; i < 240; i++) { valorisationMonths.push(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
@@ -911,7 +942,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             [
                                 {code: "109616", price: 0.00, flatRateType: "physician"},           // Doctor
                                 {code: "509611", price: 0.00, flatRateType: "physiotherapist"},     // Kine
-                                {code: "409614", price: 0.00, flatRateType: "nurse"}                // Nurse
+                                {code: "409614", price: 0.00, flatRateType: "nurse"},
+                                {code: "109594", price: 0.00, flatRateType: "ptd"}// Nurse
                             ],
                             _.compact(
                                 _.chain(_.get(this.hcp, "flatRateTarifications", []))
@@ -950,6 +982,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     }
                 })
 
+                console.log("this.flatRateInvoicingDataObject.hcpValorisationsByMonth", this.flatRateInvoicingDataObject.hcpValorisationsByMonth)
+                throw "ERREUR FORCEE"
 
                 // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
                 const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
@@ -1333,13 +1367,17 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
                         // If is a resent -> pat already exists for exported month, with another INS.
                         // Ie: should NOT be charged for current exported month
+                        //TODO: the invDate of PTD
                         const originalInvoicingCodes = _.get(pat,"isResent",false) ? [] : codesList.filter(code =>
                             parseFloat(code.price) && (
                                 (code.flatRateType === "physician" && pat.finalMedicalHouseContracts.gp === true ) ||
                                 (code.flatRateType === "nurse" && pat.finalMedicalHouseContracts.nurse === true) ||
-                                (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true)
+                                (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContracts.kine === true) ||
+                                (code.flatRateType === "ptd" && this._patHasPTD(pat, '202006') === true)
                             )
                         )
+
+                        console.log("originalInvoicingCodes", originalInvoicingCodes)
 
                         const additionalInvoicingCodes = _.flatMap(_.map(_.get(pat,"invoiceToBeResent",[]), invoiceToBeResent => {
 
@@ -1844,7 +1882,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
     _isPTDActive(ptd, invDate){
 
-        return false
+        return true
     }
 
     _patLastPTDInvoice(pat){
