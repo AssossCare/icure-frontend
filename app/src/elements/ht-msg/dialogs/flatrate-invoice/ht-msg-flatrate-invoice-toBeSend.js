@@ -1799,6 +1799,50 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         })
     }
 
+// {
+//     "type": {
+//         "identifier": "PreTrajDiab",
+//         "type": "JSON",
+//         "unique": false,
+//         "localized": false,
+//         "_attachments": {},
+//         "_id": "cb070790-058c-4146-8707-90058c714622",
+//         "java_type": "org.taktik.icure.entities.PropertyType",
+//         "rev_history": {}
+//     },
+//     "typedValue": {
+//         "type": "STRING",
+//         "stringValue": "{\"start\":\"2020-02-27T23:00:00+0000\",\"end\":\"2020-02-27T23:00:00+0000\",\"dmf\":\"\"}"
+//     },
+//     "_attachments": {},
+//     "java_type": "org.taktik.icure.entities.Property",
+//     "rev_history": {}
+// }
+    _patHasPTD(pat, invDate){
+        //TODO: define where it is stored : admin / DMI
+        //Temporary solution: as migrated from Pricare: in pat.properties
+        // identifier: PreTrajDiab
+        // stringValue:
+        //            {start: "2019-05-01T00:00:00+0000", end: "...", dmf:"2019/05"}
+        const propPTD = _.get(pat, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
+        const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
+        const ptd = ptdValue ? JSON.parse(ptdValue) : null
+        return ptdValue ? (this._isPTDActive(ptd, invDate)) : false
+    }
+
+    _isPTDActive(ptd, invDate){
+
+        return false
+    }
+
+    _patLastPTDInvoice(pat){
+        return "20190501"
+    }
+
+    _setPatLastPTDInvoice(pat){
+        return Promise.resolve(null)
+    }
+
     _closeDialogs() {
         this.set("_bodyOverlay", false);
         _.map( this.shadowRoot.querySelectorAll('.modalDialog'), i=> i && typeof i.close === "function" && i.close() )
