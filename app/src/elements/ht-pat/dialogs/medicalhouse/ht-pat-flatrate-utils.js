@@ -894,7 +894,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                 // 3. 1+ mhc.contractId (expired or not)
                                 _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
 
-                                // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not)
+                                // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not, most recent if 1+)
                                 ( ssinIsValid || _.some(_.get(it, "insurabilities", []), ins => _.trim(_.get(ins, "insuranceId")) && _.trim(_.get(ins, "identificationNumber"))) )
 
                         })
@@ -929,8 +929,8 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                 patientId: _.trim(_.get(it, "id")),
                                 patientSsin: ssinIsValid && _.trim(_.get(it, "ssin")).replace(/[^\d]/gmi, ""),
                                 nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
-                                insuranceId: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
-                                patientIdentificationNumber: _.trim(_.get(finalInsurability, "insuranceId")) ? _.trim(_.get(finalInsurability, "insuranceId")) : _.trim(_.get(latestInsurability, "insuranceId")),
+                                insuranceId: _.trim(_.get(finalInsurability, "insuranceId")) ? _.trim(_.get(finalInsurability, "insuranceId")) : _.trim(_.get(latestInsurability, "insuranceId")),
+                                patientIdentificationNumber: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
                                 startDate: parseInt(exportedDate),
                                 endDate: parseInt(moment(_.trim(exportedDate),"YYYYMMDD").add(1, 'months').format("YYYYMMDD")),
                                 reconcileKey: _.trim(_.get(it,"id")) + "_" + this.api.crypto().randomUuid()

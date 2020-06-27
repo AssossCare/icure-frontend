@@ -924,7 +924,7 @@ class IccApi extends PolymerElement {
 
   formatInamiNumber(inputContent) {
       // Split with hyphens (1,6,2,3) unless already has some or is empty
-      return inputContent.indexOf("-")>-1 || !_.trim(inputContent) ? inputContent : _.trim([inputContent.slice(0,1),inputContent.slice(1,6),inputContent.slice(6,8),inputContent.slice(8,11)].join("-"));
+      return !_.trim(inputContent) || inputContent.indexOf("-")>-1 ? inputContent : _.trim([inputContent.slice(0,1),inputContent.slice(1,6),inputContent.slice(6,8),inputContent.slice(8,11)].join("-"));
   }
 
   formatBankAccount(inputContent) {

@@ -654,7 +654,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     _getCssClassForMda(invoicesStatus) {
 
-        return ["ej20_mda","ej20_mda_history"].indexOf(invoicesStatus) > -1 ? "pt30" : ""
+        return ["ej20_mda","ej20_mda_history"].indexOf(invoicesStatus) > -1 ? "pt20" : ""
 
     }
 
