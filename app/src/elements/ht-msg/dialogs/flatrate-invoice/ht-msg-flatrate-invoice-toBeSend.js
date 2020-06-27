@@ -1520,6 +1520,19 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             //TODO: the patient needs to be updated at this point also
                             //TODO: set the latest invoicing date to last invoivincing date +1yr (NOT TODAY !)
                             //TODO: this way when multiple years need to be recovered they will be spread over multiple batches
+                            const hasPTD = !!_.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
+                            if(hasPTD){
+                                const ptdinvdate = this._patPTDYearToInvoice(pat)
+                                const valor = this.flatRateInvoicingDataObject.hcpValorisationsByMonth.find(val => val.month === ptdinvdate)
+                                const valPtd  = _.get(valor, "valorisations", []).find(val => val.code === "109594")
+                                const ic = _.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
+                                ic.dateCode = ptdinvdate
+                                ic.totalAmount = valPtd ? valPtd.price : 0.0
+                                ic.reimbursement = valPtd ? valPtd.price : 0.0
+                                console.log("pat.invoicingCodes after ptd correction", pat.invoicingCodes)
+                            }
+
+
                             return !includePat ? Promise.resolve(null) : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
                                 .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
                                     this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
@@ -1912,7 +1925,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         console.log("_isPTDInvoicable", ptd, invDate)
         const startDate = this.api.moment(ptd.start)
         const endDate = this.api.moment(ptd.end)
-        const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add() : null
+        const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
         const invDateTmp = this.api.moment(invDate)
         console.log("moments", startDate, endDate, dmfAniv, invDateTmp)
         //TODO: remove these
@@ -1924,9 +1937,15 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             && (!dmfAniv || dmfAniv.isSameOrBefore(invDateTmp, 'day'))
     }
 
-    _patLastPTDInvoice(pat){
-        //TODO implement
-        return "20190501"
+    _patPTDYearToInvoice(pat){
+        const propPTD = _.get(pat, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
+        const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
+        const ptd = ptdValue ? JSON.parse(ptdValue) : null
+
+        const startDate = this.api.moment(ptd.start)
+        const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
+
+        return parseInt((dmfAniv ? dmfAniv : startDate).format('YYYYMMDD'))
     }
 
     _setPatLastPTDInvoice(pat){
