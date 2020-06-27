@@ -1508,12 +1508,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                             // TOP-435
                             const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
 
-                            //TODO re-enable
+                            //TODO re-enable filtered invoice creation (maybe obsolete)
                             const includePat = true
                             // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === insParent.code
                             // console.log("includePat", includePat)
 
-                            //TODO: PTD:
                             //TODO: Since the PTD tarification will possibly not have the right price at this point we need to correct it
                             //TODO: per patient that has PTD invoicing code we will get the date of ptd to be invoiced
                             //TODO: according to this we will set the correct price + invoicedate
@@ -1529,7 +1528,9 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                 ic.dateCode = ptdinvdate
                                 ic.totalAmount = valPtd ? valPtd.price : 0.0
                                 ic.reimbursement = valPtd ? valPtd.price : 0.0
-                                console.log("pat.invoicingCodes after ptd correction", pat.invoicingCodes)
+                                this._updatePatPTD(pat, ptdinvdate).then(res =>{
+                                    console.log("_updatePatPTD done", res)
+                                })
                             }
 
 
@@ -1893,32 +1894,32 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 //     "rev_history": {}
 // }
     _patHasPTD(pat, invDate){
-        console.log("_patHasPTD : invDate", invDate)
-        //TODO: define where it is stored : admin / DMI
         //Temporary solution: as migrated from Pricare: in pat.properties
         // identifier: PreTrajDiab
         // stringValue:
         //            {start: "2019-05-01T00:00:00+0000", end: "...", dmf:"2019/05"}
         const propPTD = _.get(pat, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
-
         console.log("propPTD", propPTD)
-
         const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
         const ptd = ptdValue ? JSON.parse(ptdValue) : null
-
         console.log("ptd",ptd)
-
-        //TODO remove true||
         return ptdValue ? (this._isPTDInvoicable(ptd, invDate)) : false
     }
 
     _updatePatPTD(pat, newDate){
-        //TODO implement
-        return Promise.resolve(null)
+        return this.api.patient().getPatientWithUser(this.user, pat.id)
+            .then(patient => {
+                const propPTD = _.get(patient, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
+                const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
+                const ptd = ptdValue ? JSON.parse(ptdValue) : null
+                ptd.dmf = this.api.moment(newDate.toString()).format('YYYY/MM')
+                propPTD.typedValue.stringValue = JSON.stringify(ptd)
+                return this.api.patient().modifyPatientWithUser(this.user, patient)
+                    .then(p => this.api.register(p, 'patient'))
+            })
     }
 
     _isPTDInvoicable(ptd, invDate){
-        //TODO implement
         // 1. startdate is before or equal to invdate
         // 2. enddate is after invdate or before 01/01/1900
         // 3. dmf is empty of 1yr before invdate
@@ -1927,11 +1928,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const endDate = this.api.moment(ptd.end)
         const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
         const invDateTmp = this.api.moment(invDate)
-        console.log("moments", startDate, endDate, dmfAniv, invDateTmp)
-        //TODO: remove these
-        const b1 = startDate.isSameOrBefore(invDateTmp, 'day')
-        const b2 = endDate.isBefore(this.api.moment("19000101"))|| endDate.isAfter(invDateTmp)
-        const b3 = !dmfAniv || dmfAniv.isSameOrBefore(invDateTmp, 'day')
         return startDate.isSameOrBefore(invDateTmp, 'day')
             && (endDate.isBefore(this.api.moment("19000101"))|| endDate.isAfter(invDateTmp))
             && (!dmfAniv || dmfAniv.isSameOrBefore(invDateTmp, 'day'))
@@ -1946,11 +1942,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
 
         return parseInt((dmfAniv ? dmfAniv : startDate).format('YYYYMMDD'))
-    }
-
-    _setPatLastPTDInvoice(pat){
-        //TODO implement
-        return Promise.resolve(null)
     }
 
     _closeDialogs() {
