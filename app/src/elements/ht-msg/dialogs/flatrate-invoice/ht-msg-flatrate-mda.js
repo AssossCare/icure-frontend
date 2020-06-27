@@ -2247,6 +2247,14 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _formatDate(date) {
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+    }
+
+    _getIconStatusClass() {
+        return "invoice-status--blueStatus"
+    }
+
 
 
 
@@ -2558,153 +2566,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     // ---------------------------- e-Invoicing - qry methods ----------------------------
 
-    _e_placeMdaRequests() {
-
-        const promResolve = Promise.resolve()
-        const exportedDate = moment().format("YYYYMM") + "01"
-
-        return promResolve
-            .then(() => {
-                this.set('_isLoading', true )
-                this.api.setPreventLogging()
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
-            })
-
-            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
-            // 2 - Get invoices to add from timeline
-            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
-            // 4 - Get all patients of mine
-            .then(() => this._e_getPatientsEligibleForExport(exportedDate))
-
-            // 5 - Hack for INS 306 -> has to be seen as a child of 300
-            .then(pats => this._getInsurancesDataByCode(300).then(ins300 => [pats,_.head(ins300)]))
-
-            // 6 - Resolve insurances
-            .then(([pats,ins300]) => {
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3',this.language), icon:"arrow-forward"})
-                return this._getInsurancesDataByIds(_.uniq(_.map(pats, "insuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {
-                    parentInsuranceId: _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code")) === "306" ? _.get(ins300, "id") : _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"parent")),
-                    insuranceCode: _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code"))
-                })))
-            })
-
-            // 7 - Resolve OAs
-            .then(pats => this._getInsurancesDataByIds(_.uniq(_.map(pats, "parentInsuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceCode:_.trim(_.get(_.find(insurances, {id:it.parentInsuranceId}),"code"))}))))
-
-            // 8 - Save MDA requests
-            .then(pats => !_.size(pats) ? promResolve : promResolve.then(() => {
-
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language), icon:"arrow-forward"})
-
-                let prom = Promise.resolve([]);
-
-                // Todo: 20200624 - handle this correctly: drop 675
-                //try { delete(mdaRequestedDataByOa[675]); } catch(e) {}
-
-                    prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
-                        .then(promisesCarrier => this.api.message().newInstance(this.user)
-                            .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
-                                transportGuid: "MH:FLATRATE-MDA-REQUEST:" + moment().valueOf(),
-                                recipientsType: "org.taktik.icure.entities.HealthcareParty",
-                                recipients: [this.user.healthcarePartyId],
-                                toAddresses: [this.user.healthcarePartyId],
-                                metas: {
-                                    requestId: exportedDate + "-" + this.api.crypto().randomUuid(),
-                                    requestDate: moment().format("YYYYMMDDHHmmss"),
-                                    requestedDate: exportedDate,
-                                    mdaInputReference: "",
-                                    responseMessageId: "",
-                                    responseDate: "",
-                                    responseLastCheckDate: "",
-                                    totalPats: _.size(pats),
-                                    overriddenByUserDate: 0
-                                },
-                                status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
-                                subject: "MH:FLATRATE-MDA-REQUEST:" + moment().valueOf()
-                            }))), 4, 1000, 1.5))
-                            .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
-                            .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
-                            .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
-                            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:pats})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:pats}}))), 4, 1000, 1.5))
-                            .then(createdMessage => this._sleep(200).then(()=>createdMessage)) // Cool down
-                            .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
-                            .catch(()=>_.concat(promisesCarrier, [false]))
-                        )
-
-
-                return prom.then(promisesCarrier=>([pats,promisesCarrier]))
-
-            }))
-
-            // 9 - Make MDA requests
-            .then(([mdaRequestedData,createdMessages]) => {
-
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language), icon:"arrow-forward"})
-
-                let prom = Promise.resolve([]);
-
-                const targetMessage = _.head(mdaRequestedData)
-                const documentInfos = _.pick(targetMessage, ["documentId","edKeys","attachmentContent"])
-                const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
-                prom = prom
-                    .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
-                    .then(promisesCarrier => this._e_getAsyncMemberDataRequest(mdaRequestedData,_.get(targetMessage,"metas.requestId"))
-                    .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,targetMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
-                    .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
-                     .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(documentInfos.documentId,(documentInfos.edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(documentInfos.attachmentContent, {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
-                     .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
-                     .catch(e=> {console.log("ERROR with _e_placeMdaRequests",e); _.concat(promisesCarrier, [false])})
-                 )
-
-
-                return prom.then(promisesCarrier=>([mdaRequestedData,_.compact(promisesCarrier)]))
-
-            })
-
-            // Confirm & goto mda responses
-            .then(([mdaRequestedDataByOa,modifiedMessage]) => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
-            .finally(() => this.set("_isLoading",false))
-
-    }    
-
-    _e_getAsyncMemberDataRequest(requestedData, requestId) {
-
-        const promResolve = Promise.resolve();
-
-        return !_.size(requestedData) ? promResolve : this.api.fhc().MemberDataController().sendMemberDataRequestAsyncUsingPOST(
-            _.trim(_.get(this,"api.tokenIdMH")),
-            _.trim(_.get(this,"api.keystoreId")),
-            _.trim(_.get(this,"api.credentials.ehpassword")),
-            _.trim(_.get(this,"hcp.nihii")),
-            _.trim(_.get(this,"hcp.name")) ? _.trim(_.get(this,"hcp.name")) : _.trim(_.get(this,"hcp.lastName")),
-            {members:_.compact(_.map(requestedData, it => _.merge({},{
-                hospitalized:false,
-                ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
-                io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
-                ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
-                uniqId: _.trim(_.get(it, 'patientId', null)+"_"+this.api.crypto().randomUuid())
-            })))},
-            "medicalhouse",
-            moment().subtract(24, 'months').valueOf(),
-            moment().endOf("month").valueOf(),
-            false,
-            "information"
-        )
-            .then(mdaResponse => !_.get(mdaResponse, "result",false) || !_.trim(_.get(mdaResponse, "tack.reference")) ? null : _.assign({}, {
-                message: mdaResponse,
-                oa: oa,
-                requestId: requestId,
-                mdaInputReference: _.trim(_.get(mdaResponse, "tack.reference")),
-            }))
-            .catch(e=>null)
-
-    }
-
     _e_getPatAndInsOutOfInvoicesToResend(invoicesToResend) {
 
         return Promise.all(invoicesToResend.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]]).catch(e=>{console.log(e); console.log("Could not extractCryptedFKs for invoices to resend");})))
@@ -2875,7 +2736,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
                         patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
                         startDate: parseInt(moment(_.trim((parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0))||0) ? parseInt(_.get(it, "invoiceToBeResent.invoiceDate",0)) : parseInt(exportedDate)),"YYYYMMDD").subtract(1, 'months').format("YYYYMMDD")), // Always one month before
-                        reconcileKey: this.api.crypto().randomUuid()
+                        reconcileKey: _.trim(_.get(it,"id")) + "_" + this.api.crypto().randomUuid()
                     }})
                     .map(it => _.assign(it, {endDate: parseInt(moment(_.get(_.cloneDeep(it),"startDate"),"YYYYMMDD").add(1, 'months').format("YYYYMMDD"))}))
                     .filter(it => (_.trim(it.patientSsin) && this.api.patient().isValidSsin(_.trim(it.patientSsin))) || _.trim(it.patientIdentificationNumber))
@@ -3335,144 +3196,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _e_loadDataAndGetStep() {
-
-        let eInvoicingStep = "placeMdaRequests"
-        const promResolve = Promise.resolve()
-        const exportedDate = moment().format("YYYYMM") + "01"
-
-        return promResolve
-            .then(() => {
-                this.set('_isLoading', true )
-                this.api.setPreventLogging()
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
-                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
-            })
-            .then(() => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000)
-                .then(pl => { return {
-                    rows:_.filter(pl.rows, it => {
-                        it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
-                        return it &&
-                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
-                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
-                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
-                    }),
-                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                    done: !pl.nextKeyPair
-                }})
-                .catch(()=>promResolve)
-            ))
-            .then(mdaRequestMessages => _.orderBy(mdaRequestMessages,["metas.oa"],["asc"]))
-            .then(mdaRequestMessages => !_.size(mdaRequestMessages) ? promResolve : promResolve.then(() => {
-                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language), icon:"arrow-forward"})
-                let prom = Promise.resolve([])
-                _.map(mdaRequestMessages, mdaRequestMessage => {
-                    prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language) + " " + _.get(mdaRequestMessage,"metas.oa"), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
-                        .then(promisesCarrier =>
-                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document=>_.head(document))), 4, 1000, 1.5)
-                                .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
-                                .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
-                                .then(([document,edKeys,attachment]) => _.merge(mdaRequestMessage,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
-                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
-                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
-                                .catch(()=>_.concat(promisesCarrier, [mdaRequestMessage]))
-                        )
-                });
-                return prom.then(promisesCarrier=>promisesCarrier)
-            }))
-            .then(mdaRequestMessages => {
-
-                // 001 - Did not invoke "MDA request" yet (this month)
-                if(!_.size(mdaRequestMessages)) throw new Error("dontGoAnyFurther");
-
-                const originalMessages = _.chain((mdaRequestMessages||[])).cloneDeep().map(it => _.omit(it,["evaluatedStatus","document","edKeys","attachment"])).value()
-                const missingAtLeastOneAnswer = _.some((mdaRequestMessages||[]), it=>!_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate")))
-                const mostRecentCheck = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.responseLastCheckDate",0))||0).orderBy([],["desc"]).head().value()
-                const mostRecentRequestDate = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.requestDate",0))||0).orderBy([],["desc"]).head().value()
-                const mostRecentCheckOrRequestDate = moment(_.trim(mostRecentCheck ? mostRecentCheck : mostRecentRequestDate),"YYYYMMDDHHmmss")
-                const nextRequestDate = _.cloneDeep(mostRecentCheckOrRequestDate).add((parseInt(_.get(this,"minimumSecondsBetweenMdaResponseChecks",86400))||86400), 'seconds')
-
-                this.set("mdaRequestsData",{
-                    originalMessages: originalMessages,
-                    messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
-                            requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
-                            responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
-                            responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
-                        }})),
-                    nextRequestDate: nextRequestDate,
-                    everGotChecked: !!mostRecentCheck,
-                    lastCheckedSecondsAgo: moment().diff(mostRecentCheckOrRequestDate,"seconds",true),
-                })
-
-                // 002 - Do we have any pending responses to wait for ? (Either no metas.responseMessageId yet OR user overrid / bypassed the response checks)
-                eInvoicingStep = missingAtLeastOneAnswer ? "mdaCheckForResponses" : "mdaLastCallResults"
-                eInvoicingStep==="mdaCheckForResponses" && this._e_mdaCheckForResponsesCountDown()
-                if(eInvoicingStep==="mdaCheckForResponses") throw new Error("dontGoAnyFurther");
-
-                // 003 - We got this far, ie -> we should show last call's results
-                return (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language), icon:"arrow-forward"})
-
-            })
-            .then(() => Promise.all(_.map(_.filter(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.responseMessageId"))), it =>this.api.message().getMessage(_.get(it,"metas.responseMessageId")))))
-            .then(mdaResponseMessages => _.orderBy(mdaResponseMessages,["metas.oa"],["asc"]))
-            .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
-                let prom = Promise.resolve([])
-                _.map(mdaResponseMessages, mdaResponseMessages => {
-                    prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language) + " " + _.get(mdaResponseMessages,"metas.oa"), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
-                        .then(promisesCarrier =>
-                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessages).then(document=>_.head(document))), 4, 1000, 1.5)
-                                .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
-                                .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
-                                .then(([document,edKeys,attachment]) => _.merge(mdaResponseMessages,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
-                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
-                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
-                                .catch(()=>_.concat(promisesCarrier, [mdaResponseMessages]))
-                        )
-                });
-                return prom.then(promisesCarrier=>promisesCarrier)
-            }))
-            .then(mdaResponseMessages => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSES:ARCHIVE", null, key, docId, 1000)
-                    .then(pl => { return {
-                        rows:_.filter(pl.rows, it => it &&
-                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
-                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
-                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
-                        ),
-                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                        done: !pl.nextKeyPair
-                    }})
-                    .catch(()=>promResolve))
-                    .then(archiveMessages => _.chain(archiveMessages).orderBy(["created"],["desc"]).head().value())
-                    .then(archiveMessage => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, archiveMessage).then(document=>_.head(document))), 4, 1000, 1.5)
-                        .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
-                        .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).catch(()=>null))
-                        .then(attachment => this.set("mdaResponseArchiveAttachment", JSON.parse(attachment)||{}))
-                    )
-                    .then(() => mdaResponseMessages)
-            )
-            .then(mdaResponseMessages => (this.set("mdaResponsesData",{
-                    originalMessages: _.chain((mdaResponseMessages||[])).cloneDeep().map(it => _.omit(it,["document","edKeys","attachment"])).value(),
-                    messages: _.map(mdaResponseMessages||[], it=>_.merge(it,{metas:{responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
-                })||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
-            )
-            .catch(()=>{})
-            .finally(()=>{
-                this.set("_isLoading",false)
-                this.set("eInvoicingStep",eInvoicingStep)
-                this.shadowRoot.getElementById("domRepeatMdaRequests") && this.shadowRoot.getElementById("domRepeatMdaRequests").render()
-                setTimeout(() => {
-                    this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
-                    this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
-                    this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
-                },300)
-            })
-
-    }
-
     _e_gotoMdaLastCallResultsDetails(e, tabToGoFor="invalidPatients") {
 
         const promResolve = Promise.resolve()
@@ -3563,13 +3286,321 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _getIconStatusClass(){
-        return "invoice-status--blueStatus"
+
+
+
+
+
+
+
+
+
+
+
+
+    _e_placeMdaRequests() {
+
+        const promResolve = Promise.resolve()
+        const flatRateUtil = this.$.flatrateUtils
+        const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2',this.language), icon:"arrow-forward"})
+            })
+
+            // 1 - Get invoices to add from previous exports ("rejected" then flagged as "corrected" invoices)
+            // 2 - Get invoices to add from timeline
+            // 3 - If any invoices (either corrected or from timeline) -> get pat it is linked to
+            // 4 - Get all patients of mine
+            // .then(() => this._e_getPatientsEligibleForExport(exportedDate))
+
+            // Get all patients of mine, valid for MDA request
+            // 1. Has to be active
+            // 2. Has to be alive (not deceased before exportedDate)
+            // 3. 1+ mhc.contractId (expired or not)
+            // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not)
+            .then(() => flatRateUtil.getPatientsEligibleForMdaRequestByExportedDate(exportedDate))
+
+            .then(pats => {
+
+                console.log("---------- flatRateUtil.getPatientsForMdaRequestsByExportDate --------")
+                console.log("pats",pats)
+
+            })
+
+            // // 5 - Hack for INS 306 -> has to be seen as a child of 300
+            // .then(pats => this._getInsurancesDataByCode(300).then(ins300 => [pats,_.head(ins300)]))
+            //
+            // // 6 - Resolve insurances
+            // .then(([pats,ins300]) => {
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_2_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3',this.language), icon:"arrow-forward"})
+            //     return this._getInsurancesDataByIds(_.uniq(_.map(pats, "insuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {
+            //         parentInsuranceId: _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code")) === "306" ? _.get(ins300, "id") : _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"parent")),
+            //         insuranceCode: _.trim(_.get(_.find(insurances, {id:it.insuranceId}),"code"))
+            //     })))
+            // })
+            //
+            // // 7 - Resolve OAs
+            // .then(pats => this._getInsurancesDataByIds(_.uniq(_.map(pats, "parentInsuranceId"))).then(insurances => _.map(pats, it => _.assign(it, {parentInsuranceCode:_.trim(_.get(_.find(insurances, {id:it.parentInsuranceId}),"code"))}))))
+            //
+            // // 8 - Save MDA requests
+            // .then(pats => !_.size(pats) ? promResolve : promResolve.then(() => {
+            //
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language), icon:"arrow-forward"})
+            //
+            //     let prom = Promise.resolve([]);
+            //
+            //     // Todo: 20200624 - handle this correctly: drop 675
+            //     //try { delete(mdaRequestedDataByOa[675]); } catch(e) {}
+            //
+            //     prom = prom
+            //         .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+            //         .then(promisesCarrier => this.api.message().newInstance(this.user)
+            //             .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
+            //                 transportGuid: "MH:FLATRATE-MDA-REQUEST:" + exportedDate,
+            //                 recipientsType: "org.taktik.icure.entities.HealthcareParty",
+            //                 recipients: [this.user.healthcarePartyId],
+            //                 toAddresses: [this.user.healthcarePartyId],
+            //                 metas: {
+            //                     requestId: exportedDate + "-" + this.api.crypto().randomUuid(),
+            //                     requestDate: moment().format("YYYYMMDDHHmmss"),
+            //                     requestedDate: exportedDate,
+            //                     mdaInputReference: "",
+            //                     responseMessageId: "",
+            //                     responseDate: "",
+            //                     responseLastCheckDate: "",
+            //                     totalPats: _.size(pats),
+            //                     overriddenByUserDate: 0
+            //                 },
+            //                 status: _.get(this,"invoiceMessageStatuses.pending.status",(1 << 8)),
+            //                 subject: "MH:FLATRATE-MDA-REQUEST:" + exportedDate
+            //             }))), 4, 1000, 1.5))
+            //             .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
+            //             .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
+            //             .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
+            //             .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:pats})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:pats}}))), 4, 1000, 1.5))
+            //             .then(createdMessage => this._sleep(200).then(()=>createdMessage)) // Cool down
+            //             .then(createdMessage => _.concat(promisesCarrier, [createdMessage]))
+            //             .catch(()=>_.concat(promisesCarrier, [false]))
+            //         )
+            //
+            //
+            //     return prom.then(promisesCarrier=>([pats,promisesCarrier]))
+            //
+            // }))
+            //
+            // // 9 - Make MDA requests
+            // .then(([mdaRequestedData,createdMessages]) => {
+            //
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+            //     this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language), icon:"arrow-forward"})
+            //
+            //     let prom = Promise.resolve([]);
+            //
+            //     const targetMessage = _.head(mdaRequestedData)
+            //     const documentInfos = _.pick(targetMessage, ["documentId","edKeys","attachmentContent"])
+            //     const successStatus = parseInt(parseInt(targetMessage.status||_.get(this,"invoiceMessageStatuses.pending.status",(1 << 8))) | parseInt(_.get(this,"invoiceMessageStatuses.successfullySentToOA.status",(1 << 9))))
+            //     prom = prom
+            //         .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_5',this.language)+"...", icon:"arrow-forward", updateLastMessage: true })||true) && promisesCarrier)
+            //         .then(promisesCarrier => this._e_getAsyncMemberDataRequest(mdaRequestedData,_.get(targetMessage,"metas.requestId"))
+            //             .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,targetMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(targetMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
+            //             .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
+            //             .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(documentInfos.documentId,(documentInfos.edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(documentInfos.attachmentContent, {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
+            //             .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
+            //             .catch(e=> {console.log("ERROR with _e_placeMdaRequests",e); _.concat(promisesCarrier, [false])})
+            //         )
+            //
+            //
+            //     return prom.then(promisesCarrier=>([mdaRequestedData,_.compact(promisesCarrier)]))
+            //
+            // })
+            //
+            // // Confirm & goto mda responses
+            // .then(([mdaRequestedDataByOa,modifiedMessage]) => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
+            .finally(() => this.set("_isLoading",false))
+
     }
 
-    _formatDate(date){
-        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+    _e_getAsyncMemberDataRequest(requestedData, requestId) {
+
+        const promResolve = Promise.resolve();
+
+        return !_.size(requestedData) ? promResolve : this.api.fhc().MemberDataController().sendMemberDataRequestAsyncUsingPOST(
+            _.trim(_.get(this,"api.tokenIdMH")),
+            _.trim(_.get(this,"api.keystoreId")),
+            _.trim(_.get(this,"api.credentials.ehpassword")),
+            _.trim(_.get(this,"hcp.nihii")),
+            _.trim(_.get(this,"hcp.name")) ? _.trim(_.get(this,"hcp.name")) : _.trim(_.get(this,"hcp.lastName")),
+            {members:_.compact(_.map(requestedData, it => _.merge({},{
+                    hospitalized:false,
+                    ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
+                    io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
+                    ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
+                    uniqId: _.trim(_.get(it, 'patientId', null)+"_"+this.api.crypto().randomUuid())
+                })))},
+            "medicalhouse",
+            moment().subtract(24, 'months').valueOf(),
+            moment().endOf("month").valueOf(),
+            false,
+            "information"
+        )
+            .then(mdaResponse => !_.get(mdaResponse, "result",false) || !_.trim(_.get(mdaResponse, "tack.reference")) ? null : _.assign({}, {
+                message: mdaResponse,
+                oa: oa,
+                requestId: requestId,
+                mdaInputReference: _.trim(_.get(mdaResponse, "tack.reference")),
+            }))
+            .catch(e=>null)
+
     }
+
+    _e_loadDataAndGetStep() {
+
+        let eInvoicingStep = "placeMdaRequests"
+        const promResolve = Promise.resolve()
+        const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+            })
+            .then(() => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+                .then(pl => { return {
+                    rows:_.filter(pl.rows, it => {
+                        it.evaluatedStatus = this._getStatusHr(_.get(it,"status",0))
+                        return it &&
+                            _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
+                    }),
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }})
+                .catch(()=>promResolve)
+            ))
+            .then(mdaRequestMessages => !_.size(mdaRequestMessages) ? promResolve : promResolve.then(() => {
+                this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language), icon:"arrow-forward"})
+                let prom = Promise.resolve([])
+                _.map(mdaRequestMessages, mdaRequestMessage => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7',this.language), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
+                        .then(promisesCarrier =>
+                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document=>_.head(document))), 4, 1000, 1.5)
+                                .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                                .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
+                                .then(([document,edKeys,attachment]) => _.merge(mdaRequestMessage,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
+                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
+                                .catch(()=>_.concat(promisesCarrier, [mdaRequestMessage]))
+                        )
+                });
+                return prom
+            }))
+            .then(mdaRequestMessages => {
+
+                // 001 - Did not invoke "MDA request" yet (this month)
+                if(!_.size(mdaRequestMessages)) throw new Error("dontGoAnyFurther");
+
+                const originalMessages = _.chain((mdaRequestMessages||[])).cloneDeep().map(it => _.omit(it,["evaluatedStatus","document","edKeys","attachment"])).value()
+                const missingAtLeastOneAnswer = _.some((mdaRequestMessages||[]), it=>!_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate")))
+                const mostRecentCheck = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.responseLastCheckDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentRequestDate = _.chain(mdaRequestMessages||[]).map(it=>parseInt(_.get(it,"metas.requestDate",0))||0).orderBy([],["desc"]).head().value()
+                const mostRecentCheckOrRequestDate = moment(_.trim(mostRecentCheck ? mostRecentCheck : mostRecentRequestDate),"YYYYMMDDHHmmss")
+                const nextRequestDate = _.cloneDeep(mostRecentCheckOrRequestDate).add((parseInt(_.get(this,"minimumSecondsBetweenMdaResponseChecks",86400))||86400), 'seconds')
+
+                this.set("mdaRequestsData",{
+                    originalMessages: originalMessages,
+                    messages: _.map(mdaRequestMessages||[], it=>_.merge(it,{metas:{
+                            requestDateHr: moment(_.trim(_.get(it,"metas.requestDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                            responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                            responseLastCheckDateHr: !_.trim(_.get(it,"metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(it,"metas.responseLastCheckDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
+                        }})),
+                    nextRequestDate: nextRequestDate,
+                    everGotChecked: !!mostRecentCheck,
+                    lastCheckedSecondsAgo: moment().diff(mostRecentCheckOrRequestDate,"seconds",true),
+                })
+
+                // 002 - Do we have any pending responses to wait for ? (Either no metas.responseMessageId yet OR user overrid / bypassed the response checks)
+                eInvoicingStep = missingAtLeastOneAnswer ? "mdaCheckForResponses" : "mdaLastCallResults"
+                eInvoicingStep==="mdaCheckForResponses" && this._e_mdaCheckForResponsesCountDown()
+                if(eInvoicingStep==="mdaCheckForResponses") throw new Error("dontGoAnyFurther");
+
+                // 003 - We got this far, ie -> we should show last call's results
+                return (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_7_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language), icon:"arrow-forward"})
+
+            })
+            .then(() => Promise.all(_.map(_.filter(_.get(this,"mdaRequestsData.messages",[]), it => _.trim(_.get(it,"metas.responseMessageId"))), it =>this.api.message().getMessage(_.get(it,"metas.responseMessageId")))))
+            .then(mdaResponseMessages => _.orderBy(mdaResponseMessages,["metas.oa"],["asc"]))
+            .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
+                let prom = Promise.resolve([])
+                _.map(mdaResponseMessages, mdaResponseMessages => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8',this.language) + " " + _.get(mdaResponseMessages,"metas.oa"), icon:"arrow-forward", updateLastMessage: true})||true) && promisesCarrier)
+                        .then(promisesCarrier =>
+                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessages).then(document=>_.head(document))), 4, 1000, 1.5)
+                                .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                                .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).then(attachment=>([document,edKeys,attachment])).catch(()=>([document,edKeys,null])))
+                                .then(([document,edKeys,attachment]) => _.merge(mdaResponseMessages,{document:document,edKeys:edKeys,attachment:JSON.parse(attachment)||{}}))
+                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
+                                .catch(()=>_.concat(promisesCarrier, [mdaResponseMessages]))
+                        )
+                });
+                return prom.then(promisesCarrier=>promisesCarrier)
+            }))
+            .then(mdaResponseMessages => this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSES:ARCHIVE", null, key, docId, 1000)
+                .then(pl => { return {
+                    rows:_.filter(pl.rows, it => it &&
+                        _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                        _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                        _.trim(_.get(it, "metas.requestedDate")) === exportedDate
+                    ),
+                    nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                    nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                    done: !pl.nextKeyPair
+                }})
+                .catch(()=>promResolve))
+                .then(archiveMessages => _.chain(archiveMessages).orderBy(["created"],["desc"]).head().value())
+                .then(archiveMessage => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, archiveMessage).then(document=>_.head(document))), 4, 1000, 1.5)
+                    .then(document => !(_.size(_.get(document,"encryptionKeys")) || _.size(_.get(document,"delegations"))) ? ([document,[]]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
+                    .then(([document,edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(','))), 4, 1000, 1.5).catch(()=>null))
+                    .then(attachment => this.set("mdaResponseArchiveAttachment", JSON.parse(attachment)||{}))
+                )
+                .then(() => mdaResponseMessages)
+            )
+            .then(mdaResponseMessages => (this.set("mdaResponsesData",{
+                    originalMessages: _.chain((mdaResponseMessages||[])).cloneDeep().map(it => _.omit(it,["document","edKeys","attachment"])).value(),
+                    messages: _.map(mdaResponseMessages||[], it=>_.merge(it,{metas:{responseDateHr: !_.trim(_.get(it,"metas.responseDate")) ? "" : moment(_.trim(_.get(it,"metas.responseDate")),"YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
+                })||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+            )
+            .catch(()=>{})
+            .finally(()=>{
+                this.set("_isLoading",false)
+                this.set("eInvoicingStep",eInvoicingStep)
+                this.shadowRoot.getElementById("domRepeatMdaRequests") && this.shadowRoot.getElementById("domRepeatMdaRequests").render()
+                setTimeout(() => {
+                    this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
+                    this.shadowRoot.getElementById("domIfTriggerRefresh2") && this.shadowRoot.getElementById("domIfTriggerRefresh2").render()
+                    this.shadowRoot.getElementById("domIfTriggerRefresh3") && this.shadowRoot.getElementById("domIfTriggerRefresh3").render()
+                },300)
+            })
+
+    }
+
+
+
+
+
 
 }
 
@@ -3580,12 +3611,3 @@ customElements.define(HtMsgFlatrateMda.is, HtMsgFlatrateMda)
 
 
 // Todo for prod: confirm TACK confirmMemberDataAcksAsyncUsingPOST(xFHCTokenId: string, xFHCKeystoreId: string, xFHCPassPhrase: string, hcpNihii: string, hcpName: string, mdaAcksHashes: Array<string>): Promise<boolean | any>;
-
-
-
-/*
-    // MODIFY requestDate
-    ___exportedDate = "20200301"
-    ___requestDate = "20200227091011"
-    this.api.getRowsUsingPagination((key,docId)=>this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*',null,key,docId,1000).then(pl=>{return{rows:_.filter(pl.rows,it=>_.trim(_.get(it,"metas.requestedDate"))===___exportedDate),nextKey:pl.nextKeyPair&&pl.nextKeyPair.startKey,nextDocId:pl.nextKeyPair&&pl.nextKeyPair.startKeyDocId,done:!pl.nextKeyPair}})).then(mdaRequestMessages=>Promise.all(_.map(mdaRequestMessages,it=>this.api.message().modifyMessage(_.merge(it,{metas:{requestDate:___requestDate}})))))
- */
