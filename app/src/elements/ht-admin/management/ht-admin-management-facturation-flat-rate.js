@@ -155,7 +155,7 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
                         [[localize('type','Type',language)]]
                     </template>
                     <template>
-                        <div>[[item.flatRateType]]</div>
+                        <div>[[_localizeType(item.flatRateType)]]</div>
                     </template>
                 </vaadin-grid-column>
                 <vaadin-grid-column>
@@ -465,6 +465,10 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
               })
       }
   }
+
+    _localizeType(type){
+       return this.localize('frt-'+type, type, this.language)
+    }
 
   _selectedPriceChanged(e){
      //this.$['addedFlatRateTarificationDialog'].open()
