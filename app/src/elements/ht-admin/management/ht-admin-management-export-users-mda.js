@@ -127,7 +127,7 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
                                 startOfContract: _.trim(_.get(it, "validMhc.startOfContract")),
                                 startOfCoverage: _.trim(_.get(it, "validMhc.startOfCoverage")),
                                 signatureType: _.trim(_.get(it, "validMhc.signatureType")),
-                                lastInvoicing : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoicing"}), "code", "")),
+                                lastInvoicing : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoicedForJsonExport"}), "code", "")),
                             }))
                             .value()
                         return {

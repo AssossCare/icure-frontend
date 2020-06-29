@@ -2347,6 +2347,7 @@
 		"mhInvoicing.spinner.step_1": "Récupération de la Maison Médicale...",
 		"mhInvoicing.spinner.step_1_done": "Fin de la récupération de la Maison Médicale",
 		"mhInvoicing.spinner.step_2": "Collecte des patients...",
+		"mhInvoicing.spinner.step_2_done": "Fin de la collecte des patients",
 		"mhInvoicing.spinner.step_3": "Collecte des titulaires d'assurance...",
 		"mhInvoicing.spinner.step_3_done": "Fin de la collecte des titulaires d'assurance",
 		"mhInvoicing.spinner.step_4": "Création des factures...",
@@ -5273,6 +5274,7 @@
 		"mhInvoicing.spinner.step_1": "Récupération de la Maison Médicale...",
 		"mhInvoicing.spinner.step_1_done": "Fin de la récupération de la Maison Médicale",
 		"mhInvoicing.spinner.step_2": "Collecte des patients...",
+		"mhInvoicing.spinner.step_2_done": "Fin de la collecte des patients",
 		"mhInvoicing.spinner.step_3": "Collecte des titulaires d'assurance...",
 		"mhInvoicing.spinner.step_3_done": "Fin de la collecte des titulaires d'assurance",
 		"mhInvoicing.spinner.step_4": "Création des factures...",
@@ -5845,7 +5847,10 @@
 		"requestStatus": "Statut de la demande",
 		"requestResults": "Résultats de la demande",
 		"responseObtained": "Réponse obtenue",
-		"errorInResponse": "Erreur dans la réponse"
+		"errorInResponse": "Erreur dans la réponse",
+		"provideMissingPtdValorisations": "Veuillez s'il vous plait renseigner vos tarifications forfaitaires pour le prétrajet de soin",
+		"mhInvoicing.collectInsurances": "Collecte des assurances...",
+		"mhInvoicing.collectInsurances_done": "Fin de la collecte assurances"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8228,6 +8233,7 @@
 		"mhInvoicing.spinner.step_1": "Ophalen Medisch Huis...",
 		"mhInvoicing.spinner.step_1_done": "Ophalen Medisch Huis klaar",
 		"mhInvoicing.spinner.step_2": "Ophalen patiënten...",
+		"mhInvoicing.spinner.step_2_done": "Ophalen patiënten",
 		"mhInvoicing.spinner.step_3": "Ophalen titularissen...",
 		"mhInvoicing.spinner.step_3_done": "Ophalen titularissen klaar",
 		"mhInvoicing.spinner.step_4": "Ophalen facturen...",
