@@ -621,9 +621,9 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 insParent = _.get(insP, "[0]")
                 return this.api.crypto().extractDelegationsSFKs(pat, _.get(this, "user.healthcarePartyId"))
             })
-            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
+            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "mutualfund", "efact", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
             .then(invoices => this.api.invoice().newInstance(this.user, pat, invoices[0]))
-            .then(inv => this.api.invoice().createInvoice(inv, 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
+            .then(inv => this.api.invoice().createInvoice(_.assign(inv, {printedDate: moment().format('YYYYMMDD')}), 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
             .then(inv => this.api.register(inv, 'invoice'))
             .then(inv => this.api.message().newInstance(this.user).then(newMessageInstance => ([inv, newMessageInstance])))
             .then(([inv, newMessageInstance]) => this.api.message().createMessage(_.merge(newMessageInstance,
@@ -706,7 +706,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             console.log("messages", messages)
             return this.getPatientInvoices(pat)
         }).then(invs => {
-            invoices = invs.filter(inv => inv.sentMediumType === "cdrom")
+            invoices = invs.filter(inv => inv.sentMediumType === "efact")
             if (pat && pat.medicalHouseContracts && pat.medicalHouseContracts.length > 0) {
                 const mhc = _.orderBy(pat.medicalHouseContracts, ['startOfContract'], ['asc'])[0]
                 const startOfCoverage = mhc.startOfCoverage
