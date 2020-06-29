@@ -45,17 +45,17 @@ class IccApi extends PolymerElement {
           },
           headers30s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000"},
               notify: true
           },
           headers60s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000"},
               notify: true
           },
           headers120s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000"},
               notify: true
           },
           host: {

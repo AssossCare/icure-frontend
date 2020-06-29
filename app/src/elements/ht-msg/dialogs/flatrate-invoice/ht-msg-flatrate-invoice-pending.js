@@ -478,12 +478,16 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                             (status === this.localize('inv_tre','Treated',this.language)) ? "invoice-status--greenStatus" :
                                 (status === this.localize('inv_acc_tre','Accepted for treatment',this.language)) ? "invoice-status--blueStatus" :
                                     (status === this.localize('inv_pen','Pending',this.language)) ? (!this.statusToBeSend) ? "invoice-status--blueStatus" : "" :
-                                        (status === this.localize('inv_err','Error',this.language)) ? "invoice-status--redStatus" :
-                                            (status === this.localize('inv_arch','Archived',this.language)) ? "invoice-status--purpleStatus" :
-                                                (status === this.localize('nmcl-rejected','Rejected',this.language)) ? "invoice-status--redStatus" :
-                                                    (status === this.localize('nmcl-accepted','Accepted',this.language)) ? "invoice-status--greenStatus" :
-                                                        (status === this.localize('inv_send_err', 'Send error', this.language)) ? "invoice-status--redStatus" :
-                                                            ""
+                                        (status === this.localize('inv_sent','Sent',this.language)) ? "invoice-status--blueStatus" :
+                                            (status === this.localize('inv_pen_nip','Pending',this.language)) ? "invoice-status--blueStatus" :
+                                                (status === this.localize('inv_sent_oa','Sent to OA',this.language)) ? "invoice-status--blueStatus" :
+                                                    (status === this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language)) ? "invoice-status--blueStatus" :
+                                                        (status === this.localize('inv_err','Error',this.language)) ? "invoice-status--redStatus" :
+                                                            (status === this.localize('inv_arch','Archived',this.language)) ? "invoice-status--purpleStatus" :
+                                                                (status === this.localize('nmcl-rejected','Rejected',this.language)) ? "invoice-status--redStatus" :
+                                                                    (status === this.localize('nmcl-accepted','Accepted',this.language)) ? "invoice-status--greenStatus" :
+                                                                        (status === this.localize('inv_send_err', 'Send error', this.language)) ? "invoice-status--redStatus" :
+                                                                            ""
     }
     _getTxtStatusColor(status,amount) {
         console.log("gettxtstatus",status,amount)
