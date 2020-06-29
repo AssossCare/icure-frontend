@@ -1704,7 +1704,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
             // console.log("messages", messages)
             return flatRateUtil.getPatientInvoices(this.patient)
         }).then(invs => {
-            invoices = invs.filter(inv => inv.sentMediumType === "cdrom")
+            invoices = invs.filter(inv => inv.sentMediumType === "efact")
             // console.log("invoices", invoices)
             const patInsurances = this.patient.insurabilities.map(ins => ins.insuranceId)
             return flatRateUtil._getInsurancesDataByIds(_.compact(_.uniq(_.concat(_.map(invoices, "recipientId", ""), patInsurances))))
