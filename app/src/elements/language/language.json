@@ -5850,7 +5850,10 @@
 		"errorInResponse": "Erreur dans la réponse",
 		"provideMissingPtdValorisations": "Veuillez s'il vous plait renseigner vos tarifications forfaitaires pour le prétrajet de soin",
 		"mhInvoicing.collectInsurances": "Collecte des assurances...",
-		"mhInvoicing.collectInsurances_done": "Fin de la collecte assurances"
+		"mhInvoicing.collectInsurances_done": "Fin de la collecte assurances",
+		"mh_eInvoicing.downloadRequest": "Télécharger la requête",
+		"mh_eInvoicing.downloadResponses": "Télécharger les réponses",
+		"mh_eInvoicing.technicalDetails": "Détails techniques"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",

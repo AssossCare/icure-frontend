@@ -648,10 +648,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             _loadingMessages: {
                 type: Array,
                 value: () => []
-            },
-            _ptdValorisation: {
-                type: Object,
-                value: () => {}
             }
         }
     }
@@ -677,28 +673,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.set('cannotSend',maySend)
 
         }
-
-        this.set("_ptdValorisation", {
-            code: "109594",
-            flatRateType: "ptd",
-            label: {
-                fr: "Suivi d'un patient diabétique de type 2 selon le protocole de soins établi par le Comité de l'assurance",
-                en: "Suivi d'un patient diabétique de type 2 selon le protocole de soins établi par le Comité de l'assurance",
-                nl: "Opvolging van een patiënt met diabetes mellitus type 2 volgens het zorgprotocol opgemaakt door het Verzekeringscomité"
-            },
-            valorisations: [{
-                startOfValidity: 20180101,
-                reimbursement: 20.47
-            }, {
-                startOfValidity: 20190101,
-                reimbursement: 21.15
-            }, {
-                startOfValidity: 20200101,
-                reimbursement: 21.56
-            }
-            ]
-        })
-
     }
 
     _getGroupInformation(group){
@@ -1542,30 +1516,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         //TODO re-enable filtered invoice creation (maybe obsolete)
                         const includePat = true
                         // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === patParentInsuranceData.code
-                        // console.log("includePat", includePat)
 
-                        //TODO: Since the PTD tarification will possibly not have the right price at this point we need to correct it
-                        //TODO: per patient that has PTD invoicing code we will get the date of ptd to be invoiced
-                        //TODO: according to this we will set the correct price + invoicedate
-                        //TODO: the patient needs to be updated at this point also
-                        //TODO: set the latest invoicing date to last invoivincing date +1yr (NOT TODAY !)
-                        //TODO: this way when multiple years need to be recovered they will be spread over multiple batches
-                        const hasPTD = !!_.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
-                        if(hasPTD){
-                            const ptdinvdate = this._patPTDYearToInvoice(pat)
-                            const valor = this.flatRateInvoicingDataObject.hcpValorisationsByMonth.find(val => val.month === ptdinvdate)
-                            const valPtd  = _.get(valor, "valorisations", []).find(val => val.code === "109594")
-                            const ic = _.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
-                            ic.dateCode = ptdinvdate
-                            ic.totalAmount = valPtd ? valPtd.price : 0.0
-                            ic.reimbursement = valPtd ? valPtd.price : 0.0
-                            this._updatePatPTD(pat, ptdinvdate).then(res =>{
-                                console.log("_updatePatPTD done", res)
-                            })
-                        }
+                        // Update PTD last invoiced date should we do so
+                        _.some(_.get(pat,"invoicingCodes", []), ic => _.trim(_.get(ic,"code")) === "109594") && this._patPTDYearToInvoice(pat) ? this._updatePatPTD(pat, this._patPTDYearToInvoice(pat)).then(res =>{ console.log("_updatePatPTD done", res) }) : null
 
-
-                        return !includePat || !patInsuranceId || !patInsuranceParentId || !_.size(patParentInsuranceData) ? null : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId")), secretForeignKeys.extractedKeys.join(","), null, 1, _.get(pat,"invoicingCodes",[]))))
+                        return !includePat || !patInsuranceId || !patInsuranceParentId || !_.size(patParentInsuranceData) ? null : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId")), secretForeignKeys.extractedKeys.join(","), null, 0, _.get(pat,"invoicingCodes",[]))))
                             .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
                                 this.api.invoice().newInstance(this.user, pat, _.head(invoices)).then(inv => {
                                     inv.printedDate =  moment().format("YYYYMMDD")
@@ -1940,10 +1895,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         // stringValue:
         //            {start: "2019-05-01T00:00:00+0000", end: "...", dmf:"2019/05"}
         const propPTD = _.get(pat, 'properties', []).find(prop => _.get(prop, 'type.identifier', null) === "PreTrajDiab")
-        console.log("propPTD", propPTD)
+        // console.log("propPTD", propPTD)
         const ptdValue = propPTD ? _.get(propPTD, 'typedValue.stringValue', null) : null
         const ptd = ptdValue ? JSON.parse(ptdValue) : null
-        console.log("ptd",ptd)
+        // console.log("ptd",ptd)
         return ptdValue ? (this._isPTDInvoicable(ptd, invDate)) : false
     }
 
@@ -1964,7 +1919,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         // 1. startdate is before or equal to invdate
         // 2. enddate is after invdate or before 01/01/1900
         // 3. dmf is empty of 1yr before invdate
-        console.log("_isPTDInvoicable", ptd, invDate)
+        // console.log("_isPTDInvoicable", ptd, invDate)
         const startDate = this.api.moment(ptd.start)
         const endDate = this.api.moment(ptd.end)
         const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
@@ -2015,12 +1970,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         this._closeDialogs()
         this.dispatchEvent(new CustomEvent('trigger-goto-admin', { bubbles: true, composed: true, detail: {} }));
     }
-
-
-
-
-
-
 
     _exportFlatRateInvoicing_step2_v2() {
 
@@ -2218,23 +2167,25 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.collectInsurances_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language), icon:"arrow-forward"})
 
-                console.log("flatRateInvoicingDataObject", this.flatRateInvoicingDataObject)
-
-                // ONE entry (pat + invoicingCodes) = ONE invoice
-                // IF PTD ==> duplicate pat && add it the PTD valorisation
-                // Same goes for SAM timeline: duplicate PAT && assign it the right invoicing codes
+                const patientsToInvoiceIncludingPTD = _.compact(_.concat(
+                    _.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[]),
+                    _.map(_.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[]), patToInvoice => this._patHasPTD(patToInvoice, _.trim(_.get(this,"flatRateInvoicingDataObject.exportedDate"))) ? _.merge({},patToInvoice,{isPtd:true}) : false )
+                ))
 
                 return this._createOrUpdateMedicalHousePatientsInvoices(
-                    _.map(_.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[]), patToInvoice => {
+                    _.map(patientsToInvoiceIncludingPTD, patToInvoice => {
 
+                        const isPtdPat = _.get(patToInvoice,"isPtd",false)
                         const finalMhc = _.get(patToInvoice,"finalMedicalHouseContract",{})
                         const valorisationsOfExportedMonth = _.get(_.find(_.get(this,"flatRateInvoicingDataObject.hcpValorisationsByMonth",[]), valByMonth => parseInt(_.get(valByMonth,"month")) === parseInt(exportedDate)), "valorisations",[])
+                        const ptdValorisationsOfExportedMonth = !isPtdPat ? null : _.get(_.find(_.get(this,"flatRateInvoicingDataObject.hcpValorisationsByMonth",[]), valByMonth => parseInt(_.get(valByMonth,"month")) === parseInt(this._patPTDYearToInvoice(patToInvoice))), "valorisations",[])
 
                         const invoicingCodes = _.compact(_.concat(
                             [],
-                            _.get(finalMhc,"gp",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "physician"}) : [],
-                            _.get(finalMhc,"kine",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "physiotherapist"}) : [],
-                            _.get(finalMhc,"nurse",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "nurse"}) : [],
+                            _.get(finalMhc,"gp",false) && !isPtdPat ? _.find(valorisationsOfExportedMonth, {flatRateType: "physician"}) : [],
+                            _.get(finalMhc,"kine",false) && !isPtdPat ? _.find(valorisationsOfExportedMonth, {flatRateType: "physiotherapist"}) : [],
+                            _.get(finalMhc,"nurse",false) && !isPtdPat ? _.find(valorisationsOfExportedMonth, {flatRateType: "nurse"}) : [],
+                            isPtdPat ? _.find(ptdValorisationsOfExportedMonth, {flatRateType: "ptd"}) : [],
                         ))
 
                         return _.assign({}, patToInvoice, { invoicingCodes: _.map(invoicingCodes, ic => ({
@@ -2254,7 +2205,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                                 archived: false,
                                 dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
                                 id: this.api.crypto().randomUuid(),
-                                logicalId: this.api.crypto().randomUuid()
+                                logicalId: this.api.crypto().randomUuid(),
+                                contractDate: parseInt(_.get(patToInvoice, "finalMedicalHouseContracts.startOfContract"))||0
                             }))})
 
                     })
@@ -2264,63 +2216,6 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
             // 8 - Invoices are generated
             .then(createdInvoicesAndPats => (_.assign(this.flatRateInvoicingDataObject, {createdInvoicesAndPats: createdInvoicesAndPats})||true) && this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
-
-            // .then(() => {
-            //     return Promise.all(_.toPairs(this.flatRateInvoicingDataObject.listsData).map(list => {
-            //
-            //         const typeList = list[0]
-            //         const patientList = list[1]
-            //         const codesList = typeList === "list5" || typeList === "list6" ?
-            //             // Lists 5 & 6 = NEW patients with respectively no tryout ; tryout
-            //             _.concat(
-            //                 _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations"),
-            //                 _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(1,"month").format("YYYYMMDD")))}), "valorisations")
-            //             ) :
-            //             // List 8 = old / regular patients
-            //             _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations")
-            //
-            //         return _.compact(_.map(patientList, pat => {
-            //
-            //             // If is a resent -> pat already exists for exported month, with another INS.
-            //             // Ie: should NOT be charged for current exported month
-            //             //TODO: the invDate of PTD
-            //             //TODO: Info the ptd will get the price linked to the invoiced month of the MKI
-            //             //TODO: to make things simpler we will no insert the correct prices at this point
-            //             //TODO: at this point we are only interested in : does the patients needs to be PTD invoiced (new Ptd or Ptd invoiced >= 1yr)
-            //             //TODO: we will set the correct price when creating the invoices in _createOrUpdateMedicalHousePatientsInvoices
-            //             const originalInvoicingCodes = _.get(pat,"isResent",false) ? [] : codesList.filter(code =>
-            //                 parseFloat(code.price) && (
-            //                     (code.flatRateType === "physician" && pat.finalMedicalHouseContract.gp === true ) ||
-            //                     (code.flatRateType === "nurse" && pat.finalMedicalHouseContract.nurse === true) ||
-            //                     (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContract.kine === true) ||
-            //                     (code.flatRateType === "ptd" && this._patHasPTD(pat, this.flatRateInvoicingDataObject.exportedDate) === true)
-            //                 )
-            //             )
-            //
-            //             return !_.size(finalInvoicingCodes) ? false : _.assign(pat, {
-            //                 invoicingCodes: _.orderBy(_.map(finalInvoicingCodes, ic => ({
-            //                     code: ic.code,
-            //                     tarificationId: "INAMI-RIZIV|" + ic.code + "|1.0",
-            //                     label: _.get(ic, "label."+this.language,""),
-            //                     totalAmount: Number(_.get(ic,"price",0)),
-            //                     reimbursement: Number(_.get(ic,"price",0)),
-            //                     patientIntervention: Number(0.00).toFixed(2),
-            //                     doctorSupplement: Number(0.00).toFixed(2),
-            //                     units: 1,
-            //                     canceled: false,
-            //                     accepted: false,
-            //                     pending: false,
-            //                     resent: false,
-            //                     lost: false,
-            //                     archived: false,
-            //                     dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
-            //                     id: this.api.crypto().randomUuid(),
-            //                     logicalId: this.api.crypto().randomUuid(),
-            //                     contractDate: _.get(_.get(pat, "finalMedicalHouseContract", {startOfContract:0}), "startOfContract", 0)
-            //                 })), ["dateCode"], ["desc"])
-            //             })
-            //         }))
-            //     }))
 
             .catch(e => (console.log("[ERROR] _exportFlatRateInvoicing_step2_v2", e)||true) && (
                 ( _.trim(e).indexOf('no-nihii') > -1 ) ? this._showWarningNoHcpNihii() && e :
@@ -2335,7 +2230,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             ))
 
             .finally(()=>{
-                console.log("finally:flatRateInvoicingDataObject", this.flatRateInvoicingDataObject);
+                console.log("[FINALLY] flatRateInvoicingDataObject", this.flatRateInvoicingDataObject);
                 this.flatRateInvoicingDataObject = {}
                 this.set('isLoading', false );
                 this.set('_isGeneratingInvoice', false );

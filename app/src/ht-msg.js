@@ -796,12 +796,11 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         const promResolve = Promise.resolve()
         const exportedDate = moment().format("YYYYMM") + "01"
 
-        return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000)
+        return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
             .then(pl => { return {
                 rows:_.filter(pl.rows, it => it &&
                     _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
                     _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
-                    _.trim(_.get(it, "metas.requestedDate")) === exportedDate &&
                     _.trim(_.get(it, "metas.step5Validated")) === "true"
                 ),
                 nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
