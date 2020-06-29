@@ -443,7 +443,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[showMoreOptionContainer]]">
                      <div class="btn-dropdown-container">
                         <template is="dom-repeat" items="[[listOfProof]]" as="doc">
-                            <paper-button id="[[doc.commonOutput.inputReference]]" on-tap="_getDoc"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[_getDocName(doc)]]</paper-button>
+                            <paper-button id="[[doc.commonOutput.outputReference]]" on-tap="_getDoc"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[_getDocName(doc)]]</paper-button>
                         </template>                       
                      </div>
                  </template> 
@@ -640,7 +640,9 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                                 id: "",
                                 name: "flatfile",
                                 commonOutput: {
-                                    inputReference: "920000"
+                                    inputReference: "920000",
+                                    outputReference: "920000",
+                                    nipReference: "920000"
                                 },
                                 message: atMsg,
                                 xades:"",
@@ -1444,7 +1446,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         if(_.get(e, 'target.id', null)){
             e.preventDefault()
 
-            const att = _.get(this, 'listOfProof', []).find(pr => _.get(pr, 'commonOutput.inputReference', '') === _.get(e, 'target.id', null))
+            const att = _.get(this, 'listOfProof', []).find(pr => _.get(pr, 'commonOutput.outputReference', '') === _.get(e, 'target.id', null))
 
             if(_.get(att, 'xades', null)){
                 var a = document.createElement('a')
