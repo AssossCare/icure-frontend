@@ -13,6 +13,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer"
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior"
 import {PolymerElement, html} from '@polymer/polymer'
+import * as retry from "icc-api/dist/icc-x-api/utils/net-utils";
 
 class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
@@ -945,6 +946,139 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 .catch(() => Promise.resolve([]))
         )
             .then(pats => _.orderBy(pats,["nameHr","startDate"],["asc","desc"]))
+            .catch(() => Promise.resolve([]))
+
+    }
+
+    resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate) {
+
+        const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => {
+
+                            const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+
+                            return it &&
+
+                                // 1. Has to be active
+                                _.get(it, "active", true) &&
+
+                                // 2. 1+ mhc.contractId (expired or not)
+                                _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
+
+                                // 3. Must have a tag of type "flatRateLastInvoiced" with a code >= exportedDate
+                                flatRateLastInvoicedTagValue && flatRateLastInvoicedTagValue >= exportedDate
+
+                        })
+                        .map(it => _.assign(it, {tags: _.filter(_.get(it,"tags",[]), itt => _.trim(_.get(itt,"type")) !== "flatRateLastInvoiced")}))
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(patsToUpdate => {
+                let prom = Promise.resolve([])
+                _.map(patsToUpdate, patToUpdate => { prom = prom.then(promisesCarrier => this.api.patient().modifyPatientWithUser(this.user, patToUpdate).then(x => _.concat(promisesCarrier, x)).catch(x => _.concat(promisesCarrier, x))) })
+                return prom
+            })
+            .catch(e => console.log("[ERROR] resetPatientsLastInvoicedTagByMaxExportedDate", e))
+
+    }
+
+    getPatientsEligibleForInvoicingByExportedDate(exportedDate) {
+
+        const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+        const momentExportedDate = moment(exportedDate,"YYYYMMDD") // exportedDate = <string> YYYYMM01 (always first day of given month)
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => {
+
+                            const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
+                            const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+
+                            return it &&
+
+                                // 1. Has to be active
+                                _.get(it, "active", true) &&
+
+                                // 2. SSIN must be valid
+                                this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")) &&
+
+                                // 3. Has to be alive (not deceased before exportedDate)
+                                (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
+
+                                // 4. 1+ valid MHC (versus exportedDate)
+                                _.some(_.get(it, "medicalHouseContracts", []), mhc =>
+                                    _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                    _.trim(_.get(mhc, "contractId")) &&
+                                    (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                    (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                    (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                ) &&
+
+                                // 5. 1+ valid INS (versus exportedDate)
+                                _.some(_.get(it, "insurabilities", []), ins =>
+                                    _.trim(_.get(ins, "identificationNumber")) &&
+                                    _.trim(_.get(ins, "insuranceId")) &&
+                                    _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                    _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                    (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                    (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                    (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                ) &&
+
+                                // 6. Not already exported (versus exportedDate)
+                                (!flatRateLastInvoicedTagValue || flatRateLastInvoicedTagValue < exportedDate)
+
+                        })
+                        .map(it => _.merge(it, {
+                            lastName: _.trim(_.get(it,"lastName")).toUpperCase(),
+                            firstName: _.trim(_.get(it,"firstName")).toUpperCase(),
+                            ssin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
+                            finalInsurability: _
+                                .chain(_.get(it, "insurabilities", []))
+                                .filter(ins =>
+                                    _.trim(_.get(ins, "identificationNumber")) &&
+                                    _.trim(_.get(ins, "insuranceId")) &&
+                                    _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                    _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                    (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                    (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                    (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                )
+                                .orderBy(["startDate"],["desc"])
+                                .head()
+                                .value(),
+                            finalMedicalHouseContract: _
+                                .chain(_.get(it, "medicalHouseContracts", []))
+                                .filter(mhc =>
+                                    _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                    _.trim(_.get(mhc, "contractId")) &&
+                                    (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                    (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                    (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                )
+                                .orderBy(["startOfCoverage"],["desc"])
+                                .head()
+                                .value(),
+                        }))
+                        .filter(it => _.size(_.get(it,"finalMedicalHouseContract")) && _.size(_.get(it,"finalInsurability")))
+                        .compact()
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(pats => _.orderBy(_.uniqBy(pats,"ssin"),["lastName","firstName"],["asc","asc"]))
             .catch(() => Promise.resolve([]))
 
     }

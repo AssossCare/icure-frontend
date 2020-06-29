@@ -36,6 +36,7 @@ import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
 import mustache from "mustache"
 
 class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
+
     static get template() {
         return html`
         
@@ -296,6 +297,22 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 background-color: #f4f4f6;
                 font-weight: bold;
                 }
+                
+                .modal-title {
+                    justify-content: flex-start;
+                }
+
+                .modal-title iron-icon{
+                    margin-right: 8px;
+                }
+                
+            .exportMonthPicker {
+                width: 100%;
+            }
+            
+            .textAlignCenter {
+                text-align:center;
+            }                                
    
         </style>
         
@@ -412,94 +429,109 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon> [[localize('configure','Configure',language)]]</paper-button>
                 </div>
             </paper-dialog>
-            <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                    <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
-                </div>
-            </paper-dialog>
-            <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
-                <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
-                <div class="content textaligncenter pt20 pb70 pl20 pr20">
-                    <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
-                    <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
-                    <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
-                </div>
-                <div class="buttons">
-                    <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                </div>
-            </paper-dialog>
+            
+        <paper-dialog class="modalDialog" id="missingMedicalHouseValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                <p class="">[[localize('provideMissingValorisations','Please provide your flat rates',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+            </div>
+        </paper-dialog>
         
+        <paper-dialog class="modalDialog" id="missingMedicalHousePtdValorisations" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                <p class="">[[localize('provideMissingPtdValorisations',"Veuillez s'il vous plait renseigner vos tarifications forfaitaires pour le prétrajet de soin",language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_gotoMyAdmin"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog class="modalDialog" id="noDataToExport" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="">[[localize('noDataToExport','We could not find any data to export',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog class="modalDialog" id="noHcpContactPerson" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                <p class=" ">[[localize('missingMhHcpContactPerson1','Please provide an invoicing contact person',language)]].<br />[[localize('missingMhHcpContactPerson2','Required information for Insurances',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_gotoMyProfileTab1"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog class="modalDialog" id="noHcpBce" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                <p class="">[[localize('missingMhBce','Please provide a valid BCE',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_gotoMyProfileTab2"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog class="modalDialog" id="noHcpBankAccount" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('incompleteUserProfile','Incomplete user profile',language)]].</p>
+                <p class="">[[localize('missingMhBankAccount','Please provide with a valid bank account',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_gotoMyProfileTab3"><iron-icon icon="icons:settings"></iron-icon>[[localize('configure','Configure',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog class="modalDialog" id="exportAlreadyRan" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="fw700">[[localize('flatRateInvoicingAlreadyRan','Incomplete user profile',language)]].</p>
+                <p class="">[[localize('getInTouchWithUsToUnlock','Please provide with a valid bank account',language)]].</p>
+                <p class="fw700"><iron-icon icon="communication:phone" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="tel:+3223192241" class="textDecorationNone">+32(0)2/319.22.41</a> - <iron-icon icon="icons:mail" class="mr5 smallIcon colorAppSecondaryColorDark" ></iron-icon> <a href="mailto:support@topaz.care" class="textDecorationNone">support@topaz.care</a>.</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other " on-tap="_closeDialogs"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+    
         <paper-dialog class="modalDialog" id="selectMonthDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
-            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
-            <div class="modalDialogContent m-t-50">
-                <div class="textAlignCenter">
-
-                    <div class="exportMonthPicker pb20">
-                        <div class="exportMonthPickerTitle"><iron-icon icon="vaadin:calendar" style="max-width:20px; max-height:20px; margin-right:7px;"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</div>
-                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]"></vaadin-combo-box>
+            <h2 class="modal-title"><iron-icon icon="vaadin:calendar"></iron-icon> [[localize('j20_monthToGenerate','Month to generate',language)]]</h2>
+            <div class="content textAlignCenter" style="max-height:calc(100% - 45px)">
+                    <div class="exportMonthPicker pt90">
+                        <vaadin-combo-box id="exportedMonth" filtered-items="[[_getExportMonthsList()]]" item-label-path="label" item-value-path="id" label="[[localize('month','Month',language)]]" value="[[_getExportCurrentMonth()]]" class="mr20"></vaadin-combo-box>
                         <vaadin-combo-box id="exportedYear" filtered-items="[[_getExportYearsList()]]" item-label-path="label" item-value-path="id" label="[[localize('year','Year',language)]]" value="[[_getExportCurrentYear()]]"></vaadin-combo-box>
 <!--                        <vaadin-combo-box id="exportedOAs" filtered-items="[[_getExportOAsList()]]" item-label-path="label" item-value-path="id" label="[[localize('OA','OA',language)]]" value="[[_getExportOA()]]"></vaadin-combo-box>-->
 <!--                        <vaadin-checkbox checked="[[overrideBatchNumber]]" on-tap="_overrideBatchNumberGotChanged">[[localize('override_batchnr','Override batch number',language)]]</vaadin-checkbox>-->
 <!--                        <template is="dom-if" if="[[overrideBatchNumber]]"><paper-input label="[[localize('batchnr','Batch number',language)]]" value="{{batchNumber}}" class="batchNumberInput"></paper-input></template>-->
                     </div>
                     <div class="buttons">
-                        <paper-button class="button button--save tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download" class="w30px h30px"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
-                        <paper-button class="button button--other tool-btn m-t-20 f-s-1em bordered" id="largeButton" dialog-dismiss >[[localize('cancel','Annuler',language)]]</paper-button>
+                        <paper-button class="button button--save" dialog-confirm on-tap="_exportFlatRateInvoicing_dialogResult"><iron-icon icon="icons:cloud-download"></iron-icon> &nbsp; [[localize('invoicingExport','Télécharger la facturation',language)]]</paper-button>
+                        <paper-button class="button button--other" dialog-dismiss >[[localize('cancel','Annuler',language)]]</paper-button>
                     </div>
-                </div>   
             </div>        
         </paper-dialog>
         
@@ -844,7 +876,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     }
 
     _exportFlatRateInvoicing_dialogResult() {
-        this._exportFlatRateInvoicing_step2()
+        this._exportFlatRateInvoicing_step2_v2()
     }
 
     _exportFlatRateInvoicing_step2() {
@@ -1492,88 +1524,91 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _createOrUpdateMedicalHousePatientsInvoices() {
+    _createOrUpdateMedicalHousePatientsInvoices(patsToInvoice) {
+
         let prom = Promise.resolve([])
-        const allPats = _.flatMap(this.flatRateInvoicingDataObject.listsData)
-        const patsCount = _.size(allPats)
-        const parentInsuranceIds = _.compact(_.uniq(_.map( this.flatRateInvoicingDataObject.insurancesData, i=>_.get(i,"parent", false ))))
-        const childrenInsurancesData = _.compact(_.uniqBy(this.flatRateInvoicingDataObject.insurancesData, 'id'))
+        const patsCount = _.size(patsToInvoice)
+        const childrenInsurancesData = _.get(this,"flatRateInvoicingDataObject.insurancesData", [])
 
-        return this.api.insurance().getInsurances(new models.ListOfIdsDto({ids : parentInsuranceIds})).then(parentInsurances => {
-            allPats.forEach((pat,loopIndex) => {
-                prom = prom.then(pats =>
-                    this.api.crypto().extractDelegationsSFKs(pat, this.user.healthcarePartyId)
-                        .then(secretForeignKeys => {
+        patsToInvoice.forEach((pat,loopIndex) => {
+            prom = prom.then(pats =>
+                this.api.crypto().extractDelegationsSFKs(pat, this.user.healthcarePartyId)
+                    .then(secretForeignKeys => {
 
-                            // TOP-435
-                            const insParent = _.get(_.filter( parentInsurances, parentIns=> _.trim(_.get(parentIns, "id", "")) === _.trim(_.get(_.get(_.filter(childrenInsurancesData, i=>_.trim(_.get(i,"id",""))===_.trim(_.get(pat,"finalInsurability.insuranceId", ""))), "[0]", {}), "parent", ""))), "[0]", {})
+                        const patInsuranceId = _.trim(_.get(pat,"finalInsurability.insuranceId"))
+                        const patInsuranceParentId = _.trim(_.get(_.find(childrenInsurancesData, {id:patInsuranceId}), "parent"))
+                        const patParentInsuranceData = _.find(this.flatRateInvoicingDataObject.iosData, {id:patInsuranceParentId})
 
-                            //TODO re-enable filtered invoice creation (maybe obsolete)
-                            const includePat = true
-                            // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === insParent.code
-                            // console.log("includePat", includePat)
+                        //TODO re-enable filtered invoice creation (maybe obsolete)
+                        const includePat = true
+                        // const includePat = this.flatRateInvoicingDataObject.exportedOA === 'all' || this.flatRateInvoicingDataObject.exportedOA === patParentInsuranceData.code
+                        // console.log("includePat", includePat)
 
-                            //TODO: Since the PTD tarification will possibly not have the right price at this point we need to correct it
-                            //TODO: per patient that has PTD invoicing code we will get the date of ptd to be invoiced
-                            //TODO: according to this we will set the correct price + invoicedate
-                            //TODO: the patient needs to be updated at this point also
-                            //TODO: set the latest invoicing date to last invoivincing date +1yr (NOT TODAY !)
-                            //TODO: this way when multiple years need to be recovered they will be spread over multiple batches
-                            const hasPTD = !!_.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
-                            if(hasPTD){
-                                const ptdinvdate = this._patPTDYearToInvoice(pat)
-                                const valor = this.flatRateInvoicingDataObject.hcpValorisationsByMonth.find(val => val.month === ptdinvdate)
-                                const valPtd  = _.get(valor, "valorisations", []).find(val => val.code === "109594")
-                                const ic = _.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
-                                ic.dateCode = ptdinvdate
-                                ic.totalAmount = valPtd ? valPtd.price : 0.0
-                                ic.reimbursement = valPtd ? valPtd.price : 0.0
-                                this._updatePatPTD(pat, ptdinvdate).then(res =>{
-                                    console.log("_updatePatPTD done", res)
-                                })
-                            }
+                        //TODO: Since the PTD tarification will possibly not have the right price at this point we need to correct it
+                        //TODO: per patient that has PTD invoicing code we will get the date of ptd to be invoiced
+                        //TODO: according to this we will set the correct price + invoicedate
+                        //TODO: the patient needs to be updated at this point also
+                        //TODO: set the latest invoicing date to last invoivincing date +1yr (NOT TODAY !)
+                        //TODO: this way when multiple years need to be recovered they will be spread over multiple batches
+                        const hasPTD = !!_.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
+                        if(hasPTD){
+                            const ptdinvdate = this._patPTDYearToInvoice(pat)
+                            const valor = this.flatRateInvoicingDataObject.hcpValorisationsByMonth.find(val => val.month === ptdinvdate)
+                            const valPtd  = _.get(valor, "valorisations", []).find(val => val.code === "109594")
+                            const ic = _.get(pat, "invoicingCodes", []).find(ic => ic.code === "109594")
+                            ic.dateCode = ptdinvdate
+                            ic.totalAmount = valPtd ? valPtd.price : 0.0
+                            ic.reimbursement = valPtd ? valPtd.price : 0.0
+                            this._updatePatPTD(pat, ptdinvdate).then(res =>{
+                                console.log("_updatePatPTD done", res)
+                            })
+                        }
 
 
-                            return !includePat ? Promise.resolve(null) : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId","")), secretForeignKeys.extractedKeys.join(","), null, (365*2), pat.invoicingCodes)))
-                                .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
-                                    this.api.invoice().newInstance(this.user, pat, invoices[0]).then(inv => {
-                                        inv.printedDate =  moment().format("YYYYMMDD")
-                                        inv.careProviderType = "medicalhouse"
-                                        return inv
-                                    }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + this.user.healthcarePartyId + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':')))) :
-                                    Promise.resolve(invoices[0])
-                                )
-                                .then(newInvoice => {
+                        return !includePat || !patInsuranceId || !patInsuranceParentId || !_.size(patParentInsuranceData) ? null : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId")), secretForeignKeys.extractedKeys.join(","), null, 1, _.get(pat,"invoicingCodes",[]))))
+                            .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
+                                this.api.invoice().newInstance(this.user, pat, _.head(invoices)).then(inv => {
+                                    inv.printedDate =  moment().format("YYYYMMDD")
+                                    inv.careProviderType = "medicalhouse"
+                                    return inv
+                                }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + _.trim(_.get(this,"user.healthcarePartyId")) + ':' + (_.trim(_.get(patParentInsuranceData,"code")) ? _.trim(_.get(patParentInsuranceData,"code")) : '000') + ':')))) :
+                                Promise.resolve(invoices[0])
+                            )
+                            .then(newInvoice => {
 
-                                    if(this.invoiceHasDoubles(newInvoice)){
+                                // if(this.invoiceHasDoubles(newInvoice)){
+                                //
+                                //     // Drop duplicated codes
+                                //     pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
+                                //     newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
+                                //     newInvoice.printedDate =  moment().format("YYYYMMDD")
+                                //     newInvoice.careProviderType = "medicalhouse"
+                                //     // && Update invoice
+                                //     return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
+                                //         .then(newInvoiceMod => {
+                                //
+                                //             pat.invoices = [newInvoiceMod]
+                                //             this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
+                                //             return _.concat(pats, [pat])
+                                //         });
+                                //
+                                // } else {
+                                //     pat.invoices = [newInvoice]
+                                //     this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
+                                //     return _.concat(pats, [pat])
+                                //
+                                // }
 
-                                        // Drop duplicated codes
-                                        pat.invoicingCodes.forEach(pic => { newInvoice.invoicingCodes = _.remove(newInvoice.invoicingCodes, ic => ic.dateCode === pic.dateCode && ic.code === pic.dateCode); });
-                                        newInvoice.invoicingCodes = newInvoice.invoicingCodes.concat(pat.invoicingCodes);
-                                        newInvoice.printedDate =  moment().format("YYYYMMDD")
-                                        newInvoice.careProviderType = "medicalhouse"
-                                        // && Update invoice
-                                        return this.api.invoice().modifyInvoice(newInvoice).then(inv =>this.api.register(inv,'invoice'))
-                                            .then(newInvoiceMod => {
+                                pat.invoices = [newInvoice]
+                                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
+                                return _.concat(pats, [pat])
 
-                                                pat.invoices = [newInvoiceMod]
-                                                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
-                                                return _.concat(pats, [pat])
-                                            });
-
-                                    } else {
-                                        pat.invoices = [newInvoice]
-                                        this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language) + " " + (loopIndex+1) + "/" + patsCount, icon:"arrow-forward", updateLastMessage: true, done:false});
-                                        return _.concat(pats, [pat])
-
-                                    }
-
-                                })
-                        })
-                )
-            })
-            return prom
+                            })
+                    })
+            )
         })
+
+        return prom
     }
 
     invoiceHasDoubles(inv){
@@ -1588,6 +1623,11 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     _showWarningNoHcpFlatrateTarification() {
         this.set("_bodyOverlay", true);
         this.$["missingMedicalHouseValorisations"].open()
+    }
+
+    _showWarningNoHcpFlatratePtdTarification() {
+        this.set("_bodyOverlay", true);
+        this.$["missingMedicalHousePtdValorisations"].open()
     }
 
     _showWarningNoDataToExport() {
@@ -1874,25 +1914,26 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         })
     }
 
-// {
-//     "type": {
-//         "identifier": "PreTrajDiab",
-//         "type": "JSON",
-//         "unique": false,
-//         "localized": false,
-//         "_attachments": {},
-//         "_id": "cb070790-058c-4146-8707-90058c714622",
-//         "java_type": "org.taktik.icure.entities.PropertyType",
-//         "rev_history": {}
-//     },
-//     "typedValue": {
-//         "type": "STRING",
-//         "stringValue": "{\"start\":\"2020-02-27T23:00:00+0000\",\"end\":\"2020-02-27T23:00:00+0000\",\"dmf\":\"\"}"
-//     },
-//     "_attachments": {},
-//     "java_type": "org.taktik.icure.entities.Property",
-//     "rev_history": {}
-// }
+    // {
+    //     "type": {
+    //         "identifier": "PreTrajDiab",
+    //         "type": "JSON",
+    //         "unique": false,
+    //         "localized": false,
+    //         "_attachments": {},
+    //         "_id": "cb070790-058c-4146-8707-90058c714622",
+    //         "java_type": "org.taktik.icure.entities.PropertyType",
+    //         "rev_history": {}
+    //     },
+    //     "typedValue": {
+    //         "type": "STRING",
+    //         "stringValue": "{\"start\":\"2020-02-27T23:00:00+0000\",\"end\":\"2020-02-27T23:00:00+0000\",\"dmf\":\"\"}"
+    //     },
+    //     "_attachments": {},
+    //     "java_type": "org.taktik.icure.entities.Property",
+    //     "rev_history": {}
+    // }
+
     _patHasPTD(pat, invDate){
         //Temporary solution: as migrated from Pricare: in pat.properties
         // identifier: PreTrajDiab
@@ -1952,6 +1993,358 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
     openRewriteRouteDialog() {
 
         return this.shadowRoot.getElementById("routeGotRewritten") && this.shadowRoot.getElementById("routeGotRewritten").open()
+
+    }
+
+    _gotoMyProfileTab1() {
+        this._closeDialogs()
+        this.dispatchEvent(new CustomEvent('trigger-open-my-profile', { bubbles: true, composed: true, detail: {tabIndex:0} }));
+    }
+
+    _gotoMyProfileTab2() {
+        this._closeDialogs()
+        this.dispatchEvent(new CustomEvent('trigger-open-my-profile', { bubbles: true, composed: true, detail: {tabIndex:1} }));
+    }
+
+    _gotoMyProfileTab3() {
+        this._closeDialogs()
+        this.dispatchEvent(new CustomEvent('trigger-open-my-profile', { bubbles: true, composed: true, detail: {tabIndex:2} }));
+    }
+
+    _gotoMyAdmin() {
+        this._closeDialogs()
+        this.dispatchEvent(new CustomEvent('trigger-goto-admin', { bubbles: true, composed: true, detail: {} }));
+    }
+
+
+
+
+
+
+
+    _exportFlatRateInvoicing_step2_v2() {
+
+        const promResolve = Promise.resolve()
+        const flatRateUtil = this.$.flatrateUtils;
+
+        const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))
+        let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth())); exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
+
+        const exportedDate = exportedYear + exportedMonth + "01"
+        const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+
+        // DEVELOPERS ONLY (reset pat's tag of type "flatRateLastInvoiced" and "code" >= exportedDate)
+        // return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
+
+        return promResolve
+
+            // 1 - Init
+            .then(() => {
+
+                this._resetLoadingMessage();
+                this.set('isLoading', true );
+                this.set('_isGeneratingInvoice', true );
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1',this.language), icon:"arrow-forward"});
+                // Force refresh - could be new "valorisation" / bce / bank account / contact person / ... was just set
+                return _.size(_.get(this.api.hcparty().cache, _.get(this.user, "healthcarePartyId", "" ))) ? delete this.api.hcparty().cache[_.get(this.user, "healthcarePartyId", "" )] : null
+
+            })
+
+            // 2 - Get current HCP / MH
+            .then(() => this.api.hcparty().getHealthcareParty(_.trim(_.get(this,"user.healthcarePartyId"))).then(hcp => this.set("hcp", hcp)))
+
+            // 3 - Verify requirements
+            .then(() => {
+
+                if (!_.trim(_.get(this, "hcp.nihii", ""))) throw new Error("no-nihii");
+
+                this.flatRateInvoicingDataObject = {
+                    iosData: [],
+                    insurancesData: [],
+                    createdInvoicesAndPats: [],
+                    patientsOfExportedMonth: [],
+                    hcpValorisationsByMonth: [],
+                    exportedDate: exportedDate,
+                    exportedOA: _.get(this.shadowRoot.getElementById("exportedOAs"), "value", 'all'),
+                    hcpData: {
+                        id: _.trim(_.get(this.hcp, "id")),
+                        name: _.trim(_.get(this.hcp, "name")) ? _.trim(_.get(this.hcp, "name")) : _.trim(_.get(this.user, "name")) ? _.trim(_.get(this.user, "name")) : _.trim(_.trim(_.get(this.hcp, "firstName", "")) + " " + _.trim(_.get(this.hcp, "lastName", ""))),
+                        address: _.chain(_.get(this.hcp, "addresses", {})).filter({addressType: "work"}).head().value() || _.chain(_.get(this.hcp, "addresses", {})).filter({addressType: "home"}).head().value() || _.chain(_.get(this.hcp, "addresses", {})).head().value() || {},
+                        cbe: _.trim(_.get(this.hcp, "cbe", "")),
+                        nihii: _.trim(_.get(this.hcp, "nihii", "")),
+                        nihiiFormated: this.api.formatInamiNumber(_.trim(_.get(this.hcp, "nihii", ""))),
+                        contactPersonHcpId: _.trim(_.get(this.hcp, "contactPersonHcpId", "")),
+                        contactPerson: "",  // Make it empty at first, done on purpose
+                        financialInfo: _.head(_.filter(_.get(this.hcp, "financialInstitutionInformation", []), i => _.trim(_.get(i, "bankAccount", ""))))
+                    }
+                }
+
+                this.reportCurrentDateMomentObject = moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD")
+                this.flatRateInvoicingDataObject.hcpData = _.merge(this.flatRateInvoicingDataObject.hcpData, {
+                    phone: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "phone"}), "[0].telecomNumber", "")) || _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "mobile"}), "[0].telecomNumber", "")),
+                    email: _.trim(_.get(_.filter(this.flatRateInvoicingDataObject.hcpData.address.telecoms, {telecomType: "email"}), "[0].telecomNumber", "")),
+                    financialInfo: {
+                        bankAccount: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bankAccount", "")),
+                        bankAccountFormated: this.api.formatBankAccount(_.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bankAccount", ""))),
+                        bic: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bic", "")) || this.api.getBicByIban(_.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.bankAccount", ""))),
+                        name: _.trim(_.get(this.flatRateInvoicingDataObject, "hcpData.financialInfo.name", "")),
+                    }
+                })
+
+
+
+                // Make sure - refuse to proceed if missing
+                if (!_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.cbe"))) throw new Error("missing-cbe");
+
+                // Make sure - refuse to proceed if missing
+                if (!_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.contactPersonHcpId"))) throw new Error("missing-contact-person");
+
+                // Make sure - refuse to proceed if missing
+                if (!_.size(this.flatRateInvoicingDataObject.hcpData.financialInfo) || !_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.financialInfo.bankAccount", ""))) throw new Error("missing-bank-account");
+
+                // Check again, even if already done in this.super() - could be got updated meanwhile & this.super() is only called !once
+                this.api.hcparty().getHealthcareParty(_.trim(_.get(this, "flatRateInvoicingDataObject.hcpData.contactPersonHcpId")))
+                    .then(hcpContactPerson => {
+                        if (!_.size(hcpContactPerson) || !_.trim(_.get(hcpContactPerson, "id", "")) || !_.trim(_.get(hcpContactPerson, "lastName", "")) || !_.trim(_.get(hcpContactPerson, "firstName", ""))) throw new Error("missing-contact-person");
+                        const contactPerson = _.trim(_.trim(_.get(hcpContactPerson, "lastName", "")) + " " + _.trim(_.get(hcpContactPerson, "firstName", "")))
+                        this.set("contactPerson", contactPerson);
+                        this.flatRateInvoicingDataObject.hcpData.contactPerson = contactPerson
+                    })
+                    .catch((e) => { throw new Error("missing-contact-person"); })
+
+
+
+                // Hcp doesn't have the PTD valorisations yet
+                const mhPtdValorisations = _.find(_.get(this, "hcp.flatRateTarifications", []), {code:"109594"})
+                if(!_.size(mhPtdValorisations)) throw new Error("missing-ptd-valorisation")
+
+
+
+                // Get valorisations for last X months - as of export date
+                let valorisationMonths = [];
+                for (let i = 0; i < 48; i++) { valorisationMonths.push(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
+                this.flatRateInvoicingDataObject.hcpValorisationsByMonth = valorisationMonths.map(valorisationMonth => {
+                    return {
+                        month: parseInt(valorisationMonth),
+                        valorisations: _.merge(
+                            [
+                                {code: "109616", price: 0.00, flatRateType: "physician"},           // Doctor
+                                {code: "509611", price: 0.00, flatRateType: "physiotherapist"},     // Kine
+                                {code: "409614", price: 0.00, flatRateType: "nurse"},               // Nurse
+                                {code: "109594", price: 0.00, flatRateType: "ptd"}                  // Prétrajet de soin diabète
+                            ],
+                            _.compact(
+                                _.chain(_.get(this.hcp, "flatRateTarifications", []))
+                                    .map(singleNomenclature => {
+                                        const valorisationObject = _.head(
+                                            _.orderBy(
+                                                _
+                                                    .chain(singleNomenclature.valorisations)
+                                                    .filter(singleValorisation => {
+                                                        return (
+                                                            !!singleValorisation
+                                                            && parseFloat(_.get(singleValorisation, "reimbursement", 0))
+                                                            && (
+                                                                (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).isBefore(moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month')) ||
+                                                                (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).format("YYYYMMDD") === moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month').format("YYYYMMDD")
+                                                            )
+                                                        )
+
+                                                    })
+                                                    .value(),
+                                                ["startOfValidity"],
+                                                ["desc"]
+                                            )
+                                        )
+                                        return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
+                                            code: _.trim(_.get(singleNomenclature, "code")),
+                                            label: _.get(singleNomenclature, "label"),
+                                            flatRateType: _.trim(_.get(singleNomenclature, "flatRateType")),
+                                            price: parseFloat(_.get(valorisationObject, "reimbursement", 0)),
+                                            valorisationMonth: parseInt(valorisationMonth)
+                                        } : false
+                                    })
+                                    .value()
+                            )
+                        )
+                    }
+                })
+
+
+
+                // HCP NIHII last 3 digits = booleans (0/1) tell us whether or not HCP has (respectively) MKI availabilities (respectively: M = physician, K = physiotherapist & I = nurse)
+                const medicalHouseNihiiLastThreeDigits = _.trim(this.hcp.nihii).slice(-3).split("")
+                const medicalHouseAvailableValorisationsByNihii = _.compact(_.map(["physician", "physiotherapist", "nurse"], (v, k) => !!parseInt(medicalHouseNihiiLastThreeDigits[k]) ? {flatRateType: v} : false ))
+
+                // At least one MH valorisation is missing
+                if (
+                    !parseInt(_.size(medicalHouseAvailableValorisationsByNihii))
+                    || _.size(medicalHouseAvailableValorisationsByNihii) !== _.size(_.compact(_.map(medicalHouseAvailableValorisationsByNihii, mhValorisation => !!parseInt(_.size(_.filter(_.get(this, "flatRateInvoicingDataObject.hcpValorisationsByMonth[0].valorisations", {}), i =>  _.trim(_.get(i, "flatRateType", "")) === _.trim(mhValorisation.flatRateType) && parseFloat(_.get(i, "price", 0))))))))
+                ) throw new Error("missing-flatrate-tarification");
+
+
+
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_1_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                return this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_2',this.language), icon:"arrow-forward"})
+
+
+
+            })
+
+            // 4 - Get all patients of mine, valid for export
+            //      a) Has to be active
+            //      b) SSIN must be valid
+            //      c) Has to be alive (not deceased before exportedDate)
+            //      d) 1+ valid MHC (versus exportedDate)
+            //      e) 1+ valid INS (versus exportedDate)
+            //      f) Not already exported (versus exportedDate)
+            .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth => _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:patientsToExportThisMonth})))
+
+            // 5 - Collect insurances
+            .then(() => {
+                if(!_.size(_.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[]))) throw new Error("no-data-to-export")
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_2_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.collectInsurances',this.language), icon:"arrow-forward"})
+                return this._getInsurancesDataByPatientsList(_.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[])).then(insurancesData => _.assign(this.flatRateInvoicingDataObject, {insurancesData:insurancesData}))
+            })
+
+            // 6 - Collect IO's
+            .then(() => this._getIOsDataByInsurancesList(_.get(this,"flatRateInvoicingDataObject.insurancesData",[])).then(iosData =>  _.assign(this.flatRateInvoicingDataObject, {iosData:iosData})))
+
+            // 7 - Generate invoices
+            .then(() => {
+
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.collectInsurances_done',this.language), icon:"check-circle", updateLastMessage: true, done:true})
+                this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4',this.language), icon:"arrow-forward"})
+
+                console.log("flatRateInvoicingDataObject", this.flatRateInvoicingDataObject)
+
+                // ONE entry (pat + invoicingCodes) = ONE invoice
+                // IF PTD ==> duplicate pat && add it the PTD valorisation
+                // Same goes for SAM timeline: duplicate PAT && assign it the right invoicing codes
+
+                return this._createOrUpdateMedicalHousePatientsInvoices(
+                    _.map(_.get(this,"flatRateInvoicingDataObject.patientsOfExportedMonth",[]), patToInvoice => {
+
+                        const finalMhc = _.get(patToInvoice,"finalMedicalHouseContract",{})
+                        const valorisationsOfExportedMonth = _.get(_.find(_.get(this,"flatRateInvoicingDataObject.hcpValorisationsByMonth",[]), valByMonth => parseInt(_.get(valByMonth,"month")) === parseInt(exportedDate)), "valorisations",[])
+
+                        const invoicingCodes = _.compact(_.concat(
+                            [],
+                            _.get(finalMhc,"gp",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "physician"}) : [],
+                            _.get(finalMhc,"kine",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "physiotherapist"}) : [],
+                            _.get(finalMhc,"nurse",false) ? _.find(valorisationsOfExportedMonth, {flatRateType: "nurse"}) : [],
+                        ))
+
+                        return _.assign({}, patToInvoice, { invoicingCodes: _.map(invoicingCodes, ic => ({
+                                code: ic.code,
+                                tarificationId: "INAMI-RIZIV|" + ic.code + "|1.0",
+                                label: _.get(ic, "label."+this.language,""),
+                                totalAmount: Number(_.get(ic,"price",0)),
+                                reimbursement: Number(_.get(ic,"price",0)),
+                                patientIntervention: Number(0.00).toFixed(2),
+                                doctorSupplement: Number(0.00).toFixed(2),
+                                units: 1,
+                                canceled: false,
+                                accepted: false,
+                                pending: false,
+                                resent: false,
+                                lost: false,
+                                archived: false,
+                                dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
+                                id: this.api.crypto().randomUuid(),
+                                logicalId: this.api.crypto().randomUuid()
+                            }))})
+
+                    })
+                )
+
+            })
+
+            // 8 - Invoices are generated
+            .then(createdInvoicesAndPats => (_.assign(this.flatRateInvoicingDataObject, {createdInvoicesAndPats: createdInvoicesAndPats})||true) && this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+
+            // .then(() => {
+            //     return Promise.all(_.toPairs(this.flatRateInvoicingDataObject.listsData).map(list => {
+            //
+            //         const typeList = list[0]
+            //         const patientList = list[1]
+            //         const codesList = typeList === "list5" || typeList === "list6" ?
+            //             // Lists 5 & 6 = NEW patients with respectively no tryout ; tryout
+            //             _.concat(
+            //                 _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations"),
+            //                 _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').subtract(1,"month").format("YYYYMMDD")))}), "valorisations")
+            //             ) :
+            //             // List 8 = old / regular patients
+            //             _.get(_.find(this.flatRateInvoicingDataObject.hcpValorisationsByMonth, {month:parseInt(_.trim(moment(_.trim(this.flatRateInvoicingDataObject.exportedDate), "YYYYMMDD").startOf('month').format("YYYYMMDD")))}), "valorisations")
+            //
+            //         return _.compact(_.map(patientList, pat => {
+            //
+            //             // If is a resent -> pat already exists for exported month, with another INS.
+            //             // Ie: should NOT be charged for current exported month
+            //             //TODO: the invDate of PTD
+            //             //TODO: Info the ptd will get the price linked to the invoiced month of the MKI
+            //             //TODO: to make things simpler we will no insert the correct prices at this point
+            //             //TODO: at this point we are only interested in : does the patients needs to be PTD invoiced (new Ptd or Ptd invoiced >= 1yr)
+            //             //TODO: we will set the correct price when creating the invoices in _createOrUpdateMedicalHousePatientsInvoices
+            //             const originalInvoicingCodes = _.get(pat,"isResent",false) ? [] : codesList.filter(code =>
+            //                 parseFloat(code.price) && (
+            //                     (code.flatRateType === "physician" && pat.finalMedicalHouseContract.gp === true ) ||
+            //                     (code.flatRateType === "nurse" && pat.finalMedicalHouseContract.nurse === true) ||
+            //                     (code.flatRateType === "physiotherapist" && pat.finalMedicalHouseContract.kine === true) ||
+            //                     (code.flatRateType === "ptd" && this._patHasPTD(pat, this.flatRateInvoicingDataObject.exportedDate) === true)
+            //                 )
+            //             )
+            //
+            //             return !_.size(finalInvoicingCodes) ? false : _.assign(pat, {
+            //                 invoicingCodes: _.orderBy(_.map(finalInvoicingCodes, ic => ({
+            //                     code: ic.code,
+            //                     tarificationId: "INAMI-RIZIV|" + ic.code + "|1.0",
+            //                     label: _.get(ic, "label."+this.language,""),
+            //                     totalAmount: Number(_.get(ic,"price",0)),
+            //                     reimbursement: Number(_.get(ic,"price",0)),
+            //                     patientIntervention: Number(0.00).toFixed(2),
+            //                     doctorSupplement: Number(0.00).toFixed(2),
+            //                     units: 1,
+            //                     canceled: false,
+            //                     accepted: false,
+            //                     pending: false,
+            //                     resent: false,
+            //                     lost: false,
+            //                     archived: false,
+            //                     dateCode: parseInt(_.get(ic,"valorisationMonth",0))||null,
+            //                     id: this.api.crypto().randomUuid(),
+            //                     logicalId: this.api.crypto().randomUuid(),
+            //                     contractDate: _.get(_.get(pat, "finalMedicalHouseContract", {startOfContract:0}), "startOfContract", 0)
+            //                 })), ["dateCode"], ["desc"])
+            //             })
+            //         }))
+            //     }))
+
+            .catch(e => (console.log("[ERROR] _exportFlatRateInvoicing_step2_v2", e)||true) && (
+                ( _.trim(e).indexOf('no-nihii') > -1 ) ? this._showWarningNoHcpNihii() && e :
+                ( _.trim(e).indexOf('missing-flatrate-tarification') > -1 ) ? this._showWarningNoHcpFlatrateTarification() && e :
+                ( _.trim(e).indexOf('no-data-to-export') > -1 ) ? this._showWarningNoDataToExport() && e :
+                ( _.trim(e).indexOf('missing-contact-person') > -1 ) ? this._showWarningNoHcpContactPerson() && e :
+                ( _.trim(e).indexOf('missing-cbe') > -1 ) ? this._showWarningNoCbe() && e :
+                ( _.trim(e).indexOf('missing-bank-account') > -1 ) ? this._showWarningNoBankAccount() && e :
+                ( _.trim(e).indexOf('export-already-ran') > -1 ) ? this._showWarningExportAlreadyRan() && e :
+                ( _.trim(e).indexOf('missing-ptd-valorisation') > -1 ) ? this._showWarningNoHcpFlatratePtdTarification() && e :
+                e
+            ))
+
+            .finally(()=>{
+                console.log("finally:flatRateInvoicingDataObject", this.flatRateInvoicingDataObject);
+                this.flatRateInvoicingDataObject = {}
+                this.set('isLoading', false );
+                this.set('_isGeneratingInvoice', false );
+                this.set('activeGridItem', null );
+                this.set('messagesCachedData', null );
+                this.set('messagesGridData', [] );
+                this.set('messagesGridDataReset', [] );
+                this._refreshInvoiceList();
+            })
 
     }
 
