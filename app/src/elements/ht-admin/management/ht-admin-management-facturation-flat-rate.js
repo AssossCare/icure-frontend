@@ -270,7 +270,7 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
                   code: '109616',
                   label: {
                       fr : 'Forfait soins médicaux dans les centres de santé',
-                      en: 'Medical care package in health centers',
+                      en : 'Medical care package in health centers',
                       nl : 'Zorgpakket in gezondheidscentra'
                   },
                   flatRateType: 'physician'
@@ -278,7 +278,7 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
                   code: '409614',
                   label: {
                       fr : 'Forfait soins infirmiers dans les centres de santé',
-                      en: 'Nursing package at health centers',
+                      en : 'Nursing package at health centers',
                       nl : 'Verpleegpakket in gezondheidscentra'
                   },
                   flatRateType : 'nurse'
@@ -286,10 +286,18 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
                   code: '509611',
                   label: {
                       fr : 'Forfait soins kiné dans les centres de santé',
-                      en: 'Physiotherapy package in health centers',
+                      en : 'Physiotherapy package in health centers',
                       nl : 'Fysiotherapie pakket in gezondheidscentra'
                   },
                   flatRateType: 'physiotherapist'
+              },{
+                  code: '109594',
+                  label: {
+                     fr : 'Forfait pré-trajet de soins',
+                     en : 'Pre-trip care package',
+                     nl : 'Zorgpakket voor vertrek'
+                  },
+                  flatRateType: 'ptd'
               }]
          },
           hcpParent: {
