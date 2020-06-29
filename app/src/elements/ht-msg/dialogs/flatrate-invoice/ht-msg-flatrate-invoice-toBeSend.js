@@ -830,6 +830,26 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         console.log(message)
                         this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
                         this.api.register(message,'message')
+                    }).then(() => {
+                        let subProm = Promise.resolve()
+                        invoices.map(inv => {
+                            //remove tag flatRateLastInvoiced
+                            _.remove(_.get(inv, 'patient.tags', []).find(tag => tag.type === "flatRateLastInvoiced"))
+                            !_.get(inv, 'patient.tags', null) ? _.assign(inv.patient, {tags: []}) : null
+
+                            //added new tag flatRateLastInvoiced
+                            inv.patient.tags.push({
+                                type: "flatRateLastInvoiced",
+                                code: moment().startOf('month').format("YYYYMMDD")
+                            })
+
+                            //modify patient
+                            subProm = subProm.then(modifiedPatList => this.api.patient().modifyPatientWithUser(this.user, inv.patient).then(pat => _.concat(modifiedPatList, pat)))
+                        })
+
+                        subProm.then(modifiedPatList => {
+                            console.log(_.compact(modifiedPatList))
+                        })
                     })
                 })
 
