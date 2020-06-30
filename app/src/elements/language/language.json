@@ -2846,7 +2846,8 @@
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
 		"exportUsersMda": "Export users (MDA)",
-		"exportData": "Export data"
+		"exportData": "Export data",
+		"mh_flatrate_history" : "Flatrate invoicing history"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -2903,8 +2904,8 @@
 		"Dec": "déc",
 		"Feb": "fév",
 		"Jan": "jan",
-		"Jul": "jui",
-		"Jun": "jui",
+		"Jul": "juil",
+		"Jun": "juin",
 		"Mar": "mar",
 		"May": "mai",
 		"Nov": "nov",
@@ -5853,7 +5854,8 @@
 		"mhInvoicing.collectInsurances_done": "Fin de la collecte assurances",
 		"mh_eInvoicing.downloadRequest": "Télécharger la requête",
 		"mh_eInvoicing.downloadResponses": "Télécharger les réponses",
-		"mh_eInvoicing.technicalDetails": "Détails techniques"
+		"mh_eInvoicing.technicalDetails": "Détails techniques",
+		"mh_flatrate_history" : "Historique facturation au forfait"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8728,6 +8730,7 @@
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
 		"exportUsersMda": "Export users (MDA)",
-		"exportData": "Export data"
+		"exportData": "Export data",
+		"mh_flatrate_history" : "Tijdslijn forfait facturatie"
 	}
 }
