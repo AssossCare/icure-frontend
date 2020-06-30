@@ -992,10 +992,37 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     getPatientsEligibleForInvoicingByExportedDate(exportedDate) {
 
+        let mdaForcedAsValidPatientIds = []
+
+        const promResolve = Promise.resolve()
         const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
         const momentExportedDate = moment(exportedDate,"YYYYMMDD") // exportedDate = <string> YYYYMM01 (always first day of given month)
 
-        return this.api.getRowsUsingPagination(
+        return promResolve
+            .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+                .then(pl => {
+                    return {
+                        rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1),
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }
+                })
+                .catch(() => promResolve)
+            ))
+            .then(requestMessages => _.head(requestMessages))
+            .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? promResolve : promResolve.then(() => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
+                .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
+                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                .then(([document, edKeys, attachment]) => _.merge(mdaRequestMessage, {
+                    document: document,
+                    edKeys: edKeys,
+                    attachment: JSON.parse(attachment) || {}
+                }))
+                .catch(() => mdaRequestMessage)
+            ))
+            .then(mdaRequestMessage => mdaForcedAsValidPatientIds = _.uniq(_.compact(_.map(_.filter(_.get(mdaRequestMessage,"attachment.request"), {patientForcedAsValid:true}), "patientId"))))
+            .then(() => this.api.getRowsUsingPagination(
             (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
                 .then(pl => {
                     pl.rows = _
@@ -1004,6 +1031,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                             const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
                             const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) &&  !!mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
 
                             return it &&
 
@@ -1017,16 +1045,16 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                 (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
 
                                 // 4. 1+ valid MHC (versus exportedDate)
-                                _.some(_.get(it, "medicalHouseContracts", []), mhc =>
+                                _.some(_.get(it, "medicalHouseContracts", []), mhc => isPatientForcedAsValidInMda || (
                                     _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
                                     _.trim(_.get(mhc, "contractId")) &&
                                     (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
                                     (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
                                     (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
-                                ) &&
+                                )) &&
 
                                 // 5. 1+ valid INS (versus exportedDate)
-                                _.some(_.get(it, "insurabilities", []), ins =>
+                                _.some(_.get(it, "insurabilities", []), ins => isPatientForcedAsValidInMda || (
                                     _.trim(_.get(ins, "identificationNumber")) &&
                                     _.trim(_.get(ins, "insuranceId")) &&
                                     _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
@@ -1034,7 +1062,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                     (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
                                     (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
                                     (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
-                                ) &&
+                                )) &&
 
                                 // 6. Not already exported (versus exportedDate)
                                 (!flatRateLastInvoicedTagValue || flatRateLastInvoicedTagValue < exportedDate)
@@ -1052,8 +1080,10 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                     _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
                                     _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
                                     (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
-                                    (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                    (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                    ( isPatientForcedAsValidInMda || (
+                                        (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                        (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                    ))
                                 )
                                 .orderBy(["startDate"],["desc"])
                                 .head()
@@ -1064,8 +1094,10 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                     _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
                                     _.trim(_.get(mhc, "contractId")) &&
                                     (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
-                                    (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                    (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                    ( isPatientForcedAsValidInMda || (
+                                        (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                        (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                    ))
                                 )
                                 .orderBy(["startOfCoverage"],["desc"])
                                 .head()
@@ -1077,7 +1109,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                     return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
                 })
                 .catch(() => Promise.resolve([]))
-        )
+            ))
             .then(pats => _.orderBy(_.uniqBy(pats,"ssin"),["lastName","firstName"],["asc","asc"]))
             .catch(() => Promise.resolve([]))
 
