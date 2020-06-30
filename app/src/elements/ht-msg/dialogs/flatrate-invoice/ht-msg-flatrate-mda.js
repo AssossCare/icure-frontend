@@ -524,7 +524,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     }
                     
                     .invoiceContainer.mdaResults {
-                        height: calc(100vh - 407px);
+                        height: calc(100vh - 426px);
                     }
                     
                     .invoiceSubContainerBig {
@@ -1600,7 +1600,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                              <div class="td fg1">[[pat.parentInsuranceCode]]</div>
                              <div class="td fg1">[[pat.patientIdentificationNumber]]</div>
                               <!--<div class="td fg1">[[_formatDate(pat.startDate)]] => [[_formatDate(pat.endDate)]]</div>-->
-                             <div class="td fg1"><span class$="mda-status [[_getRequestIconStatusClass(pat)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getRequestIconStatusClass(pat)]]"></iron-icon> [[_getRequestStatusLabel(pat)]]</span></div>
+                             <div class="td fg1"><span class$="mda-status [[_e_getRequestIconStatusClass(pat)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_e_getRequestIconStatusClass(pat)]]"></iron-icon> [[_e_getRequestStatusLabel(pat)]]</span></div>
                              <div class="td fg2">[[pat.requestErrorMessage]]</div>
                           </div>
                       </template>
@@ -1610,7 +1610,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                    <paper-menu-button class="button-left" horizontal-align="left" dynamic-align="true" vertical-offset="26">
                         <paper-button class="button button--other" slot="dropdown-trigger" alt="menu"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.technicalDetails","Technical details",language)]]</paper-button>
                         <paper-listbox slot="dropdown-content">
-                            <paper-item on-tap="_triggerDownloadCalls">[[localize("mh_eInvoicing.downloadRequest","Download request",language)]]</paper-item>
+                            <paper-item on-tap="_triggerDownloadCalls" data-request-type="request">[[localize("mh_eInvoicing.downloadRequest","Download request",language)]]</paper-item>
                             <paper-item on-tap="_triggerDownloadCalls" data-request-type="responses">[[localize("mh_eInvoicing.downloadResponses","Download responses",language)]]</paper-item>
                         </paper-listbox>
                     </paper-menu-button>
@@ -1630,9 +1630,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         
                     <!--Bypass response (only if got checked 1+ times && waiting for next check-->
                     <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">
-                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">
+                       <!--<template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">-->
                           <paper-button class="button button--save" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
-                       </template>                            
+                       <!--</template>-->
                     </template>
                               
                 </div>
@@ -1712,6 +1712,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         
         
         
+        <!-- Not used anymore -->
         <!-- MDA responses = last call's results -->
         <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaLastCallResults')]]">
             <div class="textAlignCenter">
@@ -1776,10 +1777,12 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     <template>[[item.oa]]</template>
                                 </vaadin-grid-column>
                                 
+                                <!--
                                 <vaadin-grid-column flex-grow="0" width="140px">
                                     <template class="header"><vaadin-grid-sorter path="verifiedMonthHr">[[localize('verifiedMonth','Verified month',language)]]</vaadin-grid-sorter></template>
                                     <template>[[item.verifiedMonthHr]]</template>
                                 </vaadin-grid-column>
+                                -->
                                 
                                 <vaadin-grid-column flex-grow="1">
                                     <template class="header"><vaadin-grid-sorter path="nameHr">[[localize('name','Name',language)]]</vaadin-grid-sorter></template>
@@ -1806,7 +1809,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     <template>[[item.message]]</template>
                                 </vaadin-grid-column>
                                 
-                                <vaadin-grid-column flex-grow="0" width="230px">
+                                <vaadin-grid-column flex-grow="0" width="320px">
                                     <template>
                                         
                                         <template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'false')]]">
@@ -1829,7 +1832,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 </div>
             </div>
             
-            <div id="mdaStep4BottomButtons"><paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button></div>
+            <div class="panel-button"><paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button></div>
             
         </template>
 
@@ -2263,45 +2266,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _triggerDownloadCalls(e) {
-
-        const promResolve = Promise.resolve()
-
-        const requestType = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.requestType",""))), "dataset.requestType"))
-        const downloadFileName = moment().format("YYYYMMDD-HHmm-ss") + "-technicalDetails-" + (requestType === "responses" ? "responses" : "request") + ".zip"
-
-        return promResolve
-            .then(() => {
-                this.set("_isLoading",true)
-                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
-                return requestType !== "responses" ?
-                    Promise.resolve([_.get(this,"mdaRequestsData.message.attachment.response",[])]) :
-                    Promise.all(_.map(_.trim(_.get(this, "mdaRequestsData.message.metas.responseMessageIds", [])).split(","), it => this.api.message().getMessage(_.trim(it))))
-                        .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
-                            let prom = Promise.resolve([])
-                            _.map(mdaResponseMessages, mdaResponseMessage => {
-                                prom = prom.then(promisesCarrier => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessage).then(document => _.head(document))), 4, 1000, 1.5)
-                                    .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                                    .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).catch(() => null))
-                                    .then(attachment => _.concat(promisesCarrier, attachment))
-                                    .catch(() => _.concat(promisesCarrier, null))
-                                )
-                            })
-                            return prom
-                        }))
-            })
-            .then(contentsToDownload => {
-
-                console.log("requestType", requestType)
-                console.log("contentsToDownload", contentsToDownload)
-
-            })
-            .finally(() => this.set("_isLoading",false))
-
-        // return !oa || !downloadType || !targetContent ? null : this.api.triggerFileDownload(fileContent, "application/xml", downloadFileName)
-
-    }
-
     _formatDate(date) {
         return date ? this.api.moment(date).format('DD/MM/YYYY') : null
     }
@@ -2312,17 +2276,10 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _getRequestIconStatusClass(pat) {
 
-        return _.get(pat,"requestErrorMessage",false) ? "invoice-status--redStatus" : _.get(pat,"patientMatchedWithMdaResponse",false) ? "invoice-status--greenStatus" : "invoice-status--orangeStatus"
 
-    }
 
-    _getRequestStatusLabel(pat) {
 
-        return _.get(pat,"requestErrorMessage",false) ? this.localize("errorInResponse", "Error in response",this.language) : _.get(pat,"patientMatchedWithMdaResponse",false) ? this.localize("responseObtained", "Response obtained",this.language) : this.localize("inv_acc_tre", "Accepted for treatment",this.language)
-
-    }
 
 
 
@@ -2351,24 +2308,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
     _e_returnValueIfEquals(a,b,c) {
 
         return a===b ? c : ""
-
-    }
-
-    _e_getRootLineStep(a) {
-
-        // Steps:
-        //     placeMdaRequests
-        //     mdaCheckForResponses
-        //     mdaLastCallResults
-        //     mdaLastCallResultsDetails
-        //     mdaDoInvoicing
-
-        return a==="placeMdaRequests" ? 1 :
-            a==="mdaCheckForResponses" ? 2 :
-                a==="mdaLastCallResults" ? 3 :
-                    a==="mdaLastCallResultsDetails" ? 4 :
-                        a==="mdaDoInvoicing" ? 5 :
-                            ""
 
     }
 
@@ -2575,64 +2514,68 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _e_getRequestIconStatusClass(pat) {
 
-
-
-
-
-
-
-
-    _e_isDone(a,b) {
-
-        // Steps:
-        //     placeMdaRequests
-        //     mdaCheckForResponses
-        //     mdaLastCallResults
-        //     mdaLastCallResultsDetails
-        //     mdaDoInvoicing
-
-        return b==="placeMdaRequests" && b!==a ? "active done" :
-            b==="mdaCheckForResponses" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
-                b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 && a===b ? "active" :
-                    b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
-                        b==="mdaLastCallResultsDetails" && ["mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
-                            ""
+        return _.get(pat,"requestErrorMessage",false) ? "invoice-status--redStatus" : _.get(pat,"patientMatchedWithMdaResponse",false) ? "invoice-status--greenStatus" : "invoice-status--orangeStatus"
 
     }
 
-    _e_missingMdaRequestsResponses() {
+    _e_getRequestStatusLabel(pat) {
 
-        // const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
-        // return !_.size(requestsOriginalMessages) ||
-        //     _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
-        //     (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
-
-        const requestsOriginalMessage = _.get(this,"mdaRequestsData.originalMessage");
-        return !_.size(requestsOriginalMessage) ||
-            (!_.trim(_.get(requestsOriginalMessage,"metas.responseMessageId")) && !parseInt(_.get(requestsOriginalMessage,"metas.overriddenByUserDate"))) ||
-            (_.trim(_.get(requestsOriginalMessage,"metas.responseMessageId")) && !_.size(_.get(this,"mdaResponsesData.originalMessage")))
+        return _.get(pat,"requestErrorMessage",false) ? this.localize("errorInResponse", "Error in response",this.language) : _.get(pat,"patientMatchedWithMdaResponse",false) ? this.localize("responseObtained", "Response obtained",this.language) : this.localize("inv_acc_tre", "Accepted for treatment",this.language)
 
     }
 
-    _e_mdaFlagPatAs(e) {
+    _triggerDownloadCalls(e) {
 
+        let zipArchive = new jsZip();
         const promResolve = Promise.resolve()
-        const dataset = _.get(_.find(_.get(e,"path",[]), it => _.trim(_.get(it,"nodeName"))==="PAPER-BUTTON"),"dataset",{})
-        const oa = _.trim(_.get(dataset,"oa"))
-        const action = _.trim(_.get(dataset,"action"))
-        const reconcileKey = _.trim(_.get(dataset,"reconcileKey"))
 
-        return !oa || !action || !reconcileKey ? promResolve : promResolve
-            .then(() => this.set('_isLoading', true ))
-            .then(() => this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true}))
-            .then(() => {
-                const targetOaPatients = _.get(_.find(_.get(this,"mdaRequestsData.message",[]), it => _.trim(_.get(it,"metas.oa")) === _.trim(oa)), "attachment.request",[])
-                const targetPatient = _.find(targetOaPatients, {reconcileKey:reconcileKey})
-                _.assign(targetPatient, {patientForcedAsValid:action==="valid"})
-            })
-            .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
+        const requestType = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.requestType",""))), "dataset.requestType"))
+        const downloadFileName = moment().format("YYYYMMDD-HHmmss") + "-technicalDetails-" + requestType + ".zip"
+
+        return promResolve
+            .then(() => (this.set("_isLoading",true)||true) && this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true}))
+            .then(() => requestType === "request" ?
+                _.map(
+                    _.fromPairs([
+                        ["soapRequest.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.soapRequest"))],
+                        ["soapResponse.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.soapResponse"))],
+                        ["transactionRequest.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.transactionRequest"))],
+                        ["transactionResponse.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.transactionResponse"))],
+                        ["tack.json", _.trim(JSON.stringify(_.get(this,"mdaRequestsData.message.attachment.response.tack")))]
+                    ]),
+                    (v,k) => zipArchive.file(k, v)
+                ) :
+                _.map(_.get(this,"mdaResponsesData.messages",[]), responseMessage => _.map(
+                    _.fromPairs([
+                        ["soapRequest.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.soapRequest"))],
+                        ["soapResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.soapResponse"))],
+                        ["transactionRequest.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionRequest"))],
+                        ["transactionResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionResponse"))],
+                        ["memberDataMessageList.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.memberDataMessageList",[])))],
+                        ["acks.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.acks")))],
+                        ["genericErrors.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.genericErrors")))],
+                    ]),
+                    (v,k) => zipArchive
+                        .folder(_.trim(_.get(responseMessage,"metas.requestDate")).substr(0,8) + "-" + _.trim(_.get(responseMessage,"metas.requestDate")).substr(8,8))
+                        .file(k, v)
+                ))
+            )
+            .then(() => zipArchive.generateAsync({ type:"arraybuffer", mimeType: "application/zip", compression: "DEFLATE", compressionOptions: { level: 9 }}))
+            .then(zipFile => !zipFile ? null : this.api.triggerFileDownload(zipFile, "application/zip", downloadFileName))
             .finally(() => this.set("_isLoading",false))
+
+    }
+
+    _e_getTotalPatsWithValidInsurabilityInAllMessages(messages) {
+
+        return _
+            .chain(messages)
+            .map(it => parseInt(_.get(it,"metas.totalPatsWithValidInsurability",0))||0)
+            .compact()
+            .sum()
+            .value()
 
     }
 
@@ -2647,16 +2590,74 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _e_getTotalPatsWithValidInsurabilityInAllMessages(messages) {
+    _e_missingMdaRequestsResponses() {
 
-        return _
-            .chain(messages)
-            .map(it => parseInt(_.get(it,"metas.totalPatsWithValidInsurability",0))||0)
-            .compact()
-            .sum()
-            .value()
+        // const requestsOriginalMessages = _.get(this,"mdaRequestsData.originalMessages");
+        // return !_.size(requestsOriginalMessages) ||
+        //     _.some(requestsOriginalMessages, it => !_.trim(_.get(it,"metas.responseMessageId")) && !parseInt(_.get(it,"metas.overriddenByUserDate"))) ||
+        //     (_.some(requestsOriginalMessages, it => _.trim(_.get(it,"metas.responseMessageId"))) && !_.size(_.get(this,"mdaResponsesData.originalMessages")))
+
+        const requestsOriginalMessage = _.get(this,"mdaRequestsData.originalMessage");
+        return !_.size(requestsOriginalMessage) ||
+            (!_.trim(_.get(requestsOriginalMessage,"metas.responseMessageIds")) && !parseInt(_.get(requestsOriginalMessage,"metas.overriddenByUserDate"))) ||
+            (_.trim(_.get(requestsOriginalMessage,"metas.responseMessageIds")) && !_.size(_.get(this,"mdaResponsesData.originalMessage")))
 
     }
+
+    _e_isDone(a,b) {
+
+        // Steps:
+        //     placeMdaRequests
+        //     mdaCheckForResponses
+        //     mdaLastCallResults
+        //     mdaLastCallResultsDetails
+        //     mdaDoInvoicing
+
+        return b==="placeMdaRequests" && b!==a ? "active done" :
+            b==="mdaCheckForResponses" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 && a===b ? "active" :
+            b==="mdaLastCallResults" && ["mdaLastCallResults","mdaLastCallResultsDetails","mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            b==="mdaLastCallResultsDetails" && ["mdaDoInvoicing"].indexOf(a)>-1 ? "active done" :
+            ""
+
+    }
+
+    _e_getRootLineStep(a) {
+
+        // Steps:
+        //     placeMdaRequests
+        //     mdaCheckForResponses
+        //     mdaLastCallResults
+        //     mdaLastCallResultsDetails
+        //     mdaDoInvoicing
+
+        return a==="placeMdaRequests" ? 1 :
+            a==="mdaCheckForResponses" ? 2 :
+            a==="mdaLastCallResults" ? 3 :
+            a==="mdaLastCallResultsDetails" ? 4 :
+            a==="mdaDoInvoicing" ? 5 :
+            ""
+
+    }
+
+    _e_mdaFlagPatAs(e) {
+
+        const promResolve = Promise.resolve()
+        const dataset = _.get(_.find(_.get(e,"path",[]), it => _.trim(_.get(it,"nodeName"))==="PAPER-BUTTON"),"dataset",{})
+        const action = _.trim(_.get(dataset,"action"))
+        const reconcileKey = _.trim(_.head(_.trim(_.get(dataset,"reconcileKey")).split("_")))
+
+        // return !oa || !action || !reconcileKey ? promResolve : promResolve
+        return !action || !reconcileKey ? promResolve : promResolve
+            .then(() => this.set('_isLoading', true ))
+            .then(() => this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true}))
+            .then(() => _.assign(_.find(_.get(this,"mdaRequestsData.message.attachment.request",[]), it => _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_"))) === reconcileKey), {patientForcedAsValid:action==="valid"}))
+            .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
+            .finally(() => this.set("_isLoading",false))
+
+    }
+
+
 
 
 
@@ -3397,41 +3398,80 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _e_bypassMdaResponses() {
 
+        const promResolve = Promise.resolve();
 
+        return promResolve
+            .then(() => {
+                this.set('_isLoading', true )
+                this.api.setPreventLogging()
+                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", done:true})
+            })
+            .then(() => !_.size(_.get(this,"mdaRequestsData.originalMessage")) ? promResolve : retry.retry(() => (this.api.message().modifyMessage(_.omit(_.merge(_.get(this,"mdaRequestsData.originalMessage"), {metas:{overriddenByUserDate:moment().format("YYYYMMDDHHmmss")}}),["metas.requestDateHr","metas.responseDateHr","metas.responseLastCheckDateHr"]))), 4, 1000, 1.5)
+                .then(modifiedMessage => this.api.register(modifiedMessage, 'message'))
+                .catch(e=>console.log("[ERROR] _e_bypassMdaResponses",e))
+            )
+            .catch(e=>console.log("[ERROR] _e_bypassMdaResponses",e))
+            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndGetStep())
 
-
-
-
-
-
-
-
-
+    }
 
     _e_gotoMdaLastCallResultsDetails(e, tabToGoFor="invalidPatients") {
 
         const promResolve = Promise.resolve()
 
-        return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_loadDataAndGetStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_loadDataAndGetStep() : promResolve)
+        // return this._e_missingMdaRequestsResponses() && e instanceof Event ? this._e_loadDataAndGetStep() : (this._e_missingMdaRequestsResponses() && !(e instanceof Event) ? this._e_loadDataAndGetStep() : promResolve)
+        return promResolve
             .then(() => {
                 this.set("_isLoading",true)
                 this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
             })
+
+            // .then(() =>  this.set("rawMdaResultsGridData", _
+            //     .chain(_.get(this,"mdaRequestsData.message",[]))
+            //     .map(requestMessage => _.map(_.get(requestMessage,"attachment.request"), pat => {
+            //         const responseMessagePatients = _.get(_.find(_.get(this,"mdaResponsesData.messages"), it => _.trim(_.get(it,"metas.requestMessageId")) === _.trim(requestMessage.id)), "attachment.patients", [])
+            //         const responseMatchingPat = _.find(responseMessagePatients, {reconcileKey:_.trim(_.get(pat,"reconcileKey"))})
+            //         return _.merge({},pat,{
+            //             oa: _.trim(_.get(requestMessage,"metas.oa")),
+            //             verifiedMonthHr: moment(_.trim(_.get(pat,"startDate")),"YYYYMMDD").format("MM/YYYY"),
+            //             ssinHr: this.api.formatSsinNumber(_.trim(_.get(pat,"patientSsin"))),
+            //             message: _.trim(_.get(responseMatchingPat,"responseErrorMessage")),
+            //             patientMatchedWithMdaResponse: _.get(responseMatchingPat,"patientMatchedWithMdaResponse",false),
+            //             mdaResponsePatientHasValidInsAndMhc: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
+            //             patientInsurabilityStatus: !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false) ? "yes" : "no",
+            //             patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? false : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
+            //             patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
+            //         })
+            //     }).map(pat => _.assign(pat, {
+            //         patientInsurabilityStatusHr: _.upperFirst(this.localize(pat.patientInsurabilityStatus,this.language).toLowerCase()),
+            //         normalizedSearchTerms: _
+            //             .chain(pat)
+            //             .pick(["patientId","patientSsin","ssinHr","nameHr","patientIdentificationNumber","insuranceCode","oa","message", "responseErrorMessage"])
+            //             .flatMap()
+            //             .compact()
+            //             .map(it => _.trim(it).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,""))
+            //             .value()
+            //             .join(" ")
+            //     })))
+            //     .flatten()
+            //     .orderBy(["patientForcedAsValid","nameHr", "startDate"],["desc","asc", "desc"]) // Inside lodash, "true" gets a higher order than / comes after "false"
+            //     .value()
+            // ))
+
             .then(() =>  this.set("rawMdaResultsGridData", _
-                .chain(_.get(this,"mdaRequestsData.message",[]))
-                .map(requestMessage => _.map(_.get(requestMessage,"attachment.request"), pat => {
-                    const responseMessagePatients = _.get(_.find(_.get(this,"mdaResponsesData.messages"), it => _.trim(_.get(it,"metas.requestMessageId")) === _.trim(requestMessage.id)), "attachment.patients", [])
-                    const responseMatchingPat = _.find(responseMessagePatients, {reconcileKey:_.trim(_.get(pat,"reconcileKey"))})
+                .chain(_.get(this,"mdaRequestsData.message.attachment.request",[]))
+                .map(pat => {
                     return _.merge({},pat,{
-                        oa: _.trim(_.get(requestMessage,"metas.oa")),
-                        verifiedMonthHr: moment(_.trim(_.get(pat,"startDate")),"YYYYMMDD").format("MM/YYYY"),
+                        oa: _.trim(_.get(pat,"parentInsuranceCode")),
                         ssinHr: this.api.formatSsinNumber(_.trim(_.get(pat,"patientSsin"))),
-                        message: _.trim(_.get(responseMatchingPat,"responseErrorMessage")),
-                        patientMatchedWithMdaResponse: _.get(responseMatchingPat,"patientMatchedWithMdaResponse",false),
-                        mdaResponsePatientHasValidInsAndMhc: _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
-                        patientInsurabilityStatus: !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false) ? "yes" : "no",
-                        patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(responseMatchingPat,"patientMatchedWithMdaResponse",false) ? false : _.get(responseMatchingPat,"mdaResponsePatientHasValidInsAndMhc",false),
+                        message: _.trim(_.get(pat,"responseErrorMessage")) ? _.trim(_.get(pat,"responseErrorMessage")) : _.trim(_.get(pat,"requestErrorMessage")),
+                        patientMatchedWithMdaResponse: _.get(pat,"patientMatchedWithMdaResponse",false),
+                        mdaResponsePatientHasValidInsAndMhc: _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false),
+                        patientInsurabilityStatus: !_.get(pat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false) ? "yes" : "no",
+                        patientHasValidInsurabilityBoolean: _.get(pat,"patientForcedAsValid",false) ? true : !_.get(pat,"patientMatchedWithMdaResponse",false) ? false : _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false),
                         patientForcedAsValid: _.get(pat,"patientForcedAsValid",false)
                     })
                 }).map(pat => _.assign(pat, {
@@ -3444,8 +3484,8 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         .map(it => _.trim(it).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,""))
                         .value()
                         .join(" ")
-                })))
-                .flatten()
+                }))
+                // .flatten()
                 .orderBy(["patientForcedAsValid","nameHr", "startDate"],["desc","asc", "desc"]) // Inside lodash, "true" gets a higher order than / comes after "false"
                 .value()
             ))
@@ -3459,8 +3499,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     _e_step4SaveChangesAndGoToStep5() {
 
-        let prom = Promise.resolve([]);
-
         const promResolve = Promise.resolve()
 
         return promResolve
@@ -3472,59 +3510,19 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             })
             .then(() => {
 
-                let prom = Promise.resolve([])
+                const originalMessage = _.get(this,"mdaRequestsData.originalMessage")
+                const gridDynamicMessage = _.get(this,"mdaRequestsData.message")
+                const attachmentToUpdate = _.get(gridDynamicMessage,"attachment")
 
-                _.map(_.get(this,"mdaRequestsData.originalMessage"), originalMessage => {
-
-                    const currentOa = _.trim(_.get(originalMessage, "metas.oa"))
-                    const gridDynamicMessage = _.find(_.get(this,"mdaRequestsData.message",[]), it => _.trim(_.get(it,"metas.oa")) === currentOa)
-                    const attachmentToUpdate = _.get(gridDynamicMessage,"attachment")
-
-                    prom = prom
-                        .then(promisesCarrier => !currentOa || !_.size(gridDynamicMessage) || !_.size(attachmentToUpdate) ? promResolve : promResolve
-                            .then(promisesCarrier => (this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_15", "Enregistrement des modifications de l'OA", this.language) + " " + currentOa + "...", icon:"arrow-forward"})||true) && promisesCarrier)
-                            .then(promisesCarrier => retry.retry(() => (this.api.message().modifyMessage(_.merge(originalMessage, {metas:{ step5Validated: true }}))), 4, 1000, 1.5)
-                                .then(modifiedMessage => !modifiedMessage ? null : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate)))).then(()=>modifiedMessage)), 4, 1000, 1.5))
-                                .then(modifiedMessage => this._sleep(200).then(()=>modifiedMessage)) // Cool down
-                                .then(modifiedMessage => (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language) + " " + currentOa + "...", icon:"check-circle", updateLastMessage: true, done:true})||true) && _.concat(promisesCarrier, modifiedMessage))
-                                .catch(e=> (console.log("[ERROR] _e_step4SaveChangesAndGoToStep5",e)||true) && (this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language) + " " + currentOa + "...", icon:"check-circle", updateLastMessage: true, done:true})||true) && _.concat(promisesCarrier, false))
-                            )
-                        )
-                })
-
-                return prom
+                return !_.size(originalMessage) || !_.size(gridDynamicMessage) || !_.size(attachmentToUpdate) ? promResolve : promResolve
+                    .then(() => this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_15", "Sauvegarde des changements", this.language), icon:"arrow-forward"})||true)
+                    .then(() => retry.retry(() => (this.api.message().modifyMessage(_.omit(_.merge(originalMessage, {metas:{ step5Validated: true }}), ["metas.requestDateHr","metas.responseDateHr","metas.responseLastCheckDateHr"]))), 4, 1000, 1.5))
+                    .then(modifiedMessage => !modifiedMessage ? null : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate))))), 4, 1000, 1.5))
+                    .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+                    .catch(e=> (console.log("[ERROR] _e_step4SaveChangesAndGoToStep5",e)||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
 
             })
-            .then(modifiedMessages => (this.set('_isLoading',false)||true) && this.dispatchEvent(new CustomEvent('do-route', { bubbles: true, composed: true, detail: { forceRefreshMdaRequestsStatus: true, selection : { item : "eflatrateInvocingMenuItem", status: "toBeSend" }}})))
-
-    }
-
-    _e_bypassMdaResponses() {
-
-        const promResolve = Promise.resolve();
-
-        return promResolve
-            .then(() => {
-                this.set('_isLoading', true )
-                this.api.setPreventLogging()
-                this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
-                this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", done:true})
-            })
-            .then(() => {
-                let prom = Promise.resolve([]);
-                _.map(_.filter(_.get(this,"mdaRequestsData.originalMessage",[]), it=>!(parseInt(_.get(it,"metas.overriddenByUserDate",0))||0)), messageToModify => {
-                    prom = prom
-                        .then(promisesCarrier => retry.retry(() => (this.api.message().modifyMessage(_.merge(messageToModify, {metas:{overriddenByUserDate:moment().format("YYYYMMDDHHmmss")}}))), 4, 1000, 1.5)
-                            .then(modifiedMessage => this.api.register(modifiedMessage, 'message'))
-                            .then(modifiedMessage => this._sleep(200).then(()=>modifiedMessage)) // Cool down
-                            .then(modifiedMessage => _.concat(promisesCarrier, [modifiedMessage]))
-                            .catch(()=>_.concat(promisesCarrier, [false]))
-                        )
-                });
-                return prom.then(promisesCarrier=>promisesCarrier)
-            })
-            .catch(()=>{})
-            .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndGetStep())
+            .then(() => (this.set('_isLoading',false)||true) && this.dispatchEvent(new CustomEvent('do-route', { bubbles: true, composed: true, detail: { forceRefreshMdaRequestsStatus: true, selection : { item : "eflatrateInvocingMenuItem", status: "toBeSend" }}})))
 
     }
 
@@ -3539,12 +3537,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 this.set('_isLoading', true)
                 this.api.setPreventLogging()
                 this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
-                this._setLoadingMessage({
-                    message: this.localize('please_wait', this.language),
-                    icon: "watch-later",
-                    updateLastMessage: true,
-                    done: true
-                })
+                this._setLoadingMessage({ message: this.localize('please_wait', this.language), icon: "watch-later", updateLastMessage: true, done: true })
             })
             .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
                 .then(pl => {
@@ -3559,10 +3552,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             ))
             .then(requestMessages => _.head(requestMessages))
             .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? promResolve : promResolve.then(() => {
-                this._setLoadingMessage({
-                    message: this.localize('mh_eInvoicing.mda.step_7', this.language),
-                    icon: "arrow-forward"
-                })
+                this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_7', this.language), icon: "arrow-forward" })
                 return retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
                     .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
                     .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
@@ -3613,93 +3603,66 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 })
 
                 // Trigger grid refresh
-                this.set("mdaRequestsGridData", _.get(this,"mdaRequestsData.message.attachment.request",[]))
+                this.set("mdaRequestsGridData", _.get(this, "mdaRequestsData.message.attachment.request", []))
 
-                // 002 - Do we have any pending responses to wait for ? (Either no metas.responseMessageIds yet OR user overrid / bypassed the response checks)
-                eInvoicingStep = missingAtLeastOneAnswer ? "mdaCheckForResponses" : "mdaLastCallResults"
+                // 002 - Do we have any pending responses to wait for ? (Either not all patients we sent in request were matched in response(s) (or response(s) not obtained yet) AND user did not override / bypass the response checks)
+                eInvoicingStep = missingAtLeastOneAnswer && !(parseInt(_.get(mdaRequestMessage,"metas.overriddenByUserDate",0))||0) ? "mdaCheckForResponses" : "mdaLastCallResultsDetails"
                 eInvoicingStep === "mdaCheckForResponses" && this._e_mdaCheckForResponsesCountDown()
-                if (eInvoicingStep === "mdaCheckForResponses") throw new Error("dontGoAnyFurther");
 
-                // 003 - We got this far, ie -> we should show last call's results
-                return (this._setLoadingMessage({
-                    message: this.localize('mh_eInvoicing.mda.step_7_done', this.language),
-                    icon: "check-circle",
-                    updateLastMessage: true,
-                    done: true
-                }) || true) && this._setLoadingMessage({
-                    message: this.localize('mh_eInvoicing.mda.step_8', this.language),
-                    icon: "arrow-forward"
-                })
+                return (this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_7_done', this.language), icon: "check-circle", updateLastMessage: true, done: true }) || true) && this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_8', this.language), icon: "arrow-forward" })
 
             })
 
-
-            .then(() => Promise.all(_.map(_.filter(_.get(this, "mdaRequestsData.message", []), it => _.trim(_.get(it, "metas.responseMessageIds"))), it => this.api.message().getMessage(_.get(it, "metas.responseMessageIds")))))
-            .then(mdaResponseMessages => _.orderBy(mdaResponseMessages, ["metas.oa"], ["asc"]))
-            .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
-                let prom = Promise.resolve([])
-                _.map(mdaResponseMessages, mdaResponseMessage => {
-                    prom = prom
-                        .then(promisesCarrier => (this._setLoadingMessage({
-                            message: this.localize('mh_eInvoicing.mda.step_8', this.language) + " " + _.get(mdaResponseMessage, "metas.oa"),
-                            icon: "arrow-forward",
-                            updateLastMessage: true
-                        }) || true) && promisesCarrier)
-                        .then(promisesCarrier =>
-                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessage).then(document => _.head(document))), 4, 1000, 1.5)
-                                .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
-                                .then(([document, edKeys, attachment]) => _.merge(mdaResponseMessage, {
-                                    document: document,
-                                    edKeys: edKeys,
-                                    attachment: JSON.parse(attachment) || {}
-                                }))
-                                // .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
-                                .then(messageAndAttachment => _.concat(promisesCarrier, [messageAndAttachment]))
-                                .catch(() => _.concat(promisesCarrier, [mdaResponseMessage]))
-                        )
-                });
-                return prom
-            }))
-
-
-            .then(mdaResponseMessages => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSE:" + exportedDate, null, key, docId, 1000)
+            // 003 - Get responses no matter what (if any yet)
+            .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSE:" + exportedDate, null, key, docId, 1000)
                 .then(pl => {
                     return {
-                        rows: _.filter(pl.rows, it => it &&
-                            _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId &&
-                            _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
-                            _.trim(_.get(it, "metas.requestedDate")) === exportedDate
-                        ),
+                        rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 ),
                         nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
                         nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
                         done: !pl.nextKeyPair
                     }
-                })
-                .catch(() => promResolve))
-                .then(archiveMessages => _.chain(archiveMessages).orderBy(["created"], ["desc"]).head().value())
-                .then(archiveMessage => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, archiveMessage).then(document => _.head(document))), 4, 1000, 1.5)
-                    .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                    .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).catch(() => null))
-                    .then(attachment => this.set("mdaResponseArchiveAttachment", JSON.parse(attachment) || {}))
-                )
-                .then(() => mdaResponseMessages)
+                }))
             )
-            .then(mdaResponseMessages => (this.set("mdaResponsesData", {
+
+            // 004 - Get attachment of each response(s)
+            .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
+                let prom = Promise.resolve([])
+                _.map(mdaResponseMessages, mdaResponseMessage => {
+                    prom = prom
+                        .then(promisesCarrier => (this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_8', this.language), icon: "arrow-forward", updateLastMessage: true}) || true) && promisesCarrier)
+                        .then(promisesCarrier =>
+                            retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessage).then(document => _.head(document))), 4, 1000, 1.5)
+                                .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
+                                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                                .then(([document, edKeys, attachment]) => _.merge(mdaResponseMessage, { document: document, edKeys: edKeys, attachment: JSON.parse(attachment) || {} }))
+                                .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                                .then(messageAndAttachment => _.concat(promisesCarrier, messageAndAttachment))
+                                .catch(() => _.concat(promisesCarrier, mdaResponseMessage))
+                        )
+                })
+                return prom
+            }))
+
+            .then(mdaResponseMessages => (this.set("mdaResponsesData", !_.size(mdaResponseMessages) ? {} : {
                     originalMessages: _.chain((mdaResponseMessages || [])).cloneDeep().map(it => _.omit(it, ["document", "edKeys", "attachment"])).value(),
                     messages: _.map(mdaResponseMessages || [], it => _.merge(it, {metas: {responseDateHr: !_.trim(_.get(it, "metas.responseDate")) ? "" : moment(_.trim(_.get(it, "metas.responseDate")), "YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
-                }) || true) && this._setLoadingMessage({
-                    message: this.localize('mh_eInvoicing.mda.step_8_done', this.language),
-                    icon: "check-circle",
-                    updateLastMessage: true,
-                    done: true
-                })
+                }) || true) && this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_8_done', this.language), icon: "check-circle", updateLastMessage: true, done: true})
             )
-            .catch(() => {
+            .then(() => {
+
+                // 005 - Do we have any pending responses to wait for ? (Either not all patients we sent in request were matched in response(s) (or response(s) not obtained yet) AND user did not override / bypass the response checks)
+                if (eInvoicingStep === "mdaCheckForResponses") throw new Error("dontGoAnyFurther");
+
+                // 006 - We got so far, ie: go to response(s) status / patient corrections
+
             })
+
+            .catch(() => {})
             .finally(() => {
                 this.set("_isLoading", false)
                 this.set("eInvoicingStep", eInvoicingStep)
+                eInvoicingStep === "mdaLastCallResultsDetails" ? this._e_gotoMdaLastCallResultsDetails() : null
                 this.shadowRoot.getElementById("domRepeatMdaRequests") && this.shadowRoot.getElementById("domRepeatMdaRequests").render()
                 setTimeout(() => {
                     this.shadowRoot.getElementById("domIfTriggerRefresh1") && this.shadowRoot.getElementById("domIfTriggerRefresh1").render()
