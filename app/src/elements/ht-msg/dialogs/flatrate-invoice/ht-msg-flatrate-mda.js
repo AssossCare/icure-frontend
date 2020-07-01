@@ -1813,9 +1813,9 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                     <template>
                                         
                                         <template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'false')]]">
-                                            <!--<template is="dom-if" restamp="true" if="[[_isEqual(item.patientMatchedWithMdaResponse,'true')]]">-->
+                                            <template is="dom-if" restamp="true" if="[[_canFlagAsValid(item)]]">
                                                 <paper-button class="button button--other displayInlineFlex" on-tap="_e_mdaFlagPatAs" data-oa$="[[item.oa]]" data-reconcile-key$="[[item.reconcileKey]]" data-action="valid"><iron-icon icon="check-circle"></iron-icon> [[localize("flagAsValid","Flag as valid",language)]]</paper-button>
-                                            <!--</template>-->
+                                            </template>
                                         </template>
                                         
                                         <!--<template is="dom-if" restamp="true" if="[[_isEqual(item.patientHasValidInsurabilityBoolean,'true')]]">-->
@@ -2121,6 +2121,10 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     _isIn(needle,haystack) {
         return !!( _.trim(haystack).split(",").indexOf(needle) > -1 );
+    }
+
+    _canFlagAsValid(item){
+        return _.get(item, "requestErrorMessage", "").toLowerCase().includes("no_facet") ||  !_.get(item, "patientMatchedWithMdaResponse", false)
     }
 
     _getInsurancesData() {
@@ -3523,7 +3527,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     return _.merge({},pat,{
                         oa: _.trim(_.get(pat,"parentInsuranceCode")),
                         ssinHr: this.api.formatSsinNumber(_.trim(_.get(pat,"patientSsin"))),
-                        message: _.trim(_.get(pat,"responseErrorMessage")) ? _.trim(_.get(pat,"responseErrorMessage")) : _.trim(_.get(pat,"requestErrorMessage")),
+                        message: _.trim(_.get(pat,"responseErrorMessage")) ? _.trim(_.get(pat,"responseErrorMessage")) : this._getFriendlyMessage(_.trim(_.get(pat,"requestErrorMessage"))),
                         patientMatchedWithMdaResponse: _.get(pat,"patientMatchedWithMdaResponse",false),
                         mdaResponsePatientHasValidInsAndMhc: _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false),
                         patientInsurabilityStatus: !_.get(pat,"patientMatchedWithMdaResponse",false) ? "notVerified" : _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false) ? "yes" : "no",
@@ -3551,6 +3555,10 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 this.set("_isLoading",false)
             })
 
+    }
+
+    _getFriendlyMessage(msg){
+        return _.trim(msg).toLowerCase().includes("no_facet") ? this.localize("mda_no_facet", "No response", this.language) : msg
     }
 
     _e_step4SaveChangesAndGoToStep5() {

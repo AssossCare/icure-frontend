@@ -2847,7 +2847,8 @@
 		"condensed": "condensed",
 		"exportUsersMda": "Export users (MDA)",
 		"exportData": "Export data",
-		"mh_flatrate_history" : "Flatrate invoicing history"
+		"mh_flatrate_history" : "Flatrate invoicing history",
+		"mda_no_facet": "No data available"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5855,7 +5856,8 @@
 		"mh_eInvoicing.downloadRequest": "Télécharger la requête",
 		"mh_eInvoicing.downloadResponses": "Télécharger les réponses",
 		"mh_eInvoicing.technicalDetails": "Détails techniques",
-		"mh_flatrate_history" : "Historique facturation au forfait"
+		"mh_flatrate_history" : "Historique facturation au forfait",
+		"mda_no_facet": "La donnée n’est pas disponible"
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
@@ -8731,6 +8733,7 @@
 		"condensed": "condensed",
 		"exportUsersMda": "Export users (MDA)",
 		"exportData": "Export data",
-		"mh_flatrate_history" : "Tijdslijn forfait facturatie"
+		"mh_flatrate_history" : "Tijdslijn forfait facturatie",
+		"mda_no_facet": "Geen gegevens beschikbaar"
 	}
 }
