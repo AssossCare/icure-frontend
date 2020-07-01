@@ -3249,6 +3249,54 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             .then(([mdaResponse, responseMessage]) => !_.size(mdaResponse) ? [null, responseMessage] : promResolve.then(() => {
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_11_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12",this.language), icon:"arrow-forward"})
+                const mdaErrorFormattedResponses = _
+                    .chain(_.get(mdaResponse,"memberDataMessageList",[]))
+                    .filter(it => !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")) && _.size(_.get(it,"reference")))
+                    .map(it => _.get(it, "memberDataResponse",[]))
+                    .flatten()
+                    .filter(it => _.trim(_.get(it,"responseId")) && _.trim(_.get(it,"inResponseTo")) && _.trim(_.get(it,"issuer")) && _.trim(_.get(it,"issuer")).split(":").pop().toLowerCase() === "aa") // issuer "urn:be:cin:nippin:aa" is no OA / it's an error
+                    .map(it => {
+
+                        const isError = !!_.size(_.get(it,"errors"))
+                        const errorsData = !isError ? null : _.map(_.get(it,"errors"), error => _.merge({}, { faultCode: _.trim(_.get(error,"faultCode")), faultSource: _.trim(_.get(error,"faultSource")), message: _.trim(_.get(error,"message.value")), detail: _.map(_.get(error,"details.details"), detail => (!_.trim(_.get(detail,"detailCode")) ? "" : "["+ _.trim(_.get(detail,"detailCode")) +"] ") + _.trim(_.get(detail,"message.value"))).join(" - ") }))
+                        const allInsurabilities = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:period").value()
+                        const allPayments = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:payment").value()
+                        const allMhc = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:medicalHouse").value()
+                        const topazId = _.trim(_.get(_.trim(_.get(it,"inResponseTo")).split("_"), "[1]"))
+
+                        const mdaFormattedResponse = _.merge({},{
+                            oa: _.trim(_.get(it,"issuer")).split(":").pop(),
+                            mdaInputReference: _.trim(_.get(it,"responseId")) ? _.trim(_.get(it,"responseId")) : _.trim(_.get(it,"inResponseTo")),
+                            reconcileKey: _.trim(_.compact(_.trim(_.get(it,"inResponseTo")).split("_")).join("_")),
+                            patient: {
+                                topazId: topazId
+                            },
+                            insurabilities: [],
+                            mhcs: [],
+                            isError: isError,
+                            errorsData: errorsData,
+                            // assertions: _.get(it,"assertions")
+                        })
+                        return _.merge(mdaFormattedResponse, {
+                            patient: {
+                            },
+                            uniqueKey: md5(JSON.stringify({
+                                oa: _.trim(_.get(mdaFormattedResponse,"oa")),
+                                patient: _.get(mdaFormattedResponse,"patient"),
+                                insCode: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].code")),
+                                identificationNumber: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].identificationNumber")),
+                                topazId: topazId
+                            }))
+                        })
+
+                    })
+                    .filter(it => _.trim(_.get(it,"patient.topazId")))
+                    .reduce((acc,it) => (!(acc[_.get(it,"uniqueKey")]) ? (acc[_.get(it,"uniqueKey")]=it) : _.get(acc[_.get(it,"uniqueKey")], "insurabilities").push(_.get(it,"insurabilities")) && _.get(acc[_.get(it,"uniqueKey")], "mhcs").push(_.get(it,"mhcs")) ) && acc, {})
+                    .map(it => _.omit(it, ["uniqueKey"]))
+                    .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
+                    .value()
+                console.log("mdaErrorFormattedResponses", JSON.stringify(mdaErrorFormattedResponses))
+
                 return  [_
                     .chain(_.get(mdaResponse,"memberDataMessageList",[]))
                     .filter(it => !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")) && _.size(_.get(it,"reference")))
@@ -3330,11 +3378,19 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     .reduce((acc,it) => (!(acc[_.get(it,"uniqueKey")]) ? (acc[_.get(it,"uniqueKey")]=it) : _.get(acc[_.get(it,"uniqueKey")], "insurabilities").push(_.get(it,"insurabilities")) && _.get(acc[_.get(it,"uniqueKey")], "mhcs").push(_.get(it,"mhcs")) ) && acc, {})
                     .map(it => _.omit(it, ["uniqueKey"]))
                     .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
-                    .value(), responseMessage]
+                    .value(), mdaErrorFormattedResponses, responseMessage]
             }))
-
+            //pre7 join the formatted responses
+            .then(([mdaFormattedResponse, mdaErrorFormattedResponses,responseMessage]) => {
+                const mdaFormattedResponseWithErrors = _.concat(mdaFormattedResponse, mdaErrorFormattedResponses)
+                return [mdaFormattedResponseWithErrors,responseMessage]
+            })
             // 7 - Update patients' insurabilities and Medical House contracts
             .then(([mdaFormattedResponse,responseMessage]) => !_.size(mdaFormattedResponse) ? [null,responseMessage] : promResolve.then(() => {
+
+                console.log("mdaFormattedResponse", JSON.stringify(mdaFormattedResponse))
+                console.log("responseMessage", JSON.stringify(responseMessage))
+
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language), icon:"arrow-forward"})
                 return this._e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponse).then(mdaFormattedResponse => [mdaFormattedResponse,responseMessage])
