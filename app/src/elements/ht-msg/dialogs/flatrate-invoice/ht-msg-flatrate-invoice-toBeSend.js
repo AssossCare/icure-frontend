@@ -8,7 +8,7 @@ import '../../../../styles/dialog-style'
 import '../../../../styles/invoicing-style';
 import '../../../ht-spinner/ht-spinner.js'
 import '../../../ht-pat/dialogs/medicalhouse/ht-pat-flatrate-utils.js';
-
+import './ht-msg-flatrate-invoice-summary';
 
 //TODO import "@polymer/iron-collapse-button/iron-collapse-button"
 import "@polymer/iron-icon/iron-icon"
@@ -312,8 +312,23 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             
             .textAlignCenter {
                 text-align:center;
-            }                                
-   
+            }     
+ 
+            .sub-title{
+                padding: 5px;
+            }    
+            
+            .panel-flatrate-info-detail{
+                padding: 10px;
+                width: auto;
+                height: 40px;
+                overflow: auto;
+            }   
+            
+            .bold{
+                font-weight: bold;
+            }    
+
         </style>
         
         <div class="panel">
@@ -322,10 +337,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     [[localize('inv-to-be-send', 'Invoice to be send', language)]]
                     <span class="batchNumber batchPending">{{_forceZeroNum(listOfInvoice.length)}}</span>
                  </div>                 
-            </div>
+            </div>       
             <div class="panel-search">
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
-            </div>
+            </div>    
             <div class="panel-content">
                 <div class="table">
                     <div class="tr th">
@@ -345,7 +360,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[!isLoading]]">
                         <template is="dom-repeat" items="[[filteredListOfInvoice]]" as="group" id="invoiceList">
                             <div class="tr tr-group">
-                                <div class="td fg4">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg4">[[_getGroupInformation(group)]] - [[_getPatientNumber(group)]] [[localize('inv_pats', 'patients', 'language')]]</div>
                                 <div class="td fg1"></div>
                                 <div class="td fg1"></div>
                                 <div class="td fg1">[[_getTotalOfGroup(group, 'oa')]]€</div>
@@ -559,9 +574,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             <div class="buttons">
                 <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
-        </paper-dialog>            
-        
+        </paper-dialog>  
+
         <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
+        <ht-msg-flatrate-invoice-summary id="htMsgFlatrateInvoiceSummary" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" resources="[[resources]]" list-of-invoice="[[listOfInvoice]]" on-send-invoice="sendInvoices"></ht-msg-flatrate-invoice-summary>
 `
     }
 
@@ -679,6 +695,10 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         return _.get(_.head(group), 'parentInsuranceDto.code', null)+": "+_.get(_.head(group), 'parentInsuranceDto.name.'+this.language, null)
     }
 
+    _getPatientNumber(group){
+        return _.size(group)
+    }
+
     _getTotalOfGroup(group, type){
         return type === "oa" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'reimbursement', 0.00))}, 0).toFixed(2) :
             type === "pat" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'patientIntervention', 0.00))}, 0).toFixed(2) :
@@ -765,9 +785,19 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             _.get(this, 'checkBeforeSendEfact.invoiceCheck600', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck900', null) === false){
             this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
         }else{
-            this.sendInvoices()
+            this._showSummaryDialog()
+
         }
     }
+
+    _showSummaryDialog(){
+        this.shadowRoot.querySelector("#htMsgFlatrateInvoiceSummary")._openSummaryDialog()
+    }
+
+    _closeSummaryDialog(){
+        this.shadowRoot.querySelector("#htMsgFlatrateInvoiceSummary")._closeSummaryDialog()
+    }
+
 
     checkIfDoubleInvoiceNumber(invoices, startOfRange, endOfRange){
         if(startOfRange === 300 && endOfRange === 400){
@@ -779,6 +809,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
     sendInvoices(){
         //todo
+        this._closeSummaryDialog()
         this.shadowRoot.querySelector('#checkBeforeSendingDialog') ? this.shadowRoot.querySelector('#checkBeforeSendingDialog').close() : null
         this.set('progressItem', [])
 
@@ -2003,7 +2034,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
 
         // DEVELOPERS ONLY (reset pat's tag of type "flatRateLastInvoiced" and "code" >= exportedDate)
-        // return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
+        //return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
 
         return promResolve
 
@@ -2262,6 +2293,8 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             })
 
     }
+
+
 
 }
 

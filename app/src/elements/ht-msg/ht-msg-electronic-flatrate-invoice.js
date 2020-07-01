@@ -438,6 +438,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     invoiceReference: _.get(efact, 'invoice.invoiceReference', null),
                     patientSsin: _.get(efact, 'patient.ssin', null),
                     invoiceDate: _.get(efact, 'invoice.invoiceDate', null),
+                    invoiceMonth: _.get(efact, 'invoice.invoiceDate', null) ? this.api.moment(_.get(efact, 'invoice.invoiceDate', null)).format("YYYYMM") : null,
                     reimbursement: efact.invoice.invoicingCodes ? efact.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.reimbursement), 0).toFixed(2) : 0.00,
                     patientIntervention: efact.invoice.invoicingCodes ? efact.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.patientIntervention), 0).toFixed(2) : 0.00,
                     totalAmount: efact.invoice.invoicingCodes ? efact.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.totalAmount), 0).toFixed(2) : 0.00 ,
