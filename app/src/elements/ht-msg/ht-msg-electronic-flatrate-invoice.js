@@ -533,7 +533,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                                                 !!(st & (1 << 12)) ? this.localize('inv_rej','Rejected',this.language):
                                                                     !!(st & (1 << 11)) ? this.localize('inv_tre','Treated',this.language):
                                                                         !!(st & (1 << 10)) ? this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language):
-                                                                            !!(st & (1 << 9))  ? this.localize('inv_sent_oa','Sent to OA',this.language):
+                                                                            !!(st & (1 << 9))  ? this.localize('inv_pen_nip','Sent to OA',this.language):
                                                                                 !!(st & (1 << 8))  ? this.localize('inv_pen_nip','Pending',this.language):
                                                                                     !!(st & (1 << 7))  ? this.localize('inv_sent','Sent',this.language): ""
 
