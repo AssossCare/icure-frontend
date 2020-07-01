@@ -1374,7 +1374,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             }   
             
             .container-mdaResponse{
-                height: calc(100% - 270px);
+                height: calc(100% - 320px);
                 width: 100%;
                 margin-top:10px;
             }  
@@ -1525,6 +1525,11 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     top:0;
                     left:0
                 }
+                
+                .mda-summery{
+                    height: 40px;
+                    width: auto;
+                }
 
         </style>
         
@@ -1581,7 +1586,14 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[_isEqual(eInvoicingStep, 'mdaCheckForResponses')]]" restamp="true">
         
             <div id="mdaRequestSearchEngine"><paper-input label="[[localize('searchPatients','Search for a patient',language)]]" autofocus on-value-changed="_e_mdaRequestSearchForPat" id="mdaRequestSearchEngineInput"><iron-icon icon="accessibility" slot="prefix" style="margin-right:5px"></iron-icon></paper-input></div>
-            
+            <div class="mda-summery">
+                 <div class="tr tr-group"> 
+                    <div class="td fg1">[[localize('mda-sum-pat', 'Total of patient', language)]]: [[_getTotalOfMda(mdaRequestsGridData, 'tot')]]</div>
+                    <div class="td fg1">[[localize('mda-sum-resp', 'Total of response', language)]]: [[_getTotalOfMda(mdaRequestsGridData, 'resp')]]</div>
+                    <div class="td fg1">[[localize('mda-sum-pend', 'Total of pending', language)]]: [[_getTotalOfMda(mdaRequestsGridData, 'pend')]]</div>
+                    <div class="td fg1"></div>
+                </div>
+            </div>
             <div class="container-mdaResponse">
                 <div class="container-mdaResponse-patientList">
                     <div class="tr tr-group">                                    
@@ -3727,6 +3739,12 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 }, 300)
             });
 
+    }
+
+    _getTotalOfMda(mdaRequestsGridData, type){
+        return type === "tot" ? _.size(mdaRequestsGridData) :
+                type === "resp" ? _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) :
+                    type === "pend" ? _.size(mdaRequestsGridData) - _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) : null
     }
 
 }
