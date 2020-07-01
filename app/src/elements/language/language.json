@@ -5872,7 +5872,7 @@
 		"mh_eInvoicing.downloadResponses": "Télécharger les réponses",
 		"mh_eInvoicing.technicalDetails": "Détails techniques",
 		"mh_flatrate_history" : "Historique facturation au forfait",
-		"mda_no_facet": "La donnée n’est pas disponible"
+		"mda_no_facet": "Les données n’ont pas pu être vérifiées "
 	},
 	"nl": {
 		"eattest_reason_cancel_A": "Patiëntfout",
