@@ -1,6 +1,33 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.516",
+		  "updateDate": "2020-07-01",
+		  "startDate" : "2020-07-01",
+		  "endDate" : "2020-08-31",
+		  "mainType" : "News",
+		  "mainTitle" : "Information de l’INAMI de ce 30 juin 2020",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Information de l’INAMI de ce 30 juin 2020",
+					  "nl" : "Informatie van het RIZIV deze 30 juni 2020"
+				  },
+				  "description": {
+					  "fr": "<b>Prime de pratique intégrée en médecine générale</b><br/><br/>Nous n'avons pas encore reçu toutes les données nécessaires pour calculer la primede pratique intégrée 2019. Vous ne pourrez donc demander votre prime via MyInamiqu’à partir de mi-juillet. Nous vous communiquerons la date exacte dès que possible.",
+					  "nl": "<b>Geïntegreerde praktijkpremie huisartsengeneeskunde.</b><br/><br/>Wij hebben nog niet alle gegevens nodig om de geïntegreerde praktijkpremie 2019 teberekenen. U zal de premie dus slechts midden juli kunnen aanvragen via MyInami.Wij communiceren u de exacte datum zodra mogelijk."
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.478",
 		  "updateDate": "2020-05-09",
 		  "startDate" : "2020-05-09",
