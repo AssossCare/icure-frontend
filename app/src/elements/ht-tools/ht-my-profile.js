@@ -564,7 +564,8 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
                                     </div>
 
                                     <div class="horizontal line p8">
-                                        <vaadin-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</vaadin-checkbox>
+                                        <!--<vaadin-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</vaadin-checkbox>-->
+                                        <vaadin-checkbox checked="{{disableEhboxEmailReception}}">[[localize('disableEhbox','Disable eHealth box',language)]]</vaadin-checkbox>
                                     </div>
                                 </div>
 
@@ -899,6 +900,10 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
               type: Boolean,
               value: localStorage.getItem('receiveMailAuto') ? localStorage.getItem('receiveMailAuto') : true
           },
+          disableEhboxEmailReception: {
+              type: Boolean,
+              value: false
+          },
           printers: {
               type: Array,
               value: []
@@ -962,7 +967,15 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
   }
 
   static get observers() {
-      return ['apiReady(api,user,opened)', '_userChanged(user)', '_autoMailChanged(receiveMailAuto)', '_selectedPrinterChanged(selectedPrinter.*)', '_isValidLogin(user, user.login)', '_isValidEmailPro(adr, adr.proMail)', '_canSaveInfo(emailProVerification, loginVerification)'];
+      return [
+          'apiReady(api,user,opened)',
+          '_userChanged(user)',
+          '_autoMailChanged(receiveMailAuto)',
+          '_selectedPrinterChanged(selectedPrinter.*)',
+          '_isValidLogin(user, user.login)',
+          '_isValidEmailPro(adr, adr.proMail)',
+          '_canSaveInfo(emailProVerification, loginVerification)'
+      ];
   }
 
   ready() {
@@ -1026,6 +1039,13 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
               typedValue: {type: 'STRING', stringValue: ''}
           });
       this.set('userIBAN', propIBAN.typedValue.stringValue);
+
+      const ehboxEmailReception = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception') ||
+          (this.user.properties[this.user.properties.length] = {
+              type: {identifier: 'org.taktik.icure.user.disableEhboxEmailReception', localized: false, unique: false},
+              typedValue: {type: 'BOOLEAN', booleanValue: false}
+          });
+      this.set('disableEhboxEmailReception', !!_.get(ehboxEmailReception,"typedValue.booleanValue",false));
   }
 
   _getOARegStatus(reg){
@@ -1287,39 +1307,6 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
       this.$.dialog.close();
   }
 
-  confirm() {
-      if ((!this.userPassword || this.userPassword.length > 7) && this.userPassword === this.userConfirmation) {
-          this.user.passwordHash = this.userPassword || this.user.passwordHash
-          let propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub')
-          propHub.typedValue.stringValue = this.userPreferredHub;
-          let propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv')
-          propEnv.typedValue.stringValue = this.userEHealthEnv;
-
-          let propMHNihii = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.medicalHouse.nihii')
-          propMHNihii.typedValue.stringValue = this.userMedicalHouseNihii;
-
-          // Only save if we actually have data
-          if( this.hcp && this.hcp.financialInstitutionInformation ) this.hcp.financialInstitutionInformation =  _.filter( this.hcp.financialInstitutionInformation, 'bankAccount' );
-
-          // this.api.user().modifyUser(this.user)
-          //     .then(user => this.api.register(user,"user"))
-          //     .then(user => this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true})))
-          //     .then(() => this.api.hcparty().modifyHealthcareParty(this.hcp))
-          //     .then(hcp => this.api.register(hcp,"hcp"))
-          //     .then(hcp => this.hcp = hcp)
-          //     .finally(() => this.$.dialog.close())
-          if(!_.isEmpty(this.adr))this.addressProChanged();
-          Promise.all([this.api.user().modifyUser(this.user), this.api.hcparty().modifyHealthcareParty(this.hcp)])
-              .then(([user,hcp]) => {
-                  this.api.register(hcp,'hcp');
-                  this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
-                  this.$.dialog.close()
-              })
-              .catch(err => console.error(err))
-
-      }
-  }
-
   // Resolve and assign BIC based on IBAN
   _evalBic( event, fieldObject ) {
 
@@ -1515,9 +1502,11 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
   }
 
 
-  _isMedicalHouse(hcpType) {return hcpType && hcpType.toLowerCase() === "medicalhouse";}
+    _isMedicalHouse(hcpType) {
+        return _.trim(hcpType) && _.trim(hcpType).toLowerCase() === "medicalhouse"
+    }
 
-  addressProChanged(){
+  addressProChanged() {
       if(!this.hcp)return;
       const idx = this.hcp.addresses.findIndex(ad => ad.addressType==="work")
       const newAdd = {
@@ -1557,9 +1546,33 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
   _isValidEmailPro(){
       setTimeout(() => this.api._isValidMail(_.get(this.adr, 'proMail', null)) ? this.set('emailProVerification', true) : this.set('emailProVerification', false), 1000)
   }
-  _canSaveInfo(){
-      return _.get(this, 'emailProVerification', false) && _.get(this, 'loginVerification', false)
-  }
+    _canSaveInfo() {
+        return _.get(this, 'emailProVerification', false) && _.get(this, 'loginVerification', false)
+    }
+    confirm() {
+        if ((!this.userPassword || this.userPassword.length > 7) && this.userPassword === this.userConfirmation) {
+            this.user.passwordHash = this.userPassword || this.user.passwordHash
+            let propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub')
+            propHub.typedValue.stringValue = this.userPreferredHub;
+            let propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv')
+            propEnv.typedValue.stringValue = this.userEHealthEnv;
+            let propMHNihii = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.medicalHouse.nihii')
+            propMHNihii.typedValue.stringValue = this.userMedicalHouseNihii;
+            let disableEhboxEmailReception = this.user.properties.find(p=>p.type && p.type.identifier === 'org.taktik.icure.user.disableEhboxEmailReception')
+            disableEhboxEmailReception.typedValue.booleanValue = !!_.get(this,"disableEhboxEmailReception",false)
+            // Only save if we actually have data
+            if( this.hcp && this.hcp.financialInstitutionInformation ) this.hcp.financialInstitutionInformation =  _.filter( this.hcp.financialInstitutionInformation, 'bankAccount' );
+            if(!_.isEmpty(this.adr)) this.addressProChanged();
+            Promise.all([this.api.user().modifyUser(this.user), this.api.hcparty().modifyHealthcareParty(this.hcp)])
+                .then(([user,hcp]) => {
+                    this.api.register(hcp,'hcp');
+                    this.api.register(user,'user');
+                    this.dispatchEvent(new CustomEvent('user-saved', {detail: user, bubbles: true, composed: true}))
+                    this.$.dialog.close()
+                })
+                .catch(err => console.error(err))
+        }
+    }
 }
 
 customElements.define(HtExportKey.is, HtExportKey);

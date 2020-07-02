@@ -736,6 +736,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                                 <iron-icon icon="vaadin:ambulance"></iron-icon>
                                                 [[localize('care-path', 'Care path', language)]]
                                             </paper-button>
+                                            <paper-button on-tap="showEforms"><iron-icon icon="icons:description"></iron-icon>[[localize('eforms', 'E-forms', language)]]</paper-button>
+                                            <paper-button on-tap="_consultPcrValidationCode"><iron-icon icon="vaadin:rss-square"></iron-icon>[[localize('pcr-code', 'PCR following', language)]]</paper-button>
                                         </div>
                                     </div>
                                 </template>
@@ -4648,6 +4650,11 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.dispatchEvent(new CustomEvent('open-care-path-list', {detail: {}, composed: true, bubbles: true}))
     }
 
+    showEforms(){
+        this.set('showAddFormsContainer', false)
+        this.dispatchEvent(new CustomEvent('open-eforms-dialog', { detail: {}, composed: true, bubbles: true}));
+    }
+
     openBelRai() {
         this.set('showAddEvaFormsContainer', false)
         _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
@@ -4665,6 +4672,20 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                         ]
                     })
                 }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/") : window.open("https://www.vas.ehealth.fgov.be/registers/belrai/web/")
+    }
+
+    _consultPcrValidationCode(){
+        _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
+                .then(bearerToken => {
+                    this._sendPostRequest({
+                        action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+                        params: [
+                            {type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be" },
+                            {type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
+                        ]
+                    })
+                }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://pcr-test-prescription-web.acc.pub.vascloud.be") : window.open("https://pcr-test-prescription-web.prd.pub.vascloud.be")
     }
 
     _sendPostRequest(params) {

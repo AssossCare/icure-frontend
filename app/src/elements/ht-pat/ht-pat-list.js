@@ -1029,7 +1029,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                         </template>
                     </vaadin-grid-column>
 
-                    <vaadin-grid-column flex-grow="0" width="100px">
+                    <vaadin-grid-column flex-grow="0" width="120px">
                         <template class="header">
                             <div class="cell numeric">[[localize('pho','Phone',language)]]</div>
                         </template>

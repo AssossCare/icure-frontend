@@ -297,8 +297,7 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
           )
           .then(([document,enckeys]) => this.api.beresultimport().canHandle(_.trim(_.get(document,"id","")), (enckeys||[]).join(',')).then(canHandle => ([document,enckeys,!!canHandle])).catch(() => Promise.resolve([document,enckeys,false])))
           .then(([document,enckeys,canHandle]) => !canHandle ? Promise.resolve([document,enckeys]) : this.api.beresultimport().getInfos(_.trim(_.get(document,"id","")), true, null, (enckeys||[]).join(',')).then(docInfo=>([_.merge({},document,{docInfo:this._prettifyDocInfo(_.head(docInfo))}),enckeys])).catch(() => Promise.resolve([document,enckeys])))
-          .then(([document,enckeys]) => this.api.document().getAttachment(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), (enckeys||[]).join(',')).then(attachmentContent => _.merge({}, document, {attachment: {content:attachmentContent, downloadUrl:this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))}})).catch(()=>Promise.resolve(document)))
-          .then(document => {
+          .then(([document,enckeys]) => (this._heicMimeType(document) ? this.api.document().getAttachmentAs(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), "application/octet-stream", (enckeys||[]).join(',')) : this.api.document().getAttachment(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), (enckeys||[]).join(',')) ).then(attachmentContent => _.merge({}, document, {attachment: {content:attachmentContent, downloadUrl:this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))}})).catch(()=>Promise.resolve(document)))          .then(document => {
               const fileExtension = (_.trim(_.get(document,"name","")).split(".").pop()).toLowerCase()
               const attachmentSize = _.get((typeof _.get(document,"attachment.content","") === "string" ? this.api.crypto().utils.text2ua(_.get(document,"attachment.content","")) : _.get(document,"attachment.content","")),"byteLength",0)
               const attachmentSizePow = attachmentSize > (1024**2) ? 2 : attachmentSize > 1024 ? 1 : 0
@@ -351,6 +350,10 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
 
   _getImage(mimeType, content) {
       return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="data:' + _.trim(mimeType) + ';base64,' + btoa(this.api.crypto().utils.ua2text(content)) + '"/></div>'
+  }
+
+  _getImageFromBase64(content) {
+        return '<div class="imageContainer p10 textaligncenter borderSolid borderW1px borderColorBlack"><img src="'+content+'"/></div>'
   }
 
   _localize(value, defaultValue) {
@@ -749,7 +752,7 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
   }
 
   _getPdfFooter() {
-      
+
       return `<div class="pageFooter pt5 mt30 textaligncenter borderSolid borderW1px borderColorBlack bb0 br0 bl0">
       <b>` + this.localize("doctor", "Doctor", this.language) + `:</b> ` + _.trim(_.get(this,"_data.currentHcp.lastName")) + " " + _.trim(_.get(this,"_data.currentHcp.firstName")) + ` - <b>N° ` + this.localize("inami", "INAMI", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.nihiiHr")) +`<br />
       <b>` + this.localize("postalAddress", "Address", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.address","-")) +` -  `+ _.trim(_.get(this,"_data.currentHcp.postalCode","-")) +` `+ _.trim(_.get(this,"_data.currentHcp.city","-")) +` - <b>` + this.localize("telAbreviation", "Tel", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.phone","-")) +` - <b>` + this.localize("mobile", "Mobile", this.language) + `:</b> `+ _.trim(_.get(this,"_data.currentHcp.mobile","-")) +` - <b>E-mail:</b> `+ _.trim(_.get(this,"_data.currentHcp.email","-")) +`
@@ -758,7 +761,7 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
       '<'+'script'+'>'+'document.fonts.ready.then(() => { setInterval(() => {document.body.dispatchEvent(new CustomEvent("pdfDoneRenderingEvent"))}, 500); }); <'+'/script'+'>' + `
       </body>
       </html>`
-      
+
   }
 
   _getPdfHeader() {
@@ -881,12 +884,20 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
 
 
   _getPdfContent() {
+
+      const maxSvcPerPage = 32
+
       return "" +
           this._getPdfHeader() +
           (
               // Simple text
-              ((typeof _.get(this,"_data.content.body") === "string" ? "<pre>" + _.get(this,"_data.content.body") + "</pre>" : // Images
+              (typeof _.get(this,"_data.content.body") === "string" && !this._heicMimeType(_.get(this,"_data.document",{})) ? "<pre>" + _.get(this,"_data.content.body") + "</pre>" :
+
+              // Images
               _.get(this,"_data.content.body") instanceof ArrayBuffer && this._isImage(_.get(this,"_data.content")) ? this._getImage(_.get(this,"_data.content.mimeType"), _.get(this,"_data.content.body")) :
+
+              // Heic / Heif image
+              typeof _.get(this,"_data.content.body") === "string" && this._heicMimeType(_.get(this,"_data.document",{})) ? this._getImageFromBase64(_.get(this,"_data.content.body")) :
 
               // Lab or protocol
               _.get(this,"_data.content.body") instanceof ArrayBuffer && !!_.size(_.get(this,"_data.document.docInfo",{})) && !!_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue","")) ? "<pre>" + this._prettifyText(_.trim(_.get(_.flatMap(_.get(this,"_data.document.docInfo.services[0].content","")),"[0].stringValue",""))) + "</pre>" :
@@ -908,13 +919,12 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
                               '<div class="resultsNormalValue">' + _.trim(_.get(it,"normalValue","")) + '</div>' +
                               '<!--<div class="resultsAuthor">' + _.trim(_.get(it,"author",""))  + '</div>-->' +
                               '<div class="resultsDate">' + (!!_.trim(_.get(it,"date","")) ? _.trim(_.get(it,"date","")) : _.trim(_.get(this,"_data.content.dateHr",""))) + '</div>' +
-                          "</div>"
+                          "</div>" + ( !(k % maxSvcPerPage) && k > 0 ? '</div></div><br /><div class="page"><div class="resultLines">' : "")
                       ).join("") +
                   "</div>" :
 
               // Can't render
-              ""))
-
+              "")
           ) +
           this._getPdfFooter();
   }
@@ -1017,7 +1027,8 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
       const documentInfoServices =  _.compact(_.map(_.get(document,"docInfo.services",{}), svc => svc))
 
       return !_.size(document) ? promResolve : promResolve
-          .then(() => {
+          .then(() => this._heicMimeType(document) ? this.api.heicToJpg(document, _.get(document, "attachment.content")) : null)
+          .then(heicBase64Image => {
               return {
                   dateHr: !!_.size(contact) ? _.get(contact, "openingDateHr", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToDDMMYYYY(parseInt(_.get(document,"created"))) : moment().format("DD/MM/YYYY"),
                   dateYYYYMMDD: !!_.size(contact) ? _.get(contact, "openingDateYYYYMMDD", "") : !!(parseInt(_.get(document,"docInfo.demandDate"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"docInfo.demandDate"))) : !!(parseInt(_.get(document,"created"))||0) ? this._msTstampToYYYYMMDD(parseInt(_.get(document,"created"))) : moment().format("YYYYMMDD"),
@@ -1035,8 +1046,7 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
                               normalValue: this._getServiceNormalValues(svc),
                               author: this._getServiceAuthor(svc),
                           }}) :
-                          typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) :
-                              _.get(document, "attachment.content"),
+                          typeof _.get(document, "attachment.content") === "string" ? this._prettifyText(_.trim(_.get(document, "attachment.content"))) : heicBase64Image ? heicBase64Image : _.get(document, "attachment.content"),
                   fileExtension: _.trim(_.get(document, "attachment.fileExtension")).toLowerCase(),
                   mimeType: _.trim(_.get(document, "attachment.mimeType")).toLowerCase(),
                   downloadUrl: _.trim(_.get(document, "attachment.downloadUrl")),
@@ -1127,6 +1137,10 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
       )
 
   }
+
+    _heicMimeType(document) {
+        return document && _.get(document,"attachmentId",false) && ["heic","heif"].indexOf(_.trim(_.trim(_.get(document,"name","")).toLowerCase().split(".").pop())) > -1
+    }
 
   printDocument(inputData) {
 

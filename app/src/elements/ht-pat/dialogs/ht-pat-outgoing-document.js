@@ -85,7 +85,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
                 <paper-button class="button button--other" on-tap="_print"><iron-icon icon="icons:print"></iron-icon>[[localize('print','Print',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_saveAndAddToPatFile"><iron-icon icon="icons:save"></iron-icon>[[localize('saveToPatFile','Save to patient file',language)]]</paper-button>
-
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> &nbsp; [[localize('clo','Close',language)]]</paper-button>
             </div>
 
 
@@ -910,7 +910,10 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
         const promResolve = Promise.resolve()
 
         return this._getProseEditorTemplates()
-            .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId).then(attachmentFileContent => _.merge({}, template, {attachmentFileContent: attachmentFileContent})))))
+            .then(foundTemplates => Promise.all(_.map(foundTemplates, template => template && this.api.doctemplate().getAttachmentText(template.id, template.attachmentId)
+                .then(attachmentFileContent => _.merge({}, template, {attachmentFileContent:attachmentFileContent}))
+                .catch(e=>{})
+            )))
             .catch(e => {
                 console.log("[ERROR] _getProseEditorTemplatesAndAttachment", e)
                 return promResolve
@@ -1462,6 +1465,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             "new-doc",
             "lettre-liaison",
             "lettre-liaison-avec-es",
+            "lettre-liaison-avec-es-condenses",
             "msoap",
             "amu",
             "coups-blessures",
@@ -1490,6 +1494,13 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             "mm-desinscription",
             "mm-transfert",
             "mm-soins-abonnes-en-institution",
+            "covid19-employer",
+            "certificat-administration-biens",
+            "covid19-mutuelle",
+            "evax",
+            "covid19-quarantaine",
+            "non-complaisance",
+            "infi-prepa-medication",
         ]
 
         return promResolve
