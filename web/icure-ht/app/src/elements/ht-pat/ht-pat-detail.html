@@ -4686,7 +4686,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.set('familyrisks', (this.familyrisks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
                         this.set('surgicalHealthElements', (this.surgicalHealthElements || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
 
-                        this.set('medications',_.sortBy(_.uniqBy(svcHes.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication')).map(m =>m.svc).concat(this.medications),'id').filter(s =>!s.endOfLife && (!(this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s.svc, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
+                        this.set('medications',_.sortBy(_.uniqBy(svcHes.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication')).map(m =>m.svc).concat(this.medications),'id').map(m => {
                             return Object.assign(m, {
                                 colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
                             })
@@ -4828,7 +4828,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
                         const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
-                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
+                        this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') ).map(m => {
                             return Object.assign(m, {
                                 colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
                             })
