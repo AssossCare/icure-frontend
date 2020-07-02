@@ -2673,6 +2673,12 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _getTotalOfMda(mdaRequestsGridData, type) {
+        return type === "tot" ? _.size(mdaRequestsGridData) :
+            type === "resp" ? _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) :
+                type === "pend" ? _.size(mdaRequestsGridData) - _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) : null
+    }
+
 
 
 
@@ -3041,8 +3047,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
         const promResolve = Promise.resolve()
 
-        // Todo: delete this for PROD
-        return promResolve.then(() => console.log("[ACTIVATE FOR PROD] _e_confirmMdaMessagesByReferences", messageReferences))
+        // return promResolve.then(() => console.log("[ACTIVATE FOR PROD] _e_confirmMdaMessagesByReferences", messageReferences))
 
         return this.api.fhc().MemberDataController().confirmMemberDataMessagesAsyncUsingPOST(
             _.trim(_.get(this,"api.tokenIdMH")),
@@ -3052,7 +3057,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             _.trim(_.get(this,"hcp.name")) ? _.trim(_.get(this,"hcp.name")) : _.trim(_.get(this,"hcp.lastName")),
             messageReferences
         )
-            .then(response => console.log("[RESPONSE] confirmMemberDataMessagesAsyncUsingPOST", response))
+
             .catch(e => console.log("[ERROR] confirmMemberDataMessagesAsyncUsingPOST", e))
 
     }
@@ -3256,9 +3261,21 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
             // 5 - Confirm MDA responses back, using MDA references
             .then(([mdaResponse, responseMessage]) => {
+
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_10_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_11",this.language), icon:"arrow-forward"})
-                return !_.size(mdaResponse) ? [null, responseMessage] : this._e_confirmMdaMessagesByReferences(_.chain(mdaResponse).get("memberDataMessageList",[]).map("reference").compact().uniq().value()).then(() => [mdaResponse, responseMessage])
+
+                // All patient ids WE sent (our reconcile key is: topazPatientId + "_" + uuid)
+                const requestTopazPatientIds = _.uniq(_.compact(_.map(_.get(this,"mdaRequestsData.message.attachment.request",[]), it => _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_"))) )))
+
+                // Is at least one patient ours: drop leading underscore, if any (inResponseTo is "_" + our reconcileKey) and take first part (topazPatientId)
+                const mdaMessageIdsToConfirm = _.uniq(_.compact(_.map(_.get(mdaResponse,"memberDataMessageList",[]), responseMessage => {
+                    const mdaResponseReferenceId = _.trim(_.get(responseMessage,"reference"))
+                    return _.some(_.get(responseMessage,"memberDataResponse",[]), it => requestTopazPatientIds.indexOf(_.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))) > -1) ? mdaResponseReferenceId : false
+                })))
+
+                return !_.size(mdaResponse) ? [null, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
+
             })
 
             // 6 - Format MDA Answer
@@ -3311,7 +3328,8 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     .map(it => _.omit(it, ["uniqueKey"]))
                     .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
                     .value()
-                console.log("mdaErrorFormattedResponses", JSON.stringify(mdaErrorFormattedResponses))
+
+                // console.log("mdaErrorFormattedResponses", JSON.stringify(mdaErrorFormattedResponses))
 
                 return  [_
                     .chain(_.get(mdaResponse,"memberDataMessageList",[]))
@@ -3396,16 +3414,18 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
                     .value(), mdaErrorFormattedResponses, responseMessage]
             }))
-            //pre7 join the formatted responses
+
+            // Pre 7 - join the formatted responses
             .then(([mdaFormattedResponse, mdaErrorFormattedResponses,responseMessage]) => {
                 const mdaFormattedResponseWithErrors = _.concat(mdaFormattedResponse, mdaErrorFormattedResponses)
                 return [mdaFormattedResponseWithErrors,responseMessage]
             })
+
             // 7 - Update patients' insurabilities and Medical House contracts
             .then(([mdaFormattedResponse,responseMessage]) => !_.size(mdaFormattedResponse) ? [null,responseMessage] : promResolve.then(() => {
 
-                console.log("mdaFormattedResponse", JSON.stringify(mdaFormattedResponse))
-                console.log("responseMessage", JSON.stringify(responseMessage))
+                // console.log("mdaFormattedResponse", JSON.stringify(mdaFormattedResponse))
+                // console.log("responseMessage", JSON.stringify(responseMessage))
 
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                 this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language), icon:"arrow-forward"})
@@ -3747,12 +3767,6 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 }, 300)
             });
 
-    }
-
-    _getTotalOfMda(mdaRequestsGridData, type){
-        return type === "tot" ? _.size(mdaRequestsGridData) :
-                type === "resp" ? _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) :
-                    type === "pend" ? _.size(mdaRequestsGridData) - _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) : null
     }
 
 }
