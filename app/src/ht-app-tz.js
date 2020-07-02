@@ -46,6 +46,7 @@ import './elements/icc-api/icc-api';
 import './elements/icons/icure-icons';
 import './elements/menu-bar/menu-bar';
 import './elements/splash-screen/splash-screen'
+import './elements/mta/ht-mailer-dialog'
 import './elements/tk-localizer';
 import './ht-view404'
 import './ht-update-dialog'
@@ -113,7 +114,8 @@ import _ from "lodash";
 class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-        <style include="shared-styles dialog-style notification-style buttons-style">
+        <!--suppress CssUnresolvedCustomProperty -->
+<style include="shared-styles dialog-style notification-style buttons-style">
             :host {
                 display: block;
             }
@@ -560,7 +562,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
             .logo-text {
                 visibility: hidden;
-                transform-origin: center right;
+                transform-origin: center;
                 transform: scaleX(0.3);
                 transition: transform .24s;
             }
@@ -878,22 +880,22 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
                 </app-header>
                 <iron-pages selected="[[view]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage">
+                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-main>
-                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage">
+                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-pat>
-                    <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}">
+                    <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-hcp>
-                    <ht-msg name="msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" route-data="[[routeData]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" force-refresh="[[_forceEhBoxRefresh]]" on-trigger-open-my-profile="_triggerOpenMyProfile" on-trigger-goto-admin="_triggerOpenAdminGroupsManagementSubMenu" on-idle="resetTimer" on-refresh-patient="_refreshPatient">
+                    <ht-msg name="msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" force-refresh="[[_forceEhBoxRefresh]]" on-trigger-open-my-profile="_triggerOpenMyProfile" on-trigger-goto-admin="_triggerOpenAdminGroupsManagementSubMenu" on-idle="resetTimer" on-refresh-patient="_refreshPatient" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-msg>
-                    <ht-diary id="htDiary" name="diary" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]">
+                    <ht-diary id="htDiary" name="diary" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-diary>
-                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]">
+                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-admin>
                     <ht-view404 name="view404"></ht-view404>
@@ -1095,6 +1097,8 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[showKeystoreExpiresSoonLabel]]">
             <div class="warningLabel displayNotification" id="keystoreExpiresSoonLabel"><iron-icon icon="alarm"></iron-icon> [[localize('keystoreExpiresSoonLabel','Votre keystore va bientôt expirer',language)]] : [[keyStoreValidityLabel]]</div>
         </template>
+        
+        <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
 `;
   }
 
@@ -1406,6 +1410,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           },
           lang:{
               type: String
+          },
+          fhcTokenInfo:{
+              type: Object,
+              value: () => {}
+          },
+          timeLaunched:{
+              type: Boolean,
+              value : false
           }
 
   }
@@ -1666,42 +1678,54 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       this.sessionInterval = setInterval(() => this.api.user().getCurrentSessionWithSession(this.api.sessionId).then(sessionId => this.api.set('sessionId', sessionId)), 240000)
   }
 
-  _timeCheck(period = 30000) {
+  _timeCheck(period = 14400000) {
       setTimeout(() => {
           if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
               this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                   if (!isTokenValid) {
+                      //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                      this.set('api.isMH', null)
+                      this.set('api.tokenIdMH', null)
+                      this.set('api.tokenMH', null)
+                      this.set('api.tokenId', null)
+                      this.set('api.token', null)
+                      this.set('api.MHContactPersonName',null)
+                      this.set('api.MHContactPersonSsin', null)
                       this.uploadKeystoreAndCheckToken().then(() => {
                           this._timeCheck()
-                      }).catch(() => this._timeCheck(10000))
+                      })
                   } else {
                       this._timeCheck()
                   }
-              }).catch(() => this._timeCheck(10000))
+              })
           } else {
               this.uploadKeystoreAndCheckToken().then(() => {
                   this._timeCheck()
-              }).catch(() => this._timeCheck(10000))
+              })
           }
       }, period)
   }
 
-  _timeCheckMH(period = 30000){
+  _timeCheckMH(period = 14400000){
       setTimeout(() => {
           if (this.api.tokenIdMH) {
               this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                   if (!isTokenValid) {
+                      //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
+                      this.set('api.tokenIdMH', null)
+                      this.set('api.tokenMH', null)
+                      this.set('api.nihiiMH', null)
                       this.uploadMHKeystoreAndCheckToken().then(() => {
                           this._timeCheckMH()
-                      }).catch(() => this._timeCheckMH(10000))
+                      })
                   } else {
                       this._timeCheckMH()
                   }
-              }).catch(() => this._timeCheckMH(10000))
+              })
           } else {
               this.uploadMHKeystoreAndCheckToken().then(() => {
                   this._timeCheckMH()
-              }).catch(() => this._timeCheckMH(10000))
+              })
           }
       }, period)
   }
@@ -1847,7 +1871,8 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
       {
           const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
+          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
+              this.set('api.fhcTokenInfo', res)
               this.$.eHealthStatus.classList.remove('pending')
               this.$.eHealthStatus.classList.remove('disconnected')
 
@@ -1894,7 +1919,18 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       )
   }
 
-  _versionOk(a,b) {
+    _isOtherInstitutionWithNihii(hcp){
+        if(_.get(hcp, 'nihii', null)){
+            return _.size(_.get(hcp, 'nihii', null)) === 8 && (parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 || parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0)
+        }else{
+            return false
+        }
+    }
+    _getQuality(hcp){
+        return _.get(hcp, 'type', null) && _.get(hcp, 'type', null).toLowerCase() === 'medicalhouse' ? 'medicalhouse' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 7 ? 'sortingcenter' : parseInt(_.get(hcp, 'nihii', null).charAt(0)) === 0 ? 'officedoctors' : 'doctor'
+    }
+
+    _versionOk(a,b) {
       return a && b ? 'ok' : 'nok'
   }
 
@@ -1907,7 +1943,8 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH && hcpMH.nihii ? hcpMH.nihii.substr(0, 8) : "", this.api.keystoreIdMH, true).then(res => {
+              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
+                  this.set('api.fhcTokenInfo', res)
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
                   !_.isEmpty(res) ? this.root.getElementById('eHealthMHStatus') ? this.root.getElementById('eHealthMHStatus').classList.add('connected') : null : this.root.getElementById('eHealthMHStatus').classList.add('disconnected')
@@ -2001,6 +2038,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
                   loadKeysForParent(hcp.parentId, this.loadOrImportRSAKeys(u, hcp, page)).then(([success, page]) => {
                       if (success) {
+                          this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
                           const destPage = page || (this.routeData && this.routeData.page === 'auth' && this.subrouteData && this.subrouteData.page ? this.subrouteData.page : 'main')
                           if (!this.routeData || destPage !== this.routeData.page) {
                               this.set('routeData.page', destPage)
@@ -2010,9 +2048,12 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                       }
                   })
               }
-              this._timeCheck()
-              this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
-              this._inboxMessageCheck()
+              //only 1 instance
+              if(!this.timeLaunched){
+                  this.set("timeLaunched",true)
+                  this._timeCheck()
+                  this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
+              }              this._inboxMessageCheck()
               this._checkForUpdateMessage()
               //this._correctionGenderPatients();
 
@@ -2031,7 +2072,6 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   this.set("keyHcpId", hcp.id)
                   if (ok) {
                       this.api.loadUsersAndHcParties()
-                      this.uploadKeystoreAndCheckToken().catch(e => console.log(e))
                       resolve([true, page])
                   } else {
                       this.registerKeyPairDialogMessage = "The key registered in your browser is invalid"
@@ -2040,6 +2080,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   }
               })
           } else {
+              //todo julien revoir le changement avec les nouvelles RSA keys et les anciennes (sans besoin de vider le local storage)
               this.set("keyHcpId", hcp.id)
               if (hcp.publicKey) {
                   this.registerKeyPairDialogMessage = ""
@@ -2189,65 +2230,6 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           }).catch( error=> {
               this.createAndInviteUser();
           })
-      }
-  }
-
-  checkEhboxMessage() {
-      if (!this.user) { return }
-      const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
-      const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
-      if ( /*localStorage.getItem('receiveMailAuto') === 'true' && */ shouldLoad) {
-          localStorage.setItem('lastEhboxRefresh', Date.now())
-
-          const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
-              keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
-              if (hcp.parentId) {
-                  return getParents(hcp.parentId, keyPairs)
-              }
-              return ([hcp, keyPairs])
-          })
-
-          this.$.ehBoxMessage.classList.remove('notification')
-          if (!this.worker) { this.worker = new Worker() }
-
-          getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
-              this.worker.postMessage({
-                  action: "loadEhboxMessage",
-                  hcpartyBaseApi: this.api.hcpartyLight(),
-                  fhcHost: this.api.fhc().host,
-                  fhcHeaders: JSON.stringify(this.api.fhc().headers),
-                  language: this.language,
-                  iccHost: this.api.host,
-                  iccHeaders: JSON.stringify(this.api.headers),
-                  tokenId: this.api.tokenId,
-                  keystoreId: this.api.keystoreId,
-                  user: this.user,
-                  ehpassword: this.credentials.ehpassword,
-                  boxId: ["INBOX","SENTBOX"],
-                  alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
-                  keyPairs: kp,
-                  parentHcp: hcp
-              })
-          }))
-
-          this.worker.onmessage = e => {
-
-              const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
-              if(parseInt(totalNewMessages)) {
-                  this.set("_forceEhBoxRefresh", true)
-                  this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
-                  this.$['ehBoxMessage'].classList.add('notification');
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                  setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
-              }
-
-              if(!!_.get(e,"data.forceRefresh",false)) {
-                  this.set("_forceEhBoxRefresh", true);
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-              }
-
-          }
-
       }
   }
 
@@ -2678,6 +2660,64 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _isPatientView(){
       return this.route.path.includes("/pat")
   }
+
+    _feedbackMessage(e) {
+        if(!_.trim(_.get(e,"detail.message"))) return;
+        this.set('mailerMessage', _.trim(_.get(e,"detail.message")))
+        this.$['mailerMessage'].classList.add('notification');
+        setTimeout(() => { this.$['mailerMessage'].classList.remove('notification'); }, 10000);
+    }
+    checkEhboxMessage() {
+        if (!this.user) { return }
+        const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
+        const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
+        const disableEhboxEmailReception = _.get(_.find(_.get(this,"user.properties",[]), it=> _.trim(_.get(it, "type.identifier")) === "org.taktik.icure.user.disableEhboxEmailReception"),"typedValue.booleanValue",false)
+        if (shouldLoad && !disableEhboxEmailReception) {
+            localStorage.setItem('lastEhboxRefresh', Date.now())
+            const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
+                keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
+                if (hcp.parentId) {
+                    return getParents(hcp.parentId, keyPairs)
+                }
+                return ([hcp, keyPairs])
+            })
+            this.$.ehBoxMessage.classList.remove('notification')
+            if (!this.worker) { this.worker = new Worker() }
+            getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
+                this.worker.postMessage({
+                    action: "loadEhboxMessage",
+                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    fhcHost: this.api.fhc().host,
+                    fhcHeaders: JSON.stringify(this.api.fhc().headers),
+                    language: this.language,
+                    iccHost: this.api.host,
+                    iccHeaders: JSON.stringify(this.api.headers),
+                    tokenId: this.api.tokenId,
+                    keystoreId: this.api.keystoreId,
+                    user: this.user,
+                    ehpassword: this.credentials.ehpassword,
+                    boxId: ["INBOX","SENTBOX"],
+                    alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
+                    keyPairs: kp,
+                    parentHcp: hcp
+                })
+            }))
+            this.worker.onmessage = e => {
+                const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
+                if(parseInt(totalNewMessages)) {
+                    this.set("_forceEhBoxRefresh", true)
+                    this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
+                    this.$['ehBoxMessage'].classList.add('notification');
+                    setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
+                    setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
+                }
+                if(!!_.get(e,"data.forceRefresh",false)) {
+                    this.set("_forceEhBoxRefresh", true);
+                    setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
+                }
+            }
+        }
+    }
 }
 
 customElements.define(HtAppTz.is, HtAppTz)

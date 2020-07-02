@@ -1638,6 +1638,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                                                       }]
                                                       phcpE.referral = true
                                                       phcpE.isDmg = true
+                                                      phcpE.type = type
 
                                                       return this.api.patient().modifyPatientWithUser(this.user,patient).catch(e => defer.resolve(patient)).then(p => this.api.register(p, 'patient', defer)).then(p => this.patientChanged())
                                                   } else {
