@@ -149,24 +149,30 @@ class FilterPanel extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
             <div is="dom-if" hidden\$="{{showFiltersPanel}}" style="width: 100%;">
                 <div class="filters-bar--small">
                     <div class="horizontal">
+                    <!--
                         <template id="filterPanelIcons" is="dom-repeat" items="[[visibleItems]]" as="menu">
                             <paper-icon-button id="[[menu.id]]-btn" class\$="filters-bar--small-icon [[_isFilterSelected(menu.filter,selectedFilters,selectedFilters.*)]]" icon="[[menu.icon]]" on-tap="_filterSelected"></paper-icon-button>
                             <paper-tooltip for="[[menu.id]]-btn">[[_localize(menu.title)]]</paper-tooltip>
                         </template>
+                    -->
                     </div>
                     <template is="dom-if" if="[[!showFiltersContainer]]">
+                    <!--
                         <paper-button id="newFormBtn" class="button button--menu button--menu--other" on-tap="_toggleFiltersContainer">
                             <span class="no-mobile">[[localize('sho_fil','Show Filters',language)]]</span>
                             <iron-icon icon="[[_actionIcon(showFiltersContainer)]]"></iron-icon>
                         </paper-button>
+                    -->
                     </template>
 
-                    <template is="dom-if" if="[[showFiltersContainer]]">
+                    <template is="dom-if" if="[[showFiltersContainer]]">                 
                         <div class="filters-container">
+                         <!--
                             <paper-button class="button button--menu button--menu--other" on-tap="_toggleFiltersContainer">
                                 <span class="no-mobile">[[localize('clo','Close',language)]]</span>
                                 <iron-icon icon="[[_actionIcon(showFiltersContainer)]]"></iron-icon>
                             </paper-button>
+                        
                             <div class="filters-container-list">
                                 <paper-input id="searchInput" label="[[localize('sch','Search',language)]]" value="{{searchString}}" always-float-label="">
                                     <iron-icon class="search-icons" icon="icons:search" prefix=""></iron-icon>
@@ -181,6 +187,7 @@ class FilterPanel extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
                                     </template>
                                 </paper-listbox>
                             </div>
+                         -->
                         </div>
                     </template>
                 </div>
@@ -188,7 +195,7 @@ class FilterPanel extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
         </div>
         <div>
             <template is="dom-repeat" items="[[visibleItems]]" as="menu">
-                <paper-tooltip for="[[menu.id]]-btn">[[iconTitle(icon)]]</paper-tooltip>
+                <!--<paper-tooltip for="[[menu.id]]-btn">[[iconTitle(icon)]]</paper-tooltip>-->
             </template>
         </div>
 `;

@@ -755,8 +755,11 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
              parentFormDp: {
                 type: Object,
                 value: () => {}
+            },
+            dateForm: {
+                type: String
             }
-				};
+		};
     }
 
     static get observers() {

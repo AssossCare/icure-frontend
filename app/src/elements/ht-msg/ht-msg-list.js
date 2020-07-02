@@ -1046,8 +1046,8 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
     }
 
     _setIsConnectedToEhbox() {
-        this.set("ehealthSession", !!_.get(this,"api.tokenId"))
-        this.set("_disabledCssClassWhenNoeHealthSession", !!_.get(this,"api.tokenId") ? "" : "disabled")
+        this.set("ehealthSession", !!this.api.tokenId)
+        this.set("_disabledCssClassWhenNoeHealthSession", !!this.api.tokenId ? "" : "disabled")
     }
 
     _isUnread(m) {
@@ -1096,7 +1096,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
     _getBoxCapacity() {
         return !(_.get(this,"api.keystoreId",false) && _.get(this,"api.tokenId",false) && _.get(this,"api.credentials.ehpassword",false)) ?
             Promise.resolve() :
-            this.api.fhc().Ehboxcontroller().getInfosUsingGET(this.api.keystoreId, _.get(this,"api.tokenId"), this.api.credentials.ehpassword)
+            this.api.fhc().Ehboxcontroller().getInfosUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword)
                 .then(boxInfo=>{
                     this.set('nbrMessagesInStandBy',parseInt(_.get(boxInfo,"nbrMessagesInStandBy",0)))
                     this.set('ehBoxCurrentSize',parseInt(_.get(boxInfo,"currentSize",0)))
@@ -1252,7 +1252,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const newStatus = action === "delete" ? (_.get(singleSelectedMessage,"status",0)|(1<<20)) : (_.get(singleSelectedMessage,"status",0)^(1<<20))
                 return !eHealthBoxMessageId || !sourceBox || !destinationBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().moveMessagesUsingPOST(this.api.keystoreId, _.get(this,"api.tokenId"), this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(e=>{})
+                    this.api.fhc().Ehboxcontroller().moveMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(e=>{})
                         .then(()=> this.api.message().modifyMessage(_.merge(singleSelectedMessage, {transportGuid:destinationBox+":"+eHealthBoxMessageId, status:newStatus})).then(modifiedMessage=>_.concat(promisesCarrier, {action:action, message:modifiedMessage, success:true})).catch(e=>{console.log("ERROR with modifyMessage: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })
@@ -1366,18 +1366,18 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
 
         prom =
             ( !!_.get(additionalParameters,"dontCloseReadMessageComponent",false) ? Promise.resolve() : this._closeReadMessageComponent() )
-            .then(() => !_.trim(givenAction) || !_.trim(_.get(givenMessage,"id","")) ?
-                Promise.resolve():
-                (
-                    givenAction === "hideUnhide" ? this._hideUnHideMessages([givenMessage]) :
-                    givenAction === "deleteUndelete" ? this._deletedUndeleteMessages([givenMessage]) :
-                    givenAction === "deleteForEver" ? this._deleteMessagesForEver([givenMessage]) :
-                    (givenAction === "reply" || givenAction === "forward") ? this._replyToOrForwardMessage(givenMessage,additionalParameters,givenAction) :
-                    givenAction === "deleteAssignment" ? this._deleteAssignment(givenMessage, additionalParameters) :
-                    givenAction === "saveAssignment" ? this._saveAssignment(givenMessage, additionalParameters) :
-                    Promise.resolve()
+                .then(() => !_.trim(givenAction) || !_.trim(_.get(givenMessage,"id","")) ?
+                    Promise.resolve():
+                    (
+                        givenAction === "hideUnhide" ? this._hideUnHideMessages([givenMessage]) :
+                            givenAction === "deleteUndelete" ? this._deletedUndeleteMessages([givenMessage]) :
+                                givenAction === "deleteForEver" ? this._deleteMessagesForEver([givenMessage]) :
+                                    (givenAction === "reply" || givenAction === "forward") ? this._replyToOrForwardMessage(givenMessage,additionalParameters,givenAction) :
+                                        givenAction === "deleteAssignment" ? this._deleteAssignment(givenMessage, additionalParameters) :
+                                            givenAction === "saveAssignment" ? this._saveAssignment(givenMessage, additionalParameters) :
+                                                Promise.resolve()
+                    )
                 )
-            )
 
         return prom
             .then(()=>{})
@@ -1429,20 +1429,20 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                     const isProcessed = !!(_.get(singleMessage,"status",0)&(1<<26)) && (!(_.get(singleMessage,"status",0) & (1 << 1)))
                     return (
                         modifyAction === "hide" ? newCachedMessagesData.hidden.push(singleMessage) :
-                        modifyAction === "unhide" && messageBox === "INBOX" ? newCachedMessagesData.inbox.push(singleMessage) :
-                        modifyAction === "unhide" && messageBox === "SENTBOX" ? newCachedMessagesData.sent.push(singleMessage) :
-                        modifyAction === "delete" ? newCachedMessagesData.deleted.push(singleMessage) :
-                        modifyAction === "undelete" && isHidden ? newCachedMessagesData.hidden.push(singleMessage) :
-                        modifyAction === "undelete" && !isHidden && messageBox === "INBOX" && !isProcessed ? newCachedMessagesData.inbox.push(singleMessage) :
-                        modifyAction === "undelete" && !isHidden && messageBox === "INBOX" && !!isProcessed ? newCachedMessagesData.assigned.push(singleMessage) :
-                        modifyAction === "undelete" && !isHidden && messageBox === "SENTBOX" ? newCachedMessagesData.sent.push(singleMessage) :
-                        modifyAction === "deleteAssignment" && _.trim(_.get(this,"menuSelectionObject.selection.folder","inbox")) !== "assigned" ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
-                        modifyAction === "deleteAssignment" && _.trim(_.get(this,"menuSelectionObject.selection.folder","inbox")) === "assigned" ? newCachedMessagesData.inbox.push(singleMessage) :
-                        modifyAction === "saveAssignment" && !!allAnnexesAreAssigned ? newCachedMessagesData.assigned.push(singleMessage) :
-                        modifyAction === "saveAssignment" && !allAnnexesAreAssigned ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
-                        modifyAction === "readFullyAssigned" ? newCachedMessagesData.assigned.push(singleMessage) :
-                        ( modifyAction === "unread" || modifyAction === "read" ) ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
-                        false
+                            modifyAction === "unhide" && messageBox === "INBOX" ? newCachedMessagesData.inbox.push(singleMessage) :
+                                modifyAction === "unhide" && messageBox === "SENTBOX" ? newCachedMessagesData.sent.push(singleMessage) :
+                                    modifyAction === "delete" ? newCachedMessagesData.deleted.push(singleMessage) :
+                                        modifyAction === "undelete" && isHidden ? newCachedMessagesData.hidden.push(singleMessage) :
+                                            modifyAction === "undelete" && !isHidden && messageBox === "INBOX" && !isProcessed ? newCachedMessagesData.inbox.push(singleMessage) :
+                                                modifyAction === "undelete" && !isHidden && messageBox === "INBOX" && !!isProcessed ? newCachedMessagesData.assigned.push(singleMessage) :
+                                                    modifyAction === "undelete" && !isHidden && messageBox === "SENTBOX" ? newCachedMessagesData.sent.push(singleMessage) :
+                                                        modifyAction === "deleteAssignment" && _.trim(_.get(this,"menuSelectionObject.selection.folder","inbox")) !== "assigned" ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
+                                                            modifyAction === "deleteAssignment" && _.trim(_.get(this,"menuSelectionObject.selection.folder","inbox")) === "assigned" ? newCachedMessagesData.inbox.push(singleMessage) :
+                                                                modifyAction === "saveAssignment" && !!allAnnexesAreAssigned ? newCachedMessagesData.assigned.push(singleMessage) :
+                                                                    modifyAction === "saveAssignment" && !allAnnexesAreAssigned ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
+                                                                        modifyAction === "readFullyAssigned" ? newCachedMessagesData.assigned.push(singleMessage) :
+                                                                            ( modifyAction === "unread" || modifyAction === "read" ) ? newCachedMessagesData[_.trim(_.get(this,"menuSelectionObject.selection.folder","inbox"))].push(singleMessage) :
+                                                                                false
                     )
                 })
 
@@ -1474,33 +1474,33 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const patientIds = _.uniq(_.compact(_.flatMap(_.map(messagesWithDecryptedPatientInfos,i=>_.compact(_.map(_.get(i,"annexesInfos",[]),j=>_.get(j,"patientId","")))))))
                 return this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: patientIds}))
                     .then(patientsFromLocalDb => _.map(_.compact(messagesWithDecryptedPatientInfos), singleMessageToEnrichWithPatDetails => {
-                        const patsInfos = _.get(singleMessageToEnrichWithPatDetails,"annexesInfos",[])
-                        return !_.size(patsInfos) ?
-                            singleMessageToEnrichWithPatDetails :
-                            _.merge({},singleMessageToEnrichWithPatDetails, {
-                                annexesInfos: patsInfos.map( patInfo => {
-                                    const patientData = _.find(patientsFromLocalDb, p => _.trim(_.get(patInfo,"patientId","")) === _.trim(_.get(p,"id","")))
-                                    const couldResolvePatient = !(!_.trim(_.get(patInfo,"patientId","")) || !_.trim(_.get(patientData,"id","")))
-                                    return _.merge({},patInfo,{patientData:
-                                        {
-                                            id: !!couldResolvePatient ? _.trim(_.get(patientData,"id","")) : "",
-                                            uniqueId: !!couldResolvePatient ? _.uniqueId(_.trim(_.get(patientData,"id","")) + "-") : _.uniqueId("patientData-"),
-                                            firstName: _.map( ( !!couldResolvePatient ?_.trim(_.get(patientData, "firstName", "")) : _.trim(_.get(patInfo,"docInfo.firstName","")) ).split(" "),i=> _.capitalize(i)).join(" "),
-                                            lastName: _.map( ( !!couldResolvePatient ?_.trim(_.get(patientData, "lastName", "")) : _.trim(_.get(patInfo,"docInfo.lastName","")) ).split(" "),i=> _.capitalize(i)).join(" "),
-                                            dateOfBirth: !!couldResolvePatient ? _.trim(_.get(patientData,"dateOfBirth","")) : _.trim(_.get(patInfo,"docInfo.dateOfBirth","")),
-                                            dateOfBirthHr: !!couldResolvePatient ? (_.parseInt(_.trim(_.get(patientData,"dateOfBirth",""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData,"dateOfBirth","")))) : "") : (_.parseInt(_.trim(_.get(patInfo,"docInfo.dateOfBirth",""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patInfo,"docInfo.dateOfBirth","")))) : ""),
-                                            ssin: !!couldResolvePatient ? _.trim(_.get(patientData,"ssin","")) : _.trim(_.get(patInfo,"docInfo.ssin","")),
-                                            sex: !!couldResolvePatient ? (_.trim(_.get(patientData,"gender","male")).toLowerCase()==="male" ? "M" : "F") : (_.trim(_.get(patInfo,"docInfo.sex","M")).toLowerCase()==="m" ? "M" : "F"),
-                                            picture: !!couldResolvePatient ? _.trim(_.get(patientData,"picture","")) : "",
-                                            address: !!couldResolvePatient ?
-                                               _.chain(_.get(patientData, "addresses", {})).filter({addressType:"home"}).head().value() ||
-                                               _.chain(_.get(patientData, "addresses", {})).filter({addressType:"work"}).head().value() ||
-                                               _.chain(_.get(patientData, "addresses", {})).head().value() ||
-                                               {} : ""
-                                        }
+                            const patsInfos = _.get(singleMessageToEnrichWithPatDetails,"annexesInfos",[])
+                            return !_.size(patsInfos) ?
+                                singleMessageToEnrichWithPatDetails :
+                                _.merge({},singleMessageToEnrichWithPatDetails, {
+                                    annexesInfos: patsInfos.map( patInfo => {
+                                        const patientData = _.find(patientsFromLocalDb, p => _.trim(_.get(patInfo,"patientId","")) === _.trim(_.get(p,"id","")))
+                                        const couldResolvePatient = !(!_.trim(_.get(patInfo,"patientId","")) || !_.trim(_.get(patientData,"id","")))
+                                        return _.merge({},patInfo,{patientData:
+                                                {
+                                                    id: !!couldResolvePatient ? _.trim(_.get(patientData,"id","")) : "",
+                                                    uniqueId: !!couldResolvePatient ? _.uniqueId(_.trim(_.get(patientData,"id","")) + "-") : _.uniqueId("patientData-"),
+                                                    firstName: _.map( ( !!couldResolvePatient ?_.trim(_.get(patientData, "firstName", "")) : _.trim(_.get(patInfo,"docInfo.firstName","")) ).split(" "),i=> _.capitalize(i)).join(" "),
+                                                    lastName: _.map( ( !!couldResolvePatient ?_.trim(_.get(patientData, "lastName", "")) : _.trim(_.get(patInfo,"docInfo.lastName","")) ).split(" "),i=> _.capitalize(i)).join(" "),
+                                                    dateOfBirth: !!couldResolvePatient ? _.trim(_.get(patientData,"dateOfBirth","")) : _.trim(_.get(patInfo,"docInfo.dateOfBirth","")),
+                                                    dateOfBirthHr: !!couldResolvePatient ? (_.parseInt(_.trim(_.get(patientData,"dateOfBirth",""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData,"dateOfBirth","")))) : "") : (_.parseInt(_.trim(_.get(patInfo,"docInfo.dateOfBirth",""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patInfo,"docInfo.dateOfBirth","")))) : ""),
+                                                    ssin: !!couldResolvePatient ? _.trim(_.get(patientData,"ssin","")) : _.trim(_.get(patInfo,"docInfo.ssin","")),
+                                                    sex: !!couldResolvePatient ? (_.trim(_.get(patientData,"gender","male")).toLowerCase()==="male" ? "M" : "F") : (_.trim(_.get(patInfo,"docInfo.sex","M")).toLowerCase()==="m" ? "M" : "F"),
+                                                    picture: !!couldResolvePatient ? _.trim(_.get(patientData,"picture","")) : "",
+                                                    address: !!couldResolvePatient ?
+                                                        _.chain(_.get(patientData, "addresses", {})).filter({addressType:"home"}).head().value() ||
+                                                        _.chain(_.get(patientData, "addresses", {})).filter({addressType:"work"}).head().value() ||
+                                                        _.chain(_.get(patientData, "addresses", {})).head().value() ||
+                                                        {} : ""
+                                                }
+                                        })
                                     })
                                 })
-                            })
                         })
                     )
                     .catch(e=>{console.log("ERROR with getPatientsWithUser: ", e); return _.compact(messagesWithDecryptedPatientInfos);})
@@ -1584,11 +1584,11 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                                 const isProcessed = !!(_.get(singleMessageWithEnrichedPatientInfos,"status",0)&(1<<26)) && (!(_.get(singleMessageWithEnrichedPatientInfos,"status",0) & (1 << 1)))    // Processed AND unread (otherwise remains under inbox - could have been fully assigned by webworker but not seen by user yet)
                                 return (
                                     !!isProcessed ? this.push("_cachedMessagesData.assigned", singleMessageWithEnrichedPatientInfos) :
-                                    messageBox === "INBOX" && !isHidden ? this.push("_cachedMessagesData.inbox", singleMessageWithEnrichedPatientInfos) :
-                                    messageBox === "SENTBOX" && !isHidden ? this.push("_cachedMessagesData.sent", singleMessageWithEnrichedPatientInfos) :
-                                    messageBox === "BININBOX" && !isHidden ? this.push("_cachedMessagesData.deleted", singleMessageWithEnrichedPatientInfos):
-                                    messageBox === "BINSENTBOX" && !isHidden ? this.push("_cachedMessagesData.deleted", singleMessageWithEnrichedPatientInfos) :
-                                    this.push("_cachedMessagesData.hidden", singleMessageWithEnrichedPatientInfos)
+                                        messageBox === "INBOX" && !isHidden ? this.push("_cachedMessagesData.inbox", singleMessageWithEnrichedPatientInfos) :
+                                            messageBox === "SENTBOX" && !isHidden ? this.push("_cachedMessagesData.sent", singleMessageWithEnrichedPatientInfos) :
+                                                messageBox === "BININBOX" && !isHidden ? this.push("_cachedMessagesData.deleted", singleMessageWithEnrichedPatientInfos):
+                                                    messageBox === "BINSENTBOX" && !isHidden ? this.push("_cachedMessagesData.deleted", singleMessageWithEnrichedPatientInfos) :
+                                                        this.push("_cachedMessagesData.hidden", singleMessageWithEnrichedPatientInfos)
                                 )
                             })
                         })
@@ -1611,16 +1611,16 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                         const isLabResult = !!((_.get(msg,"status",0) & (1 << 0)) || !!_.size(_.get(msg,"assignedResults",[])) || !!_.size(_.get(msg,"unassignedResults",[])) || (!!_.size(_.get(msg,"annexesInfos",[])) && !!_.size(_.get(msg,"annexesInfos",[]).filter(ai=>!!_.size(_.get(ai,"docInfo",{}))))))
                         return !_.trim(selectedMessagesFilter) ? msg :
                             _.trim(selectedMessagesFilter) === "read" ? !(_.get(msg,"status",0) & (1 << 1)) :
-                            _.trim(selectedMessagesFilter) === "unread" ? !!(_.get(msg,"status",0) & (1 << 1)) :
-                            _.trim(selectedMessagesFilter) === "withAttachment" ? !!(_.get(msg,"status",0) & (1 << 4)) :
-                            _.trim(selectedMessagesFilter) === "withoutAttachment" ? !(_.get(msg,"status",0) & (1 << 4)) :
-                            _.trim(selectedMessagesFilter) === "important" ? !!(_.get(msg,"status",0) & (1 << 2)) :
-                            _.trim(selectedMessagesFilter) === "notImportant" ? !(_.get(msg,"status",0) & (1 << 2)) :
-                            _.trim(selectedMessagesFilter) === "assignedResults" ? (!!isLabResult && (!!_.some(_.get(msg,"annexesInfos",[]), {isAssigned:true}) || !!_.size(_.get(msg,"assignedResults",[])))) :
-                            _.trim(selectedMessagesFilter) === "unassignedResults" ? (!!isLabResult && (!!_.some(_.get(msg,"annexesInfos",[]), {isAssigned:false}) || !!_.size(_.get(msg,"unassignedResults",[])))) :
-                            _.trim(selectedMessagesFilter) === "labResults" ? !!isLabResult :
-                            _.trim(selectedMessagesFilter) === "allButLabResults" ? !isLabResult :
-                            false
+                                _.trim(selectedMessagesFilter) === "unread" ? !!(_.get(msg,"status",0) & (1 << 1)) :
+                                    _.trim(selectedMessagesFilter) === "withAttachment" ? !!(_.get(msg,"status",0) & (1 << 4)) :
+                                        _.trim(selectedMessagesFilter) === "withoutAttachment" ? !(_.get(msg,"status",0) & (1 << 4)) :
+                                            _.trim(selectedMessagesFilter) === "important" ? !!(_.get(msg,"status",0) & (1 << 2)) :
+                                                _.trim(selectedMessagesFilter) === "notImportant" ? !(_.get(msg,"status",0) & (1 << 2)) :
+                                                    _.trim(selectedMessagesFilter) === "assignedResults" ? (!!isLabResult && (!!_.some(_.get(msg,"annexesInfos",[]), {isAssigned:true}) || !!_.size(_.get(msg,"assignedResults",[])))) :
+                                                        _.trim(selectedMessagesFilter) === "unassignedResults" ? (!!isLabResult && (!!_.some(_.get(msg,"annexesInfos",[]), {isAssigned:false}) || !!_.size(_.get(msg,"unassignedResults",[])))) :
+                                                            _.trim(selectedMessagesFilter) === "labResults" ? !!isLabResult :
+                                                                _.trim(selectedMessagesFilter) === "allButLabResults" ? !isLabResult :
+                                                                    false
                     })
                     .filter(msg=>{
                         const valuesToSearchOn = _.uniq(_.compact(_.concat(
@@ -1713,7 +1713,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const action = "deleteForEver"
                 return !eHealthBoxMessageId || !sourceBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().deleteMessagesUsingPOST(this.api.keystoreId, _.get(this,"api.tokenId"), this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox).catch(e=>{})
+                    this.api.fhc().Ehboxcontroller().deleteMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox).catch(e=>{})
                         .then(()=> this.api.message().deleteMessages(_.trim(_.get(singleSelectedMessage,"id",""))).then(deletetionResult=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:!!deletetionResult})).catch(e=>{console.log("ERROR with deleteMessages: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })
@@ -1773,6 +1773,63 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _getPatContactsByProtocols(hcpId, patientObject) {
+
+        const promResolve = Promise.resolve();
+
+        return this.api.contact().findBy(hcpId,patientObject)
+            .then(patientContacts => _
+                .chain(patientContacts)
+                .map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
+                    ctcId: _.trim(_.get(ctc,"id")),
+                    protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
+                    formId: _.trim(_.get(ctc,"subContacts[0].formId")),
+                    complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
+                    totalSubCtc: _.size(_.get(ctc,"subContacts"))
+                })
+                .compact()
+                .reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
+                .value()
+            )
+            .catch(e=>{ console.log("ERROR _getPatContactsByProtocols", e); return promResolve; })
+
+    }
+
+    _reconcilePartialAndIncompleteResults(patientIds) {
+
+        const promResolve = Promise.resolve()
+
+        return !_.size(_.uniq(_.compact(patientIds))) ? promResolve : this.api.patient().getPatientsWithUser(_.get(this,"user",{}),{ids:_.uniq(_.compact(patientIds))})
+            .then(myPatients => {
+
+                let promPat = Promise.resolve([])
+                let promContacts = Promise.resolve([])
+
+                _.map(myPatients, pat => {
+                    promPat = promPat
+                        .then(promisesCarrierPat => this._getPatContactsByProtocols(_.trim(_.get(this,"user.healthcarePartyId","")), pat).then(contactsByProtocols => {
+                            _.map(contactsByProtocols, contacts => {
+                                promContacts = promContacts
+                                    .then(promiseCarrierContacts => {
+                                        const completeResults = _.filter(contacts, {complete:true})
+                                        const incompleteResults = _.filter(contacts, {complete:false})
+                                        const formIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"formId"))).join(",")
+                                        const contactIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"ctcId"))).join(",")
+                                        return  _.size(contacts) < 2 || !_.size(completeResults) || !_.size(incompleteResults) ? promiseCarrierContacts||[] : this.api.form().deleteForms(formIdsToDelete).catch(e=>null).then(x=>this.api.contact().deleteContacts(contactIdsToDelete).catch(e=>null).then(x=>_.concat(promiseCarrierContacts, [x])))
+                                    })
+                            })
+                            return promContacts.then(x => _.concat(promisesCarrierPat, x)).then(x => _.concat(promisesCarrierPat, null))
+                        }))
+                })
+
+                return promPat
+
+            })
+            .then(promPat => null)
+            .catch(e => null)
+
+    }
+
     _saveAssignment(givenMessage, additionalParameters) {
 
         const promResolve = Promise.resolve()
@@ -1780,6 +1837,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
         const patientId = _.trim(_.get(additionalParameters,"patientId",""))
         const documentType = _.trim(_.get(additionalParameters,"documentType",""))
         const documentTypeLabel = _.trim(_.get(additionalParameters,"documentTypeLabel","Analyse"))
+        const documentTitle = _.trim(_.get(additionalParameters,"documentTitle","Analyse", documentTypeLabel))
         const documentToAssign = _.find(_.get(additionalParameters,"documentsOfMessage",[]), {id:documentId})
         const isLabResult = !!_.size(_.get(documentToAssign,"docInfo",[]))
         const annexesInfosAlreadyExist = !!_.size(_.get(givenMessage,"annexesInfos",[]))
@@ -1794,122 +1852,127 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
 
         return (!documentId || !patientId || !_.size(documentToAssign)) ?
             promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
-            .then(patientObject => {
-                this.api.accesslog().newInstance(this.user,patientObject,{}).then(log =>{
-                    log.detail="Save Assignment in Message panel"
-                    this.api.accesslog().createAccessLogWithUser(this.user,log)
-                })
-                let contactObjectForInstance = {
-                    //groupId: _.trim(_.get(givenMessage,"id","")),
-                    groupId: this.api.crypto().randomUuid(),
-                    created: +new Date,
-                    modified: +new Date,
-                    author: _.trim(_.get(this,"user.id","")),
-                    responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
-                    openingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
-                    closingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
-                    encounterType: { type: "CD-TRANSACTION", version: "1", code: documentType },
-                    descr: importDescription,
-                    tags: [
-                        { type: 'CD-TRANSACTION', code: documentType },
-                        { type: "originalEhBoxDocumentId", id: documentId },
-                        { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
-                    ],
-                    subContacts: []
-                }
-                if(!isLabResult) contactObjectForInstance.descr = /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name",""))
-                return this.api.contact().newInstance(this.user, patientObject, contactObjectForInstance).then(contactInstance => [contactInstance,patientObject])
-            })
-            .then(([contactInstance,patientObject]) => {
-
-                if(isLabResult) {
-                    // contactInstance.services.push({
-                    //     id: this.api.crypto().randomUuid(),
-                    //     label: documentTypeLabel,
-                    //     valueDate: parseInt(moment().format('YYYYMMDDHHmmss')),
-                    //     content: _.fromPairs([[this.language, {stringValue: _.trim(_.get(documentToAssign,"docInfo[0].labo",""))}]])
-                    // })
-                } else {
-                    const svc = this.api.contact().service().newInstance( this.user, {
-                        content: _.fromPairs([[this.language, {documentId: documentId,
-                        stringValue: _.trim(_.get(documentToAssign,"name",""))}]]),
-                        label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
+                .then(patientObject => {
+                    this.api.accesslog().newInstance(this.user,patientObject,{}).then(log =>{
+                        log.detail="Save Assignment in Message panel"
+                        this.api.accesslog().createAccessLogWithUser(this.user,log)
+                    })
+                    let contactObjectForInstance = {
+                        //groupId: _.trim(_.get(givenMessage,"id","")),
+                        groupId: this.api.crypto().randomUuid(),
+                        created: +new Date,
+                        modified: +new Date,
+                        author: _.trim(_.get(this,"user.id","")),
+                        responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                        openingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
+                        closingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
+                        encounterType: { type: "CD-TRANSACTION", version: "1", code: documentType },
+                        descr: _.trim(documentTitle) ? documentTitle : importDescription,
                         tags: [
                             { type: 'CD-TRANSACTION', code: documentType },
                             { type: "originalEhBoxDocumentId", id: documentId },
                             { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                         ],
-                    })
-                    contactInstance.services = [svc]
-                    contactInstance.subContacts.push({
-                        status: 64,
-                        services: [{serviceId: svc.id}],
-                        tags: [
-                            { type: 'CD-TRANSACTION', code: documentType },
-                            { type: "originalEhBoxDocumentId", id: documentId },
-                            { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
-                        ],
-                    })
-                }
-
-                return this.api.contact().createContactWithUser(this.user, contactInstance)
-                    .then(createdContact => [createdContact,patientObject])
-
-            })
-            .then(([createdContact,patientObject]) => !isLabResult ? createdContact :
-                this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: importDescription})
-                    .then(formInstance => this.api.form().createForm(formInstance))
-                    .then(createdForm => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy( _.trim(_.get(this,"user.healthcarePartyId","")), _.trim(_.get(documentToAssign,"id","")), _.size(_.get(documentToAssign,"encryptionKeys",{})) ? _.get(documentToAssign,"encryptionKeys",{}) : _.get(documentToAssign,"delegations",{}))
-                        .then(({extractedKeys: enckeys}) => this.api.beresultimport().doImport( _.trim(_.get(documentToAssign,"id","")), _.trim(_.get(this,"user.healthcarePartyId","")), this.language, _.trim(_.get(documentToAssign,"docInfo[0].protocol","")), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
-                        .catch(e=>{console.log("ERROR with extractKeysFromDelegationsForHcpHierarchy: ", e); return Promise.resolve(createdContact);})
-                    )
-                    .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{
-                        tags:[
-                            { type: 'CD-TRANSACTION', code: documentType },
-                            { type: "originalEhBoxDocumentId", id: documentId },
-                            { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
-                        ],
-                        descr: (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject")))
-                    }]})))
-                    .catch(e =>{ console.log("ERROR with createForm: ", e); return Promise.resolve(createdContact); })
-            )
-            .then(createdContact => {
-
-                const updatedAnnexInfosForDocumentToAssign = {
-                    isAssigned: true,
-                    patientId: patientId,
-                    protocolId: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"protocolId","")) : _.trim(_.get(documentToAssign,"docInfo[0].protocol","")) ),
-                    contactId: _.trim(_.get(createdContact,"id","")),
-                    documentId: documentId,
-                    docInfo: {
-                        dateOfBirth: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.dateOfBirth","")) : _.trim(_.get(documentToAssign,"docInfo[0].dateOfBirth","")) ),
-                        firstName: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.firstName","")) : _.trim(_.get(documentToAssign,"docInfo[0].firstName","")) ),
-                        lastName: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.lastName","")) : _.trim(_.get(documentToAssign,"docInfo[0].lastName","")) ),
-                        sex: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.sex","")) : _.trim(_.get(documentToAssign,"docInfo[0].sex","")) ),
-                        ssin: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.ssin","")) : _.trim(_.get(documentToAssign,"docInfo[0].ssin","")) )
+                        subContacts: []
                     }
-                }
+                    // if(!isLabResult) contactObjectForInstance.descr = /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name",""))
+                    if(!isLabResult) contactObjectForInstance.descr = _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name",""))
+                    return this.api.contact().newInstance(this.user, patientObject, contactObjectForInstance).then(contactInstance => [contactInstance,patientObject])
+                })
+                .then(([contactInstance,patientObject]) => {
 
-                return !annexesInfosAlreadyExist ?
-                    [updatedAnnexInfosForDocumentToAssign] :
-                    !!_.size(annexInfosToUpdate) ?
-                        _.compact(_.map( _.get(givenMessage,"annexesInfos",[]), ai=> (_.trim(_.get(ai,"documentId","")) === _.trim(_.get(annexInfosToUpdate,"documentId","")) ? updatedAnnexInfosForDocumentToAssign : ai))) :
-                        _.concat(givenMessage.annexesInfos, updatedAnnexInfosForDocumentToAssign)
+                    if(isLabResult) {
+                        // contactInstance.services.push({
+                        //     id: this.api.crypto().randomUuid(),
+                        //     label: documentTypeLabel,
+                        //     valueDate: parseInt(moment().format('YYYYMMDDHHmmss')),
+                        //     content: _.fromPairs([[this.language, {stringValue: _.trim(_.get(documentToAssign,"docInfo[0].labo",""))}]])
+                        // })
+                    } else {
+                        const svc = this.api.contact().service().newInstance( this.user, {
+                            content: _.fromPairs([[this.language, {documentId: documentId,
+                                stringValue: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name",""))}]]),
+                            // label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
+                            label: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name","")),
+                            tags: [
+                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: "originalEhBoxDocumentId", id: documentId },
+                                { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
+                            ],
+                        })
+                        contactInstance.services = [svc]
+                        contactInstance.subContacts.push({
+                            status: 64,
+                            services: [{serviceId: svc.id}],
+                            tags: [
+                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: "originalEhBoxDocumentId", id: documentId },
+                                { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
+                            ],
+                        })
+                    }
 
-            })
-            .then(updatedAnnexesInfos => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos.map(ai=>_.omit(ai,"patientData"))))))
-                .then(encryptedContent => _.merge({},givenMessage, {metas:{annexesInfos:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(encryptedContent)))}}))
-                .then(givenMessageWithCryptedMetasPatientInfos => this.api.message().modifyMessage( (totalAnnexes && totalAssignedAnnexes===totalAnnexes) ? _.merge({}, givenMessageWithCryptedMetasPatientInfos, { status: (_.get(givenMessageWithCryptedMetasPatientInfos,"status",0) |(1<<20) ) |(1<<26) }) : givenMessageWithCryptedMetasPatientInfos ))    // Everything assigned, flag as "STATUS_SHOULD_BE_DELETED_ON_SERVER" && "STATUS_TRAITED"
-                .then(modifiedMessage => this._updateCachedMessagesDataStructure([{action:"saveAssignment", message:modifiedMessage}],!!(totalAnnexes && totalAssignedAnnexes===totalAnnexes))
-                    .then(() => this._getEHealthBoxData(null,null,null,{avoidClosingOpenedDocument:true,avoidScrollToTop:true}))
-                    .then(()=> this.set("_vaadinGridMessagesActiveItem", _.find(_.flatMap(_.get(this,"_cachedMessagesData",[])), {id:_.trim(_.get(modifiedMessage,"id",""))})))
+                    return this.api.contact().createContactWithUser(this.user, contactInstance)
+                        .then(createdContact => [createdContact,patientObject])
+
+                })
+                .then(([createdContact,patientObject]) => !isLabResult ? createdContact :
+                    this.api.form().newInstance(this.user, patientObject, {contactId: _.trim(_.get(createdContact,"id","")), descr: (_.trim(documentTitle) ? documentTitle : importDescription)})
+                        .then(formInstance => this.api.form().createForm(formInstance))
+                        .then(createdForm => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy( _.trim(_.get(this,"user.healthcarePartyId","")), _.trim(_.get(documentToAssign,"id","")), _.size(_.get(documentToAssign,"encryptionKeys",{})) ? _.get(documentToAssign,"encryptionKeys",{}) : _.get(documentToAssign,"delegations",{}))
+                            .then(({extractedKeys: enckeys}) => this.api.beresultimport().doImport( _.trim(_.get(documentToAssign,"id","")), _.trim(_.get(this,"user.healthcarePartyId","")), this.language, encodeURIComponent(_.trim(_.get(documentToAssign,"docInfo[0].protocol",""))), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
+                            .catch(e=>{console.log("ERROR with extractKeysFromDelegationsForHcpHierarchy: ", e); return Promise.resolve(createdContact);})
+                        )
+                        .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{
+                                tags:[
+                                    { type: 'CD-TRANSACTION', code: documentType },
+                                    { type: "originalEhBoxDocumentId", id: documentId },
+                                    { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
+                                ],
+                                descr: _.trim(documentTitle) ? documentTitle : (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject"))),
+                                subContacts: [{descr:_.trim(documentTitle) ? documentTitle : (!!_.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) ? _.trim(_.get(updatedContactAfterImport, "subContacts[0].descr")) : _.trim(_.get(givenMessage,"subject")))}]
+                            }]})))
+                        .catch(e =>{ console.log("ERROR with createForm: ", e); return Promise.resolve(createdContact); })
                 )
-            )
-            .then(() => this.dispatchEvent(new CustomEvent("refresh-patient",{bubbles:true,composed:true})))
-            .catch(e=>{ console.log(e); return promResolve; })
-            .finally(()=>promResolve)
+                .then(createdContact => {
+
+                    const updatedAnnexInfosForDocumentToAssign = {
+                        isAssigned: true,
+                        patientId: patientId,
+                        protocolId: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"protocolId","")) : _.trim(_.get(documentToAssign,"docInfo[0].protocol","")) ),
+                        contactId: _.trim(_.get(createdContact,"id","")),
+                        documentId: documentId,
+                        docInfo: {
+                            dateOfBirth: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.dateOfBirth","")) : _.trim(_.get(documentToAssign,"docInfo[0].dateOfBirth","")) ),
+                            firstName: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.firstName","")) : _.trim(_.get(documentToAssign,"docInfo[0].firstName","")) ),
+                            lastName: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.lastName","")) : _.trim(_.get(documentToAssign,"docInfo[0].lastName","")) ),
+                            sex: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.sex","")) : _.trim(_.get(documentToAssign,"docInfo[0].sex","")) ),
+                            ssin: ( !!_.size(annexInfosToUpdate) ? _.trim(_.get(annexInfosToUpdate,"docInfo.ssin","")) : _.trim(_.get(documentToAssign,"docInfo[0].ssin","")) )
+                        }
+                    }
+
+                    return !annexesInfosAlreadyExist ?
+                        [updatedAnnexInfosForDocumentToAssign] :
+                        !!_.size(annexInfosToUpdate) ?
+                            _.compact(_.map( _.get(givenMessage,"annexesInfos",[]), ai=> (_.trim(_.get(ai,"documentId","")) === _.trim(_.get(annexInfosToUpdate,"documentId","")) ? updatedAnnexInfosForDocumentToAssign : ai))) :
+                            _.concat(givenMessage.annexesInfos, updatedAnnexInfosForDocumentToAssign)
+
+                })
+                .then(updatedAnnexesInfos => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos.map(ai=>_.omit(ai,"patientData"))))))
+                    .then(encryptedContent => _.merge({},givenMessage, {metas:{annexesInfos:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(encryptedContent)))}}))
+                    .then(givenMessageWithCryptedMetasPatientInfos => this.api.message().modifyMessage( (totalAnnexes && totalAssignedAnnexes===totalAnnexes) ? _.merge({}, givenMessageWithCryptedMetasPatientInfos, { status: (_.get(givenMessageWithCryptedMetasPatientInfos,"status",0) |(1<<20) ) |(1<<26) }) : givenMessageWithCryptedMetasPatientInfos ))    // Everything assigned, flag as "STATUS_SHOULD_BE_DELETED_ON_SERVER" && "STATUS_TRAITED"
+                    .then(modifiedMessage => this._updateCachedMessagesDataStructure([{action:"saveAssignment", message:modifiedMessage}],!!(totalAnnexes && totalAssignedAnnexes===totalAnnexes))
+                        .then(() => this._getEHealthBoxData(null,null,null,{avoidClosingOpenedDocument:true,avoidScrollToTop:true}))
+                        .then(()=> this.set("_vaadinGridMessagesActiveItem", _.find(_.flatMap(_.get(this,"_cachedMessagesData",[])), {id:_.trim(_.get(modifiedMessage,"id",""))})))
+                    )
+                )
+                .then(() => this._reconcilePartialAndIncompleteResults([patientId]))
+                .then(() => this.dispatchEvent(new CustomEvent("refresh-patient",{bubbles:true,composed:true})))
+                .catch(e=>{ console.log(e); return promResolve; })
+                .finally(()=>promResolve)
 
     }
+
 
 }
 
