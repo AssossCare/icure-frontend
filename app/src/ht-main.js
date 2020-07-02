@@ -753,11 +753,48 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 					</div>
 				</template>
 				<template is="dom-if" if="[[_isEqual(widget.id,'widgetUpdatesHistory')]]">
-					<widget-updates-history id="[[widget.id]]" language="[[language]]" resources="[[resources]]" class="card" on-dragstart="_dragWidgetStart" on-dragover="_dragWidgetOver" on-dragenter="_dragWidgetEnter" on-dragleave="_dragWidgetLeave" on-dragend="_dragWidgetEnd" on-drop="_dropWidget" style="--area:[[widget.id]];" on-update-selected="updateSelected"></widget-updates-history>
+					<widget-updates-history id="[[widget.id]]" language="[[language]]" resources="[[resources]]" class="card" on-dragstart="_dragWidgetStart" on-dragover="_dragWidgetOver" on-dragenter="_dragWidgetEnter" on-dragleave="_dragWidgetLeave" on-dragEnd="_dragWidgetEnd" on-drop="_dropWidget" style="--area:[[widget.id]];" on-update-selected="updateSelected"></widget-updates-history>
 				</template>
 			</template>
 		</div>
 
+		<paper-dialog id="updateDialog">
+			<h2 class="modal-title">[[selectedUpdate.mainTitle]]<label class="update-date"><span>[[selectedUpdate.updateDate]]</span></label></h2>
+			<div class="content">
+				<template is="dom-if" if="[[_isNews(selectedUpdate)]]">
+					<div class="newsContent">
+						<template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
+							<div inner-h-t-m-l="[[_localizeContent(module.description)]]"></div>
+						</template>
+					</div>
+				</template>
+				<template is="dom-if" if="[[_isUpdate(selectedUpdate)]]">
+					UPDATE
+					<div class="blockUpdate">
+						<div class="versionTitle bold">
+							Version: [[selectedUpdate.version]]
+						</div>
+						<ol>
+							<template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
+								<li>
+									<span class="releaseNoteTitle">[[_localizeContent(module.areaCode)]] - [[_localizeContent(module.title)]]</span>
+									[[_localizeContent(module.description)]]
+								</li>
+							</template>
+						</ol>
+						<template is="dom-if" if="_isLink(selectedUpdate)">
+							<div>
+								Plus d'infos, cliquez <a href="[[selectedUpdate.mainLink]]" target="_blank"> ici</a>.
+							</div>
+						</template>
+					</div>
+				</template>
+			</div>
+			<div class="buttons">
+				<paper-button class="button" dialog-dismiss>Close</paper-button>
+			</div>
+		</paper-dialog>
+		
 		<paper-dialog id="layoutDialog">
 			<h2 class="modal-title">[[localize('edit_layout','Edit layout',language)]]</h2>
 			<div class="content">
@@ -793,42 +830,6 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 		</paper-dialog>
 		
 		<!--todo changed var and make event in widget-update-history-->
-        <paper-dialog id="updateDialog">
-            <h2 class="modal-title">[[selectedUpdate.mainTitle]]<label class="update-date"><span>[[selectedUpdate.updateDate]]</span></label></h2>
-            <div class="content">
-                <template is="dom-if" if="[[_isNews(selectedUpdate)]]">
-                    <div class="newsContent">
-                        <template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
-                            <div inner-h-t-m-l="[[_localizeContent(module.description)]]"></div>
-                        </template>
-                    </div>
-                </template>
-                <template is="dom-if" if="[[_isUpdate(selectedUpdate)]]">
-                    UPDATE
-                    <div class="blockUpdate">
-                        <div class="versionTitle bold">
-                            Version: [[selectedUpdate.version]]
-                        </div>
-                        <ol>
-                            <template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
-                                <li>
-                                    <span class="releaseNoteTitle">[[_localizeContent(module.areaCode)]] - [[_localizeContent(module.title)]]</span>
-                                    [[_localizeContent(module.description)]]
-                                </li>
-                            </template>
-                        </ol>
-                        <template is="dom-if" if="_isLink(selectedUpdate)">
-                            <div>
-                                Plus d'infos, cliquez <a href="[[selectedUpdate.mainLink]]" target="_blank"> ici</a>.
-                            </div>
-                        </template>
-                    </div>
-                </template>
-            </div>
-            <div class="buttons">
-                <paper-button class="button" dialog-dismiss="">Close</paper-button>
-            </div>
-        </paper-dialog>
 `;
   }
 

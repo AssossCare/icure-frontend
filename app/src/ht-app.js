@@ -78,7 +78,6 @@ import "@polymer/paper-tabs/paper-tab"
 import "@polymer/paper-tooltip/paper-tooltip"
 import "@polymer/paper-fab/paper-fab"
 import "@polymer/paper-dropdown-menu/paper-dropdown-menu"
-import "@polymer/paper-listbox/paper-listbox"
 import "@polymer/paper-checkbox/paper-checkbox"
 import "@polymer/paper-toolbar/paper-toolbar"
 
@@ -101,16 +100,18 @@ import "@vaadin/vaadin-grid/vaadin-grid-tree-toggle"
 
 import moment from 'moment/src/moment'
 import Worker from 'worker-loader!./workers/ehboxWebworker.js'
-const runtime = require('offline-plugin/runtime');
 import _ from 'lodash/lodash';
 import io from 'socket.io-client';
-import {PolymerElement, html} from '@polymer/polymer';
+import {html, PolymerElement} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
 
+const runtime = require('offline-plugin/runtime');
+
 class HtApp extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
-        <style include="shared-styles dialog-style notification-style buttons-style">
+    static get template() {
+        return html`
+        <!--suppress CssUnresolvedCustomProperty -->
+<style include="shared-styles dialog-style notification-style buttons-style">
             :host {
                 display: block;
             }
@@ -2162,81 +2163,82 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               } else {
                   this.createAndInviteUser();
               }
-          }).catch( error=> {
+          }).catch(error => {
               this.createAndInviteUser();
           })
       }
   }
 
-  checkEhboxMessage() {
-      if (!this.user) { return }
-      const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
-      const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
-      if ( /*localStorage.getItem('receiveMailAuto') === 'true' && */ shouldLoad) {
-          localStorage.setItem('lastEhboxRefresh', Date.now())
+    checkEhboxMessage() {
+        if (!this.user) {
+            return
+        }
+        const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
+        const shouldLoad = (lastLoad + (10 * 60000) <= Date.now() || lastLoad === -1)
+        const disableEhboxEmailReception = _.get(_.find(_.get(this, "user.properties", []), it => _.trim(_.get(it, "type.identifier")) === "org.taktik.icure.user.disableEhboxEmailReception"), "typedValue.booleanValue",false)
+        if (shouldLoad && !disableEhboxEmailReception) {
+            localStorage.setItem('lastEhboxRefresh', Date.now())
+            const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
+                keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
+                if (hcp.parentId) {
+                    return getParents(hcp.parentId, keyPairs)
+                }
+                return ([hcp, keyPairs])
+            })
+            this.$.ehBoxMessage.classList.remove('notification')
+            if (!this.worker) {
+                this.worker = new Worker()
+            }
+            getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
+                this.worker.postMessage({
+                    action: "loadEhboxMessage",
+                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    fhcHost: this.api.fhc().host,
+                    fhcHeaders: JSON.stringify(this.api.fhc().headers),
+                    language: this.language,
+                    iccHost: this.api.host,
+                    iccHeaders: JSON.stringify(this.api.headers),
+                    tokenId: this.api.tokenId,
+                    keystoreId: this.api.keystoreId,
+                    user: this.user,
+                    ehpassword: this.credentials.ehpassword,
+                    boxId: ["INBOX", "SENTBOX"],
+                    alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
+                    keyPairs: kp,
+                    parentHcp: hcp
+                })
+            }))
+            this.worker.onmessage = e => {
+                const totalNewMessages = parseInt(_.get(e, "data.totalNewMessages", 0))
+                if (parseInt(totalNewMessages)) {
+                    this.set("_forceEhBoxRefresh", true)
+                    this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
+                    this.$['ehBoxMessage'].classList.add('notification');
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000);
+                    setTimeout(() => {
+                        this.$['ehBoxMessage'].classList.remove('notification');
+                    }, 15000);
+                }
+                if (!!_.get(e, "data.forceRefresh", false)) {
+                    this.set("_forceEhBoxRefresh", true);
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000);
+                }
+            }
+        }
+    }
 
-          const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
-              keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
-              if (hcp.parentId) {
-                  return getParents(hcp.parentId, keyPairs)
-              }
-              return ([hcp, keyPairs])
-          })
+    getMHKeystore() {
+        const healthcarePartyId = this.user.healthcarePartyId;
+        // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
 
-          this.$.ehBoxMessage.classList.remove('notification')
+    }
 
-          if (!this.worker) { this.worker = new Worker() }
-
-          getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
-              this.worker.postMessage({
-                  action: "loadEhboxMessage",
-                  hcpartyBaseApi: this.api.hcpartyLight(),
-                  fhcHost: this.api.fhc().host,
-                  fhcHeaders: JSON.stringify(this.api.fhc().headers),
-                  language: this.language,
-                  iccHost: this.api.host,
-                  iccHeaders: JSON.stringify(this.api.headers),
-                  tokenId: this.api.tokenId,
-                  keystoreId: this.api.keystoreId,
-                  user: this.user,
-                  ehpassword: this.credentials.ehpassword,
-                  boxId: ["INBOX","SENTBOX"],
-                  alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
-                  keyPairs: kp,
-                  parentHcp: hcp
-              })
-          }))
-
-          this.worker.onmessage = e => {
-
-              const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
-              if(parseInt(totalNewMessages)) {
-                  this.set("_forceEhBoxRefresh", true)
-                  this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
-                  this.$['ehBoxMessage'].classList.add('notification');
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                  setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
-              }
-
-              if(!!_.get(e,"data.forceRefresh",false)) {
-                  this.set("_forceEhBoxRefresh", true);
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-              }
-
-          }
-
-      }
-
-  }
-
-  getMHKeystore(){
-      const healthcarePartyId =this.user.healthcarePartyId;
-      // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
-
-  }
-
-  getAlternateKeystores(){
-      const healthcarePartyId = this.user.healthcarePartyId;
+    getAlternateKeystores() {
+        const healthcarePartyId = this.user.healthcarePartyId;
 
       return Promise.all(
       Object.keys(localStorage).filter(k => k.includes(this.api.crypto().keychainLocalStoreIdPrefix + healthcarePartyId + ".") === true)

@@ -1,0 +1,113 @@
+diff --git a/web/icure-ht/app/src/workers/ehboxWebworker.js b/web/icure-ht/app/src/workers/ehboxWebworker.js
+index 44cc22bd3..548161e29 100644
+--- a/web/icure-ht/app/src/workers/ehboxWebworker.js
++++ b/web/icure-ht/app/src/workers/ehboxWebworker.js
+@@ -59,13 +59,13 @@ onmessage = e => {
+             INBOX: 0,
+             SENTBOX: 0
+         }
+-
+         let appVersions = {
+             backend: "-",
+             frontend: "[AIV]{version}[/AIV]",
+             electron: "-",
+             isElectron: false
+         }
++		let patientIdsWithAssignedResults = []
+
+
+
+@@ -172,6 +172,9 @@ onmessage = e => {
+                             }
+                         })
+
++						// Holds to reconcile results (partials vs complete)
++						patientIdsWithAssignedResults.push(_.trim(_.get(singleAssignResult,"patientId","")))
++
+                     })
+
+                     const totalAssignedAnnexes = parseInt(_.size(_.filter(annexesInfos,{isAssigned:true})))
+@@ -313,7 +316,7 @@ onmessage = e => {
+                         .then(createdContact => iccFormXApi.newInstance(user, candidates[0],{ contactId: _.trim(_.get(createdContact,"id","")), descr: "Lab result " + +new Date })
+                             .then(formInstance => iccFormXApi.createForm(formInstance)
+                                 .then(createdForm => iccCryptoXApi.extractKeysFromDelegationsForHcpHierarchy( _.trim(_.get(user,"healthcarePartyId","")), _.trim(_.get(document,"id","")), _.size(_.get(document,"encryptionKeys",{})) ? _.get(document,"encryptionKeys",{}): _.get(document,"delegations",{}))
+-                                    .then(({extractedKeys: enckeys}) => beResultApi.doImport(_.trim(_.get(document,"id","")), _.trim(_.get(user,"healthcarePartyId","")), language, _.trim(_.get(docInfo,"protocol","")), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
++                                    .then(({extractedKeys: enckeys}) => beResultApi.doImport(_.trim(_.get(document,"id","")), _.trim(_.get(user,"healthcarePartyId","")), language, encodeURIComponent(_.trim(_.get(docInfo,"protocol",""))), _.trim(_.get(createdForm,"id","")), null, enckeys.join(','), createdContact).catch(e=>{console.log("ERROR with doImport: ", e); return Promise.resolve(createdContact);}))
+                                     .catch(e=>{console.log("ERROR with extractKeysFromDelegationsForHcpHierarchy: ", e); return Promise.resolve(createdContact);})
+                                 )
+                                 .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : iccContactXApi.modifyContactWithUser(user, _.merge({},updatedContactAfterImport,{ subContacts: [{
+@@ -523,6 +526,66 @@ onmessage = e => {
+
+         }
+
++        const getPatContactsByProtocols = (hcpId, patientObject) => {
++
++			const promResolve = Promise.resolve();
++
++			return iccContactXApi.findBy(hcpId,patientObject)
++				.then(patientContacts => _
++					.chain(patientContacts)
++					.map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
++						ctcId: _.trim(_.get(ctc,"id")),
++						protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
++						formId: _.trim(_.get(ctc,"subContacts[0].formId")),
++						complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
++						totalSubCtc: _.size(_.get(ctc,"subContacts"))
++					})
++					.compact()
++					.reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
++					.value()
++				)
++				.catch(e=>{ console.log("ERROR _getPatContactsByProtocols", e); return promResolve; })
++
++		}
++
++        const reconcilePartialAndIncompleteResults = () => {
++
++			const promResolve = Promise.resolve()
++
++			return !_.size(_.uniq(_.compact(patientIdsWithAssignedResults))) ? promResolve : iccPatientXApi.getPatientsWithUser(user,{ids:_.uniq(_.compact(patientIdsWithAssignedResults))})
++				.then(myPatients => {
++
++					let promPat = Promise.resolve([])
++					let promContacts = Promise.resolve([])
++
++					_.map(myPatients, pat => {
++						promPat = promPat
++							.then(promisesCarrierPat => getPatContactsByProtocols(_.trim(_.get(user,"healthcarePartyId","")), pat).then(contactsByProtocols => {
++								_.map(contactsByProtocols, contacts => {
++									promContacts = promContacts
++										.then(promiseCarrierContacts => {
++											const completeResults = _.filter(contacts, {complete:true})
++											const incompleteResults = _.filter(contacts, {complete:false})
++											const formIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"formId"))).join(",")
++											const contactIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"ctcId"))).join(",")
++											return  _.size(contacts) < 2 || !_.size(completeResults) || !_.size(incompleteResults) ? promiseCarrierContacts||[] : iccFormXApi.deleteForms(formIdsToDelete).catch(e=>null).then(x=>iccContactXApi.deleteContacts(contactIdsToDelete).catch(e=>null).then(x=>_.concat(promiseCarrierContacts, [x])))
++										})
++								})
++								return promContacts.then(x => _.concat(promisesCarrierPat, x)).then(x => _.concat(promisesCarrierPat, null))
++							}))
++					})
++
++					return promPat
++
++				})
++				.then(promPat => null)
++				.catch(e => null)
++
++
++		}
++
++
++
+
+
+         icureApi.getVersion()
+@@ -542,6 +605,7 @@ onmessage = e => {
+                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))
+                     .finally(()=> _.concat(promisesCarrier, []))
+                 )
++                prom.then(()=> reconcilePartialAndIncompleteResults())
+                 prom.then(()=> {
+
+                     if(singleBoxId === "INBOX" && parseInt(totalNewMessages["INBOX"])) {
