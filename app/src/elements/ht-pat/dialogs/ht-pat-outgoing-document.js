@@ -1302,6 +1302,10 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+            _sleep (time) {
+                return new Promise((resolve) => setTimeout(resolve, time));
+            }
+
     _saveDocumentAsService(inputConfig) {
 
         const promResolve = Promise.resolve()
@@ -1325,6 +1329,11 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             {type: 'CD-TRANSACTION', code: _.trim(_.get(inputConfig, "cdTransactionCode", ""))},
         ]
 
+                return promResolve
+                    .then(() => this._sleep(2000))
+                    .then(() => this.api.contact().getContactWithUser(_.get(this,"user",{}), _.trim(_.get(this, "_data.currentContact.id", ""))).then(currentContact => this._data.currentContact = currentContact).catch(e=>{}))
+                    .then(() => {
+
         if (false === _.get(this, "_data.currentContact.services", false)) this._data.currentContact.services = []
         if (false === _.get(this, "_data.currentContact.subContacts", false)) this._data.currentContact.subContacts = []
 
@@ -1335,7 +1344,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             tags: svc.tags,
         })
 
-        return promResolve
+                    })
             .then(() => !!_.trim(_.get(this, "_data.currentContact.rev", "")) ?
                 this.api.contact().modifyContactWithUser(_.get(this, "user", {}), _.get(this, "_data.currentContact", {})) :
                 this.api.contact().createContactWithUser(_.get(this, "user", {}), _.get(this, "_data.currentContact", {}))
@@ -1494,6 +1503,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             "mm-desinscription",
             "mm-transfert",
             "mm-soins-abonnes-en-institution",
+                    "covid19",
+                    "covid19-patient",
             "covid19-employer",
             "certificat-administration-biens",
             "covid19-mutuelle",
@@ -1540,7 +1551,19 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
                 // Have "New document" as last item of list
                 const sortedFoundTemplates = _.concat(
-                    _.filter(foundTemplates, it => _.trim(_.get(it, "guid", "")) !== "new-doc"),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it => _.trim(_.get(it,"guid","")) === "covid19-patient"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-employer"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-mutuelle"), {isBold:true}),
+                            _.merge(_.find(foundTemplates, it =>  _.trim(_.get(it,"guid","")) === "covid19-quarantaine"), {isBold:true, hrAfter: true}),
+                            _.filter(foundTemplates, it => (
+                                _.trim(_.get(it,"guid","")) !== "new-doc" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-patient" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-employer" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-mutuelle" &&
+                                _.trim(_.get(it,"guid","")) !== "covid19-quarantaine"
+                            )),
                     _.merge(_.find(foundTemplates, it => _.trim(_.get(it, "guid", "")) === "new-doc"), {isLast: true})
                 )
 
@@ -1586,74 +1609,20 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             subVars: [{
                 name: this.localize('idHcp', 'Physician identification', this.language),
                 nodes: [
-                    {
-                        type: 'paragraph',
-                        content: [{
-                            type: 'text',
-                            marks: [{type: 'strong'}, {type: 'underlined'}],
-                            text: _.trim(this.localize('idHcp', 'Physician identification', this.language)).toUpperCase()
-                        }]
-                    },
-                    {
-                        type: 'table', content: [
-                            {
-                                type: 'table_row', content: [
-                                    {
-                                        type: 'table_cell',
-                                        attrs: {
-                                            "colspan": 1,
-                                            "rowspan": 1,
-                                            "colwidth": null,
-                                            "borderColor": "#999999",
-                                            "background": "#fafafa"
-                                        },
-                                        content: [
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("doctorAbreviation", "Dr.", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'hcp.lastName'}}, {
-                                                        type: 'text',
-                                                        text: ' '
-                                                    }, {type: 'variable', attrs: {expr: 'hcp.firstName'}},
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("inami", "Nihii", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'hcp.nihiiHr'}}, {
-                                                        type: 'text',
-                                                        text: ' '
-                                                    },
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("postalAddress", "Address", this.language) + ": "
-                                                    },
-                                                    {type: 'variable', attrs: {expr: 'hcp.address'}}, {
-                                                        type: 'text',
-                                                        text: ' - '
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'hcp.postalCode'}
-                                                    }, {type: 'text', text: ' '}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'hcp.city'}
-                                                    }, {type: 'text', text: ' '},
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: "Email: "
-                                                    }, {type: 'variable', attrs: {expr: 'hcp.email'}},
+                            {type: 'paragraph',content: [{type: 'text', marks: [{type: 'strong'},{type: 'underlined'}], text:_.trim(this.localize('idHcp', 'Physician identification', this.language)).toUpperCase()}]},
+                            {type: 'table',content: [
+                                    {type: 'table_row',content: [
+                                            {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: [
+                                                    {type:'paragraph', content: [
+                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("doctorAbreviation", "Dr.", this.language) + ": "}, {type: 'variable', attrs: {expr: 'hcp.lastName'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'hcp.firstName'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("inami", "Nihii", this.language) + ": "}, {type: 'variable', attrs: {expr: 'hcp.nihiiHr'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("postalAddress", "Address", this.language) + ": "},
+                                                            {type:'variable', attrs: {expr: 'hcp.address'}}, {type:'text', text: ' - '}, {type: 'variable', attrs: {expr: 'hcp.postalCode'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'hcp.city'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type:'text', marks: [{type: 'strong'}], text: "Email: "}, {type: 'variable', attrs: {expr: 'hcp.email'}},
                                                     {type: 'text', text: ' - '}, {
                                                         type: 'text',
                                                         marks: [{type: 'strong'}],
@@ -1690,116 +1659,31 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                         }]
                     },
                     {type: 'paragraph', content: [{type: 'text', text: " "}]},
-                    {
-                        type: 'paragraph', content: [
-                            {
-                                type: 'text',
-                                text: this.localize("doctorAbreviation", "Dr.", this.language) + " "
-                            }, {type: 'variable', attrs: {expr: 'hcp.lastName'}}, {
-                                type: 'text',
-                                text: ' '
-                            }, {type: 'variable', attrs: {expr: 'hcp.firstName'}}, {type: 'text', text: ' - '},
-                            {
-                                type: 'text',
-                                text: this.localize("inami", "Nihii", this.language) + ": "
-                            }, {type: 'variable', attrs: {expr: 'hcp.nihiiHr'}}, {type: 'text', text: ' '}
-                        ]
-                    },
+                            {type:'paragraph',content: [
+                                    {type:'text', text: this.localize("doctorAbreviation", "Dr.", this.language) + " "}, {type: 'variable', attrs: {expr: 'hcp.lastName'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'hcp.firstName'}}, {type:'text', text: ' - '},
+                                    {type:'text', text: this.localize("inami", "Nihii", this.language) + ": "}, {type: 'variable', attrs: {expr: 'hcp.nihiiHr'}}, {type:'text', text: ' '}
+                                ]},
 
-                    {
-                        type: 'paragraph',
-                        content: [{
-                            type: 'text',
-                            text: this.localize("postalAddress", "Address", this.language) + ": "
-                        }, {type: 'variable', attrs: {expr: 'hcp.address'}}, {
-                            type: 'text',
-                            text: ' - '
-                        }, {type: 'variable', attrs: {expr: 'hcp.postalCode'}}, {
-                            type: 'text',
-                            text: ' '
-                        }, {type: 'variable', attrs: {expr: 'hcp.city'}}, {type: 'text', text: ' '},]
-                    },
-                    {
-                        type: 'paragraph', content: [
-                            {type: 'text', text: "Email: "}, {
-                                type: 'variable',
-                                attrs: {expr: 'hcp.email'}
-                            }, {type: 'text', text: ' - '},
-                            {
-                                type: 'text',
-                                text: this.localize("phone", "Phone", this.language) + ": "
-                            }, {type: 'variable', attrs: {expr: 'hcp.phone'}}, {
-                                type: 'text',
-                                text: ' - '
-                            }, {
-                                type: 'text',
-                                text: this.localize("mobile", "Mobile", this.language) + ": "
-                            }, {type: 'variable', attrs: {expr: 'hcp.mobile'}}, {type: 'text', text: ' '},
-                        ]
-                    },
+                            {type:'paragraph',content: [{type:'text', text: this.localize("postalAddress", "Address", this.language) + ": "},{type:'variable', attrs: {expr: 'hcp.address'}}, {type:'text', text: ' - '}, {type: 'variable', attrs: {expr: 'hcp.postalCode'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'hcp.city'}}, {type:'text', text: ' '},]},
+                            {type:'paragraph',content: [
+                                    {type:'text', text: "Email: "}, {type: 'variable', attrs: {expr: 'hcp.email'}}, {type:'text', text: ' - '},
+                                    {type:'text', text: this.localize("phone", "Phone", this.language) + ": "}, {type: 'variable', attrs: {expr: 'hcp.phone'}},{type:'text', text: ' - '}, {type: 'text', text: this.localize("mobile", "Mobile", this.language) + ": "}, {type: 'variable', attrs: {expr: 'hcp.mobile'}}, {type:'text', text: ' '},
+                                ]},
                 ]
             }, {
                 name: this.localize('idPatientShort', 'Patient id. (short)', this.language),
                 nodes: [
-                    {
-                        type: 'paragraph',
-                        content: [{
-                            type: 'text',
-                            marks: [{type: 'strong'}, {type: 'underlined'}],
-                            text: _.trim(this.localize('idPatientHr', 'Patient identification', this.language)).toUpperCase()
-                        }]
-                    },
-                    {
-                        type: 'table', content: [
-                            {
-                                type: 'table_row', content: [
-                                    {
-                                        type: 'table_cell',
-                                        attrs: {
-                                            "colspan": 1,
-                                            "rowspan": 1,
-                                            "colwidth": null,
-                                            "borderColor": "#999999",
-                                            "background": "#fafafa"
-                                        },
-                                        content: [
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("lastAndAndFirstNames", "Last & first names", this.language) + ": "
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.lastName'}
-                                                    }, {type: 'text', text: ' '}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.firstName'}
-                                                    },
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("postalAddress", "Address", this.language) + ": "
-                                                    },
-                                                    {type: 'variable', attrs: {expr: 'patient.address'}}, {
-                                                        type: 'text',
-                                                        text: ' - '
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.postalCode'}
-                                                    }, {type: 'text', text: ' '}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.city'}
-                                                    }, {type: 'text', text: ' '},
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("sexLitteral", "Sex", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.genderHr'}},
+                            {type: 'paragraph',content: [{type: 'text', marks: [{type: 'strong'},{type: 'underlined'}], text:_.trim(this.localize('idPatientHr', 'Patient identification', this.language)).toUpperCase()}]},
+                            {type: 'table',content: [
+                                    {type: 'table_row',content: [
+                                            {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: [
+                                                    {type:'paragraph',content: [
+                                                            {type: 'text', marks: [{type: 'strong'}], text: this.localize("lastAndAndFirstNames", "Last & first names", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.lastName'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'patient.firstName'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("postalAddress", "Address", this.language) + ": "},
+                                                            {type: 'variable', attrs: {expr: 'patient.address'}}, {type:'text', text: ' - '}, {type: 'variable', attrs: {expr: 'patient.postalCode'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'patient.city'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type: 'text', marks: [{type: 'strong'}], text: this.localize("sexLitteral", "Sex", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.genderHr'}},
                                                     {type: 'text', text: ' - '}, {
                                                         type: 'text',
                                                         marks: [{type: 'strong'}],
@@ -1826,121 +1710,29 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             }, {
                 name: this.localize('idPatient', 'Patient identification', this.language),
                 nodes: [
-                    {
-                        type: 'paragraph',
-                        content: [{
-                            type: 'text',
-                            marks: [{type: 'strong'}, {type: 'underlined'}],
-                            text: _.trim(this.localize('idPatientHr', 'Patient identification', this.language)).toUpperCase()
-                        }]
-                    },
-                    {
-                        type: 'table', content: [
-                            {
-                                type: 'table_row', content: [
-                                    {
-                                        type: 'table_cell',
-                                        attrs: {
-                                            "colspan": 1,
-                                            "rowspan": 1,
-                                            "colwidth": null,
-                                            "borderColor": "#999999",
-                                            "background": "#fafafa"
-                                        },
-                                        content: [
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("lastAndAndFirstNames", "Last & first names", this.language) + ": "
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.lastName'}
-                                                    }, {type: 'text', text: ' '}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.firstName'}
-                                                    },
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("postalAddress", "Address", this.language) + ": "
-                                                    },
-                                                    {type: 'variable', attrs: {expr: 'patient.address'}}, {
-                                                        type: 'text',
-                                                        text: ' - '
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.postalCode'}
-                                                    }, {type: 'text', text: ' '}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.city'}
-                                                    }, {type: 'text', text: ' '},
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("sexLitteral", "Sex", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.genderHr'}},
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("birthDate", "Birthdate", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.dateOfBirthHr'}},
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("ssinPatVerbose", "NISS", this.language) + ": "
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.ssinHr'}
-                                                    }, {type: 'text', text: ' '},
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: "Email: "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.email'}},
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("phone", "Phone", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.phone'}},
-                                                    {type: 'text', text: ' - '}, {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("job", "Job", this.language) + ": "
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.profession'}
-                                                    }, {type: 'text', text: ' '},
-                                                ]
-                                            },
-                                            {
-                                                type: 'paragraph', content: [
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("adm_in", "Insurance", this.language) + ": "
-                                                    }, {type: 'variable', attrs: {expr: 'patient.insuranceData.name'}},
-                                                    {type: 'text', text: ' (#'}, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.insuranceData.code'}
-                                                    }, {type: 'text', text: ') - '},
-                                                    {
-                                                        type: 'text',
-                                                        marks: [{type: 'strong'}],
-                                                        text: this.localize("AFF", "Membership number", this.language) + ": "
-                                                    }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: 'patient.insuranceData.identificationNumber'}
-                                                    },
+                            {type: 'paragraph',content: [{type: 'text', marks: [{type: 'strong'},{type: 'underlined'}], text:_.trim(this.localize('idPatientHr', 'Patient identification', this.language)).toUpperCase()}]},
+                            {type: 'table',content: [
+                                    {type: 'table_row',content: [
+                                            {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: [
+                                                    {type:'paragraph',content: [
+                                                            {type: 'text', marks: [{type: 'strong'}], text: this.localize("lastAndAndFirstNames", "Last & first names", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.lastName'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'patient.firstName'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("postalAddress", "Address", this.language) + ": "},
+                                                            {type: 'variable', attrs: {expr: 'patient.address'}}, {type:'text', text: ' - '}, {type: 'variable', attrs: {expr: 'patient.postalCode'}}, {type:'text', text: ' '}, {type: 'variable', attrs: {expr: 'patient.city'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type: 'text', marks: [{type: 'strong'}], text: this.localize("sexLitteral", "Sex", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.genderHr'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("birthDate", "Birthdate", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.dateOfBirthHr'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("ssinPatVerbose", "NISS", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.ssinHr'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type:'text', marks: [{type: 'strong'}], text: "Email: "}, {type: 'variable', attrs: {expr: 'patient.email'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("phone", "Phone", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.phone'}},
+                                                            {type:'text', text: ' - '}, {type: 'text', marks: [{type: 'strong'}], text: this.localize("job", "Job", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.profession'}}, {type:'text', text: ' '},
+                                                        ]},
+                                                    {type:'paragraph',content: [
+                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("adm_in", "Insurance", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.insuranceData.name'}},
+                                                            {type:'text', text: ' (#'}, {type: 'variable', attrs: {expr: 'patient.insuranceData.code'}}, {type:'text', text: ') - '},
+                                                            {type:'text', marks: [{type: 'strong'}], text: this.localize("AFF", "Membership number", this.language) + ": "}, {type: 'variable', attrs: {expr: 'patient.insuranceData.identificationNumber'}},
                                                     {type: 'text', text: ' - '}, {
                                                         type: 'text',
                                                         marks: [{type: 'strong'}],
@@ -1960,7 +1752,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                     {type: 'paragraph', content: [{type: 'text', text: " "}]},
                 ]
             }]
-        }]
+                }];
 
         // Add MH data
         if (!!_.trim(_.get(this, "_data.currentMh.id"))) {
@@ -1968,26 +1760,11 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 type: 'mh',
                 name: this.localize('medicalHouseInformations', 'Medical house informations', this.language),
                 subVars: [
-                    {
-                        name: this.localize('name', 'Name', this.language),
-                        nodes: [{type: 'variable', attrs: {expr: 'mh.name'}}, {type: 'text', text: ' '}]
-                    },
-                    {
-                        name: this.localize('inami', 'Nihii', this.language),
-                        nodes: [{type: 'variable', attrs: {expr: 'mh.nihiiHr'}}, {type: 'text', text: ' '}]
-                    },
-                    {
-                        name: this.localize('postalAddress', 'Address', this.language),
-                        nodes: [{type: 'variable', attrs: {expr: 'mh.address'}}, {type: 'text', text: ' '}]
-                    },
-                    {
-                        name: this.localize('postalCode', 'Zip', this.language),
-                        nodes: [{type: 'variable', attrs: {expr: 'mh.postalCode'}}, {type: 'text', text: ' '}]
-                    },
-                    {
-                        name: this.localize('city', 'City', this.language),
-                        nodes: [{type: 'variable', attrs: {expr: 'mh.city'}}, {type: 'text', text: ' '}]
-                    },
+                            {name: this.localize('name', 'Name', this.language), nodes: [{type: 'variable', attrs: {expr: 'mh.name'}},{type:'text', text: ' '}]},
+                            {name: this.localize('inami', 'Nihii', this.language), nodes: [{type: 'variable', attrs: {expr: 'mh.nihiiHr'}},{type:'text', text: ' '}]},
+                            {name: this.localize('postalAddress', 'Address', this.language), nodes: [{type: 'variable', attrs: {expr: 'mh.address'}},{type:'text', text: ' '}]},
+                            {name: this.localize('postalCode', 'Zip', this.language), nodes: [{type: 'variable', attrs: {expr: 'mh.postalCode'}},{type:'text', text: ' '}]},
+                            {name: this.localize('city', 'City', this.language), nodes: [{type: 'variable', attrs: {expr: 'mh.city'}},{type:'text', text: ' '}]},
                     {name: "E-mail", nodes: [{type: 'variable', attrs: {expr: 'mh.email'}}, {type: 'text', text: ' '}]},
                     {
                         name: this.localize('phone', 'Phone', this.language),
@@ -2001,143 +1778,43 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             type: 'hcp',
             name: this.localize('physicianInformations', 'Physician informations', this.language),
             subVars: [
-                {
-                    name: this.localize('las_nam', 'Last name', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.lastName'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('fir_nam', 'First name', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.firstName'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('inami', 'Nihii', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.nihiiHr'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('postalAddress', 'Address', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.address'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('postalCode', 'Zip', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.postalCode'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('city', 'City', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.city'}}, {type: 'text', text: ' '}]
-                },
+                        {name: this.localize('las_nam', 'Last name', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.lastName'}},{type:'text', text: ' '}]},
+                        {name: this.localize('fir_nam', 'First name', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.firstName'}},{type:'text', text: ' '}]},
+                        {name: this.localize('inami', 'Nihii', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.nihiiHr'}},{type:'text', text: ' '}]},
+                        {name: this.localize('postalAddress', 'Address', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.address'}},{type:'text', text: ' '}]},
+                        {name: this.localize('postalCode', 'Zip', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.postalCode'}},{type:'text', text: ' '}]},
+                        {name: this.localize('city', 'City', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.city'}},{type:'text', text: ' '}]},
                 {name: "E-mail", nodes: [{type: 'variable', attrs: {expr: 'hcp.email'}}, {type: 'text', text: ' '}]},
-                {
-                    name: this.localize('phone', 'Phone', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.phone'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('mobile', 'Mobile', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'hcp.mobile'}}, {type: 'text', text: ' '}]
-                },
+                        {name: this.localize('phone', 'Phone', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.phone'}},{type:'text', text: ' '}]},
+                        {name: this.localize('mobile', 'Mobile', this.language), nodes: [{type: 'variable', attrs: {expr: 'hcp.mobile'}},{type:'text', text: ' '}]},
             ]
         }, {
             type: 'patient',
             additionalCssClasses: 'largeDivider',
             name: this.localize('patientInformations', 'Patient informations', this.language),
             subVars: [
-                {
-                    name: this.localize('docTitle', 'Title', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.civilityHr'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('las_nam', 'Last name', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.lastName'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('fir_nam', 'First name', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.firstName'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("postalAddress", "Address", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.address'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("postalCode", "Zip", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.postalCode'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("city", "City", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.city'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("sexLitteral", "Sex", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.genderHr'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("birthDate", "Birthdate", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.dateOfBirthHr'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("age", "Age", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.age'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("ssinPatVerbose", "NISS", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.ssinHr'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("nationality", "Nationality", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.nationality'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: "E-mail",
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.email'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("phone", "Phone", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.phone'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("job", "Job", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.profession'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("adm_in", "Insurance", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.name'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("insuranceCode", "Insurance code", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.code'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("insuranceAddress", "Insurance address", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.address'}}, {
-                        type: 'text',
-                        text: ' '
-                    }]
-                },
-                {
-                    name: this.localize("insuranceZip", "Insurance zip", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.postalCode'}}, {
-                        type: 'text',
-                        text: ' '
-                    }]
-                },
-                {
-                    name: this.localize("insuranceCity", "Insurance city", this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.city'}}, {type: 'text', text: ' '}]
-                },
-                {
-                    name: "CT1 - CT2",
-                    nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.tc1tc2'}}, {
-                        type: 'text',
-                        text: ' '
-                    }]
-                },
-                {
-                    name: this.localize("AFF", "Membership number", this.language),
-                    nodes: [{
-                        type: 'variable',
-                        attrs: {expr: 'patient.insuranceData.identificationNumber'}
-                    }, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize("husbandWife", "Partner", this.language), nodes: [
+                        {name: this.localize('docTitle', 'Title', this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.civilityHr'}},{type:'text', text: ' '}]},
+                        {name: this.localize('las_nam', 'Last name', this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.lastName'}},{type:'text', text: ' '}]},
+                        {name: this.localize('fir_nam', 'First name', this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.firstName'}},{type:'text', text: ' '}]},
+                        {name: this.localize("postalAddress", "Address", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.address'}},{type:'text', text: ' '}]},
+                        {name: this.localize("postalCode", "Zip", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.postalCode'}},{type:'text', text: ' '}]},
+                        {name: this.localize("city", "City", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.city'}},{type:'text', text: ' '}]},
+                        {name: this.localize("sexLitteral", "Sex", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.genderHr'}},{type:'text', text: ' '}]},
+                        {name: this.localize("birthDate", "Birthdate", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.dateOfBirthHr'}},{type:'text', text: ' '}]},
+                        {name: this.localize("age", "Age", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.age'}},{type:'text', text: ' '}]},
+                        {name: this.localize("ssinPatVerbose", "NISS", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.ssinHr'}},{type:'text', text: ' '}]},
+                        {name: this.localize("nationality", "Nationality", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.nationality'}},{type:'text', text: ' '}]},
+                        {name: "E-mail", nodes: [{type: 'variable', attrs: {expr: 'patient.email'}},{type:'text', text: ' '}]},
+                        {name: this.localize("phone", "Phone", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.phone'}},{type:'text', text: ' '}]},
+                        {name: this.localize("job", "Job", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.profession'}},{type:'text', text: ' '}]},
+                        {name: this.localize("adm_in", "Insurance", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.name'}},{type:'text', text: ' '}]},
+                        {name: this.localize("insuranceCode", "Insurance code", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.code'}},{type:'text', text: ' '}]},
+                        {name: this.localize("insuranceAddress", "Insurance address", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.address'}},{type:'text', text: ' '}]},
+                        {name: this.localize("insuranceZip", "Insurance zip", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.postalCode'}},{type:'text', text: ' '}]},
+                        {name: this.localize("insuranceCity", "Insurance city", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.city'}},{type:'text', text: ' '}]},
+                        {name: "CT1 - CT2", nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.tc1tc2'}},{type:'text', text: ' '}]},
+                        {name: this.localize("AFF", "Membership number", this.language), nodes: [{type: 'variable', attrs: {expr: 'patient.insuranceData.identificationNumber'}},{type:'text', text: ' '}]},
+                        {name: this.localize("husbandWife", "Partner", this.language), nodes: [
                         {type: 'variable', attrs: {expr: 'patient.partnerHr.lastName'}}, {type: 'text', text: ' '},
                         {type: 'variable', attrs: {expr: 'patient.partnerHr.firstName'}}, {type: 'text', text: ' '},
                         {type: 'variable', attrs: {expr: 'patient.partnerHr.ssinHr'}}, {type: 'text', text: ' '}
@@ -2164,6 +1841,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 return (!_.size(hes) /* || heType==="archivedHealthElements" */) ? null : {
                     name: heTypeLabel,
                     sorting: heType === "activeHealthElements" ? 1 :
+                                heType === "inactiveHealthElements" ? 2 :
                         heType === "surgicalHealthElements" ? 3 :
                             heType === "familyrisks" ? 4 :
                                 heType === "risks" ? 5 :
@@ -2177,172 +1855,27 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                 template: {
                                     'default': heType !== "medications" ?
                                         [
-                                            {
-                                                type: 'paragraph',
-                                                marks: [{type: 'underlined'}],
-                                                content: [{
-                                                    type: 'text',
-                                                    marks: [{type: 'strong'}],
-                                                    text: _.trim(heTypeLabel).toUpperCase() + ": "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.heCodeHr`}
-                                                }, {type: 'text', text: " - "}, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.descr`}
-                                                }, {type: 'text', text: " "}]
-                                            },
-                                            {
-                                                type: 'table', content: [
-                                                    {
-                                                        type: 'table_row', content: [
-                                                            {
-                                                                type: 'table_cell',
-                                                                attrs: {
-                                                                    "colspan": 1,
-                                                                    "rowspan": 1,
-                                                                    "colwidth": null,
-                                                                    "borderColor": "#999999",
-                                                                    "background": "#fafafa"
-                                                                },
-                                                                content: _.compact([
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("healthElement", "Health element", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.heHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                    ((heType !== "allergies" && heType !== "archivedHealthElements") ? false : {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("cdItemAllergy", "Allergy", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.allergyHr`}
-                                                                        }, {type: 'text', text: " - "}, {
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("drugs", "Drug", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.cnkHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    }),
-                                                                    {
-                                                                        type: 'paragraph', content: [
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("status", "Status", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.statusHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("cert", "Certainity", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.certaintyHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("sev", "Severity", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.severityHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("temp", "Temporality", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.evolutionHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                        ]
-                                                                    },
-                                                                    ((heType !== "familyrisks" && heType !== "archivedHealthElements") ? false : {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("fam-ris", "Family risk", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.familyLinkHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    }),
-                                                                    {
-                                                                        type: 'paragraph', content: [
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("st_da", "Start date", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.openingDateHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("en_da", "End date", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.closingDateHr`}
-                                                                            }, {type: 'text', text: " "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("remanence", "Rémanence", this.language) + ": "
-                                                                            }, {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.temporalityHr`}
-                                                                            }, {type: 'text', text: " "}
-                                                                        ]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: "ICPC" + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.icpcsHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: "ICD" + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.icdsHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("last_update", "Last update", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.lastUpdateDateHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
+                                                    {type:'paragraph',marks:[{type: 'underlined'}], content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.heCodeHr`}}, {type:'text', text: " - "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.descr`}}, {type:'text', text: " "}]},
+                                                    {type: 'table',content: [
+                                                            {type: 'table_row',content: [
+                                                                    {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: _.compact([
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("healthElement","Health element", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.heHr`}}, {type:'text', text: " "}]},
+                                                                            ((heType !== "allergies" && heType !== "archivedHealthElements") ? false : {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}, {type:'text', text: " "}]} ),
+                                                                            {type:'paragraph',content: [
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("status","Status", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.statusHr`}}, {type:'text', text: " "},
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("cert","Certainity", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.certaintyHr`}}, {type:'text', text: " "},
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("sev","Severity", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.severityHr`}}, {type:'text', text: " "},
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("temp","Temporality", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.evolutionHr`}}, {type:'text', text: " "},
+                                                                                ]},
+                                                                            ((heType !== "familyrisks" && heType !== "archivedHealthElements") ? false : {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("fam-ris","Family risk", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.familyLinkHr`}}, {type:'text', text: " "}]} ),
+                                                                            {type:'paragraph',content: [
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("st_da","Start date", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " "},
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("en_da","End date", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}}, {type:'text', text: " "},
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("remanence","Rémanence", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.temporalityHr`}}, {type:'text', text: " "}
+                                                                                ]},
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: "ICPC" + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.icpcsHr`}}, {type:'text', text: " "}]},
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: "ICD" + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.icdsHr`}}, {type:'text', text: " "}]},
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("last_update","Last update", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.lastUpdateDateHr`}}, {type:'text', text: " "}]},
                                                                 ])
                                                             },
                                                         ]
@@ -2350,115 +1883,27 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                 ]
                                             },
                                         ] : [
-                                            {
-                                                type: 'paragraph',
-                                                marks: [{type: 'underlined'}],
-                                                content: [{
-                                                    type: 'text',
-                                                    marks: [{type: 'strong'}],
-                                                    text: _.trim(heTypeLabel).toUpperCase() + ": "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.cnkCode`}
-                                                }, {type: 'text', text: " - "}, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.cnkHrLabel`}
-                                                }, {type: 'text', text: " "}]
-                                            },
-                                            {
-                                                type: 'table', content: [
-                                                    {
-                                                        type: 'table_row', content: [
-                                                            {
-                                                                type: 'table_cell',
-                                                                attrs: {
-                                                                    "colspan": 1,
-                                                                    "rowspan": 1,
-                                                                    "colwidth": null,
-                                                                    "borderColor": "#999999",
-                                                                    "background": "#fafafa"
-                                                                },
-                                                                content: [
-                                                                    {
-                                                                        type: 'paragraph', content: [
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("begin", "Begin", this.language) + ": "
-                                                                            },
-                                                                            {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.medication.begin`}
-                                                                            },
+                                                    {type:'paragraph',marks:[{type: 'underlined'}], content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkCode`}}, {type:'text', text: " - "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " "}]},
+                                                    {type: 'table',content: [
+                                                            {type: 'table_row',content: [
+                                                                    {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: [
+                                                                            {type:'paragraph',content: [
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("begin","Begin", this.language) + ": "},
+                                                                                    {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},
                                                                             {type: 'text', text: " - "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("end", "End", this.language) + ": "
-                                                                            },
-                                                                            {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.medication.end`}
-                                                                            },
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("end","End", this.language) + ": "},
+                                                                                    {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},
                                                                             {type: 'text', text: " - "},
-                                                                            {
-                                                                                type: 'text',
-                                                                                marks: [{type: 'strong'}],
-                                                                                text: this.localize("substitution", "Substitution", this.language) + ": "
-                                                                            },
-                                                                            {
-                                                                                type: 'variable',
-                                                                                attrs: {expr: `dataProvider.form().he.medication.substitutionAllowed`}
-                                                                            },
+                                                                                    {type:'text', marks: [{type: 'strong'}], text: this.localize("substitution","Substitution", this.language) + ": "},
+                                                                                    {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},
                                                                             {type: 'text', text: " "}
-                                                                        ]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("cdItemAllergy", "Allergy", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.allergyHr`}
-                                                                        }, {type: 'text', text: " "}, {
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("com", "Comment", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.medication.comment`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("pos", "Posology", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.medication.regimenHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                    {
-                                                                        type: 'paragraph',
-                                                                        content: [{
-                                                                            type: 'text',
-                                                                            marks: [{type: 'strong'}],
-                                                                            text: this.localize("last_update", "Last update", this.language) + ": "
-                                                                        }, {
-                                                                            type: 'variable',
-                                                                            attrs: {expr: `dataProvider.form().he.lastUpdateDateHr`}
-                                                                        }, {type: 'text', text: " "}]
-                                                                    },
-                                                                ]
-                                                            },
-                                                        ]
-                                                    },
-                                                ]
-                                            },
+                                                                                ]},
+                                                                            // {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', marks: [{type: 'strong'}], text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("pos","Posology", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.regimenHr`}}, {type:'text', text: " "}]},
+                                                                            {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: this.localize("last_update","Last update", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.lastUpdateDateHr`}}, {type:'text', text: " "}]},
+                                                                        ]},
+                                                                ]},
+                                                        ]},
                                         ]
                                 },
                             }
@@ -2474,7 +1919,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
         const healthElementVariablesLight = {
             type: 'hesLight',
-            additionalCssClasses: 'largeDivider',
+                    // additionalCssClasses:'largeDivider',
             name: this.localize('healthcareelements', 'Health elements', this.language) + " (" + this.localize('summary', 'summary', this.language) + ")",
             subVars: _.compact(_.map(_.get(this, "_data.allHealthElements", []), (hes, heType) => {
 
@@ -2487,7 +1932,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                         heType === "medications" ? this.localize("med", "Medication", this.language) :
                                             heType === "archivedHealthElements" ? this.localize("arc", "Archives", this.language) : ""
 
-                return (!_.size(hes) /* || heType==="archivedHealthElements" */) ? null : {
+                        return (!_.size(hes) || heType==="archivedHealthElements") ? null : {
                     name: heTypeLabel,
                     sorting: heType === "activeHealthElements" ? 1 :
                         heType === "inactiveHealthElements" ? 2 :
@@ -2498,16 +1943,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                             heType === "medications" ? 7 :
                                                 heType === "archivedHealthElements" ? 8 : 999,
                     nodes: [
-                        {
-                            type: 'paragraph',
-                            content: [{
-                                type: 'text',
-                                marks: [{type: 'strong'}],
-                                text: _.trim(heTypeLabel).toUpperCase() + ": "
-                            }, {type: 'text', text: " "}]
-                        },
-                        {
-                            type: 'template', attrs: {
+                                {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'text', text: " "}]},
+                                {type:'template', attrs: {
                                 expr: `subContextsHes("${heType}")`,
                                 template: {
                                     'default': heType !== "medications" ?
@@ -2528,88 +1965,21 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                         attrs: {expr: `dataProvider.form().he.heCodeHr`}
                                                     }, {type: 'text', text: ") - "},
                                                         // {type:'variable', attrs:{ expr:`dataProvider.form().he.statusHr`}}, {type:'text', text: " - "},
-                                                        {
-                                                            type: 'text',
-                                                            text: this.localize("from2", "From", this.language) + " "
-                                                        }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: `dataProvider.form().he.openingDateHr`}
-                                                    }, {type: 'text', text: " "},
-                                                        {
-                                                            type: 'text',
-                                                            text: this.localize("till", "to", this.language) + " "
-                                                        }, {
-                                                        type: 'variable',
-                                                        attrs: {expr: `dataProvider.form().he.closingDateHr`}
-                                                    }
+                                                                {type:'text', text: this.localize("from2","From", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " "},
+                                                                {type:'text', text: this.localize("till","to", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}}
                                                     ]
                                                 )))
                                             },
                                             ((heType !== "allergies" && heType !== "archivedHealthElements") ? null :
-                                                    {
-                                                        type: 'paragraph', content: [
-                                                            {
-                                                                type: 'text',
-                                                                text: this.localize("cdItemAllergy", "Allergy", this.language) + ": "
-                                                            }, {
-                                                                type: 'variable',
-                                                                attrs: {expr: `dataProvider.form().he.allergyHr`}
-                                                            }, {type: 'text', text: " - "},
-                                                            {
-                                                                type: 'text',
-                                                                text: this.localize("drugs", "Drug", this.language) + ": "
-                                                            }, {
-                                                                type: 'variable',
-                                                                attrs: {expr: `dataProvider.form().he.cnkHr`}
-                                                            }
-                                                        ]
-                                                    }
+                                                            null
+                                                        // {type:'paragraph',content: [
+                                                        //     {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
+                                                        //     {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
+                                                        // ]}
                                             ),
                                         ]) : [
-                                            {
-                                                type: 'paragraph',
-                                                content: [{
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.cnkHrLabel`}
-                                                }, {type: 'text', text: " (CNK: "}, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.cnkCode`}
-                                                }, {type: 'text', text: ") - "}, {
-                                                    type: 'text',
-                                                    text: this.localize("from2", "From", this.language) + " "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.begin`}
-                                                }, {type: 'text', text: " "}, {
-                                                    type: 'text',
-                                                    text: this.localize("till", "to", this.language) + " "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.end`}
-                                                }, {type: 'text', text: " - "}, {
-                                                    type: 'text',
-                                                    text: this.localize("substitution", "Substitution", this.language) + ": "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.substitutionAllowed`}
-                                                }, {type: 'text', text: " "}]
-                                            },
-                                            {
-                                                type: 'paragraph',
-                                                content: [{
-                                                    type: 'text',
-                                                    text: this.localize("cdItemAllergy", "Allergy", this.language) + ": "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.allergyHr`}
-                                                }, {type: 'text', text: " "}, {
-                                                    type: 'text',
-                                                    text: this.localize("com", "Comment", this.language) + ": "
-                                                }, {
-                                                    type: 'variable',
-                                                    attrs: {expr: `dataProvider.form().he.medication.comment`}
-                                                }, {type: 'text', text: " "}]
-                                            },
+                                                    {type:'paragraph',content: [{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " (CNK: "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkCode`}}, {type:'text', text: ") - "}, {type:'text', text: this.localize("from2","From", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " "},{type:'text', text: this.localize("till","to", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " - "} ,{type:'text', text: this.localize("substitution","Substitution", this.language) + ": "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.substitutionAllowed`}},{type:'text', text: " "}]},
+                                                    // {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}, {type:'text', text: this.localize("com","Comment", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.medication.comment`}}, {type:'text', text: " "}]},
                                         ]
                                 },
                             }
@@ -2622,6 +1992,68 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
         }
 
         _.assign(healthElementVariablesLight, {subVars: _.orderBy(_.get(healthElementVariablesLight, "subVars", []), ['sorting'], ['asc'])})
+
+                const healthElementVariablesCondensed = {
+                    type:'hesCondensed',
+                    additionalCssClasses:'largeDivider',
+                    name: this.localize('healthcareelements', 'Health elements', this.language) + " (" + this.localize('condensed', 'Condensed', this.language) +")",
+                    subVars: _.compact(_.map(_.get(this,"_data.allHealthElements",[]), (hes, heType) => {
+
+                        const heTypeLabel = heType === "activeHealthElements" ? this.localize("act_hea_pro","Active Health Problems", this.language) :
+                            heType === "inactiveHealthElements" ? this.localize("med_ant","Medical antecedents", this.language) :
+                                heType === "surgicalHealthElements" ? this.localize("surg","Surgical", this.language) :
+                                    heType === "familyrisks" ? this.localize("fam_ris","Family risks", this.language) :
+                                        heType === "risks" ? this.localize("ris","Risks", this.language) :
+                                            heType === "allergies" ? this.localize("aller","Allergies", this.language) :
+                                                heType === "medications" ? this.localize("med","Medication", this.language) :
+                                                    heType === "archivedHealthElements" ? this.localize("arc","Archives", this.language) : ""
+
+                        return (!_.size(hes) || heType==="archivedHealthElements") ? null : {
+                            name: heTypeLabel,
+                            sorting: heType === "activeHealthElements" ? 1 :
+                                heType === "inactiveHealthElements" ? 2 :
+                                    heType === "surgicalHealthElements" ? 3 :
+                                        heType === "familyrisks" ? 4 :
+                                            heType === "risks" ? 5 :
+                                                heType === "allergies" ? 6 :
+                                                    heType === "medications" ? 7 :
+                                                        heType === "archivedHealthElements" ? 8 : 999,
+
+                            nodes: [
+                                {type:'paragraph',content: [{type:'text', marks: [{type: 'strong'}], text: _.trim(heTypeLabel).toUpperCase() + ": "}, {type:'text', text: " "}]},
+                                {type:'template', attrs: {
+                                        expr:`subContextsHes("${heType}")`,
+                                        template: {'default': heType !== "medications" ?
+                                                _.compact([
+                                                    {type:'paragraph', content:_.flatten(_.compact(_.concat(
+                                                            (heType !== "familyrisks" ? [] : [{type:'variable', attrs:{ expr:`dataProvider.form().he.familyLinkHr`}}, {type:'text', text: ": "}]),
+                                                            [
+                                                                {type:'variable', attrs:{ expr:`dataProvider.form().he.descr`}}, {type:'text', text: " "},
+                                                                {type:'text', text: this.localize("from2","From", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.openingDateHr`}}, {type:'text', text: " "},
+                                                                {type:'text', text: this.localize("till","to", this.language) + " "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.closingDateHr`}}
+                                                            ]
+                                                        )))},
+                                                    ((heType !== "allergies" && heType !== "archivedHealthElements") ? null :
+                                                            null
+                                                        // {type:'paragraph',content: [
+                                                        //     {type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " - "},
+                                                        //     {type:'text', text: this.localize("drugs","Drug", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.cnkHr`}}
+                                                        // ]}
+                                                    ),
+                                                ]) : [
+                                                    {type:'paragraph',content: [{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.cnkHrLabel`}}, {type:'text', text: " - "}, {type:'text', text: this.localize("from2","From", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.begin`}},{type:'text', text: " "},{type:'text', text: this.localize("till","to", this.language) + " "},{type:'variable', attrs:{ expr:`dataProvider.form().he.medication.end`}},{type:'text', text: " "}]},
+                                                    // {type:'paragraph',content: [{type:'text', text: this.localize("cdItemAllergy","Allergy", this.language) + ": "}, {type:'variable', attrs:{ expr:`dataProvider.form().he.allergyHr`}}, {type:'text', text: " "}]},
+                                                ]
+                                        },
+                                    }},
+                                {type:'paragraph',content: [{type:'text', text: " "}]},
+                            ]
+                        }
+
+                    }))
+                }
+
+                _.assign(healthElementVariablesCondensed, {subVars: _.orderBy(_.get(healthElementVariablesCondensed,"subVars",[]), ['sorting'],['asc'])})
 
         const getterByDataType = {
             TKDate: "getDateValue",
@@ -2655,13 +2087,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                     name: _.get(formObject, "descr", "") + (totalFormsForCurrentTemplateGuid === 1 ? "" : " (" + _.trim(parseInt(templateGuidAndIndex[1])) + "/" + totalFormsForCurrentTemplateGuid + ")"),
                     templateGuid: _.trim(_.get(templateGuidAndIndex, "[0]", "")),
                     nodes: [
-                        {
-                            type: 'paragraph', content: [
-                                {
-                                    type: 'text',
-                                    marks: [{type: 'strong'}, {type: 'underlined'}],
-                                    text: this.localize("form", "Form", this.language).toUpperCase()
-                                },
+                                {type:'paragraph', content: [
+                                        {type:'text', marks: [{type: 'strong'}, {type: 'underlined'}], text: this.localize("form", "Form", this.language).toUpperCase()},
                                 {type: 'text', text: ": " + _.trim(formName).toUpperCase()},
                                 {
                                     type: 'text',
@@ -2669,22 +2096,10 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                 },
                                 {type: 'variable', attrs: {expr: `contactOpeningDate`}},
                                 {type: 'text', text: ' '}
-                            ]
-                        },
-                        {
-                            type: 'table', content: [
-                                {
-                                    type: 'table_row', content: [
-                                        {
-                                            type: 'table_cell',
-                                            attrs: {
-                                                "colspan": 1,
-                                                "rowspan": 1,
-                                                "colwidth": null,
-                                                "borderColor": "#999999",
-                                                "background": "#fafafa"
-                                            },
-                                            content: [{
+                                    ]},
+                                {type: 'table',content: [
+                                        {type: 'table_row',content: [
+                                                {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content:[{
                                                 type: 'template',
                                                 attrs: {
                                                     expr: `subContextsForms("${templateGuid}")`,
@@ -2709,16 +2124,9 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                                     (_.trim(_.get(k, "type")) === "TKMeasure" && !_.trim(form.dataProvider.getMeasureValue(k.name).value))
                                                                 )) ? false :
                                                                     // Not sub form and has field value
-                                                                    (!isSubForm) ? {
-                                                                            type: 'paragraph', content: [
-                                                                                {
-                                                                                    type: 'text',
-                                                                                    marks: [{type: 'strong'}],
-                                                                                    text: fieldLabel + ": "
-                                                                                },
-                                                                                {
-                                                                                    type: 'variable', attrs: {
-                                                                                        expr: `const v = dataProvider.` + _.trim(_.get(getterByDataType, k.type, "getValue")) + `("${k.name}"); Array.isArray(v) ? v.join(', ') : ` + (
+                                                                            (!isSubForm) ? {type:'paragraph',content: [
+                                                                                        {type:'text', marks: [{type: 'strong'}], text: fieldLabel + ": "},
+                                                                                        {type:'variable', attrs: {expr: `const v = dataProvider.` + _.trim(_.get(getterByDataType, k.type, "getValue")) + `("${k.name}"); Array.isArray(v) ? v.join(', ') : ` + (
                                                                                             _.trim(_.get(k, "type")) === "TKDate" ? "componentDataProvider.getYYYYMMDDAsDDMMYYYY(v)" :
                                                                                                 _.trim(_.get(k, "type")) === "TKMeasure" ? "componentDataProvider.getMeasureValue(v)" :
                                                                                                     _.trim(_.get(k, "type")) === "TKBoolean" ? "componentDataProvider.getBooleanValue(v)" :
@@ -2738,50 +2146,17 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                                                 const subFormTemplateDataList = _.get(subFormObject, "template.layout.sections[0].formColumns[0].formDataList", [])
 
                                                                                 return [
-                                                                                    {
-                                                                                        type: 'paragraph',
-                                                                                        content: [{
-                                                                                            type: 'text',
-                                                                                            text: " "
-                                                                                        }]
-                                                                                    },
-                                                                                    {
-                                                                                        type: 'paragraph', content: [
-                                                                                            {
-                                                                                                type: 'text',
-                                                                                                marks: [{type: 'strong'}, {type: 'underlined'}],
-                                                                                                text: this.localize("subForm", "Sub-form", this.language).toUpperCase()
-                                                                                            },
-                                                                                            {
-                                                                                                type: 'text',
-                                                                                                text: ": " + _.trim(subFormName).toUpperCase()
-                                                                                            },
-                                                                                            {
-                                                                                                type: 'text',
-                                                                                                text: " - " + this.localize("con_of", "Consultation of", this.language) + ": "
-                                                                                            },
-                                                                                            {
-                                                                                                type: 'variable',
-                                                                                                attrs: {expr: `contactOpeningDate`}
-                                                                                            },
+                                                                                            {type:'paragraph',content: [{type:'text', text: " "}]},
+                                                                                            {type:'paragraph', content: [
+                                                                                                    {type:'text', marks: [{type: 'strong'}, {type: 'underlined'}], text: this.localize("subForm", "Sub-form", this.language).toUpperCase()},
+                                                                                                    {type:'text', text: ": " + _.trim(subFormName).toUpperCase()},
+                                                                                                    {type:'text', text: " - " + this.localize("con_of", "Consultation of", this.language) + ": "},
+                                                                                                    {type:'variable', attrs: {expr: `contactOpeningDate`}},
                                                                                             {type: 'text', text: ' '}
-                                                                                        ]
-                                                                                    },
-                                                                                    {
-                                                                                        type: 'table', content: [
-                                                                                            {
-                                                                                                type: 'table_row',
-                                                                                                content: [
-                                                                                                    {
-                                                                                                        type: 'table_cell',
-                                                                                                        attrs: {
-                                                                                                            "colspan": 1,
-                                                                                                            "rowspan": 1,
-                                                                                                            "colwidth": null,
-                                                                                                            "borderColor": "#999999",
-                                                                                                            "background": "#fafafa"
-                                                                                                        },
-                                                                                                        content: [{
+                                                                                                ]},
+                                                                                            {type: 'table',content: [
+                                                                                                    {type: 'table_row',content: [
+                                                                                                            {type: 'table_cell',attrs: { "colspan":1,"rowspan":1,"colwidth":null,"borderColor":"#999999","background":"#fafafa"},content: [{
                                                                                                             type: 'template',
                                                                                                             attrs: {
                                                                                                                 expr: `subContextsSubForms("${k.name}",${subFormIdx})`,
@@ -2792,15 +2167,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                                                                                         return /* (!_.trim(subFormFieldValue) || _.trim(subFormFieldValue) === "-" || _.trim(subFormFieldValue).toLowerCase() === "ok") ? false : */ {
                                                                                                                             type: 'paragraph',
                                                                                                                             content: [
-                                                                                                                                {
-                                                                                                                                    type: 'text',
-                                                                                                                                    marks: [{type: 'strong'}],
-                                                                                                                                    text: subFormFieldLabel + ": "
-                                                                                                                                },
-                                                                                                                                {
-                                                                                                                                    type: 'variable',
-                                                                                                                                    attrs: {
-                                                                                                                                        expr: `const v = dataProvider.` + _.trim(_.get(getterByDataType, kk.type, "getValue")) + `("${kk.name}"); Array.isArray(v) ? v.join(', ') : ` + (
+                                                                                                                                        {type:'text', marks: [{type: 'strong'}], text: subFormFieldLabel + ": "},
+                                                                                                                                        {type:'variable', attrs: {expr: `const v = dataProvider.` + _.trim(_.get(getterByDataType, kk.type, "getValue")) + `("${kk.name}"); Array.isArray(v) ? v.join(', ') : ` + (
                                                                                                                                             _.trim(_.get(k, "type")) === "TKDate" ? "componentDataProvider.getYYYYMMDDAsDDMMYYYY(v)" :
                                                                                                                                                 _.trim(_.get(k, "type")) === "TKMeasure" ? "componentDataProvider.getMeasureValue(v)" :
                                                                                                                                                     _.trim(_.get(k, "type")) === "TKBoolean" ? "componentDataProvider.getBooleanValue(v)" :
@@ -2810,15 +2178,11 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                                                                                                 },
                                                                                                                             ]
                                                                                                                         }
-                                                                                                                    }))
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }]
+                                                                                                                            }))}
                                                                                                     }
-                                                                                                ]
-                                                                                            }
-                                                                                        ]
-                                                                                    }
+                                                                                                                }]}
+                                                                                                        ]}
+                                                                                                ]}
                                                                                 ]
                                                                             })),
                                                                             [{
@@ -2826,15 +2190,11 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                                                                                 content: [{type: 'text', text: " "}]
                                                                             }]
                                                                         )
-                                                        })))
+                                                                })))}
                                                     }
-                                                }
-                                            }]
-                                        },
-                                    ]
-                                },
-                            ]
-                        },
+                                                    }]},
+                                            ]},
+                                    ]},
                         {type: 'paragraph', content: [{type: 'text', text: " "}]},
                     ]
                 }
@@ -2847,27 +2207,9 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             type: 'misc',
             name: this.localize('miscellaneous', 'Miscellaneous', this.language),
             subVars: [
-                {
-                    name: this.localize('hub-doc-title', 'Document title', this.language),
-                    nodes: [{
-                        type: 'variable',
-                        attrs: {expr: 'dataProvider.getVariableValue("documentTitle")'}
-                    }, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('todaysDate', 'Todays date', this.language),
-                    nodes: [{
-                        type: 'variable',
-                        attrs: {expr: 'dataProvider.getVariableValue("todaysDate")'}
-                    }, {type: 'text', text: ' '}]
-                },
-                {
-                    name: this.localize('hour', 'Time', this.language),
-                    nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("time")'}}, {
-                        type: 'text',
-                        text: ' '
-                    }]
-                },
+                        {name: this.localize('hub-doc-title', 'Document title', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("documentTitle")'}},{type:'text', text: ' '}]},
+                        {name: this.localize('todaysDate', 'Todays date', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("todaysDate")'}},{type:'text', text: ' '}]},
+                        {name: this.localize('hour', 'Time', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("time")'}},{type:'text', text: ' '}]},
             ]
         }
 
@@ -2876,13 +2218,11 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 staticVariables,
                 (!!_.size(_.get(healthElementVariables, "subVars")) ? healthElementVariables : []),
                 (!!_.size(_.get(healthElementVariablesLight, "subVars")) ? healthElementVariablesLight : []),
+                        (!!_.size(_.get(healthElementVariablesCondensed,"subVars")) ? healthElementVariablesCondensed : []),
                 formVariables,
                 miscVariables
             )))
-            .map(it => {
-                _.assign(_.last(it.subVars), {isLast: "isLast"})
-                return it
-            })
+                    .map(it => { _.assign(_.last(it.subVars), {isLast: "isLast"}); return it; })
             .value()
 
         _.assign(_.last(proseEditorVariables), {isLast: "isLast"})
@@ -2899,10 +2239,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
         return this._resetComponentProperties()
             .then(() => _.map(this._data, (propValue, propKey) => typeof _.get(propValue, "value", null) !== "function" ? null : this.set("_data." + propKey, propValue.value())))
-            .then(() => {
-                this.set("_isBusy", true)
-                this.shadowRoot.querySelector('#outgoingDocumentDialog').open()
-            })
+                    .then(() => { this.set("_isBusy", true); this.shadowRoot.querySelector('#outgoingDocumentDialog').open(); })
             .then(() => this._getPrettifiedFormsAndDataProviders(_.cloneDeep(_.get(inputData, "formsAndDataProviders", []))).then(formsAndDataProviders => _.assign(this._data, _.cloneDeep(inputData), {formsAndDataProviders: formsAndDataProviders})))
             .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp: hcp})))
             .then(() => this._getPrettifiedMh().then(hcp => _.assign(this._data, {currentMh: hcp})))
@@ -2911,10 +2248,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             .then(() => this._getCodesFromData().then(codes => _.assign(this._data, {codes: codes})))
             .then(() => this._getPrettifiedHealthElements(_.get(this, "_data.allHealthElements", [])).then(x => x))
             .then(() => this._getProseEditorVariables().then(proseEditorVariables => _.assign(this._data, {proseEditorVariables: proseEditorVariables})))
-            .then(() => {
-                const proseEditor = this.shadowRoot.querySelector("#prose-editor")
-                proseEditor.set("dynamicVars", _.get(this, "_data.proseEditorVariables", []))
-            })
+                    .then(() => { const proseEditor = this.shadowRoot.querySelector("#prose-editor"); proseEditor.set("dynamicVars", _.get(this,"_data.proseEditorVariables",[])) })
             .then(() => this._getProseEditorTemplatesAndAttachment().then(proseEditorTemplates => _.assign(this._data, {proseEditorTemplates: proseEditorTemplates})))
             .then(() => this._getDataProvider().then(dataProvider => _.assign(this, {dataProvider: dataProvider})))
             .then(() => !!_.trim(_.get(this, "_data.docTemplateId", "")) ? this._applyProseEditorTemplate(null, _.find(_.get(this, "_data.proseEditorTemplates", []), {id: _.trim(_.get(this, "_data.docTemplateId", ""))})) : this._refreshProseEditorContext())
@@ -2923,6 +2257,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
         // Todo: When using prose template object, can't write in it ? Cusor jumps after one char typed / render issue ?
         // Todo: With linking letters, create smart component to get recipient details using cobra
+                // Todo: allow to close editor & open it again (with same template) -> without flushing content again (Muriel Mernier)
 
     }
 }
