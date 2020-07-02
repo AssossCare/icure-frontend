@@ -348,10 +348,10 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                     </paper-item>
                     <paper-item class="one-line-menu menu-item flex-start" id="account" data-submenu="myDelegationsSubMenu">
                         <iron-icon class="sub-menu-icon" icon="communication:vpn-key"></iron-icon> [[localize('deleg','My delegation',language)]]
-                    </paper-item>
+                    </paper-item>-->
                     <paper-item class="one-line-menu menu-item flex-start" id="account" data-submenu="preferencesSubMenu">
                         <iron-icon class="sub-menu-icon" icon="vaadin:sliders"></iron-icon> [[localize('acc_prefs','Preferences',language)]]
-                    </paper-item>-->
+                    </paper-item>
                 </paper-listbox>
             </collapse-button>
 

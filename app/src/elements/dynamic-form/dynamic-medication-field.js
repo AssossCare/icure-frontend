@@ -269,7 +269,7 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
 <!--					<paper-button class="add-medication" on-tap="addMedicationProto"><iron-icon icon="add"></iron-icon>[[localize('add_pre_dru','Add prescription drug',language)]]</paper-button>-->
 <!--				</template>-->
 				<template is="dom-if" if="[[createTreatment]]">
-					<paper-icon-button class="button--icon-btn" icon="print" on-tap="openPrescriptionDialog">[[localize('pri_pre','Print',language)]]</paper-icon-button>
+					<paper-icon-button class="button--icon-btn" icon="print" on-tap="openPrintDialog">[[localize('pri_pre','Print',language)]]</paper-icon-button>
 				</template>
 			</div>
 		</div>
@@ -349,7 +349,16 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
       this.updateStyles({ '--dynamic-field-width': width, '--dynamic-field-width-percent': '' + width + '%' });
 	}
 
-    /** get partie for displaying*/
+    /*_getNewsMedications(value){
+    return this._localizedValue(value.filter(v =>!(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : true}}).medicationValue.endMoment))
+}
+_hasEndDate(value){
+    //return this._localizedValue(value.filter(v =>(this.api.moment((this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment).isSame(moment(),"day")))).length
+    return this._localizedValue(value.filter(v =>(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment)).length
+}
+_getCloseMedication(value){
+    return this._localizedValue(value.filter(v =>(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment))
+}*/
 
     //what is this
     isReadOnlyOrAlreadyPrescribed(val) {
@@ -360,16 +369,16 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
         return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
     }
 
-  _localizedValue(value) {
-      return value && _.compact(_.sortBy(value, 'index').map(v => v && v.content && this.localizedMedicationValueWithId(v.id, v.content, this.language))) || [];
-	}
+    _localizedValue(value) {
+        return value && _.compact(_.sortBy(value, 'index').map(v => v && v.content && this.localizedMedicationValueWithId(v.id, v.content, this.language))) || [];
+    }
 
     localizedMedicationValueWithId(id, e, lng) {
-      if (!e) {
-          return null;
-      }
-      return { id: id, stringValue: this.api.contact().medication().medicationToString((this.api.contact().preferredContent({content: e},this.language) || {}).medicationValue || "", this.language.toLowerCase() || 'fr') };
-	}
+        if (!e) {
+            return null;
+        }
+        return { id: id, stringValue: this.api.contact().medication().medicationToString((this.api.contact().preferredContent({content: e},this.language) || {}).medicationValue || "", this.language.toLowerCase() || 'fr') };
+    }
 
     //what is this
     isReadOnlyOrMedication(val) { // disable edition of medication (but keep prescription editable) because not working for the moment
@@ -401,7 +410,7 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
 
     /**Print partie @todo change event*/
 
-    openPrescriptionDialog() {
+    openPrintDialog() {
         this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))
     }
 
@@ -424,8 +433,6 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
         }))
     }
 
-
-
     //edit
     extractContentWithIdFromMedicationService(m, isNew, isPrescription) {
         console.log('extractContentWithIdFromMedicationService',m,isNew)
@@ -436,7 +443,7 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
             isNew: isNew || false,
             isPrescription: isPrescription || m.isPrescription || false
         };
-	}
+    }
 
     /**useless things*/
     _displayMedicationDetails(e) {

@@ -31,7 +31,7 @@ import {TkLocalizerMixin} from "../tk-localizer";
 class HtMsgDocDetail extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-		<style include="shared-style spinner-style buttons-style">
+		<style include="shared-styles spinner-style buttons-style">
 			:host{
 				position: relative;
 				background: var(--app-background-color-light);

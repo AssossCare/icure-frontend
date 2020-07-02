@@ -20,9 +20,10 @@ import {TkLocalizerMixin} from "../../tk-localizer";
 class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-        <style include="shared-styles">
+         <style include="shared-styles dropdown-style paper-input-style buttons-style">
             :host {
                 display: block;
+                height: 100%;
             }
 
             :host *:focus{
@@ -34,6 +35,7 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
                 height: 100%;
                 padding: 0 24px;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .section-title{
@@ -248,21 +250,78 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
             .card.facturation{
                 width: 100%;
             }
+            
+            .buttons{
+               display: flex;
+               flex-flow: row-reverse;
+               margin-bottom: 12px;
+           }
+
+           #savedIndicator{
+               position: fixed;
+               top:50%;
+               right: 0;
+               z-index:1000;
+               color: white;
+               font-size: 13px;
+               background:rgba(0,0,0,0.42);
+               height: 24px;
+               padding: 0 8px 0 12px;
+               border-radius: 3px 0 0 3px;
+               width: 0;
+               opacity: 0;
+           }
+           .saved{
+               animation: savedAnim 2.5s ease-in;
+           }
+           .saved iron-icon{
+               margin-left: 4px;
+               padding: 4px;
+           }
+
+           @keyframes savedAnim {
+               0%{
+                   width: 0;
+                   opacity: 0;
+               }
+               20%{
+                   width: 114px;
+                   opacity: 1;
+               }
+               25%{
+                   width: 96px;
+                   opacity: 1;
+               }
+               75%{
+                   width: 96px;
+                   opacity: 1;
+               }
+               100%{
+                   width: 0;
+                   opacity: 0;
+               }
+           }
 
         </style>
 
-        <div class="users-panel">
-            <h4 class="section-title">[[localize('my_pro', 'My profil', language)]] - [[localize('acc_prefs', 'Preferences', language)]]</h4>
-
+        <div class="users-panel">  
+            <paper-item id="savedIndicator">[[localize('sav','SAVED',language)]]
+               <iron-icon icon="icons:check"></iron-icon>    
+            </paper-item>
+            
+            <h4 class="section-title">[[localize('my_pro', 'My profil', language)]] - [[localize('acc_prefs', 'Preferences', language)]]</h4>    
+            
             <div class="card dossier">
                 <h5 class="header">Dossier patient</h5>
                 <div class="content">
-                    <paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>
+                    <!--<paper-checkbox checked="{{openPostItAuto}}">[[localize('open_post_it','Open post-it with patient folder',language)]]</paper-checkbox>-->
+                    <paper-checkbox checked="{{showAllHE}}">[[localize('show-all-HE','don t hide actif health element before january 2018',language)]]</paper-checkbox>
+                    <paper-checkbox checked="{{openFirstVoletAuto}}">[[localize('open_first_volet','Open all elements of the first volet with patient folder',language)]]</paper-checkbox>
                 </div>
             </div>
 
 
-            <div class="card ehbox">
+            <!--<div class="card ehbox">
                 <h5 class="header">Ehbox</h5>
                 <div class="content">
                     <paper-checkbox checked="{{receiveMailAuto}}">[[localize('auto_ehbox','Receive mails automatically',language)]]</paper-checkbox>
@@ -300,6 +359,9 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
                     <paper-input label="OA 600" value="{{_getBatchNumber(600)}}"></paper-input>
                     <paper-input label="OA 900" value="{{_getBatchNumber(900)}}"></paper-input>
                 </div> 
+            </div>-->
+            <div class="buttons">
+                <paper-button on-tap="_save" class="button button--save"><iron-icon icon="save"></iron-icon>[[localize('save','Save',language)]]</paper-button>
             </div>
         </div>
 `;
@@ -334,6 +396,14 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
           listOfEfactBatchNumbers:{
               type: Array,
               value: () => []
+          },
+          openFirstVoletAuto: {
+              type: Boolean,
+              value: false
+          },
+          showAllHE: {
+              type: Boolean,
+              value: false
           }
       }
   }
@@ -350,34 +420,80 @@ class HtAdminAccountPreferences extends TkLocalizerMixin(PolymerElement) {
       super.ready()
   }
 
-  _preferencesDataProvider(){
-      const prefixTab = [
-          'efact:'+this.user.healthcarePartyId+':100:',
-          'efact:'+this.user.healthcarePartyId+':200:',
-          'efact:'+this.user.healthcarePartyId+':300:',
-          'efact:'+this.user.healthcarePartyId+':400:',
-          'efact:'+this.user.healthcarePartyId+':500:',
-          'efact:'+this.user.healthcarePartyId+':600:',
-          'efact:'+this.user.healthcarePartyId+':900:'
-      ]
+    _preferencesDataProvider() {
+        /*const prefixTab = [
+            'efact:' + this.user.healthcarePartyId + ':100:',
+            'efact:' + this.user.healthcarePartyId + ':200:',
+            'efact:' + this.user.healthcarePartyId + ':300:',
+            'efact:' + this.user.healthcarePartyId + ':400:',
+            'efact:' + this.user.healthcarePartyId + ':500:',
+            'efact:' + this.user.healthcarePartyId + ':600:',
+            'efact:' + this.user.healthcarePartyId + ':900:'
+        ]
+        Promise.all(prefixTab.map(prefix => ({
+            nextBatchNumber: this.api.invoice().getNextInvoiceReference(prefix, this.api.entityRef()),
+            prefix: prefix
+        }))).then(batchNumbers => this.set('listOfEfactBatchNumbers', batchNumbers))
+            .finally(() => console.log(this.listOfEfactBatchNumbers))*/
 
-      Promise.all(prefixTab.map(prefix => ({
-          nextBatchNumber: this.api.invoice().getNextInvoiceReference(prefix, this.api.entityRef()),
-          prefix: prefix
+        this.set("showAllHE",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHE")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))
+        this.set("openFirstVoletAuto",!!((this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")|| {typedValue: {stringValue:"none"}}).typedValue.stringValue==="full"))
 
-      }))).then(batchNumbers => this.set('listOfEfactBatchNumbers', batchNumbers))
-          .finally(() => console.log(this.listOfEfactBatchNumbers))
+    }
 
-  }
+    _getBatchNumber(oa) {
+        const batchNumber = this.listOfEfactBatchNumbers.find(batch => batch.prefix === 'efact:' + this.user.healthcarePartyId + ':' + oa + ':')
+        //return batchNumber.nextBatchNumber
+    }
 
-  _getBatchNumber(oa){
-      const batchNumber = this.listOfEfactBatchNumbers.find(batch => batch.prefix === 'efact:'+this.user.healthcarePartyId+':'+oa+':')
-      //return batchNumber.nextBatchNumber
-  }
+    _getValueLabel(label) {
+        return label[this.language]
+    }
 
-  _getValueLabel(label){
-      return label[this.language]
-  }
+    _save() {
+        const propShowAllHe = this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.showAllHE")
+        if(propShowAllHe){
+            propShowAllHe.typedValue.type="STRING"
+            propShowAllHe.type.type="STRING"
+            propShowAllHe.typedValue.stringValue= !!this.showAllHE
+        }else{
+            this.push("user.properties",{
+                type : {
+                    identifier : "be.topaz.preferred.showAllHE",
+                    type: "STRING",
+                    unique : false,
+                    localized : false
+                },
+                typedValue:{
+                    type : "STRING",
+                    stringValue : !!this.showAllHE ? "full" : "none"
+                }
+            })
+        }
+
+        const openFirstVoletAuto = this.user.properties.find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+        if(openFirstVoletAuto){
+            openFirstVoletAuto.typedValue.type="STRING"
+            openFirstVoletAuto.type.type="STRING"
+            openFirstVoletAuto.typedValue.stringValue= !!this.openFirstVoletAuto
+        }else{
+            this.push("user.properties",{
+                type : {
+                    identifier : "be.topaz.preferred.openFirstPanelAuto",
+                    type: "STRING",
+                    unique : false,
+                    localized : false
+                },
+                typedValue:{
+                    type : "STRING",
+                    stringValue : !!this.openFirstVoletAuto ? "full" : "none"
+                }
+            })
+        }
+
+        //this.api.user().modifyProperties(this.user.id,this.user.properties).then(u=> this.api.register(u,"user")).then(u=>this.set("user",u))
+        this.api.user().modifyUser(this.user).then(u=> this.api.register(u,"user")).then(u=>this.set("user",u))
+    }
 }
 
 customElements.define(HtAdminAccountPreferences.is, HtAdminAccountPreferences)

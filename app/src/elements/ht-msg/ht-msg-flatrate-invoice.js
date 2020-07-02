@@ -2327,7 +2327,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         );
         this.reportCurrentDateMomentObject = moment(this.reportCurrentDateString, "YYYYMMDD");
 
-        this._getPatientsByHcp(_.get(this.hcp, "id"))
+        this._getPatientsByHcp(_.get(this.hcp, "id"), false)
             .then(hcpPat => {
                 this._setLoadingMessage({ message:this.localize('mhListing.spinner.step_3_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});
                 if(!!hcpPat.length) _.forEach(hcpPat, ((singleHcpPat)=>this.flatRateAllPatients.push(singleHcpPat)));
@@ -2779,7 +2779,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _getPatientsByHcp( hcpId ) {
+    _getPatientsByHcp( hcpId, onlyActive = true ) {
 
         return this.api.getRowsUsingPagination(
             (key,docId) =>
@@ -2789,7 +2789,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             .chain(pl.rows)
                             .filter((i)=>{return(
                                 !!i
-                                && !!_.get(i,"active", true)
+                                && (!!_.get(i,"active", true) || !onlyActive)
                                 && !!_.trim(_.get(i,"dateOfBirth", ""))
                                 && !!_.trim(_.get(i,"ssin", ""))
                                 && !!_.size(_.get(i,"insurabilities", []))

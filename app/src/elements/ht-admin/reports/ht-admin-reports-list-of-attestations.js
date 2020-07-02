@@ -852,124 +852,162 @@ class HtAdminReportsListOfAttestations extends TkLocalizerMixin(PolymerElement) 
       })
   }
 
-  refreshInvoiceList() {
-      this.set('_isLoadingList', true)
-      return this.getRawInvoiceList().then(invoices => {
-          return Promise.all(invoices.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]])))
-              .then(invAndIdsPat =>
-                  this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))}))
-                      .then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])]))
-                      .catch(err => {
-                          console.log("error when getting patients", err);
-                          return invAndIdsPat.map(it => [it[0], null])
-                      })
-              ).then(invAndPats => {
-                  console.log("invAndPats", invAndPats)
-                  return invAndPats.filter(iap => iap[1] !== undefined && iap[1] !== null)
-              }).then(invAndPats =>
-                  this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.flatten(invAndPats).filter(i => i.insurabilities).map(i => i && i.insurabilities && i.insurabilities[0] && i.insurabilities[0].insuranceId))})).then(ins => invAndPats.map(it => [it[0], it[1], ins.find(i => it && (it[0] && it[0].insurabilities && it[0].insurabilities[0] && i.id === it[1].insurabilities[0].insuranceId) || (it[1] && it[1].insurabilities && it[1].insurabilities.find(patIns => (it[0] && it[0].invoiceDate && patIns.startDate && patIns.endDate && it[0].invoiceDate >= patIns.startDate && it[0].invoiceDate <= patIns.endDate && patIns.insuranceId === i.id) || (!(it[0] && it[0].invoiceDate && patIns.startDate && patIns.endDate) && patIns.insuranceId === i.id))))]))
-              )
-              .then(invAndPats => {
-                  // cache author
-                  return Promise.all(_.uniq(invAndPats.map(iap => iap[0].author)).map(userId => this.getCachedHcpByUserId(userId))).then(() => invAndPats)
-              })
-              .then(invAndPats => {
-                  // cache responsible
-                  return Promise.all(_.uniq(invAndPats.map(iap => iap[0].responsible)).map(hcpId => this.getCachedHcpByHcpId(hcpId))).then(() => invAndPats)
-              })
-              .then(invAndPats => {
-                  return Promise.all(invAndPats.map(([invoice, pat, ins]) => {
+    refreshInvoiceList() {
+        this.set('_isLoadingList', true)
+        return this.getRawInvoiceList().then(invoices => {
+            return Promise.all(invoices.map(inv => this.api.crypto().extractCryptedFKs(inv, this.user.healthcarePartyId).then(ids => [inv, ids.extractedKeys[0]])))
+                .then(invAndIdsPat =>
+                    this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(invAndIdsPat.map(x => x[1]))}))
+                        .then(pats => invAndIdsPat.map(it => [it[0], pats.find(p => p.id === it[1])]))
+                        .catch(err => {
+                            console.log("error when getting patients", err);
+                            return invAndIdsPat.map(it => [it[0], null])
+                        })
+                ).then(invAndPats => {
+                    console.log("invAndPats", invAndPats)
+                    return invAndPats.filter(iap => iap[1] !== undefined && iap[1] !== null)
+                }).then(invAndPats =>
+                    this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.flatten(invAndPats).filter(i => i.insurabilities).map(i => i && i.insurabilities && i.insurabilities[0] && i.insurabilities[0].insuranceId))})).then(ins => invAndPats.map(it => [it[0], it[1], ins.find(i => it && (it[0] && it[0].insurabilities && it[0].insurabilities[0] && i.id === it[1].insurabilities[0].insuranceId) || (it[1] && it[1].insurabilities && it[1].insurabilities.find(patIns => (it[0] && it[0].invoiceDate && patIns.startDate && patIns.endDate && it[0].invoiceDate >= patIns.startDate && it[0].invoiceDate <= patIns.endDate && patIns.insuranceId === i.id) || (!(it[0] && it[0].invoiceDate && patIns.startDate && patIns.endDate) && patIns.insuranceId === i.id))))]))
+                )
+                .then(invAndPats => {
+                    // cache author
+                    return Promise.all(_.uniq(invAndPats.map(iap => iap[0].author)).map(userId => this.getCachedHcpByUserId(userId))).then(() => invAndPats)
+                })
+                .then(invAndPats => {
+                    // cache responsible
+                    return Promise.all(_.uniq(invAndPats.map(iap => iap[0].responsible)).map(hcpId => this.getCachedHcpByHcpId(hcpId))).then(() => invAndPats)
+                })
+                .then(invAndPats => {
+                    return Promise.all(invAndPats.map(([invoice, pat, ins]) => {
 
-                      //console.log("invoice:", invoice)
-                      let invdate = ""
-                      let sentdate = ""
-                      let dateToSort = 0
-                      let sentDateToSort = 0
-                      if(invoice.invoiceDate !== null && invoice.invoiceDate !== undefined && invoice.invoiceDate !== "" ) {
-                          invdate = this.api.moment(invoice.invoiceDate).format("DD-MM-YYYY")
-                          dateToSort = parseInt(this.api.moment(invoice.invoiceDate).format("YYYYMMDD"))
-                      }
-                      if(invoice.sentDate !== null && invoice.sentDate !== undefined && invoice.sentDate !== "" ) {
-                          sentdate = this.api.moment(invoice.sentDate).format("DD-MM-YYYY")
-                          sentDateToSort = parseInt(this.api.moment(invoice.sentDate).format("YYYYMMDD"))
-                      }
-                      const item = {
-                          //author: after,
-                          date: invdate,
-                          sentDate: sentdate,
-                          dateToSort: dateToSort,
-                          sentDateToSort: sentDateToSort,
-                          //patient: after
-                          invoiceReference: invoice.invoiceReference,
-                          paymentReference: invoice.paymentReference,
-                          //oa: after
-                          //insurance: after
-                          invoiceType: this.getInvoiceTypeLabel(invoice.invoiceType),
-                          sentMediumType: this.getSentMediumTypeLabel(invoice.sentMediumType),
-                          //linkedConvention: for future use
-                          paymentType: this.getPaymentTypeLabel(invoice.paymentType),
-                          cash: 0,
-                          debitCard: 0,
-                          creditCard: 0,
-                          wired: 0,
-                          totalAmount: 0,
+                        //console.log("invoice:", invoice)
+                        let invdate = ""
+                        let sentdate = ""
+                        let canceldate = ""
+                        let dateToSort = 0
+                        let sentDateToSort = 0
+                        let cancelDateToSort = 0
+                        if(invoice.invoiceDate !== null && invoice.invoiceDate !== undefined && invoice.invoiceDate !== "" ) {
+                            invdate = this.api.moment(invoice.invoiceDate).format("DD-MM-YYYY")
+                            dateToSort = parseInt(this.api.moment(invoice.invoiceDate).format("YYYYMMDD"))
+                        }
+                        if(invoice.sentDate !== null && invoice.sentDate !== undefined && invoice.sentDate !== "" ) {
+                            sentdate = this.api.moment(invoice.sentDate).format("DD-MM-YYYY")
+                            sentDateToSort = parseInt(this.api.moment(invoice.sentDate).format("YYYYMMDD"))
+                        }
+                        if(invoice.cancelDate !== null && invoice.cancelDate !== undefined && invoice.cancelDate !== "" ) {
+                            canceldate = this.api.moment(invoice.cancelDate).format("DD-MM-YYYY")
+                            cancelDateToSort = parseInt(this.api.moment(invoice.cancelDate).format("YYYYMMDD"))
+                        }
+                        const item = {
+                            //author: after,
+                            date: invdate,
+                            sentDate: sentdate,
+                            cancelDate: canceldate,
+                            cancelReason: invoice.cancelReason || "",
+                            cancelReasonDet: invoice.cancelReason ? "eattest_reason_cancel_"+invoice.cancelReason : "",
+                            dateToSort: dateToSort,
+                            sentDateToSort: sentDateToSort,
+                            cancelDateToSort: cancelDateToSort,
+                            cancelIndex: this.api.crypto().randomUuid(),
+                            //patient: after
+                            invoiceReference: invoice.invoiceReference,
+                            paymentReference:(invoice.sentMediumType == "eattest" || invoice.invoiceType == "eattest") ? invoice.thirdPartyReference : invoice.paymentReference,
+                            //oa: after
+                            //insurance: after
+                            invoiceType: this.getInvoiceTypeLabel(invoice.invoiceType),
+                            sentMediumType: this.getSentMediumTypeLabel(invoice.sentMediumType),
+                            //linkedConvention: for future use
+                            paymentType: this.getPaymentTypeLabel(invoice.paymentType),
+                            cash: 0,
+                            debitCard: 0,
+                            creditCard: 0,
+                            wired: 0,
+                            totalAmount: 0,
+                            paid : this.api._powRoundFloatByPrecision(_.get(invoice,"paid",0),2),
 
-                          invoice: invoice
-                      }
+                            invoice: invoice
+                        }
 
-                      const computeSum = function (paytype) {
-                          if(invoice.paymentType == paytype) {
-                              return item.totalPatientAmount
-                          } else {
-                              return 0
-                          }
-                      }
-                      const computeCodeSum = function(propName) {
-                          return invoice.invoicingCodes.reduce((acc, code) => {
-                              return acc + code[propName]
-                          }, 0) || 0
-                      }
-                      item.totalAmount = computeCodeSum('totalAmount')
-                      item.reimbursementAmount = computeCodeSum('reimbursement')
-                      item.conventionAmount = computeCodeSum('conventionAmount')
-                      item.doctorSupplement = computeCodeSum('doctorSupplement')
-                      item.ticketAmount = computeCodeSum('patientIntervention')
-                      if(invoice.sentMediumType == "eattest" || invoice.invoiceType == "eattest") {
-                          item.totalPatientAmount = item.totalAmount
-                      } else {
-                          item.totalPatientAmount = item.ticketAmount + item.doctorSupplement
-                      }
+                        const computeSum = function (paytype) {
+                            if(invoice.paymentType == paytype) {
+                                return item.totalPatientAmount
+                            } else {
+                                return 0
+                            }
+                        }
+                        const computeCodeSum = function(propName) {
+                            return invoice.invoicingCodes.reduce((acc, code) => {
+                                return acc + code[propName]
+                            }, 0) || 0
+                        }
+                        item.totalAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('totalAmount'))
+                        item.reimbursementAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('reimbursement'))
+                        item.conventionAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('conventionAmount'))
+                        item.doctorSupplement =  this.api._powRoundFloatByPrecision(computeCodeSum('doctorSupplement'))
+                        item.ticketAmount =  this.api._powRoundFloatByPrecision(computeCodeSum('patientIntervention'))
+                        if(invoice.sentMediumType == "eattest" || invoice.invoiceType == "eattest") {
+                            item.totalPatientAmount =  this.api._powRoundFloatByPrecision(item.totalAmount,2)
+                        } else {
+                            item.totalPatientAmount =  this.api._powRoundFloatByPrecision(item.ticketAmount + item.doctorSupplement,2)
+                        }
 
-                      item.cash = computeSum('cash')
-                      item.debitCard = computeSum('debitcard')
-                      item.creditCard = computeSum('creditcard')
-                      item.wired = computeSum('wired')
+                        item.cash =  this.api._powRoundFloatByPrecision(computeSum('cash'))
+                        item.debitCard = this.api._powRoundFloatByPrecision(computeSum('debitcard'))
+                        item.creditCard = this.api._powRoundFloatByPrecision(computeSum('creditcard'))
+                        item.wired =  this.api._powRoundFloatByPrecision(computeSum('wired'))
+                        item.round=0.00
+                        if(item.cash){
+                            if(_.round((invoice.paid*100))%5===0 && _.round(invoice.paid-item.totalAmount,2)<=0.02 && _.round(invoice.paid-item.totalAmount,2)>=-0.02)
+                                item.round=this.api._powRoundFloatByPrecision(invoice.paid-item.totalAmount,2)
+                        }
 
-                      item.insurance = ins ? ins.code + ' ' + (ins.name["fr"] || ins.name["nl"]) : null
-                      item.oa = item.insurance ? item.insurance[0] + '00' : null
-                      item.patient = pat ? (pat.firstName + ' ' + pat.lastName) : null
-                      item.patientId = pat ? pat.id : null
-                      item.patientToSort = item.patient.toLowerCase()
+                        item.insurance = ins ? ins.code + ' ' + (ins.name["fr"] || ins.name["nl"]) : null
+                        item.oa = item.insurance ? item.insurance[0] + '00' : null
+                        item.patient = pat ? (pat.firstName + ' ' + pat.lastName) : null
+                        item.patientId = pat ? pat.id : null
+                        item.patientToSort = item.patient.toLowerCase()
 
-                      return this.getCachedHcpByUserId(invoice.author).then(hcp => {
-                          item.author = hcp.lastName + ' ' + hcp.firstName
-                          item.authorToSort = item.author.toLowerCase()
-                          item.authorHcpId = hcp.id
-                      }).then(() => {
-                          return this.getCachedHcpByHcpId(invoice.responsible).then(hcp => {
-                              item.responsible = hcp.lastName + ' ' + hcp.firstName
-                              item.responsibleToSort = item.responsible.toLowerCase()
-                              item.responsibleHcpId = hcp.id
-                              return item
-                          })
-                      })
-                  }))
-              }).then(invlist => {
-                  this.set('invoiceItems', invlist)
-                  this.set('_isLoadingList', false)
-              })
-      })
-  }
+                        return this.getCachedHcpByUserId(invoice.author).then(hcp => {
+                            item.author = hcp.lastName + ' ' + hcp.firstName
+                            item.authorToSort = item.author.toLowerCase()
+                            item.authorHcpId = hcp.id
+                        }).then(() => {
+                            return this.getCachedHcpByHcpId(invoice.responsible).then(hcp => {
+                                item.responsible = hcp.lastName + ' ' + hcp.firstName
+                                item.responsibleToSort = item.responsible.toLowerCase()
+                                item.responsibleHcpId = hcp.id
+                                return item
+                            })
+                        })
+                    }))
+                }).then(invlist => {
+                    this.set('invoiceItems', _.flattenDeep(invlist.map(inv =>{
+                        const newList=[]
+                        newList.push(inv)
+                        if(inv.cancelDate){
+                            const cancel=_.cloneDeep(inv)
+                            cancel.totalAmount= this.api._powRoundFloatByPrecision(0-cancel.totalAmount,2)
+                            cancel.reimbursementAmount= this.api._powRoundFloatByPrecision(0-cancel.reimbursementAmount,2)
+                            cancel.conventionAmount= this.api._powRoundFloatByPrecision(0-cancel.conventionAmount,2)
+                            cancel.doctorSupplement= this.api._powRoundFloatByPrecision(0-cancel.doctorSupplement,2)
+                            cancel.ticketAmount= this.api._powRoundFloatByPrecision(0-cancel.ticketAmount,2)
+                            cancel.cash = this.api._powRoundFloatByPrecision(0-cancel.cash,2)
+                            cancel.debitCard= this.api._powRoundFloatByPrecision(0-cancel.debitCard,2)
+                            cancel.creditCard= this.api._powRoundFloatByPrecision(0-cancel.creditCard,2)
+                            cancel.wired= this.api._powRoundFloatByPrecision(0-cancel.wired,2)
+                            cancel.round= this.api._powRoundFloatByPrecision(0-cancel.round,2)
+                            cancel.totalPatientAmount= this.api._powRoundFloatByPrecision(0-cancel.totalPatientAmount,2)
+                            cancel.paid= this.api._powRoundFloatByPrecision(0-cancel.paid,2)
+                            cancel.cancelIndex= this.api.crypto().randomUuid()
+                            newList.push(cancel)
+                        }
+                        return newList;
+                    })))
+                    this.set('_isLoadingList', false)
+                })
+        })
+    }
 
   filterInvoiceList() {
       const invoiceTypeFilter = []
@@ -1061,32 +1099,51 @@ class HtAdminReportsListOfAttestations extends TkLocalizerMixin(PolymerElement) 
       }))
   }
 
-  exportToCsv() {
-      let items = null
-      if(this.checkedInvoices.length > 0) {
-          items = this.checkedInvoices
-      } else {
-          items = this.filteredInvoiceItems
-      }
-      this.generateXlsFile(items.map(inv => {
-          const xlinv = JSON.parse(JSON.stringify(inv));
-          if(this.isExportAnonyme) {
-              delete xlinv.patient
-          }
-          xlinv.date = xlinv.date.replace("-", "/").replace("-", "/")
-          xlinv.invoiceId = xlinv.invoice.id
-          delete xlinv.patientId
-          delete xlinv.invoice
-          delete xlinv.authorHcpId
-          delete xlinv.responsibleHcpId
-          delete xlinv.responsibleToSort
-          delete xlinv.patientToSort
-          delete xlinv.authorToSort
-          delete xlinv.dateToSort
-          delete xlinv.sentDateToSort
-          return xlinv
-      }))
-  }
+    exportToCsv() {
+        let items = null
+        if(this.checkedInvoices.length > 0) {
+            items = this.checkedInvoices
+        } else {
+            items = this.filteredInvoiceItems
+        }
+        this.generateXlsFile(items.map(inv => {
+            const xlinv = JSON.parse(JSON.stringify(inv));
+            if(this.isExportAnonyme) {
+                delete xlinv.patient
+            }
+            xlinv.date = xlinv.date.replace("-", "/").replace("-", "/")
+            xlinv.invoiceId = xlinv.invoice.id
+            xlinv.reason = this.localize(xlinv.cancelReasonDet,xlinv.cancelReasonDet)
+            delete xlinv.patientId
+            delete xlinv.invoice
+            delete xlinv.authorHcpId
+            delete xlinv.responsibleHcpId
+            delete xlinv.responsibleToSort
+            delete xlinv.patientToSort
+            delete xlinv.authorToSort
+            delete xlinv.dateToSort
+            delete xlinv.sentDateToSort
+            delete xlinv.cancelDateToSort
+            delete xlinv.cancelIndex
+            delete xlinv.cancelReasonDet
+
+            xlinv.cash = isNaN(inv.cash) || inv.cash==="NaN" ? 0 : parseFloat(inv.cash)
+            xlinv.conventionAmount = isNaN(inv.conventionAmount) || inv.conventionAmount==="NaN" ? 0 : parseFloat(inv.conventionAmount)
+            xlinv.creditCard = isNaN(inv.creditCard)|| inv.creditCard==="NaN" ? 0 : parseFloat(inv.creditCard)
+            xlinv.debitCard = isNaN(inv.debitCard)|| inv.debitCard==="NaN" ? 0 : parseFloat(inv.debitCard)
+            xlinv.doctorSupplement = isNaN(inv.doctorSupplement)|| inv.doctorSupplement==="NaN" ? 0 : parseFloat(inv.doctorSupplement)
+            xlinv.paid = isNaN(inv.paid)|| inv.paid==="NaN" ? 0 : parseFloat(inv.paid)
+            xlinv.reimbursementAmount = isNaN(inv.reimbursementAmount)|| inv.reimbursementAmount==="NaN" ? 0 : parseFloat(inv.reimbursementAmount)
+            xlinv.round = isNaN(inv.round)|| inv.round==="NaN" ? 0 : parseFloat(inv.round)
+            xlinv.ticketAmount = isNaN(inv.ticketAmount)|| inv.ticketAmount==="NaN" ? 0 : parseFloat(inv.ticketAmount)
+            xlinv.totalAmount = isNaN(inv.totalAmount)|| inv.totalAmount==="NaN" ? 0 : parseFloat(inv.totalAmount)
+            xlinv.totalPatientAmount = isNaN(inv.totalPatientAmount)|| inv.totalPatientAmount==="NaN" ? 0 : parseFloat(inv.totalPatientAmount)
+            xlinv.wired = isNaN(inv.wired)||inv.wired ==="NaN" ? 0 : parseFloat(inv.wired)
+
+
+            return xlinv
+        }))
+    }
 
   generateXlsFile(data) {
 

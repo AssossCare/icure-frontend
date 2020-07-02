@@ -287,6 +287,7 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
                             <template is="dom-if" if="[[item.rid]]">
                                 <template is="dom-if" if="[[!_isRevoked(item.service)]]">
                                     <div class="action"><paper-icon-button data-rid\$="[[item.rid]]" class="form-title-bar-btn" icon="icons:block" on-tap="_revoke"></paper-icon-button></div>
+                                    <!--<div class="action"><paper-icon-button data-rid$="[[item.rid]]" class="form-title-bar-btn" icon="icons:code" on-tap="_getPrescriptionFromRecipe"></paper-icon-button></div>-->
                                 </template>
                             </template>
                         </div>
@@ -538,17 +539,24 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
   }
 
   _print(e) {
-      const id = e.currentTarget.dataset.id;
-      console.log("_print " + id);
-      if (!this.hcp) return;
-      const prescription = this.prescriptions.find(p => p.service.id === id);
-      this.dispatchEvent(new CustomEvent('print-prescription', {
-          detail: {
-              service: prescription.service
-          },
-          bubbles:true,
-          composed:true
-      }))
+      const pres = _.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id",false))
+      const listServices = _.uniqBy( _.compact(pres.rid ? this.prescriptions.filter(p => p.rid === pres.rid).map(p => _.get(p,"service",{})) : [_.get(pres,"service",{})]),"id")
+      return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { rid : pres.rid, services:  listServices}, bubbles:true, composed:true }))
+
+  }
+
+  _printAndSendByEmail(e) {
+     const pres = _.find(this.prescriptions, p => p.service.id === _.get(e,"currentTarget.dataset.id",false))
+     const listServices = _.uniqBy( _.compact(pres.rid ? this.prescriptions.filter(p => p.rid === pres.rid).map(p => _.get(p,"service",{})) : [_.get(pres,"service",{})]),"id")
+     return !this.hcp ? null : this.dispatchEvent(new CustomEvent('print-prescription', { detail: { rid : pres.rid, services: listServices, sendDocumentByEmail:true }, bubbles:true, composed:true }))
+  }
+
+  _getPrescriptionFromRecipe(e){
+      if(_.get(e, 'currentTarget.dataset.rid', null)){
+          this.api.fhc().Recipecontroller().getPrescriptionMessageUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e, 'currentTarget.dataset.rid', null)).then( pr => {
+              console.log(pr)
+          })
+      }
   }
 }
 
