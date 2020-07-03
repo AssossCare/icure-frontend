@@ -480,7 +480,7 @@
                         const layoutItems = form.template && form.template.layout && _.flatten(_.flatten((form||this.form).template.layout.sections.map(s => s.formColumns)).map(c => c.formDataList))
                         return _.sortBy(_.compact(
                             layoutItems && layoutItems.map(s => (_.assign({name:s.name, label:s.subForm ? s.label : s.name, isSubForm: s.subForm, type: s.type, unit:s.type==="TKMeasure" ?
-                            		s.defaultValue.find(value=> Object.keys(value).find(key=> key==="measureValue")).measureValue.unit : ""
+                            		_.get(_.get(s,"defaultValue",[]).find(c => _.get(c,"measureValue",false)),"measureValue.unit","") : ""
 								}))) ||
 							_.uniq(self.services.map(s => s.svc && ({name:s.svc.label, label:s.svc.label})))
 						))
