@@ -1869,8 +1869,8 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _getToken() {
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-          const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, this._getQuality(hcp)).then(res => {
+          const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
+          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
 
               this.set('api.fhcTokenInfo', res)
               this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
@@ -1901,7 +1901,6 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   this.set('api.tokenId', _.get(res, 'tokenId', null))
                   this.set('api.token', _.get(res, 'token', null))
               }
-
 
               this.api && this.api.electron().tokenFHC(isMH,!isMH ? _.get(this.api, 'tokenId', null) : _.get(this.api, 'tokenIdMH', null),!isMH ? _.get(this.api, 'token', null) : _.get(this.api, 'tokenMH', null), isMH ? _.get(this.api, 'keystoreIdMH', null) : null , isMH ? _.get(this.api, 'nihiiMH', null) : null)
                   .then(rep => {
