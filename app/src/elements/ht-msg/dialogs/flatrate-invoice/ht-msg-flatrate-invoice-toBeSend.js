@@ -2194,11 +2194,12 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
 
             // 4 - Get all patients of mine, valid for export
             //      a) Has to be active
-            //      b) SSIN must be valid
+            //      b) SSIN must be valid (because of mda call)
             //      c) Has to be alive (not deceased before exportedDate)
             //      d) 1+ valid MHC (versus exportedDate)
             //      e) 1+ valid INS (versus exportedDate)
             //      f) Not already exported (versus exportedDate)
+            //      g) Rules (some) can be overridden if patient was forced as valid (using mda flow)
             .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth => _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:patientsToExportThisMonth})))
 
             // 5 - Collect insurances

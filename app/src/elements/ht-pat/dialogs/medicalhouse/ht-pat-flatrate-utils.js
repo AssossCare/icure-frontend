@@ -1031,78 +1031,97 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
                             const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
                             const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
-                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) &&  !!mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
+                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) && _.trim(_.get(it,"id")) && mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
 
                             return it &&
 
                                 // 1. Has to be active
                                 _.get(it, "active", true) &&
 
-                                // 2. SSIN must be valid
+                                // 2. SSIN must be valid (because of mda call)
                                 this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")) &&
 
                                 // 3. Has to be alive (not deceased before exportedDate)
                                 (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
 
-                                // 4. 1+ valid MHC (versus exportedDate)
-                                _.some(_.get(it, "medicalHouseContracts", []), mhc =>
-                                    _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
-                                    _.trim(_.get(mhc, "contractId")) &&
-                                    (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
-                                    (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                    (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
-                                ) &&
+                                (
 
-                                // 5. 1+ valid INS (versus exportedDate)
-                                _.some(_.get(it, "insurabilities", []), ins =>
-                                    _.trim(_.get(ins, "identificationNumber")) &&
-                                    _.trim(_.get(ins, "insuranceId")) &&
-                                    _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
-                                    _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
-                                    (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
-                                    (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                    (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                    isPatientForcedAsValidInMda || (
+
+                                        // 4. 1+ valid MHC (versus exportedDate)
+                                        _.some(_.get(it, "medicalHouseContracts", []), mhc =>
+                                            _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                            _.trim(_.get(mhc, "contractId")) &&
+                                            (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                            (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                        ) &&
+
+                                        // 5. 1+ valid INS (versus exportedDate)
+                                        _.some(_.get(it, "insurabilities", []), ins =>
+                                            _.trim(_.get(ins, "identificationNumber")) &&
+                                            _.trim(_.get(ins, "insuranceId")) &&
+                                            _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                            _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                            (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                            (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                        )
+
+                                    )
+
                                 ) &&
 
                                 // 6. Not already exported (versus exportedDate)
                                 (!flatRateLastInvoicedTagValue || flatRateLastInvoicedTagValue < exportedDate)
 
+                                // 7. Rules (some) can be overridden if patient was forced as valid (using mda flow) -> isPatientForcedAsValidInMda
+
                         })
-                        .map(it => _.merge(it, {
-                            lastName: _.trim(_.get(it,"lastName")).toUpperCase(),
-                            firstName: _.trim(_.get(it,"firstName")).toUpperCase(),
-                            ssin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
-                            finalInsurability: _
-                                .chain(_.get(it, "insurabilities", []))
-                                .filter(ins =>
-                                    _.trim(_.get(ins, "identificationNumber")) &&
-                                    _.trim(_.get(ins, "insuranceId")) &&
-                                    _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
-                                    _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
-                                    (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                        .map(it => {
+                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) && _.trim(_.get(it,"id")) && mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
+                            return _.merge(it, {
+                                lastName: _.trim(_.get(it,"lastName")).toUpperCase(),
+                                firstName: _.trim(_.get(it,"firstName")).toUpperCase(),
+                                ssin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
+                                finalInsurability: _
+                                    .chain(_.get(it, "insurabilities", []))
+                                    .filter(ins =>
+                                        _.trim(_.get(ins, "identificationNumber")) &&
+                                        _.trim(_.get(ins, "insuranceId")) &&
+                                        _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                        _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                        (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                        (
+                                            isPatientForcedAsValidInMda || (
+                                                (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                            )
+                                        )
 
-                                        (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                        (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                    )
+                                    .orderBy(["startDate"],["desc"])
+                                    .head()
+                                    .value(),
+                                finalMedicalHouseContract: _
+                                    .chain(_.get(it, "medicalHouseContracts", []))
+                                    .filter(mhc =>
+                                        _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                        _.trim(_.get(mhc, "contractId")) &&
+                                        (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                        (
+                                            isPatientForcedAsValidInMda || (
+                                                (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                            )
+                                        )
 
-                                )
-                                .orderBy(["startDate"],["desc"])
-                                .head()
-                                .value(),
-                            finalMedicalHouseContract: _
-                                .chain(_.get(it, "medicalHouseContracts", []))
-                                .filter(mhc =>
-                                    _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
-                                    _.trim(_.get(mhc, "contractId")) &&
-                                    (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
-
-                                        (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                        (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
-
-                                )
-                                .orderBy(["startOfCoverage"],["desc"])
-                                .head()
-                                .value(),
-                        }))
+                                    )
+                                    .orderBy(["startOfCoverage"],["desc"])
+                                    .head()
+                                    .value(),
+                            })
+                        })
                         .filter(it => _.size(_.get(it,"finalMedicalHouseContract")) && _.size(_.get(it,"finalInsurability")))
                         .compact()
                         .value()
