@@ -599,7 +599,7 @@ onmessage = e => {
 
             let promisesCarrier = []
             let prom = Promise.resolve()
-            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 200, alternateKeystores).then(messagesFromEHealthBox => {
+            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
                 _.map(_.filter(messagesFromEHealthBox, m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
                     .then(promisesCarrier => createDbMessageWithAppendicesAndTryToAssign(singleMessage, singleBoxId))
                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))
