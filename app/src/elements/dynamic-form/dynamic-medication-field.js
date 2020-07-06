@@ -1,7 +1,4 @@
 import './dynamic-link.js';
-import './dialogs/medication-selection-dialog.js';
-import './dialogs/medication-details-dialog.js';
-import './dialogs/medication-details-dialog-old.js';
 import '../../styles/buttons-style.js';
 
 import {PolymerElement, html} from '@polymer/polymer';

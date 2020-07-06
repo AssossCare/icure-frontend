@@ -30,14 +30,7 @@ import '../dynamic-form/entity-selector.js'
 import '../dynamic-form/health-problem-selector.js'
 import './dialogs/ht-pat-charts-dialog.js'
 import './dialogs/ht-pat-action-plan-dialog.js'
-import './dialogs/ht-pat-prescription-dialog.js'
 import './dialogs/ht-pat-preventive-acts-dialog.js'
-import '../dynamic-form/dialogs/medication-selection-dialog.js'
-import '../dynamic-form/dialogs/medications-selection-dialog.js'
-import '../dynamic-form/dialogs/medication-details-dialog.js'
-import '../dynamic-form/dialogs/medication-details-dialog-old.js'
-import '../dynamic-form/dialogs/medication-plan-dialog.js'
-import '../dynamic-form/dialogs/medication-prescription-dialog.js'
 import './dialogs/ht-pat-edmg-dialog.js'
 import './dialogs/hubs/ht-pat-hub-transaction-view.js'
 import '../ht-msg/ht-msg-import-doc-dialog.js'
@@ -2763,19 +2756,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         </paper-dialog>
         <ht-pat-preventive-acts-dialog id="preventiveActs" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" contacts="[[contacts]]" on-open-action="openActionDialog" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" services-refresher="[[servicesRefresher]]"></ht-pat-preventive-acts-dialog>
         <ht-pat-action-plan-dialog id="planActionForm" api="[[api]]" user="[[user]]" resources="[[resources]]" language="[[language]]" i18n="[[i18n]]" linkables="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" current-contact="[[currentContact]]" on-create-service="_createService" on-update-service="_updateServices" on-delete-service="_deleteService" readonly="false"></ht-pat-action-plan-dialog>
-        <medication-prescription-dialog 
-            id="medication-prescription" 
-            api="[[api]]" 
-            user="[[user]]" 
-            patient="[[patient]]" 
-            i18n="[[i18n]]" 
-            language="[[language]]" 
-            medications="[[existingMedications]]" 
-            treatment-history="[[treatmentHistory]]" 
-            resources="[[resources]]">
-        </medication-prescription-dialog>
-        <medication-details-dialog id="medication-detail" api="[[api]]" user="[[user]]" i18n="[[i18n]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" selected-medication-content-with-id="{{selectedMedicationContentWithId}}"></medication-details-dialog>
-        <medication-plan-dialog id="medication-plan" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" prescriptions="[[prescriptions]]" user="[[user]]" patient="[[patient]]" on-print-prescription="onPrintPrescription"></medication-plan-dialog>
         <!--<ht-pat-mcn-chapteriv-agreement id="chapterivdialog" api="[[api]]" user="[[user]]" patient="[[patient]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" medications="[[medications]]" on-create-service="_createService" on-update-services="_updateServices"></ht-pat-mcn-chapteriv-agreement>-->
         <ht-pat-edmg-dialog id="edmgDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]"></ht-pat-edmg-dialog>
         <ht-pat-patientwill-dialog id="patientWillDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" on-service-changed="_serviceChanged"></ht-pat-patientwill-dialog>
@@ -2793,9 +2773,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
-        </paper-dialog>
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" on-save-document-as-service="[[_handleSaveDocumentAsService]]" global-hcp="[[globalHcp]]" on-save-contact="_saveContact"></ht-pat-prescription-dialog>
-
+        </paper-dialog> 
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
         <paper-dialog id="notConnctedToeHealthBox" class="modalDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
@@ -4530,8 +4508,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.root.querySelector('#cb_alhelb').opened = false
             this.root.querySelector('#cb_rhelb').opened = false
         }
-        this.root.querySelector('#medication-plan').reset()
-
 
         this.set('selectedHealthcareElements', [])
         this.set('contacts', [])
@@ -6361,15 +6337,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         e.preventDefault()
 
         //this.$['chapterivdialog'].open()
-    }
-
-
-    _medicationPlan(e) {
-        e.stopPropagation()
-        e.preventDefault()
-
-        this.$['medication-plan'].open()
-        this.$['medication-plan'].setContacts(this.contacts)
     }
 
     updateEdmgClassList(cssClassToAssign) {

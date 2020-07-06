@@ -1,6 +1,5 @@
 import '../filter-panel/filter-panel.js'
 import './dialogs/ht-pat-invoicing-dialog.js'
-import './dialogs/ht-pat-prescription-dialog.js'
 import './ht-pat-detail-table.js'
 import './dialogs/ht-pat-outgoing-document.js'
 
@@ -1106,13 +1105,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 <entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"
                                  columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]"
                                  on-entity-selected="_addedFormSelected"></entity-selector>
-                
-                <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]"
-                                            language="[[language]]" patient="[[patient]]" resources="[[resources]]"
-                                            current-contact="[[currentContact]]" services-map="[[servicesMap]]"
-                                            drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]]
-                                            on-save-document-as-service="[[_handleSaveDocumentAsService]]"
-                                            on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>
+                       
                 
                 <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]"
                                          current-contact="[[currentContact]]" i18n="[[i18n]]"
