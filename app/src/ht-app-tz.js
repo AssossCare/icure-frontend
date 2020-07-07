@@ -1868,41 +1868,43 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _getToken() {
-      return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-      {
-          const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
-              this.set('api.fhcTokenInfo', res)
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('disconnected')
+      return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
+          const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
+          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
 
-              !_.isEmpty(res) ? this.$.eHealthStatus.classList.add('connected') : this.$.eHealthStatus.classList.add('disconnected')
+              this.set('api.fhcTokenInfo', res)
+              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
+              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
+
+              !_.isEmpty(res) ?
+                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('connected') : null :
+                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('disconnected') : null
 
               this.set('api.isMH', isMH)
+
               if(isMH){
-                  this.credentials.ehpasswordMH = this.credentials.ehpassword
+                  this.credentials.ehpasswordMH = _.get(this, 'credentials.ehpassword', null)
 
-                  this.set('api.keystoreIdMH', this.api.keystoreId)
-                  this.set('api.tokenIdMH', res.tokenId)
-                  this.set('api.tokenMH', res.token)
-                  this.set('api.nihiiMH', hcp.nihii)
+                  this.set('api.keystoreIdMH', _.get(this, 'api.keystoreId', null))
+                  this.set('api.tokenIdMH', _.get(res, 'tokenId', null))
+                  this.set('api.tokenMH', _.get(res, 'token', null))
+                  this.set('api.nihiiMH', _.get(hcp, 'nihii', null))
 
-                  if(hcp.contactPersonHcpId){
-                      this.$.api.hcparty().getHealthcareParty(hcp.contactPersonHcpId).then(hcpCt =>{
-                          this.set('api.MHContactPersonName', hcpCt.lastName + ' ' + hcpCt.firstName)
-                          this.set('api.MHContactPersonSsin', hcpCt.ssin)
+                  if(_.get(hcp, 'contactPersonHcpId', null)){
+                      this.$.api.hcparty().getHealthcareParty(_.get(hcp, 'contactPersonHcpId', null)).then(hcpCt => {
+                          this.set('api.MHContactPersonName', _.get(hcpCt, 'lastName', '') +' '+ _.get(hcpCt, 'firstName', ''))
+                          this.set('api.MHContactPersonSsin', _.get(hcpCt, 'ssin', null))
                       });
                   }
 
               }else {
-                  this.set('api.tokenId', res.tokenId)
-                  this.set('api.token', res.token)
+                  this.set('api.tokenId', _.get(res, 'tokenId', null))
+                  this.set('api.token', _.get(res, 'token', null))
               }
 
-
-              this.api && this.api.electron().tokenFHC(isMH,!isMH?this.api.tokenId:this.api.tokenIdMH,!isMH ? this.api.token :this.api.tokenMH, isMH ? this.api.keystoreIdMH : null , isMH ? this.api.nihiiMH : null)
+              this.api && this.api.electron().tokenFHC(isMH,!isMH ? _.get(this.api, 'tokenId', null) : _.get(this.api, 'tokenIdMH', null),!isMH ? _.get(this.api, 'token', null) : _.get(this.api, 'tokenMH', null), isMH ? _.get(this.api, 'keystoreIdMH', null) : null , isMH ? _.get(this.api, 'nihiiMH', null) : null)
                   .then(rep => {
-                      if(rep.ok){
+                      if(_.get(rep, 'ok', null)){
                           this.set('routeData.page', "diary")
                           setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikornoIframe(), 100)
                       }
@@ -1910,13 +1912,12 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
               return res.tokenId
           }).catch((e) => {
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('connected')
-              this.$.eHealthStatus.classList.add('disconnected')
+              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
               throw(e)
           })
-      }
-      )
+        })
   }
 
     _isOtherInstitutionWithNihii(hcp){
@@ -1943,7 +1944,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
+              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH,"medicalhouse").then(res => {
                   this.set('api.fhcTokenInfo', res)
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')

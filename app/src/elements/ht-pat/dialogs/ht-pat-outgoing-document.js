@@ -1580,6 +1580,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                         }
                     })))
                     .then(loadedMissingTemplates => Promise.all(_.map(_.filter(loadedMissingTemplates, it => !!_.trim(_.get(it, "guid", ""))), templateToInject => this.api.doctemplate().createDocumentTemplate({
+                            id: this.api.crypto().randomUuid(),
                             created: +new Date(),
                             documentType: _.trim(_.get(templateToInject, "documentType", "template")),
                             guid: _.trim(_.get(templateToInject, "guid", "")),
