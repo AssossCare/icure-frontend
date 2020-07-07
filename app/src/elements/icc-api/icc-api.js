@@ -27,7 +27,7 @@ import {html, PolymerElement} from '@polymer/polymer';
 class IccApi extends PolymerElement {
   static get template() {
     return html`
-        <fhc-api id="fhc-api" host="[[fhcHost]]"></fhc-api>
+        <fhc-api id="fhc-api" host="[[fhcHost]]" headers="[[fhcHeaders]]"></fhc-api>
 `;
   }
 
@@ -37,24 +37,29 @@ class IccApi extends PolymerElement {
 
   static get properties() {
       return {
+          fhcHeaders:{
+              type: Object,
+              value: {"Content-Type": "application/json",  "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              notify: true
+          },
           headers: {
               type: Object,
-              value: {"Content-Type": "application/json", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers30s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000"},
               notify: true
           },
           headers60s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000"},
               notify: true
           },
           headers120s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000"},
               notify: true
           },
           host: {
