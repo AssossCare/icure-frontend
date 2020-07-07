@@ -61,6 +61,8 @@ import './dialogs/care-path/ht-pat-care-path-list-dialog.js'
 import './dialogs/mda/ht-pat-member-data-detail.js'
 import './dialogs/ht-pat-other-form-dialog'
 
+import './dialogs/prescription/ht-pat-prescription-detail'
+
 import '@vaadin/vaadin-split-layout/vaadin-split-layout'
 import '@polymer/paper-button/paper-button'
 import '@polymer/paper-toast/paper-toast'
@@ -2855,6 +2857,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-prescription-detail id="htPatPrescriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]"></ht-pat-prescription-detail>
+
+
 `
     }
 
@@ -5952,11 +5957,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
 
     openMedicationDialog(e){
-        if(e.detail.isNew) {
-            this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
-        }else{
-            this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
-        }
+        _.get(e, 'detail.isNew', null) ?
+            this.$['htPatPrescriptionDetail']._open(_.get(e, 'detail.service', null), { isPrescription : true }, _.get(e, 'detail.onSave', null)) :
+            this.$['htPatPrescriptionDetail']._open(_.get(e, 'detail.onSave', null) , _.get(e, 'detail.service', null), _.get(e, 'detail.content', null))
     }
 
     _medicationsDetail(e) {

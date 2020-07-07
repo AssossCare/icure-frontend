@@ -346,22 +346,12 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
       this.updateStyles({ '--dynamic-field-width': width, '--dynamic-field-width-percent': '' + width + '%' });
 	}
 
-    /*_getNewsMedications(value){
-    return this._localizedValue(value.filter(v =>!(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : true}}).medicationValue.endMoment))
-}
-_hasEndDate(value){
-    //return this._localizedValue(value.filter(v =>(this.api.moment((this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment).isSame(moment(),"day")))).length
-    return this._localizedValue(value.filter(v =>(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment)).length
-}
-_getCloseMedication(value){
-    return this._localizedValue(value.filter(v =>(this.api.contact().preferredContent({content: v.content},this.language) || {medicationValue: {endMoment : "19000101"}}).medicationValue.endMoment))
-}*/
-
     //what is this
     isReadOnlyOrAlreadyPrescribed(val) {
         const idx = this.value.findIndex(s => s.id === val.id)
         return this.readOnly || this._isDrugAlreadyPrescribed(this.value[idx]) || !this.createTreatment
     }//too
+
     _isDrugAlreadyPrescribed(s) {
         return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
     }
