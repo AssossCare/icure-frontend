@@ -1620,7 +1620,6 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
         return document && _.get(document,"attachmentId",false) && ["heic","heif"].indexOf(_.trim(_.trim(_.get(document,"name","")).toLowerCase().split(".").pop())) > -1
     }
 
-  /**@todo julien changer le fetch pour l'electron api*/
   _dataUrlChanged(dataUrl) {
       const promResolve = Promise.resolve()
       if (dataUrl && dataUrl.length && this.document && this.document.mainUti !== "com.adobe.pdf" && this.document.mainUti !== "public.jpeg" && this.document.mainUti !== "public.png") {

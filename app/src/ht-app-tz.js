@@ -746,7 +746,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
         </style>
 
-        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" headers="[[headers]]" credentials="[[credentials]]"></icc-api>
+        <icc-api id="api" host="[[icureUrl]]" fhc-host="[[fhcUrl]]" headers="[[headers]]" electron-host="[[electronUrl]]" credentials="[[credentials]]"></icc-api>
 
         <paper-item id="noehealth" class="notification-panel noehealth">[[localize('no_ehe_con','No Ehealth connection ',language)]]
             <iron-icon icon="icons:warning"></iron-icon>
@@ -1237,6 +1237,10 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               type: Object,
               value: {"Content-Type": "application/json"}
           },
+          electronUrl: {
+              type: String,
+              value: "http://127.0.0.1:16042"
+          },
           credentials: {
               type: Object,
               value: {logout: false}
@@ -1471,6 +1475,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
       this.set('icureUrl', params.icureUrl || `https://kraken.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
       this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhctz.icure.cloud' : 'https://fhctz.icure.cloud'))
+      this.set('electronUrl', params.electronUrl || (params.icureUrl && !params.icureUrl.includes(":16043") && !params.icureUrl.includes("https") && _.replace(params.icureUrl,"/rest/v1","")) || "http://127.0.0.1:16042")
       this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
       this.set('defaultIcureUrl', this.icureUrl)
@@ -2692,6 +2697,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                     fhcHeaders: JSON.stringify(this.api.fhc().headers),
                     language: this.language,
                     iccHost: this.api.host,
+                    electronHost: this.api.hostElectron,
                     iccHeaders: JSON.stringify(this.api.headers),
                     tokenId: this.api.tokenId,
                     keystoreId: this.api.keystoreId,

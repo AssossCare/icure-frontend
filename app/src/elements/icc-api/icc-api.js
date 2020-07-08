@@ -68,6 +68,9 @@ class IccApi extends PolymerElement {
           fhcHost: {
               type: String
           },
+          hostElectron: {
+              type: String
+          },
           baseApi: {
               type: Object,
               notify: true
@@ -180,8 +183,8 @@ class IccApi extends PolymerElement {
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
       this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
-      const hostElectron = this.host.includes(":16042") ? _.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042" : "http://127.0.0.1:16042"
-      this.desktopApi = new ElectronApi(hostElectron)
+      this.hostElectron = this.host.includes(":16042") ? _.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042" : "http://127.0.0.1:16042"
+      this.desktopApi = new ElectronApi(this.hostElectron)
 
 
 
