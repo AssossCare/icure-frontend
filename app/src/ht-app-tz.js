@@ -2697,7 +2697,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                     fhcHeaders: JSON.stringify(this.api.fhc().headers),
                     language: this.language,
                     iccHost: this.api.host,
-                    electronHost: this.api.hostElectron,
+                    electronHost: this.api.electronHost,
                     iccHeaders: JSON.stringify(this.api.headers),
                     tokenId: this.api.tokenId,
                     keystoreId: this.api.keystoreId,
