@@ -106,7 +106,6 @@ import moment from 'moment/src/moment'
 import Worker from 'worker-loader!./workers/ehboxWebworker.js'
 const runtime = require('offline-plugin/runtime');
 
-import io from 'socket.io-client';
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
 import _ from "lodash";
@@ -880,10 +879,10 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
                 </app-header>
                 <iron-pages selected="[[view]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
+                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-main>
-                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
+                    <ht-pat id="ht-pat" name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" on-user-saved="_userSaved" on-idle="resetTimer" on-patient-changed="_patientChanged" on-force-reload-patient="forceReloadPatient" on-error-electron="setElectronErrorMessage" on-open-mailer="_openMailer" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-pat>
                     <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" on-feedback-message="_feedbackMessage">
@@ -895,7 +894,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                     <ht-diary id="htDiary" name="diary" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-diary>
-                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]" on-feedback-message="_feedbackMessage">
+                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" on-feedback-message="_feedbackMessage">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-admin>
                     <ht-view404 name="view404"></ht-view404>
@@ -1370,10 +1369,6 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               type : Boolean,
               value : true
           },
-          socket: {
-              type : Object,
-              value : null
-          },
           _forceEhBoxRefresh: {
               type : Boolean,
               value : false
@@ -1532,35 +1527,32 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
       this.set('api', this.$.api)
 
-      //init socket io
-      this.set("socket",null)
+
       this.api && this.api.electron().checkAvailable().then(electron => {
           this.set("isElectron",electron)
           if (electron) {
-             this.set("socket",io(_.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042"))
 
-              this.socket.on("connect", () => {
-                  console.log("connection avec le socket de electron")
-              })
-
-              this.socket.on("update-downloaded", msg => {
-                  console.log(msg)
-                  this.$['electronMessage'].classList.add('notification');
-                  setTimeout(() => {
-                      this.$['electronMessage'].classList.remove('notification');
-                  }, 7500);
-              })
-
-              this.socket.on("auto-read-card-eid", cards =>{
-                  if(typeof cards==="string" && cards.includes("Error"))return;
-                  if(this.route.path.includes("/pat")){
-                      this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid ==="function" && this.$["ht-pat"].autoReadCardEid(cards)
-                  }else if(this.route.path.includes("/main") && !this.route.path.includes("/auth")){
-                      this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid ==="function" && this.$["htmain"].autoReadCardEid(cards)
+              const callBack = {
+                  "update-downloaded" : msg => {
+                      console.log(msg)
+                      this.$['electronMessage'].classList.add('notification');
+                      setTimeout(() => {
+                          this.$['electronMessage'].classList.remove('notification');
+                      }, 7500);
+                  },
+                  "auto-read-card-eid" : cards =>{
+                      if(typeof cards==="string" && cards.includes("Error"))return;
+                      if(this.route.path.includes("/pat")){
+                          this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid ==="function" && this.$["ht-pat"].autoReadCardEid(cards)
+                      }else if(this.route.path.includes("/main") && !this.route.path.includes("/auth")){
+                          this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid ==="function" && this.$["htmain"].autoReadCardEid(cards)
+                      }
                   }
-              })
+              }
 
-              this.notifyPath("socket");
+              this.api.electron().launchWS(callBack)
+
+
               this.api && this.api.electron().checkDrugs()
               this.api.electron().getVersion()
                   .then(res => {
