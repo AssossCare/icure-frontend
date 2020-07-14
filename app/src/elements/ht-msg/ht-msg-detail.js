@@ -2380,6 +2380,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   !( !!_.trim(_.get(singlePatientToResolve,"lastName","")) || !!_.trim(_.get(singlePatientToResolve,"firstName","")) || !!_.trim(_.get(singlePatientToResolve,"dateOfBirth","")) ) ? promResolve : this.api.patient().filterByWithUser(_.get(this,"user",{}), null, null, 20, 0, null, null, {filter: filter}).then(({rows}) => _.concat(promisesCarrier, this._filterBestMatchingPatients(rows,singlePatientToResolve))).catch(e=>{console.log("ERROR with fuzzySearchWithUser: ", e); return promisesCarrier;})
               ])
                   .then(promsAnswers=>_.flatMap(promsAnswers,pa=>_.compact(pa)))
+                  .catch(e=>prom)
           )
       })
 
