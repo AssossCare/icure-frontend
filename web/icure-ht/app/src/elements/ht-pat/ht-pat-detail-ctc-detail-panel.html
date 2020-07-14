@@ -737,6 +737,8 @@
 									<iron-icon icon="[[_actionIcon(showOutGoingDocContainer)]]" ></iron-icon>
 								</paper-button>
 								<div class="outgoing-docs-container">
+									<paper-button on-tap="_triggerOpenOutGoingDocumentDialog" class="fw700"><iron-icon icon="icons:launch"></iron-icon>[[localize('openEditor','Open editor', language)]]</paper-button>
+									<hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/>
 									<template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
                                         <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
 										<paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
@@ -4530,6 +4532,13 @@
 			_isBold(x) {
 
 				return !!x ? "fw700" : ""
+
+			}
+
+			_triggerOpenOutGoingDocumentDialog(e) {
+
+				this.set('showOutGoingDocContainer', false);
+				return this.newReport_v2(null,null,{reOpen:true})
 
 			}
 

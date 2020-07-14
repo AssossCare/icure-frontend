@@ -2706,7 +2706,8 @@
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
-		"copyMe": "Send me a copy of message"
+		"copyMe": "Send me a copy of message",
+		"openEditor": "Open editor"
 	},
 	"fr": {
 		"show-all-HE": "Ne pas cacher les éléments de soin d'avant janvier 2018",
@@ -5507,7 +5508,8 @@
 		"sendByEmail": "Envoyer par email",
 		"disableEhbox": "Désactiver l'eHealth box",
 		"condensed": "condensé",
-		"copyMe": "M'envoyer une copie du message"
+		"copyMe": "M'envoyer une copie du message",
+		"openEditor": "Rouvrir l'éditeur"
 	},
 	"nl": {
 		"show-all-HE": "don't hide actif health element before january 2018",
@@ -8264,6 +8266,7 @@
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
-		"copyMe": "Send me a copy of message"
+		"copyMe": "Send me a copy of message",
+		"openEditor": "Open editor"
 	}
 }

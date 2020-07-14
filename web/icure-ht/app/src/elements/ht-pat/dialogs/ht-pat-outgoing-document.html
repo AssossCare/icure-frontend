@@ -92,7 +92,7 @@
 
 
 
-        <paper-dialog id="outgoingDocumentDialog" always-on-top="true" no-cancel-on-outside-click="true" no-cancel-on-esc-key="true">
+        <paper-dialog id="outgoingDocumentDialog" always-on-top="true">
 
 
 
@@ -2101,6 +2101,9 @@
 
                 if(!!_.get(this,"_isBusy",false)) return;
 
+                // Simply re-open editor
+                if(!!_.get(inputData,"reOpen",false)) return this.shadowRoot.querySelector('#outgoingDocumentDialog').open();
+
                 const patientId = !!_.trim(_.get(inputData,"patientId","")) ? _.trim(_.get(inputData,"patientId","")) : _.trim(_.get(this,"patient.id",""))
 
                 return this._resetComponentProperties()
@@ -2121,9 +2124,7 @@
                     .catch(e => console.log("[ERROR] outgoing document", e, inputData))
                     .finally(() => (this.set("_isBusy", false)||true) && console.log("[Outgoing document, _data]",this._data))
 
-                    // Todo: When using prose template object, can't write in it ? Cusor jumps after one char typed / render issue ?
                     // Todo: With linking letters, create smart component to get recipient details using cobra
-                    // Todo: allow to close editor & open it again (with same template) -> without flushing content again (Muriel Mernier)
 
             }
 
