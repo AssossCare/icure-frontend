@@ -635,6 +635,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             },
 
             getHrCodesAndTagsValue: (value) => {
+                if(typeof value === "boolean") return !!value ? this.localize("yes","Yes", this.language) : this.localize("no","No", this.language)
                 if (!_.trim(value) || !(_.trim(value).toLowerCase().startsWith("cd-") && _.trim(value).indexOf("|") > 1)) return value
                 const splittedValue = _.trim(value).split("|")
                 const hrValue = _.get(_.find(_.get(this, "_data.codes." + _.trim(_.get(splittedValue, "[0]"))), {code: _.trim(_.get(splittedValue, "[1]"))}), "labelHr", "")
