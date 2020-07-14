@@ -65,7 +65,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
 
 
-        <paper-dialog id="outgoingDocumentDialog" always-on-top="true">
+        <paper-dialog id="outgoingDocumentDialog" always-on-top="true" no-cancel-on-outside-click="true">
 
 
 
