@@ -2741,7 +2741,8 @@
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
-		"copyMe": "Send me a copy of message"
+		"copyMe": "Send me a copy of message",
+		"openEditor": "Open editor"
 	},
 	"fr": {
 		"choose_url": "Choix de l'URL",
@@ -5580,7 +5581,8 @@
 		"sendByEmail": "Envoyer par email",
 		"disableEhbox": "Désactiver l'eHealth box",
 		"condensed": "condensé",
-		"copyMe": "M'envoyer une copie du message"
+		"copyMe": "M'envoyer une copie du message",
+		"openEditor": "Rouvrir l'éditeur"
 	},
 	"nl": {
 		"choose_url": "Choose your URL",
@@ -8363,6 +8365,7 @@
 		"sendByEmail": "Send by email",
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
-		"copyMe": "Send me a copy of message"
+		"copyMe": "Send me a copy of message",
+		"openEditor": "Open editor"
 	}
 }
