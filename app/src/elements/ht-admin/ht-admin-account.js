@@ -65,11 +65,11 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
         </template>
 
         <template is="dom-if" if="[[printersInformationLayout]]">
-            <ht-admin-account-printers id="admin-account-printers" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" socket="[[socket]]"></ht-admin-account-printers>
+            <ht-admin-account-printers id="admin-account-printers" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-account-printers>
         </template>
         
         <template is="dom-if" if="[[configurationElectronLayout]]">
-            <ht-admin-account-electron id="admin-account-electron" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" socket="[[socket]]"></ht-admin-account-electron>
+            <ht-admin-account-electron id="admin-account-electron" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-account-electron>
         </template>
 
         <template is="dom-if" if="[[accountInformationsLayout]]">
@@ -139,10 +139,6 @@ class HtAdminAccount extends TkLocalizerMixin(PolymerElement) {
           delegationLayout:{
               type: Boolean,
               value: false
-          },
-          socket : {
-              type : Object,
-              value: {}
           }
 
       }

@@ -379,10 +379,6 @@ class HtAdminAccountPrinters extends TkLocalizerMixin(PolymerElement) {
           electronAvailable: {
               type : Boolean,
               value : false
-          },
-          socket: {
-              type : Object,
-              value : {}
           }
       }
   }
