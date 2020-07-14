@@ -166,7 +166,7 @@ class HtAdmin extends PolymerElement {
             </template>
 
             <template is="dom-if" if="[[accountLayout]]">
-                <ht-admin-account id="admin-account" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" selected-sub-menu="[[selectedSubMenu]]" socket="[[socket]]"></ht-admin-account>
+                <ht-admin-account id="admin-account" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" selected-sub-menu="[[selectedSubMenu]]"></ht-admin-account>
             </template>
 
             <template is="dom-if" if="[[reportsLayout]]">
@@ -214,10 +214,6 @@ class HtAdmin extends PolymerElement {
           selectedSubMenu:{
               type: String,
               value: null
-          },
-          socket : {
-              type: Object,
-              value : {}
           }
       }
   }
