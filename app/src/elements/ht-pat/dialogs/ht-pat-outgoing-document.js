@@ -1302,9 +1302,9 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-            _sleep (time) {
-                return new Promise((resolve) => setTimeout(resolve, time));
-            }
+    _sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
 
     _saveDocumentAsService(inputConfig) {
 
