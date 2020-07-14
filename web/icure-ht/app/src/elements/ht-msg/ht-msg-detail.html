@@ -1443,7 +1443,7 @@
                                             <div class="singleAssignmentLine"><iron-icon icon="vaadin:calendar-clock" class="w20 m-t-minus-2"></iron-icon> [[localize('last_edi','Last modification',language)]]: [[item.patientData.lastModifiedHr]]</div>
                                             <div class="documentTypeComboBoxContainer">
                                                 <span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box>
-                                                <paper-input id$="documentTitleSuggestion-[[item.documentId]]-[[item.patientData.id]]"  placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
+                                                <paper-input id$="documentTitleSuggestion-[[item.documentId]]-[[item.patientData.id]]" class="documentTitleInput" placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
                                             </div>
                                             <div class="singleAssignmentSet"><paper-button class="button button--other" on-tap="_openConfirmActionDialog" data-confirmation-action="_saveAssignment" data-document-id$="[[item.documentId]]" data-patient-id$="[[item.patientData.id]]"><iron-icon icon="icons:assignment-turned-in" class="w20 m-t-minus-2" data-confirmation-action="_saveAssignment" data-document-id$="[[item.documentId]]"  data-patient-id$="[[item.patientData.id]]"></iron-icon> [[localize('assignDocumentToThisPatient','Assign document to this patient',language)]]</paper-button></div>
                                             <div class="clear"></div>
@@ -1485,7 +1485,7 @@
                                         <div class="singleAssignmentLine"><iron-icon icon="vaadin:calendar-clock" class="w20 m-t-minus-2"></iron-icon> [[localize('last_edi','Last modification',language)]]: [[item.patientData.lastModifiedHr]]</div>
                                         <div class="documentTypeComboBoxContainer">
                                             <span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box>
-                                            <paper-input id$="documentTitleManual-[[item.documentId]]-[[item.patientData.id]]"  placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
+                                            <paper-input id$="documentTitleManual-[[item.documentId]]-[[item.patientData.id]]" class="documentTitleInput" placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
                                         </div>
                                         <div class="singleAssignmentSet"><paper-button class="button button--save" on-tap="_openConfirmActionDialog" data-confirmation-action="_saveAssignment" data-document-id$="[[item.documentId]]" data-patient-id$="[[item.patientData.id]]"><iron-icon icon="icons:assignment-turned-in" class="w20 m-t-minus-2" data-confirmation-action="_saveAssignment" data-document-id$="[[item.documentId]]"  data-patient-id$="[[item.patientData.id]]"></iron-icon> [[localize('assignDocumentToThisPatient','Assign document to this patient',language)]]</paper-button></div>
                                         <div class="clear"></div>
@@ -1520,7 +1520,7 @@
                                     <div class="fl50"><span class="fieldLabel">[[localize('gender','Gender',language)]]: </span><vaadin-combo-box filtered-items="[[_genders]]" item-label-path="name" item-value-path="value" value="{{newPat.gender}}" id="newPat_gender" auto-validate></vaadin-combo-box></div>
                                     <div class="clear"></div>
 
-                                    <div class="fl50"><span style="display:block;margin-top:-15px;"><paper-input label="[[localize('doc-title','Titre du document',language)]]" value="{{newPat.documentTitle}}" id="newPat_documentTitle"></paper-input></div>
+                                    <div class="fl50"><span style="display:block;margin-top:-15px;"><paper-input label="[[localize('doc-title','Titre du document',language)]]" class="documentTitleInput" value="{{newPat.documentTitle}}" id="newPat_documentTitle"></paper-input></span></div>
                                     <div class="fr50"><span class="fieldLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="{{newPat.documentType}}" auto-validate id="newPat_documentType"></vaadin-combo-box></div>
                                     <div class="clear"></div>
 
@@ -2465,7 +2465,15 @@
 
                 if(!isOpened && !_.trim(documentId)) return prom;
                 if(!!isOpened) { this.set("_assignmentDialogIsOpened", false); this.set("_assignmentDialogIsLoading", false); this.$["positiveFeedback"].classList.remove('showFeedbackMessage'); this.$["negativeFeedback"].classList.remove('showFeedbackMessage'); this.$['annexAssignmentDialog'].close(); return prom; }
-                if(!isOpened && _.trim(documentId)) { this.set("_assignmentDialogIsOpened", true); this.set("_assignmentDialogIsLoading", true); this.$['annexAssignmentDialog'].open(); }
+                if(!isOpened && _.trim(documentId)) {
+                    this.set("_assignmentDialogIsOpened", true);
+                    this.set("_assignmentDialogIsLoading", true);
+                    this.$['annexAssignmentDialog'].open();
+                    setTimeout(() => {
+                        _.map( this.shadowRoot.querySelectorAll(".documentTypeComboBox"), it => it.value = undefined)
+                        _.map( this.shadowRoot.querySelectorAll(".documentTitleInput"), it => it.value = "")
+                    }, 100)
+                }
 
                 const selectedMessage =  _.get(this,"selectedMessage",{})
                 const currentDocument = _.find(_.get(this,"documentsOfMessage",[]), {id:documentId})
