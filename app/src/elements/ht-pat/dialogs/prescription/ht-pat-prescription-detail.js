@@ -94,16 +94,16 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             </div>
             <div class="content">
                 <div class="content-drugs">
-                    <ht-pat-prescription-detail-drugs id="htPatPrescriptionDetailDrugs" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]"></ht-pat-prescription-detail-drugs>
+                    <ht-pat-prescription-detail-drugs id="htPatPrescriptionDetailDrugs" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
                     <div class="content-search">
-                        <ht-pat-prescription-detail-search id="htPatPrescriptionDetailSearch" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]"></ht-pat-prescription-detail-search>
+                        <ht-pat-prescription-detail-search id="htPatPrescriptionDetailSearch" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-search>
                     </div>
                 </template>
                  <template is="dom-if" if="[[isPosologyView]]">
                     <div class="content-posology">
-                        <ht-pat-prescription-detail-posology id="htPatPrescriptionDetailPosology" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]"></ht-pat-prescription-detail-posology>
+                        <ht-pat-prescription-detail-posology id="htPatPrescriptionDetailPosology" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-posology>
                     </div>
                 </template>                           
             </div>
@@ -156,6 +156,14 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             isSearchView: {
                 type: Boolean,
                 value: false
+            },
+            listOfCompound: {
+                type: Array,
+                value: () => []
+            },
+            listOfPrescription: {
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -175,10 +183,58 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _open(e){
         this._reset()
-        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-            this.set('hcp', hcp)
-            this.shadowRoot.querySelector('#prescriptionDetailDialog').open()
+
+        this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
+            .then(hcp => this.set('hcp', hcp))
+            .finally(() => {
+                this.set('listOfCompound', this._refreshCompoundList())
+                this.set('listOfPrescription', this._refreshHistoryList())
+                this.shadowRoot.querySelector('#prescriptionDetailDialog').open()
+            })
+    }
+
+    _refreshHistoryList(){
+        const serviceList = _.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "ICURE" && _.get(tag, 'code', null) === "PRESC"))
+        return serviceList.map(service => {
+            if(_.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null)){
+                if(_.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) || _.get(service, 'content.medicationValue.medicinalProduct', null)){
+                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) :  _.get(service, 'content.medicationValue.medicinalProduct', null)
+                    return this._composeHistory(drug, service)
+                }else if(_.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) || _.get(service, 'content.medicationValue.substanceProduct', null)){
+                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) : _.get(service, 'content.medicationValue.substanceProduct', null)
+                    return this._composeHistory(drug, service)
+                }else if(_.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) || _.get(service, 'content.medicationValue.compoundPrescription', null)){
+                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) ? _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) : _.get(service, 'content.medicationValue.compoundPrescription', null)
+                    return this._composeHistory(drug, service)
+                }
+            }
         })
+    }
+
+    _refreshCompoundList(){
+        return _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? this.set('listOfCompound', JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', ""))) : null
+    }
+
+    _composeHistory(drug, service){
+        return {
+            endDate: _.get(service, 'content.'+this.language+'.medicationValue', null) ? _.get(service, 'content.'+this.language+'.medicationValue.endMoment', null) : _.get(service, 'content.medicationValue.endMoment', null),
+            startDate: _.get(service, 'content.'+this.language+'.medicationValue', null) ? _.get(service, 'content.'+this.language+'.medicationValue.beginMoment', null) : _.get(service, 'content.medicationValue.beginMoment', null),
+            publicPrice: null,
+            chapt4: null,
+            atc: _.get(_.get(service, 'codes', []).find(cd => _.get(cd, 'type', null) === "CD-ATC"), 'code', null),
+            label: _.get(drug, 'intendedname', null),
+            delivery: null,
+            cat: null,
+            narcotic: null,
+            reinPharmaVigi: null,
+            pharmaVigi: null,
+            severeRenalInsu: null,
+            moderateRenalInsu: null,
+            atcCat: _.get(_.get(service, 'codes', []).find(cd => _.get(cd, 'type', null) === "CD-ATC"), 'code', null) ? _.get(_.get(service, 'codes', []).find(cd => _.get(cd, 'type', null) === "CD-ATC"), 'code', null).substring(0,1) : null,
+            id: _.get(service, 'id', null),
+            status:  null,
+            service: service
+        }
     }
 
     _closeDialog(){

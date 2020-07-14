@@ -8,6 +8,7 @@ import '../../../../styles/scrollbar-style.js';
 import '../../../../styles/paper-tabs-style';
 import '../../../../styles/shared-styles';
 import '../../../../styles/buttons-style';
+import '../../../../styles/atc-styles';
 
 
 import * as models from 'icc-api/dist/icc-api/model/models';
@@ -20,7 +21,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
             .table{         
                 width: auto;
                 height: 100%;
@@ -128,6 +129,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 color: white;
             }
             
+            .atcIcon{
+                height: 14px;
+                width: 14px;
+            }
+            
         </style>
         
         <div class="search-container">
@@ -170,17 +176,21 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                     <div class="td fg1">[[localize('','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
-                                    <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
-                                    <div class="td fg2"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg1"></div>
-                                    <div class="td fg1"></div> 
+                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg2">[[drug.label]]</div>
+                                        <div class="td fg05">
+                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                                        </div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05">[[drug.chapt4]]</div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
+                                    </div>
                                 </template>
                             </div>                   
                        </div>
@@ -202,17 +212,21 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                     <div class="td fg1">[[localize('','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.history]]" as="drug">
-                                    <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
-                                    <div class="td fg2"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg1"></div>
-                                    <div class="td fg1"></div> 
+                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg2">[[drug.label]]</div>
+                                        <div class="td fg05">
+                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                                        </div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05">[[drug.chapt4]]</div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
+                                    </div>
                                 </template>
                             </div>                   
                        </div>
@@ -236,16 +250,18 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
                                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.prescriptionName.fr]]</div>
-                                        <div class="td fg05">[[drug.ampps.0.atcs]]</div>
+                                        <div class="td fg2">[[drug.label]]</div>
+                                        <div class="td fg05">
+                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                                        </div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05">[[drug.chapt4]]</div>
                                         <div class="td fg05"></div>
                                         <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg1"></div>
-                                        <div class="td fg1"></div> 
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg05">[[drug.publicPrice]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
                                     </div>
                                 </template>
                             </div>                   
@@ -271,15 +287,17 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
                                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
                                         <div class="td fg2">[[drug.label]]</div>
-                                        <div class="td fg05">[[drug.atc]]</div>
-                                        <div class="td fg05">[[drug]]</div>
+                                        <div class="td fg05">
+                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                                        </div>
+                                        <div class="td fg05"></div>
                                         <div class="td fg05">[[drug.chapt4]]</div>
                                         <div class="td fg05"></div>
                                         <div class="td fg05"></div>
                                         <div class="td fg05">[[drug.publicPrice]]</div>
                                         <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg1">[[drug.startDate]]</div>
-                                        <div class="td fg1">[[drug.endDate]]</div> 
+                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
+                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
                                     </div>
                                 </template>
                             </div>                   
@@ -302,17 +320,19 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                     <div class="td fg1">[[localize('','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
-                                    <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
-                                    <div class="td fg2"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg1"></div>
-                                    <div class="td fg1"></div> 
+                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg2">[[drug.title]]</div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg05"></div>
+                                        <div class="td fg1"></div>
+                                        <div class="td fg1"></div> 
+                                    </div>
                                 </template>
                             </div>                   
                        </div>
@@ -375,23 +395,35 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             tabs:{
                 type: Number,
                 value: 0
+            },
+            listOfCompound: {
+                type: Array,
+                value: () => []
+            },
+            listOfPrescription: {
+                type: Array,
+                value: () => []
             }
         };
     }
 
     static get observers() {
-        return ['_drugsFilterChanged(drugsFilter)'];
+        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfCompound.*, listOfPrescription.*)'];
     }
 
     ready() {
         super.ready();
     }
 
+    _initializeDataProvider(){
+        this._reset()
+    }
+
     _reset(){
         this.set('searchResult', {
-            compound: [],
+            compound: _.get(this, 'listOfCompound', []),
             commercialName: [],
-            history: [],
+            history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
             molecule: [],
             chronic: []
         })
@@ -405,27 +437,55 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
            ]).then(([vmps, vmpGroups, amps]) => {
                const now = moment().valueOf();
-
-               this.set("searchResult.commercialName", _.get(amps, 'rows', []).map(amp => {
+               this.set("searchResult.commercialName", _.orderBy(_.get(amps, 'rows', []).map(amp => {
                    return {
-                       endDate: "",
-                       startDate: "",
-                       publicPrice: "",
-                       chapt4: "",
-                       atc: "",
+                       endDate: null,
+                       startDate: null,
+                       publicPrice: null,
+                       chapt4: null,
+                       atc: _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null),
                        label: _.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'prescriptionName.'+this.language, null) || _.get(_.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P"), 'prescriptionName.'+this.language, null) || _.get(ampp, 'abbreviatedName.'+this.language))) || "",
-                       delivery: "",
-                       cat: "",
-                       narcotic: "",
-                       reinPharmaVigi: "",
-                       pharmaVigi: "",
-                       severeRenalInsu: "",
-                       moderateRenalInsu: "",
-                       atcCat: "",
-                       id: _.get(amp, 'id', null)
+                       delivery: null,
+                       cat: null,
+                       narcotic: null,
+                       reinPharmaVigi: null,
+                       pharmaVigi: null,
+                       severeRenalInsu: null,
+                       moderateRenalInsu: null,
+                       atcCat: _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null) ? _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null).substring(0, 1) : null,
+                       id: _.get(amp, 'id', null),
+                       status:  _.get(amp, 'status', null)
                    }
-               }))
-               this.set("searchResult.molecule", _.get(vmps, 'rows', []))
+               }).filter(amp => _.get(amp, 'label', null) && _.get(amp, 'status', null) === "AUTHORIZED"), ["label"], ["asc"]))
+
+                this.set("searchResult.molecule", _.orderBy(_.get(vmpGroups, 'rows', []).map(vmpGroup => {
+                    return {
+                        endDate: null,
+                        startDate: null,
+                        publicPrice: null,
+                        chapt4: null,
+                        atc: null,
+                        label: _.get(vmpGroup, 'name.'+this.language, null),
+                        delivery: null,
+                        cat: null,
+                        narcotic: null,
+                        reinPharmaVigi: null,
+                        pharmaVigi: null,
+                        severeRenalInsu: null,
+                        moderateRenalInsu: null,
+                        atcCat: null,
+                        id: _.get(vmpGroup, 'id', null),
+                        status: null
+                    }
+                }).filter(vmpGroup => _.get(vmpGroup, 'label', null)), ["label"], ["asc"]))
+            })
+        }else{
+            this.set('searchResult', {
+                compound: _.get(this, 'listOfCompound', []),
+                commercialName: [],
+                history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
+                molecule: [],
+                chronic: []
             })
         }
     }
@@ -436,6 +496,18 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _getDrugsCount(drugsList){
         return _.size(drugsList)
+    }
+
+    _formatDate(date){
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+    }
+
+    _getAtc(cat) {
+        return cat ? this.localize('atc-' + cat, '') : null
+    }
+
+    _getAtcColor(cat){
+        return cat ? "ATC--"+_.toUpper(cat) : null
     }
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);
