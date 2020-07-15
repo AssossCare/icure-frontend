@@ -5647,7 +5647,8 @@
                         )
                     }) //22
                     .finally(()=>{
-                        console.log(this.flatRateInvoicingDataObject);
+                        console.log("finally: flatRateInvoicingDataObject", this.flatRateInvoicingDataObject);
+                        console.log("finally: flatRateInvoicingDataObject: json", JSON.stringify(this.flatRateInvoicingDataObject));
                         this.flatRateInvoicingDataObject = {}
                         this.set('_isLoading', false );
                         this.set('activeGridItem', null );
@@ -5664,6 +5665,41 @@
 
             }
 
+            _devOnlySendBatch(batch){
+                //todo
+                this.set('progressItem', [])
+
+                const lastSend = '2020-03-01' //parseInt(localStorage.getItem('lastInvoicesSent')) ? this.api.moment(parseInt(localStorage.getItem('lastInvoicesSent'))).format('YYYY-MM-DD') : '2000-01-01'
+                const maySend =  !this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
+                if (maySend) {
+                    this.set('cannotSend',true)
+                    localStorage.setItem('lastInvoicesSent', Date.now())
+                    this.shadowRoot.querySelector('#sendingDialog').open()
+                    this.set('isSending', true)
+                    this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
+
+                    let prom = Promise.resolve()
+
+                    _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true), 500)))
+                        .groupBy(fact => fact.insuranceParent)
+                        .toPairs().value()
+                        .forEach(([fedId,invoices]) => {
+                            prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto: _.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
+                                undefined,
+                                (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`))
+                            ).then(message => {
+                                this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
+                                this.api.register(message,'message')
+                            })
+                        })
+
+                    return prom.then(() => {
+                        this.set('isSending',false)
+                        this.shadowRoot.querySelector('#sendingDialog').close()
+                        this.getMessage(true)
+                    })
+                }
+            }
         }
 
         customElements.define(HtMsgFlatrateInvoice.is, HtMsgFlatrateInvoice);
