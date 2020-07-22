@@ -80,6 +80,7 @@
     "xml-parse": "^0.3.1"
   },
   "dependencies": {
+    "@taktik/icc-api-legacy": "^1.0.238",
     "@types/base64-js": "^1.2.5",
     "@types/chroma-js": "^1.3.6",
     "@types/lodash": "^4.14.110",
@@ -110,7 +111,6 @@
     "global": "^4.3.2",
     "heic2any": "0.0.3",
     "iban": "0.0.11",
-    "icc-api": "1.0.221",
     "jasmine": "^3.3.0",
     "js-base64": "^2.5.1",
     "js-levenshtein": "^1.1.6",
