@@ -197,6 +197,7 @@
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
 
         class HtMsgInvoice extends Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
@@ -467,14 +468,12 @@
 
             fetchMessages() {
                 this.messageIdsCanBeAutoArchived = []
-
                 this.api.message().findMessagesByTransportGuid("EFACT:BATCH:*").then(messages => {
-
                     const filteredMessages = messages.rows.filter(msg => msg.transportGuid && msg.responsible === this.hcp.id && (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || msg.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))))
 
                     Promise.all(filteredMessages.map(msg =>
-                        this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: msg.invoiceIds.map(id => id)}))
-                            .then(invsFromMess => this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: invsFromMess.map(inv => inv.correctiveInvoiceId)})))
+                        this._getInvoicesFormBatch(msg.invoiceIds.map(id => id))
+                            .then(invsFromMess => this._getInvoicesFormBatch(invsFromMess.map(inv => inv.correctiveInvoiceId)))
                             .then(correctiveInvoices => {
                                 let allInvoicesIsCorrected = false
 
@@ -579,17 +578,29 @@
                                             },
                                             normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(msg, 'metas.ioFederationCode', "")), _.trim(_.get(this.hcp, 'firstName', "")), _.trim(_.get(this.hcp, 'lastName', "")), _.trim(_.get(msg, 'externalRef', "")), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth : null,), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth+'01' : null), _.trim(_.get(msg, 'metas.paymentReferenceAccount1', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
                                         })
-                                    }).catch(e => console.log(e))
-
-                            })))
-                        .then(msgsStructs => {
-                            this.set("isMessagesLoaded",true)
-                            this.set('allMessages', _.compact(msgsStructs))
-                            this.dispatchMessages()
-                            this.set("isLoading",false)
+                             }).catch(e => console.log(e))
                         })
-
+                    )).then(msgsStructs => {
+                       this.set("isMessagesLoaded",true)
+                       this.set('allMessages', _.compact(msgsStructs))
+                    }).finally(() => {
+                       this.dispatchMessages()
+                       this.set("isLoading",false)
+                    })
                 })
+            }
+
+            _getInvoicesFormBatch(listOfInvoiceId){
+                let prom = Promise.resolve([])
+                _.chunk(listOfInvoiceId, 50).map(chunkList =>
+                    prom = prom.then(listOfInvoice =>
+                        retry.retry(() => (this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: chunkList.map(id => id)}))), 4, 1000, 1)
+                            .then(inv => _.concat(listOfInvoice, inv))
+                            .catch(e => console.log(e))
+                    )
+                )
+
+                return prom
             }
 
             dispatchMessages() {
