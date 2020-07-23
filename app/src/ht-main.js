@@ -1096,7 +1096,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
                   return services.map(s => ({ service: s, patient: patients.rows.find(p => p.id === s.patId) }))
               });
           }).then(services => this.set('services', (services || []).filter(it => it.patient)));
-          this._isLoadingToDoList = false;
+          this.set("_isLoadingToDoList",false);
 
       });
 	}

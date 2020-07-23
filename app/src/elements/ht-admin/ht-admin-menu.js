@@ -376,6 +376,10 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="rashReport">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('rash','RASH',language)]]
                     </paper-item>
+                    
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="activityReport">
+                        <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('activity','Activity',language)]]
+                    </paper-item>
 
                 </paper-listbox>
             </collapse-button>

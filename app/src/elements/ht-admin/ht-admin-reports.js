@@ -9,7 +9,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import './reports/ht-admin-reports-list-of-attestations.js';
 import './reports/ht-admin-reports-age-structure.js';
-import './reports/ht-admin-reports-rash'
+import './reports/ht-admin-reports-rash.js'
+import './reports/ht-admin-reports-activity.js'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
@@ -62,6 +63,9 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[rashReport]]">            
                <ht-admin-reports-rash id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-rash>        
         </template>
+        <template is="dom-if" if="[[activityReport]]">            
+               <ht-admin-reports-activity id="admin-reports-activity" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-activity>        
+        </template>
 
 `;
   }
@@ -96,6 +100,10 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: false
           },
+          activityReport:{
+              type: Boolean,
+              value: false
+          },
           selection: {
               type: Object,
               observer: '_select'
@@ -127,6 +135,7 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
       this.set('listOfAttestationLayout', this.selectedSubMenu === "listOfAttestationSubMenu");
       this.set('ageStructure', this.selectedSubMenu === "ageStructure");
       this.set('rashReport', this.selectedSubMenu === "rashReport");
+      this.set('activityReport', this.selectedSubMenu === "activityReport");
   }
 }
 
