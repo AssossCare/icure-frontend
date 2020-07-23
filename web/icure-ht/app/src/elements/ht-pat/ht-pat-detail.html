@@ -4839,7 +4839,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         //this.set("prescriptions", _.sortBy(svcs.filter(svc => !svc.tags.some(t => t.type === "CD-ITEM" && t.code === "medication"))));
 
                         //todo julien a quoi ca sert cette merde je te jure ???????
-                        this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
+                        this.set('existingMedications', this.medications.filter(med => (_.get(med, 'content.'+this.language+'.medicationValue', null) || _.get(med, 'content.medicationValue', null)) && !_.get(med, 'content.'+this.language+'.medicationValue.endMoment', null) || (_.get(med, 'content.'+this.language+'.medicationValue.endMoment', null) ? this.api.moment(_.get(med, 'content.'+this.language+'.medicationValue.endMoment', null)).isAfter() : false)))
+                        //this.set('existingMedications', this.medications.filter(s => !_.values(_.get(s, 'content', null)).some(c => _.get(c, 'medicationValue', null) && _.get(c, 'medicationValue.endOfLife', null) && this.api.moment(_.get(c, 'medicationValue.endOfLife', null)).isBefore(now))))
 
                         const combinedHes = _.sortBy(_.concat(svcHes, hes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)
                         const combinedHesWithHistory = _.sortBy(_.concat(svcHes, allHes.filter(it => it.descr != null && !it.descr.startsWith('Etat g') && !it.descr.startsWith('Algemeen t') && it.descr !== 'INBOX')), sorter)

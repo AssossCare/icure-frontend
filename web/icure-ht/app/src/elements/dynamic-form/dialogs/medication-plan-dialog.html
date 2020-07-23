@@ -810,8 +810,8 @@
                 <template is="dom-if" if="{{_isEqual(selectedTab,1)}}">
                     <div class="header-content">
                         <paper-input always-float-label id="filter" label="[[localize('search','Search',language)]]" value="{{filterPresentValue}}" autofocus></paper-input>
-                        <vaadin-date-picker id="startDatePresent" value="{{startDatePresent}}" max="[[endDatePresent]]" label="[[localize('from2', 'Du', language)]]"></vaadin-date-picker>
-                        <vaadin-date-picker id="endDatePresent" value="{{endDatePresent}}" min="[[startDatePresent]]" label="[[localize('to2', 'Au', language)]]"></vaadin-date-picker>
+                        <vaadin-date-picker id="startDatePresent" value="{{startDatePresent}}" label="[[localize('from2', 'Du', language)]]"></vaadin-date-picker>
+                        <vaadin-date-picker id="endDatePresent" value="{{endDatePresent}}"  label="[[localize('to2', 'Au', language)]]"></vaadin-date-picker>
                     </div>
                     <div class="present">
                         <div class="table">
@@ -1419,6 +1419,7 @@
 
             open(medicationPlan, selectedMedicationContentWithId) {
                 this.$['medication-plan'].open()
+                this.set('endDatePresent', moment().format('YYYY-MM-DD'))
             }
 
             _setStatus(service, status) {
