@@ -2379,6 +2379,14 @@
                     service.tags.some(tag => tag.type === "CD-ITEM" && tag.code === "medication") ? "medication" : "";
             }
 
+            _getTypeOfMedication(service){
+                const medicationValue = _.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null) || {}
+
+                return _.get(medicationValue, 'medicinalProduct.intendedcds', []).find(cd => _.get(cd, 'type', null) === "CD-DRUG-CNK") ? "medicine" :
+                    _.get(medicationValue, 'substanceProduct', null) && !_.isEmpty(_.get(medicationValue, 'substanceProduct', null)) ? "substance" :
+                        "compound"
+            }
+
             _servicesSearch(source, sourceType, searchValue, first, count) {
                 // todo: this must be done only once per search!
                 const normSearchValue = searchValue.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
@@ -2391,7 +2399,7 @@
                             const medicationValue = this.api.contact().medicationValue(service, this.language) || {};
                             const compoundFields = this._getCompoundPrescriptionFields(medicationValue.compoundPrescription);
                             const intendedName = _.get(medicationValue, "medicinalProduct.intendedname", _.get(medicationValue, "substanceProduct.intendedname", compoundFields.formula));
-                            const type = service.codes.some(c => c.type === "CD-INNCLUSTER" || c.type === "CD-VMPGROUP") && "substance" || service.codes.some(c => c.type === "CD-DRUG-CNK") && "medicine" || "compound";
+                            const type = this._getTypeOfMedication(this.api.deleteRecursivelyNullValues(service))
                             const id = (service.codes.find(c =>  ["CD-INNCLUSTER", "CD-VMPGROUP", "CD-DRUG-CNK"].includes(c.type)) || {code: service.id}).code;
                             const atcCodes = service.codes.filter(c => c.type === "CD-ATC").map(code => code.code) || [];
                             const allergies = this.allergies.filter(allergy => (allergy.cnk && (id === allergy.cnk)) || (atcCodes && atcCodes.some(atcCode => atcCode === allergy.atcCode) || ""));
