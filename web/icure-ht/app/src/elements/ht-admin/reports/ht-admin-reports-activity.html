@@ -287,7 +287,7 @@
                         mhcs.find(mhc =>  this.api.moment(_.get(mhc,"startOfCoverage","22000101")).isSameOrBefore(moment("31/12/"+this.chosenDate,"DD/MM/YYYY"),"day") && this.api.moment(_.get(mhc,"endOfCoverage","22000101")).isSameOrAfter(moment("31/12/"+this.chosenDate,"DD/MM/YYYY"),"day")) ?
                             subDecemCpt++ : notSubDecemCpt++
 
-                        _.get(pat,"dateOfBirth",false) && yearOldMoy.push(moment("31/12/"+this.chosenDate,"DD/MM/YYYY").diff(this.api.moment(pat.dateOfBirth),'years'))
+                        _.get(pat,"dateOfBirth",false) && !_.isNaN(moment("31/12/"+this.chosenDate,"DD/MM/YYYY").diff(this.api.moment(pat.dateOfBirth),'years')) && yearOldMoy.push(moment("31/12/"+this.chosenDate,"DD/MM/YYYY").diff(this.api.moment(pat.dateOfBirth),'years'))
 
                         prom = prom.then( data => this.api.contact().findBy(this.user.healthcarePartyId, pat)
                             .then(ctcs => {
