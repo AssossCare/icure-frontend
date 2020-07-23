@@ -1013,7 +1013,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                   forms.map(f => {
                       return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
                           const hcpid = hcp.parentId ? hcp.parentId : hcp.id;
-                          return this.api.form().getChildren(f.id, hcpid)
+                          return this.api.form().getChildrenForms(f.id, hcpid)
                       })
                   })
               )

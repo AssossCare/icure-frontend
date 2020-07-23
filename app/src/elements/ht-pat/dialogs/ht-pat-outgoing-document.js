@@ -14,7 +14,7 @@ import _ from 'lodash/lodash'
 import moment from 'moment/src/moment'
 import '../../prose-editor/prose-editor/prose-editor'
 import * as evaljs from "evaljs"
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 
 import {PolymerElement, html} from '@polymer/polymer'
@@ -65,7 +65,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
 
 
-        <paper-dialog id="outgoingDocumentDialog" always-on-top="true" no-cancel-on-outside-click="true" no-cancel-on-esc-key="true">
+        <paper-dialog id="outgoingDocumentDialog" always-on-top="true" no-cancel-on-outside-click="true">
 
 
 
@@ -635,6 +635,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             },
 
             getHrCodesAndTagsValue: (value) => {
+                if(typeof value === "boolean") return !!value ? this.localize("yes","Yes", this.language) : this.localize("no","No", this.language)
                 if (!_.trim(value) || !(_.trim(value).toLowerCase().startsWith("cd-") && _.trim(value).indexOf("|") > 1)) return value
                 const splittedValue = _.trim(value).split("|")
                 const hrValue = _.get(_.find(_.get(this, "_data.codes." + _.trim(_.get(splittedValue, "[0]"))), {code: _.trim(_.get(splittedValue, "[1]"))}), "labelHr", "")
@@ -2236,6 +2237,9 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
 
         if (!!_.get(this, "_isBusy", false)) return
 
+        // Simply re-open editor
+        if(!!_.get(inputData,"reOpen",false)) return this.shadowRoot.querySelector('#outgoingDocumentDialog').open();
+
         const patientId = !!_.trim(_.get(inputData, "patientId", "")) ? _.trim(_.get(inputData, "patientId", "")) : _.trim(_.get(this, "patient.id", ""))
 
         return this._resetComponentProperties()
@@ -2256,9 +2260,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             .catch(e => console.log("[ERROR] outgoing document", e, inputData))
             .finally(() => (this.set("_isBusy", false) || true) && console.log("[Outgoing document, _data]", this._data))
 
-        // Todo: When using prose template object, can't write in it ? Cusor jumps after one char typed / render issue ?
-        // Todo: With linking letters, create smart component to get recipient details using cobra
-                // Todo: allow to close editor & open it again (with same template) -> without flushing content again (Muriel Mernier)
+            // Todo: With linking letters, create smart component to get recipient details using cobra
 
     }
 }

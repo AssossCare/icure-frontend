@@ -30,7 +30,7 @@ import moment from 'moment/src/moment'
 import '../prose-editor/prose-editor/prose-editor'
 import * as evaljs from "evaljs"
 import mustache from "mustache/mustache.js"
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 const $_documentContainer = document.createElement('template')
 
@@ -57,7 +57,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     static get template() {
         return html`
-                <style>
+                <style include="shared-styles">
                     :host {
                         width: 160px;
                         max-width: 100%;                    
@@ -757,23 +757,20 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             <span class="no-mobile">[[localize('clo','Close',language)]]</span>
                                             <iron-icon icon="[[_actionIcon(showOutGoingDocContainer)]]"></iron-icon>
                                         </paper-button>
+                                        
                                         <div class="outgoing-docs-container">
-                                            <template is="dom-repeat" id="outGoingDocumentTemplates"
-                                                      items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
-                                                <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]>
-                                                    <hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/>
-                                                </template>
-                                                <paper-button on-tap="_triggerOutGoingDocumentDialog"
-                                                              data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]">
-                                                    <iron-icon icon="icons:description"></iron-icon>
-                                                    [[outGoingDocumentTemplate.name]]
-                                                </paper-button>
+                                        
+                                            <paper-button on-tap="_triggerOpenOutGoingDocumentDialog" class="fw700"><iron-icon icon="icons:launch"></iron-icon>[[localize('openEditor','Open editor', language)]]</paper-button>
+                                            <hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/>
+                                            
+                                            <template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
+                                                <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
+                                                <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
                                             </template>
-                                            <paper-button on-tap="_exportSumehrDialog">
-                                                <iron-icon icon="icons:description"></iron-icon>
-                                                [[localize('export_sumehr','Export Sumehr', language)]]
-                                            </paper-button>
-                                        </div>
+                                            <paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
+                                        </div>                                        
+                                        
                                     </div>
                                 </template>
                 
@@ -4967,6 +4964,19 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             .then(() => _.assign(targetCtc, {subContacts: _.filter(_.get(targetCtc, "subContacts", []), subCtc => _.size(_.get(subCtc, "services", [])))}))
             .then(() => !_.size(_.get(targetCtc, "services", [])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
             .finally(() => this.$['deleteServiceDialog'].close())
+
+    }
+
+    _isBold(x) {
+
+        return !!x ? "fw700" : ""
+
+    }
+
+    _triggerOpenOutGoingDocumentDialog(e) {
+
+        this.set('showOutGoingDocContainer', false);
+        return this.newReport_v2(null,null,{reOpen:true})
 
     }
 
