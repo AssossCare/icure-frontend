@@ -463,6 +463,18 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   diabeteconvention: "DIABETES_CONVENTION",
                   notreimbursable: "NOT_REIMBURSABLE"
               }
+          },
+          selectedContacts:{
+              type: Object,
+              value: () => {}
+          },
+          selectedContactIdForPrescription:{
+              type: String,
+              value: null
+          },
+          selectedContactForPrescription:{
+              type: Object,
+              value: () => {}
           }
       }
   }
@@ -492,8 +504,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
   open() {
       this.$.dialog.open()
-      this.api.contact().getContactWithUser(this.user, _.get(this, 'currentContact.id', null)).then(ctc => this.api.register(ctc, 'currentContact')).then( ctc => {
-          this.set('currentContact', ctc)
+      this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
+          this.set('selectedContactForPrescription', ctc)
           this._refreshDrugsToBePrescribed()
           this.api.electron().getPrinterSetting(this.user.id)
               .then( data => {
@@ -723,12 +735,12 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   _drugsAlreadyPrescribed() {
-      return this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
+      return this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
   }
 
   _refreshDrugsToBePrescribed() {
       //console.log("_refreshDrugsToBePrescribed()")
-      let tbp = this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugNotPrescribed.bind(this)) || [];
+      let tbp = this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugNotPrescribed.bind(this)) || [];
       this.set('_drugsToBePrescribed', tbp)
       return tbp
   }
@@ -1237,7 +1249,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           downloadFileName: _.kebabCase([ "prescription", _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
           documentMetas : {
               title : "Prescription",
-              contactId : _.get(this.currentContact, "id", ""),
+              contactId : _.get(this.selectedContactForPrescription, "id", ""),
               created: ""+ +new Date(),
               patientId : _.trim(_.get(this.patient, "id", "")),
               patientName : _.compact([ _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", "") ]).join(" ")
@@ -1316,7 +1328,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       });
       this._refreshDrugsToBePrescribed();
       this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
-      this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.currentContact}, bubbles: true, composed: true}));
+      this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.selectedContactForPrescription}, bubbles: true, composed: true}));
   }
 
 
