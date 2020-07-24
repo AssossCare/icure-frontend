@@ -394,6 +394,10 @@
                     currentContact: {
                         type: Object
                     },
+                    selectedContacts:{
+                        type: Object,
+                        value: () => {}
+                    },
                     deliveryDateString: {
                         type: String,
                         value: moment().format("YYYY-MM-DD")
@@ -463,6 +467,14 @@
                             diabeteconvention: "DIABETES_CONVENTION",
                             notreimbursable: "NOT_REIMBURSABLE"
                         }
+                    },
+                    selectedContactIdForPrescription:{
+                        type: String,
+                        value: null
+                    },
+                    selectedContactForPrescription:{
+                        type: Object,
+                        value: () => {}
                     }
                 }
             }
@@ -493,8 +505,8 @@
             open() {
                 this.$.dialog.open()
 
-                this.api.contact().getContactWithUser(this.user, _.get(this, 'currentContact.id', null)).then(ctc => this.api.register(ctc, 'currentContact')).then( ctc => {
-                    this.set('currentContact', ctc)
+                this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
+                    this.set('selectedContactForPrescription', ctc)
                     this._refreshDrugsToBePrescribed()
 
                     this.api.isElectronAvailable()
@@ -736,12 +748,12 @@
             }
 
             _drugsAlreadyPrescribed() {
-				return this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
+				return this.api && this.selectedContactForPrescription && this.selectedContactForPrescription.services && this.selectedContactForPrescription.services.filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
 			}
 
             _refreshDrugsToBePrescribed() {
                 //console.log("_refreshDrugsToBePrescribed()")
-                let tbp = this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugNotPrescribed.bind(this)) || [];
+                let tbp = this.api && this.selectedContactForPrescription && this.selectedContactForPrescription.services && this.selectedContactForPrescription.services.filter(this._isDrugNotPrescribed.bind(this)) || [];
                 this.set('_drugsToBePrescribed', tbp)
                 return tbp
             }
@@ -1266,7 +1278,7 @@
                     downloadFileName: _.kebabCase([ "prescription", _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
                     documentMetas : {
                         title : "Prescription",
-                        contactId : _.get(this.currentContact, "id", ""),
+                        contactId : _.get(this.selectedContactForPrescription, "id", ""),
                         created: ""+ +new Date(),
                         patientId : _.trim(_.get(this.patient, "id", "")),
                         patientName : _.compact([ _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", "") ]).join(" ")
@@ -1355,7 +1367,7 @@
                 });
                 this._refreshDrugsToBePrescribed();
                 this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
-                this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.currentContact}, bubbles: true, composed: true}));
+                this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.selectedContactForPrescription}, bubbles: true, composed: true}));
             }
 
             _markDrugsAsSent(drugsToBePrescribed) {
