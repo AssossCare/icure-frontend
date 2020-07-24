@@ -3,7 +3,7 @@ import {html, PolymerElement} from "@polymer/polymer";
 
 import _ from 'lodash/lodash';
 import moment from 'moment/src/moment';
-import * as models from "icc-api";
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 
 class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
     static get template() {
