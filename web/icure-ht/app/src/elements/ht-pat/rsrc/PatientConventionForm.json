@@ -1,0 +1,107 @@
+{
+  "sections": [
+    {
+      "formColumns": [
+        {
+          "formDataList": [
+            {
+              "editor" : {
+                "readOnly" : true,
+                "height" : 50,
+                "labelPosition" : "Left",
+                "width" : 150,
+                "multiline" : false,
+                "left" : 15,
+                "top" : 15,
+                "key" : "StringEditor"
+              },
+              "sortOrder" : 1,
+              "codeTypes" : [],
+              "label" : "type",
+              "irrelevant" : true,
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "type"
+            },
+            {
+              "editor" : {
+                "readOnly" : true,
+                "height" : 50,
+                "labelPosition" : "Left",
+                "width" : 150,
+                "multiline" : false,
+                "left" : 175,
+                "top" : 15,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 2,
+              "codeTypes" : [],
+              "label" : "conv_start_date",
+              "irrelevant" : true,
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "startDate"
+            },
+            {
+              "editor" : {
+                "readOnly" : true,
+                "height" : 50,
+                "labelPosition" : "Left",
+                "width" : 150,
+                "multiline" : false,
+                "left" : 335,
+                "top" : 15,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 3,
+              "codeTypes" : [],
+              "label" : "conv_end_date",
+              "irrelevant" : true,
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "endDate"
+            },
+            {
+              "editor" : {
+                "readOnly" : true,
+                "height" : 50,
+                "labelPosition" : "Left",
+                "width" : 300,
+                "multiline" : false,
+                "left" : 15,
+                "top" :75,
+                "key" : "StringEditor"
+              },
+              "sortOrder" : 4,
+              "codeTypes" : [],
+              "label" : "descr_fr",
+              "irrelevant" : true,
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "content.fr"
+            },
+            {
+              "editor" : {
+                "readOnly" : true,
+                "height" : 50,
+                "labelPosition" : "Left",
+                "width" : 300,
+                "multiline" : false,
+                "left" : 325,
+                "top" :75,
+                "key" : "StringEditor"
+              },
+              "sortOrder" : 5,
+              "codeTypes" : [],
+              "label" : "descr_nl",
+              "irrelevant" : true,
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "content.nl"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

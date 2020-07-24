@@ -740,6 +740,24 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     return require('./rsrc/PatientPartnershipsContainerForm.json');
                 }
             },
+            conventionForm: {
+                type: Object,
+                value: function () {
+                    return require('./rsrc/PatientConventionForm.json');
+                }
+            },
+            workForm: {
+                type: Object,
+                value: function () {
+                    return require('./rsrc/PatientWorkInfosForm.json');
+                }
+            },
+            schoolForm: {
+                type: Object,
+                value: function () {
+                    return require('./rsrc/PatientSchoolInfosForm.json');
+                }
+            },
             user: {
                 type: Object
             },
@@ -1333,7 +1351,13 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
                                         this.partnershipsForm :
                                         key === 'medicalHouseContracts' ?
                                             this.medicalHouseContractsForm :
-                                            this.insuranceForm
+                                            key === 'conventions' ?
+                                                this.conventionForm :
+                                                key === 'schoolingInfos' ?
+                                                    this.schoolForm :
+                                                    key === 'employementInfos' ?
+                                                        this.workForm :
+                                                        this.insuranceForm
                     };
                 }))
             },

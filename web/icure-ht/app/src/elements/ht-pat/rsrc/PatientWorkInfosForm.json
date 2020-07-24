@@ -1,0 +1,118 @@
+{
+  "sections": [
+    {
+      "formColumns": [
+        {
+          "formDataList": [
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 415,
+                "top" : 1,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "start_date",
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "startDate",
+              "irrelevant" : true
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 620,
+                "top" : 1,
+                "key" : "DateTimeEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "end_date",
+              "subForm" : false,
+              "type" : "TKDate",
+              "name" : "endDate",
+              "irrelevant" : true
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 5,
+                "top" : 1,
+                "key" : "PopupMenuEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+                {"type" :  "BE-PROFESSION-TYPE"}
+              ],
+              "label" : "professionType",
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "professionType"
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 200,
+                "multiline" : false,
+                "left" : 210,
+                "top" : 1,
+                "key" : "StringEditor"
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "employerName",
+              "subForm" : false,
+              "type" : "TKString",
+              "name" : "employer.name"
+            },
+            {
+              "editor" : {
+                "readOnly" : false,
+                "height" : 48,
+                "labelPosition" : "Left",
+                "width" : 820,
+                "multiline" : false,
+                "left" : 5,
+                "top" : 50,
+                "key" : "SubFormEditor",
+                "optionalFormGuids" : [
+                  "05349a38-554e-4034-8b9e-a0a5100748b8"
+                ]
+              },
+              "sortOrder" : 1465333559,
+              "codeTypes" : [
+
+              ],
+              "label" : "addresses",
+              "subForm" : true,
+              "type" : "TKConsult",
+              "name" : "employer.addresse"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

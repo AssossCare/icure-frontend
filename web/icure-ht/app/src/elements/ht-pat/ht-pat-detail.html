@@ -969,11 +969,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 --paper-fab-background: var(--app-status-color-pending);
             }
 
-            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance{
+            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance, #conventionStatus.convKo{
                 --paper-fab-background: var(--app-status-color-nok);
             }
 
-            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk {
+            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk, #conventionStatus.convOk{
                 --paper-fab-background: var(--app-status-color-ok);
             }
 
@@ -1977,6 +1977,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
                                             <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
+                                        </template>
+
+                                        <template is="dom-if" if="[[_isDisplayingConvention(patient)]]">
+                                            <paper-fab id="conventionStatus" mini icon="vaadin:handshake"></paper-fab>
+                                            <paper-tooltip position="top" for="conventionStatus">[[localize(conventionStatus,'statut de la convention',language)]]</paper-tooltip>
                                         </template>
                                     </div>
                                 </div>
@@ -3439,6 +3444,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             mda: ["physician"],
                             insurability: ["medicalHouse", "specialist", "officedoctors"]
                         }
+                    },
+                    conventionStatus: {
+                        type: String,
+                        value: "conv_status_ko"
                     }
                 };
             }
@@ -4553,6 +4562,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             patientChanged(api, user, patient) {
+
+                if(this.patient && !Object.keys(this.patient).find(key => key.includes("conventions"))){
+                    this.set("patient",_.merge(this.patient,{
+                        "conventions" : _.compact(this.patient.properties.filter(p => p.type.identifier.includes("convention")).map(prop =>{
+                            const c = JSON.parse(prop.typedValue.stringValue)
+                            if(!_.get(c,"conv",false))return false;
+                            return {
+                                type : _.get(c,"convType",""),
+                                content: {
+                                    fr : _.get(c,"convDes_FR",""),
+                                    nl : _.get(c,"convDes_NL","")
+                                },
+                                startDate: _.get(c, "convDate", "") === "" ? null : moment(_.get(c,"convDate","")).format("YYYYMMDD"),
+                                endDate: _.get(c, "convValid", "") === "" ? null : moment(_.get(c,"convValid","")).format("YYYYMMDD"),
+                                codes: [],
+                                tags: []
+                            }
+                        }))
+                    }))
+                }
+                this.shadowRoot.querySelector("#conventionStatus") ? this.shadowRoot.querySelector("#conventionStatus").classList.remove('convOk') : null
+                this.shadowRoot.querySelector("#conventionStatus") ? this.shadowRoot.querySelector("#conventionStatus").classList.remove('convKo') : null
+                console.log("patient conventions", _.get(this,"patient.conventions",[]))
+                const now = moment()
+                if(_.get(this,"patient.conventions",[]).length && _.get(this,"patient.conventions",[]).find(conv => !conv.endDate || now.isBefore(conv.endDate))){
+                    this.set("conventionStatus","conv_status_ok")
+                    this.shadowRoot.querySelector("#conventionStatus") ? this.shadowRoot.querySelector("#conventionStatus").classList.add('convOk') : null
+                }else{
+                    this.set("conventionStatus","conv_status_ko")
+                    this.shadowRoot.querySelector("#conventionStatus") ? this.shadowRoot.querySelector("#conventionStatus").classList.add('convKo') : null
+                }
+
                 this.set('curGenInsResp', null);
                 this.set("SpinnerActive",true)
                 this.set('healthTopics', [])
@@ -7589,6 +7630,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _isSpecialist(hcp){
                 return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
 
+            }
+
+            _isDisplayingConvention(){
+                return !(_.get(this,"patient.medicalHouseContracts",[]).filter(contract => !contract.endOfContract || moment().isBefore(this.api.moment(contract.endOfContract))).length)
             }
 
         }
