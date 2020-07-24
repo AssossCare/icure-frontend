@@ -356,203 +356,6 @@ export class ProseEditor extends Polymer.Element {
     }
   }
 
-  ready() {
-    super.ready()
-
-    const proseEditor = this
-
-    let selectionTrackingPlugin = new Plugin({
-      view(view) {
-        return {
-          update: function (view, prevState) {
-            var state = view.state;
-
-            if (!(prevState && prevState.doc.eq(state.doc) && prevState.selection.eq(state.selection))) {
-              const {$anchor, $head, $cursor} = state.selection as TextSelection
-              const node = state.doc.nodeAt($anchor.pos) || ($head && state.doc.nodeAt($head.pos))
-
-              if (node && node.type.name === 'heading') {
-                proseEditor.set('currentHeading', 'Heading ' + node.attrs.level)
-              } else {
-                proseEditor.set('currentHeading', 'Normal')
-              }
-              //Might want to restrict node marks analysis to paragraphs and headings
-              let marks = ($cursor && $cursor.marks() && $cursor.marks().length ? $cursor.marks() : state.storedMarks) || []
-
-              const {from, to} = state.selection
-
-              let align : string | null = null
-              state.doc.nodesBetween(from, to, (node, pos) => {
-                if ((node.type === proseEditor.editorSchema.nodes.paragraph || node.type === proseEditor.editorSchema.nodes.heading) && node.attrs.align != align) {
-                  align = node.attrs.align
-                }
-                if (!marks.length && node.marks.length) {
-                  marks = node.marks
-                }
-              })
-
-              const fontMark = marks.find(m => m.type === proseEditor.editorSchema.marks.font)
-              const sizeMark = marks.find(m => m.type === proseEditor.editorSchema.marks.size)
-              const strongMark = marks.find(m => m.type === proseEditor.editorSchema.marks.strong)
-              const emMark = marks.find(m => m.type === proseEditor.editorSchema.marks.em)
-              const underlinedMark = marks.find(m => m.type === proseEditor.editorSchema.marks.underlined)
-              const colorMark = marks.find(m => m.type === proseEditor.editorSchema.marks.color)
-              const bgcolorMark = marks.find(m => m.type === proseEditor.editorSchema.marks.bgcolor)
-              const varMark = marks.find(m => m.type === proseEditor.editorSchema.marks.var)
-
-              proseEditor.set('currentFont', fontMark && fontMark.attrs.font || 'Roboto')
-              proseEditor.set('currentSize', sizeMark && sizeMark.attrs.size || '11px')
-              proseEditor.set('isStrong', !!strongMark )
-              proseEditor.set('isEm', !!emMark )
-              proseEditor.set('isUnderlined', !!underlinedMark )
-              proseEditor.set('currentColor', colorMark && colorMark.attrs.color || '#000000' )
-              proseEditor.set('currentBgColor', bgcolorMark && bgcolorMark.attrs.color || '#000000' )
-              proseEditor.set('isVar',  varMark && varMark.attrs.expr &&  varMark && varMark.attrs.expr.length)
-              proseEditor.set('codeExpression',  varMark && varMark.attrs.expr || '')
-
-              proseEditor.set('isLeft', align && align === 'left')
-              proseEditor.set('isCenter',  align && align === 'center' )
-              proseEditor.set('isRight',  align && align === 'right' )
-              proseEditor.set('isJustify',  align && align === 'justify' )
-
-              proseEditor.set('canUndo', undoDepth(state) !== 0)
-              proseEditor.set('canRedo', redoDepth(state) !== 0)
-            }
-          }
-        }
-      }
-    });
-
-    let paginationPlugin = new Plugin({
-      appendTransaction(tr, oldState, newState) {
-        setTimeout(() => proseEditor.layout(), 0)
-        if (oldState.doc.childCount > newState.doc.childCount && tr[0].steps[0] instanceof ReplaceStep) {
-          const loc: number = (tr[0].steps[0] as any).from
-          const lastNode = newState.doc.nodeAt(loc)
-          if (lastNode && lastNode.type.name === 'paragraph') {
-            return newState.tr.join(loc)
-          }
-        }
-        return null
-      },
-      props: {
-        //nodeViews: { page(node, view, getPos, decorations) { return new PageView(node, view, getPos, decorations) } }
-      }
-    });
-
-    let paragraphPlugin = new Plugin({
-      view: ((view: EditorView) => {
-        return {
-          update: (view, state) => {
-            view.state.doc.descendants((n, pos, parent) => {
-              if (n.type == view.state.schema.nodes.paragraph) {
-                const p = view.domAtPos(pos).node as HTMLParagraphElement
-                Array.from(p.getElementsByClassName('tab')).forEach(span => {
-                  if (span instanceof HTMLSpanElement) {
-                    const prev = span.previousSibling
-                    const delta = prev && (prev instanceof HTMLSpanElement) && prev.classList.contains('tab') ? 1 : 0
-                    const desiredPadding = (200 - (span.offsetLeft + delta - p!!.offsetLeft) % 200) + 'px'
-                    if (desiredPadding !== span.style.paddingLeft) {
-                      span.style.paddingLeft = desiredPadding
-                    }
-                  }
-                })
-              } else if (n.type == view.state.schema.nodes.tab) {
-              }
-              return true
-            })
-            return true
-          },
-          destroy: () => {
-          }
-        }
-      })
-    });
-
-    let templateTrackerPlugin = new Plugin({
-      appendTransaction(tr, oldState, newState) {
-        if (tr[0] && tr[0].steps && tr[0].steps.length) {
-          const a = tr[0].selection.$anchor
-          for (let l = a.depth - 1; l > 0; l--) {
-            let ti = a.node(l)
-            if (ti.type.name === 'ti') {
-              let tplt = a.node(l - 1)
-              const newTemplate = Object.assign({}, tplt.attrs.template)
-              newTemplate[ti.attrs.tid] = ti.toJSON()['content']
-              return newState.tr.replaceWith(a.start(l - 1) - 1, a.end(l - 1) + 1, newState.schema.nodes.template.create({expr: tplt.attrs.expr, template: newTemplate, renderTimestamp: tplt.attrs.renderTimestamp}, tplt.content))
-            }
-          }
-        }
-      },
-      props: {}
-    });
-
-    let state = EditorState.create({
-      doc: DOMParser.fromSchema(this.editorSchema).parse(this.$.content),
-      plugins: [
-        history(),
-        dropCursor(),
-        gapCursor(),
-        columnResizing({}),
-        tableEditing(),
-        keymap(Object.assign(baseKeymap,{
-          "Enter": chainCommands(newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks),
-          "Tab": goToNextCell(1),
-          "Shift-Tab": goToNextCell(-1),
-          "Mod-b": toggleMark(this.editorSchema.marks.strong, {}),
-          "Mod-i": toggleMark(this.editorSchema.marks.em, {}),
-          "Mod-u": toggleMark(this.editorSchema.marks.underlined, {}),
-          'Mod-z': undo,
-          'Mod-y': redo,
-          'Mod-+': (e: EditorState, d?: (tr: Transaction) => void) => this.addMark(this.editorSchema.marks.size, {size: proseEditor.sizes[Math.min(proseEditor.currentSizeIdx(), proseEditor.sizes.length-2) + 1]})(e,d),
-          'Mod--': (e: EditorState, d?: (tr: Transaction) => void) => this.addMark(this.editorSchema.marks.size, {size: proseEditor.sizes[Math.max(proseEditor.currentSizeIdx(), 1) - 1]})(e,d),
-          'Mod-Shift-k' : this.clearMarks()
-        })),
-        selectionTrackingPlugin,
-		// LDE: disabling paginationPlugin because a node bigger than one single page generates infinite loop
-	    //paginationPlugin,
-        paragraphPlugin,
-        templateTrackerPlugin
-      ]
-    })
-
-    let fix = fixTables(state)
-    if (fix) state = state.apply(fix.setMeta("addToHistory", false))
-
-    this.editorView = new EditorView(this.$.editor, {
-      state: state,
-      nodeViews: {
-        variable(node, view, getPos) { return new VariableView(node, view, getPos) }
-      },
-      // TODO: this was to prevent pasting impossible elements like li, a, etc. from external source, which are not supported
-      transformPastedHTML: function transformEditorPastedHTML(html: string): string {
-        var ALLOWED_TAGS = ['STRONG', 'EM', 'SPAN', 'P', 'LI', 'UL', 'OL', 'TABLE', 'TBODY', 'THEAD', 'TR', 'TD', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'DIV']
-        function sanitize(el: HTMLElement) {
-          debugger
-          const tags = Array.prototype.slice.apply(el.getElementsByTagName('*'), [0])
-          for (let i = 0; i < tags.length; i++) {
-            if (ALLOWED_TAGS.indexOf(tags[i].nodeName) === -1) {
-              let last = tags[i]
-              for (let j = tags[i].childNodes.length - 1; j >= 0; j--) {
-                const e = tags[i].removeChild(tags[i].childNodes[j])
-                tags[i].parentNode.insertBefore(e, last)
-                last = e
-              }
-              tags[i].parentNode.removeChild(tags[i])
-            }
-          }
-        }
-        const tmp =  document.createElement('DIV')
-        tmp.innerHTML = html
-        sanitize(tmp)
-        return tmp.innerHTML
-      }
-    })
-
-    //document.execCommand("enableObjectResizing", false, false)
-    //document.execCommand("enableInlineTableEditing", false, false)
-  }
-
   setHTMLContent(doc:HTMLElement) {
     if (this.editorView) {
       const node = DOMParser.fromSchema(this.editorSchema).parse(doc)
@@ -798,7 +601,6 @@ export class ProseEditor extends Polymer.Element {
     }
   }
 
-
   setAlignment(align: String) {
     const proseEditor = this
     return function(state: EditorState, dispatch?: (tr: Transaction) => void)  {
@@ -1002,6 +804,208 @@ export class ProseEditor extends Polymer.Element {
     return index>0 && aVar.type !== vars[index-1].type
   }
 
+	ready() {
+
+		super.ready()
+
+		const proseEditor = this
+
+		let selectionTrackingPlugin = new Plugin({
+			view(view) {
+				return {
+					update: function (view, prevState) {
+						var state = view.state;
+
+						if (!(prevState && prevState.doc.eq(state.doc) && prevState.selection.eq(state.selection))) {
+							const {$anchor, $head, $cursor} = state.selection as TextSelection
+							const node = state.doc.nodeAt($anchor.pos) || ($head && state.doc.nodeAt($head.pos))
+
+							if (node && node.type.name === 'heading') {
+								proseEditor.set('currentHeading', 'Heading ' + node.attrs.level)
+							} else {
+								proseEditor.set('currentHeading', 'Normal')
+							}
+							//Might want to restrict node marks analysis to paragraphs and headings
+							let marks = ($cursor && $cursor.marks() && $cursor.marks().length ? $cursor.marks() : state.storedMarks) || []
+
+							const {from, to} = state.selection
+
+							let align : string | null = null
+							state.doc.nodesBetween(from, to, (node, pos) => {
+								if ((node.type === proseEditor.editorSchema.nodes.paragraph || node.type === proseEditor.editorSchema.nodes.heading) && node.attrs.align != align) {
+									align = node.attrs.align
+								}
+								if (!marks.length && node.marks.length) {
+									marks = node.marks
+								}
+							})
+
+							const fontMark = marks.find(m => m.type === proseEditor.editorSchema.marks.font)
+							const sizeMark = marks.find(m => m.type === proseEditor.editorSchema.marks.size)
+							const strongMark = marks.find(m => m.type === proseEditor.editorSchema.marks.strong)
+							const emMark = marks.find(m => m.type === proseEditor.editorSchema.marks.em)
+							const underlinedMark = marks.find(m => m.type === proseEditor.editorSchema.marks.underlined)
+							const colorMark = marks.find(m => m.type === proseEditor.editorSchema.marks.color)
+							const bgcolorMark = marks.find(m => m.type === proseEditor.editorSchema.marks.bgcolor)
+							const varMark = marks.find(m => m.type === proseEditor.editorSchema.marks.var)
+
+							proseEditor.set('currentFont', fontMark && fontMark.attrs.font || 'Roboto')
+							proseEditor.set('currentSize', sizeMark && sizeMark.attrs.size || '11px')
+							proseEditor.set('isStrong', !!strongMark )
+							proseEditor.set('isEm', !!emMark )
+							proseEditor.set('isUnderlined', !!underlinedMark )
+							proseEditor.set('currentColor', colorMark && colorMark.attrs.color || '#000000' )
+							proseEditor.set('currentBgColor', bgcolorMark && bgcolorMark.attrs.color || '#000000' )
+							proseEditor.set('isVar',  varMark && varMark.attrs.expr &&  varMark && varMark.attrs.expr.length)
+							proseEditor.set('codeExpression',  varMark && varMark.attrs.expr || '')
+
+							proseEditor.set('isLeft', align && align === 'left')
+							proseEditor.set('isCenter',  align && align === 'center' )
+							proseEditor.set('isRight',  align && align === 'right' )
+							proseEditor.set('isJustify',  align && align === 'justify' )
+
+							proseEditor.set('canUndo', undoDepth(state) !== 0)
+							proseEditor.set('canRedo', redoDepth(state) !== 0)
+						}
+					}
+				}
+			}
+		});
+
+		let paginationPlugin = new Plugin({
+			appendTransaction(tr, oldState, newState) {
+				setTimeout(() => proseEditor.layout(), 0)
+				if (oldState.doc.childCount > newState.doc.childCount && tr[0].steps[0] instanceof ReplaceStep) {
+					const loc: number = (tr[0].steps[0] as any).from
+					const lastNode = newState.doc.nodeAt(loc)
+					if (lastNode && lastNode.type.name === 'paragraph') {
+						return newState.tr.join(loc)
+					}
+				}
+				return null
+			},
+			props: {
+				//nodeViews: { page(node, view, getPos, decorations) { return new PageView(node, view, getPos, decorations) } }
+			}
+		});
+
+		let paragraphPlugin = new Plugin({
+			view: ((view: EditorView) => {
+				return {
+					update: (view, state) => {
+						view.state.doc.descendants((n, pos, parent) => {
+							if (n.type == view.state.schema.nodes.paragraph) {
+								const p = view.domAtPos(pos).node as HTMLParagraphElement
+								Array.from(p.getElementsByClassName('tab')).forEach(span => {
+									if (span instanceof HTMLSpanElement) {
+										const prev = span.previousSibling
+										const delta = prev && (prev instanceof HTMLSpanElement) && prev.classList.contains('tab') ? 1 : 0
+										const desiredPadding = (200 - (span.offsetLeft + delta - p!!.offsetLeft) % 200) + 'px'
+										if (desiredPadding !== span.style.paddingLeft) {
+											span.style.paddingLeft = desiredPadding
+										}
+									}
+								})
+							} else if (n.type == view.state.schema.nodes.tab) {
+							}
+							return true
+						})
+						return true
+					},
+					destroy: () => {
+					}
+				}
+			})
+		});
+
+		let templateTrackerPlugin = new Plugin({
+			appendTransaction(tr, oldState, newState) {
+				if (tr[0] && tr[0].steps && tr[0].steps.length) {
+					const a = tr[0].selection.$anchor
+					for (let l = a.depth - 1; l > 0; l--) {
+						let ti = a.node(l)
+						if (ti.type.name === 'ti') {
+							let tplt = a.node(l - 1)
+							const newTemplate = Object.assign({}, tplt.attrs.template)
+							newTemplate[ti.attrs.tid] = ti.toJSON()['content']
+							const replacedTr =  newState.tr.replaceWith(a.start(l - 1) - 1, a.end(l - 1) + 1, newState.schema.nodes.template.create({expr: tplt.attrs.expr, template: newTemplate, renderTimestamp: tplt.attrs.renderTimestamp}, tplt.content))
+							const newStatePos = newState.selection.$anchor.pos, newCursorPos = replacedTr.doc.resolve(newStatePos)
+							replacedTr.setSelection(new TextSelection(newCursorPos, newCursorPos))
+							return replacedTr
+						}
+					}
+				}
+			},
+			props: {}
+		});
+
+		let state = EditorState.create({
+			doc: DOMParser.fromSchema(this.editorSchema).parse(this.$.content),
+			plugins: [
+				history(),
+				dropCursor(),
+				gapCursor(),
+				columnResizing({}),
+				tableEditing(),
+				keymap(Object.assign(baseKeymap,{
+					"Enter": chainCommands(newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks),
+					"Tab": goToNextCell(1),
+					"Shift-Tab": goToNextCell(-1),
+					"Mod-b": toggleMark(this.editorSchema.marks.strong, {}),
+					"Mod-i": toggleMark(this.editorSchema.marks.em, {}),
+					"Mod-u": toggleMark(this.editorSchema.marks.underlined, {}),
+					'Mod-z': undo,
+					'Mod-y': redo,
+					'Mod-+': (e: EditorState, d?: (tr: Transaction) => void) => this.addMark(this.editorSchema.marks.size, {size: proseEditor.sizes[Math.min(proseEditor.currentSizeIdx(), proseEditor.sizes.length-2) + 1]})(e,d),
+					'Mod--': (e: EditorState, d?: (tr: Transaction) => void) => this.addMark(this.editorSchema.marks.size, {size: proseEditor.sizes[Math.max(proseEditor.currentSizeIdx(), 1) - 1]})(e,d),
+					'Mod-Shift-k' : this.clearMarks()
+				})),
+				selectionTrackingPlugin,
+				// LDE: disabling paginationPlugin because a node bigger than one single page generates infinite loop
+				//paginationPlugin,
+				paragraphPlugin,
+				templateTrackerPlugin
+			]
+		})
+
+		let fix = fixTables(state)
+		if (fix) state = state.apply(fix.setMeta("addToHistory", false))
+
+		this.editorView = new EditorView(this.$.editor, {
+			state: state,
+			nodeViews: {
+				variable(node, view, getPos) { return new VariableView(node, view, getPos) }
+			},
+			// TODO: this was to prevent pasting impossible elements like li, a, etc. from external source, which are not supported
+			transformPastedHTML: function transformEditorPastedHTML(html: string): string {
+				var ALLOWED_TAGS = ['STRONG', 'EM', 'SPAN', 'P', 'LI', 'UL', 'OL', 'TABLE', 'TBODY', 'THEAD', 'TR', 'TD', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'DIV']
+				function sanitize(el: HTMLElement) {
+					debugger
+					const tags = Array.prototype.slice.apply(el.getElementsByTagName('*'), [0])
+					for (let i = 0; i < tags.length; i++) {
+						if (ALLOWED_TAGS.indexOf(tags[i].nodeName) === -1) {
+							let last = tags[i]
+							for (let j = tags[i].childNodes.length - 1; j >= 0; j--) {
+								const e = tags[i].removeChild(tags[i].childNodes[j])
+								tags[i].parentNode.insertBefore(e, last)
+								last = e
+							}
+							tags[i].parentNode.removeChild(tags[i])
+						}
+					}
+				}
+				const tmp =  document.createElement('DIV')
+				tmp.innerHTML = html
+				sanitize(tmp)
+				return tmp.innerHTML
+			}
+		})
+
+		//document.execCommand("enableObjectResizing", false, false)
+		//document.execCommand("enableInlineTableEditing", false, false)
+
+	}
+
 }
 
 class VariableView implements NodeView<Schema> {
@@ -1127,6 +1131,7 @@ class VariableView implements NodeView<Schema> {
     }
     return true
   }
+
   destroy() {
     if (this.innerView) this.close()
   }
@@ -1136,6 +1141,5 @@ class VariableView implements NodeView<Schema> {
   }
 
   ignoreMutation() { return true }
+
 }
-
-
