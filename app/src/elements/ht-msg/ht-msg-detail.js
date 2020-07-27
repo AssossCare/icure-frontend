@@ -1018,7 +1018,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
             .singleAssignment {
                 margin-bottom:30px;
                 border:1px dashed var(--app-background-color-darker);
-                padding:15px 15px 10px 15px;
+                padding:15px 15px 60px 15px;
                 background-color: var(--app-background-color);
                 position:relative;
             }
@@ -1398,7 +1398,11 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                                             <div class="singleAssignmentLine"><iron-icon icon="icons:home" class="w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[item.patientData.address.street]] [[item.patientData.address.houseNumber]] [[item.patientData.address.postboxNumber]]</div>
                                             <div class="singleAssignmentLine"><iron-icon icon="social:location-city" class="w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[item.patientData.address.postalCode]] [[item.patientData.address.city]]</div>
                                             <div class="singleAssignmentLine"><iron-icon icon="vaadin:calendar-clock" class="w20 m-t-minus-2"></iron-icon> [[localize('last_edi','Last modification',language)]]: [[item.patientData.lastModifiedHr]]</div>
-                                            <div class="documentTypeComboBoxContainer"><span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id\$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box></div>
+                                            <div class="documentTypeComboBoxContainer">
+                                                <span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id\$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box>
+                                                <paper-input id$="documentTitleSuggestion-[[item.documentId]]-[[item.patientData.id]]" class="documentTitleInput" placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
+                                            </div>
+                                                
                                             <div class="singleAssignmentSet"><paper-button class="button button--other" on-tap="_openConfirmActionDialog" data-confirmation-action="_saveAssignment" data-document-id\$="[[item.documentId]]" data-patient-id\$="[[item.patientData.id]]"><iron-icon icon="icons:assignment-turned-in" class="w20 m-t-minus-2" data-confirmation-action="_saveAssignment" data-document-id\$="[[item.documentId]]" data-patient-id\$="[[item.patientData.id]]"></iron-icon> [[localize('assignDocumentToThisPatient','Assign document to this patient',language)]]</paper-button></div>
                                             <div class="clear"></div>
                                         </div>
@@ -1437,7 +1441,10 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                                         <div class="singleAssignmentLine"><iron-icon icon="icons:home" class="w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[item.patientData.address.street]] [[item.patientData.address.houseNumber]] [[item.patientData.address.postboxNumber]]</div>
                                         <div class="singleAssignmentLine"><iron-icon icon="social:location-city" class="w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[item.patientData.address.postalCode]] [[item.patientData.address.city]]</div>
                                         <div class="singleAssignmentLine"><iron-icon icon="vaadin:calendar-clock" class="w20 m-t-minus-2"></iron-icon> [[localize('last_edi','Last modification',language)]]: [[item.patientData.lastModifiedHr]]</div>
-                                        <div class="documentTypeComboBoxContainer"><span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id\$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box></div>
+                                        <div class="documentTypeComboBoxContainer">
+                                            <span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box id\$="documentType-[[item.documentId]]-[[item.patientData.id]]" class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="[[item.documentType]]"></vaadin-combo-box>
+                                            <paper-input id$="documentTitleManual-[[item.documentId]]-[[item.patientData.id]]" class="documentTitleInput" placeHolder="[[localize('doc-title','Titre du document',language)]]" label="[[localize('doc-title','Titre du document',language)]]"></paper-input>
+                                        </div>
                                         <div class="singleAssignmentSet"><paper-button class="button button--save" on-tap="_openConfirmActionDialog" data-confirmation-action="_saveAssignment" data-document-id\$="[[item.documentId]]" data-patient-id\$="[[item.patientData.id]]"><iron-icon icon="icons:assignment-turned-in" class="w20 m-t-minus-2" data-confirmation-action="_saveAssignment" data-document-id\$="[[item.documentId]]" data-patient-id\$="[[item.patientData.id]]"></iron-icon> [[localize('assignDocumentToThisPatient','Assign document to this patient',language)]]</paper-button></div>
                                         <div class="clear"></div>
                                     </div>
@@ -1469,9 +1476,12 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="clear"></div>
 
                                     <div class="fl50"><span class="fieldLabel">[[localize('gender','Gender',language)]]: </span><vaadin-combo-box filtered-items="[[_genders]]" item-label-path="name" item-value-path="value" value="{{newPat.gender}}" id="newPat_gender" auto-validate=""></vaadin-combo-box></div>
-                                    <div class="fr50"><span class="fieldLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="{{newPat.documentType}}" auto-validate="" id="newPat_documentType"></vaadin-combo-box></div>
+                                    <div class="fr50"><paper-input label="[[localize('doc-title','Titre du document',language)]]" class="documentTitleInput" value="{{newPat.documentTitle}}" id="newPat_documentTitle"></paper-input></div>
                                     <div class="clear"></div>
-
+                                    
+                                    <div class="fl50"><span class="fieldLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span><vaadin-combo-box class="documentTypeComboBox" filtered-items="[[_transactionCodes]]" item-label-path="name" item-value-path="code" value="{{newPat.documentType}}" auto-validate="" id="newPat_documentType"></vaadin-combo-box></div>
+                                    <div class="clear"></div>
+                                    
                                     <div class="singleAssignmentSet"><paper-button class="button button--save" on-tap="_openConfirmActionDialog" data-confirmation-action="_createNewPatAndSaveAssignment" data-document-id\$="[[_assignmentCurrentDocumentId]]"><iron-icon icon="icons:assignment-turned-in" class="w20 m-t-minus-2" data-confirmation-action="_createNewPatAndSaveAssignment" data-document-id\$="[[_assignmentCurrentDocumentId]]"></iron-icon> [[localize('createPatientAndAssignDocument','Create and assign',language)]]</paper-button></div>
                                     <div class="clear"></div>
                                 </div>
@@ -1499,7 +1509,10 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                                         <div class="singleAssignmentLine"><iron-icon icon="social:location-city" class="w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[item.patientData.address.postalCode]] [[item.patientData.address.city]]</div>
                                         <div class="singleAssignmentLine"><iron-icon icon="vaadin:calendar-clock" class="w20 m-t-minus-2"></iron-icon> [[localize('assignmentDate','Assignment date',language)]]: [[item.createdHr]]</div>
                                         <div class="singleAssignmentChecked"><iron-icon icon="icons:check-circle" class="w20 m-t-minus-2"></iron-icon> [[localize('documentAssigned','Document assigned',language)]]</div>
-                                        <div class="documentTypeComboBoxContainer alreadyAssigned"><span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span>[[item.documentTypeHr]]</div>
+                                        <div class="documentTypeComboBoxContainer alreadyAssigned">
+                                            <span class="documentTypeLabel">[[localize('ehb.assignmentDocumentType','Document type',language)]]:</span>[[item.documentTypeHr]]
+                                            <span class="documentTypeLabel mt20">[[localize('doc-title','Titre du document',language)]]:</span>[[item.documentTitle]]
+                                        </div>
                                         <div class="singleAssignmentDelete"><paper-button class="button button--other" on-tap="_openConfirmActionDialog" data-confirmation-action="_deleteAssignment" data-contact-id\$="[[item.contactId]]"><iron-icon icon="icons:delete-forever" class="w20 m-t-minus-2" data-confirmation-action="_deleteAssignment" data-contact-id\$="[[item.contactId]]"></iron-icon> [[localize('deleteAssignment','Delete assignment',language)]]</paper-button></div>
                                         <div class="clear"></div>
                                     </div>
@@ -1785,7 +1798,8 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       "birthDate": "",
                       "ssin": "",
                       "gender": "male",
-                      "documentType": "labresult"
+                      "documentType": "labresult",
+                      "documentTitle": ""
                   }
               }
           },
@@ -1793,6 +1807,10 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
               type: Array,
               value: () => [],
               noReset: true
+          },
+          fullDateMode:{
+              type: Boolean,
+              value : false
           }
       };
   }
@@ -2045,26 +2063,30 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
 
   }
 
-  _saveAssignment(e) {
+    _saveAssignment(e) {
 
-      const documentId = _.trim(_.get(e,"documentId",""))
-      const patientId = _.trim(_.get(e,"patientId",""))
-      const documentType = _.trim(_.get(this.shadowRoot.querySelector('#documentType-' + documentId + '-' + patientId),"value","labresult"))
-      const documentTypeLabel = _.get(_.find(this._transactionCodes, {code:documentType}), "name", "Analyse")
-      if(!_.trim(documentId) || !_.trim(patientId)) return;
+        const documentId = _.trim(_.get(e,"documentId",""))
+        const patientId = _.trim(_.get(e,"patientId",""))
+        const documentType = _.trim(_.get(this.shadowRoot.querySelector('#documentType-' + documentId + '-' + patientId),"value","labresult"))
+        const documentTypeLabel = _.get(_.find(this._transactionCodes, {code:documentType}), "name", "Analyse")
+        const documentTitle = this._assignmentActiveTab === "manual" ? _.trim(_.get(this.shadowRoot.querySelector('#documentTitleManual-' + documentId + '-' + patientId),"value","")) :
+            this._assignmentActiveTab === "suggestion" ? _.trim(_.get(this.shadowRoot.querySelector('#documentTitleSuggestion-' + documentId + '-' + patientId),"value","")) :
+                ""
+        if(!_.trim(documentId) || !_.trim(patientId)) return;
 
-      this.set("_assignmentCallBack", {
-          action: "saveAssignment",
-          activeTab: _.trim(_.get(this,"_assignmentActiveTab","")),
-          documentId: documentId,
-          patientId: patientId,
-          documentType: documentType
-      })
+        this.set("_assignmentCallBack", {
+            action: "saveAssignment",
+            activeTab: _.trim(_.get(this,"_assignmentActiveTab","")),
+            documentId: documentId,
+            patientId: patientId,
+            documentType: documentType,
+            documentTitle: _.trim(documentTitle)
+        })
 
-      this.set("_assignmentDialogIsLoading", true)
-      this._takeAction(this._assignmentCallBack.action,{documentId:documentId, patientId:patientId, documentType:documentType, documentTypeLabel:documentTypeLabel, dontCloseReadMessageComponent:true})
+        this.set("_assignmentDialogIsLoading", true)
+        this._takeAction(this._assignmentCallBack.action,{documentId:documentId, patientId:patientId, documentType:documentType, documentTypeLabel:documentTypeLabel, documentTitle:documentTitle, dontCloseReadMessageComponent:true})
 
-  }
+    }
 
   _manualSearchForPatients(searchedValue){
 
@@ -2304,7 +2326,15 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
 
       if(!isOpened && !_.trim(documentId)) return prom;
       if(!!isOpened) { this.set("_assignmentDialogIsOpened", false); this.set("_assignmentDialogIsLoading", false); this.$["positiveFeedback"].classList.remove('showFeedbackMessage'); this.$["negativeFeedback"].classList.remove('showFeedbackMessage'); this.$['annexAssignmentDialog'].close(); return prom; }
-      if(!isOpened && _.trim(documentId)) { this.set("_assignmentDialogIsOpened", true); this.set("_assignmentDialogIsLoading", true); this.$['annexAssignmentDialog'].open(); }
+      if(!isOpened && _.trim(documentId)) {
+          this.set("_assignmentDialogIsOpened", true);
+          this.set("_assignmentDialogIsLoading", true);
+          this.$['annexAssignmentDialog'].open();
+          setTimeout(() => {
+              _.map( this.shadowRoot.querySelectorAll(".documentTypeComboBox"), it => it.value = undefined)
+              _.map( this.shadowRoot.querySelectorAll(".documentTitleInput"), it => it.value = "")
+          }, 100)
+      }
 
       const selectedMessage =  _.get(this,"selectedMessage",{})
       const currentDocument = _.find(_.get(this,"documentsOfMessage",[]), {id:documentId})
@@ -2350,6 +2380,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   !( !!_.trim(_.get(singlePatientToResolve,"lastName","")) || !!_.trim(_.get(singlePatientToResolve,"firstName","")) || !!_.trim(_.get(singlePatientToResolve,"dateOfBirth","")) ) ? promResolve : this.api.patient().filterByWithUser(_.get(this,"user",{}), null, null, 20, 0, null, null, {filter: filter}).then(({rows}) => _.concat(promisesCarrier, this._filterBestMatchingPatients(rows,singlePatientToResolve))).catch(e=>{console.log("ERROR with fuzzySearchWithUser: ", e); return promisesCarrier;})
               ])
                   .then(promsAnswers=>_.flatMap(promsAnswers,pa=>_.compact(pa)))
+                  .catch(e=>prom)
           )
       })
 
@@ -2382,11 +2413,13 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       const contactOfDocument = _.find(foundContacts, {id:_.trim(_.get(aad,"contactId",""))})
                       const contactCreatedOn = _.get(contactOfDocument, "created", null)
                       const transactionTag = _.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"})
+                      const serviceOfDocument = _.find(contactOfDocument.services, it => _.get(it,"content.fr.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.nl.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.en.documentId") === documentId)
                       return _.merge({}, aad, {
                           documentType: _.get(transactionTag, "code","labresult"),
                           documentTypeHr: _.trim(_.get(_.find(_.get(this,"_transactionCodes",[]), {code:_.get(transactionTag, "code","labresult")}), "name", this.localize("labresult", "Lab result", this.language))),
                           created: contactCreatedOn,
-                          createdHr: moment(contactCreatedOn).format("DD/MM/YYYY - HH:mm:ss")
+                          createdHr: moment(contactCreatedOn).format("DD/MM/YYYY - HH:mm:ss"),
+                          documentTitle: _.get(serviceOfDocument, "content.en.stringValue") || _.get(serviceOfDocument, "content.nl.stringValue") || _.get(serviceOfDocument, "content.fr.stringValue") || _.get(contactOfDocument,"subContacts[0].descr"),
                       })
                   }))
                   .catch(e=>{console.log("ERROR with getContactsWithUser: ", e); return alreadyAssignedDocuments;})
@@ -2446,14 +2479,15 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       const documentId = _.trim(_.get(e,"documentId",""))
       const documentType = _.trim(_.get(this,"newPat.documentType","labresult"))
       const documentTypeLabel = _.get(_.find(this._transactionCodes, {code:documentType}), "name", "Analyse")
+      const documentTitle = _.trim(_.get(this,"newPat.documentTitle")) || documentTypeLabel
 
-      // const fieldsToValidate = _.keys(this.newPat)
-      // 20191210 - Murielle Mernier - Niss should not be validated anymore
-
-      const fieldsToValidate = _.keys(this.newPat)
+        // const fieldsToValidate = _.keys(this.newPat)
+        // 20191210 - Murielle Mernier - Niss should not be validated anymore
+      const fieldsToValidate = _.filter(_.keys(this.newPat), it => _.trim(it) !== "ssin")
       const fieldsValidation = _.compact(_.map( fieldsToValidate, k => { const fieldToValidate = this.shadowRoot.querySelector('#newPat_' + k); return (fieldToValidate && typeof _.get(fieldToValidate, "validate", false) === "function" && fieldToValidate.validate()); }))
 
       if(!_.trim(documentId)) return;
+
       if(_.size(fieldsToValidate) !== _.size(fieldsValidation) || !_.trim(_.get(this,"newPat.gender","")) || !_.trim(!_.trim(_.get(this,"newPat.documentType","")))) return this.$['fieldsValidationDialog'].open()
 
       return this._getPatientDataBySsin(_.trim(_.get(this,"newPat.ssin","")))
@@ -2475,10 +2509,11 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       activeTab: _.trim(_.get(this,"_assignmentActiveTab","")),
                       documentId: documentId,
                       patientId: patientId,
-                      documentType: documentType
+                      documentType: documentType,
+                      documentTitle: documentTitle,
                   })
                   this.set("_assignmentDialogIsLoading", true)
-                  return this._takeAction(this._assignmentCallBack.action,{documentId:documentId, patientId:patientId, documentType:documentType, documentTypeLabel:documentTypeLabel, dontCloseReadMessageComponent:true})
+                  return this._takeAction(this._assignmentCallBack.action,{documentId:documentId, patientId:patientId, documentType:documentType, documentTypeLabel:documentTypeLabel, documentTitle:documentTitle, dontCloseReadMessageComponent:true})
               })
           )
 
@@ -2531,6 +2566,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       const printDocumentComponent = this.shadowRoot.querySelector("#printDocument")
       return printDocumentComponent && typeof _.get(printDocumentComponent,"printDocument", false) === "function"  && printDocumentComponent.printDocument(_.get(e,"detail",{}))
   }
+
 }
 
 customElements.define(HtMsgDetail.is, HtMsgDetail);

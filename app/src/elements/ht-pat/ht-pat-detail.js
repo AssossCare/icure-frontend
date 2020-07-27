@@ -2775,7 +2775,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
-        </paper-dialog> 
+        </paper-dialog>
+        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-contact-id-for-prescription="[[selectedContactIdForPrescription]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" on-save-document-as-service="[[_handleSaveDocumentAsService]]" global-hcp="[[globalHcp]]" on-save-contact="_saveContact"></ht-pat-prescription-dialog>
+
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
         <paper-dialog id="notConnctedToeHealthBox" class="modalDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
@@ -3351,6 +3353,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             conventionStatus: {
                 type: String,
                 value: "conv_status_ko"
+            },
+            selectedContactIdForPrescription: {
+                type: String,
+                value: null
             }
         }
     }
@@ -4596,7 +4602,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     inactiveHealthElements: this.inactiveHealthElements,
                     archivedHealthElements: this.archivedHealthElements,
                     allergies: this.allergies,
-                    medications: this.medications,//todo julien ?????? pourquoi pas medications ????
+                    medications: this.medications,
                     risks: this.risks,
                     familyrisks: this.familyrisks,
                     surgicalHealthElements: this.surgicalHealthElements
@@ -6796,6 +6802,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _prescribe(e) {
         e.stopPropagation()
+        this.set('selectedContactIdForPrescription', _.get(e, 'detail.contactId', null))
         this.$.prescriptionDialog.open()
     }
 

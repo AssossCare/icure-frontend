@@ -1,24 +1,23 @@
 import '../fhc-api/fhc-api.js';
-import * as api from 'icc-api/dist/icc-api/iccApi'
+import * as api from '@taktik/icc-api/dist/icc-api/iccApi'
 import moment from 'moment'
 import _ from 'lodash/lodash';
 
-import {IccBedrugsXApi} from 'icc-api/dist/icc-x-api/icc-bedrugs-x-api'
-import {IccBekmehrXApi} from 'icc-api/dist/icc-x-api/icc-bekmehr-x-api'
-import {IccCodeXApi} from 'icc-api/dist/icc-x-api/icc-code-x-api'
-import {IccContactXApi} from 'icc-api/dist/icc-x-api/icc-contact-x-api'
-import {IccCryptoXApi} from 'icc-api/dist/icc-x-api/icc-crypto-x-api'
-import {IccDocumentXApi} from 'icc-api/dist/icc-x-api/icc-document-x-api'
-import {IccFormXApi} from 'icc-api/dist/icc-x-api/icc-form-x-api'
-import {IccHcpartyXApi} from 'icc-api/dist/icc-x-api/icc-hcparty-x-api'
-import {IccHelementXApi} from 'icc-api/dist/icc-x-api/icc-helement-x-api'
-import {IccPatientXApi} from 'icc-api/dist/icc-x-api/icc-patient-x-api'
-import {IccReceiptXApi} from 'icc-api/dist/icc-x-api/icc-receipt-x-api'
-import {IccAccesslogXApi} from 'icc-api/dist/icc-x-api/icc-accesslog-x-api'
-import {IccUserXApi} from 'icc-api/dist/icc-x-api/icc-user-x-api'
-import {IccInvoiceXApi} from 'icc-api/dist/icc-x-api/icc-invoice-x-api'
-import {IccMessageXApi} from 'icc-api/dist/icc-x-api/icc-message-x-api'
-import {IccClassificationXApi} from 'icc-api/dist/icc-x-api/icc-classification-x-api'
+import {IccBekmehrXApi} from '@taktik/icc-api/dist/icc-x-api/icc-bekmehr-x-api'
+import {IccCodeXApi} from '@taktik/icc-api/dist/icc-x-api/icc-code-x-api'
+import {IccContactXApi} from '@taktik/icc-api/dist/icc-x-api/icc-contact-x-api'
+import {IccCryptoXApi} from '@taktik/icc-api/dist/icc-x-api/icc-crypto-x-api'
+import {IccDocumentXApi} from '@taktik/icc-api/dist/icc-x-api/icc-document-x-api'
+import {IccFormXApi} from '@taktik/icc-api/dist/icc-x-api/icc-form-x-api'
+import {IccHcpartyXApi} from '@taktik/icc-api/dist/icc-x-api/icc-hcparty-x-api'
+import {IccHelementXApi} from '@taktik/icc-api/dist/icc-x-api/icc-helement-x-api'
+import {IccPatientXApi} from '@taktik/icc-api/dist/icc-x-api/icc-patient-x-api'
+import {IccReceiptXApi} from '@taktik/icc-api/dist/icc-x-api/icc-receipt-x-api'
+import {IccAccesslogXApi} from '@taktik/icc-api/dist/icc-x-api/icc-accesslog-x-api'
+import {IccUserXApi} from '@taktik/icc-api/dist/icc-x-api/icc-user-x-api'
+import {IccInvoiceXApi} from '@taktik/icc-api/dist/icc-x-api/icc-invoice-x-api'
+import {IccMessageXApi} from '@taktik/icc-api/dist/icc-x-api/icc-message-x-api'
+import {IccClassificationXApi} from '@taktik/icc-api/dist/icc-x-api/icc-classification-x-api'
 import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 import heic2any from 'heic2any'
 
@@ -27,7 +26,7 @@ import {html, PolymerElement} from '@polymer/polymer';
 class IccApi extends PolymerElement {
   static get template() {
     return html`
-        <fhc-api id="fhc-api" host="[[fhcHost]]"></fhc-api>
+        <fhc-api id="fhc-api" host="[[fhcHost]]" headers="[[fhcHeaders]]"></fhc-api>
 `;
   }
 
@@ -37,30 +36,38 @@ class IccApi extends PolymerElement {
 
   static get properties() {
       return {
+          fhcHeaders:{
+              type: Object,
+              value: {"Content-Type": "application/json",  "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              notify: true
+          },
           headers: {
               type: Object,
-              value: {"Content-Type": "application/json", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers30s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"30000"},
               notify: true
           },
           headers60s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"60000"},
               notify: true
           },
           headers120s: {
               type: Object,
-              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json", "X-CLIENT-SIDE-TIMEOUT":"120000"},
               notify: true
           },
           host: {
               type: String
           },
           fhcHost: {
+              type: String
+          },
+          electronHost: {
               type: String
           },
           baseApi: {
@@ -115,7 +122,7 @@ class IccApi extends PolymerElement {
   }
 
   static get observers() {
-      return ["refresh(headers, headers.*, host, fhcHost)"]
+      return ["refresh(headers, headers.*, host, fhcHost, electronHost)"]
   }
 
   constructor() {
@@ -133,27 +140,26 @@ class IccApi extends PolymerElement {
       Object.assign(this.headers120s, this.headers)
 
       this.authicc = new api.iccAuthApi(this.host, this.headers)
-      this.bemikronoicc = new api.iccBeMikronoApi(this.host, this.headers)
-      this.onlineBeMikronoicc = new api.iccBeMikronoApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
-      this.beresultexporticc = new api.iccBeResultExportApi(this.host, this.headers)
-      this.beresultimporticc = new api.iccBeResultImportApi(this.host, this.headers)
+      this.bemikronoicc = new api.iccBemikronoApi(this.host, this.headers)
+      this.onlineBeMikronoicc = new api.iccBemikronoApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
+      this.beresultexporticc = new api.iccBeresultexportApi(this.host, this.headers)
+      this.beresultimporticc = new api.iccBeresultimportApi(this.host, this.headers)
       this.doctemplateicc = new api.iccDoctemplateApi(this.host, this.headers)
       this.entitytemplateicc = new api.iccEntitytemplateApi(this.host, this.headers)
-      this.genericicc = new api.iccGenericApi(this.host, this.headers)
+
       this.icureicc = new api.iccIcureApi(this.host, this.headers)
       this.insuranceicc = new api.iccInsuranceApi(this.host, this.headers)
-      this.replicationicc = new api.iccReplicationApi(this.host, this.headers)
+
       this.tarificationicc = new api.iccTarificationApi(this.host, this.headers)
       this.entityreficc = new api.iccEntityrefApi(this.host, this.headers30s)
 
       this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
       this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
-      this.besamv2icc = new api.iccBeSamv2Api(this.host, this.headers)
+      this.besamv2icc = new api.iccBesamv2Api(this.host, this.headers)
 
       this.usericc = new IccUserXApi(this.host, this.headers)
 
       this.codeicc = new IccCodeXApi(this.host, this.headers)
-      this.bedrugsicc = new IccBedrugsXApi(this.host, this.headers)
 
       this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
@@ -175,8 +181,7 @@ class IccApi extends PolymerElement {
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
       this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
-      const hostElectron = this.host.includes(":16042") ? _.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042" : "http://127.0.0.1:16042"
-      this.desktopApi = new ElectronApi(hostElectron)
+      this.desktopApi = new ElectronApi(this.electronHost)
 
 
 
@@ -205,46 +210,6 @@ class IccApi extends PolymerElement {
       return this.authicc
   }
 
-  beab() {
-      return this.beabicc
-  }
-
-  bechapter() {
-      return this.bechaptericc
-  }
-
-  bedmg() {
-      return this.bedmgicc
-  }
-
-  bedrugs() {
-      return this.bedrugsicc
-  }
-
-  beefact() {
-      return this.beefacticc
-  }
-
-  beehbox() {
-      return this.beehboxicc
-  }
-
-  beeid() {
-      return this.beeidicc
-  }
-
-  beetarif() {
-      return this.beetarificc
-  }
-
-  begenins() {
-      return this.begeninsicc
-  }
-
-  behubs() {
-      return this.behubsicc
-  }
-
   bekmehr() {
       return this.bekmehricc
   }
@@ -257,14 +222,6 @@ class IccApi extends PolymerElement {
       return this.onlineBeMikronoicc
   }
 
-  beprimoto() {
-      return this.beprimotoicc
-  }
-
-  berecipe() {
-      return this.berecipeicc
-  }
-
   beresultexport() {
       return this.beresultexporticc
   }
@@ -275,18 +232,6 @@ class IccApi extends PolymerElement {
 
   besamv2() {
       return this.besamv2icc
-  }
-
-  bests() {
-      return this.bestsicc
-  }
-
-  betherlink() {
-      return this.betherlinkicc
-  }
-
-  bevitalink() {
-      return this.bevitalinkicc
   }
 
   code() {
@@ -311,10 +256,6 @@ class IccApi extends PolymerElement {
 
   form() {
       return this.formicc
-  }
-
-  generic() {
-      return this.genericicc
   }
 
   hcparty() {
@@ -349,9 +290,6 @@ class IccApi extends PolymerElement {
       return this.patienticc
   }
 
-  replication() {
-      return this.replicationicc
-  }
 
   receipt() {
       return this.receipticc

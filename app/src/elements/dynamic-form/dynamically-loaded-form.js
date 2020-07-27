@@ -77,7 +77,31 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
 		</style>
 
 		<template is="dom-if" if="[[_shouldDisplay(form, form.deletionDate, contact)]]">
-			<dynamic-form id="dynamic-form" api="[[api]]" user="[[user]]" language="[[language]]" resources="[[resources]]" template="[[form.template.layout]]" reports="[[formReports]]" data-provider="[[dataProvider]]" i18n="[[i18n]]" data-map="[[dataMap]]" linkable-health-elements="[[mainHealthElements]]" title="[[form.template.name]]" read-only="[[_isNotInCurrentContact(currentContact, contact, form, currentContact.subContacts.*)]]" show-title="true" health-elements="[[healthElements]]" disabled="[[currentContact.closingDate]]" on-link-form="linkForm" on-link-to-health-element="linkService" on-unlink-to-health-element="unlinkService" on-delete-form="deleteForm" on-status-changed="_statusChanged" on-dynamically-event="_openActionDialog" subcontact-type="[[subcontactType]]" on-subcontact-type-change="_subContactTypeChange">
+			<dynamic-form id="dynamic-form" 
+                api="[[api]]" 
+                user="[[user]]" 
+                language="[[language]]" 
+                resources="[[resources]]" 
+                template="[[form.template.layout]]" 
+                reports="[[formReports]]" 
+                data-provider="[[dataProvider]]" 
+                contacts="[[contacts]]"
+                i18n="[[i18n]]" 
+                data-map="[[dataMap]]" 
+                linkable-health-elements="[[mainHealthElements]]" 
+                title="[[form.template.name]]" 
+                read-only="[[_isNotInCurrentContact(currentContact, contact, form, currentContact.subContacts.*)]]" 
+                show-title="true" 
+                health-elements="[[healthElements]]" 
+                disabled="[[currentContact.closingDate]]" 
+                on-link-form="linkForm" 
+                on-link-to-health-element="linkService" 
+                on-unlink-to-health-element="unlinkService" 
+                on-delete-form="deleteForm" 
+                on-status-changed="_statusChanged" 
+                on-dynamically-event="_openActionDialog" 
+                subcontact-type="[[subcontactType]]" 
+                on-subcontact-type-change="_subContactTypeChange">
 				<div slot="titlebar" class="title-bar">
 					<dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*, dataProvider)]]" highlighted-hes="{{highlightedHes}}"></dynamic-pills>
 				</div>
@@ -1013,7 +1037,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                   forms.map(f => {
                       return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
                           const hcpid = hcp.parentId ? hcp.parentId : hcp.id;
-                          return this.api.form().getChildren(f.id, hcpid)
+                          return this.api.form().getChildrenForms(f.id, hcpid)
                       })
                   })
               )

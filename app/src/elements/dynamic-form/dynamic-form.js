@@ -617,6 +617,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
                                                                       on-field-changed="_valueContainersChanged"
                                                                       read-only="[[_isReadOnly(layoutItem,readOnly)]]"
                                                                       disabled="[[disabled]]"
+                                                                      contacts=[[contacts]]
                                                                       create-treatment="[[_hasTreatmentCdItem(layoutItem.tags)]]"></dynamic-medication-field>
                                         </template>
                                         <template is="dom-if" if="[[_isSubForm(layoutItem)]]">
@@ -758,6 +759,10 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
             },
             dateForm: {
                 type: String
+            },
+            contacts:{
+               type: Array,
+               value: () => []
             }
 		};
     }

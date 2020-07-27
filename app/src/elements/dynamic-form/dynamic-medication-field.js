@@ -326,6 +326,10 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
               type: Number,
               value: 48,
               observer: '_widthChanged'
+          },
+          contacts:{
+              type: Array,
+              value: () => []
           }
       }
   }
@@ -398,7 +402,7 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
     /**Print partie @todo change event*/
 
     openPrintDialog() {
-        this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true}))
+        this.dispatchEvent(new CustomEvent("open-prescription-dialog", {composed: true, bubbles: true, detail:{contactId: _.get(this.contacts.find(ctc => _.get(ctc, 'services', []).find(svc => _.get(svc, 'id', null) ===  _.get(_.head(_.get(this,'value', [])), 'id', null))), 'id', null)}}))
     }
 
     /** save partie*/

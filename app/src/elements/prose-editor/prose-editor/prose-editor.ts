@@ -984,7 +984,10 @@ export class ProseEditor extends PolymerElement {
               let tplt = a.node(l - 1)
               const newTemplate = Object.assign({}, tplt.attrs.template)
               newTemplate[ti.attrs.tid] = ti.toJSON()['content']
-              return newState.tr.replaceWith(a.start(l - 1) - 1, a.end(l - 1) + 1, newState.schema.nodes.template.create({expr: tplt.attrs.expr, template: newTemplate, renderTimestamp: tplt.attrs.renderTimestamp}, tplt.content))
+              const replacedTr =  newState.tr.replaceWith(a.start(l - 1) - 1, a.end(l - 1) + 1, newState.schema.nodes.template.create({expr: tplt.attrs.expr, template: newTemplate, renderTimestamp: tplt.attrs.renderTimestamp}, tplt.content))
+              const newStatePos = newState.selection.$anchor.pos, newCursorPos = replacedTr.doc.resolve(newStatePos)
+              replacedTr.setSelection(new TextSelection(newCursorPos, newCursorPos))
+              return replacedTr
             }
           }
         }
