@@ -3,6 +3,7 @@ import {html, PolymerElement} from "@polymer/polymer";
 
 import _ from 'lodash/lodash';
 import moment from 'moment/src/moment';
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 
 class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
     static get template() {
@@ -215,7 +216,7 @@ class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
                         done: !pl.nextKeyPair
                     }
                 }))//,
-            //todo @julien this request doesn't properly work. Problems with your db and with another we don't have good responsenpm
+            //todo @julien this request doesn't properly work. Problems with your db and with another we don't have good response
             /*this.api.getRowsUsingPagination((key,docId) => this.api.contact().filterByWithUser(this.user,key && JSON.stringify(key), docId, 1000, new models.FilterChain({ filter: {'$type': 'ContactByHcPartyTagCodeDateFilter', healthcarePartyId : this.user.healthcarePartyId, startOfContactOpeningDate : _.parseInt(this.chosenDate+"0101000001"), endOfContactOpeningDate : _.parseInt(this.chosenDate+"1231235959")} }))
                 .then(pl => {
                     return {
