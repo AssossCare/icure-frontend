@@ -4797,7 +4797,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         inactiveHealthElements: this.inactiveHealthElements,
                         archivedHealthElements: this.archivedHealthElements,
                         allergies: this.allergies,
-                        medications: this.medications,//todo julien ?????? pourquoi pas medications ????
+                        medications: this.medications,
                         risks: this.risks,
                         familyrisks: this.familyrisks,
                         surgicalHealthElements: this.surgicalHealthElements
