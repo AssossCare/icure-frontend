@@ -165,16 +165,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <div class="table">
                                 <div class="tr th">                 
                                     <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('','End',language)]]</div> 
+                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
@@ -201,16 +201,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <div class="table">
                                 <div class="tr th">                 
                                     <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('','End',language)]]</div> 
+                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.history]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
@@ -237,16 +237,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <div class="table">
                                 <div class="tr th">                 
                                     <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('','End',language)]]</div> 
+                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
@@ -273,16 +273,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <div class="table">
                                 <div class="tr th">                 
                                     <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('','End',language)]]</div> 
+                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
@@ -309,16 +309,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <div class="table">
                                 <div class="tr th">                 
                                     <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('','End',language)]]</div> 
+                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">

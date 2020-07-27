@@ -94,9 +94,9 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             <div class="drugs-list">
                 <div class="table">
                     <div class="tr th">                     
-                        <div class="td fg05">[[localize('','Quantity',language)]]</div>
-                        <div class="td fg05">[[localize('','Type',language)]]</div>
-                        <div class="td fg2">[[localize('','Description',language)]]</div>
+                        <div class="td fg05">[[localize('presc-qt','Quantity',language)]]</div>
+                        <div class="td fg05">[[localize('presc-type','Type',language)]]</div>
+                        <div class="td fg2">[[localize('presc-descr','Description',language)]]</div>
                     </div>
                     <template is="dom-repeat" items="[[]]" as="[[drug]]">
                         <div class="td fg05"></div>
