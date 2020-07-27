@@ -94,16 +94,57 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             </div>
             <div class="content">
                 <div class="content-drugs">
-                    <ht-pat-prescription-detail-drugs id="htPatPrescriptionDetailDrugs" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-drugs>
+                    <ht-pat-prescription-detail-drugs 
+                        id="htPatPrescriptionDetailDrugs" 
+                        api="[[api]]" 
+                        i18n="[[i18n]]" 
+                        user="[[user]]" 
+                        patient="[[patient]]" 
+                        language="[[language]]" 
+                        resources="[[resources]]" 
+                        current-contact="[[currentContact]]" 
+                        contacts="[[contacts]]" 
+                        hcp="[[hcp]]" 
+                        list-of-prescription="[[listOfPrescription]]" 
+                        list-of-compound="[[listOfCompound]]"
+                    ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
                     <div class="content-search">
-                        <ht-pat-prescription-detail-search id="htPatPrescriptionDetailSearch" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-search>
+                        <ht-pat-prescription-detail-search 
+                            id="htPatPrescriptionDetailSearch" 
+                            api="[[api]]" 
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]" 
+                            current-contact="[[currentContact]]" 
+                            contacts="[[contacts]]" 
+                            hcp="[[hcp]]" 
+                            list-of-prescription="[[listOfPrescription]]" 
+                            list-of-compound="[[listOfCompound]]"
+                            on-open-posology-view="_openPosologyView"    
+                        ></ht-pat-prescription-detail-search>
                     </div>
                 </template>
                  <template is="dom-if" if="[[isPosologyView]]">
                     <div class="content-posology">
-                        <ht-pat-prescription-detail-posology id="htPatPrescriptionDetailPosology" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" hcp="[[hcp]]" list-of-prescription="[[listOfPrescription]]" list-of-compound="[[listOfCompound]]"></ht-pat-prescription-detail-posology>
+                        <ht-pat-prescription-detail-posology 
+                            id="htPatPrescriptionDetailPosology" 
+                            api="[[api]]" 
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]" 
+                            current-contact="[[currentContact]]" 
+                            contacts="[[contacts]]" 
+                            hcp="[[hcp]]" 
+                            list-of-prescription="[[listOfPrescription]]" 
+                            list-of-compound="[[listOfCompound]]"
+                            selected-drug-for-posology="[[selectedDrugForPosology]]"
+                         ></ht-pat-prescription-detail-posology>
                     </div>
                 </template>                           
             </div>
@@ -164,6 +205,13 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             listOfPrescription: {
                 type: Array,
                 value: () => []
+            },
+            selectedDrugForPosology:{
+                type: Object,
+                value: {
+                    id: null,
+                    type: null
+                }
             }
         };
     }
@@ -179,6 +227,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _reset(){
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
+        this.set('selectedDrugForPosology', {
+            id: null,
+            type: null
+        })
     }
 
     _open(e){
@@ -239,6 +291,18 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _closeDialog(){
         this.shadowRoot.querySelector('#prescriptionDetailDialog').close()
+    }
+
+    _openPosologyView(e){
+        if(_.get(e, 'detail.id', null) && _.get(e, 'detail.type', null)){
+            this.set('selectedDrugForPosology', {
+                id: _.get(e ,'detail.id', null),
+                type: _.get(e, 'detail.type', null)
+            })
+            this.set('isPosologyView', true)
+            this.set('isSearchView', false)
+        }
+
     }
 
 }

@@ -18,6 +18,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
+import _ from "lodash"
 class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
@@ -177,7 +178,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
                                         <div class="td fg2">[[drug.label]]</div>
                                         <div class="td fg05">
                                             <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
@@ -213,7 +214,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.history]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="history" on-tap="_openPosologyView"></iron-icon></div>    
                                         <div class="td fg2">[[drug.label]]</div>
                                         <div class="td fg05">
                                             <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
@@ -249,7 +250,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
                                         <div class="td fg2">[[drug.label]]</div>
                                         <div class="td fg05">
                                             <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
@@ -285,7 +286,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="molecule" on-tap="_openPosologyView"></iron-icon></div>    
                                         <div class="td fg2">[[drug.label]]</div>
                                         <div class="td fg05">
                                             <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
@@ -321,7 +322,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                                 </div>
                                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
                                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add"></iron-icon></div>    
+                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
                                         <div class="td fg2">[[drug.title]]</div>
                                         <div class="td fg05"></div>
                                         <div class="td fg05"></div>
@@ -508,6 +509,12 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _getAtcColor(cat){
         return cat ? "ATC--"+_.toUpper(cat) : null
+    }
+
+    _openPosologyView(e){
+        if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
+            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
+        }
     }
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);

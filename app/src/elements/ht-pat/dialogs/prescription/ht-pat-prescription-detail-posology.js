@@ -38,6 +38,30 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             },
             language: {
                 type: String
+            },
+            selectedDrugForPosology:{
+                type: Object,
+                value: () => {}
+            },
+            listOfCompound: {
+                type: Array,
+                value: () => []
+            },
+            listOfPrescription: {
+                type: Array,
+                value: () => []
+            },
+            hcp: {
+                type: Object,
+                value: () => {}
+            },
+            contacts:{
+                type: Array,
+                value: () => []
+            },
+            currentContact:{
+                type: Object,
+                value: () => {}
             }
         };
     }
