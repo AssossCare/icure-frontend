@@ -870,7 +870,7 @@ class IccApi extends PolymerElement {
 
   isElectronAvailable() {
       return this.electron().checkAvailable()
-          .then(() => true)
+          .then(retour => retour)
           .catch(() => false)
   }
 
