@@ -11,7 +11,7 @@ import '../../../../styles/buttons-style';
 import '../../../../styles/atc-styles';
 
 
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
