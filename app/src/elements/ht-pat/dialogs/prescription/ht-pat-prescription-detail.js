@@ -264,7 +264,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _refreshCompoundList(){
-        return _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? this.set('listOfCompound', JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', ""))) : null
+        return _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : null
     }
 
     _composeHistory(drug, service){

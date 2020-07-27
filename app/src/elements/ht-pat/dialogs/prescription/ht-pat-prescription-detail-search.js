@@ -144,19 +144,19 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             <div class="search-container-result">
                 <paper-tabs selected="{{tabs}}">
                     <paper-tab>
-                        <iron-icon class="tabIcon" icon="icons:alarm-on"></iron-icon> [[localize('','Chronic',language)]] [[_getDrugsCount(searchResult.chronic, searchResult.chronic.*)]]
+                        <iron-icon class="tabIcon" icon="icons:alarm-on"></iron-icon> [[localize('presc-sear-chro','Chronic',language)]] ([[_getDrugsCount(searchResult.chronic, searchResult.chronic.*)]])
                     </paper-tab> 
                      <paper-tab>
-                        <iron-icon class="tabIcon" icon="vaadin:time-backward"></iron-icon> [[localize('','History',language)]] [[_getDrugsCount(searchResult.history, searchResult.history.*)]]
+                        <iron-icon class="tabIcon" icon="vaadin:time-backward"></iron-icon> [[localize('presc-sear-hist','History',language)]] ([[_getDrugsCount(searchResult.history, searchResult.history.*)]])
                     </paper-tab>
                      <paper-tab>
-                        <iron-icon class="tabIcon" icon="vaadin:copyright"></iron-icon> [[localize('','Commercial name',language)]] [[_getDrugsCount(searchResult.commercialName, searchResult.commercialName.*)]]
+                        <iron-icon class="tabIcon" icon="vaadin:copyright"></iron-icon> [[localize('presc-sear-comm','Commercial name',language)]] ([[_getDrugsCount(searchResult.commercialName, searchResult.commercialName.*)]])
                     </paper-tab>
                      <paper-tab>
-                        <iron-icon class="tabIcon" icon="vaadin:pill"></iron-icon> [[localize('','Molecule',language)]] [[_getDrugsCount(searchResult.molecule, searchResult.molecule.*)]]
+                        <iron-icon class="tabIcon" icon="vaadin:pill"></iron-icon> [[localize('presc-sear-mol','Molecule',language)]] ([[_getDrugsCount(searchResult.molecule, searchResult.molecule.*)]])
                     </paper-tab>
                      <paper-tab>
-                        <iron-icon class="tabIcon" icon="vaadin:flask"></iron-icon> [[localize('','Compound',language)]] [[_getDrugsCount(searchResult.compound, searchResult.compound.*)]]
+                        <iron-icon class="tabIcon" icon="vaadin:flask"></iron-icon> [[localize('presc-sear-comp','Compound',language)]] ([[_getDrugsCount(searchResult.compound, searchResult.compound.*)]])
                     </paper-tab>
                 </paper-tabs>
                 <iron-pages selected="[[tabs]]">
@@ -421,6 +421,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _reset(){
+        this.set('tabs', 0)
         this.set('searchResult', {
             compound: _.get(this, 'listOfCompound', []),
             commercialName: [],
