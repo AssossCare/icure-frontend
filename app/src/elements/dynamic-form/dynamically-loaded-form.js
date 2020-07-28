@@ -542,9 +542,9 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                               x[label] = self.parentForm.getRawValue(label)
                               return x
                           }, {}): {},
-                          children: self.hasSubForms() ? self.subFormsMap.reduce((x,child) =>{
+                          children: self.hasSubForms() ? Object.keys(self.subFormsMap).map(key => self.subFormsMap[key]).reduce((x,child) =>{
                               x[child.template.name] = _.keys(this.servicesMap).reduce((y, label) => {
-                                  y[label] =	child.dataProvider.getRawValue(label)
+                                  y[label] = child.dataProvider.getRawValue(label)
                                   return y
                               }, {})
                               return x;
