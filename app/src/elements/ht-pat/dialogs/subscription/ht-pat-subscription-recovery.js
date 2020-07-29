@@ -6,7 +6,7 @@ import '../../../../styles/buttons-style.js'
 import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
-import './ht-pat-subscription-send-recovery.js'
+import './ht-pat-subscription-send-recovery'
 
 
 // import {TkLocalizerMixin} from "../../../tk-localizer"

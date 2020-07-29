@@ -3,10 +3,12 @@ import '../../../dynamic-form/dynamic-pills.js'
 import '../../../ht-spinner/ht-spinner.js'
 import '../../../../styles/dialog-style.js'
 import '../../../../styles/buttons-style.js'
+import '../../../../styles/spinner-style';
+import '../../../../styles/scrollbar-style';
+import '../../../../styles/shared-styles';
 import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
-import './ht-pat-subscription-send-recovery.js'
 
 
 // import {TkLocalizerMixin} from "../../../tk-localizer"
