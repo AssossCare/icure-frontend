@@ -13,9 +13,11 @@ import './ht-pat-subscription-send-recovery'
 // import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
 // import {IronResizableBehavior} from "@polymer/iron-resizable-behavior"
 import {PolymerElement, html} from '@polymer/polymer'
+import {TkLocalizerMixin} from "../../../tk-localizer";
+import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
+import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 
-class HtPatSubscriptionRecovery extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
-
+class HtPatSubscriptionRecovery extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">

@@ -15,10 +15,11 @@ import _ from 'lodash/lodash'
 // import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
 // import {IronResizableBehavior} from "@polymer/iron-resizable-behavior"
 import {PolymerElement, html} from '@polymer/polymer'
+import {TkLocalizerMixin} from "../../../tk-localizer";
+import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
+import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 
-const XLSX = require('../../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
-
-class HtPatSubscriptionSendRecovery extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
