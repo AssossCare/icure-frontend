@@ -237,43 +237,43 @@ iron-pages{
 <paper-dialog id="subscriptionRecoveryDialog">
     <div class="subscriptionRecoveryDialog">
     <div class="subscription-content">
-    <div class="subscription-view">
-    <paper-tabs selected="{{tabs}}">
-    <paper-tab>
-    <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-recovery','Envoyer reprise',language)]]
-    </paper-tab>
-    <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
-    <paper-tab>
-    <iron-icon class="tabIcon" icon="vaadin:tools"></iron-icon> [[localize('mhm-technical-info','Technical info',language)]]
-    </paper-tab>
-    </template>
-    </paper-tabs>
-    <iron-pages selected="[[tabs]]">
-    <page>
-    <div class="page-content">
-    <ht-pat-subscription-send-recovery id="htPatSubscriptionSendRecovery" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-recovery-status="_recoveryStatus"></ht-pat-subscription-send-recovery>
-    </div>
-    </page>
-    <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
-    <page>
-    <div class="page-content">
-    <ht-pat-subscription-technical-info id="htPatSubscriptionTechnicalInfo" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" hcp="[[hcp]]" subscription-result-detail="[[subscriptionResultDetail]]"></ht-pat-subscription-technical-info>
-    </div>
-    </page>
-    </template>
-    </iron-pages>
-    </div>
+        <div class="subscription-view">
+            <paper-tabs selected="{{tabs}}">
+            <paper-tab>
+                <iron-icon class="tabIcon" icon="icons:note-add"></iron-icon> [[localize('mhm-send-recovery','Envoyer reprise',language)]]
+            </paper-tab>
+            <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
+                <paper-tab>
+                    <iron-icon class="tabIcon" icon="vaadin:tools"></iron-icon> [[localize('mhm-technical-info','Technical info',language)]]
+                </paper-tab>
+            </template>
+            </paper-tabs>
+            <iron-pages selected="[[tabs]]">
+                <page>
+                    <div class="page-content">
+                        <ht-pat-subscription-send-recovery id="htPatSubscriptionSendRecovery" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" hcp="[[hcp]]" patient-insurance-parent="[[patientInsuranceParent]]" on-recovery-status="_recoveryStatus"></ht-pat-subscription-send-recovery>
+                    </div>
+                </page>
+                <template is="dom-if" if="[[_isTechnicalInfo(subscriptionResultDetail, subscriptionResultDetail.*)]]" restamp="true">
+                    <page>
+                        <div class="page-content">
+                            <ht-pat-subscription-technical-info id="htPatSubscriptionTechnicalInfo" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" hcp="[[hcp]]" subscription-result-detail="[[subscriptionResultDetail]]"></ht-pat-subscription-technical-info>
+                        </div>
+                    </page>
+                </template>
+            </iron-pages>
+        </div>
     </div>
     <div class="buttons">
-    <template is="dom-if" if="[[canRecovery]]">
-    <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
-</template>
-<template is="dom-if" if="[[canDownload]]">
-    <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
-</template>
-<paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-</div>
-</div>
+        <template is="dom-if" if="[[canRecovery]]">
+            <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
+        </template>
+        <template is="dom-if" if="[[canDownload]]">
+            <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
+        </template>
+        <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+    </div>
+    </div>
 </paper-dialog>
 `
 

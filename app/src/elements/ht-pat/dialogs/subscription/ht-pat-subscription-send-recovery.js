@@ -10,6 +10,8 @@ import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
 
+import XLSX from 'xlsx'
+import 'xlsx/dist/shim.min'
 
 // import {TkLocalizerMixin} from "../../../tk-localizer"
 // import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
@@ -127,43 +129,43 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
 
 <div class="subscription-container">
     <div class="request-container">
-    <div class="mhm-sub-container">
-    <div class="mhm-person-container">
-    <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
-    <div class="mhm-person-container-content">
-    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contract MM </div>
-<template is="dom-if" if="[[isLoading]]">
-    <div>Chargement en cours</div>
-</template>
-<template is="dom-if" if="[[isRunning]]">
-    <div>Reprise en cours ...</div>
-<div>Patient en cours: [[curPat]]</div>
-</template>
-<template is="dom-if" if="[[!isLoading]]">
-    <template is="dom-if" if="[[!isRunning]]">
-    <template is="dom-if" if="[[isValidDate]]">
-    <template is="dom-if" if="[[!hasRunned]]">
-    <div>Prêt pour lancer reprise.</div>
-</template>
-</template>
-<template is="dom-if" if="[[!isValidDate]]">
-    <div>invalid date to run</div>
-</template>
-</template>
-</template>
-</div>
-<div class="headerMasterTitle headerLabel">[[localize('mhm-rep-log', 'Log', language)]]</div>
-    <div class="mhm-log-container-content">
-    <template is="dom-repeat" items="[[recoveryLog]]" as="logitem">
-    <div>
-    <div>[[logitem.timestamp]]: [[logitem.patient]] --> [[logitem.status]]</div>
-</div>
-</template>
-</div>
-</div>
-</div>
-</div>
-</div>
+        <div class="mhm-sub-container">
+            <div class="mhm-person-container">
+                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
+                <div class="mhm-person-container-content">
+                    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contract MM </div>
+                    <template is="dom-if" if="[[isLoading]]">
+                        <div>Chargement en cours</div>
+                    </template>
+                    <template is="dom-if" if="[[isRunning]]">
+                        <div>Reprise en cours ...</div>
+                        <div>Patient en cours: [[curPat]]</div>
+                    </template>
+                    <template is="dom-if" if="[[!isLoading]]">
+                        <template is="dom-if" if="[[!isRunning]]">
+                            <template is="dom-if" if="[[isValidDate]]">
+                                <template is="dom-if" if="[[!hasRunned]]">
+                                    <div>Prêt pour lancer reprise.</div>
+                                </template>
+                            </template>
+                            <template is="dom-if" if="[[!isValidDate]]">
+                                <div>invalid date to run</div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep-log', 'Log', language)]]</div>
+                    <div class="mhm-log-container-content">
+                        <template is="dom-repeat" items="[[recoveryLog]]" as="logitem">
+                        <div>
+                            <div>[[logitem.timestamp]]: [[logitem.patient]] --> [[logitem.status]]</div>
+                        </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
         `
     }
 
@@ -338,8 +340,8 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set('patientsToRecover', [])
         this.set('recoveryLog', [])
         //TODO DEFINE fixed dates for start and end of recovery
-        this.dateRecoveryStart = Date.parse("2020-06-01")
-        this.dateRecoveryEnd = Date.parse("2020-07-01")
+        this.dateRecoveryStart = Date.parse("2020-07-29")
+        this.dateRecoveryEnd = Date.parse("2020-08-31")
         console.log("date limits", this.dateRecoveryStart, this.dateRecoveryEnd)
         const now = moment().format('YYYY-MM-DD')
         this.set("isValidDate", this.api.moment(now).isSameOrAfter(this.api.moment(this.dateRecoveryStart).format('YYYY-MM-DD')) && this.api.moment(now).isSameOrBefore(this.api.moment(this.dateRecoveryEnd).format('YYYY-MM-DD')))
