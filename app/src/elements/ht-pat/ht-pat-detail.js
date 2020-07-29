@@ -4752,7 +4752,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this.set("patientWillServices", patientWillServices)
             })
             ctcs.forEach(ctc => this._normalizeMedications(ctc))
-            this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
+            this.api.contact().filterServices(ctcs, s => (s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)) || (_.get(s,"content.isSurgical.booleanValue",false) && s.tags.length && s.tags.find(t => t.code.includes("acts")))).then(hesAsServices => {
                 const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
                 this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
@@ -4794,7 +4794,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     this.set('allergies', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => (c.type === 'CD-ITEM' || c.type === 'CD-ITEM-EXT-CHARACTERIZATION') && (c.code === 'allergy' || c.code === 'adr'))))
                     this.set('risks', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk' || c.code === 'professionalrisk'))))
                     this.set('familyrisks', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
-                    this.set('surgicalHealthElements', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
+                    this.set('surgicalHealthElements', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'surgery' || c.code==="acts"))))
 
                     this.set("allHealthElements", {
                         activeHealthElements: this.activeHealthElements,
