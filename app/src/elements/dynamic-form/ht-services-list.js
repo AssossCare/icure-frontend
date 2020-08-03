@@ -503,7 +503,7 @@ class HtServicesList extends TkLocalizerMixin(PolymerElement) {
                   .then(({extractedKeys: enckeys}) => ([document,enckeys]))
                   .catch(()=>Promise.resolve([document,null]))
           )
-          .then(([document,enckeys]) => !_.size(document) ? false : this.api.triggerUrlDownload(this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys, _.get(this,"api.sessionId"))))
+          .then(([document,enckeys]) => !_.size(document) ? false : this.api.document().getAttachmentUrl(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), enckeys)).then(url => this.api.triggerUrlDownload(url))
           .catch(()=>false)
 
   }

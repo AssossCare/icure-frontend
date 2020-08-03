@@ -371,6 +371,10 @@ iron-pages{
         };
     }
 
+    constructor() {
+        super();
+    }
+
     static get observers() {
         return ['_handleRecoveryStatus(recoveryStatus)'];
     }

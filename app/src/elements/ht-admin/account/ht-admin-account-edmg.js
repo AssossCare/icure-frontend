@@ -662,7 +662,7 @@ class HtAdminAccountEdmg extends TkLocalizerMixin(PolymerElement) {
       if( typeof fieldObject.value === 'undefined' ) return;
 
       // target & save
-      var ibanFieldObject = event.path[0];
+      var ibanFieldObject = (event.path || event.composedPath())[0];
 
       // Target (100,200,300,400,500,600,900)
       var oaValue = parseInt( ibanFieldObject.getAttribute('rel') );

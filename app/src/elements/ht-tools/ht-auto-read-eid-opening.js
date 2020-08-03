@@ -204,7 +204,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
 
   openSelectedPatientWithEid(e){
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       let id="";
       if(this.activeItem) {
           const selected = this.activeItem

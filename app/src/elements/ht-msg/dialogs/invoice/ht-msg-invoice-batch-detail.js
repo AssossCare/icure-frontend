@@ -58,8 +58,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             
             .panel-error{
                 height: 40px;
+                max-height: 40px;
                 width: auto;
                 font-size: var(--font-size-normal);
+                overflow: auto;
             }
             
             .panel-content{
@@ -485,6 +487,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
 
     constructor() {
         super();
+    }
+
+    ready() {
+        super.ready();
     }
 
     static get observers() {

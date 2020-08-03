@@ -14,7 +14,7 @@ import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
-        return html`
+    return html`
         <style include="dialog-style">
             .endline {
 				display: flex;

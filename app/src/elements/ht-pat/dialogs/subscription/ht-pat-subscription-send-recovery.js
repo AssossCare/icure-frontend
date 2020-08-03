@@ -306,6 +306,10 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         };
     }
 
+    constructor() {
+        super();
+    }
+
     static get observers() {
         return [
             '_todoCountChanged(patientsToRecover)',

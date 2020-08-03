@@ -25,7 +25,8 @@ module.exports = {
         modules: [
             path.resolve(__dirname,  'node_modules'),
         ],
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.html']
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.html'],
+        alias: { '@polymer/iron-selector': path.resolve(__dirname, 'node_modules/@taktik/iron-selector-meta-shift')}
     },
     devtool: 'eval-source-map',
 	node: {

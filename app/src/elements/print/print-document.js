@@ -2,13 +2,14 @@ import '../ht-spinner/ht-spinner.js';
 
 import _ from 'lodash/lodash';
 import moment from 'moment/src/moment';
-import { Base64 } from 'js-base64';
+import {Base64} from 'js-base64';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
 class PrintDocument extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
+    static get template() {
+        return html`
         <style>
             .overlaySpinnerContainer {
                 position:absolute;
@@ -26,265 +27,282 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
         </style>
         <template is="dom-if" if="[[_isBusy]]"><div class="overlaySpinnerContainer"><div class="overlaySpinner"><ht-spinner active=""></ht-spinner></div></div></template>
 `;
-  }
+    }
 
-  static get is() {
-      return 'print-document';
-  }
+    static get is() {
+        return 'print-document';
+    }
 
-  static get properties() {
-      return {
-          api: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          user: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          resources: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          language: {
-              type: String,
-              noReset: true,
-              value: "fr"
-          },
-          patient: {
-              type: Object,
-              noReset: true,
-              value: () => {}
-          },
-          _isBusy: {
-              type: Boolean,
-              value: false,
-              noReset: true
-          },
-          _data: {
-              type: Object,
-              value: () => {return{
-                  currentHcp: {
-                      type: Object,
-                      value: () => {}
-                  },
-                  currentPatient: {
-                      type: Object,
-                      value: () => {}
-                  },
-                  codes: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-                  contact: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-                  document: {
-                      type: Object,
-                      value: ()=>{}
-                  },
-              }}
-          }
-      };
-  }
+    static get properties() {
+        return {
+            api: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            user: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            resources: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            language: {
+                type: String,
+                noReset: true,
+                value: "fr"
+            },
+            patient: {
+                type: Object,
+                noReset: true,
+                value: () => {
+                }
+            },
+            _isBusy: {
+                type: Boolean,
+                value: false,
+                noReset: true
+            },
+            _data: {
+                type: Object,
+                value: () => {
+                    return {
+                        currentHcp: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        currentPatient: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        codes: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        contact: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                        document: {
+                            type: Object,
+                            value: () => {
+                            }
+                        },
+                    }
+                }
+            }
+        };
+    }
 
-  static get observers() {
-      return [];
-  }
+    static get observers() {
+        return [];
+    }
 
-  constructor() {
-      super();
-  }
+    constructor() {
+        super();
+    }
 
-  ready() {
-      super.ready();
-      // if(this.patientHealthCarePartiesById == null) {
-      //     Promise.all(
-      //         _.chunk(this.patient.patientHealthCareParties,100).map(uChunk =>
-      //             this.api.hcparty().getHealthcareParties(uChunk.map(u => u.healthcarePartyId).filter(id => !!id).join(','))
-      //         )
-      //     ).then(hcps => {
-      //         this.patientHealthCarePartiesById = _.flatMap(hcps).reduce((acc, hcp) => {
-      //             if(_.trim(_.get(hcp,"id",""))) acc[hcp.id] = hcp
-      //             return acc
-      //         }, {});
-      //     } )
-      // }
-  }
+    ready() {
+        super.ready();
+        // if(this.patientHealthCarePartiesById == null) {
+        //     Promise.all(
+        //         _.chunk(this.patient.patientHealthCareParties,100).map(uChunk =>
+        //             this.api.hcparty().getHealthcareParties(uChunk.map(u => u.healthcarePartyId).filter(id => !!id).join(','))
+        //         )
+        //     ).then(hcps => {
+        //         this.patientHealthCarePartiesById = _.flatMap(hcps).reduce((acc, hcp) => {
+        //             if(_.trim(_.get(hcp,"id",""))) acc[hcp.id] = hcp
+        //             return acc
+        //         }, {});
+        //     } )
+        // }
+    }
 
-  _resetComponentProperties() {
-      const promResolve = Promise.resolve();
-      return promResolve
-          .then(() => {
-              const componentProperties = PrintDocument.properties
-              Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
-              return promResolve
-          })
-  }
+    _resetComponentProperties() {
+        const promResolve = Promise.resolve();
+        return promResolve
+            .then(() => {
+                const componentProperties = PrintDocument.properties
+                Object.keys(componentProperties).forEach(k => {
+                    if (!_.get(componentProperties[k], "noReset", false)) {
+                        this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null)))
+                    }
+                })
+                return promResolve
+            })
+    }
 
-  _msTstampToDDMMYYYY(msTstamp) {
-      return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('DD/MM/YYYY') : ""
-  }
+    _msTstampToDDMMYYYY(msTstamp) {
+        return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('DD/MM/YYYY') : ""
+    }
 
-  _msTstampToYYYYMMDD(msTstamp) {
-      return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('YYYYMMDD') : ""
-  }
+    _msTstampToYYYYMMDD(msTstamp) {
+        return parseInt(msTstamp) ? this.api.moment(parseInt(msTstamp)).format('YYYYMMDD') : ""
+    }
 
-  _YYYYMMDDToDDMMYYYY(inputValue) {
-      return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDD").format('DD/MM/YYYY') : ""
-  }
+    _YYYYMMDDToDDMMYYYY(inputValue) {
+        return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)), "YYYYMMDD").format('DD/MM/YYYY') : ""
+    }
 
-  _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
-      return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
-  }
+    _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
+        return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)), "YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
+    }
 
-  _upperFirstAll(inputValue){
-      return _.trim(_.map(_.trim(inputValue).toLowerCase().split(" "),i=>_.upperFirst(_.trim(i))).join(" "))
-  }
+    _upperFirstAll(inputValue) {
+        return _.trim(_.map(_.trim(inputValue).toLowerCase().split(" "), i => _.upperFirst(_.trim(i))).join(" "))
+    }
 
-  _dobToAge(inputValue) {
-      return inputValue ? this.api.getCurrentAgeFromBirthDate(inputValue,( e , s ) => this.localize(e, s, this.language)) : ''
-  }
+    _dobToAge(inputValue) {
+        return inputValue ? this.api.getCurrentAgeFromBirthDate(inputValue, (e, s) => this.localize(e, s, this.language)) : ''
+    }
 
-  _getServiceAuthor(svc) {
-      return this.api.getAuthor(svc.author);
-  }
+    _getServiceAuthor(svc) {
+        return this.api.getAuthor(svc.author);
+    }
 
-  _getServiceShortDescription(svc) {
-      return this.api.contact().shortServiceDescription(svc, this.language);
-  }
+    _getServiceShortDescription(svc) {
+        return this.api.contact().shortServiceDescription(svc, this.language);
+    }
 
-  _prettifyText(input) {
-      return _.trim(input).replace(/\r\n|\n|\r/gm, "\n")
-  }
+    _prettifyText(input) {
+        return _.trim(input).replace(/\r\n|\n|\r/gm, "\n")
+    }
 
-  _getServiceNormalValues(svc) {
-      const c = this.api.contact().preferredContent(svc, this.language)
-      return c && c.measureValue && `${c.measureValue.ref ? c.measureValue.ref.toFixed(2) : ''} ${c.measureValue.min || c.measureValue.max ? `${c.measureValue.min ? c.measureValue.min.toFixed(1) : '*'} - ${c.measureValue.max ? c.measureValue.max.toFixed(1) : '*'}` : ''}` || '';
-  }
+    _getServiceNormalValues(svc) {
+        const c = this.api.contact().preferredContent(svc, this.language)
+        return c && c.measureValue && `${c.measureValue.ref ? c.measureValue.ref.toFixed(2) : ''} ${c.measureValue.min || c.measureValue.max ? `${c.measureValue.min ? c.measureValue.min.toFixed(1) : '*'} - ${c.measureValue.max ? c.measureValue.max.toFixed(1) : '*'}` : ''}` || '';
+    }
 
-  _getPrettifiedHcp() {
-      const promResolve = Promise.resolve()
-      return this.api.hcparty().getCurrentHealthcareParty()
-          .then(hcp => {
-              const addressData = _.find(_.get(hcp,"addresses",[]), {addressType:"work"}) || _.find(_.get(hcp,"addresses",[]), {addressType:"home"}) || _.get(hcp,"addresses[0]",[])
-              return _.merge({}, hcp, {
-                  address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
-                  postalCode: _.trim(_.get(addressData,"postalCode","")),
-                  city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
-                  country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
-                  phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
-                  mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
-                  email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
-                  firstName: this._upperFirstAll(_.get(hcp,"firstName","")),
-                  lastName: this._upperFirstAll(_.get(hcp,"lastName","")),
-                  nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp,"nihii",""))),
-                  ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp,"ssin",""))),
-              })
-          })
-          .catch(()=>promResolve)
-  }
+    _getPrettifiedHcp() {
+        const promResolve = Promise.resolve()
+        return this.api.hcparty().getCurrentHealthcareParty()
+            .then(hcp => {
+                const addressData = _.find(_.get(hcp, "addresses", []), {addressType: "work"}) || _.find(_.get(hcp, "addresses", []), {addressType: "home"}) || _.get(hcp, "addresses[0]", [])
+                return _.merge({}, hcp, {
+                    address: [_.trim(_.get(addressData, "street", "")), _.trim(_.get(addressData, "houseNumber", "")) + (!!_.trim(_.get(addressData, "postboxNumber", "")) ? "/" + _.trim(_.get(addressData, "postboxNumber", "")) : "")].join(", "),
+                    postalCode: _.trim(_.get(addressData, "postalCode", "")),
+                    city: this._upperFirstAll(_.trim(_.get(addressData, "city", ""))),
+                    country: this._upperFirstAll(_.trim(_.get(addressData, "country", ""))),
+                    phone: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "phone"}), "telecomNumber", "")),
+                    mobile: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "mobile"}), "telecomNumber", "")),
+                    email: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "email"}), "telecomNumber", "")),
+                    firstName: this._upperFirstAll(_.get(hcp, "firstName", "")),
+                    lastName: this._upperFirstAll(_.get(hcp, "lastName", "")),
+                    nihiiHr: this.api.formatInamiNumber(_.trim(_.get(hcp, "nihii", ""))),
+                    ssinHr: this.api.formatSsinNumber(_.trim(_.get(hcp, "ssin", ""))),
+                })
+            })
+            .catch(() => promResolve)
+    }
 
-  _prettifyPatient(patient) {
-      const addressData = _.find(_.get(patient,"addresses",[]), {addressType:"home"}) || _.find(_.get(patient,"addresses",[]), {addressType:"work"}) || _.get(patient,"addresses[0]",[])
-      return _.merge({}, patient, {
-          address: [ _.trim(_.get(addressData,"street","")), _.trim(_.get(addressData,"houseNumber","")) + (!!_.trim(_.get(addressData,"postboxNumber","")) ? "/" + _.trim(_.get(addressData,"postboxNumber","")) : "") ].join(", "),
-          postalCode: _.trim(_.get(addressData,"postalCode","")),
-          city: this._upperFirstAll(_.trim(_.get(addressData,"city",""))),
-          country: this._upperFirstAll(_.trim(_.get(addressData,"country",""))),
-          phone: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"phone"}), "telecomNumber", "")),
-          mobile: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"mobile"}), "telecomNumber", "")),
-          email: _.trim(_.get(_.find(_.get(addressData,"telecoms",[]), {"telecomType":"email"}), "telecomNumber", "")),
-          firstName: this._upperFirstAll(_.get(patient,"firstName","")),
-          lastName: this._upperFirstAll(_.get(patient,"lastName","")),
-          ssinHr: this.api.formatSsinNumber(_.trim(_.get(patient, "ssin", ""))),
-          gender: _.trim(_.get(patient, "gender", "male")),
-          genderHr: this._upperFirstAll(this.localize(_.trim(_.get(patient, "gender", "male")) + "GenderLong", "masculin")),
-          dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(patient, "dateOfBirth"))),
-          insuranceData: _
-              .chain(_.get(patient, "insurabilities",{}))
-              .filter((i)=>{
-                  return i &&
-                      !!moment( _.trim(_.get(i, "startDate", "0") ), "YYYYMMDD" ).isBefore(moment()) &&
-                      (!!moment( _.trim(_.get(i, "endDate", "0") ), "YYYYMMDD" ).isAfter(moment()) || !_.trim(_.get(i, "endDate", "") ) ) &&
-                      !!_.trim( _.get( i, "insuranceId", "" ) )
-              })
-              .map(i => {return {
-                  insuranceId: _.trim(_.get(i,"insuranceId","")),
-                  identificationNumber: _.trim(_.get(i,"identificationNumber","")),
-                  tc1: _.trim(_.get(i,"parameters.tc1","")),
-                  tc2: _.trim(_.get(i,"parameters.tc2","")),
-                  preferentialstatus: typeof _.get(i,"parameters.preferentialstatus") === "boolean" ? !!_.get(i,"parameters.preferentialstatus",false) : _.trim(_.get(i,"parameters.preferentialstatus")) === "true"
-              }})
-              .head()
-              .value(),
-      })
-  }
+    _prettifyPatient(patient) {
+        const addressData = _.find(_.get(patient, "addresses", []), {addressType: "home"}) || _.find(_.get(patient, "addresses", []), {addressType: "work"}) || _.get(patient, "addresses[0]", [])
+        return _.merge({}, patient, {
+            address: [_.trim(_.get(addressData, "street", "")), _.trim(_.get(addressData, "houseNumber", "")) + (!!_.trim(_.get(addressData, "postboxNumber", "")) ? "/" + _.trim(_.get(addressData, "postboxNumber", "")) : "")].join(", "),
+            postalCode: _.trim(_.get(addressData, "postalCode", "")),
+            city: this._upperFirstAll(_.trim(_.get(addressData, "city", ""))),
+            country: this._upperFirstAll(_.trim(_.get(addressData, "country", ""))),
+            phone: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "phone"}), "telecomNumber", "")),
+            mobile: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "mobile"}), "telecomNumber", "")),
+            email: _.trim(_.get(_.find(_.get(addressData, "telecoms", []), {"telecomType": "email"}), "telecomNumber", "")),
+            firstName: this._upperFirstAll(_.get(patient, "firstName", "")),
+            lastName: this._upperFirstAll(_.get(patient, "lastName", "")),
+            ssinHr: this.api.formatSsinNumber(_.trim(_.get(patient, "ssin", ""))),
+            gender: _.trim(_.get(patient, "gender", "male")),
+            genderHr: this._upperFirstAll(this.localize(_.trim(_.get(patient, "gender", "male")) + "GenderLong", "masculin")),
+            dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(patient, "dateOfBirth"))),
+            insuranceData: _
+                .chain(_.get(patient, "insurabilities", {}))
+                .filter((i) => {
+                    return i &&
+                        !!moment(_.trim(_.get(i, "startDate", "0")), "YYYYMMDD").isBefore(moment()) &&
+                        (!!moment(_.trim(_.get(i, "endDate", "0")), "YYYYMMDD").isAfter(moment()) || !_.trim(_.get(i, "endDate", ""))) &&
+                        !!_.trim(_.get(i, "insuranceId", ""))
+                })
+                .map(i => {
+                    return {
+                        insuranceId: _.trim(_.get(i, "insuranceId", "")),
+                        identificationNumber: _.trim(_.get(i, "identificationNumber", "")),
+                        tc1: _.trim(_.get(i, "parameters.tc1", "")),
+                        tc2: _.trim(_.get(i, "parameters.tc2", "")),
+                        preferentialstatus: typeof _.get(i, "parameters.preferentialstatus") === "boolean" ? !!_.get(i, "parameters.preferentialstatus", false) : _.trim(_.get(i, "parameters.preferentialstatus")) === "true"
+                    }
+                })
+                .head()
+                .value(),
+        })
+    }
 
-  _getPrettifiedPatient(user, patientId, patientObject=null) {
-      const promResolve = Promise.resolve()
-      return !_.size(patientObject) && (!_.trim(_.get(user, "id")) || !_.trim(patientId)) ? promResolve : (!!_.size(patientObject) ? Promise.resolve(patientObject) : this.api.patient().getPatientWithUser(user, patientId))
-          .then(patient => this._prettifyPatient(patient))
-          .then(patient => this._getInsuranceData(_.trim(_.get(patient,"insuranceData.insuranceId"))).then(insuranceData => _.merge({},patient,{insuranceData:insuranceData})))
-          .catch(()=>promResolve)
-  }
+    _getPrettifiedPatient(user, patientId, patientObject = null) {
+        const promResolve = Promise.resolve()
+        return !_.size(patientObject) && (!_.trim(_.get(user, "id")) || !_.trim(patientId)) ? promResolve : (!!_.size(patientObject) ? Promise.resolve(patientObject) : this.api.patient().getPatientWithUser(user, patientId))
+            .then(patient => this._prettifyPatient(patient))
+            .then(patient => this._getInsuranceData(_.trim(_.get(patient, "insuranceData.insuranceId"))).then(insuranceData => _.merge({}, patient, {insuranceData: insuranceData})))
+            .catch(() => promResolve)
+    }
 
-  _getInsuranceData(insuranceId) {
-      const promResolve = Promise.resolve()
-      return !_.trim(insuranceId) ? promResolve : this.api.insurance().getInsurance(insuranceId)
-          .then(insuranceData => _.merge({}, {
-              code: _.trim(_.get(insuranceData, "code", "")),
-              name: this._upperFirstAll(!!_.trim(_.get(insuranceData, "name." + this.language, "")) ? _.trim(_.get(insuranceData, "name." + this.language, "")) : _.trim(_.find(_.get(insuranceData, "name", {}), _.trim)))
-          }))
-          .catch(()=>promResolve)
-  }
+    _getInsuranceData(insuranceId) {
+        const promResolve = Promise.resolve()
+        return !_.trim(insuranceId) ? promResolve : this.api.insurance().getInsurance(insuranceId)
+            .then(insuranceData => _.merge({}, {
+                code: _.trim(_.get(insuranceData, "code", "")),
+                name: this._upperFirstAll(!!_.trim(_.get(insuranceData, "name." + this.language, "")) ? _.trim(_.get(insuranceData, "name." + this.language, "")) : _.trim(_.find(_.get(insuranceData, "name", {}), _.trim)))
+            }))
+            .catch(() => promResolve)
+    }
 
-  _getCodesByType(codeType) {
-      const promResolve = Promise.resolve()
-      return !_.trim(codeType) ? promResolve : this.api.code().findPaginatedCodes("be", codeType)
-          .then(({rows}) => _
-              .chain(rows)
-              .filter(i=> !_.get(i,"disabled",false))
-              .map(i => _.merge({},i,{
-                  labelHr: codeType === "CD-TRANSACTION" ?
-                      _.upperFirst(_.trim(this.localize("cd-transaction-" + _.trim(_.get(i,"code")), _.trim(_.get(i,"code")), this.language)).toLowerCase()) :
-                      _.trim(_.get(i,"label." + this.language,"")) ?
-                          _.upperFirst(_.trim(_.get(i,"label." + this.language,"")).toLowerCase()) :
-                          _.upperFirst(_.trim(_.head(_.flatMap(_.get(i,"label","")))).toLowerCase())
-              }))
-              .orderBy(["labelHr"],["asc"])
-              .value()
-          )
-          .then(codes => _.fromPairs([[codeType,codes]]))
-          .catch(()=>promResolve)
-  }
+    _getCodesByType(codeType) {
+        const promResolve = Promise.resolve()
+        return !_.trim(codeType) ? promResolve : this.api.code().findPaginatedCodes("be", codeType)
+            .then(({rows}) => _
+                .chain(rows)
+                .filter(i => !_.get(i, "disabled", false))
+                .map(i => _.merge({}, i, {
+                    labelHr: codeType === "CD-TRANSACTION" ?
+                        _.upperFirst(_.trim(this.localize("cd-transaction-" + _.trim(_.get(i, "code")), _.trim(_.get(i, "code")), this.language)).toLowerCase()) :
+                        _.trim(_.get(i, "label." + this.language, "")) ?
+                            _.upperFirst(_.trim(_.get(i, "label." + this.language, "")).toLowerCase()) :
+                            _.upperFirst(_.trim(_.head(_.flatMap(_.get(i, "label", "")))).toLowerCase())
+                }))
+                .orderBy(["labelHr"], ["asc"])
+                .value()
+            )
+            .then(codes => _.fromPairs([[codeType, codes]]))
+            .catch(() => promResolve)
+    }
 
-  _getContact(user, contactId) {
-      const promResolve = Promise.resolve()
-      return !_.trim(_.get(user, "id")) || !_.trim(contactId) ? promResolve : this.api.contact().getContactWithUser(user, contactId)
-          .then(contact => _.merge(contact, {
-              createdHr: this._msTstampToDDMMYYYY(_.get(contact,"created","")),
-              openingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact,"openingDate","")).substring(0,8)),
-              openingDateYYYYMMDD: _.trim(_.get(contact,"openingDate","")).substring(0,8),
-              closingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact,"closingDate","")).substring(0,8)),
-          }))
-          .catch(()=>promResolve)
-  }
+    _getContact(user, contactId) {
+        const promResolve = Promise.resolve()
+        return !_.trim(_.get(user, "id")) || !_.trim(contactId) ? promResolve : this.api.contact().getContactWithUser(user, contactId)
+            .then(contact => _.merge(contact, {
+                createdHr: this._msTstampToDDMMYYYY(_.get(contact, "created", "")),
+                openingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact, "openingDate", "")).substring(0, 8)),
+                openingDateYYYYMMDD: _.trim(_.get(contact, "openingDate", "")).substring(0, 8),
+                closingDateHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(contact, "closingDate", "")).substring(0, 8)),
+            }))
+            .catch(() => promResolve)
+    }
 
-  _prettifyDocInfo(docInfo) {
-      return !_.size(docInfo) ? null :_.merge({}, docInfo, {
-          demandDateHr: this._msTstampToDDMMYYYY(_.get(docInfo,"demandDate","")),
-          firstName: this._upperFirstAll(_.get(docInfo,"firstName","")),
-          lastName: this._upperFirstAll(_.get(docInfo,"lastName","")),
-          labo: this._upperFirstAll(_.get(docInfo,"labo","")),
-          ssinHr: this.api.formatSsinNumber(_.trim(_.get(docInfo,"ssin",""))),
-          dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(docInfo, "dateOfBirth"))),
-      })
-  }
+    _prettifyDocInfo(docInfo) {
+        return !_.size(docInfo) ? null : _.merge({}, docInfo, {
+            demandDateHr: this._msTstampToDDMMYYYY(_.get(docInfo, "demandDate", "")),
+            firstName: this._upperFirstAll(_.get(docInfo, "firstName", "")),
+            lastName: this._upperFirstAll(_.get(docInfo, "lastName", "")),
+            labo: this._upperFirstAll(_.get(docInfo, "labo", "")),
+            ssinHr: this.api.formatSsinNumber(_.trim(_.get(docInfo, "ssin", ""))),
+            dateOfBirthHr: this._YYYYMMDDToDDMMYYYY(_.trim(_.get(docInfo, "dateOfBirth"))),
+        })
+    }
 
   _getDocument(user, documentId) {
       const promResolve = Promise.resolve()

@@ -974,7 +974,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     
 
 
-                    <vaadin-grid-column flex-grow="0" width="52px">
+                    <vaadin-grid-column flex-grow="0" width="60px">
                         <template class="header">
                             <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
                                 <vaadin-checkbox checked="[[isAllPatientCheck]]" on-checked-changed="_checkAllPatientChanged"></vaadin-checkbox>
@@ -1019,7 +1019,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.firstName]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="104px">
+                    <vaadin-grid-column flex-grow="0" width="120px">
                         <template class="header">
                             <vaadin-grid-sorter path="dateOfBirth">[[localize('dat_of_bir','Date of birth',language)]]
                             </vaadin-grid-sorter>
@@ -2080,7 +2080,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption || this.preventionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       if(this.activeItem) {
           this.set('isLoadingPatient', true)
           const selected = this.activeItem
@@ -3248,7 +3248,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       console.log(e.target.dataset.item)
       this.api.electron().getPatient(e.target.dataset.item)
           .then(response => {if(response.code!==0){
