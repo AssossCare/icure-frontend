@@ -1,7 +1,8 @@
 import * as fhcApi from 'fhc-api/dist/fhcApi'
-import * as iccApi from 'icc-api/dist/icc-api/iccApi'
-import * as iccXApi from 'icc-api/dist/icc-x-api/index'
-import {UtilsClass} from "icc-api/dist/icc-x-api/crypto/utils"
+import * as iccApi from '@taktik/icc-api/dist/icc-api/iccApi'
+import * as iccXApi from '@taktik/icc-api/dist/icc-x-api/index'
+import {UtilsClass} from "@taktik/icc-api/dist/icc-x-api/crypto/utils"
+import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 
 import moment from 'moment/src/moment'
 import levenshtein from 'js-levenshtein'
@@ -17,6 +18,8 @@ onmessage = e => {
 
         const fhcHost               = e.data.fhcHost
         const fhcHeaders            = JSON.parse(e.data.fhcHeaders)
+
+        const electronHost			= e.data.electronHost
 
         const tokenId               = e.data.tokenId
         const keystoreId            = e.data.keystoreId
@@ -55,17 +58,19 @@ onmessage = e => {
         const iccPatientXApi        = new iccXApi.IccPatientXApi(iccHost, iccHeaders, iccCryptoXApi, iccContactXApi, iccFormXApi, iccHelementXApi, iccIccInvoiceXApi, iccDocumentXApi, iccHcpartyXApi, iccClassificationXApi)
         const iccMessageXApi        = new iccXApi.IccMessageXApi(iccHost, iccHeaders, iccCryptoXApi, iccInsuranceApi, iccEntityrefApi, iccIccInvoiceXApi, iccDocumentXApi, iccReceiptXApi, iccPatientXApi)
 
+        const electronApi        = new ElectronApi(electronHost)
+
         let totalNewMessages = {
             INBOX: 0,
             SENTBOX: 0
         }
-
         let appVersions = {
             backend: "-",
             frontend: "[AIV]{version}[/AIV]",
             electron: "-",
             isElectron: false
         }
+		let patientIdsWithAssignedResults = []
 
 
 
@@ -171,6 +176,9 @@ onmessage = e => {
                                 labo: _.trim(_.get(singleAssignResult,"docInfo.labo",""))
                             }
                         })
+
+						// Holds to reconcile results (partials vs complete)
+						patientIdsWithAssignedResults.push(_.trim(_.get(singleAssignResult,"patientId","")))
 
                     })
 
@@ -523,25 +531,86 @@ onmessage = e => {
 
         }
 
+        const getPatContactsByProtocols = (hcpId, patientObject) => {
+
+			const promResolve = Promise.resolve();
+
+			return iccContactXApi.findBy(hcpId,patientObject)
+				.then(patientContacts => _
+					.chain(patientContacts)
+					.map(ctc => !_.trim(_.get(ctc,"subContacts[0].protocol")) ? false : {
+						ctcId: _.trim(_.get(ctc,"id")),
+						protocol: _.trim(_.get(ctc,"subContacts[0].protocol")),
+						formId: _.trim(_.get(ctc,"subContacts[0].formId")),
+						complete: !!((parseInt(_.get(ctc,"subContacts[0].status"))||0) & (1<<4)),
+						totalSubCtc: _.size(_.get(ctc,"subContacts"))
+					})
+					.compact()
+					.reduce((acc, ctc) => (acc[_.get(ctc,"protocol")]||(acc[_.get(ctc,"protocol")] = [])).push(_.omit(ctc, ["protocol"])) && acc, {})
+					.value()
+				)
+				.catch(e=>{ console.log("ERROR _getPatContactsByProtocols", e); return promResolve; })
+
+		}
+
+        const reconcilePartialAndIncompleteResults = () => {
+
+			const promResolve = Promise.resolve()
+
+			return !_.size(_.uniq(_.compact(patientIdsWithAssignedResults))) ? promResolve : iccPatientXApi.getPatientsWithUser(user,{ids:_.uniq(_.compact(patientIdsWithAssignedResults))})
+				.then(myPatients => {
+
+					let promPat = Promise.resolve([])
+					let promContacts = Promise.resolve([])
+
+					_.map(myPatients, pat => {
+						promPat = promPat
+							.then(promisesCarrierPat => getPatContactsByProtocols(_.trim(_.get(user,"healthcarePartyId","")), pat).then(contactsByProtocols => {
+								_.map(contactsByProtocols, contacts => {
+									promContacts = promContacts
+										.then(promiseCarrierContacts => {
+											const completeResults = _.filter(contacts, {complete:true})
+											const incompleteResults = _.filter(contacts, {complete:false})
+											const formIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"formId"))).join(",")
+											const contactIdsToDelete = _.compact(_.map(incompleteResults, it => _.get(it,"totalSubCtc") !== 1 ? false : _.get(it,"ctcId"))).join(",")
+											return  _.size(contacts) < 2 || !_.size(completeResults) || !_.size(incompleteResults) ? promiseCarrierContacts||[] : iccFormXApi.deleteForms(formIdsToDelete).catch(e=>null).then(x=>iccContactXApi.deleteContacts(contactIdsToDelete).catch(e=>null).then(x=>_.concat(promiseCarrierContacts, [x])))
+										})
+								})
+								return promContacts.then(x => _.concat(promisesCarrierPat, x)).then(x => _.concat(promisesCarrierPat, null))
+							}))
+					})
+
+					return promPat
+
+				})
+				.then(promPat => null)
+				.catch(e => null)
+
+
+		}
+
+
+
 
 
         icureApi.getVersion()
         .then(icureVersion => appVersions.backend = _.trim(icureVersion))
-        .then(() => fetch("http://localhost:16042/ok", {method:"GET"}).then(() => true).catch(() => false))
+        .then(() => electronApi.checkAvailable())
         .then(isElectron => appVersions.isElectron = !!isElectron)
-        .then(() => fetch("http://localhost:16042/getVersion", {method:"GET"}).then((response) => response.json()).catch(() => false))
+        .then(() => electronApi.getVersion() )
         .then(electronVersion => appVersions.electron = _.trim(_.get(electronVersion,"version","-")))
         .then(() => autoDeleteMessages())
         .finally(()=>{
 
             let promisesCarrier = []
             let prom = Promise.resolve()
-            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 200, alternateKeystores).then(messagesFromEHealthBox => {
+            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
                 _.map(_.filter(messagesFromEHealthBox, m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
                     .then(promisesCarrier => createDbMessageWithAppendicesAndTryToAssign(singleMessage, singleBoxId))
                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))
                     .finally(()=> _.concat(promisesCarrier, []))
                 )
+                prom.then(()=> reconcilePartialAndIncompleteResults())
                 prom.then(()=> {
 
                     if(singleBoxId === "INBOX" && parseInt(totalNewMessages["INBOX"])) {

@@ -458,13 +458,13 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
 
 
 
-        <template is="dom-if" if="[[!isLabOrProtocol]]">
+ <template is="dom-if" if="[[!isLabOrProtocol]]">
 
-            <paper-card class\$="pat-details-card [[_fullWidth(fullwidth)]]">
+            <paper-card class$="pat-details-card [[_fullWidth(fullwidth)]]">
 
                 <template is="dom-if" if="[[!_unknownMimeType(document.mainUti, document.otherUtis.*, dataUrl, data)]]">
 
-                    <template is="dom-if" if="[[!documentId]]"><template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template></template>
+                    <template is="dom-if" if="[[!documentId]]"><template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template></template>
 
                     <template is="dom-if" if="[[_imageMimeType(document.mainUti, document.otherUtis.*, dataUrl, data)]]">
                         <div class="form-title">
@@ -474,36 +474,41 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                 <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
                                 <template is="dom-if" if="[[downloadable]]">
-                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-1"></paper-icon-button>
+                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-1"></paper-icon-button>
                                     <paper-tooltip for="downloadFile-1" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                                 </template>
                                 <template is="dom-if" if="[[printable]]">
-                                    <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id\$="[[contactId]]" data-document-id\$="[[_getId(document)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
+                                    <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id$="[[contactId]]" data-document-id$="[[_getId(document)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
                                     <paper-tooltip for="printDocument" position="left">[[localize('pri','Print',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
                                     <template is="dom-if" if="[[!isPatDetail]]">
                                         <template is="dom-if" if="[[!forceNoAssignation]]">
-                                            <paper-icon-button on-tap="_triggerOpenAssignmentDialog" icon="icons:assignment-ind" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                            <paper-icon-button on-tap="_triggerOpenAssignmentDialog" icon="icons:assignment-ind" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
                                             <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                         </template>
                                     </template>
                                 </template>
 
                                 <template is="dom-if" if="[[hubImportable]]">
-                                    <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document\$="[[data]]" data-transaction\$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button  icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[hubuploadable]]">
-                                    <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id\$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button  icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[forwardable]]">
-                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
+                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[sendbyemail]]">
+                                    <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                    <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[allowEsLink]]">
@@ -512,8 +517,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                         <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
                                         <paper-listbox slot="dropdown-content">
                                             <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
                                             </template>
                                         </paper-listbox>
                                     </paper-menu-button>
@@ -534,8 +539,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         <template is="dom-if" if="[[_size(patientData)]]">
                             <div class="resInfos">
                                 <div class="patientInfos">
-                                    <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                    <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                     <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                     <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                     <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -547,9 +552,9 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                             </div>
                         </template>
 
-                        <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
+                        <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
                         <div class="img-container">
-                            <img src\$="[[_selectImageData(dataUrl, data)]]">
+                            <img src$="[[_selectImageData(dataUrl, data)]]">
                         </div>
                         <template is="dom-if" if="[[hasComment]]">
                             <div class="form-comment">
@@ -573,30 +578,35 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                 <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
                                 <template is="dom-if" if="[[downloadable]]">
-                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-2"></paper-icon-button>
+                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-2"></paper-icon-button>
                                     <paper-tooltip for="downloadFile-2" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[!isPatDetail]]">
                                     <template is="dom-if" if="[[!forceNoAssignation]]">
-                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab-3"></paper-icon-button>
+                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab-3"></iron-icon></paper-icon-button>
                                         <paper-tooltip for="assign-ico-lab-3" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                     </template>
                                 </template>
 
                                 <template is="dom-if" if="[[hubImportable]]">
-                                    <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document\$="[[data]]" data-transaction\$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[hubuploadable]]">
-                                    <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id\$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[forwardable]]">
-                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
+                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[sendbyemail]]">
+                                    <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                    <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[allowEsLink]]">
@@ -605,8 +615,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                         <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
                                         <paper-listbox slot="dropdown-content">
                                             <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
                                             </template>
                                         </paper-listbox>
                                     </paper-menu-button>
@@ -628,8 +638,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         <template is="dom-if" if="[[_size(patientData)]]">
                             <div class="resInfos">
                                 <div class="patientInfos">
-                                    <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                    <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                     <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                     <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                     <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -641,8 +651,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                             </div>
                         </template>
 
-                        <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
-                        <pdf-element src="[[_selectData(dataUrl, data)]]" elevation="5" downloadable="" fit-width="" fit-height="" enable-text-selection=""></pdf-element>
+                        <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
+                        <pdf-element src="[[_selectData(dataUrl, data)]]" elevation="5" downloadable fit-width fit-height enable-text-selection></pdf-element>
 
                         <template is="dom-if" if="[[hasComment]]">
                             <div class="form-comment">
@@ -660,29 +670,29 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                 <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
                                 <template is="dom-if" if="[[downloadable]]">
-                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-3"></paper-icon-button>
+                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-3"></paper-icon-button>
                                     <paper-tooltip for="downloadFile-3" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[!isPatDetail]]">
                                     <template is="dom-if" if="[[!forceNoAssignation]]">
-                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="actionIcons form-title-bar-btn button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="actionIcons form-title-bar-btn" id="assign-ico-lab"></paper-icon-button>
                                         <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                     </template>
                                 </template>
 
                                 <template is="dom-if" if="[[hubImportable]]">
-                                    <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document\$="[[data]]" data-transaction\$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[hubuploadable]]">
-                                    <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id\$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                                    <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
                                     <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
                                 </template>
 
                                 <template is="dom-if" if="[[forwardable]]">
-                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
+                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
                                     <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
                                 </template>
 
@@ -692,8 +702,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                         <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
                                         <paper-listbox slot="dropdown-content">
                                             <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                                <template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>
+                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                                <template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>
                                             </template>
                                         </paper-listbox>
                                     </paper-menu-button>
@@ -715,8 +725,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         <template is="dom-if" if="[[_size(patientData)]]">
                             <div class="resInfos">
                                 <div class="patientInfos">
-                                    <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                    <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                     <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                     <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                     <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -731,10 +741,107 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         <div class="img-container" style="text-transform:uppercase">
                             [[localize('noPreviewDownload','No preview available, please download the file',language)]]
                             <template is="dom-if" if="[[downloadable]]">
-                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" style="margin-left:10px" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-4"></paper-icon-button>
+                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" style="margin-left:10px" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-4"></paper-icon-button>
                                 <paper-tooltip for="downloadFile-4" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                             </template>
                         </div>
+
+                    </template>
+
+                    <template is="dom-if" if="[[_heicMimeType(document)]]">
+                        <div class="form-title">
+                            [[_title(document.name, title)]]
+                            <div>
+
+                                <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+
+                                <template is="dom-if" if="[[downloadable]]">
+                                    <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-1"></paper-icon-button>
+                                    <paper-tooltip for="downloadFile-1" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[printable]]">
+                                    <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id$="[[contactId]]" data-document-id$="[[_getId(document)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
+                                    <paper-tooltip for="printDocument" position="left">[[localize('pri','Print',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
+                                    <template is="dom-if" if="[[!isPatDetail]]">
+                                        <template is="dom-if" if="[[!forceNoAssignation]]">
+                                            <paper-icon-button on-tap="_triggerOpenAssignmentDialog" icon="icons:assignment-ind" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                            <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
+                                        </template>
+                                    </template>
+                                </template>
+
+                                <template is="dom-if" if="[[hubImportable]]">
+                                    <paper-icon-button  icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                                    <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[hubuploadable]]">
+                                    <paper-icon-button  icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                                    <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[forwardable]]">
+                                    <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
+                                    <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[sendbyemail]]">
+                                    <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                    <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[allowEsLink]]">
+                                    <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
+                                    <paper-menu-button class="form-title-bar-btn" horizontal-align="right" dynamic-align="true" vertical-offset="30">
+                                        <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
+                                        <paper-listbox slot="dropdown-content">
+                                            <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
+                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                            </template>
+                                        </paper-listbox>
+                                    </paper-menu-button>
+                                </template>
+
+                                <template is="dom-if" if="[[allowEditLabelAndTransaction]]">
+                                    <paper-icon-button icon="create" on-tap="_editLabelAndTransaction" class="button--icon-btn" id="editLabelAndTransaction"></paper-icon-button>
+                                    <paper-tooltip for="editLabelAndTransaction" position="left">[[localize('editLabelAndTransaction','Edit label and type',language)]]</paper-tooltip>
+                                </template>
+
+                                <template is="dom-if" if="[[allowDeletion]]">
+                                    <paper-icon-button icon="delete" on-tap="_deleteService" class="button--icon-btn" id="deleteService"></paper-icon-button>
+                                    <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
+                                </template>
+
+                            </div>
+                        </div>
+                        <template is="dom-if" if="[[_size(patientData)]]">
+                            <div class="resInfos">
+                                <div class="patientInfos">
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                    <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
+                                    <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
+                                    <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
+                                    <div class="m-b-3"><iron-icon icon="social:location-city" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[patientData.address.postalCode]] [[patientData.address.city]]</div>
+                                    <div class="flTopRight">
+                                        <iron-icon icon="icons:check-circle" class="m-r-5 w20 m-t-minus-2 darkerGreen"></iron-icon> <span class="bold darkerGreen">[[localize('documentAssigned','Document assigned',language)]]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template is="dom-if" if="[[isLoadingHeic]]"><ht-spinner active></ht-spinner></template>
+                        <div class="img-container"><template is="dom-if" if="[[heicToJpgImgSrc]]"><img src$="[[heicToJpgImgSrc]]"></template></div>
+                        <template is="dom-if" if="[[hasComment]]">
+                            <div class="form-comment">
+                                [[comment]]
+                            </div>
+                        </template>
 
                     </template>
 
@@ -748,14 +855,14 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                             <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
                             <template is="dom-if" if="[[downloadable]]">
-                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-4"></paper-icon-button>
+                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-4"></paper-icon-button>
                                 <paper-tooltip for="downloadFile-4" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
                                 <template is="dom-if" if="[[!isPatDetail]]">
                                     <template is="dom-if" if="[[!forceNoAssignation]]">
-                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                        <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
                                         <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                     </template>
                                 </template>
@@ -767,8 +874,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                     <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
                                     <paper-listbox slot="dropdown-content">
                                         <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                            <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                            <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                            <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                            <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
                                         </template>
                                     </paper-listbox>
                                 </paper-menu-button>
@@ -790,8 +897,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[_size(patientData)]]">
                         <div class="resInfos">
                             <div class="patientInfos">
-                                <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                 <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                 <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                 <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -803,8 +910,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         </div>
                     </template>
 
-                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
-                    <pdf-element src="[[pdfData]]" elevation="5" downloadable="" fit-width="" fit-height="" enable-text-selection=""></pdf-element>
+                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
+                    <pdf-element src="[[pdfData]]" elevation="5" downloadable fit-width fit-height enable-text-selection></pdf-element>
                     <template is="dom-if" if="[[hasComment]]">
                         <div class="form-comment">
                             [[comment]]
@@ -820,8 +927,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[_size(patientData)]]">
                         <div class="resInfos">
                             <div class="patientInfos">
-                                <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                 <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                 <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                 <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -833,92 +940,98 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                         </div>
                     </template>
 
-                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
+                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
                     <p><a href="[[data.url]]" target="_blank">External link</a></p>
                 </template>
 
                 <template is="dom-if" if="[[_plainMimeType(document.mainUti, document.otherUtis.*, null, data)]]">
-                    <template is="dom-if" if="[[attachmentContent.length]]">
+                    <template is="dom-if" if="[[!_heicMimeType(document)]]">
+                        <template is="dom-if" if="[[attachmentContent.length]]">
 
-                        <template is="dom-if" if="[[!isBodyTextOfEmail]]">
-                            <div class="form-title">
-                                [[_title(document.name, title)]]
-                                <div>
+                            <template is="dom-if" if="[[!isBodyTextOfEmail]]">
+                                <div class="form-title">
+                                    [[_title(document.name, title)]]
+                                    <div>
 
-                                    <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
+                                        <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
-                                    <template is="dom-if" if="[[downloadable]]">
-                                        <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-5"></paper-icon-button>
-                                        <paper-tooltip for="downloadFile-5" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
-                                    </template>
-
-                                    <template is="dom-if" if="[[printable]]">
-                                        <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id\$="[[contactId]]" data-document-id\$="[[_getId(document)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
-                                        <paper-tooltip for="printFile" position="left">[[localize('print','Print',language)]]</paper-tooltip>
-                                    </template>
-
-                                    <template is="dom-if" if="[[forwardable]]">
-                                        <paper-icon-button on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
-                                        <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
-                                    </template>
-
-                                    <template is="dom-if" if="[[!isPatDetail]]">
-                                        <template is="dom-if" if="[[!forceNoAssignation]]">
-                                            <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
-                                            <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[downloadable]]">
+                                            <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-5"></paper-icon-button>
+                                            <paper-tooltip for="downloadFile-5" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                                         </template>
-                                    </template>
 
-                                    <template is="dom-if" if="[[allowEsLink]]">
-                                    <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
-                                    <paper-menu-button class="form-title-bar-btn" horizontal-align="right" dynamic-align="true" vertical-offset="30">
-                                        <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
-                                        <paper-listbox slot="dropdown-content">
-                                            <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                                <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                                <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                        <template is="dom-if" if="[[printable]]">
+                                            <paper-icon-button  icon="print" on-tap="_printDocument" data-contact-id$="[[contactId]]" data-document-id$="[[_getId(document)]]" class="button--icon-btn" id="printDocument"></paper-icon-button>
+                                            <paper-tooltip for="printFile" position="left">[[localize('print','Print',language)]]</paper-tooltip>
+                                        </template>
+
+                                        <template is="dom-if" if="[[forwardable]]">
+                                            <paper-icon-button on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
+                                            <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                                        </template>
+
+                                        <template is="dom-if" if="[[sendbyemail]]">
+                                            <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                            <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
+                                        </template>
+
+                                        <template is="dom-if" if="[[!isPatDetail]]">
+                                            <template is="dom-if" if="[[!forceNoAssignation]]">
+                                                <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                                <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                             </template>
-                                        </paper-listbox>
-                                    </paper-menu-button>
-                                </template>
+                                        </template>
 
-                                    <template is="dom-if" if="[[allowEditLabelAndTransaction]]">
-                                        <paper-icon-button icon="create" on-tap="_editLabelAndTransaction" class="button--icon-btn" id="editLabelAndTransaction"></paper-icon-button>
-                                        <paper-tooltip for="editLabelAndTransaction" position="left">[[localize('editLabelAndTransaction','Edit label and type',language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[allowEsLink]]">
+                                        <paper-tooltip position="left" for="linkhe">[[localize('link_he','Link Health Element',language)]]</paper-tooltip>
+                                        <paper-menu-button class="form-title-bar-btn" horizontal-align="right" dynamic-align="true" vertical-offset="30">
+                                            <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
+                                            <paper-listbox slot="dropdown-content">
+                                                <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
+                                                    <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                                    <!--<template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>-->
+                                                </template>
+                                            </paper-listbox>
+                                        </paper-menu-button>
                                     </template>
 
-                                    <template is="dom-if" if="[[allowDeletion]]">
-                                        <paper-icon-button icon="delete" on-tap="_deleteService" class="button--icon-btn" id="deleteService"></paper-icon-button>
-                                        <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
-                                    </template>
+                                        <template is="dom-if" if="[[allowEditLabelAndTransaction]]">
+                                            <paper-icon-button icon="create" on-tap="_editLabelAndTransaction" class="button--icon-btn" id="editLabelAndTransaction"></paper-icon-button>
+                                            <paper-tooltip for="editLabelAndTransaction" position="left">[[localize('editLabelAndTransaction','Edit label and type',language)]]</paper-tooltip>
+                                        </template>
 
-                                </div>
-                            </div>
-                            <template is="dom-if" if="[[_size(patientData)]]">
-                                <div class="resInfos">
-                                    <div class="patientInfos">
-                                        <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                        <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
-                                        <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
-                                        <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
-                                        <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
-                                        <div class="m-b-3"><iron-icon icon="social:location-city" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[patientData.address.postalCode]] [[patientData.address.city]]</div>
-                                        <div class="flTopRight">
-                                            <iron-icon icon="icons:check-circle" class="m-r-5 w20 m-t-minus-2 darkerGreen"></iron-icon> <span class="bold darkerGreen">[[localize('documentAssigned','Document assigned',language)]]</span>
-                                        </div>
+                                        <template is="dom-if" if="[[allowDeletion]]">
+                                            <paper-icon-button icon="delete" on-tap="_deleteService" class="button--icon-btn" id="deleteService"></paper-icon-button>
+                                            <paper-tooltip for="deleteService" position="left">[[localize('del','Delete',language)]]</paper-tooltip>
+                                        </template>
+
                                     </div>
                                 </div>
+                                <template is="dom-if" if="[[_size(patientData)]]">
+                                    <div class="resInfos">
+                                        <div class="patientInfos">
+                                            <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                            <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                            <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
+                                            <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
+                                            <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
+                                            <div class="m-b-3"><iron-icon icon="social:location-city" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('zipHyphenCity','ZIP - City',language)]]: [[patientData.address.postalCode]] [[patientData.address.city]]</div>
+                                            <div class="flTopRight">
+                                                <iron-icon icon="icons:check-circle" class="m-r-5 w20 m-t-minus-2 darkerGreen"></iron-icon> <span class="bold darkerGreen">[[localize('documentAssigned','Document assigned',language)]]</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
+                                <template is="dom-if" if="[[preview]]"><pre class="txt-container large">[[attachmentContent]]</pre></template>
+
                             </template>
 
-                            <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
-                            <template is="dom-if" if="[[preview]]"><pre class="txt-container large">[[attachmentContent]]</pre></template>
+                            <template is="dom-if" if="[[isBodyTextOfEmail]]"><pre class="txt-container large bodyOfEmail">[[attachmentContent]]</pre></template>
 
                         </template>
-
-                        <template is="dom-if" if="[[isBodyTextOfEmail]]"><pre class="txt-container large bodyOfEmail">[[attachmentContent]]</pre></template>
-
                     </template>
-
                 </template>
 
                 <template is="dom-if" if="[[_unknownMimeType(document.mainUti, document.otherUtis.*, dataUrl, data)]]">
@@ -929,30 +1042,35 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                             <template is="dom-if" if="[[allowEsLink]]"><dynamic-pills health-elements="[[_selectedHes(healthElements.*, contact.subContacts.*)]]" on-unlink-to-health-element="_unlinkDoc"></dynamic-pills></template>
 
                             <template is="dom-if" if="[[downloadable]]">
-                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-6"></paper-icon-button>
+                                <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-6"></paper-icon-button>
                                 <paper-tooltip for="downloadFile-6" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[!isPatDetail]]">
                                 <template is="dom-if" if="[[!forceNoAssignation]]">
-                                    <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                    <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
                                     <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                                 </template>
                             </template>
 
                             <template is="dom-if" if="[[hubImportable]]">
-                                <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document\$="[[data]]" data-transaction\$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                                <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
                                 <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[hubuploadable]]">
-                                <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id\$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                                <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
                                 <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[forwardable]]">
-                                <paper-icon-button on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
+                                <paper-icon-button on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument" icon="forward"></paper-icon-button>
                                 <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
+                            </template>
+
+                            <template is="dom-if" if="[[sendbyemail]]">
+                                <paper-icon-button icon="communication:email" on-tap="_sendByEmail" data-document-id$="[[document.id]]" class="button--icon-btn" id="sendByEmail"></paper-icon-button>
+                                <paper-tooltip for="sendByEmail" position="left">[[localize('sendByEmail','Send by email',language)]]</paper-tooltip>
                             </template>
 
                             <template is="dom-if" if="[[allowEsLink]]">
@@ -961,8 +1079,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                     <paper-icon-button id="linkhe" class="button--icon-btn" icon="icons:link" slot="dropdown-trigger"></paper-icon-button>
                                     <paper-listbox slot="dropdown-content">
                                         <template is="dom-repeat" items="[[linkableHealthElements]]" as="he">
-                                            <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class\$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class\$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
-                                            <template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class\$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>
+                                            <template is="dom-if" if="[[he.id]]"><paper-item id="[[he.id]]" class$="link [[_isExcluded(he)]]" on-tap="_linkDoc"><label class$="colour-code [[he.colour]]"><span></span></label>[[he.descr]]</paper-item></template>
+                                            <template is="dom-if" if="[[!he.id]]"><paper-item id="[[he.idService]]" class$="link [[he.colour]]" on-tap="_linkDoc"><label class="colour-code"><span></span></label>[[he.descr]]</paper-item></template>
                                         </template>
                                     </paper-listbox>
                                 </paper-menu-button>
@@ -984,8 +1102,8 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[_size(patientData)]]">
                         <div class="resInfos">
                             <div class="patientInfos">
-                                <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                 <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                 <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                 <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -999,7 +1117,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
 
                     <pre class="txt-container large">[[attachmentContent]]</pre>
 
-                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active=""></ht-spinner></template>
+                    <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
                 </template>
 
             </paper-card>
@@ -1009,43 +1127,43 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
 
 
         <template is="dom-if" if="[[isLabOrProtocol]]">
-            <paper-card class\$="pat-details-card [[_fullWidth(fullwidth)]]" rel="isLabOrProtocol">
+            <paper-card class$="pat-details-card [[_fullWidth(fullwidth)]]" rel="isLabOrProtocol">
 
-                <template is="dom-if" if="[[isLoading]]"><div class="spinnerContainer"><ht-spinner active=""></ht-spinner></div></template>
+                <template is="dom-if" if="[[isLoading]]"><div class="spinnerContainer"><ht-spinner active></ht-spinner></div></template>
 
                 <div class="form-title bold">
                     <span class="fs12em"><iron-icon icon="vaadin:flask" class="darkBlue w-20 m-r-5"></iron-icon> [[localize('boxtitle.labResult','Lab results',language)]] <span class="regular italic">([[labOrProtocolContentFirstItem.labo]])</span> - [[localize('prot','Protocol',language)]] <span class="darkBlue">#[[labOrProtocolContentFirstItem.protocol]]</span> - <span class="darkRed">[[labOrProtocolTotalPatients]] [[localize('singularOrPluralpatient','Patient(s)',language)]]</span></span>
                     <div>
 
                         <template is="dom-if" if="[[downloadable]]">
-                            <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataurl\$="[[item.dataUrl]]" class="button--icon-btn" id="downloadFile-7"></paper-icon-button>
+                            <paper-icon-button icon="file-download" on-tap="_downloadAnnex" dataUrl$='[[item.dataUrl]]' class="button--icon-btn" id="downloadFile-7"></paper-icon-button>
                             <paper-tooltip for="downloadFile-7" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                         </template>
 
                         <template is="dom-if" if="[[printable]]">
-                            <paper-icon-button icon="print" on-tap="_printDocument" data-contact-id\$="[[contactId]]" data-document-id\$="[[_getId(document)]]" id="printDocument" class="button--icon-btn"></paper-icon-button>
+                            <paper-icon-button  icon="print" on-tap="_printDocument" data-contact-id$="[[contactId]]" data-document-id$="[[_getId(document)]]" id="printDocument" class="button--icon-btn"></paper-icon-button>
                             <paper-tooltip for="printDocument" position="left">[[localize('print','Print',language)]]</paper-tooltip>
                         </template>
 
                         <template is="dom-if" if="[[!isPatDetail]]">
                             <template is="dom-if" if="[[!forceNoAssignation]]">
-                                <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id\$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
+                                <paper-icon-button icon="icons:assignment-ind" on-tap="_triggerOpenAssignmentDialog" document-id$="[[item.id]]" class="button--icon-btn" id="assign-ico-lab"></paper-icon-button>
                                 <paper-tooltip for="assign-ico-lab" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                             </template>
                         </template>
 
                         <template is="dom-if" if="[[hubImportable]]">
-                            <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document\$="[[data]]" data-transaction\$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
+                            <paper-icon-button icon="icons:cloud-download" on-tap="_importDocumentFromHub" data-document$="[[data]]" data-transaction$="[[transactionInfo]]" class="button--icon-btn" id="downloadFileOnHub"></paper-icon-button>
                             <paper-tooltip for="downloadFileOnHub" position="left">[[localize('hub-down-fil-pat','Download file into patient folder',language)]]</paper-tooltip>
                         </template>
 
                         <template is="dom-if" if="[[hubuploadable]]">
-                            <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id\$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
+                            <paper-icon-button icon="icons:cloud-upload" on-tap="_uploadOnHubs" data-document-id$="[[document.id]]" class="button--icon-btn" id="uploadFileOnHub"></paper-icon-button>
                             <paper-tooltip for="uploadFileOnHub" position="left">[[localize('hub-upl-fil','Upload file on hubs',language)]]</paper-tooltip>
                         </template>
 
                         <template is="dom-if" if="[[forwardable]]">
-                            <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id\$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
+                            <paper-icon-button icon="arrow-forward" on-tap="_forwardDocument" data-document-id$="[[document.id]]" class="button--icon-btn" id="forwardDocument"></paper-icon-button>
                             <paper-tooltip for="forwardDocument" position="left">[[localize('forwardDocumentToColleague','Forward document to a colleague',language)]]</paper-tooltip>
                         </template>
 
@@ -1060,9 +1178,9 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
 
                         <template is="dom-if" if="[[_size(patientData)]]">
                             <div class="resInfos">
-                                <div class="patientInfos">
-                                    <div class="patientPicture"><img src\$="[[_renderPatientPicture(patientData)]]"></div>
-                                    <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(patientData.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
+                                <div class="patientInfos" >
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(patientData)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(patientData.sex)]]" class$="m-r-5 [[_colorCssClassBySex(patientData.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[patientData.lastName]] [[patientData.firstName]]</b></div>
                                     <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(patientData.ssin)]]</div>
                                     <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[patientData.dateOfBirthHr]]</div>
                                     <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: [[patientData.address.street]] [[patientData.address.houseNumber]] [[patientData.address.postboxNumber]]</div>
@@ -1079,9 +1197,9 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
 
                         <template is="dom-if" if="[[!_size(patientData)]]">
                             <div class="resInfos">
-                                <div class="patientInfos">
-                                    <div class="patientPicture"><img src\$="[[_renderPatientPicture(resInfo)]]"></div>
-                                    <div class="m-b-3"><iron-icon icon\$="[[_iconBySex(resInfo.sex)]]" class\$="m-r-5 [[_colorCssClassBySex(resInfo.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[resInfo.lastName]] [[resInfo.firstName]]</b></div>
+                                <div class="patientInfos" >
+                                    <div class="patientPicture"><img src$="[[_renderPatientPicture(resInfo)]]"></div>
+                                    <div class="m-b-3"><iron-icon icon$="[[_iconBySex(resInfo.sex)]]" class$="m-r-5 [[_colorCssClassBySex(resInfo.sex)]] w20 m-t-minus-2"></iron-icon> <b>[[resInfo.lastName]] [[resInfo.firstName]]</b></div>
                                     <div class="m-b-3"><iron-icon icon="vaadin:user-card" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('ssinPatVerbose','National identification number',language)]]: [[_formatSsinNumber(resInfo.ssin)]]</div>
                                     <div class="m-b-3"><iron-icon icon="social:cake" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('birthDate','Birth date',language)]]: [[_YYYYMMDDDateToHrDate(resInfo.dateOfBirth)]]</div>
                                     <div class="m-b-3"><iron-icon icon="icons:home" class="m-r-5 w20 m-t-minus-2"></iron-icon> [[localize('postalAddress','Address',language)]]: -</div>
@@ -1226,6 +1344,10 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: false
           },
+          isLoadingHeic: {
+              type: Boolean,
+              value: false
+          },
           fullwidth: {
               type: Boolean,
               value: false
@@ -1278,6 +1400,10 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
               type: String,
               value: "forward-document"
           },
+          heicToJpgImgSrc: {
+              type: String,
+              value: ""
+          },
           allowEsLink: {
               type: Boolean,
               value: false
@@ -1300,7 +1426,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get observers() {
-      return ['_documentIdChanged(documentId, api, user)','_dataUrlChanged(dataUrl)', '_dataChanged(data)']
+      return ['_documentIdChanged(documentId, api, user)','_dataUrlChanged(dataUrl)', '_dataChanged(data)', '_heicToJpg(document)']
   }
 
   constructor() {
@@ -1330,97 +1456,105 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
       this.dispatchEvent(new CustomEvent('trigger-open-assignment-dialog', {detail: {documentId: this.documentId}, bubbles: true, composed: true}))
   }
 
-  _documentIdChanged() {
-      if (!this.documentId || !this.api || !this.user) {
-          this.set('isLoading',false)
-          return;
-      }
-      this.set('isLoading',true)
+    _documentIdChanged() {
+        if (!this.documentId || !this.api || !this.user) {
+            this.set('isLoading',false)
+            return;
+        }
+        this.set('isLoading',true)
 
-      const contac1 = _.find(this.contacts, ctc => _.some(_.get(ctc,"services",[]), svc => _.trim(_.get(svc,"content."+ this.language +".documentId")) === _.trim(_.get(this,"documentId",""))));
-      const contact = _.find(this.contacts, ctc => _.some(_.get(ctc,"services",[]), svc => _.trim(_.get(this.api.contact().preferredContent(svc, this.language), "documentId")) === _.trim(_.get(this,"documentId",""))));
-      this.set("contact", contact);
-      this.set("contactId", _.trim(_.get(this.contact,"id","")));
+        const contact = _.find(this.contacts, ctc => _.some(_.get(ctc,"services",[]), svc => _.trim(_.get(svc,"content."+ this.language +".documentId")) === _.trim(_.get(this,"documentId",""))));
+        this.set("contact", contact);
+        this.set("contactId", _.trim(_.get(this.contact,"id","")));
 
-      const docId = this.documentId
-      this.api.document().getDocument(docId)
-          .then(doc => {
-              this.set('document', doc)
-              if (_.size(doc.encryptionKeys) || _.size(doc.delegations)) {
-                  this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
-                      .then(({extractedKeys: enckeys}) => {
-                          if(_.trim(_.get(doc,"mainUti","")) === "public.html")
-                              this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
-                          const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
-                          this.set('dataUrl', url)
-                      })
-                      .catch(() => {
-                          const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                          this.set('dataUrl', url)
-                      })
-              } else {
-                  const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                  this.set('dataUrl', url)
-              }
-          })
-          .then(() => this._getComment())
-          .then(comment => {
-              comment && this.set("comment", comment);
-              this.set("hasComment", !!comment);
-          })
-          .catch(error => {
-              console.log(error);
-          })
-          .finally(() => this.set('isLoading', false))
-  }
+        const docId = this.documentId
+        this.api.document().getDocument(docId)
+            .then(doc => {
+                this.set('document', doc)
+                if (_.size(doc.encryptionKeys) || _.size(doc.delegations)) {
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
+                        .then(({extractedKeys: enckeys}) => {
+                            if(_.trim(_.get(doc,"mainUti","")) === "public.html") this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
+                            const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
+                            this.set('dataUrl', url)
+                        })
+                        .catch(() => {
+                            const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
+                            this.set('dataUrl', url)
+                        })
+                } else {
+                    const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
+                    this.set('dataUrl', url)
+                }
+            })
+            .then(() => this._getComment())
+            .then(comment => {
+                comment && this.set("comment", comment);
+                this.set("hasComment", !!comment);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+            .finally(() => this.set('isLoading', false))
+    }
 
-  _downloadAnnex(){
-      const doc = this.document
-      if (doc && (_.size(doc.encryptionKeys) || _.size(doc.delegations))) {
-          this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations
-          ).then(({extractedKeys: enckeys}) => {
-              const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
-              const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
-              const docName = !docExt && utiExt ? doc.name + "." + (!utiExt.includes("text") ? utiExt : "txt") : doc.name
-              const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
-              let a = document.createElement("a");
-              document.body.appendChild(a);
-              this.appendChild(a);
-              a.style = "display: none";
-              a.download = doc.name // optional
-              a.setAttribute('href', url);
-              a.click();
-              window.URL.revokeObjectURL(url);
-          })
-      } else {
-          if(this.data && this.data.value){
-              let image_data = atob(this.data.value);
-              let arraybuffer = new ArrayBuffer(image_data.length);
-              let view = new Uint8Array(arraybuffer);
-              for (let i=0; i<image_data.length; i++) {
-                  view[i] = image_data.charCodeAt(i) & 0xff;
-              }
-              let blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+    _downloadAnnex(){
 
-              let url = window.URL.createObjectURL(blob)
-              let a = document.createElement("a");
-              this.appendChild(a);
-              a.style = "display: none";
-              a.href = url;
-              if(this.data && this.data.mediatype && this.data.mediatype === "IMAGE_JPEG"){
-                  a.download = `${"image"}_${moment()}.jpeg`;
-              }else {
-                  a.download = `${"image"}_${moment()}.png`;
-              }
-              a.click();
-              this.removeChild(a);
-              window.URL.revokeObjectURL(url);
-          } else if(this.dataUrl){
-              console.log("dataUrl : ", this.dataUrl)
-          }
-      }
+        const doc = this.document
 
-  }
+        const fileExtension = _
+            .chain(this.api.document().utiExts)
+            .map((v,k) => _.trim(v) !== _.trim(_.get(doc,"mainUti")) ? null : k)
+            .compact()
+            .head()
+            .trim()
+            .value()
+
+        const downloadFilename = _.trim(_.get(doc,"name",this.api.crypto().randomUuid())) + ( _.trim(_.get(doc,"name")).toLowerCase().indexOf(fileExtension.toLowerCase()) > -1 ? "" : "." + fileExtension)
+
+        if (doc && (_.size(doc.encryptionKeys) || _.size(doc.delegations))) {
+            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
+                .then(({extractedKeys: enckeys}) => {
+                    const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
+                    const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
+                    const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
+                    const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
+                    this.api.triggerUrlDownload(_.get(this,"dataUrl"), downloadFilename)
+                })
+        } else {
+
+            if(this.data && this.data.value) {
+
+                let image_data = atob(this.data.value);
+                let arraybuffer = new ArrayBuffer(image_data.length);
+                let view = new Uint8Array(arraybuffer);
+                for (let i=0; i<image_data.length; i++) {
+                    view[i] = image_data.charCodeAt(i) & 0xff;
+                }
+                let blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+
+                let url = window.URL.createObjectURL(blob)
+                let a = document.createElement("a");
+                this.appendChild(a);
+                a.style = "display: none";
+                a.href = url;
+                if(this.data && this.data.mediatype && this.data.mediatype === "IMAGE_JPEG"){
+                    a.download = `${"image"}_${moment()}.jpeg`;
+                }else {
+                    a.download = `${"image"}_${moment()}.png`;
+                }
+                a.click();
+                this.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } else if(_.trim(_.get(this,"dataUrl"))) {
+
+                this.api.triggerUrlDownload(_.get(this,"dataUrl"), downloadFilename)
+
+            }
+        }
+
+    }
 
   _print(e) {
       const target = this.document || null
@@ -1468,13 +1602,24 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
       return data && data.mediatype ? data.mediatype === "TEXT_HTML" : false
   }
 
-  _unknownMimeType(uti, utis, dataUrl, data) {
-      return (!this._imageMimeType(uti, utis, dataUrl, data) && !this._pdfMimeType(uti, utis, dataUrl, data) && !this._xmlMimeType(uti, utis)
-          && !this._plainMimeType(uti, utis)&& !this._pdfRenderableMimeType(uti, utis, null, data)
-          && !this._urlMimeType(uti, utis, null, data))
-  }
+    _unknownMimeType(uti, utis, dataUrl, data) {
 
-  /**@todo julien changer le fetch pour l'electron api*/
+        return (
+            !this._heicMimeType()
+            && !this._imageMimeType(uti, utis, dataUrl, data)
+            && !this._pdfMimeType(uti, utis, dataUrl, data)
+            && !this._xmlMimeType(uti, utis)
+            && !this._plainMimeType(uti, utis) &&
+            !this._pdfRenderableMimeType(uti, utis, null, data)
+            && !this._urlMimeType(uti, utis, null, data)
+        )
+    }
+
+    _heicMimeType(givenDocument=false) {
+        const document = givenDocument || _.get(this,"document",false)
+        return document && _.get(document,"attachmentId",false) && ["heic","heif"].indexOf(_.trim(_.trim(_.get(document,"name","")).toLowerCase().split(".").pop())) > -1
+    }
+
   _dataUrlChanged(dataUrl) {
       const promResolve = Promise.resolve()
       if (dataUrl && dataUrl.length && this.document && this.document.mainUti !== "com.adobe.pdf" && this.document.mainUti !== "public.jpeg" && this.document.mainUti !== "public.png") {
@@ -1507,7 +1652,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                                   })
 
                           }
-                  }).catch((e) => console.log('Handle error: ', e))
+                      }).catch((e) => console.log('Handle error: ', e))
               })
               .finally(()=>this.set('isLoading',false))
       }else{
@@ -1515,18 +1660,18 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
       }
   }
 
-  _dataChanged(data) {
-      if (data) {
-          this.set('isLabOrProtocol', false)
-          this.set('attachmentContent', data && data.value ? data.value : data)
-          this.set('isLoading',false)
-          if(data && data.content && (data.l || data.l === null)){
-              this._renderData(data);
-          }
-      } else {
-          this.set('isLabOrProtocol', false)
-      }
-  }
+    _dataChanged(data) {
+        if (data) {
+            this.set('isLabOrProtocol', false)
+            this.set('attachmentContent', data && data.value ? data.value : data)
+            this.set('isLoading',false)
+            if(data && data.content && (data.l || data.l === null)){
+                this._renderData(data);
+            }
+        } else {
+            this.set('isLabOrProtocol', false)
+        }
+    }
 
   _selectData(dataUrl, data){
       //data.value: kmehr lnk element
@@ -1722,6 +1867,46 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
   _deleteService(e) {
       this.dispatchEvent(new CustomEvent('delete-service', {detail: {contact: this.contact, document: this.document}, composed: true, bubbles: true}));
   }
+
+    getImageType(buffer) {
+        const arr = new Uint8Array(buffer).subarray(0, 4)
+        let header = ""; for (let i = 0; i < arr.length; i++)  header += arr[i].toString(16);
+        switch (header) {
+            case "89504e47": return "image/png";
+            case "47494638": return "image/gif";
+            case "ffd8ffe0":
+            case "ffd8ffe1":
+            case "ffd8ffe2":
+            case "ffd8ffe3":
+            case "ffd8ffe8": return "image/jpeg";
+            default: return false;
+        }
+    }
+
+
+    blobToBase64(blob) {
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader;
+            reader.onerror = reject
+            reader.onload = () =>  resolve(reader.result)
+            reader.readAsDataURL(blob)
+        })
+
+    }
+
+    _heicToJpg(document) {
+
+        const promResolve = Promise.resolve()
+
+        return document && this._heicMimeType(document) && promResolve
+            .then(() => this.set("isLoadingHeic", true))
+            .then(() => this.api.heicToJpg(document))
+            .then(base64Image => !base64Image ? null : this.set("heicToJpgImgSrc",base64Image))
+            .finally(() => this.set("isLoadingHeic", false))
+
+    }
+
 }
 
 customElements.define(DynamicDoc.is, DynamicDoc);

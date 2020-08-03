@@ -1,34 +1,32 @@
 import '../fhc-api/fhc-api.js';
-import * as api from 'icc-api/dist/icc-api/iccApi'
+import * as api from '@taktik/icc-api/dist/icc-api/iccApi'
 import moment from 'moment'
 import _ from 'lodash/lodash';
 
-import {IccBedrugsXApi} from 'icc-api/dist/icc-x-api/icc-bedrugs-x-api'
-import {IccBekmehrXApi} from 'icc-api/dist/icc-x-api/icc-bekmehr-x-api'
-import {IccCodeXApi} from 'icc-api/dist/icc-x-api/icc-code-x-api'
-import {IccContactXApi} from 'icc-api/dist/icc-x-api/icc-contact-x-api'
-import {IccCryptoXApi} from 'icc-api/dist/icc-x-api/icc-crypto-x-api'
-import {IccDocumentXApi} from 'icc-api/dist/icc-x-api/icc-document-x-api'
-import {IccFormXApi} from 'icc-api/dist/icc-x-api/icc-form-x-api'
-import {IccHcpartyXApi} from 'icc-api/dist/icc-x-api/icc-hcparty-x-api'
-import {IccHelementXApi} from 'icc-api/dist/icc-x-api/icc-helement-x-api'
-import {IccPatientXApi} from 'icc-api/dist/icc-x-api/icc-patient-x-api'
-import {IccReceiptXApi} from 'icc-api/dist/icc-x-api/icc-receipt-x-api'
-import {IccAccesslogXApi} from 'icc-api/dist/icc-x-api/icc-accesslog-x-api'
-import {IccUserXApi} from 'icc-api/dist/icc-x-api/icc-user-x-api'
-import {IccInvoiceXApi} from 'icc-api/dist/icc-x-api/icc-invoice-x-api'
-import {IccMessageXApi} from 'icc-api/dist/icc-x-api/icc-message-x-api'
-import {IccClassificationXApi} from 'icc-api/dist/icc-x-api/icc-classification-x-api'
+import {IccBekmehrXApi} from '@taktik/icc-api/dist/icc-x-api/icc-bekmehr-x-api'
+import {IccCodeXApi} from '@taktik/icc-api/dist/icc-x-api/icc-code-x-api'
+import {IccContactXApi} from '@taktik/icc-api/dist/icc-x-api/icc-contact-x-api'
+import {IccCryptoXApi} from '@taktik/icc-api/dist/icc-x-api/icc-crypto-x-api'
+import {IccDocumentXApi} from '@taktik/icc-api/dist/icc-x-api/icc-document-x-api'
+import {IccFormXApi} from '@taktik/icc-api/dist/icc-x-api/icc-form-x-api'
+import {IccHcpartyXApi} from '@taktik/icc-api/dist/icc-x-api/icc-hcparty-x-api'
+import {IccHelementXApi} from '@taktik/icc-api/dist/icc-x-api/icc-helement-x-api'
+import {IccPatientXApi} from '@taktik/icc-api/dist/icc-x-api/icc-patient-x-api'
+import {IccReceiptXApi} from '@taktik/icc-api/dist/icc-x-api/icc-receipt-x-api'
+import {IccAccesslogXApi} from '@taktik/icc-api/dist/icc-x-api/icc-accesslog-x-api'
+import {IccUserXApi} from '@taktik/icc-api/dist/icc-x-api/icc-user-x-api'
+import {IccInvoiceXApi} from '@taktik/icc-api/dist/icc-x-api/icc-invoice-x-api'
+import {IccMessageXApi} from '@taktik/icc-api/dist/icc-x-api/icc-message-x-api'
+import {IccClassificationXApi} from '@taktik/icc-api/dist/icc-x-api/icc-classification-x-api'
 import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
-
-import {PolymerElement, html} from '@polymer/polymer';
-
 import heic2any from 'heic2any'
+
+import {html, PolymerElement} from '@polymer/polymer';
 
 class IccApi extends PolymerElement {
   static get template() {
     return html`
-        <fhc-api id="fhc-api" host="[[fhcHost]]"></fhc-api>
+        <fhc-api id="fhc-api" host="[[fhcHost]]" headers="[[fhcHeaders]]"></fhc-api>
 `;
   }
 
@@ -38,9 +36,14 @@ class IccApi extends PolymerElement {
 
   static get properties() {
       return {
+          fhcHeaders:{
+              type: Object,
+              value: {"Content-Type": "application/json",  "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              notify: true
+          },
           headers: {
               type: Object,
-              value: {"Content-Type": "application/json", "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers30s: {
@@ -62,6 +65,9 @@ class IccApi extends PolymerElement {
               type: String
           },
           fhcHost: {
+              type: String
+          },
+          electronHost: {
               type: String
           },
           baseApi: {
@@ -120,7 +126,7 @@ class IccApi extends PolymerElement {
   }
 
   static get observers() {
-      return ["refresh(headers, headers.*, host, fhcHost)"]
+      return ["refresh(headers, headers.*, host, fhcHost, electronHost)"]
   }
 
   constructor() {
@@ -138,27 +144,26 @@ class IccApi extends PolymerElement {
       Object.assign(this.headers120s, this.headers)
 
       this.authicc = new api.iccAuthApi(this.host, this.headers)
-      this.bemikronoicc = new api.iccBeMikronoApi(this.host, this.headers)
-      this.onlineBeMikronoicc = new api.iccBeMikronoApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
-      this.beresultexporticc = new api.iccBeResultExportApi(this.host, this.headers)
-      this.beresultimporticc = new api.iccBeResultImportApi(this.host, this.headers)
+      this.bemikronoicc = new api.iccBemikronoApi(this.host, this.headers)
+      this.onlineBeMikronoicc = new api.iccBemikronoApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
+      this.beresultexporticc = new api.iccBeresultexportApi(this.host, this.headers)
+      this.beresultimporticc = new api.iccBeresultimportApi(this.host, this.headers)
       this.doctemplateicc = new api.iccDoctemplateApi(this.host, this.headers)
       this.entitytemplateicc = new api.iccEntitytemplateApi(this.host, this.headers)
-      this.genericicc = new api.iccGenericApi(this.host, this.headers)
+
       this.icureicc = new api.iccIcureApi(this.host, this.headers)
       this.insuranceicc = new api.iccInsuranceApi(this.host, this.headers)
-      this.replicationicc = new api.iccReplicationApi(this.host, this.headers)
+
       this.tarificationicc = new api.iccTarificationApi(this.host, this.headers)
       this.entityreficc = new api.iccEntityrefApi(this.host, this.headers30s)
 
       this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
       this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
-      this.besamv2icc = new api.iccBeSamv2Api(this.host, this.headers)
+      this.besamv2icc = new api.iccBesamv2Api(this.host, this.headers)
 
       this.usericc = new IccUserXApi(this.host, this.headers)
 
       this.codeicc = new IccCodeXApi(this.host, this.headers)
-      this.bedrugsicc = new IccBedrugsXApi(this.host, this.headers)
 
       this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
@@ -180,8 +185,7 @@ class IccApi extends PolymerElement {
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
       this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
-      const hostElectron = this.host.includes(":16042") ? _.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042" : "http://127.0.0.1:16042"
-      this.desktopApi = new ElectronApi(hostElectron)
+      this.desktopApi = new ElectronApi(this.electronHost)
 
 
 
@@ -210,46 +214,6 @@ class IccApi extends PolymerElement {
       return this.authicc
   }
 
-  beab() {
-      return this.beabicc
-  }
-
-  bechapter() {
-      return this.bechaptericc
-  }
-
-  bedmg() {
-      return this.bedmgicc
-  }
-
-  bedrugs() {
-      return this.bedrugsicc
-  }
-
-  beefact() {
-      return this.beefacticc
-  }
-
-  beehbox() {
-      return this.beehboxicc
-  }
-
-  beeid() {
-      return this.beeidicc
-  }
-
-  beetarif() {
-      return this.beetarificc
-  }
-
-  begenins() {
-      return this.begeninsicc
-  }
-
-  behubs() {
-      return this.behubsicc
-  }
-
   bekmehr() {
       return this.bekmehricc
   }
@@ -262,14 +226,6 @@ class IccApi extends PolymerElement {
       return this.onlineBeMikronoicc
   }
 
-  beprimoto() {
-      return this.beprimotoicc
-  }
-
-  berecipe() {
-      return this.berecipeicc
-  }
-
   beresultexport() {
       return this.beresultexporticc
   }
@@ -280,18 +236,6 @@ class IccApi extends PolymerElement {
 
   besamv2() {
       return this.besamv2icc
-  }
-
-  bests() {
-      return this.bestsicc
-  }
-
-  betherlink() {
-      return this.betherlinkicc
-  }
-
-  bevitalink() {
-      return this.bevitalinkicc
   }
 
   code() {
@@ -316,10 +260,6 @@ class IccApi extends PolymerElement {
 
   form() {
       return this.formicc
-  }
-
-  generic() {
-      return this.genericicc
   }
 
   hcparty() {
@@ -354,9 +294,6 @@ class IccApi extends PolymerElement {
       return this.patienticc
   }
 
-  replication() {
-      return this.replicationicc
-  }
 
   receipt() {
       return this.receipticc
@@ -852,24 +789,22 @@ class IccApi extends PolymerElement {
 
   }
 
-    triggerFileDownload(fileRawContent, mimeType, downloadFileName, appendTarget = false ) {
+  triggerFileDownload(fileRawContent, mimeType, downloadFileName, appendTarget = false ) {
 
-        if(!fileRawContent || !_.trim(mimeType) || !_.trim(downloadFileName) ) return;
+      if(!fileRawContent || !_.trim(mimeType) || !_.trim(downloadFileName) ) return;
 
-        const urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
-        const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
+      const urlObject = window.URL.createObjectURL( new Blob([fileRawContent],{type :mimeType}) );
+      const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: urlObject, download:downloadFileName });
+      try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);}
+      catch(e) { window.open(_.trim(urlObject)) }
 
-        try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(urlObject);}
-        catch(e) { window.open(_.trim(urlObject)) }
+  }
 
-    }
-
-  triggerUrlDownload(downloadUrl, appendTarget = false ) {
+  triggerUrlDownload(downloadUrl, downloadFilename, appendTarget = false ) {
       if(!_.trim(downloadUrl)) return
-      try {
-          const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: downloadUrl })
-          (appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(downloadUrl);
-      } catch(e) { window.open(_.trim(downloadUrl)) }
+      const linkObject = _.merge(document.createElement("a"),{ style: "display: none", href: downloadUrl, download:downloadFilename })
+      try {(appendTarget?appendTarget:document.body).appendChild( linkObject ) && linkObject.click() && window.URL.revokeObjectURL(downloadUrl);}
+      catch(e) { window.open(_.trim(downloadUrl)) }
   }
 
   encryptDecryptFileContentByUserHcpIdAndDocumentObject( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
@@ -924,7 +859,7 @@ class IccApi extends PolymerElement {
 
   formatInamiNumber(inputContent) {
       // Split with hyphens (1,6,2,3) unless already has some or is empty
-      return !_.trim(inputContent) || inputContent.indexOf("-")>-1 ? inputContent : _.trim([inputContent.slice(0,1),inputContent.slice(1,6),inputContent.slice(6,8),inputContent.slice(8,11)].join("-"));
+      return inputContent.indexOf("-")>-1 || !_.trim(inputContent) ? inputContent : _.trim([inputContent.slice(0,1),inputContent.slice(1,6),inputContent.slice(6,8),inputContent.slice(8,11)].join("-"));
   }
 
   formatBankAccount(inputContent) {
@@ -939,7 +874,7 @@ class IccApi extends PolymerElement {
 
   isElectronAvailable() {
       return this.electron().checkAvailable()
-          .then(() => true)
+          .then(x => x)
           .catch(() => false)
   }
 
@@ -1138,79 +1073,64 @@ class IccApi extends PolymerElement {
       this.set("preventLogging",status)
   }
 
-
-    _isValidMail(email){
-
+    _isValidMail(email) {
         // return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(email))
-
         const values = _.map(_.trim(email).split(/,|;| /), _.trim)
-
         // RFC 2823
         const regExp1 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
-
         // RFC 5322
         const regExp2 = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/i
-
         // RFC 2822
         const regExp3 = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/i
-
         // RFC 2822
         const regExp4 = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i
-
         // Accepts unicode
         const regExp5 = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/i
-
         // Microsoft ASP MVC
         const regExp6 = /^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/i
-
-        return _.size(_.filter(values, it => _.trim(it) && regExp6.test(it) )) === _.size(values)
-
+        return _.size(_.filter(values, it => _.trim(it) && regExp6.test(it))) === _.size(values)
     }
 
     getImageType(buffer) {
-
         const arr = new Uint8Array(buffer).subarray(0, 4)
-        let header = ""; for (let i = 0; i < arr.length; i++)  header += arr[i].toString(16);
-
+        let header = "";
+        for (let i = 0; i < arr.length; i++) header += arr[i].toString(16);
         return header === "89504e47" ? "image/png" :
             header === "47494638" ? "image/gif" :
-                ["ffd8ffe0","ffd8ffe1","ffd8ffe2","ffd8ffe3","ffd8ffe8"].indexOf(header) > -1 ? "image/jpeg" :
+                ["ffd8ffe0", "ffd8ffe1", "ffd8ffe2", "ffd8ffe3", "ffd8ffe8"].indexOf(header) > -1 ? "image/jpeg" :
                     false
-
     }
 
     blobToBase64(blob) {
-
         return new Promise((resolve, reject) => {
             const reader = new FileReader;
             reader.onerror = reject
-            reader.onload = () =>  resolve(reader.result)
+            reader.onload = () => resolve(reader.result)
             reader.readAsDataURL(blob)
         })
-
     }
 
-    heicToJpg(document, attachmentContent=false) {
-
+    heicToJpg(document, attachmentContent = false) {
         const promResolve = Promise.resolve()
-
-        return !_.get(document,"id",null) || (!_.size(_.get(document,"encryptionKeys")) && !_.size(_.get(document,"delegations"))) ? promResolve : promResolve
+        return !_.get(document, "id", null) || (!_.size(_.get(document, "encryptionKeys")) && !_.size(_.get(document, "delegations"))) ? promResolve : promResolve
             .then(() => attachmentContent ? attachmentContent : this.user().getCurrentUser()
-                .then(currentUser => this.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(currentUser,"healthcarePartyId", null), _.trim(_.get(document,"id","")), _.size(_.get(document,"encryptionKeys",[])) ? _.get(document,"encryptionKeys",[]) : _.get(document,"delegations",[]))
-                    .then(({extractedKeys: enckeys}) => this.document().getAttachmentAs(_.trim(_.get(document,"id","")), _.trim(_.get(document,"attachmentId","")), "application/octet-stream", enckeys.join(',')))
+                .then(currentUser => this.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(currentUser, "healthcarePartyId", null), _.trim(_.get(document, "id", "")), _.size(_.get(document, "encryptionKeys", [])) ? _.get(document, "encryptionKeys", []) : _.get(document, "delegations", []))
+                    .then(({extractedKeys: enckeys}) => this.document().getAttachmentAs(_.trim(_.get(document, "id", "")), _.trim(_.get(document, "attachmentId", "")), "application/octet-stream", enckeys.join(',')))
                     .catch(e => console.log("ERROR getting attachment", e))
                 )
             )
             .then(decryptedContent => [this.getImageType(decryptedContent), new Blob([decryptedContent])])
-            .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type:imageMimeType}) : !imageBlobContent ? null : heic2any({blob: imageBlobContent, toType: "image/jpeg", quality: 0.9}).catch(()=>null))
+            .then(([imageMimeType, imageBlobContent]) => imageMimeType ? _.merge(imageBlobContent, {type: imageMimeType}) : !imageBlobContent ? null : heic2any({
+                blob: imageBlobContent,
+                toType: "image/jpeg",
+                quality: 0.9
+            }).catch(() => null))
             .then(imageBlobContent => !imageBlobContent ? null : this.blobToBase64(imageBlobContent).catch(() => null))
             .catch(() => null)
-
     }
 
-    executeFetchRequest(url, data, getAs=false){
+    executeFetchRequest(url, data, getAs = false) {
         const fetchImpl = typeof window !== "undefined" ? window.fetch : typeof self !== "undefined" ? self.fetch : fetch
-
         return fetchImpl(url, data).then(response => Promise.all([response, getAs === "application/octet-stream" ? response.arrayBuffer() : response.text()]))
             .then(([res, content]) => Promise.resolve({
                 response: res,
@@ -1218,17 +1138,16 @@ class IccApi extends PolymerElement {
             })).catch(err => console.log(err))
     }
 
-    isJson(str){
-        try{
+    isJson(str) {
+        try {
             JSON.parse(str)
-        }catch(e){
+        } catch (e) {
             return false
         }
-
         return true
     }
 
-    deleteRecursivelyNullValues(obj){
+    deleteRecursivelyNullValues(obj) {
         const ithis = this
         return _.transform(obj, function (o, v, k) {
             if (v && typeof v === 'object') {
@@ -1239,7 +1158,7 @@ class IccApi extends PolymerElement {
         });
     }
 
-    sleep (time) {
+    sleep(time) {
         return new Promise((resolve) => setTimeout(resolve, time));
     }
 

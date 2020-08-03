@@ -22,7 +22,7 @@ import './styles/notification-style.js';
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
@@ -753,11 +753,48 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 					</div>
 				</template>
 				<template is="dom-if" if="[[_isEqual(widget.id,'widgetUpdatesHistory')]]">
-					<widget-updates-history id="[[widget.id]]" language="[[language]]" resources="[[resources]]" class="card" on-dragstart="_dragWidgetStart" on-dragover="_dragWidgetOver" on-dragenter="_dragWidgetEnter" on-dragleave="_dragWidgetLeave" on-dragend="_dragWidgetEnd" on-drop="_dropWidget" style="--area:[[widget.id]];" on-update-selected="updateSelected"></widget-updates-history>
+					<widget-updates-history id="[[widget.id]]" language="[[language]]" resources="[[resources]]" class="card" on-dragstart="_dragWidgetStart" on-dragover="_dragWidgetOver" on-dragenter="_dragWidgetEnter" on-dragleave="_dragWidgetLeave" on-dragEnd="_dragWidgetEnd" on-drop="_dropWidget" style="--area:[[widget.id]];" on-update-selected="updateSelected"></widget-updates-history>
 				</template>
 			</template>
 		</div>
 
+		<paper-dialog id="updateDialog">
+			<h2 class="modal-title">[[selectedUpdate.mainTitle]]<label class="update-date"><span>[[selectedUpdate.updateDate]]</span></label></h2>
+			<div class="content">
+				<template is="dom-if" if="[[_isNews(selectedUpdate)]]">
+					<div class="newsContent">
+						<template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
+							<div inner-h-t-m-l="[[_localizeContent(module.description)]]"></div>
+						</template>
+					</div>
+				</template>
+				<template is="dom-if" if="[[_isUpdate(selectedUpdate)]]">
+					UPDATE
+					<div class="blockUpdate">
+						<div class="versionTitle bold">
+							Version: [[selectedUpdate.version]]
+						</div>
+						<ol>
+							<template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
+								<li>
+									<span class="releaseNoteTitle">[[_localizeContent(module.areaCode)]] - [[_localizeContent(module.title)]]</span>
+									[[_localizeContent(module.description)]]
+								</li>
+							</template>
+						</ol>
+						<template is="dom-if" if="_isLink(selectedUpdate)">
+							<div>
+								Plus d'infos, cliquez <a href="[[selectedUpdate.mainLink]]" target="_blank"> ici</a>.
+							</div>
+						</template>
+					</div>
+				</template>
+			</div>
+			<div class="buttons">
+				<paper-button class="button" dialog-dismiss>Close</paper-button>
+			</div>
+		</paper-dialog>
+		
 		<paper-dialog id="layoutDialog">
 			<h2 class="modal-title">[[localize('edit_layout','Edit layout',language)]]</h2>
 			<div class="content">
@@ -793,42 +830,6 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 		</paper-dialog>
 		
 		<!--todo changed var and make event in widget-update-history-->
-        <paper-dialog id="updateDialog">
-            <h2 class="modal-title">[[selectedUpdate.mainTitle]]<label class="update-date"><span>[[selectedUpdate.updateDate]]</span></label></h2>
-            <div class="content">
-                <template is="dom-if" if="[[_isNews(selectedUpdate)]]">
-                    <div class="newsContent">
-                        <template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
-                            <div inner-h-t-m-l="[[_localizeContent(module.description)]]"></div>
-                        </template>
-                    </div>
-                </template>
-                <template is="dom-if" if="[[_isUpdate(selectedUpdate)]]">
-                    UPDATE
-                    <div class="blockUpdate">
-                        <div class="versionTitle bold">
-                            Version: [[selectedUpdate.version]]
-                        </div>
-                        <ol>
-                            <template is="dom-repeat" items="[[selectedUpdate.modules]]" as="module">
-                                <li>
-                                    <span class="releaseNoteTitle">[[_localizeContent(module.areaCode)]] - [[_localizeContent(module.title)]]</span>
-                                    [[_localizeContent(module.description)]]
-                                </li>
-                            </template>
-                        </ol>
-                        <template is="dom-if" if="_isLink(selectedUpdate)">
-                            <div>
-                                Plus d'infos, cliquez <a href="[[selectedUpdate.mainLink]]" target="_blank"> ici</a>.
-                            </div>
-                        </template>
-                    </div>
-                </template>
-            </div>
-            <div class="buttons">
-                <paper-button class="button" dialog-dismiss="">Close</paper-button>
-            </div>
-        </paper-dialog>
 `;
   }
 
@@ -1064,7 +1065,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
           const desc = 'desc';
 
           const planningFilter = { '$type': 'UnionFilter', 'filters': [{ '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start, endValueDate: end }, { '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start * 1000000, endValueDate: end * 1000000 }] };
-          this.api.contact().filterServicesBy(null, null, 1000, new models.FilterChain({ filter: planningFilter })) //todo wtf JSON not valid
+          this.api.contact().filterServicesBy(null, null, 1000, new models.FilterChainService({ filter: planningFilter })) //todo wtf JSON not valid
           .then(planningList => {
               const svcDict = planningList.rows.reduce((acc, s) => {
                   const cs = acc[s.id];
@@ -1095,7 +1096,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
                   return services.map(s => ({ service: s, patient: patients.rows.find(p => p.id === s.patId) }))
               });
           }).then(services => this.set('services', (services || []).filter(it => it.patient)));
-          this._isLoadingToDoList = false;
+          this.set("_isLoadingToDoList",false);
 
       });
 	}
@@ -1123,7 +1124,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
               },
           ]
       }
-      this.api.contact().filterServicesBy(null, null, 50, new models.FilterChain({filter: labsFilter}))
+      this.api.contact().filterServicesBy(null, null, 50, new models.FilterChainService({filter: labsFilter}))
           .then(services => {
               return Promise.all(services.rows.map(s => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, s.id, s.cryptedForeignKeys).then(({extractedKeys: cfks}) => [s, cfks])))
                   .then(cfksLists => this.api.patient().filterByWithUser(this.user, null, null, 50, null, null, null, {

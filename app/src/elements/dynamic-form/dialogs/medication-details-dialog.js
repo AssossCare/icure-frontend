@@ -382,7 +382,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
       return {title: fields.length > 1 ? fields[0] : "", formula: fields.length > 1 ? fields[1] : fields.length > 0 ? fields[0] : ""};
   }
 
-  open(action, service, medicationContent, boxes) {
+    open(action,service, medicationContent, boxes) {
       this.set("saveAction",action)
       this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
           .then(hes => {
@@ -493,6 +493,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
 
   _valueChanged() {
       this.saveAction(this.medicationDetail)
+      //this.dispatchEvent(new CustomEvent('value-changed', {detail: {medication: this.medicationDetail}, bubbles: true, composed: true}))
   }
 
   _medicationName(svc) {

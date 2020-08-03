@@ -25,7 +25,7 @@ import '@vaadin/vaadin-details/vaadin-details'
 
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer'
 import {TkLocalizerMixin} from "../../../tk-localizer"
@@ -689,11 +689,11 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
             this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
 
             let prom = Promise.resolve()
-            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true), 100)))
+            _.chain(_.head(_.chunk(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true), 500)))
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
+                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto: _.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efactcontroller(),
                         undefined,
                         (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`), "doctor")
                     ).then(message => {

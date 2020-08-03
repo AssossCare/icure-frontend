@@ -30,7 +30,7 @@ import moment from 'moment/src/moment'
 import '../prose-editor/prose-editor/prose-editor'
 import * as evaljs from "evaljs"
 import mustache from "mustache/mustache.js"
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 const $_documentContainer = document.createElement('template')
 
@@ -57,7 +57,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     static get template() {
         return html`
-                <style>
+                <style include="shared-styles">
                     :host {
                         width: 160px;
                         max-width: 100%;                    
@@ -736,6 +736,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                                 <iron-icon icon="vaadin:ambulance"></iron-icon>
                                                 [[localize('care-path', 'Care path', language)]]
                                             </paper-button>
+                                            <paper-button on-tap="showEforms"><iron-icon icon="icons:description"></iron-icon>[[localize('eforms', 'E-forms', language)]]</paper-button>
+                                            <paper-button on-tap="_consultPcrValidationCode"><iron-icon icon="vaadin:rss-square"></iron-icon>[[localize('pcr-code', 'PCR following', language)]]</paper-button>
                                         </div>
                                     </div>
                                 </template>
@@ -755,23 +757,20 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             <span class="no-mobile">[[localize('clo','Close',language)]]</span>
                                             <iron-icon icon="[[_actionIcon(showOutGoingDocContainer)]]"></iron-icon>
                                         </paper-button>
+                                        
                                         <div class="outgoing-docs-container">
-                                            <template is="dom-repeat" id="outGoingDocumentTemplates"
-                                                      items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
-                                                <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]>
-                                                    <hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/>
-                                                </template>
-                                                <paper-button on-tap="_triggerOutGoingDocumentDialog"
-                                                              data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]">
-                                                    <iron-icon icon="icons:description"></iron-icon>
-                                                    [[outGoingDocumentTemplate.name]]
-                                                </paper-button>
+                                        
+                                            <paper-button on-tap="_triggerOpenOutGoingDocumentDialog" class="fw700"><iron-icon icon="icons:launch"></iron-icon>[[localize('openEditor','Open editor', language)]]</paper-button>
+                                            <hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/>
+                                            
+                                            <template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
+                                                <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
+                                                <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
                                             </template>
-                                            <paper-button on-tap="_exportSumehrDialog">
-                                                <iron-icon icon="icons:description"></iron-icon>
-                                                [[localize('export_sumehr','Export Sumehr', language)]]
-                                            </paper-button>
-                                        </div>
+                                            <paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
+                                        </div>                                        
+                                        
                                     </div>
                                 </template>
                 
@@ -1968,13 +1967,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _prescribe(e) {
         e.stopPropagation()
         // this.$.prescriptionDialog.open();
-        this.dispatchEvent(new CustomEvent("prescribe", {
-            detail: {
-                currentContact: this.currentContact,
-                servicesMaps: this.servicesMap,
-                globalHcp: this.globalHcp
-            }, composed: true, bubbles: true
-        }))
+        this.dispatchEvent(new CustomEvent("prescribe", {detail:{currentContact: this.currentContact, servicesMaps: this.servicesMap, globalHcp: this.globalHcp, contactId: _.get(e, 'detail.contactId', null)}, composed: true, bubbles: true}))
     }
 
     _handlePdfReport(e) {
@@ -4648,6 +4641,11 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.dispatchEvent(new CustomEvent('open-care-path-list', {detail: {}, composed: true, bubbles: true}))
     }
 
+    showEforms(){
+        this.set('showAddFormsContainer', false)
+        this.dispatchEvent(new CustomEvent('open-eforms-dialog', { detail: {}, composed: true, bubbles: true}));
+    }
+
     openBelRai() {
         this.set('showAddEvaFormsContainer', false)
         _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
@@ -4665,6 +4663,20 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                         ]
                     })
                 }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/") : window.open("https://www.vas.ehealth.fgov.be/registers/belrai/web/")
+    }
+
+    _consultPcrValidationCode(){
+        _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
+                .then(bearerToken => {
+                    this._sendPostRequest({
+                        action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+                        params: [
+                            {type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be" },
+                            {type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
+                        ]
+                    })
+                }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://pcr-test-prescription-web.acc.pub.vascloud.be") : window.open("https://pcr-test-prescription-web.prd.pub.vascloud.be")
     }
 
     _sendPostRequest(params) {
@@ -4946,6 +4958,19 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             .then(() => _.assign(targetCtc, {subContacts: _.filter(_.get(targetCtc, "subContacts", []), subCtc => _.size(_.get(subCtc, "services", [])))}))
             .then(() => !_.size(_.get(targetCtc, "services", [])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
             .finally(() => this.$['deleteServiceDialog'].close())
+
+    }
+
+    _isBold(x) {
+
+        return !!x ? "fw700" : ""
+
+    }
+
+    _triggerOpenOutGoingDocumentDialog(e) {
+
+        this.set('showOutGoingDocContainer', false);
+        return this.newReport_v2(null,null,{reOpen:true})
 
     }
 

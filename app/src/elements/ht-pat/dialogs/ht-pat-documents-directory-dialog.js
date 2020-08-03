@@ -463,10 +463,10 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
             <div class="content">
 
                 <div id="filterResults">
-                    <div class="filterContainer"><label>[[localize('document','Document',language)]] [[localize('inComingOutGoing','Incoming / outgoing',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float="" selected-item="{{_filterInComingOutGoingHr}}"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.inComingOutGoingHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
-                    <div class="filterContainer"><label>[[localize('type','Type',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float="" selected-item="{{_filterTypeHr}}"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.typeHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
-                    <div class="filterContainer"><label>[[localize('origin','Origin',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float="" selected-item="{{_filterOriginHr}}"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.originHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
-                    <div class="filterContainer"><label>[[localize('aut','Author',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float="" selected-item="{{_filterAuthorHr}}"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.authorHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
+                    <div class="filterContainer"><label>[[localize('document','Document',language)]] [[localize('inComingOutGoing','Incoming / outgoing',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float selected-item="{{_filterInComingOutGoingHr}}" on-value-changed="_filterResults"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.inComingOutGoingHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
+                    <div class="filterContainer"><label>[[localize('type','Type',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float selected-item="{{_filterTypeHr}}" on-value-changed="_filterResults"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.typeHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
+                    <div class="filterContainer"><label>[[localize('origin','Origin',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float selected-item="{{_filterOriginHr}}" on-value-changed="_filterResults"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.originHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
+                    <div class="filterContainer"><label>[[localize('aut','Author',language)]] [[localize('ofDocument','of document',language)]]:</label> <paper-dropdown-menu class="filtersDropDown" label="[[localize('choose','Choose',language)]]" no-label-float selected-item="{{_filterAuthorHr}}" on-value-changed="_filterResults"><paper-listbox slot="dropdown-content"><paper-item data-filter="">[[localize('any','Tous',language)]]</paper-item><template is="dom-repeat" items="[[_data.searchEngineValues.authorHr]]" as="item"><paper-item data-filter="[[item]]">[[item]]</paper-item></template></paper-listbox></paper-dropdown-menu></div>
                 </div>
 
                 <div class="docDetailDialog">
@@ -675,10 +675,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get observers() {
-      return [
-          '_vaadinGridActiveItemChanged(_vaadinGridActiveItem)',
-          '_filterResults(_filterInComingOutGoingHr, _filterTypeHr, _filterOriginHr, _filterAuthorHr)',
-      ];
+      return ['_vaadinGridActiveItemChanged(_vaadinGridActiveItem)'];
   }
 
   constructor() {
@@ -983,28 +980,6 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
 
   }
 
-  _filterResults(inComingOutGoingHr, typeHr, originHr, authorHr) {
-
-      if(!!_.get(this,"_isLocked",false)) return;
-
-      let finalResults = _.cloneDeep(_.get(this,"_data.directoryDocuments", []));
-      const inComingOutGoingHrValue = _.trim(_.get(inComingOutGoingHr,"dataFilter",""))
-      const typeHrValue = _.trim(_.get(typeHr,"dataFilter",""))
-      const originHrValue = _.trim(_.get(originHr,"dataFilter",""))
-      const authorHrValue = _.trim(_.get(authorHr,"dataFilter",""))
-
-      finalResults = !_.trim(inComingOutGoingHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"inComingOutGoingHr","")).indexOf(inComingOutGoingHrValue) > -1)
-      finalResults = !_.trim(typeHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"typeHr","")).indexOf(typeHrValue) > -1)
-      finalResults = !_.trim(originHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"originHr","")).indexOf(originHrValue) > -1)
-      finalResults = !_.trim(authorHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"authorHr","")).indexOf(authorHrValue) > -1)
-
-      this.set("_data.vaadinGridData",finalResults)
-
-      // When updating filters, by pass observer (avoid infinite loop)
-      this.set("_isLocked", true); this._getSearchEngineValue().then(searchEngineValues => { this.set("_data.searchEngineValues", searchEngineValues); this.set("_isLocked", false); })
-
-  }
-
   _getDirectoryDocuments(patientObject) {
 
       const promResolve = Promise.resolve();
@@ -1021,8 +996,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                   documentId: _.trim(_.get(this.api.contact().preferredContent(singleService, this.language),"documentId")),
               }),
               // Target ehealthbox message
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
-                  contact: singleContact,
+              ((!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) && !_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}))) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {                  contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
                   date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
@@ -1031,7 +1005,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                   isLabResultOrProtocol: true,
               }),
               // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
-              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+              (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
                   contact: singleContact,
                   services: singleContact.services,
                   serviceTitle: _.trim(_.get(singleContact,"descr")),
@@ -1207,6 +1181,30 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
           .finally(()=>(this.set("_isBusy", false)||true)&&(this.api.setPreventLogging(false)||true))
 
   }
+
+    _filterResults() {
+        if(!!_.get(this,"_isLocked",false)) return;
+        // When updating filters, by pass observer (avoid infinite loop)
+        this.set("_isLocked", true);
+        const clonedDirectoryDocuments = _.cloneDeep(_.get(this,"_data.directoryDocuments", []))
+        let inComingOutGoingHrValue = ""; let typeHrValue = ""; let originHrValue = ""; let authorHrValue = "";
+        // Wait for paper-dropdown-menu / listbox to set its value
+        return this.api.sleep(500)
+            .then(() => {
+                inComingOutGoingHrValue = _.trim(_.get(this, "_filterInComingOutGoingHr.dataFilter"))
+                typeHrValue = _.trim(_.get(this, "_filterTypeHr.dataFilter"))
+                originHrValue = _.trim(_.get(this, "_filterOriginHr.dataFilter"))
+                authorHrValue = _.trim(_.get(this, "_filterAuthorHr.dataFilter"))
+            })
+            .then(() => !_.trim(inComingOutGoingHrValue) ? clonedDirectoryDocuments : _.filter(clonedDirectoryDocuments, i => _.trim(_.get(i,"inComingOutGoingHr","")).indexOf(inComingOutGoingHrValue) > -1))
+            .then(finalResults => !_.trim(typeHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"typeHr","")).indexOf(typeHrValue) > -1))
+            .then(finalResults => !_.trim(originHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"originHr","")).indexOf(originHrValue) > -1))
+            .then(finalResults => !_.trim(authorHrValue) ? finalResults : _.filter(finalResults, i => _.trim(_.get(i,"authorHr","")).indexOf(authorHrValue) > -1))
+            .then(finalResults => this.set("_data.vaadinGridData",finalResults))
+            // .then(() => this._getSearchEngineValue())
+            // .then(searchEngineValues => this.set("_data.searchEngineValues", searchEngineValues))
+            .finally(() => this.set("_isLocked", false))
+    }
 }
 
 customElements.define(HtPatDocumentsDirectoryDialog.is, HtPatDocumentsDirectoryDialog);

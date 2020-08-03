@@ -78,7 +78,6 @@ import "@polymer/paper-tabs/paper-tab"
 import "@polymer/paper-tooltip/paper-tooltip"
 import "@polymer/paper-fab/paper-fab"
 import "@polymer/paper-dropdown-menu/paper-dropdown-menu"
-import "@polymer/paper-listbox/paper-listbox"
 import "@polymer/paper-checkbox/paper-checkbox"
 import "@polymer/paper-toolbar/paper-toolbar"
 
@@ -101,16 +100,17 @@ import "@vaadin/vaadin-grid/vaadin-grid-tree-toggle"
 
 import moment from 'moment/src/moment'
 import Worker from 'worker-loader!./workers/ehboxWebworker.js'
-const runtime = require('offline-plugin/runtime');
 import _ from 'lodash/lodash';
-import io from 'socket.io-client';
-import {PolymerElement, html} from '@polymer/polymer';
+import {html, PolymerElement} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
 
+const runtime = require('offline-plugin/runtime');
+
 class HtApp extends TkLocalizerMixin(PolymerElement) {
-  static get template() {
-    return html`
-        <style include="shared-styles dialog-style notification-style buttons-style">
+    static get template() {
+        return html`
+        <!--suppress CssUnresolvedCustomProperty -->
+<style include="shared-styles dialog-style notification-style buttons-style">
             :host {
                 display: block;
             }
@@ -878,10 +878,10 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
 
                 </app-header>
                 <iron-pages selected="[[view]]" attr-for-selected="name" fallback-selection="view404" role="main">
-                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}" socket="[[socket]]">
+                    <ht-main id="htmain" name="main" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" route="{{subroute}}">
                         <splash-screen></splash-screen>
                     </ht-main>
-                    <ht-pat name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" socket="[[socket]]" on-user-saved="_userSaved" on-idle="resetTimer">
+                    <ht-pat name="pat" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}" credentials="[[credentials]]" on-user-saved="_userSaved" on-idle="resetTimer">
                         <splash-screen></splash-screen>
                     </ht-pat>
                     <ht-hcp name="hcp" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" route="{{subroute}}">
@@ -893,7 +893,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
                     <ht-diary id="htDiary" name="diary" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]">
                         <splash-screen></splash-screen>
                     </ht-diary>
-                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" socket="[[socket]]">
+                    <ht-admin id="htAdmin" name="admin" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]">
                         <splash-screen-tz></splash-screen-tz>
                     </ht-admin>
                     <ht-view404 name="view404"></ht-view404>
@@ -1331,10 +1331,7 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               type : Boolean,
               value : true
           },
-          socket: {
-              type : Object,
-              value : null
-          },
+
           _forceEhBoxRefresh: {
               type : Boolean,
               value : false
@@ -1491,37 +1488,30 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
 
       this.set('api', this.$.api)
 
-      //init socket io
-      this.set("socket",null)
+
       this.api.electron().checkAvailable().then(electron => {
           this.set("isElectron",electron)
           if (electron) {
-              this.set("socket",io(_.replace(this.host,"/rest/v1","") || "http://127.0.0.1:16042"))
-
-              this.socket.on("connect", () => {
-                  console.log("connection avec le socket de electron")
-              })
-
-              this.socket.on("update-downloaded", msg => {
-                  console.log(msg)
-                  this.$['electronMessage'].classList.add('notification');
-                  setTimeout(() => {
-                      this.$['electronMessage'].classList.remove('notification');
-                  }, 7500);
-              })
-
-              this.socket.on("auto-read-card-eid", cards =>{
-                  if(typeof cards==="string" && cards.includes("Error"))return;
-                  if(this.route.path.includes("/pat")){
-                      this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid ==="function" && this.$["ht-pat"].autoReadCardEid(cards)
-                  }else if(this.route.path.includes("/main") && !this.route.path.includes("/auth")){
-                      this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid ==="function" && this.$["htmain"].autoReadCardEid(cards)
+              const callBack = {
+                  "update-downloaded" : msg => {
+                      console.log(msg)
+                      this.$['electronMessage'].classList.add('notification');
+                      setTimeout(() => {
+                          this.$['electronMessage'].classList.remove('notification');
+                      }, 7500);
+                  },
+                  "auto-read-card-eid" : cards =>{
+                      if(typeof cards==="string" && cards.includes("Error"))return;
+                      if(this.route.path.includes("/pat")){
+                          this.$["ht-pat"] && typeof this.$["ht-pat"].autoReadCardEid ==="function" && this.$["ht-pat"].autoReadCardEid(cards)
+                      }else if(this.route.path.includes("/main") && !this.route.path.includes("/auth")){
+                          this.$["htmain"] && typeof this.$["htmain"].autoReadCardEid ==="function" && this.$["htmain"].autoReadCardEid(cards)
+                      }
                   }
-              })
+              }
 
-              this.api.electron().checkDrugs()
+              this.api.electron().launchWS(callBack)
 
-              this.notifyPath("socket");
               this.api.electron().getVersion()
                   .then(res => {
                       if (res.version) {
@@ -2162,81 +2152,82 @@ class HtApp extends TkLocalizerMixin(PolymerElement) {
               } else {
                   this.createAndInviteUser();
               }
-          }).catch( error=> {
+          }).catch(error => {
               this.createAndInviteUser();
           })
       }
   }
 
-  checkEhboxMessage() {
-      if (!this.user) { return }
-      const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
-      const shouldLoad = (lastLoad + (10*60000) <= Date.now() || lastLoad === -1)
-      if ( /*localStorage.getItem('receiveMailAuto') === 'true' && */ shouldLoad) {
-          localStorage.setItem('lastEhboxRefresh', Date.now())
+    checkEhboxMessage() {
+        if (!this.user) {
+            return
+        }
+        const lastLoad = parseInt(localStorage.getItem('lastEhboxRefresh')) ? parseInt(localStorage.getItem('lastEhboxRefresh')) : -1
+        const shouldLoad = (lastLoad + (10 * 60000) <= Date.now() || lastLoad === -1)
+        const disableEhboxEmailReception = _.get(_.find(_.get(this, "user.properties", []), it => _.trim(_.get(it, "type.identifier")) === "org.taktik.icure.user.disableEhboxEmailReception"), "typedValue.booleanValue",false)
+        if (shouldLoad && !disableEhboxEmailReception) {
+            localStorage.setItem('lastEhboxRefresh', Date.now())
+            const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
+                keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
+                if (hcp.parentId) {
+                    return getParents(hcp.parentId, keyPairs)
+                }
+                return ([hcp, keyPairs])
+            })
+            this.$.ehBoxMessage.classList.remove('notification')
+            if (!this.worker) {
+                this.worker = new Worker()
+            }
+            getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
+                this.worker.postMessage({
+                    action: "loadEhboxMessage",
+                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    fhcHost: this.api.fhc().host,
+                    fhcHeaders: JSON.stringify(this.api.fhc().headers),
+                    language: this.language,
+                    iccHost: this.api.host,
+                    iccHeaders: JSON.stringify(this.api.headers),
+                    tokenId: this.api.tokenId,
+                    keystoreId: this.api.keystoreId,
+                    user: this.user,
+                    ehpassword: this.credentials.ehpassword,
+                    boxId: ["INBOX", "SENTBOX"],
+                    alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
+                    keyPairs: kp,
+                    parentHcp: hcp
+                })
+            }))
+            this.worker.onmessage = e => {
+                const totalNewMessages = parseInt(_.get(e, "data.totalNewMessages", 0))
+                if (parseInt(totalNewMessages)) {
+                    this.set("_forceEhBoxRefresh", true)
+                    this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
+                    this.$['ehBoxMessage'].classList.add('notification');
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000);
+                    setTimeout(() => {
+                        this.$['ehBoxMessage'].classList.remove('notification');
+                    }, 15000);
+                }
+                if (!!_.get(e, "data.forceRefresh", false)) {
+                    this.set("_forceEhBoxRefresh", true);
+                    setTimeout(() => {
+                        this.set("_forceEhBoxRefresh", false)
+                    }, 1000);
+                }
+            }
+        }
+    }
 
-          const getParents = (id, keyPairs) => this.api.hcparty().getHealthcareParty(id).then(hcp => {
-              keyPairs[hcp.id] = this.api.crypto().RSA.loadKeyPairNotImported(id)
-              if (hcp.parentId) {
-                  return getParents(hcp.parentId, keyPairs)
-              }
-              return ([hcp, keyPairs])
-          })
+    getMHKeystore() {
+        const healthcarePartyId = this.user.healthcarePartyId;
+        // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
 
-          this.$.ehBoxMessage.classList.remove('notification')
+    }
 
-          if (!this.worker) { this.worker = new Worker() }
-
-          getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
-              this.worker.postMessage({
-                  action: "loadEhboxMessage",
-                  hcpartyBaseApi: this.api.hcpartyLight(),
-                  fhcHost: this.api.fhc().host,
-                  fhcHeaders: JSON.stringify(this.api.fhc().headers),
-                  language: this.language,
-                  iccHost: this.api.host,
-                  iccHeaders: JSON.stringify(this.api.headers),
-                  tokenId: this.api.tokenId,
-                  keystoreId: this.api.keystoreId,
-                  user: this.user,
-                  ehpassword: this.credentials.ehpassword,
-                  boxId: ["INBOX","SENTBOX"],
-                  alternateKeystores: ({keystores: alternateKeystores.filter(ak => ak.passPhrase)}),
-                  keyPairs: kp,
-                  parentHcp: hcp
-              })
-          }))
-
-          this.worker.onmessage = e => {
-
-              const totalNewMessages = parseInt(_.get(e,"data.totalNewMessages",0))
-              if(parseInt(totalNewMessages)) {
-                  this.set("_forceEhBoxRefresh", true)
-                  this.set('ehBoxWebWorkerTotalNewMessages', totalNewMessages)
-                  this.$['ehBoxMessage'].classList.add('notification');
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-                  setTimeout(() => { this.$['ehBoxMessage'].classList.remove('notification'); }, 15000);
-              }
-
-              if(!!_.get(e,"data.forceRefresh",false)) {
-                  this.set("_forceEhBoxRefresh", true);
-                  setTimeout(() => { this.set("_forceEhBoxRefresh", false) }, 1000);
-              }
-
-          }
-
-      }
-
-  }
-
-  getMHKeystore(){
-      const healthcarePartyId =this.user.healthcarePartyId;
-      // MHPrefix ? MHPrefix + "." + this.user.healthcarePartyId :
-
-  }
-
-  getAlternateKeystores(){
-      const healthcarePartyId = this.user.healthcarePartyId;
+    getAlternateKeystores() {
+        const healthcarePartyId = this.user.healthcarePartyId;
 
       return Promise.all(
       Object.keys(localStorage).filter(k => k.includes(this.api.crypto().keychainLocalStoreIdPrefix + healthcarePartyId + ".") === true)

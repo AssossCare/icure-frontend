@@ -10,7 +10,7 @@ import './ht-pat-hub-transaction-view.js';
 import './ht-pat-hub-history-viewer.js';
 import './ht-pat-hub-diary-note.js';
 import './ht-pat-hub-utils.js';
-import * as models from 'icc-api/dist/icc-api/model/models';
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
@@ -196,7 +196,6 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                 border-bottom: 1px solid var(--app-background-color-darker);
                 background-color: var(--app-background-color-dark);
                 padding: 0 12px;
-                display: flex;
                 flex-flow: row wrap;
                 justify-content: flex-start;
                 align-items: center;
@@ -457,8 +456,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                         </div>
                         <div class="hub-menu-list-header-info">
                             <div class="hub-name">
-                                <span class="hub">[[curHub]]</span>
-                            </div>
+                                <vaadin-combo-box id="hubSelector" class="w50" label="[[localize('hub-selector', 'Hub', language)]]" filter="{{hubSelectorFilter}}" selected-item="{{selectedHub}}"  filtered-items="[[listOfAvailableHub]]" item-label-path="name"></vaadin-combo-box>                            </div>
                         </div>
                     </div>
                     <div class="hub-submenu-container">
@@ -610,6 +608,19 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
               value: null,
               observer: '_curHubChanged'
           },
+          listOfAvailableHub:{
+              type: Array,
+              value: [
+                  {id: "rsw", name: "RSW"},
+                  {id: "rsb", name: "RSB"},
+                  {id: "vitalink", name: "Vitalink"},
+                  {id: "cozo", name: "Cozo"}
+              ]
+          },
+          selectedHub:{
+              type: Object,
+              value: () => {}
+          },
           curEnv:{
               type: String,
               value: null
@@ -734,7 +745,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   static get observers() {
-      return ['apiReady(api,user,opened)', 'filterChanged(filter)', 'selectedFiltersChanged(selectedDocumentCategory, selectedAuthor, selectedDocumentType)'];
+      return ['apiReady(api,user,opened)', 'filterChanged(filter)', 'selectedFiltersChanged(selectedDocumentCategory, selectedAuthor, selectedDocumentType)', 'selectedHubChanged(selectedHub)'];
   }
 
   ready() {
@@ -775,7 +786,22 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       this.$['hubDetailDialog'].open();
 
       this.set('selectedTransaction', null);
+      this.set('selectedHub', {})
       this.$['htPatHubTransactionViewer'].open(this,  null);
+
+      const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
+          (this.user.properties[this.user.properties.length] = {
+              type: {identifier: 'org.taktik.icure.user.preferredhub'},
+              typedValue: {type: 'STRING', stringValue: 'rsw'}
+          })
+      const propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv') ||
+          (this.user.properties[this.user.properties.length] = {
+              type: {identifier: 'org.taktik.icure.user.eHealthEnv'},
+              typedValue: {type: 'STRING', stringValue: 'prd'}
+          })
+      this.set("curHub", propHub.typedValue.stringValue);
+      this.set("curEnv", propEnv.typedValue.stringValue);
+      this.set("selectedHub", _.get(this, 'listOfAvailableHub', []).find(hub => _.get(hub, 'id', null) === _.get(propHub, 'typedValue.stringValue', '')))
 
       this._refresh();
 
@@ -807,20 +833,13 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       this._setHub();
   }
 
-  _initHub(){
-      const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
-          (this.user.properties[this.user.properties.length] = {
-              type: {identifier: 'org.taktik.icure.user.preferredhub'},
-              typedValue: {type: 'STRING', stringValue: 'rsw'}
-          })
+    selectedHubChanged(){
+        if(_.get(this, 'selectedHub', null)){
+            this.set("curHub", _.get(this.selectedHub, 'id', null));
+        }
+    }
 
-      const propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv') ||
-          (this.user.properties[this.user.properties.length] = {
-              type: {identifier: 'org.taktik.icure.user.eHealthEnv'},
-              typedValue: {type: 'STRING', stringValue: 'prd'}
-          })
-      this.set("curHub", propHub.typedValue.stringValue);
-      this.set("curEnv", propEnv.typedValue.stringValue);
+  _initHub(){
       this.set("supportBreakTheGlass", false);
 
       const hubConfig = this.$["htPatHubUtils"].getHubConfig(this.curHub, this.curEnv);

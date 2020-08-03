@@ -25,7 +25,7 @@ import '@vaadin/vaadin-details/vaadin-details'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../tk-localizer";
@@ -268,7 +268,7 @@ class HtMsgInvoiceToBeCorrected extends TkLocalizerMixin(PolymerElement) {
                 </div>
             </div>
             <div class="panel-button">
-            
+            <!--<paper-button class="button button--other" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>-->
             </div>
         </div>
 `;
@@ -382,6 +382,23 @@ class HtMsgInvoiceToBeCorrected extends TkLocalizerMixin(PolymerElement) {
         if(_.get(e, 'currentTarget.dataset.item', null)){
             this.dispatchEvent(new CustomEvent('open-invoice-detail-panel', {bubbles: true, composed: true, detail: {selectedInv: JSON.parse(_.get(e, 'currentTarget.dataset.item', null))}}))
         }
+    }
+
+    _correctAllInvoice(){
+        let prom = Promise.resolve()
+
+        _.get(this, 'listOfInvoice', []).map(inv => {
+            _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
+                ic.pending = true
+                ic.resent = false
+            })
+            inv.printedDate = this.api.moment(new Date).format('YYYYMMDD')
+            prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+        })
+
+        prom.then(listOfModifiedInv => {
+            console.log(listOfModifiedInv)
+        })
     }
 
 }

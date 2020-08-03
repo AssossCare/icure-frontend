@@ -4,7 +4,7 @@ import '../../../styles/vaadin-icure-theme.js'
 import '../../../styles/dialog-style.js'
 import './related-code-link.js'
 import '../../dynamic-form/validator/ht-inami-validator.js'
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
 import * as evaljs from "evaljs"
 import mustache from "mustache/mustache.js"
@@ -4782,6 +4782,12 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
     _isSpecialist() {
         return !!(_.get(this, 'hcp.nihii', null) && _.startsWith(_.get(this, 'hcp.nihii', null), "1", 0) && _.size(_.get(this, 'hcp.nihii', null)) === 11 && (_.get(this, 'hcp.nihii', null).substr(_.size(_.get(this, 'hcp.nihii', null)) - 3) >= 10))
     }
-}
 
+    _deleteInvoice(){
+        this.api.invoice().deleteInvoice(_.get(this.selectedInvoice, 'id', null)).then(inv => {
+            console.log("Invoice n°"+_.get(inv, 'id', null)+" is deleted")
+            this.updateGui(_.get(this, 'invoices', []).find(inv => !inv.id), true)
+        })
+    }
+}
 customElements.define(HtPatInvoicingDialog.is, HtPatInvoicingDialog)

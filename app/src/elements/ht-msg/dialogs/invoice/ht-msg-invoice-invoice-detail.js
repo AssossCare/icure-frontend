@@ -25,7 +25,7 @@ import '@vaadin/vaadin-details/vaadin-details'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../tk-localizer";
@@ -295,7 +295,11 @@ class HtMsgInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[isRejected]]" restamp="true">
                     <paper-button class="button button--save" on-tap="_openInvoicingDialog" >[[localize('btn-correct', 'Correct', language)]]</paper-button>
                 </template>
-                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>              
+                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>  
+                <!--Only for dev-->
+                <!--<paper-button class="button button--other" on-tap="_transferInvoiceToSupervisor">[[localize('inv_tr_sup','Transfer to supervisor',language)]]</paper-button>-->
+                <!--<paper-button class="button button--other" on-tap="_recreateInvoice">[[localize('','Recreate invoice',language)]]</paper-button>-->
+                <!---->            
             </div>
         </div>
         
@@ -535,6 +539,34 @@ class HtMsgInvoiceInvoiceDetail extends TkLocalizerMixin(PolymerElement) {
     _closeInvoicingDialog(){
         this._closeDetailPanel()
         this._getMessage()
+    }
+
+    _recreateInvoice(){
+        if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
+            this.api.invoice().newInstance(this.user, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
+                "deletionDate", "created", "modified",
+                "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
+                "encryptedSelf"]))
+                .then(ninv => this.api.invoice().modifyInvoice(ninv))
+                .then(inv => console.log(inv))
+        }
+    }
+
+    _transferInvoiceToSupervisor(){
+        if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
+            this.api.user().findByHcpartyId(_.get(this.hcp, 'supervisorId', null))
+                .then(user => this.api.user().getUser(_.head(user)))
+                .then(supervisor => this.api.invoice().newInstance(supervisor, _.get(this.selectedInvoiceForDetail, 'patient', {}), _.omit(_.get(this.selectedInvoiceForDetail, 'invoice', {}), [
+                    "deletionDate", "created", "modified", "author",
+                    "secretForeignKeys", "cryptedForeignKeys", "delegations", "encryptionKeys",
+                    "encryptedSelf"])))
+                .then(ninv => this.api.invoice().modifyInvoice(ninv))
+                .then(inv => console.log(inv))
+                .finally(() => {
+                    this._getMessage(false)
+                    this._closeDetailPanel()
+                })
+        }
     }
 }
 

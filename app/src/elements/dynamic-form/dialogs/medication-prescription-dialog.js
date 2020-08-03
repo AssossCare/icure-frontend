@@ -666,7 +666,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
             }
 
             .right-pane {
-                width: 70%;
+                width: 80%;
                 flex-grow: 3;
                 display: flex;
                 flex-direction: column;
@@ -687,7 +687,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
             }
 
             .left-pane {
-                width: 30%;
+                width: 20%;
                 max-width: 30%;
                 flex-grow: 1;
                 display: flex;
@@ -2727,7 +2727,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
 
   saveMedications() {
       this.saveAction(this.medicationAccumulator.map(m => {
-          if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
+         if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
               m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
           }
           return m;

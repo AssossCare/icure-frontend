@@ -185,7 +185,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             <div class="buttons">
                 <paper-button class="button" on-tap="" dialog-dismiss="">[[localize('can', "Annuler", language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_printPrescriptionNoRecipe" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
-                <paper-button class="button button--save" dialog-dismiss="" autofocus="" on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('try_again','Réessayer',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_printAndSendByEmailNoRecipe" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
+                <paper-button class="button button--save" dialog-dismiss autofocus on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="print"></iron-icon>[[localize('try_again','Réessayer',language)]]</paper-button>
             </div>
             
         </paper-dialog>
@@ -352,10 +353,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 </div>
                 <div class="buttons">
                     <!-- <vaadin-date-picker id="deliveryDate" label="Date de délivrance" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker> -->
-                    <dynamic-date-field id="deliveryDate" class="deliveryDate" label="Date de délivrance" value="{{deliveryDateString}}" i18n="[[i18n]]"></dynamic-date-field>
+                    <vaadin-date-picker id="deliveryDate" class="deliveryDate" label="[[localize('deliver_date','Date de délivrance',language)]]" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker>
                     <div class="printButton">
                         <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
-                        <paper-button class="button button--save" dialog-confirm="" autofocus="" on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]">[[localize('pri','Print',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_printAndSendByEmail" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
+                        <paper-button class="button button--save" dialog-confirm autofocus on-tap="_printPrescriptions" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]">[[localize('pri','Print',language)]]</paper-button>
                     </div>
                 </div>
             </template>
@@ -461,6 +463,18 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   diabeteconvention: "DIABETES_CONVENTION",
                   notreimbursable: "NOT_REIMBURSABLE"
               }
+          },
+          selectedContacts:{
+              type: Object,
+              value: () => {}
+          },
+          selectedContactIdForPrescription:{
+              type: String,
+              value: null
+          },
+          selectedContactForPrescription:{
+              type: Object,
+              value: () => {}
           }
       }
   }
@@ -490,12 +504,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
   open() {
       this.$.dialog.open()
-      this._refreshDrugsToBePrescribed()
-      this.api && this.api.isElectronAvailable()
-          .then(hasElectron => hasElectron ? this.api.electron().getPrinterSetting(this.user.id)
+      this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
+          this.set('selectedContactForPrescription', ctc)
+          this._refreshDrugsToBePrescribed()
+          this.api.electron().getPrinterSetting(this.user.id)
               .then( data => {
                   this.set('selectedFormat',data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ? JSON.parse(data.data).find(x => x.type==="recipe").format : "A4")
-              }): this.set('selectedFormat',"A4") )
+              })
+      })
   }
 
   _entitiesNotifyResize() {
@@ -719,12 +735,12 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   _drugsAlreadyPrescribed() {
-      return this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
+      return this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
   }
 
   _refreshDrugsToBePrescribed() {
       //console.log("_refreshDrugsToBePrescribed()")
-      let tbp = this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(this._isDrugNotPrescribed.bind(this)) || [];
+      let tbp = this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugNotPrescribed.bind(this)) || [];
       this.set('_drugsToBePrescribed', tbp)
       return tbp
   }
@@ -820,8 +836,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               const key = Object.keys(this._reimbursementReasonToInstructions).find(key => key === medicationValue.reimbursementReason.code);
               medicationValue.instructionsForReimbursement = key && this._reimbursementReasonToInstructions[key] || this._reimbursementReasonToInstructions.notreimbursable;
           }
-       });
-      return medsDup;
+          medicationValue.temporality = null
+          _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
+      });
+      return this.api.deleteRecursivelyNullValues(medsDup);
   }
 
   _printPrescriptions(e) {
@@ -843,7 +861,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               Promise.all(
                   splitColumns.map(c =>
                       this.api.fhc().Recipecontroller().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
-                          patient: this.patient,
+                          patient: _.omit(this.patient, ['personalStatus']),
                           hcp: hcp,
                           feedback: false,
                           medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
@@ -905,20 +923,20 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   _print(e) {
-      const service = e.detail.service;
-      const medicationValue = service ?
-          _.get(this.api.contact().preferredContent(service, this.language), "medicationValue", null) : null;
-      const rid = _.get(medicationValue, "prescriptionRID", null);
-      const ids = ((medicationValue.status & STATUS_SENT) && rid) ?
-          [{ drugIds: service.id, rid: rid }] :
-          [{ drugIds: service.id }];
-      const drugs = [service];
-      const toPrint = this._formatBody(ids, drugs);
-      this._pdfReport(drugs, toPrint, 'presc')
-          .then(() => {
-              console.log("printed")
-              //this._markDrugsAsSent(drugsToBePrescribed)
-          })
+      const services = e.detail.services;
+      if(services.length){
+          const splitColumns =[{
+              drugIds : services.map(service => service.id ),
+              rid : e.detail.rid
+          }]
+          const drugs = services;
+          const toPrint = this._formatBody(splitColumns, drugs);
+          this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
+              .then(() => {
+                  console.log("printed")
+                  //this._markDrugsAsSent(drugsToBePrescribed)
+              })
+      }
   }
 
   _printPrescriptionNoRecipe(e) {
@@ -943,7 +961,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       let prescriToPrint = [], allPages = []
       let prescNum = 0, pageNum = 1
 
-      const inRecipeMode = this.patient.ssin && this.api.tokenId && splitColumns.find(c=>c.rid) // else print good old prescription format
+      const inRecipeMode = this.patient.ssin && splitColumns.find(c=>c.rid) // else print good old prescription format && this.api.tokenId
       splitColumns.forEach((c, idx) => {
           const ridOrNihii = c.rid ? c.rid : hcp.nihii;
           JsBarcode(element, ridOrNihii, {format: "CODE128A", displayValue: false, height: 75});
@@ -1231,7 +1249,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           downloadFileName: _.kebabCase([ "prescription", _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
           documentMetas : {
               title : "Prescription",
-              contactId : _.get(this.currentContact, "id", ""),
+              contactId : _.get(this.selectedContactForPrescription, "id", ""),
               created: ""+ +new Date(),
               patientId : _.trim(_.get(this.patient, "id", "")),
               patientName : _.compact([ _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", "") ]).join(" ")
@@ -1310,7 +1328,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       });
       this._refreshDrugsToBePrescribed();
       this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
-      this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.currentContact}, bubbles: true, composed: true}));
+      this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.selectedContactForPrescription}, bubbles: true, composed: true}));
   }
 
 

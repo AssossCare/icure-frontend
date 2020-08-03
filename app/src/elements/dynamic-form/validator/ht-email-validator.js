@@ -1,3 +1,5 @@
+import iban from 'iban';
+
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {PolymerElement, html} from '@polymer/polymer';
 import {IronValidatorBehavior} from "@polymer/iron-validator-behavior";

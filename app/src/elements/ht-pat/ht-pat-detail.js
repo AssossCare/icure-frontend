@@ -78,14 +78,13 @@ import '@polymer/paper-radio-button/paper-radio-button'
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
 import styx from '../../../scripts/styx'
-import {AccessLogDto} from "icc-api/dist/icc-api/model/AccessLogDto"
-
-const md5 = require('md5')
 import XLSX from 'xlsx'
 import 'xlsx/dist/shim.min'
 
-import {PolymerElement, html} from '@polymer/polymer'
+import {html, PolymerElement} from '@polymer/polymer'
 import {TkLocalizerMixin} from "../tk-localizer"
+
+const md5 = require('md5')
 
 class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     static get template() {
@@ -940,15 +939,15 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 display: block;
             }
 
-              #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse, #subscriptionStatus.subscriptionPending{
+            #insuranceStatus.medicalHouse, #edmgStatus.edmgPending, #tlStatus.tlPending, #rnConsultStatus.rnConsultPending, #consentStatus.pendingConsent, #sumehrStatus.sumehrChange, #mdaStatus.medicalHouse{
                 --paper-fab-background: var(--app-status-color-pending);
             }
 
-            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance, #subscriptionStatus.subscriptionNoSubscription{
+            #insuranceStatus.noInsurance, #hubStatus.noAccess, #tlStatus.noTl, #consentStatus.noConsent, #edmgStatus.edmgNOk, #rnConsultStatus.rnConsultNOk, #sumehrStatus.noSumehr, #mdaStatus.noInsurance, #conventionStatus.convKo{
                 --paper-fab-background: var(--app-status-color-nok);
             }
 
-            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk, #subscriptionStatus.subscriptionSubscriptionOk {
+            #insuranceStatus.insuranceOk, #hubStatus.accessOk, #tlStatus.tlOk, #consentStatus.consentOk, #edmgStatus.edmgOk, #rnConsultStatus.rnConsultOk, #sumehrStatus.sumehr, #mdaStatus.insuranceOk, #conventionStatus.convOk {
                 --paper-fab-background: var(--app-status-color-ok);
             }
 
@@ -1957,7 +1956,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                                     </div>
                                                 </template>
                                             </paper-tooltip>
-                                        </template>
+                                        </template>                                        
                                         <paper-fab id="ebmPracticeNet" mini on-tap="_linkToEbPracticeNet" src="[[_ebmPicture()]]"></paper-fab>
                                         <paper-tooltip position="top" for="ebmPracticeNet">[[localize('adm_ebm','ebmPracticeNet',language)]]</paper-tooltip>
                                         <paper-fab id="cbipLink" mini on-tap="_linkToCBIP" src="[[_cbipPicture()]]"></paper-fab>
@@ -2464,7 +2463,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError">
+                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
                             </ht-pat-detail-ctc-detail-panel>
                             </template>
                             <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]">
@@ -2795,7 +2794,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" on-save-document-as-service="[[_handleSaveDocumentAsService]]" global-hcp="[[globalHcp]]" on-save-contact="_saveContact"></ht-pat-prescription-dialog>
+        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-contact-id-for-prescription="[[selectedContactIdForPrescription]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" on-save-document-as-service="[[_handleSaveDocumentAsService]]" global-hcp="[[globalHcp]]" on-save-contact="_saveContact"></ht-pat-prescription-dialog>
 
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
@@ -2878,6 +2877,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
+        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
 `
     }
 
@@ -3359,8 +3359,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     therLink: ["physician", "specialist"],
                     consent: ["physician", "specialist"],
                     mda: ["physician", "medicalHouse"],
-                    insurability: ["specialist", "officedoctors"],
-                    subscription: ["medicalHouse"]
+                    subscription: ["medicalHouse"],
+                    insurability: ["medicalHouse", "specialist", "officedoctors"]
                 }
             },
             errorIndicatorMessage: {
@@ -3370,6 +3370,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             conventionStatus: {
                 type: String,
                 value: "conv_status_ko"
+            },
+            selectedContactIdForPrescription: {
+                type: String,
+                value: null
             }
         }
     }
@@ -4497,31 +4501,41 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.set('sumehrContentOnPatientLoad', null)
         this.set('sumehrContentOnPatientRefresh', null)
 
-        // Default values = all closed
-        this.root.querySelector('#cb_ahelb').opened = false
-        this.root.querySelector('#cb_ihelb').opened = false
-        this.root.querySelector('#cb_alhelb').opened = false
-        this.root.querySelector('#cb_rhelb').opened = false
-        this.root.querySelector('#cb_gmhelb').opened = false
-        this.root.querySelector('#cb_archhelb').opened = false
-        this.root.querySelector('#cb_ishelb').opened = false
-        this.root.querySelector('#cb_frhelb').opened = false
-        this.root.querySelector('#cb_biom').opened = false
-        this.root.querySelector('#cb_pwhelb').opened = false
-
-        // 20190612 for labellisation -> must all be opened
-        // this.root.querySelector('#cb_ahelb').opened = true
-        // this.root.querySelector('#cb_ihelb').opened = true
-        // this.root.querySelector('#cb_alhelb').opened = true
-        // this.root.querySelector('#cb_rhelb').opened = true
-        // this.root.querySelector('#cb_gmhelb').opened = true
-        // this.root.querySelector('#cb_archhelb').opened = true
-        // this.root.querySelector('#cb_ishelb').opened = true
-        // this.root.querySelector('#cb_frhelb').opened = true
-        // this.root.querySelector('#cb_biom').opened = true
-        // this.root.querySelector('#cb_pwhelb').opened = true
-        // 20190612 for labellisation -> must all be opened
-
+        const openAll = _.get(user,"properties",[]).find(prop => prop.type.identifier==="be.topaz.preferred.openFirstPanelAuto")
+        if(openAll && openAll.typedValue.stringValue==="full"){
+            // 20190612 for labellisation -> must all be opened
+            this.root.querySelector('#cb_ahelb').opened = true
+            this.root.querySelector('#cb_ihelb').opened = true
+            this.root.querySelector('#cb_alhelb').opened = true
+            this.root.querySelector('#cb_rhelb').opened = true
+            this.root.querySelector('#cb_gmhelb').opened = true
+            this.root.querySelector('#cb_archhelb').opened = true
+            this.root.querySelector('#cb_ishelb').opened = true
+            this.root.querySelector('#cb_frhelb').opened = true
+            this.root.querySelector('#cb_biom').opened = true
+            this.root.querySelector('#cb_pwhelb').opened = true
+            this.root.querySelector('#cb_ahelb').opened = true
+            this.root.querySelector('#cb_ihelb').opened = true
+            this.root.querySelector('#cb_alhelb').opened = true
+            this.root.querySelector('#cb_rhelb').opened = true
+            // 20190612 for labellisation -> must all be opened
+        }else{
+            // Default values = all closed excepted activeES
+            this.root.querySelector('#cb_ahelb').opened = false
+            this.root.querySelector('#cb_ihelb').opened = false
+            this.root.querySelector('#cb_alhelb').opened = false
+            this.root.querySelector('#cb_rhelb').opened = false
+            this.root.querySelector('#cb_gmhelb').opened = false
+            this.root.querySelector('#cb_archhelb').opened = false
+            this.root.querySelector('#cb_ishelb').opened = false
+            this.root.querySelector('#cb_frhelb').opened = false
+            this.root.querySelector('#cb_biom').opened = false
+            this.root.querySelector('#cb_pwhelb').opened = false
+            this.root.querySelector('#cb_ahelb').opened = true
+            this.root.querySelector('#cb_ihelb').opened = false
+            this.root.querySelector('#cb_alhelb').opened = false
+            this.root.querySelector('#cb_rhelb').opened = false
+        }
         this.root.querySelector('#medication-plan').reset()
 
 
@@ -4743,10 +4757,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
                 const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
-                const oneWeekAgo = moment().subtract(7, 'days')
-
-                //s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication' && !_.values(s.content).some(c => c && c.medicationValue && c.medicationValue.endMomentAsString && this.api.moment(c.medicationValue.endMomentAsString).isBefore(oneWeekAgo)))
-                this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && !(this.api.contact().medicationValue(s, this.language) || {}).endMoment).map(m => {
+                this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
                     return Object.assign(m, {
                         colour: m.codes && m.codes.length && `ATC--${((m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0, 1)}` || ""
                     })
@@ -4800,9 +4811,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
                     // Default values
                     this.activeHealthElements.length && (this.root.querySelector('#cb_ahelb').opened = true)
-                    this.inactiveHealthElements.length && (this.root.querySelector('#cb_ihelb').opened = false)
+                    /*this.inactiveHealthElements.length && (this.root.querySelector('#cb_ihelb').opened = false)
                     this.allergies.length && (this.root.querySelector('#cb_alhelb').opened = false)
-                    this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)
+                    this.risks.length && (this.root.querySelector('#cb_rhelb').opened = false)*/
 
 
                     // 20190612 for labellisation -> must all be opened
@@ -4986,7 +4997,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.selectedTherLink = null
 
         this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>{
-            _.get(hcp, 'type', null).toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
+            _.get(hcp, 'type', '').toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
                 this._isSpecialist(hcp) ? this.set('hcpType', "specialist") :
                     this.set('hcpType', "physician")
 
@@ -5007,10 +5018,16 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _isAvailableForHcp(hcpType, wsType) {
-        if(!(_.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)){
+        //override hcpType when only MH token is present
+        //explanation:
+        //An user can have 1 or 2 tokens(ehaelthsessions)
+        //   a personal token related to the users hcpType
+        //   an organisational token, for now only medicalhouse tokens are supported
+        //   if an user has only a medicalhouse token the users hcpType must be overridden to 'medicalhouse'
+        if (!(_.get(this.api, 'tokenId', null) && _.get(this.api, 'keystoreId', null)) && _.get(this.api, 'tokenIdMH', null) && _.get(this.api, 'keystoreIdMH', null)) {
             hcpType = "medicalHouse"
         }
-        return !!_.get(this, "matrixByHcpType."+wsType, []).find(hcp => hcp === hcpType)
+        return !!_.get(this, "matrixByHcpType." + wsType, []).find(hcp => hcp === hcpType)
     }
 
     _checkEhealthServiceForPhysician(hcp){
@@ -6705,6 +6722,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _prescribe(e) {
         e.stopPropagation()
+        this.set('selectedContactIdForPrescription', _.get(e, 'detail.contactId', null))
         this.$.prescriptionDialog.open()
     }
 
@@ -6713,10 +6731,22 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
     }
 
+    _eformsDownload(e){
+        this.root.querySelector('ht-pat-detail-ctc-detail-panel')._contactsChanged()
+    }
+
     // _saveDoc(e){
     //     this.shadowRoot.querySelector('#ctcDetailPanel').saveDoc(e)
     //     // this.root.querySelector('ht-pat-detail-ctc-detail-panel')._saveDoc(e)
     // }
+
+    _openEformDialog(){
+        if(this._checkForEhealthSession() === true){
+            this.$['htPatEformDialog'].openDialog()
+        }else{
+            this._ehealthErrorNotification()
+        }
+    }
 
     _resetPatient() {
         this.$['prose-editor-dialog-linking-letter'].close()

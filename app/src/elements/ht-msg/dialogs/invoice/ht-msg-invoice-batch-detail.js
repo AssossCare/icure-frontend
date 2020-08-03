@@ -24,7 +24,7 @@ import '@vaadin/vaadin-details/vaadin-details'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../tk-localizer";
@@ -633,7 +633,7 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                     })
                 }).finally(()=>{
                     this._batchCanBeArchived()
-                    this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(this.selectedInvoiceForDetail.message.status & (1 << 16))) || (!!(this.selectedInvoiceForDetail.message.status & (1 << 12)))))
+                    this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 21))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 17))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 16))) || (!!(_.get(this.selectedInvoiceForDetail, 'message.status', null) & (1 << 12)))))
                     this.set('filteredInvoicesFormBatch', _.get(this, 'invoicesFromBatch', []))
                     this.set('batchCanBeResent', _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) ? _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) : false)
                     this.set('isLoading', false)

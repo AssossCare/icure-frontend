@@ -10,7 +10,7 @@ import "@polymer/paper-dialog/paper-dialog"
 import "@vaadin/vaadin-grid/vaadin-grid"
 import "@vaadin/vaadin-grid/vaadin-grid-column"
 
-import { HealthcarePartyDto } from 'icc-api/dist/icc-api/model/models'
+import { HealthcarePartyDto } from '@taktik/icc-api/dist/icc-api/model/models'
 
 //noinspection JSUnusedGlobalSymbols
 import {PolymerElement, html} from '@polymer/polymer';
@@ -176,7 +176,7 @@ class HtAppWelcomeTz extends TkLocalizerMixin(PolymerElement) {
                             <p class="invalid-form">[[allEmptyMsg]]</p>
                         </template>
                         <p>If you already have a database in the cloud. You can copy your cloud key below and start using Topaz. </p>
-                        <paper-input label="Cloud key" value="{{cloudKey}}"></paper-input>
+                        <paper-input label="Cluster" value="{{cluster}}"></paper-input>
                     </div>
                 </div>
                 <div class="middle">
@@ -248,6 +248,10 @@ class HtAppWelcomeTz extends TkLocalizerMixin(PolymerElement) {
           specialities: {
               type: Array,
               value: [{id:'003',descr:'general practitioner'}, {id:'690',descr:'pediatrics'}, {id:'055',descr:'dermatology'}, {id:'055',descr:'gastroenterology'}, {id:'340',descr:'gynecologyobstetrics'}]
+          },
+          cluster:{
+              type : String,
+              value: "couch.prd.icure.cloud"
           }
       };
 	}
