@@ -28,13 +28,12 @@ import "@vaadin/vaadin-date-picker/vaadin-date-picker"
 
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
-import * as models from 'icc-api/dist/icc-api/model/models'
+import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 
 import {PolymerElement, html} from '@polymer/polymer'
 import {TkLocalizerMixin} from "../../../tk-localizer"
 import promiseLimit from "promise-limit"
-import * as retry from "icc-api/dist/icc-x-api/utils/net-utils"
-import mustache from "mustache"
+import * as retry from "@taktik/icc-api/dist/icc-x-api/utils/net-utils"
 import * as fhcmodels from 'fhc-api/dist/model/models'
 import jsZip from "jszip/dist/jszip.js";
 const md5 = require('md5')

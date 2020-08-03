@@ -2885,7 +2885,7 @@
 		"exportUsersMda": "Export users (MDA)",
 		"exportData": "Export data",
 		"mh_flatrate_history" : "Flatrate invoicing history",
-		"mda_no_facet": "No data available"
+		"mda_no_facet": "No data available",
 		"conv_start_date": "start date of the convention",
 		"conv_end_date": "end date of the convention",
 		"descr_fr": "french description",
@@ -5961,7 +5961,7 @@
 		"mh_eInvoicing.downloadResponses": "Télécharger les réponses",
 		"mh_eInvoicing.technicalDetails": "Détails techniques",
 		"mh_flatrate_history" : "Historique facturation au forfait",
-		"mda_no_facet": "Les données n’ont pas pu être vérifiées "
+		"mda_no_facet": "Les données n’ont pas pu être vérifiées ",
 		"conv_start_date": "date de commencement de la convention",
 		"conv_end_date": "date de fin de la convention",
 		"descr_fr": "description française",
@@ -8991,7 +8991,7 @@
 		"exportUsersMda": "Export users (MDA)",
 		"exportData": "Export data",
 		"mh_flatrate_history" : "Tijdslijn forfait facturatie",
-		"mda_no_facet": "Geen gegevens beschikbaar"
+		"mda_no_facet": "Geen gegevens beschikbaar",
 		"sendDocumentByEmail": "Send a document by email",
 		"recipientsEmailAddresses": "Recipient(s) email address(es)",
 		"warningSendByEmail": "Warning, sending confidential documents by email is NOT secured. Please use the eHealth box when possible.",

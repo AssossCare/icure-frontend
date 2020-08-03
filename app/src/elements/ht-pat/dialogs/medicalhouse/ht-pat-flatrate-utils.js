@@ -13,7 +13,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer"
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior"
 import {PolymerElement, html} from '@polymer/polymer'
-import * as retry from "icc-api/dist/icc-x-api/utils/net-utils";
+import * as retry from "@taktik/icc-api/dist/icc-x-api/utils/net-utils";
 
 class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
