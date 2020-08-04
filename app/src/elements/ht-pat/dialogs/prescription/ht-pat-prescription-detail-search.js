@@ -443,7 +443,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                    return {
                        endDate: null,
                        startDate: null,
-                       publicPrice: null,
+                       publicPrice: parseFloat(_.get(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'dmpps', []).find(dmpp => dmpp.deliveryEnvironment === "P")).find(reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now )), 'price', 0.00)).toFixed(2),
                        chapt4: null,
                        atc: _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null),
                        label: _.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'prescriptionName.'+this.language, null) || _.get(_.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P"), 'prescriptionName.'+this.language, null) || _.get(ampp, 'abbreviatedName.'+this.language))) || "",
