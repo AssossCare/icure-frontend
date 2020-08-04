@@ -731,7 +731,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                                 <iron-icon icon="editor:attach-file"></iron-icon>
                                                 [[localize('add_doc','Add document',language)]]
                                             </paper-button>
-                                            <!--<paper-button on-tap="writeLinkingLetter"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[localize('linkingLetter','Lettre de liaison',language)]]</paper-button>-->
                                             <paper-button on-tap="showCarePath">
                                                 <iron-icon icon="vaadin:ambulance"></iron-icon>
                                                 [[localize('care-path', 'Care path', language)]]
@@ -2407,7 +2406,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 name: reportData.title,
                 descr: reportData.description || reportData.title
             }).then(createDocTemplate => {
-                this.api.doctemplate().setAttachment(createDocTemplate.id, JSON.stringify(proseJsonContentWithoutVars)).then(setAttachment => {
+                this.api.doctemplate().setDocumentTemplateAttachment(createDocTemplate.id, JSON.stringify(proseJsonContentWithoutVars)).then(setAttachment => {
                     this.confirmSaved()
                     this.savedDocTemplateId = _.trim(createDocTemplate.id)
                 })
@@ -2425,7 +2424,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                         descr: reportData.description || reportData.title,
                         rev: docTemplateLastDefinition.rev
                     }).then(updateDocTemplate => {
-                    this.api.doctemplate().setAttachment(_.trim(this.savedDocTemplateId), JSON.stringify(proseJsonContentWithoutVars)).then(setAttachment => {
+                    this.api.doctemplate().setDocumentTemplateAttachment(_.trim(this.savedDocTemplateId), JSON.stringify(proseJsonContentWithoutVars)).then(setAttachment => {
                         this.confirmSaved()
                     })
                 })
@@ -2669,7 +2668,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
             .then(resourcesObject => this.api.pdfReport(this._getProsePdfHeader() + this.api.rewriteTableColumnsWidth(proseHtmlContent) + this._getPdfFooter()).then(pdfFileContent => _.assign({pdfFileContent: pdfFileContent}, resourcesObject)))
             .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
-            .then(resourcesObject => this.api.document().setAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
+            .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => this._saveDocumentAsService({
                 documentId: _.trim(_.get(resourcesObject, "createDocumentResponse.id", "")),
                 stringValue: _.trim(reportData.title) + " " + _.trim(reportData.description),
@@ -3023,7 +3022,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
             .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
-            .then(resourcesObject => this.api.document().setAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
+            .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => {
                 this._saveDocumentAsService({
                     documentId: _.trim(_.get(resourcesObject, "createDocumentResponse.id", "")),
@@ -3302,7 +3301,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.document().setAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({
                     documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
@@ -3496,7 +3495,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.document().setAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({
                     documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
@@ -4032,7 +4031,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             documentType: "template",
             mainUti: "proseTemplate.linkingLetter." + this.language,
             name: "Prose template (json) for linking letters between hcps",
-        }).then(createDocTemplate => this.api.doctemplate().setAttachment(createDocTemplate.id, templateContent))
+        }).then(createDocTemplate => this.api.doctemplate().setDocumentTemplateAttachment(createDocTemplate.id, templateContent))
     }
 
     _printLinkingLetter(e) {
@@ -4114,7 +4113,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
             .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
-            .then(resourcesObject => this.api.document().setAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
+            .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => {
                 this._saveDocumentAsService({
                     documentId: _.trim(_.get(resourcesObject, "createDocumentResponse.id", "")),
@@ -4132,15 +4131,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 this.busySpinner = false
             })
 
-    }
-
-    writeLinkingLetter(e) {
-        this.dispatchEvent(new CustomEvent("write-linking-letter", {
-            composed: true,
-            bubbles: true,
-            detail: {currentContact: this.currentContact}
-        }))
-        this.busySpinner = true
     }
 
     _getLinkingLetterDataProvider() {
@@ -4434,7 +4424,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.document().setAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({
                     documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),

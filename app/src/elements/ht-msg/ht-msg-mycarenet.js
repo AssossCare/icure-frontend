@@ -436,7 +436,7 @@ class HtMsgMycarenet extends TkLocalizerMixin(PolymerElement) {
           return
       }
       Promise.all(_.uniq(this.selectedItems.filter(item => this._isList(item)).flatMap(i => i.children || [i])).map(msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg).then(
-          docs => Promise.all(docs.map(d => this.api.document().getAttachment(d.id, d.attachmentId).then(a => {
+          docs => Promise.all(docs.map(d => this.api.document().getDocumentAttachment(d.id, d.attachmentId).then(a => {
               try {
                   return JSON.parse(new Uint8Array(a).reduce((data, byte) => data + String.fromCharCode(byte), ''))
               } catch (e) {

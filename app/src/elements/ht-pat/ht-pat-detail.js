@@ -2463,7 +2463,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
+                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
                             </ht-pat-detail-ctc-detail-panel>
                             </template>
                             <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]">
@@ -6752,49 +6752,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.$['prose-editor-dialog-linking-letter'].close()
     }
 
-    writeLinkingLetter(e) {
-        this.$['prose-editor-dialog-linking-letter'].open()
-        const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
-        proseEditor.set("additionalCssClasses", "linkingLetter")
-        const ctcDetailPanel = this.shadowRoot.querySelector('#ctcDetailPanel')
-
-        ctcDetailPanel._getPatAndHcpCommonData({})
-            .then(dpData => _.assign({dpData: dpData}, {}))
-            .then(resourceObject => {
-
-                ctcDetailPanel.linkingLetterDpData = resourceObject.dpData
-                if (ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied) return
-
-                return ctcDetailPanel.api.doctemplate().findDocumentTemplatesByDocumentType('template')
-                    .then(docTemplates => _.get(_.filter(docTemplates, i => _.get(i, "mainUti", "") === "proseTemplate.linkingLetter." + this.language), "[0]", false) || _.get(_.filter(docTemplates, i => _.get(i, "mainUti", "") === "proseTemplate.linkingLetter.fr"), "[0]", {}))
-                    .then(dt => {
-                        return (dt && dt.id && dt.attachmentId) ?
-                            ctcDetailPanel.api.doctemplate().getAttachmentText(dt.id, dt.attachmentId).then(proseTemplate => {
-                                ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied = true
-                                proseEditor.setJSONContent(ctcDetailPanel.api.crypto().utils.ua2utf8(proseTemplate) || {})
-                            }).catch(e => {
-                            }) :
-                            ctcDetailPanel._createLinkingLettersProseTemplate().then(createdTemplate => {
-                                ctcDetailPanel.api.doctemplate().getAttachmentText(createdTemplate.id, createdTemplate.attachmentId).then(proseTemplate => {
-                                    ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied = true
-                                    proseEditor.setJSONContent(ctcDetailPanel.api.crypto().utils.ua2utf8(proseTemplate) || {})
-                                }).catch(e => {
-                                })
-                            }).catch(e => {
-                            })
-                    })
-                    .catch(e => console.log(e))
-
-            })
-            .catch(e => console.log(e))
-            .finally(() => {
-                ctcDetailPanel._refreshContextLinkingLetter()
-                ctcDetailPanel._toggleAddActions()
-                ctcDetailPanel.busySpinner = false
-            })
-
-    }
-
     _closeLinkingLetterDialog() {
         this.$['prose-editor-dialog-linking-letter'].close()
         const ctcDetailPanel = this.shadowRoot.querySelector('#ctcDetailPanel')
@@ -6971,7 +6928,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         .then(newDocInstance => this.api.document().createDocument(newDocInstance))
                         .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
                             .then(encryptedFileContent => ({createdDocument, encryptedFileContent})))
-                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                         .then(resourcesObject => {
                             console.log("resourcesObject", resourcesObject)
                             return this.api.bekmehr().importSumehrByItemId(resourcesObject.id, "dockey", false, this.patient.id, this.language, {}, itemId).then(results => {

@@ -1649,7 +1649,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
             }).then(documentInstance => ([createdMessage, documentInstance])))
             .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument => ([createdMessage, createdDocument])))
             .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this, "user", {}), createdDocument, this.api.crypto().utils.text2ua(_.get(this, "_data.eMediattest.khmerContent", ""))).then(encryptedFileContent => [createdMessage, createdDocument, encryptedFileContent]))
-            .then(([createdMessage, createdDocument, encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => ([createdMessage, createdDocument])))
+            .then(([createdMessage, createdDocument, encryptedFileContent]) => this.api.document().setDocumentAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => ([createdMessage, createdDocument])))
             .then(([createdMessage, createdDocument]) => this._saveDocumentAsService({
                 documentId: _.trim(_.get(createdDocument, "id", "")),
                 stringValue: _.trim(_.get(messageObject, "subject", "")),
@@ -1706,7 +1706,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
             // To improve: could be several attachments from pat (considering we only have one at the moment)
             return this.api.document().getDocument(_.trim(_.get(dataFromPatDetail, "documentId", "")))
                 .then(foundDocument => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), _.trim(_.get(foundDocument, "id", "")), _.size(_.get(foundDocument, "encryptionKeys", [])) ? _.get(foundDocument, "encryptionKeys", []) : _.get(foundDocument, "delegations", []))
-                    .then(({extractedKeys: enckeys}) => !!_.trim(_.get(foundDocument, "attachmentId", "")) ? this.api.document().getAttachment(_.trim(_.get(foundDocument, "id", "")), _.trim(_.get(foundDocument, "attachmentId", "")), enckeys.join(',')).then(decryptedContent => ({
+                    .then(({extractedKeys: enckeys}) => !!_.trim(_.get(foundDocument, "attachmentId", "")) ? this.api.document().getDocumentAttachment(_.trim(_.get(foundDocument, "id", "")), _.trim(_.get(foundDocument, "attachmentId", "")), enckeys.join(',')).then(decryptedContent => ({
                         foundDocument,
                         decryptedContent
                     })).catch(e => {

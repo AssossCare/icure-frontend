@@ -1013,7 +1013,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .then(requestMessages => _.head(requestMessages))
             .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? promResolve : promResolve.then(() => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
                 .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getDocumentAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
                 .then(([document, edKeys, attachment]) => _.merge(mdaRequestMessage, {
                     document: document,
                     edKeys: edKeys,

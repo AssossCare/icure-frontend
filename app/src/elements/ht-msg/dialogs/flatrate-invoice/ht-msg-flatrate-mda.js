@@ -2991,7 +2991,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                     .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance=>([createdMessage,newDocumentInstance])))
                     .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument=>([createdMessage,createdDocument]))), 4, 1000, 1.5))
                     .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>([createdMessage,createdDocument,extractedKeys])))
-                    .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:pats})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:pats}}))), 4, 1000, 1.5))
+                    .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setDocumentAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify({request:pats})))).then(()=>_.merge(createdMessage,{documentId:_.trim(_.get(createdDocument,"id")), edKeys:edKeys, attachmentContent:{request:pats}}))), 4, 1000, 1.5))
                     .then(createdMessage => this._sleep(200).then(()=>[pats,createdMessage])) // Cool down
 
             }))
@@ -3007,7 +3007,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 return this._e_getAsyncMemberDataRequest(pats)
                     .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,createdMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(createdMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
                     .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
-                    .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(createdMessage,"documentId")),_.get(createdMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(_.get(createdMessage,"attachmentContent", {}), {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
+                    .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setDocumentAttachment(_.trim(_.get(createdMessage,"documentId")),_.get(createdMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(_.get(createdMessage,"attachmentContent", {}), {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
                     .catch(e=> (console.log("ERROR with _e_placeMdaRequests",e)||true) && createdMessage)
 
             })
@@ -3024,7 +3024,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         // 9530cd70-0e80-4263-b212-3878956cf8ff
         // return this.api.document().getDocument("9530cd70-0e80-4263-b212-3878956cf8ff")
         //     .then(document => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document,"id"), _.size(_.get(document,"encryptionKeys")) ? document.encryptionKeys : _.get(document,"delegations")).then(({extractedKeys})=>([document,extractedKeys])))
-        //     .then(([document,edKeys]) => this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(',')))
+        //     .then(([document,edKeys]) => this.api.document().getDocumentAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(',')))
         //     .then(attachment => JSON.parse(attachment))
 
         return this.api.fhc().MemberDataController().getMemberDataMessageAsyncUsingPOST(
@@ -3081,7 +3081,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {documentType: 'report', mainUti: this.api.document().uti("application/javascript"), name: _.trim(_.get(createdMessage,"subject"))+".json"}).then(newDocumentInstance => [createdMessage,newDocumentInstance]))
             .then(([createdMessage,newDocumentInstance]) => retry.retry(() => (this.api.document().createDocument(newDocumentInstance).then(createdDocument => [createdMessage,createdDocument])), 4, 1000, 1.5))
             .then(([createdMessage,createdDocument]) => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{})).then(({extractedKeys})=>[createdMessage,createdDocument,extractedKeys]))
-            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(mdaResponse)))).then(() => createdMessage)), 4, 1000, 1.5))
+            .then(([createdMessage,createdDocument,edKeys]) => retry.retry(() => (this.api.document().setDocumentAttachment(createdDocument.id,(edKeys||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(mdaResponse)))).then(() => createdMessage)), 4, 1000, 1.5))
             .catch(e=>console.log("[ERROR] _e_saveMdaResponse", e))
 
     }
@@ -3337,7 +3337,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                 responseLastCheckDate: moment().format("YYYYMMDDHHmmss")
                             }
                         }), ["metas.requestDateHr","metas.responseDateHr","metas.responseLastCheckDateHr"]))), 4, 1000, 1.5)
-                            .then(modifiedMessage => !_.size(modifiedMessage) ? null : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(requestMessage,"document.id")),_.get(requestMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify( _.assign(_.get(this,"mdaRequestsData.message.attachment",{}), {request:requestedDataMatchedWithResponseData}))))).then(() => modifiedMessage)), 4, 1000, 1.5))
+                            .then(modifiedMessage => !_.size(modifiedMessage) ? null : retry.retry(() => (this.api.document().setDocumentAttachment(_.trim(_.get(requestMessage,"document.id")),_.get(requestMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify( _.assign(_.get(this,"mdaRequestsData.message.attachment",{}), {request:requestedDataMatchedWithResponseData}))))).then(() => modifiedMessage)), 4, 1000, 1.5))
 
                     })
 
@@ -3471,7 +3471,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 return !_.size(originalMessage) || !_.size(gridDynamicMessage) || !_.size(attachmentToUpdate) ? promResolve : promResolve
                     .then(() => this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_15", "Sauvegarde des changements", this.language), icon:"arrow-forward"})||true)
                     .then(() => retry.retry(() => (this.api.message().modifyMessage(_.omit(_.merge(originalMessage, {metas:{ step5Validated: true }}), ["metas.requestDateHr","metas.responseDateHr","metas.responseLastCheckDateHr"]))), 4, 1000, 1.5))
-                    .then(modifiedMessage => !modifiedMessage ? null : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate))))), 4, 1000, 1.5))
+                    .then(modifiedMessage => !modifiedMessage ? null : retry.retry(() => (this.api.document().setDocumentAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate))))), 4, 1000, 1.5))
                     .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
                     .catch(e=> (console.log("[ERROR] _e_step4SaveChangesAndGoToStep5",e)||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
 
@@ -3646,7 +3646,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 this._setLoadingMessage({ message: this.localize('mh_eInvoicing.mda.step_7', this.language), icon: "arrow-forward" })
                 return retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
                     .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                    .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                    .then(([document, edKeys]) => retry.retry(() => (this.api.document().getDocumentAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
                     .then(([document, edKeys, attachment]) => _.merge(mdaRequestMessage, {
                         document: document,
                         edKeys: edKeys,
@@ -3725,7 +3725,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                         .then(promisesCarrier =>
                             retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessage).then(document => _.head(document))), 4, 1000, 1.5)
                                 .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
-                                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getDocumentAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
                                 .then(([document, edKeys, attachment]) => _.merge(mdaResponseMessage, { document: document, edKeys: edKeys, attachment: JSON.parse(attachment) || {} }))
                                 .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
                                 .then(messageAndAttachment => _.concat(promisesCarrier, messageAndAttachment))

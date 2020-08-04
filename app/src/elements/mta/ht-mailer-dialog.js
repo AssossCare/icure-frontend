@@ -426,7 +426,7 @@ class HtMailerDialog extends TkLocalizerMixin(PolymerElement) {
                     }
                 }) : this.api.document().getDocument(documentId)
                     .then(doc => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), _.trim(_.get(doc, "id", "")), _.size(_.get(doc, "encryptionKeys", [])) ? _.get(doc, "encryptionKeys", []) : _.get(doc, "delegations", [])).then(({extractedKeys: enckeys}) => [doc, enckeys]))
-                    .then(([doc, enckeys]) => this.api.document().getAttachment(_.trim(_.get(doc, "id", "")), _.trim(_.get(doc, "attachmentId", "")), enckeys.join(',')).then(decryptedContent => [doc, decryptedContent]))
+                    .then(([doc, enckeys]) => this.api.document().getDocumentAttachment(_.trim(_.get(doc, "id", "")), _.trim(_.get(doc, "attachmentId", "")), enckeys.join(',')).then(decryptedContent => [doc, decryptedContent]))
                     .then(([doc, decryptedContent]) => _.assign(this._data, {
                         attachment: {
                             name: _.trim(filename) ? _.trim(filename) : _.trim(_.get(doc, "name")) || this.api.crypto().randomUuid() + '.pdf',

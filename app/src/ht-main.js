@@ -1065,7 +1065,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
           const desc = 'desc';
 
           const planningFilter = { '$type': 'UnionFilter', 'filters': [{ '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start, endValueDate: end }, { '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start * 1000000, endValueDate: end * 1000000 }] };
-          this.api.contact().filterServicesBy(null, null, 1000, new models.FilterChainService({ filter: planningFilter })) //todo wtf JSON not valid
+          this.api.contact().filterServicesBy(null, 1000, new models.FilterChainService({ filter: planningFilter })) //todo wtf JSON not valid
           .then(planningList => {
               const svcDict = planningList.rows.reduce((acc, s) => {
                   const cs = acc[s.id];
@@ -1124,7 +1124,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
               },
           ]
       }
-      this.api.contact().filterServicesBy(null, null, 50, new models.FilterChainService({filter: labsFilter}))
+      this.api.contact().filterServicesBy(null, 50, new models.FilterChainService({filter: labsFilter}))
           .then(services => {
               return Promise.all(services.rows.map(s => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, s.id, s.cryptedForeignKeys).then(({extractedKeys: cfks}) => [s, cfks])))
                   .then(cfksLists => this.api.patient().filterByWithUser(this.user, null, null, 50, null, null, null, {

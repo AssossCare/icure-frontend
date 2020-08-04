@@ -1475,7 +1475,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
               Promise.all(this.appendicesTokens.map(ap =>
                   this.api.document().getDocument(ap.id)
                       .then(doc =>
-                          this.api.document().getAttachment(doc.id, doc.attachmentId)
+                          this.api.document().getDocumentAttachment(doc.id, doc.attachmentId)
                       ).then(a => ({
                           verseSeq: ap.verseSeq,
                           documentSeq: ap.docSeq,
