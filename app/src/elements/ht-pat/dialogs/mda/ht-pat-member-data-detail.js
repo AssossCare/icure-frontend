@@ -661,8 +661,8 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                     category: "memberData",
                     subCategory:"soapResponse"
                 })]).then(([mdaResponse, receiptRequest, receiptResponse]) => Promise.all([
-                    _.get(mdaResponse, 'mycarenetConversation.soapRequest', null) ? this.api.receipt().setAttachment(receiptRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapRequest', null))))) : Promise.resolve(),
-                    _.get(mdaResponse, 'mycarenetConversation.soapResponse', null) ? this.api.receipt().setAttachment(receiptResponse.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapResponse', null))))) : Promise.resolve()
+                    _.get(mdaResponse, 'mycarenetConversation.soapRequest', null) ? this.api.receipt().setReceiptAttachment(receiptRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapRequest', null))))) : Promise.resolve(),
+                    _.get(mdaResponse, 'mycarenetConversation.soapResponse', null) ? this.api.receipt().setReceiptAttachment(receiptResponse.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(mdaResponse, 'mycarenetConversation.soapResponse', null))))) : Promise.resolve()
                 ])) : Promise.resolve({})
             }).finally(() => {
                 this.set('isLoading',false)
