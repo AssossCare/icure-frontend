@@ -604,22 +604,31 @@ class HtPatSubscriptionDetail extends TkLocalizerMixin(PolymerElement) {
         this.set('isCancelSubscription', false)
         this.set('isNewSubscription', false)
 
-        this.set('medicalHouseContracts', _.orderBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => _.assign(mhc, {
-            medicalHouseName: this._getMedicalHouse(_.get(mhc, 'mmNihii', null)),
-            hrStatus: this._getSubscriptionStatus(mhc),
-            hrFlatRateType: this._getFlatRateType(mhc),
-            hrSignatureType: this._localizeSignatureType(_.get(mhc, 'signatureType', null)),
-            hrClosureReason: this._getClosureReason(mhc),
-            hrClosureType: this._getClosureType(mhc),
-            receiptsList: this._getReceiptsList(mhc)
-        })))
+        Promise.all(
+            _.uniqBy(_.get(this.patient, 'medicalHouseContracts', []), 'hcpId')
+            .filter(mhc => !!mhc.hcpId)
+            .map(mhc => this.api.hcparty().getHealthcareParty(mhc.hcpId).then(mhc.hcpId))).then(mmHcps => {
 
-        this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1 << 2)) && !(_.get(mhc, 'status', null) & (1 << 3))))
+            this.set('medicalHouseContracts', _.orderBy(_.get(this.patient, 'medicalHouseContracts', []), 'startOfContract', 'desc').map(mhc => {
+                const fallBackNihii = !!mhc.hcpId && mmHcps.find(hcp => hcp.id === mhc.hcpId) ? _.get(mmHcps.find(hcp => hcp.id === mhc.hcpId), 'nihii', null) : null
+                return _.assign(mhc, {
+                medicalHouseName: this._getMedicalHouse(_.get(mhc, 'mmNihii', fallBackNihii)),
+                hrStatus: this._getSubscriptionStatus(mhc),
+                hrFlatRateType: this._getFlatRateType(mhc),
+                hrSignatureType: this._localizeSignatureType(_.get(mhc, 'signatureType', null)),
+                hrClosureReason: this._getClosureReason(mhc),
+                hrClosureType: this._getClosureType(mhc),
+                receiptsList: this._getReceiptsList(mhc)
+            })
+            }))
 
-        const now = moment().format('YYYY-MM-DD')
-        this.set('isNotifySubscriptionClosure', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
-        this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
-        this.set('isNewSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || _.size(_.get(this.patient, 'medicalHouseContracts', []).filter(mhs => (_.get(mhs, 'hrStatus', null) === 'En cours' && _.get(mhs, 'contractId', null)))) === 0)
+            this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1 << 2)) && !(_.get(mhc, 'status', null) & (1 << 3))))
+
+            const now = moment().format('YYYY-MM-DD')
+            this.set('isNotifySubscriptionClosure', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+            this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+            this.set('isNewSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || _.size(_.get(this.patient, 'medicalHouseContracts', []).filter(mhs => (_.get(mhs, 'hrStatus', null) === 'En cours' && _.get(mhs, 'contractId', null)))) === 0)
+           })
     }
 
     _isTechnicalInfo(subscriptionResultDetail) {
