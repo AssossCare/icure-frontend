@@ -4372,29 +4372,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         let biometrics = {}
         const services = _.uniqBy(this.contacts.flatMap(contact => contact.services), 'id')
         services.forEach(service => this._getBiometricFromService(biometrics, service))
-        // this.contacts.forEach(contact => {
-        //     contact.subContacts.forEach(subcontact => {
-        //         subcontact.services.forEach(service => {
-        //             this._getBiometricFromService(biometrics, service);
-        //         });
-        //     });
-        //     contact.services.forEach(service => {
-        //         this._getBiometricFromService(biometrics, service);
-        //     });
-        // });
-
-        const values = this._biometrics.filter(b => b.key in biometrics).flatMap(b => biometrics[b.key].map(c => {
-                return {
-                    code: c.code,
-                    date: c.date,
-                    label: c.label,
-                    value: c.value,
-                    dateAsString: this.api.moment(c.date).format('DD/MM/YY'),
-                }
-            })
-        )
-
-        this._biometricsFiltered = values
+        this._biometricsFiltered = this._biometrics.filter(b => b.key in biometrics).flatMap(b => biometrics[b.key].map(c => _.assign(c,{dateAsString: this.api.moment(c.date).format('DD/MM/YY'),})))
 
         this._sortBiometrics("bio-label")
 
@@ -4427,7 +4405,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         if (this._compareValueDates(date, _.last(biometrics[biometric.key]).date) < 0)
                             biometrics[biometric.key].pop()
                     if (biometrics[biometric.key].length < 3) {
-                        biometrics[biometric.key].push({code: biometric.chart, date: date, label: label, value: value})
+                        biometrics[biometric.key].push({code: biometric.code,chart : biometric.chart, date: date, label: label, value: value})
                         biometrics[biometric.key].sort((a, b) => this._compareValueDates(a.date, b.date))
                     }
                 }
