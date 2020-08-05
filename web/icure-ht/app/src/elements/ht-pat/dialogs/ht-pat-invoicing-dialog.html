@@ -970,6 +970,11 @@
                 width: 500px;
             }
 
+            #confirmDeleteInvoice{
+                height: 300px;
+                width: 500px;
+            }
+
             #noDerogation {
                 height: 200px;
                 width: 500px;
@@ -1673,7 +1678,9 @@
                     <paper-button class="button button--other" on-tap="_closeDialog">[[localize('clo','close',language)]]</paper-button>
 
                     <template is="dom-if" if="[[!isInvoiceClosed]]">
-                        <!--<paper-button on-tap="_deleteInvoice" class="button button--other">[[localize('del_inv','Delete invoice',language)]]</paper-button>-->
+                        <template is="dom-if" if="[[_isInvoiceCanBeDeleted(selectedInvoice)]]">
+                            <paper-button on-tap="_confirmDeleteInvoice" class="button button--other">[[localize('del_inv','Delete invoice',language)]]</paper-button>
+                        </template>
                         <template is="dom-if" if="[[!_isSpecialist()]]">
                             <template is="dom-if" if="[[hasInsurability]]"><paper-button class="button button--other" on-tap="_verifyTarification" disabled="[[_isETarButtonDisabled(selectedInvoice,isLoadingValidation,isTarificationMcnError,npi,selectedInvoice.sentMediumType)]]">[[localize('eTarif','Validation eTarif',language)]]</paper-button></template>
                         </template>
@@ -1690,6 +1697,7 @@
                         <paper-button on-tap="_changePaymentType" class="button button--other">[[localize('btn-chg-pai-met','Change payment method',language)]]</paper-button>
                         <paper-button on-tap="_switchBetweenMethodForJustif" class="button button--save" disabled="[[isLoadingJustif]]">[[localize('val_justificatory','Justificatory',language)]]</paper-button>
                     </template>
+
                 </div>
         </paper-dialog>
 
@@ -1854,6 +1862,19 @@
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_confirmPaymentChanged">[[localize('valid','Validate',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="confirmDeleteInvoice">
+            <h2 class="modal-title">Supprimer la facture</h2>
+            <div class="content">
+                <div class="p5">
+                    <p>Voulez-vous vraiment supprimer cette facture ?</p>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_deleteInvoice">[[localize('del','Delete',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -2899,7 +2920,7 @@
             }
 
             analyzeMediumType(e) {
-                if(!this.selectedInvoice || !this.selectedMediumCodeType) return;
+                if(!_.get(this.selectedInvoice, 'id', null) || !this.selectedMediumCodeType) return;
                 if(_.get(this,"selectedInvoice.invoicingCodes",[]).find(code =>  _.get(code, 'code', []).includes("101990") || _.get(code, 'code', []).includes("101135")) && _.get(e, 'detail.value', null)==="eattest"){
                     this.set("errorMessage", "Les codes ne sont pas admis dans le circuit eattest")
                 }
@@ -5474,11 +5495,27 @@
                 return pat.picture ? 'data:image/png;base64,' + pat.picture : (pat.gender && pat.gender.substr(0,1).toLowerCase() === 'f') ? require('../../../../images/female-placeholder.png') : require('../../../../images/male-placeholder.png');
             }
 
+            _confirmDeleteInvoice(){
+                this.shadowRoot.querySelector('#confirmDeleteInvoice').open()
+            }
+
             _deleteInvoice(){
                 this.api.invoice().deleteInvoice(_.get(this.selectedInvoice, 'id', null)).then(inv => {
-                    console.log("Invoice n°"+_.get(inv, 'id', null)+" is deleted")
-                    this.updateGui(_.get(this, 'invoices', []).find(inv => !inv.id), true)
+                    if(inv){
+                        let invoiceList = _.cloneDeep(this.invoices)
+                        _.remove(invoiceList, this.selectedInvoice)
+                        this.set("invoices", invoiceList)
+                        this.$['nmclGrid'].clearCache()
+                        this.set('selectedInvoiceIndex', this.invoices.indexOf(_.head(_.get(this, 'invoices', []))))
+                        this.set('selectedInvoice', _.head(_.get(this, 'invoices', [])))
+                    }
+                }).finally(() => {
+                    this.shadowRoot.querySelector('#confirmDeleteInvoice').close()
                 })
+            }
+
+            _isInvoiceCanBeDeleted(invoice){
+                return _.get(invoice, 'id', null) && _.size(_.get(invoice, 'invoicingCodes', [])) > 0
             }
         }
 
