@@ -1812,6 +1812,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 width: 400px;
                 z-index: 3000;
             }
+            
+            vaadin-split-layout{
+                height: 100%;
+            }
 
         </style>
 
