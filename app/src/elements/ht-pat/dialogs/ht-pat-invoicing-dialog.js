@@ -1107,6 +1107,11 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             .accepted{
                 color: var(--app-status-color-ok);
             }
+            
+             #confirmDeleteInvoice{
+                height: 300px;
+                width: 500px;
+            }
 
         </style>
 
@@ -1484,6 +1489,9 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     </template>
 
                     <template is="dom-if" if="[[!isInvoiceClosed]]">
+                        <template is="dom-if" if="[[_isInvoiceCanBeDeleted(selectedInvoice)]]">
+                            <paper-button on-tap="_confirmDeleteInvoice" class="button button--other">[[localize('del_inv','Delete invoice',language)]]</paper-button>
+                        </template>
                         <template is="dom-if" if="[[!_isSpecialist()]]">
                              <template is="dom-if" if="[[hasInsurability]]">
                                 <paper-button class="button button--other" on-tap="_verifyTarification" disabled="[[_isETarButtonDisabled(selectedInvoice,isLoadingValidation,isTarificationMcnError,npi,selectedInvoice.sentMediumType)]]">[[localize('eTarif','Validation eTarif',language)]]</paper-button></template>
@@ -1584,6 +1592,19 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss="">[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--save" dialog-confirm="" on-tap="_confirmPayment">[[localize('validate','Validate',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog id="confirmDeleteInvoice">
+            <h2 class="modal-title">Supprimer la facture</h2>
+            <div class="content">
+                <div class="p5">
+                    <p>Voulez-vous vraiment supprimer cette facture ?</p>
+                </div>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_deleteInvoice">[[localize('del','Delete',language)]]</paper-button>
             </div>
         </paper-dialog>
 `
@@ -2495,7 +2516,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
     }
 
     analyzeMediumType(e) {
-        if (!this.selectedInvoice || !this.selectedMediumCodeType) return
+        if(!_.get(this.selectedInvoice, 'id', null) || !this.selectedMediumCodeType) return;
         this.set('selectedMediumCodeType', e.detail.value)
         this.set('selectedInvoice.sentMediumType', e.detail.value)
         const mediumType = e.detail.value
@@ -4783,11 +4804,27 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
         return !!(_.get(this, 'hcp.nihii', null) && _.startsWith(_.get(this, 'hcp.nihii', null), "1", 0) && _.size(_.get(this, 'hcp.nihii', null)) === 11 && (_.get(this, 'hcp.nihii', null).substr(_.size(_.get(this, 'hcp.nihii', null)) - 3) >= 10))
     }
 
+    _confirmDeleteInvoice(){
+        this.shadowRoot.querySelector('#confirmDeleteInvoice').open()
+    }
+
     _deleteInvoice(){
         this.api.invoice().deleteInvoice(_.get(this.selectedInvoice, 'id', null)).then(inv => {
-            console.log("Invoice n°"+_.get(inv, 'id', null)+" is deleted")
-            this.updateGui(_.get(this, 'invoices', []).find(inv => !inv.id), true)
+            if(inv){
+                let invoiceList = _.cloneDeep(this.invoices)
+                _.remove(invoiceList, this.selectedInvoice)
+                this.set("invoices", invoiceList)
+                this.$['nmclGrid'].clearCache()
+                this.set('selectedInvoiceIndex', this.invoices.indexOf(_.head(_.get(this, 'invoices', []))))
+                this.set('selectedInvoice', _.head(_.get(this, 'invoices', [])))
+            }
+        }).finally(() => {
+            this.shadowRoot.querySelector('#confirmDeleteInvoice').close()
         })
+    }
+
+    _isInvoiceCanBeDeleted(invoice){
+        return _.get(invoice, 'id', null) && _.size(_.get(invoice, 'invoicingCodes', [])) > 0
     }
 }
 customElements.define(HtPatInvoicingDialog.is, HtPatInvoicingDialog)
