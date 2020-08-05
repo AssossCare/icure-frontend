@@ -697,7 +697,7 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
                   doc.docId = createdDoc.id
                   return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob)
               })
-              .then(encryptedFileContent => this.api.document().setAttachment(doc.docId, null, encryptedFileContent)
+              .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent)
                   .then(x=>x)
                   .catch((e)=>{console.log("---error upload attachment---")}))
               .finally(x => {

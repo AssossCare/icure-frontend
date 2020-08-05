@@ -1284,7 +1284,7 @@ class HtMsgDocDetail extends TkLocalizerMixin(PolymerElement) {
   //     this.api.document().findByMessage(this.user.healthcarePartyId, selMsg)
   //         .then(found => {
   //             this.set("document",found[0]);
-  //             return this.api.document().getAttachment(found[0].id, found[0].attachmentId, found[0].secretForeignKeys);
+  //             return this.api.document().getDocumentAttachment(found[0].id, found[0].attachmentId, found[0].secretForeignKeys);
   //         })
   //         .then(attachmentResponse => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, this.document, attachmentResponse))
   //         .then(decryptedFileContent => {
@@ -1324,7 +1324,7 @@ class HtMsgDocDetail extends TkLocalizerMixin(PolymerElement) {
       let documentList = selMsg.metas && selMsg.metas.documentListJson && JSON.parse(selMsg.metas.documentListJson) || [];
       this.set('disabled', ((selMsg.status & (1 << 26)) !== 0));
       this.api.document().findByMessage(this.user.healthcarePartyId, selMsg)
-          .then(documents => Promise.all(documents.map(document => this.api.document().getAttachment(document.id, document.attachmentId, document.secretForeignKeys)
+          .then(documents => Promise.all(documents.map(document => this.api.document().getDocumentAttachment(document.id, document.attachmentId, document.secretForeignKeys)
               .then(attachment => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, document, attachment))
               .then(decryptedAttachment => {
                   let type = _.toLower(document.name.split('.').pop());

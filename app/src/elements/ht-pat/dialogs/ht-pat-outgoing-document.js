@@ -814,7 +814,9 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
         return (!prose || !_.get(selectedTemplate, "attachmentFileContent")) ? promResolve : promResolve
             .then(() => this._flushProseEditorContent())
             .then(() => this.set("_data.proseEditorSelectedTemplate", selectedTemplate))
-            .then(() => JSON.parse(this.api.crypto().utils.ua2utf8(_.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent"))))
+            // For icc-api legacy
+            // .then(() => JSON.parse(this.api.crypto().utils.ua2utf8(_.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent"))))
+            .then(() => JSON.parse(_.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent")))
             .then(jsonTemplate => {
                 jsonTemplate.content[0].content = _
                     .chain(_.get(jsonTemplate, "content[0].content", {}))
@@ -1030,7 +1032,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             }).then(documentInstance => ([createdMessage, documentInstance])))
             .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument => ([createdMessage, createdDocument])))
             .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this, "user", {}), createdDocument, _.get(this, "_data.pdf.data", "")).then(encryptedFileContent => [createdMessage, createdDocument, encryptedFileContent]))
-            .then(([createdMessage, createdDocument, encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => ([createdMessage, createdDocument])))
+            .then(([createdMessage, createdDocument, encryptedFileContent]) => this.api.document().setDocumentAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => ([createdMessage, createdDocument])))
             .then(([createdMessage, createdDocument]) => this._saveDocumentAsService({
                 documentId: _.trim(_.get(createdDocument, "id", "")),
                 stringValue: _.trim(_.get(messageObject, "subject", "")),
@@ -1395,7 +1397,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                     }))
                     .then(documentInstance => this.api.document().createDocument(documentInstance))
                     .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this, "user", {}), createdDocument, printedPdf).then(encryptedFileContent => [createdDocument, encryptedFileContent]))
-                    .then(([createdDocument, encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => createdDocument))
+                    .then(([createdDocument, encryptedFileContent]) => this.api.document().setDocumentAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => createdDocument))
                     .then(createdDocument => this._saveDocumentAsService({
                         documentId: _.trim(_.get(createdDocument, "id", "")),
                         stringValue: _.trim(_.get(messageObject, "subject", "")),
@@ -1455,7 +1457,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 const proseJsonContentWithoutVars = this._dropVarsFromProseJsonContent(proseJsonContent, variablesPath)
                 const proseTextContentWithoutVars = JSON.stringify(proseJsonContentWithoutVars).replace(/"rendered":"([^"*]*)"/g, '"rendered":""')
                 console.log("savedTemplate", proseTextContentWithoutVars)
-                return this.api.doctemplate().setAttachment(_.trim(_.get(docTemplateObject, "id", "")), proseTextContentWithoutVars)
+                return this.api.doctemplate().setDocumentTemplateAttachment(_.trim(_.get(docTemplateObject, "id", "")), proseTextContentWithoutVars)
             })
             .then(docTemplateObject => this._refreshDataProseEditorTemplates().then(() => docTemplateObject))
             .then(docTemplateObject => this.set("_data.proseEditorSelectedTemplate", docTemplateObject))
@@ -1590,7 +1592,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                             name: _.trim(_.get(templateToInject, "name", this.api.crypto().randomUuid())),
                             descr: _.trim(_.get(templateToInject, "descr", "-")),
                         })
-                            .then(docTemplateObject => this.api.doctemplate().setAttachment(_.trim(_.get(docTemplateObject, "id", "")), JSON.stringify(_.get(templateToInject, "content"))))
+                            .then(docTemplateObject => this.api.doctemplate().setDocumentTemplateAttachment(_.trim(_.get(docTemplateObject, "id", "")), JSON.stringify(_.get(templateToInject, "content"))))
                     )))
                     .then(() => this._getProseEditorTemplates(true)) // "True" param avoids infinite loop in case template couldn't be "required"
 

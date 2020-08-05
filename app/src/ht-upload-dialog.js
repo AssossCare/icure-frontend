@@ -1361,7 +1361,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
                                     .then(() => createdDoc)
                                 )
                                 .then(createdDoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob))
-                                .then(encryptedFileContent => this.api.document().setAttachment(doc.docId, null, encryptedFileContent))
+                                .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent))
                         }))
                             .then(() => contact)
                     )

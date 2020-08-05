@@ -990,7 +990,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
               return !(data.types.length && words && words.length) ? Promise.resolve([]) : Promise.all(data.types.map(ct => {
                   const typeLng = this.api.code().languageForType(ct.type, this.language);
                   const sorter = x => [x.stringValue && x.stringValue.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").startsWith(words[0]) ? 0 : 1, x.stringValue]
-                  return this.api.code().filterBy(null, null, 1000, null, null, null, {filter: {'$type':'IntersectionFilter', 'filters':words.map(w => ({
+                  return this.api.code().filterCodesBy(null, null, 1000, null, null, null, {filter: {'$type':'IntersectionFilter', 'filters':words.map(w => ({
                           '$type': 'CodeByRegionTypeLabelLanguageFilter',
                           'region': 'be',
                           'type': ct.type,

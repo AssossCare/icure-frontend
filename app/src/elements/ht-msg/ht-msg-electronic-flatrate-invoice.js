@@ -508,7 +508,7 @@ class htMsgElectronicFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                 const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
                                 return jsonDoc && jsonDoc.attachmentId ?
                                     (_.size(jsonDoc.encryptionKeys) || _.size(jsonDoc.delegations) ?
-                                        this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId))
+                                        this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(jsonDoc.id, jsonDoc.attachmentId))
 
                                         .then(a => {
                                             if (typeof a === "string"){

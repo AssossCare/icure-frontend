@@ -226,7 +226,7 @@ class HtPatHubUpload extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
   /*
       this.api.document().getDocument(this.selectedDocumentIdToUpload)
-          .then(doc => Promise.all([doc, this.api.document().getAttachment(doc.id, doc.attachmentId, null)]))
+          .then(doc => Promise.all([doc, this.api.document().getDocumentAttachment(doc.id, doc.attachmentId, null)]))
           .then(([doc, att]) => Promise.all([doc, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, att)]))
           .then(([doc, decryptedContent]) => {
               const base64Content = btoa(String.fromCharCode.apply(null, new Uint8Array(decryptedContent)))

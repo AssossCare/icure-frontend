@@ -627,11 +627,11 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 .then(() => this.api.message().getChildren(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
                 .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900', '931000'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
                 .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
-                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId)))))
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(d.id, d.attachmentId)))))
                 .then((attachs) => {
                     return this.api.document().findByMessage(this.user.healthcarePartyId, this.selectedInvoiceForDetail.message).then(docs => {
                         return Promise.all(docs.map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
-                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId))))
+                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(d.id, d.attachmentId))))
                     }).then(flatfileAttachs => {
                         const atDetail = flatfileAttachs.find(at => at.startsWith && at.startsWith("920000"))
                         const atMsg = flatfileAttachs.find(at => !at.startsWith)
