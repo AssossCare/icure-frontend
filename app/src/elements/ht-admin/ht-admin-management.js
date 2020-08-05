@@ -15,6 +15,7 @@ import './management/ht-admin-management-parent.js';
 import './management/ht-admin-management-facturation-flat-rate.js';
 import './management/ht-admin-management-facturation-service-fee.js';
 import './management/ht-admin-management-forms.js';
+import './management/ht-admin-management-export-users-mda'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
@@ -55,6 +56,11 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[groupsManagementLayout]]">
             <ht-admin-management-groups id="admin-management-groups" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-management-groups>
         </template>
+        
+        <template is="dom-if" if="[[exportUsersMdaLayout]]">
+            <ht-admin-management-export-users-mda id="admin-management-export-users-mda" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-management-export-users-mda>
+        </template>
+
 
         <template is="dom-if" if="[[usersManagementLayout]]">
             <ht-admin-management-users id="admin-management-users" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-management-users>
@@ -108,6 +114,10 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: false
           },
+          exportUsersMdaLayout:{
+              type: Boolean,
+              value: false
+          },
           parentManagementLayout:{
               type: Boolean,
               value: false
@@ -149,6 +159,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       if(this.selectedSubMenu === "groupsManagementSubMenu"){
           this.set('groupsManagementLayout', true)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', false)
@@ -157,6 +168,16 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "usersManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', true)
+          this.set('exportUsersMdaLayout', false)
+          this.set('parentManagementLayout', false)
+          this.set('delegationsManagementLayout', false)
+          this.set('facturationServiceFeeManagementLayout', false)
+          this.set('facturationFlatRateManagementLayout', false)
+          this.set('formsManagementLayout', false)
+      }else if(this.selectedSubMenu === "exportUsersMdaSubMenu"){
+          this.set('groupsManagementLayout', false)
+          this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', true)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', false)
@@ -165,6 +186,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "parentManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', true)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', false)
@@ -173,6 +195,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "delegationsManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', true)
           this.set('facturationServiceFeeManagementLayout', false)
@@ -181,6 +204,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "facturationServiceFeeManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', true)
@@ -189,6 +213,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "facturationFlatRateManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', false)
@@ -197,6 +222,7 @@ class HtAdminManagement extends TkLocalizerMixin(PolymerElement) {
       }else if(this.selectedSubMenu === "formsManagementSubMenu"){
           this.set('groupsManagementLayout', false)
           this.set('usersManagementLayout', false)
+          this.set('exportUsersMdaLayout', false)
           this.set('parentManagementLayout', false)
           this.set('delegationsManagementLayout', false)
           this.set('facturationServiceFeeManagementLayout', false)

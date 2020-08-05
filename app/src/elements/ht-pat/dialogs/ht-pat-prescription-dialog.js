@@ -14,7 +14,7 @@ import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
-        return html`
+    return html`
         <style include="dialog-style">
             .endline {
 				display: flex;
@@ -1292,7 +1292,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       )
       .then(pdfPrintingData=>this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse=>_.assign({createDocumentResponse:createDocumentResponse},pdfPrintingData)))
       .then(pdfPrintingData=>this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user.healthcarePartyId, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent=>_.assign({encryptedFileContent:encryptedFileContent},pdfPrintingData)))
-      .then(pdfPrintingData=>this.api.document().setAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},pdfPrintingData)))
+      .then(pdfPrintingData=>this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},pdfPrintingData)))
       .then(pdfPrintingData=>{
           this.dispatchEvent(new CustomEvent('save-document-as-service', {detail: {
               documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),

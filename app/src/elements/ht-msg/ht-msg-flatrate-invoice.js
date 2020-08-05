@@ -3121,7 +3121,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                     }))
                     .then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
                     .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, pdfFileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                    .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                    .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                     .then(() => !printed && this.api.triggerFileDownload( pdfFileContent, "application/pdf", this.downloadFileName ))
             })
             .then(() => {
@@ -3163,7 +3163,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         let messageId = _.get(_.head(_.chain(e.path).filter((i)=>{return _.get(_.get(i,"classList",[]), "value","").indexOf('downloadListingArchive')!==-1}).value()),"messageid",false);
         this.api.document().findByMessage(this.user.healthcarePartyId, _.chain(this.archiveListingMessages).filter({id:messageId}).head().value()).then(singleMessage => {
             if(singleMessage && singleMessage[0] && singleMessage[0].id && singleMessage[0].attachmentId && singleMessage[0].secretForeignKeys) {
-                this.api.document().getAttachment(singleMessage[0].id, singleMessage[0].attachmentId, singleMessage[0].secretForeignKeys).then(attachmentResponse => {
+                this.api.document().getDocumentAttachment(singleMessage[0].id, singleMessage[0].attachmentId, singleMessage[0].secretForeignKeys).then(attachmentResponse => {
                     if(attachmentResponse) {
                         this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, _.head(singleMessage), attachmentResponse).then(decryptedFileContent =>{
                             this.api.triggerFileDownload(decryptedFileContent,"application/pdf",_.get( _.head(_.filter(this.archiveListingMessages, {"id":_.trim(messageId)})), "filename","listing-patients.pdf"));
@@ -3722,7 +3722,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         const batchMessage = _.get( _.filter( this.messagesCachedData.roughData, i=> i.metas.exportedDate === batchExportedDate && i.transportGuid === "MH:FLATRATE:INVOICING-BATCH-ZIP" ), "[0]", "")
 
         return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, batchMessage)
-            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
+            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getDocumentAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
             .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
             .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/zip",_.get( doc, "name", doc.id + ".zip")))
             .catch(e=>{console.log(e)})
@@ -3741,7 +3741,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         const batchMessage = _.get( _.filter( this.messagesCachedData.roughData, i=> i.metas.exportedDate === batchExportedDate && i.transportGuid === "MH:FLATRATE:PARENT-OA-INVOICING-PDF" && i.metas.parentOaId === batchParentOaId ), "[0]", "")
 
         return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, batchMessage)
-            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}).catch(e=>{console.log(e)}) : prom )
+            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getDocumentAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}).catch(e=>{console.log(e)}) : prom )
             .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
             .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/pdf",_.get( doc, "name", doc.id + ".pdf")))
             .catch(e=>{console.log(e)})
@@ -3756,7 +3756,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
         if(messageId) this.set('_isLoadingSmall', true );
 
         return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, _.get(_.filter(this.messageDetailsData, {id:messageId}), "[0].messageData" ))
-            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
+            .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getDocumentAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
             .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
             .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/pdf",_.get( doc, "name", doc.id + ".pdf")))
             .catch(e=>{console.log(e)})
@@ -5427,7 +5427,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.merge(singleFileObject, {documentId:createdDocument.id})
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
-                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment flatfile---");console.log(createdDocument);console.log(encryptedFileContent);}) })
+                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment flatfile---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                 }))
                     .then(()=>{
                         return Promise.all(this.flatRateInvoicingDataObject.generatedFiles.slips.map( singleFileObject =>  {
@@ -5459,7 +5459,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                                     _.merge(singleFileObject, {documentId:createdDocument.id})
                                     return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
-                                .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
+                                .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         })).then(x=>x)
                     })
                     .then(()=>{
@@ -5529,7 +5529,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.merge(singlePdfFileObject, {documentId:createdDocument.id})
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
-                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
+                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                 })).then(x=>x)
             }) //15
             .then(()=>{
@@ -5583,7 +5583,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                             _.merge(singlePdfFileObject, {documentId:createdDocument.id})
                             return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                         })
-                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
+                        .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                 })).then(x=>x)
             }) //18
             .then(()=>{
@@ -5622,7 +5622,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
                         _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id})
                         return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                     })
-                    .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
+                    .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
             }) //20
             .then(()=>{
                 this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_8_done',this.language), icon:"check-circle", updateLastMessage: true, done:true});

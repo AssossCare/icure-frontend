@@ -106,7 +106,7 @@ onmessage = e => {
                 .then(createdMessage => iccDocumentXApi.newInstance(user, createdMessage, {documentType: 'result', mainUti: "application/octet-stream", name: _.get(fullMessageFromEHealthBox,"id","") + ".json"}))
                 .then(documentInstance => docApi.createDocument(documentInstance))
                 .then(createdDocument => encryptContent( user, createdDocument, fullMessageFromEHealthBox ).then(encryptedContent => ([createdDocument,encryptedContent])))
-                .then(([createdDocument, encryptedContent]) => docApi.setAttachment(createdDocument.id, null, encryptedContent))
+                .then(([createdDocument, encryptedContent]) => docApi.setDocumentAttachment(createdDocument.id, null, encryptedContent))
                 .catch(() => promResolve )
         }
 
@@ -124,7 +124,7 @@ onmessage = e => {
                     .then(d => docApi.createDocument(d).catch(e => { console.log("ERROR with createDocument: ", e); return promResolve; }))
                     .then(createdDocument => [createdDocument, iccUtils.base64toArrayBuffer(_.get(singleDocumentOrAnnex,"content",""))])
                     .then(([createdDocument, byteContent]) => iccCryptoXApi.extractKeysFromDelegationsForHcpHierarchy(user.healthcarePartyId,createdDocument.id,_.size(_.get(createdDocument,"encryptionKeys",{})) ? createdDocument.encryptionKeys : _.get(createdDocument,"delegations",{}))
-                        .then(({extractedKeys: enckeys}) => docApi.setAttachment(createdDocument.id, enckeys.join(','), byteContent).catch(e => { console.log("ERROR with setAttachment: ", e); return promResolve; }))
+                        .then(({extractedKeys: enckeys}) => docApi.setDocumentAttachment(createdDocument.id, enckeys.join(','), byteContent).catch(e => { console.log("ERROR with setDocumentAttachment: ", e); return promResolve; }))
                         .then(() => createdDocument)
                         .catch(e => { console.log("ERROR with extractKeysFromDelegationsForHcpHierarchy: ", e); return promResolve; })
                     )
@@ -205,7 +205,7 @@ onmessage = e => {
                     _.trim(_.get(createdDocumentToAssign,"id","")),
                     _.size(_.get(createdDocumentToAssign,"encryptionKeys",{})) ? createdDocumentToAssign.encryptionKeys : _.get(createdDocumentToAssign,"delegations",{})
                 )
-                .then(({extractedKeys: encryptionKeys}) => beResultApi.getInfos(createdDocumentToAssign.id, false, null, encryptionKeys.join(',')).catch(e=>{console.log("ERROR with getInfos: ", e); return promResolve;}))
+                .then(({extractedKeys: encryptionKeys}) => beResultApi.getInfos(createdDocumentToAssign.id, null, encryptionKeys.join(','), false).catch(e=>{console.log("ERROR with getInfos: ", e); return promResolve;}))
                 .then(beResultApiDocInfos => {
                     let prom = Promise.resolve();
                     _.map(beResultApiDocInfos, docInfo => {

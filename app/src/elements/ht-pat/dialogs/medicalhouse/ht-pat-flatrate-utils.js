@@ -13,6 +13,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer"
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class"
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior"
 import {PolymerElement, html} from '@polymer/polymer'
+import * as retry from "@taktik/icc-api/dist/icc-x-api/utils/net-utils";
 
 class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
@@ -621,9 +622,9 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 insParent = _.get(insP, "[0]")
                 return this.api.crypto().extractDelegationsSFKs(pat, _.get(this, "user.healthcarePartyId"))
             })
-            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "patient", "cdrom", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
+            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "mutualfund", "efact", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
             .then(invoices => this.api.invoice().newInstance(this.user, pat, invoices[0]))
-            .then(inv => this.api.invoice().createInvoice(inv, 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
+            .then(inv => this.api.invoice().createInvoice(_.assign(inv, {printedDate: moment().format('YYYYMMDD')}), 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
             .then(inv => this.api.register(inv, 'invoice'))
             .then(inv => this.api.message().newInstance(this.user).then(newMessageInstance => ([inv, newMessageInstance])))
             .then(([inv, newMessageInstance]) => this.api.message().createMessage(_.merge(newMessageInstance,
@@ -706,7 +707,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             console.log("messages", messages)
             return this.getPatientInvoices(pat)
         }).then(invs => {
-            invoices = invs.filter(inv => inv.sentMediumType === "cdrom")
+            invoices = invs.filter(inv => inv.sentMediumType === "efact")
             if (pat && pat.medicalHouseContracts && pat.medicalHouseContracts.length > 0) {
                 const mhc = _.orderBy(pat.medicalHouseContracts, ['startOfContract'], ['asc'])[0]
                 const startOfCoverage = mhc.startOfCoverage
@@ -801,6 +802,38 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
             .catch(() => Promise.resolve())
     }
 
+
+
+
+
+
+
+
+    flagInvoicesToAddFromTimelineAsAdded(exportDate) {
+        let promMessages = Promise.resolve([])
+        // previous "transportGuid" = MH:FLATRATE:INVOICE-TO-ADD
+        return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
+            .then(foundMessages => foundMessages.map(msg => {
+                promMessages = promMessages.then(promisesCarrier => !_.trim(_.get(msg, "id", "")) ?
+                    Promise.resolve() :
+                    this.api.message().modifyMessage(_.merge(msg, {transportGuid: "MH:FLATRATE:INVOICE-GOT-ADDED"}))
+                        .then(x => _.concat(promisesCarrier, x))
+                        .catch(() => _.concat(promisesCarrier, {}))
+                )
+            }))
+            .catch(() => Promise.resolve())
+    }
+
+    getInvoicesToAddFromTimelineByMaxExportDate(exportDate) {
+
+        return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
+            .then(foundMessages => _.chain(foundMessages).map("invoiceIds").flatten().compact().uniq().value())
+            .then(invoiceIds => !_.size(invoiceIds) ? null : this.api.invoice().getInvoices({ids: invoiceIds}))
+            .then(invoices => (!_.size(invoices) || !_.trim(_.get(invoices, "[0].id"))) ? [] : _.filter(invoices, it => !_.trim(_.get(it, "sentDate"))))
+            .catch(() => Promise.resolve())
+
+    }
+
     getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate) {
 
         const userHcpId = _.trim(_.get(this, "user.healthcarePartyId"))
@@ -828,30 +861,280 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     }
 
-    getInvoicesToAddFromTimelineByMaxExportDate(exportDate) {
 
-        return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
-            .then(foundMessages => _.chain(foundMessages).map("invoiceIds").flatten().compact().uniq().value())
-            .then(invoiceIds => !_.size(invoiceIds) ? null : this.api.invoice().getInvoices({ids: invoiceIds}))
-            .then(invoices => (!_.size(invoices) || !_.trim(_.get(invoices, "[0].id"))) ? [] : _.filter(invoices, it => !_.trim(_.get(it, "sentDate"))))
-            .catch(() => Promise.resolve())
+
+
+
+
+
+
+
+    getPatientsEligibleForMdaRequestByExportedDate(exportedDate) {
+
+        const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+        const momentExportedDate = moment(exportedDate,"YYYYMMDD") // exportedDate = <string> YYYYMM01 (always first day of given month)
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => {
+
+                            const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
+                            const ssinIsValid = this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""))
+
+                            return it &&
+
+                                // 1. Has to be active
+                                _.get(it, "active", true) &&
+
+                                // 2. Has to be alive (not deceased before exportedDate)
+                                (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
+
+                                // 3. 1+ mhc.contractId (expired or not)
+                                _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
+
+                                // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not, most recent if 1+)
+                                ( ssinIsValid || _.some(_.get(it, "insurabilities", []), ins => _.trim(_.get(ins, "insuranceId")) && _.trim(_.get(ins, "identificationNumber"))) )
+
+                        })
+                        .map(it => {
+
+                            const ssinIsValid = this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""))
+
+                            const latestInsurability = _
+                                .chain(_.get(it, "insurabilities", []))
+                                .filter(ins => _.size(ins) &&
+                                    _.trim(_.get(ins, "identificationNumber")) &&
+                                    _.trim(_.get(ins, "insuranceId", "")) &&
+                                    _.trim(_.get(ins, "parameters.tc1", "")).length === 3 &&
+                                    _.trim(_.get(ins, "parameters.tc2", "")).length === 3 &&
+                                    (_.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000")
+                                )
+                                .orderBy(["startDate"], ["desc"])
+                                .head()
+                                .value()
+
+                            const finalInsurability = _.find(_.get(it, "insurabilities", []), ins => _.size(ins) &&
+                                _.trim(_.get(ins, "identificationNumber")) &&
+                                _.trim(_.get(ins, "insuranceId")) &&
+                                _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                (moment(_.trim(_.get(ins, "startDate" + "", 0)), 'YYYYMMDD').isSameOrBefore(momentExportedDate) || !(parseInt(_.get(ins, "startDate", 0))||0)) &&
+                                (moment(_.trim(_.get(ins, "endDate" + "", 0)), 'YYYYMMDD').isSameOrAfter(momentExportedDate) || !(parseInt(_.get(ins, "endDate", 0))||0))
+                            )
+
+                            return {
+                                patientId: _.trim(_.get(it, "id")),
+                                patientSsin: ssinIsValid && _.trim(_.get(it, "ssin")).replace(/[^\d]/gmi, ""),
+                                nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
+                                insuranceId: _.trim(_.get(finalInsurability, "insuranceId")) ? _.trim(_.get(finalInsurability, "insuranceId")) : _.trim(_.get(latestInsurability, "insuranceId")),
+                                patientIdentificationNumber: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
+                                startDate: parseInt(exportedDate),
+                                endDate: parseInt(moment(_.trim(exportedDate),"YYYYMMDD").add(1, 'months').format("YYYYMMDD")),
+                                reconcileKey: _.trim(_.get(it,"id")) + "_" + this.api.crypto().randomUuid()
+                            }
+
+                        })
+                        .filter(it => _.trim(it.patientSsin) || _.trim(it.patientIdentificationNumber))
+                        .compact()
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(pats => _.orderBy(pats,["nameHr","startDate"],["asc","desc"]))
+            .catch(() => Promise.resolve([]))
 
     }
 
-    flagInvoicesToAddFromTimelineAsAdded(exportDate) {
-        let promMessages = Promise.resolve([])
-        // previous "transportGuid" = MH:FLATRATE:INVOICE-TO-ADD
-        return this.getMessagesOfInvoicesToAddFromTimelineByMaxExportDate(exportDate)
-            .then(foundMessages => foundMessages.map(msg => {
-                promMessages = promMessages.then(promisesCarrier => !_.trim(_.get(msg, "id", "")) ?
-                    Promise.resolve() :
-                    this.api.message().modifyMessage(_.merge(msg, {transportGuid: "MH:FLATRATE:INVOICE-GOT-ADDED"}))
-                        .then(x => _.concat(promisesCarrier, x))
-                        .catch(() => _.concat(promisesCarrier, {}))
-                )
-            }))
-            .catch(() => Promise.resolve())
+    resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate) {
+
+        const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+
+        return this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => {
+
+                            const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+
+                            return it &&
+
+                                // 1. Has to be active
+                                _.get(it, "active", true) &&
+
+                                // 2. 1+ mhc.contractId (expired or not)
+                                _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
+
+                                // 3. Must have a tag of type "flatRateLastInvoiced" with a code >= exportedDate
+                                flatRateLastInvoicedTagValue && flatRateLastInvoicedTagValue >= exportedDate
+
+                        })
+                        .map(it => _.assign(it, {tags: _.filter(_.get(it,"tags",[]), itt => _.trim(_.get(itt,"type")) !== "flatRateLastInvoiced")}))
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+        )
+            .then(patsToUpdate => {
+                let prom = Promise.resolve([])
+                _.map(patsToUpdate, patToUpdate => { prom = prom.then(promisesCarrier => this.api.patient().modifyPatientWithUser(this.user, patToUpdate).then(x => _.concat(promisesCarrier, x)).catch(x => _.concat(promisesCarrier, x))) })
+                return prom
+            })
+            .catch(e => console.log("[ERROR] resetPatientsLastInvoicedTagByMaxExportedDate", e))
+
     }
+
+    getPatientsEligibleForInvoicingByExportedDate(exportedDate) {
+
+        let mdaForcedAsValidPatientIds = []
+
+        const promResolve = Promise.resolve()
+        const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
+        const momentExportedDate = moment(exportedDate,"YYYYMMDD") // exportedDate = <string> YYYYMM01 (always first day of given month)
+
+        return promResolve
+            .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+                .then(pl => {
+                    return {
+                        rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1),
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }
+                })
+                .catch(() => promResolve)
+            ))
+            .then(requestMessages => _.head(requestMessages))
+            .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? promResolve : promResolve.then(() => retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
+                .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
+                .then(([document, edKeys]) => retry.retry(() => (this.api.document().getDocumentAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                .then(([document, edKeys, attachment]) => _.merge(mdaRequestMessage, {
+                    document: document,
+                    edKeys: edKeys,
+                    attachment: JSON.parse(attachment) || {}
+                }))
+                .catch(() => mdaRequestMessage)
+            ))
+            .then(mdaRequestMessage => mdaForcedAsValidPatientIds = _.uniq(_.compact(_.map(_.filter(_.get(mdaRequestMessage,"attachment.request"), {patientForcedAsValid:true}), "patientId"))))
+            .then(() => this.api.getRowsUsingPagination(
+            (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                .then(pl => {
+                    pl.rows = _
+                        .chain(pl.rows)
+                        .filter(it => {
+
+                            const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
+                            const flatRateLastInvoicedTagValue = _.trim(_.get(_.find(_.get(it,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) && _.trim(_.get(it,"id")) && mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
+
+                            return it &&
+
+                                // 1. Has to be active
+                                _.get(it, "active", true) &&
+
+                                // 2. SSIN must be valid (because of mda call)
+                                this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")) &&
+
+                                // 3. Has to be alive (not deceased before exportedDate)
+                                (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
+
+                                (
+
+                                    isPatientForcedAsValidInMda || (
+
+                                        // 4. 1+ valid MHC (versus exportedDate)
+                                        _.some(_.get(it, "medicalHouseContracts", []), mhc =>
+                                            _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                            _.trim(_.get(mhc, "contractId")) &&
+                                            (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                            (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                        ) &&
+
+                                        // 5. 1+ valid INS (versus exportedDate)
+                                        _.some(_.get(it, "insurabilities", []), ins =>
+                                            _.trim(_.get(ins, "identificationNumber")) &&
+                                            _.trim(_.get(ins, "insuranceId")) &&
+                                            _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                            _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                            (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                            (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                        )
+
+                                    )
+
+                                ) &&
+
+                                // 6. Not already exported (versus exportedDate)
+                                (!flatRateLastInvoicedTagValue || flatRateLastInvoicedTagValue < exportedDate)
+
+                                // 7. Rules (some) can be overridden if patient was forced as valid (using mda flow) -> isPatientForcedAsValidInMda
+
+                        })
+                        .map(it => {
+                            const isPatientForcedAsValidInMda = _.size(mdaForcedAsValidPatientIds) && _.trim(_.get(it,"id")) && mdaForcedAsValidPatientIds.indexOf(_.trim(_.get(it,"id"))) > -1
+                            return _.merge(it, {
+                                lastName: _.trim(_.get(it,"lastName")).toUpperCase(),
+                                firstName: _.trim(_.get(it,"firstName")).toUpperCase(),
+                                ssin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
+                                finalInsurability: _
+                                    .chain(_.get(it, "insurabilities", []))
+                                    .filter(ins =>
+                                        _.trim(_.get(ins, "identificationNumber")) &&
+                                        _.trim(_.get(ins, "insuranceId")) &&
+                                        _.trim(_.get(ins, "parameters.tc1")).length === 3 &&
+                                        _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
+                                        (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
+                                        (
+                                            isPatientForcedAsValidInMda || (
+                                                (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
+                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                            )
+                                        )
+
+                                    )
+                                    .orderBy(["startDate"],["desc"])
+                                    .head()
+                                    .value(),
+                                finalMedicalHouseContract: _
+                                    .chain(_.get(it, "medicalHouseContracts", []))
+                                    .filter(mhc =>
+                                        _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                        _.trim(_.get(mhc, "contractId")) &&
+                                        (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                        (
+                                            isPatientForcedAsValidInMda || (
+                                                (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                            )
+                                        )
+
+                                    )
+                                    .orderBy(["startOfCoverage"],["desc"])
+                                    .head()
+                                    .value(),
+                            })
+                        })
+                        .filter(it => _.size(_.get(it,"finalMedicalHouseContract")) && _.size(_.get(it,"finalInsurability")))
+                        .compact()
+                        .value()
+                    return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                })
+                .catch(() => Promise.resolve([]))
+            ))
+            .then(pats => _.orderBy(_.uniqBy(pats,"ssin"),["lastName","firstName"],["asc","asc"]))
+            .catch(() => Promise.resolve([]))
+
+    }
+
+
 
 }
 

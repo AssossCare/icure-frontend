@@ -995,7 +995,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                             </div>
 
                             <div id="appendix-upload-container">
-                                <vaadin-upload id="appendix-upload" no-auto="" files="{{appendices}}" accept="image/jpeg,application/pdf" target="[[api.host]]/document/{documentId}/attachment/multipart;jsessionid=[[api.sessionId]]" method="PUT" form-data-name="attachment" on-upload-success="_fileUploaded"></vaadin-upload>
+                                <vaadin-upload id="appendix-upload" no-auto="" files="{{appendices}}" accept="image/jpeg,application/pdf" target="[[api.host]]/document/{documentId}/attachment/multipart" method="PUT" form-data-name="attachment" on-upload-request="_fileRequest" on-upload-success="_fileUploaded"></vaadin-upload>
                                 <paper-fab class="close-button-icon" icon="icons:close" on-tap="_hideUpload"></paper-fab>
                             </div>
                         </template>
@@ -1281,7 +1281,11 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
       return this.isAgreementSelected && this.displayedParagraph && this.displayedParagraph.inTreatment && this.appendicesTokens && this.appendicesTokens.length > 0
   }
 
-  neededAppendices() {
+    _fileRequest(e) {
+        e.detail.xhr.setRequestHeader('Authorization', this.api.authorizationHeader());
+    }
+
+    neededAppendices() {
       const dp = this.displayedParagraph
       if (!dp || !dp.paragraphInfo) { return 0 }
 
@@ -1471,7 +1475,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
               Promise.all(this.appendicesTokens.map(ap =>
                   this.api.document().getDocument(ap.id)
                       .then(doc =>
-                          this.api.document().getAttachment(doc.id, doc.attachmentId)
+                          this.api.document().getDocumentAttachment(doc.id, doc.attachmentId)
                       ).then(a => ({
                           verseSeq: ap.verseSeq,
                           documentSeq: ap.docSeq,

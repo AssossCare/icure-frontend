@@ -1474,7 +1474,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                 if (_.size(doc.encryptionKeys) || _.size(doc.delegations)) {
                     this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
                         .then(({extractedKeys: enckeys}) => {
-                            if(_.trim(_.get(doc,"mainUti","")) === "public.html") this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
+                            if(_.trim(_.get(doc,"mainUti","")) === "public.html") this.api.document().getDocumentAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
                             const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
                             this.set('dataUrl', url)
                         })
@@ -1636,7 +1636,7 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                       .then(isResult => {
                           if (isResult) {
                               this.set('isLabOrProtocol', true)
-                              return this.api.beresultimport().getInfos(this.document.id, true, this.language || 'fr', enckeys.join(','))
+                              return this.api.beresultimport().getInfos(this.document.id, this.language || 'fr', enckeys.join(','), true)
                                   .then(res => {
                                       this.set('labOrProtocolContent', res)
                                       this.set('labOrProtocolContentFirstItem', _.head(res))

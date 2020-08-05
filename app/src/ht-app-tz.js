@@ -47,6 +47,7 @@ import './elements/icons/icure-icons';
 import './elements/menu-bar/menu-bar';
 import './elements/splash-screen/splash-screen'
 import './elements/mta/ht-mailer-dialog'
+import './elements/ht-pat/dialogs/subscription/ht-pat-subscription-recovery'
 import './elements/tk-localizer';
 import './ht-view404'
 import './ht-update-dialog'
@@ -864,6 +865,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                     <paper-item class="extra-menu-item" on-tap="_logList">[[localize('acc_log','Access Log',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_tuto">[[localize('tutorial','Tutorial',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="mmhSendRecoveryDialog">[[localize('mmh_send_recovery','Reprise des contrats MM',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_myProfile">
                                         <iron-icon icon="icons:account-circle"></iron-icon>
                                         [[localize('my_pro','My profile',language)]]
@@ -1098,6 +1100,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         </template>
         
         <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
+        <ht-pat-subscription-recovery id="htPatSubscriptionRecovery" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-subscription-recovery>
 `;
   }
 
@@ -1940,7 +1943,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, null, "medicalhouse").then(res => {
+              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse", null).then(res => {
                   this.set('api.fhcTokenInfo', res)
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
@@ -2431,6 +2434,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           })
       }
   }
+
+    mmhSendRecoveryDialog(e){
+        //e.stopPropagation()
+        //if(this._checkForEhealthSession() === true){
+        this.$["htPatSubscriptionRecovery"]._openDialog()
+        //}else{
+        //    this._ehealthErrorNotification()
+        //}
+    }
 
   mikronoAppointmentsMigration(){
 

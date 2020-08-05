@@ -2236,7 +2236,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
           .then(()=> !_.trim(_.get(selectedMessage,"id","")) ? prom : this.api.document().findByMessage(_.get(this,"user.healthcarePartyId",""), selectedMessage).catch(e=>{console.log("ERROR with findByMessage: ", e); return prom;}))
           .then(documentsOfMessage => !_.size(documentsOfMessage) ? prom : Promise.all(_.compact(_.filter(documentsOfMessage,d=>!!_.trim(_.get(d,"attachmentId",""))&&!!_.trim(_.get(d,"secretForeignKeys","")))).map(singleDocument => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"user.healthcarePartyId", null), _.trim(_.get(singleDocument,"id","")), _.size(_.get(singleDocument,"encryptionKeys",[])) ? _.get(singleDocument,"encryptionKeys",[]) : _.get(singleDocument,"delegations",[]))
               .then(({extractedKeys: enckeys}) => this.api.beresultimport().canHandle(_.trim(_.get(singleDocument,"id","")), enckeys.join(',')).catch(e=>{console.log("ERROR with canHandle: ", e); return prom;})
-                  .then(canHandle => !!canHandle ? this.api.beresultimport().getInfos(_.trim(_.get(singleDocument,"id","")), true, null, enckeys.join(',')).catch(e=>{console.log("ERROR with getInfos: ", e); return prom;}) : prom)
+                  .then(canHandle => !!canHandle ? this.api.beresultimport().getInfos(_.trim(_.get(singleDocument,"id","")), null, enckeys.join(','), true).catch(e=>{console.log("ERROR with getInfos: ", e); return prom;}) : prom)
                   .then(beResultImportInfos => !beResultImportInfos ? prom : _.compact(_.map(beResultImportInfos, singleBeResultImportInfo => { return _.merge(singleBeResultImportInfo, {
                       codes: _.get(singleBeResultImportInfo,"codes[0]",{}),
                       lastName: _.map( _.trim(_.get(singleBeResultImportInfo, "lastName", "")).split(" "),i=> _.capitalize(i)).join(" "),
@@ -2247,8 +2247,11 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       demandDateHr: moment(_.get(singleBeResultImportInfo,"demandDate",undefined)).format("DD/MM/YYYY")
                   })})))
                   .then(documentsInfos => ({singleDocument,documentsInfos}))
-                  .then(({singleDocument,documentsInfos})=>!!_.trim(_.get(singleDocument,"id","")) && _.trim(_.get(singleDocument,"attachmentId","")) ? this.api.document().getAttachment(_.trim(_.get(singleDocument,"id","")), _.trim(_.get(singleDocument,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>({singleDocument,documentsInfos,decryptedContent})).catch(e=>{console.log("ERROR with getAttachment: ",e); return ({singleDocument,documentsInfos});}) : ({singleDocument,documentsInfos}))
-                  .then(({singleDocument,documentsInfos,decryptedContent})=>{
+                  .then(({singleDocument,documentsInfos})=>!!_.trim(_.get(singleDocument,"id","")) && _.trim(_.get(singleDocument,"attachmentId","")) ? this.api.document().getDocumentAttachment(_.trim(_.get(singleDocument,"id","")), _.trim(_.get(singleDocument,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>({singleDocument,documentsInfos,decryptedContent})).catch(e=>{console.log("ERROR with getAttachment: ",e); return ({singleDocument,documentsInfos});}) : ({singleDocument,documentsInfos}))
+                  .then(({singleDocument,documentsInfos,decryptedContent}) =>
+                      this.api.document().getAttachmentUrl(_.trim(_.get(singleDocument, "id","")), _.trim(_.get(singleDocument, "attachmentId","")), enckeys)
+                      .then(url => ({url,singleDocument,documentsInfos,decryptedContent}))
+                  ).then(({url,singleDocument,documentsInfos,decryptedContent})=>{
                       const foundExtension = _.trim(_.get(singleDocument,"name","")).split(".").pop()
                       const fileExtension = _.trim(_.get( _.compact(_.map(this.api.document().utiExts, (v,k)=>_.trim(v).toLowerCase() ===_.trim(_.get(singleDocument,"mainUti","")).toLowerCase()?k:false)), "[0]", ( _.trim(_.get(singleDocument,"name","")).indexOf(".") > -1 && _.trim(foundExtension).length<5 && _.trim(foundExtension).length>2 ? foundExtension : "" ))).toLowerCase()
                       const attachmentSize = _.get((typeof decryptedContent === "string" ? this.api.crypto().utils.text2ua(decryptedContent) : decryptedContent),"byteLength",0)
@@ -2259,7 +2262,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                               filename: _.kebabCase(_.trim(_.get(singleDocument,"name","")).replace("."+foundExtension,"")) + "." + fileExtension,
                               fileExtension: fileExtension,
                               size: this.api._powRoundFloatByPrecision( attachmentSize / (1024**attachmentSizePow) ,2) + " " + _.trim(attachmentSizePow === 2 ? "Mb" : attachmentSizePow === 1 ? "Kb" : "Bytes"),
-                              attachmentUrl: _.trim(this.api.document().getAttachmentUrl(_.trim(_.get(singleDocument, "id","")), _.trim(_.get(singleDocument, "attachmentId","")), enckeys, this.api.sessionId)),
+                              attachmentUrl: _.trim(url),
                               decryptedContent: decryptedContent,
                               mimeType: _.trim(this.api.document().mimeType(_.trim(_.get(singleDocument,"mainUti","")))) ? _.trim(this.api.document().mimeType(_.trim(_.get(singleDocument,"mainUti","")))) : "text/plain",
                               uniqueId: _.uniqueId(_.trim(_.get(singleDocument,"id","")) + "-"),
@@ -2283,7 +2286,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   prom:
                   this.api.document().getDocument(backupOriginalMessageDocumentId)
                       .then(originalMessageDocumentObject => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this,"user.healthcarePartyId", null), _.trim(_.get(originalMessageDocumentObject,"id","")), _.size(_.get(originalMessageDocumentObject,"encryptionKeys",[])) ? _.get(originalMessageDocumentObject,"encryptionKeys",[]) : _.get(originalMessageDocumentObject,"delegations",[])).then(({extractedKeys: enckeys}) => [originalMessageDocumentObject,enckeys]))
-                      .then(([originalMessageDocumentObject,enckeys]) => this.api.document().getAttachment(_.trim(_.get(originalMessageDocumentObject,"id","")), _.trim(_.get(originalMessageDocumentObject,"attachmentId","")), enckeys.join(',')))
+                      .then(([originalMessageDocumentObject,enckeys]) => this.api.document().getDocumentAttachment(_.trim(_.get(originalMessageDocumentObject,"id","")), _.trim(_.get(originalMessageDocumentObject,"attachmentId","")), enckeys.join(',')))
                       .then(decryptedContent => console.log("ORIGINAL EHB MESSAGE", JSON.parse(this.api.crypto().utils.ua2text(decryptedContent))||{}) )
                       .catch(e=>{console.log("ERROR with get backupOriginalMessage: ", e); return prom;})
           })

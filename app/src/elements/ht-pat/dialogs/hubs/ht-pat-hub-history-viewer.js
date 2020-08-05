@@ -658,7 +658,7 @@ class HtPatHubHistoryViewer extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
   getAttachment(doc) {
       return this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations).then(
-          ({extractedKeys: enckeys}) => this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(','))
+          ({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(','))
       ).catch(err => {
           return err;
       })

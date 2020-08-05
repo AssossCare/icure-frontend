@@ -4086,8 +4086,8 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                         })
                     ])
                         .then(([kmehr, xades]) => Promise.all([
-                            this.api.receipt().setAttachment(kmehr.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.kmehrMessage))))),
-                            this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.xades)))))
+                            this.api.receipt().setReceiptAttachment(kmehr.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.kmehrMessage))))),
+                            this.api.receipt().setReceiptAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.xades)))))
                         ]))
                         .then(([kmehr, xades]) => {
                             kmehr.id && this.set('selectedInvoice.receipts', _.assign(this.selectedInvoice.receipts || {}, {kmehr: kmehr.id}))

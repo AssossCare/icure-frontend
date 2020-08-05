@@ -758,6 +758,7 @@ class htMsgInvoice extends TkLocalizerMixin(PolymerElement) {
     */
     }
 
+
     _getInvoicesFormBatch(listOfInvoiceId){
         let prom = Promise.resolve([])
         _.chunk(listOfInvoiceId, 50).map(chunkList =>

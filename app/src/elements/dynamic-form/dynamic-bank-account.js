@@ -187,7 +187,7 @@ class DynamicBankAccount extends TkLocalizerMixin(PolymerElement) {
       if( typeof fieldObject.value === 'undefined' ) return;
 
       // target & save
-      var ibanFieldObject = event.path[0];
+      var ibanFieldObject = (event.path || event.composedPath())[0];
 
       // Which one ?
       var fiiIndex = _.chain( ibanFieldObject.getAttribute('id') ).split('_').nth(1).value() || 1
@@ -241,7 +241,7 @@ class DynamicBankAccount extends TkLocalizerMixin(PolymerElement) {
 
   _deleteFii( event, fieldObject ) {
 
-      let targetContainer = _.chain(event.path).filter((item)=>{ return /(?:.*)singleFinancialInstitutionInformationContainer(?:.*)/.exec(item.className) }).head().value();
+      let targetContainer = _.chain(event.path || event.composedPath()).filter((item)=>{ return /(?:.*)singleFinancialInstitutionInformationContainer(?:.*)/.exec(item.className) }).head().value();
 
       // Which one ?
       let fiiIndex = _.chain( targetContainer.getAttribute('id') ).split('_').nth(1).value() || 1;

@@ -127,7 +127,7 @@ function filter(parsedInput, api, hcpartyId, debug) {
 							if (filter.entity === 'SVC') {
 								if (debug)
 									console.error('Request SVC: ' + JSON.stringify(body));
-								const servicesOutput = lodash_1.uniqBy(lodash_1.flatMap(yield Promise.all(hcpHierarchy.map(hcpId => api.contacticc.filterServicesBy(undefined, undefined, 10000, Object.assign({}, body, { filter: Object.assign({}, body.filter, { healthcarePartyId: hcpId }) })))), pl => pl.rows || []), x => x.id);
+								const servicesOutput = lodash_1.uniqBy(lodash_1.flatMap(yield Promise.all(hcpHierarchy.map(hcpId => api.contacticc.filterServicesBy(undefined, 10000, Object.assign({}, body, { filter: Object.assign({}, body.filter, { healthcarePartyId: hcpId }) })))), pl => pl.rows || []), x => x.id);
 								if (mainEntity === 'PAT') {
 									const patientIds = yield servicesToPatientIds(servicesOutput);
 									if (debug)
@@ -224,7 +224,7 @@ function filter(parsedInput, api, hcpartyId, debug) {
 						res = yield api.helementicc.filterBy({ filter: filter.filter });
 					}
 					else if (filter.entity === 'SVC') {
-						res = yield api.contacticc.filterServicesBy(undefined, undefined, undefined, { filter: filter.filter });
+						res = yield api.contacticc.filterServicesBy(undefined, undefined, { filter: filter.filter });
 					}
 					else if (filter.entity === 'INV') {
 						res = yield api.invoiceicc.filterBy({ filter: filter.filter });
