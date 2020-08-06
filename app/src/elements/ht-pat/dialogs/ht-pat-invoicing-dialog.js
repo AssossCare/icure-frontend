@@ -2671,7 +2671,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
             this.api.crypto().extractDelegationsSFKs(this.patient, this.user.healthcarePartyId).then(secretForeignKeys => {
                 const patientKeys = secretForeignKeys.extractedKeys.join(",")
-                this.api.invoice().appendCodes((this.isDoctorAssistant(this.hcp.nihii) === true && this.supervisor && this.supervisor.id) ? this.supervisor.id : this.user.id, this.selectedInvoice.invoiceType, this.selectedMediumCodeType, (_.get(patientInssurance, 'insuranceId', '')), patientKeys, null, 0, [newNmcl])
+                this.api.invoice().appendCodes((this.isDoctorAssistant(this.hcp.nihii) === true && this.supervisor && this.supervisor.id) ? this.supervisor.id : this.user.id, this.selectedInvoice.invoiceType, this.selectedMediumCodeType, patientKeys, (_.get(patientInssurance, 'insuranceId', '')), null, 0, [newNmcl])
                     .then(inv => (patientInssurance && patientInssurance.insuranceId ? this.api.insurance().getInsurance(patientInssurance.insuranceId).then(ins => [inv[0] || null, ins || null]) : Promise.resolve([inv[0] || null, null])))
                     .then(([inv, ins]) => (ins && ins != null) ? this.api.insurance().getInsurance(ins.parent).then(parentIns => [inv, parentIns]) : Promise.resolve([inv, null]))
                     .then(([inv, parentIns]) => {
@@ -3696,7 +3696,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             this.api.crypto().extractDelegationsSFKs(this.patient, this.user.healthcarePartyId).then(secretForeignKeys => {
                 const patientKeys = secretForeignKeys.extractedKeys.join(",")
                 const patientInssurance = _.sortBy(_.get(this, 'patient.insurabilities', []), ['startDate']).find(ass => _.get(this, 'selectedInvoice.invoiceDate', null) && _.get(ass, 'startDate', null) && _.get(ass, 'endDate', null) && this.api.moment(_.get(this, 'selectedInvoice.invoiceDate', null)).isBetween(this.api.moment(_.get(ass, 'startDate', null)), this.api.moment(_.get(ass, 'endDate', null)))) || _.sortBy(_.get(this, 'patient.insurabilities', []), ['startDate']).find(ass => !ass.endDate && ass.insuranceId != "")
-                this.api.invoice().appendCodes(this.user.id, this.selectedInvoice.invoiceType, this.bufferTypeCode, _.get(patientInssurance, 'insuranceId', ''), patientKeys, null, 0, [this.activeNmclItem])
+                this.api.invoice().appendCodes(this.user.id, this.selectedInvoice.invoiceType, this.bufferTypeCode, patientKeys, _.get(patientInssurance, 'insuranceId', ''), null, 0, [this.activeNmclItem])
                     .then(inv => (patientInssurance && patientInssurance.insuranceId ? this.api.insurance().getInsurance(patientInssurance.insuranceId).then(ins => [inv[0] || null, ins || null]) : Promise.resolve([inv[0] || null, null])))
                     .then(([inv, ins]) => (ins && ins != null) ? this.api.insurance().getInsurance(ins.parent).then(parentIns => [inv, parentIns]) : Promise.resolve([inv, null]))
                     .then(([inv, parentIns]) => {
@@ -4137,7 +4137,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
         var a = document.createElement('a')
 
         this.api.receipt().getReceipt(invoice.receipts.kmehr)
-            .then(receipt => this.api.receipt().getAttachment(receipt.id, receipt.attachmentIds.kmehrResponse))
+            .then(receipt => this.api.receipt().getReceiptAttachment(receipt.id, receipt.attachmentIds.kmehrResponse))
             .then(attach => {
                 a.href = window.URL.createObjectURL(new Blob([new Uint8Array(attach)]))
                 a.download = `invoice_kmehr-${invoice.invoiceDate}-${+new Date()}.xml`
@@ -4158,7 +4158,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
         var a = document.createElement('a')
 
         this.api.receipt().getReceipt(invoice.receipts.xades)
-            .then(receipt => this.api.receipt().getAttachment(receipt.id, receipt.attachmentIds.xades))
+            .then(receipt => this.api.receipt().getReceiptAttachment(receipt.id, receipt.attachmentIds.xades))
             .then(attach => {
                 a.href = window.URL.createObjectURL(new Blob([new Uint8Array(attach)]))
                 a.download = `invoice_xades-${invoice.invoiceDate}-${+new Date()}.xml`

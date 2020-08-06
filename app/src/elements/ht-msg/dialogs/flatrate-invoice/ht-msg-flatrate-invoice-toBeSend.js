@@ -1571,7 +1571,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                         // Update PTD last invoiced date should we do so
                         _.some(_.get(pat,"invoicingCodes", []), ic => _.trim(_.get(ic,"code")) === "109594") && this._patPTDYearToInvoice(pat) ? this._updatePatPTD(pat, this._patPTDYearToInvoice(pat)).then(res =>{ console.log("_updatePatPTD done", res) }) : null
 
-                        return !includePat || !patInsuranceId || !patInsuranceParentId || !_.size(patParentInsuranceData) ? null : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", _.trim(_.get(pat,"finalInsurability.insuranceId")), secretForeignKeys.extractedKeys.join(","), null, 0, _.get(pat,"invoicingCodes",[]))))
+                        return !includePat || !patInsuranceId || !patInsuranceParentId || !_.size(patParentInsuranceData) ? null : retry.retry(() => (this.api.invoice().appendCodes(this.user.id, "patient", "efact", secretForeignKeys.extractedKeys.join(","), _.trim(_.get(pat,"finalInsurability.insuranceId")), null, 0, _.get(pat,"invoicingCodes",[]))))
                             .then(invoices => !_.trim(_.get(invoices, "[0].id", "")) ?
                                 this.api.invoice().newInstance(this.user, pat, _.head(invoices)).then(inv => {
                                     inv.printedDate =  moment().format("YYYYMMDD")
