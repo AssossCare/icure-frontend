@@ -131,11 +131,11 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
     <div class="request-container">
         <div class="mhm-sub-container">
             <div class="mhm-person-container">
-                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
+                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contrats MM', language)]]</div>
                 <div class="mhm-person-container-content">
-                    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contract MM </div>
+                    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contrat MM </div>
                     <template is="dom-if" if="[[isLoading]]">
-                        <div>Chargement en cours</div>
+                        <div><b>Chargement en cours ...</b></div>
                     </template>
                     <template is="dom-if" if="[[isRunning]]">
                         <div>Reprise en cours ...</div>
@@ -145,11 +145,11 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
                         <template is="dom-if" if="[[!isRunning]]">
                             <template is="dom-if" if="[[isValidDate]]">
                                 <template is="dom-if" if="[[!hasRunned]]">
-                                    <div>Prêt pour lancer reprise.</div>
+                                    <div><b>Prêt pour lancer reprise.</b></div>
                                 </template>
                             </template>
                             <template is="dom-if" if="[[!isValidDate]]">
-                                <div>invalid date to run</div>
+                                <div>Reprise seulement possible entre 1/10/2020 et 31/10/2020</div>
                             </template>
                         </template>
                     </template>
@@ -433,7 +433,7 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
 
         //TODO remove : limit patients
         if(_.size(this.patientsToRecover) > 3){
-            this.patientsToRecover = this.patientsToRecover.slice(0, 50)
+            this.patientsToRecover = this.patientsToRecover.slice(0, 1)
         }
         let tmpLog = []
         let prom = Promise.resolve([])
