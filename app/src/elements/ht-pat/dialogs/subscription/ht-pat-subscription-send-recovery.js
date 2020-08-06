@@ -133,23 +133,23 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
             <div class="mhm-person-container">
                 <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contrats MM', language)]]</div>
                 <div class="mhm-person-container-content">
-                    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contrat MM </div>
+                    <div>[[localize('mhm-rep-num-1', 'Patients à reprendre', language)]]: [[numTodo]] [[localize('mhm-rep-num-2', 'patiens de', language)]] [[numTotal]] [[localize('mhm-rep-num-3', 'patients avec contrat MM', language)]]</div>
                     <template is="dom-if" if="[[isLoading]]">
-                        <div><b>Chargement en cours ...</b></div>
+                        <div><b>[[localize('mhm-rep-loading', 'Chargement en cours ...', language)]]</b></div>
                     </template>
                     <template is="dom-if" if="[[isRunning]]">
-                        <div>Reprise en cours ...</div>
-                        <div>Patient en cours: [[curPat]]</div>
+                        <div>[[localize('mhm-rep-run', 'Reprise en cours ...', language)]]</div>
+                        <div>[[localize('mhm-rep-run-pat', 'Patient en cours', language)]]: [[curPat]]</div>
                     </template>
                     <template is="dom-if" if="[[!isLoading]]">
                         <template is="dom-if" if="[[!isRunning]]">
                             <template is="dom-if" if="[[isValidDate]]">
                                 <template is="dom-if" if="[[!hasRunned]]">
-                                    <div><b>Prêt pour lancer reprise.</b></div>
+                                    <div><b>[[localize('mhm-rep-ready', 'Prêt pour lancer reprise.', language)]]</b></div>
                                 </template>
                             </template>
                             <template is="dom-if" if="[[!isValidDate]]">
-                                <div>Reprise seulement possible entre 1/10/2020 et 31/10/2020</div>
+                                <div>[[localize('mhm-rep-invalid-date', 'Reprise seulement possible entre 1/10/2020 et 31/10/2020', language)]]</div>
                             </template>
                         </template>
                     </template>
