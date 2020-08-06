@@ -2900,7 +2900,20 @@
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
 		"copyMe": "Send me a copy of message",
-		"openEditor": "Open editor"
+		"openEditor": "Open editor",
+		"mhm-send-recovery" : "Send recovery",
+		"mhm-technical-info" : "Technical info",
+		"mhm-recovery-log" : "Download log",
+		"mhm-rep" : "Recovery of MH contracts",
+		"mhm-rep-num-1" : "Patients to recover",
+		"mhm-rep-num-2" : "patients of",
+		"mhm-rep-num-3" : "patients with MH contract",
+		"mhm-rep-loading" : "Loading ...",
+		"mhm-rep-run" : "Recovery in progress ...",
+		"mhm-rep-run-pat" : "Patient being send",
+		"mhm-rep-ready" : "Ready for send recovery",
+		"mhm-rep-invalid-date" : "Recovery only possible between 01/10/2020 and 31/10/2020",
+		"mhm-rep-log" : "Log"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5978,7 +5991,20 @@
 		"disableEhbox": "Désactiver l'eHealth box",
 		"condensed": "condensé",
 		"copyMe": "M'envoyer une copie du message",
-		"openEditor": "Rouvrir l'éditeur"
+		"openEditor": "Rouvrir l'éditeur",
+		"mhm-send-recovery" : "Envoyer reprise",
+		"mhm-technical-info" : "Infos techniques",
+		"mhm-recovery-log" : "Télécharger log",
+		"mhm-rep" : "Reprise des contrats MM",
+		"mhm-rep-num-1" : "Patients à reprendre",
+		"mhm-rep-num-2" : "patients de",
+		"mhm-rep-num-3" : "patients avec contrat MM",
+		"mhm-rep-loading" : "Chargement en cours",
+		"mhm-rep-run" : "Reprise en cours ...",
+		"mhm-rep-run-pat" : "Patient en cours",
+		"mhm-rep-ready" : "Prêt pour lancer reprise.",
+		"mhm-rep-invalid-date" : "Reprise seulement possible entre 1/10/2020 et 31/10/2020",
+		"mhm-rep-log" : "Log"
 	},
 	"nl": {
 		"choose_url": "Choose your URL",
@@ -9005,6 +9031,19 @@
 		"disableEhbox": "Disable eHealth box",
 		"condensed": "condensed",
 		"copyMe": "Send me a copy of message",
-		"openEditor": "Open editor"
+		"openEditor": "Open editor",
+		"mhm-send-recovery" : "Overname verzenden",
+		"mhm-technical-info" : "Technische informatie",
+		"mhm-recovery-log" : "Download log",
+		"mhm-rep" : "Overname van MH contracten",
+		"mhm-rep-num-1" : "Over te nemen patiënten",
+		"mhm-rep-num-2" : "patiënten van",
+		"mhm-rep-num-3" : "patiënten met MH contract",
+		"mhm-rep-loading" : "Laden ...",
+		"mhm-rep-run" : "Overname bezig ...",
+		"mhm-rep-run-pat" : "Patient in verwerking",
+		"mhm-rep-ready" : "Klaar voor verzenden overname",
+		"mhm-rep-invalid-date" : "Overname enkel mogelijk tussen 1/10/2020 en 31/10/2020",
+		"mhm-rep-log" : "Log"
 	}
 }
