@@ -289,10 +289,110 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
             .p4{
                 pading: 4px;
             }
+            
+            .table{         
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+            
+            .tr-item{
+                cursor: pointer;
+            }
+            
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+            
+            .tr{
+                display: flex;
+                height: 22px;            
+                border-bottom: 1px solid var(--app-background-color-dark);   
+                padding: 4px;                
+            }
+            
+            .td{
+               position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;               
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+            
+            .fg05{
+            flex-grow: 0.5;
+            }
+            
+            .fg1{
+                flex-grow: 1;
+            }
+            
+            .fg2{
+                flex-grow: 2;
+            }  
+            
+            .fg5{
+                flex-grow: 4.6;
+            }
+
+            .title{
+                display:flex;
+                padding: 5px;
+            }
+            
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
         </style>
         <div class="team-content">
             <div class="internal-team">
                 <h4 class="subtitle">[[localize('icp','Internal care provider',language)]]</h4>
+                
+                <div class="table">
+                    <div class="tr th">     
+                        <div class="td fg0"></div>                
+                        <div class="td fg2">[[localize('nam','Name',language)]]</div>
+                        <div class="td fg1">[[localize('inami','Nihii',language)]]</div>
+                        <div class="td fg1">[[localize('speciality','Speciality',language)]]</div>
+                        <div class="td fg1">[[localize('foll-up-beg','Beginning of the follow-up',language)]]</div>
+                        <div class="td fg1">[[localize('foll-up-end','End of the follow-up',language)]]</div>
+                    </div>
+                    <template id="internal-care-team-list" is="dom-repeat" items="[[patientTeam.internal]]" as="team">
+                        <div class="tr tr-item" id="[[team.id]]" data-type="internal" on-tap="_selectedCareProviderChanged">
+                            <div class="td fg0">
+                                <template is="dom-if" if="[[_isReferral(team)]]">
+                                    <iron-icon class="referral-icon" icon="icons:accessibility"></iron-icon>
+                                </template>
+                                <template is="dom-if" if="[[!_isReferral(team)]]">
+                                    <iron-icon class="referral-icon hidden" icon="icons:accessibility"></iron-icon>
+                                </template>
+                            </div>
+                            <div class="td fg2">[[getHcpName(team)]]</div>
+                            <div class="td fg1">[[formatNihiiNumber(team.nihii)]]</div>
+                            <div class="td fg1">[[_localizeSpeciality(team.speciality)]]</div>
+                            <div class="td fg1">[[getStartDate(team)]]</div>
+                            <div class="td fg1">[[getEndDate(team)]]</div>
+                        </div>
+                    </template>
+                 </div>
+                <!--
                 <vaadin-grid id="internal-care-team-list" class="material" overflow="bottom" multi-sort="[[multiSort]]" items="[[patientTeam.internal]]" active-item="{{selectedCareProvider}}">
                     <vaadin-grid-column width="240px">
                         <template class="header">
@@ -341,10 +441,40 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                         </template>
                     </vaadin-grid-column>
                 </vaadin-grid>
+                
+                -->
             </div>
 
             <div class="external-team">
                 <h4 class="subtitle">[[localize('ecp','External care provider',language)]] <iron-icon class="icon-title" icon="vaadin:plus-circle" on-tap="_showExternalTeamSelector"></iron-icon></h4>
+                <div class="table">
+                    <div class="tr th">     
+                        <div class="td fg0"></div>                
+                        <div class="td fg2">[[localize('nam','Name',language)]]</div>
+                        <div class="td fg1">[[localize('inami','Nihii',language)]]</div>
+                        <div class="td fg1">[[localize('speciality','Speciality',language)]]</div>
+                        <div class="td fg1">[[localize('foll-up-beg','Beginning of the follow-up',language)]]</div>
+                        <div class="td fg1">[[localize('foll-up-end','End of the follow-up',language)]]</div>
+                    </div>
+                    <template id="dmg-owner-list" is="dom-repeat" items="[[patientTeam.external]]" as="team">
+                        <div class="tr tr-item" id="[[team.id]]" data-type="external" on-tap="_selectedCareProviderChanged">
+                            <div class="td fg0">
+                                <template is="dom-if" if="[[_isReferral(team)]]">
+                                    <iron-icon class="referral-icon" icon="icons:accessibility"></iron-icon>
+                                </template>
+                                <template is="dom-if" if="[[!_isReferral(team)]]">
+                                    <iron-icon class="referral-icon hidden" icon="icons:accessibility"></iron-icon>
+                                </template>
+                            </div>
+                            <div class="td fg2">[[getHcpName(team)]]</div>
+                            <div class="td fg1">[[formatNihiiNumber(team.nihii)]]</div>
+                            <div class="td fg1">[[_localizeSpeciality(team.speciality)]]</div>
+                            <div class="td fg1">[[getStartDate(team)]]</div>
+                            <div class="td fg1">[[getEndDate(team)]]</div>
+                        </div>
+                    </template>
+                 </div>
+                <!--
                 <vaadin-grid id="dmg-owner-list" class="material" overflow="bottom" multi-sort="[[multiSort]]" items="[[patientTeam.external]]" active-item="{{selectedCareProvider}}">
                     <vaadin-grid-column width="240px">
                         <template class="header">
@@ -393,6 +523,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                         </template>
                     </vaadin-grid-column>
                 </vaadin-grid>
+                -->
             </div>
         </div>
 
@@ -694,7 +825,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       };
   }
   static get observers() {
-      return ['_hcpFilterChanged(hcpType, hcpFilter)', '_loadHcpTypesTranslations(language)', '_selectedHcpChanged(selectedHcp)', '_initialize(usr, patient)', '_selectedHcpSpecialityChanged(selectedHcpSpeciality)', '_selectedCareProviderChanged(selectedCareProvider)'];
+      return ['_hcpFilterChanged(hcpType, hcpFilter)', '_loadHcpTypesTranslations(language)', '_selectedHcpChanged(selectedHcp)', '_initialize(usr, patient)', '_selectedHcpSpecialityChanged(selectedHcpSpeciality)'];
   }
   constructor() {
       super();
@@ -712,26 +843,24 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       })
   }
   _showAddPersonToCareTeam() {
-      this.$['internalCareTeamDialog'].open()
+      this.shadowRoot.querySelector('#internalCareTeamDialog').open()
       this.set('currentHcp', _.values(this.api.hcParties))
   }
   _showAddNewPersonToCareTeamForm() {
-      this.$['internalCareTeamDialog'].close()
-      this.$['externalCareTeamDialog'].open()
+      this.shadowRoot.querySelector('#internalCareTeamDialog').close()
+      this.shadowRoot.querySelector('#externalCareTeamDialog').open()
   }
   _initCurrentCareTeam(){
-      this.api.patient().getPatientWithUser(this.user, this.patient.id)
+      this.api.patient().getPatientWithUser(_.get(this, 'user', null), _.get(this, 'patient.id', null))
           .then(patient => this.api.register(patient, 'patient'))
           .then(patient => Promise.all([patient, _.keys(patient.delegations).length > 0 ? this.api.hcparty().getHealthcareParties(_.keys(patient.delegations).join(',')) : Promise.resolve([])]))
           .then(([patient, listOfInternalHcp]) => Promise.all([listOfInternalHcp, patient.patientHealthCareParties.length > 0 ? this.api.hcparty().getHealthcareParties(patient.patientHealthCareParties.map(hcp => hcp.healthcarePartyId).join(',')) : Promise.resolve([])]))
           .then(([listOfInternalHcp, listOfExternalHcp]) => {
-              this.patient.patientHealthCareParties.map(patientHcp => _.assign(_.compact(listOfExternalHcp).find(externHcp => externHcp.id === patientHcp.healthcarePartyId), {referral: patientHcp.referral, referralPeriods: patientHcp.referralPeriods}))
-              _.compact(listOfInternalHcp.map(int => listOfExternalHcp.find(ext => ext.id === int.id))).map(h => _.remove(listOfExternalHcp, {id: h.id}))
+              this.patient.patientHealthCareParties.map(patientHcp => _.assign(_.compact(listOfExternalHcp).find(externHcp => _.get(externHcp, 'id', null) === _.get(patientHcp, 'healthcarePartyId', '')), {referral: _.get(patientHcp, 'referral', null), referralPeriods: _.get(patientHcp, 'referralPeriods', null)}))
+              _.compact(listOfInternalHcp.map(int => listOfExternalHcp.find(ext => _.get(ext, 'id', null) === _.get(int, 'id', '')))).map(h => _.remove(listOfExternalHcp, {id: _.get(h, 'id', null)}))
               this.set('patientTeam', _.assign({internal: listOfInternalHcp}, {external: listOfExternalHcp}))
           })
           .finally(() => {
-              this.$['dmg-owner-list'].clearCache()
-              this.$['internal-care-team-list'].clearCache()
               this._checkForDmgOwner();
           })
   }
@@ -740,12 +869,12 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp => this.api.fhc().Dmgcontroller().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin))
               .then(rep => {
-                  const dmgNihii = rep.hcParty && rep.hcParty.ids && rep.hcParty.ids.find(id => id.s === 'ID_HCPARTY') ? rep.hcParty.ids.find(id => id.s === 'ID_HCPARTY').value : null
-                  if(dmgNihii && this.patientTeam.internal.find(h => h.nihii === dmgNihii)){
+                  const dmgNihii = _.get(rep, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY') ? _.get(_.get(rep, 'hcParty.ids', []).find(id => _.get(id, 's', null) === 'ID_HCPARTY'), 'value', null) : null
+                  if(dmgNihii && _.get(this, 'patientTeam.internal', []).find(h => _.get(h, 'nihii', null) === dmgNihii)){
                       console.log('dmg owner in internal team')
-                  }else if(dmgNihii && this.patientTeam.external.find(h => h.nihii === dmgNihii)){
+                  }else if(dmgNihii && _.get(this, 'patientTeam.external', []).find(h => _.get(h, 'nihii', null) === dmgNihii)){
                       console.log('dmg owner in external team')
-                      const dmgOwner = this.patientTeam.external.find(h => h.nihii === dmgNihii)
+                      const dmgOwner = _.get(this, 'patientTeam.external', []).find(h => _.get(h, 'nihii', null) === dmgNihii)
                       console.log(dmgOwner)
                   }else if(dmgNihii){
                       console.log('dmg owner not yet in patientHcParties')
@@ -759,9 +888,9 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       var externalTeam = []
       var externalPatientHcpTeam = []
       //var dmgOwner = []
-      this.api.patient().getPatientWithUser(this.user,this.patient.id).then(p => this.api.register(p, 'patient')).then(patient => {
-          const internalHcp = patient.delegations
-          const externalHcp = patient.patientHealthCareParties
+      this.api.patient().getPatientWithUser(this.user, _.get(this, 'patient.id', null)).then(p => this.api.register(p, 'patient')).then(patient => {
+          const internalHcp = _.get(patient, 'delegations', [])
+          const externalHcp = _.get(patient, 'patientHealthCareParties', [])
           Promise.all([
                   Promise.all(
                       _.keys(internalHcp).map(hcpId =>
@@ -971,9 +1100,10 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
   getEndDate(item){
       return _.get(item, 'referralPeriods[0].endDate', null) ? this.api.moment(_.get(item, 'referralPeriods[0].endDate', null)).format('DD/MM/YYYY') : null
   }
-  _selectedCareProviderChanged(){
-      if(this.selectedCareProvider) {
-          this.$['htPatAdminTeamDialog']._openDialog()
+  _selectedCareProviderChanged(e){
+      if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
+          this.set("selectedCareProvider", _.get(e, 'currentTarget.dataset.type', null) === "internal" ? _.get(this, 'patientTeam.internal', []).find(hcp => _.get(hcp, 'id', null) === _.get(e, 'currentTarget.id', '')) : _.get(this, 'patientTeam.external', []).find(hcp => _.get(hcp, 'id', null) === _.get(e, 'currentTarget.id', '')))
+          this.shadowRoot.querySelector('#htPatAdminTeamDialog')._openDialog()
       }
   }
   _timeFormat(date) {
@@ -1125,10 +1255,10 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       })
   }
   _showInternalTeamSelector(){
-      this.$['internalCareTeamDialog'].open()
+      this.shadowRoot.querySelector('#internalCareTeamDialog').open()
   }
   _showExternalTeamSelector(){
-      this.$['externalCareTeamDialog'].open()
+      this.shadowRoot.querySelector('#externalCareTeamDialog').open()
       this.shadowRoot.querySelector('#newHcp')._clear() || false
   }
   _addHcpToInternalTeam(){
@@ -1191,12 +1321,11 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
               })
               .then(([usr, patient]) => Promise.all([usr, this.api.register(patient, 'patient')]))
               .then(([usr, patient]) => {
-                  this.$['externalCareTeamDialog'].close()
-                  this.$['ht-invite-hcp-link'].open()
+                  this.shadowRoot.querySelector('#externalCareTeamDialog').close()
+                  this.shadowRoot.querySelector('#ht-invite-hcp-link').open()
                   this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
               }).finally(() => {
-              this.$['dmg-owner-list'].clearCache()
-              this.$['externalCareTeamDialog'].close()
+              this.shadowRoot.querySelector('#externalCareTeamDialog').close()
               this.set('newHcpCareTeam', {})
               this.shadowRoot.querySelector('#newHcp')._clear() || false
               this.shadowRoot.querySelector('#type-To')._clear() || false
@@ -1241,7 +1370,6 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
               .then(patient => this.api.patient().modifyPatientWithUser(this.user, patient))
               .then(patient => this.api.register(patient, 'patient'))
               .finally(() => {
-                  this.$['dmg-owner-list'].clearCache()
                   this.set('newHcpCareTeam', {})
                   this.shadowRoot.querySelector('#hcpSpeciality')._clear() || false
               }).catch(e => console.log("Error: "+e))
@@ -1256,8 +1384,6 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
 
   _refreshGrid(){
       this._initCurrentCareTeam()
-      this.$['dmg-owner-list'].clearCache()
-      this.$['internal-care-team-list'].clearCache()
   }
 }
 customElements.define(HtPatAdminTeam.is, HtPatAdminTeam);
