@@ -622,7 +622,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 insParent = _.get(insP, "[0]")
                 return this.api.crypto().extractDelegationsSFKs(pat, _.get(this, "user.healthcarePartyId"))
             })
-            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "mutualfund", "efact", (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), secretForeignKeys.extractedKeys.join(","), null, (1), pat.invoicingCodes))
+            .then(secretForeignKeys => this.api.invoice().appendCodes(this.user.id, "mutualfund", "efact", secretForeignKeys.extractedKeys.join(","), (pat.finalInsurability && pat.finalInsurability.insuranceId ? pat.finalInsurability.insuranceId : ''), null, (1), pat.invoicingCodes))
             .then(invoices => this.api.invoice().newInstance(this.user, pat, invoices[0]))
             .then(inv => this.api.invoice().createInvoice(_.assign(inv, {printedDate: moment().format('YYYYMMDD')}), 'invoice:' + _.get(this, "user.healthcarePartyId") + ':' + this.getChangeParentCode306(insParent && insParent.code ? insParent.code : '000') + ':'))
             .then(inv => this.api.register(inv, 'invoice'))

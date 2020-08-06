@@ -131,25 +131,25 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
     <div class="request-container">
         <div class="mhm-sub-container">
             <div class="mhm-person-container">
-                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contracts MM', language)]]</div>
+                <div class="headerMasterTitle headerLabel">[[localize('mhm-rep', 'Reprise des contrats MM', language)]]</div>
                 <div class="mhm-person-container-content">
-                    <div>Patient à reprendre [[numTodo]] patiens de [[numTotal]] patients avec contract MM </div>
+                    <div>[[localize('mhm-rep-num-1', 'Patients à reprendre', language)]]: [[numTodo]] [[localize('mhm-rep-num-2', 'patiens de', language)]] [[numTotal]] [[localize('mhm-rep-num-3', 'patients avec contrat MM', language)]]</div>
                     <template is="dom-if" if="[[isLoading]]">
-                        <div>Chargement en cours</div>
+                        <div><b>[[localize('mhm-rep-loading', 'Chargement en cours ...', language)]]</b></div>
                     </template>
                     <template is="dom-if" if="[[isRunning]]">
-                        <div>Reprise en cours ...</div>
-                        <div>Patient en cours: [[curPat]]</div>
+                        <div>[[localize('mhm-rep-run', 'Reprise en cours ...', language)]]</div>
+                        <div>[[localize('mhm-rep-run-pat', 'Patient en cours', language)]]: [[curPat]]</div>
                     </template>
                     <template is="dom-if" if="[[!isLoading]]">
                         <template is="dom-if" if="[[!isRunning]]">
                             <template is="dom-if" if="[[isValidDate]]">
                                 <template is="dom-if" if="[[!hasRunned]]">
-                                    <div>Prêt pour lancer reprise.</div>
+                                    <div><b>[[localize('mhm-rep-ready', 'Prêt pour lancer reprise.', language)]]</b></div>
                                 </template>
                             </template>
                             <template is="dom-if" if="[[!isValidDate]]">
-                                <div>invalid date to run</div>
+                                <div>[[localize('mhm-rep-invalid-date', 'Reprise seulement possible entre 1/10/2020 et 31/10/2020', language)]]</div>
                             </template>
                         </template>
                     </template>
@@ -433,7 +433,7 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
 
         //TODO remove : limit patients
         if(_.size(this.patientsToRecover) > 3){
-            this.patientsToRecover = this.patientsToRecover.slice(0, 50)
+            this.patientsToRecover = this.patientsToRecover.slice(0, 1)
         }
         let tmpLog = []
         let prom = Promise.resolve([])
