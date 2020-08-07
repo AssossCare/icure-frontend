@@ -1870,7 +1870,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _getToken() {
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
           const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), null, this._getQuality(hcp)).then(res => {
+          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
               this.set('api.fhcTokenInfo', res)
               this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
               this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
