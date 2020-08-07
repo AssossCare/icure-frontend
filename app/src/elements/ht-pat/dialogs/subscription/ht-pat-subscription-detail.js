@@ -737,7 +737,7 @@ class HtPatSubscriptionDetail extends TkLocalizerMixin(PolymerElement) {
         this.api.receipt().getReceipt(idAttachment)
             .then(receipt => {
                 const key = Object.keys(receipt.attachmentIds)[0]
-                return this.api.receipt().getAttachment(receipt.id, receipt.attachmentIds[key])
+                return this.api.receipt().getReceiptAttachment(receipt.id, receipt.attachmentIds[key])
             })
             .then(attach => {
                 a.href = window.URL.createObjectURL(new Blob([new Uint8Array(attach)]))
