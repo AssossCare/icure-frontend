@@ -432,16 +432,16 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set("recoveryLog", []);
 
         //TODO remove : limit patients
-        if(_.size(this.patientsToRecover) > 3){
-            this.patientsToRecover = this.patientsToRecover.slice(0, 1)
-        }
+        // if(_.size(this.patientsToRecover) > 3){
+        //     this.patientsToRecover = this.patientsToRecover.slice(0, 10)
+        // }
         let tmpLog = []
         let prom = Promise.resolve([])
         _.map(this.patientsToRecover, pat => {
             prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
                 .then(pat =>{
                     this.curPat = pat.lastName + " " + pat.firstName
-                    let recoveryLogItem = {patient: pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
+                    let recoveryLogItem = {patient: _.get(pat, 'ssin', '') + " " + pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
                     return this._sendSubscription(pat, recoveryLogItem).then(res => {
                         recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
                         this.push("recoveryLog", recoveryLogItem)
