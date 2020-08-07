@@ -360,6 +360,17 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                 background-color: #f4f4f6;
                 font-weight: bold;
             }
+            
+            .extra-button {
+               padding: 2px;
+               height: 20px;
+               width: 20px;
+               border-radius: 3px;
+               background: var(--app-secondary-color);
+               color: var(--app-text-color-light);
+               margin-right: 4px;
+            }
+            
         </style>
         <div class="team-content">
             <div class="internal-team">
@@ -395,9 +406,13 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
             </div>
 
             <div class="external-team">
-                <h4 class="subtitle">[[localize('ecp','External care provider',language)]] <iron-icon class="icon-title" icon="vaadin:plus-circle" on-tap="_showExternalTeamSelector"></iron-icon></h4>
+                <h4 class="subtitle">
+                    [[localize('ecp','External care provider',language)]] 
+                    <paper-icon-button id="med-edit-btn-plan" class="extra-button" icon="vaadin:plus-circle" on-tap="_showExternalTeamSelector"></paper-icon-button>
+                    <!--<paper-icon-button class="button--icon-btn" icon="vaadin:plus-circle" alt="menu" on-tap="_showExternalTeamSelector"></paper-icon-button>       -->                                               
+                </h4>
                 <div class="table">
-                    <div class="tr th">     
+                    <div class="tr th">
                         <div class="td fg0"></div>                
                         <div class="td fg2">[[localize('nam','Name',language)]]</div>
                         <div class="td fg1">[[localize('inami','Nihii',language)]]</div>
