@@ -237,7 +237,7 @@ class HtPatOtherFormDialog extends TkLocalizerMixin(PolymerElement){
                         normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(form, 'name', ''), _.get(form, 'layout.group', ''), _.get(form, 'layout.name', '')])))), i => _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
                     }))
                 )
-                this.set('availableForm', _.sortBy(_.get(this, 'formList', []).filter(form => _.get(form, 'disabled', false) !== true), ['group.name']))
+                this.set('availableForm', _.sortBy(_.get(this, 'formList', []).filter(form => _.get(form, 'disabled', false) !== true && _.get(form,"tags",[]).find(t => t.type==="care.topaz.customLanguage" && t.code===this.language)), ['group.name']))
                 this.set('formFilter', null)
                 this.$['formList'].clearCache()
             })
