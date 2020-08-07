@@ -392,57 +392,6 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                         </div>
                     </template>
                  </div>
-                <!--
-                <vaadin-grid id="internal-care-team-list" class="material" overflow="bottom" multi-sort="[[multiSort]]" items="[[patientTeam.internal]]" active-item="{{selectedCareProvider}}">
-                    <vaadin-grid-column width="240px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="lastName">[[localize('nam','Name',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <template is="dom-if" if="[[_isReferral(item)]]">
-                                <iron-icon class="referral-icon" icon="icons:accessibility"></iron-icon>
-                            </template>
-                            <template is="dom-if" if="[[!_isReferral(item)]]">
-                                <iron-icon class="referral-icon hidden" icon="icons:accessibility"></iron-icon>
-                            </template>
-                            [[getHcpName(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column width="80px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="nihii">[[localize('inami','Nihii',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[formatNihiiNumber(item.nihii)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column width="80px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="speciality">[[localize('speciality','Speciality',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[_localizeSpeciality(item.speciality)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column>
-                        <template class="header">
-                            <vaadin-grid-sorter path="beginDate">[[localize('foll-up-beg','Beginning of the follow-up',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[getStartDate(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column>
-                        <template class="header">
-                            <vaadin-grid-sorter path="endDate">[[localize('foll-up-end','End of the follow-up',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[getEndDate(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                </vaadin-grid>
-                
-                -->
             </div>
 
             <div class="external-team">
@@ -473,57 +422,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                             <div class="td fg1">[[getEndDate(team)]]</div>
                         </div>
                     </template>
-                 </div>
-                <!--
-                <vaadin-grid id="dmg-owner-list" class="material" overflow="bottom" multi-sort="[[multiSort]]" items="[[patientTeam.external]]" active-item="{{selectedCareProvider}}">
-                    <vaadin-grid-column width="240px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="name">[[localize('nam','Name',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <template is="dom-if" if="[[_isReferral(item)]]">
-                                <iron-icon class="referral-icon" icon="icons:accessibility"></iron-icon>
-                            </template>
-                            <template is="dom-if" if="[[!_isReferral(item)]]">
-                                <iron-icon class="referral-icon hidden" icon="icons:accessibility"></iron-icon>
-                            </template>
-                            [[getHcpName(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column width="80px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="nihii">[[localize('inami','Nihii',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[formatNihiiNumber(item.nihii)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column width="80px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="speciality">[[localize('speciality','Speciality',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[_localizeSpeciality(item.speciality)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column>
-                        <template class="header">
-                            <vaadin-grid-sorter path="beginDate">[[localize('foll-up-beg','Beginning of the follow-up',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[getStartDate(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column>
-                        <template class="header">
-                            <vaadin-grid-sorter path="endDate">[[localize('foll-up-end','End of the follow-up',language)]]</vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            [[getEndDate(item)]]
-                        </template>
-                    </vaadin-grid-column>
-                </vaadin-grid>
-                -->
+                 </div>            
             </div>
         </div>
 
@@ -1259,7 +1158,6 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
   }
   _showExternalTeamSelector(){
       this.shadowRoot.querySelector('#externalCareTeamDialog').open()
-      this.shadowRoot.querySelector('#newHcp')._clear() || false
   }
   _addHcpToInternalTeam(){
       let pPromise = Promise.resolve([])
@@ -1372,6 +1270,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
               .finally(() => {
                   this.set('newHcpCareTeam', {})
                   this.shadowRoot.querySelector('#hcpSpeciality')._clear() || false
+                  this.shadowRoot.querySelector('#dmg-owner-list').render()
               }).catch(e => console.log("Error: "+e))
       }
   }
