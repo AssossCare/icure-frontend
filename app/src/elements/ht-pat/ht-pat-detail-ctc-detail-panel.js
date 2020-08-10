@@ -4976,7 +4976,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                 {
                                     type: "hidden",
                                     name: "RelayState",
-                                    value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadona.health.fgov.be/"
+                                    value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/"
                                 },
                                 {type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
                             ]
