@@ -1700,6 +1700,14 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     {
                         id: "paper",
                         label: {"fr": "Papier", "nl": "Paper", "en": "Paper"}
+                    },
+                    {
+                        id:"technicalAct",
+                        label:{
+                            fr: 'Papier - Acte technique',
+                            nl: 'Paper - Technische handeling',
+                            en: 'Paper - Technical act'
+                        }
                     }
                 ]
             },
