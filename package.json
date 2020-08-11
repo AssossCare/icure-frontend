@@ -1,6 +1,6 @@
 {
   "name": "icure-ht",
-  "version": "0.0.538",
+  "version": "0.0.539",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
