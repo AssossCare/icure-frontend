@@ -860,12 +860,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
               Promise.all(
                   splitColumns.map(c =>
-                      this.api.fhc().Recipecontroller().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                      this.api.fhc().Recipecontroller().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                           patient: _.omit(this.patient, ['personalStatus']),
                           hcp: hcp,
                           feedback: false,
                           medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
-                          deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
+                          deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD"),
+                          samVersion: null
                       }).then(prescri => {
                           c.rid = prescri.rid
                           c.recipeResponse = prescri

@@ -7198,12 +7198,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending')
             })
             .then(() => mdaDidRespond ?
-                this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
+                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
                     !_.size(mdaResult) ? 'subscriptionNoSubscription' :
                         !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
                             _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
                                 'subscriptionPending'
-                ) : this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription")
+                ) : null : this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription") : null
             )
 
     }

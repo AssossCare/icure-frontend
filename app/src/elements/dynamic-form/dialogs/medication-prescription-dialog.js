@@ -2645,16 +2645,16 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addMedication(med) {
-      const currentMedIdx = _.findIndex(this.medicationAccumulator, m => m.id === med.id);
+      const currentMedIdx = _.findIndex(this.medicationAccumulator, m => _.get(m, 'id', null) === _.get(med, 'id', ''));
       if (currentMedIdx >= 0) {
           if (this.isPrescription) {
               this.set(`medicationAccumulator.${currentMedIdx}.boxes`, (this.medicationAccumulator[currentMedIdx].boxes || 1) + 1)
           }
       } else {
-          const drugType = med.type === "medicine" ? "CD-DRUG-CNK" :
-              med.type === "substance" ? "CD-VMPGROUP" : "compoundPrescription";
+          const drugType = _.get(med, 'type', null) === "medicine" ? "CD-DRUG-CNK" :
+              _.get(med, 'type', null) === "substance" ? "CD-VMPGROUP" : "compoundPrescription";
 
-          let newMed = med.service;
+          let newMed = _.get(med, 'service', {})
           const medicationValue = newMed && this.api.contact().medicationValue(newMed, this.language);
           const hasMedication = !!(medicationValue);
 
@@ -2675,14 +2675,15 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                   });
               } else {
                   const product = {
-                      intendedname: med.intendedName,
-                      intendedcds: [{type: drugType, code: med.id}],
-                      priority: "low"
+                      intendedname: _.get(med, 'intendedName', null),
+                      intendedcds: [{type: drugType, code: _.get(med, 'id', null)}],
+                      priority: "low",
+                      samId: _.get(med, 'samCode', null)
                   };
 
                   Object.assign(newMedicationContent.medicationValue, drugType === "CD-VMPGROUP" ? {substanceProduct: product} : {medicinalProduct: product});
 
-                  ((newMed.codes || (newMed.codes = [])).find(code => code.type === drugType) || (newMed.codes[newMed.codes.length] = {
+                  ((newMed.codes || (newMed.codes = [])).find(code => _.get(code, 'type', null) === drugType) || (newMed.codes[newMed.codes.length] = {
                       type: drugType,
                       version: "1"
                   })).code = med.id;
@@ -2697,11 +2698,11 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               }
           }
           const newMedClone = _.cloneDeep(newMed);
-          newMedClone.tags = newMed.tags && newMed.tags.length && newMed.tags.filter(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || [];
+          newMedClone.tags = _.get(newMed, 'tags', []).filter(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || [];
           const medicationValueClone = this.api.contact().medicationValue(newMedClone, this.language);
           if (hasMedication) {
-              medicationValueClone.beginMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10) : medicationValueClone.beginMoment;
-              medicationValueClone.endMoment = !med.service.tags.find(t => t.type==="CD-ITEM" && t.code==="medication") ? null : medicationValueClone.endMoment
+              medicationValueClone.beginMoment = !_.get(med, 'service.tags', []).find(t => _.get(t, 'type', null) ==="CD-ITEM" && _.get(t, 'code', null) ==="medication") ? parseInt(this.api.moment(Date.now()).format("YYYYMMDD"), 10) : _.get(medicationValueClone, 'beginMoment', null)
+              medicationValueClone.endMoment = !_.get(med, 'service.tags', []).find(t => _.get(t, 'type', null) ==="CD-ITEM" && _.get(t, 'code', null) ==="medication") ? null : _.get(medicationValueClone, 'endMoment', null)
           }
           (this.api.contact().medicationValue(newMedClone, this.language) || {medicationValue: {}}).status = 0;
           newMedClone.beginMoment = null;
