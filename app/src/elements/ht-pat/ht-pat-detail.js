@@ -3364,7 +3364,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     consent: ["physician", "specialist"],
                     mda: ["physician", "medicalHouse"],
                     subscription: ["medicalHouse"],
-                    insurability: ["medicalHouse", "specialist", "officedoctors"]
+                    insurability: ["specialist", "officedoctors"]
                 }
             },
             errorIndicatorMessage: {
