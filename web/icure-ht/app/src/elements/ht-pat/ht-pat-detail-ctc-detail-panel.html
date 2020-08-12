@@ -4360,7 +4360,11 @@
 				const docId = _.trim(_.get(e, "detail.document.id",""))
                 const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc,"content.fr",{})) && _.get(svc,"content.fr.documentId","") === docId) || (!!_.size(_.get(svc,"content.nl",{})) && _.get(svc,"content.nl.documentId","") === docId) || (!!_.size(_.get(svc,"content.en",{})) && _.get(svc,"content.en.documentId","") === docId))
                 const serviceLabel = !!_.trim(_.get(documentSvc,"content.fr.stringValue","")) ? _.trim(_.get(documentSvc,"content.fr.stringValue","")) : !!_.trim(_.get(documentSvc,"content.nl.stringValue","")) ? _.trim(_.get(documentSvc,"content.nl.stringValue","")) : !!_.trim(_.get(documentSvc,"content.en.stringValue","")) ? _.trim(_.get(documentSvc,"content.en.stringValue","")) : _.trim(_.get(documentSvc,"label",""))
-                const transactionCode = !!_.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) : ""
+                const transactionCode = !!_.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+					!!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+					!!_.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+					!!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+					""
 
 			    this.set("editLabelAndTransactionData.ctc", ctc)
 			    this.set("editLabelAndTransactionData.docId", docId)
@@ -4384,6 +4388,7 @@
 
 				const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
 				const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+				const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
 				return !_.size(ctc) ||
 				    !_.trim(docId) ||
@@ -4395,12 +4400,12 @@
 				                ctc.descr = newLabel
 				                documentSvc.label = newLabel
 
-				                ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION")
-				                ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+				                ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+				                ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
                                 if(!!_.size(documentSctc)) {
-									documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-									documentSctc.tags.push({type: "CD-TRANSACTION",code: newTransactionCode,disabled: false})
+									documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction")
+									documentSctc.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
 								}
 
 				            }
@@ -4409,8 +4414,8 @@
 				            if(!!_.size(_.get(documentSvc,"content.nl",{}))) _.merge(documentSvc, {content:{nl:{stringValue:newLabel}}})
 				            if(!!_.size(_.get(documentSvc,"content.en",{}))) _.merge(documentSvc, {content:{en:{stringValue:newLabel}}})
 
-				            documentSvc.tags = _.filter(_.get(documentSvc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION")
-				            documentSvc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+				            documentSvc.tags = _.filter(_.get(documentSvc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+				            documentSvc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
 				        })
 				        .then(()=>this._saveContactAndRefreshContacts(ctc))
@@ -4468,7 +4473,11 @@
 				const ctc = _.find(this.contacts, {id:_.get(e, "detail.contact.id","")})
 				const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
 				const serviceLabel = !!_.trim(_.get(ctc,"descr","")) ? _.trim(_.get(ctc,"descr","")) : _.trim(_.get(sourceSubContact,"descr",""))
-				const transactionCode = !!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) : _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", ""))
+				const transactionCode =
+					!!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+					!!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+					!!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+					_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", ""))
 
 				this.set("editLabelAndTransactionData.ctc", ctc)
 				this.set("editLabelAndTransactionData.docId", "")
@@ -4488,16 +4497,17 @@
 
 				const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
 				const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+				const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
 				return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
 					.then(() => {
 
 						ctc.descr = newLabel
-						isEhboxMessage && (ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION"))
-						isEhboxMessage && ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+						isEhboxMessage && (ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction"))
+						isEhboxMessage && ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
-						isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION"))
-						isEhboxMessage && sourceSubContact.tags.push({type: "CD-TRANSACTION",code: newTransactionCode,disabled: false})
+						isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction"))
+						isEhboxMessage && sourceSubContact.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
 
 					})
 					.then(()=>this._saveContactAndRefreshContacts(ctc))

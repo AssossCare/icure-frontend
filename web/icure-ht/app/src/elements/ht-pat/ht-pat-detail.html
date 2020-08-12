@@ -5925,8 +5925,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     return this.api.after(ctc.openingDate, this.timeSpanStart)
                         && this.api.before(ctc.openingDate, this.timeSpanEnd)
                         && (!regExp || ctc.subContacts.some(sc => sc.descr && sc.descr.match(regExp) && sc.services.length)
-                            || ctc.services.some(s => this.shortServiceDescription(s, this.language).match(regExp))
-                            || this.hcp(ctc).match(regExp) )
+                            || ctc.services.some(s => this.shortServiceDescription(s, this.language).match(regExp) || _.trim(_.get(s, "label")).match(regExp))
+                            || this.hcp(ctc).match(regExp)
+                            || _.trim(_.get(ctc,"userDescr")).match(regExp)
+                        )
                         && (!heIds.length && !poaIds.length && !svcIds.length
                             || ctc.subContacts.some(sc => (sc.healthElementId && heIds.includes(sc.healthElementId) || sc.planOfActionId && poaIds.includes(sc.planOfActionId)))
                             || ctc.services.some(s => svcIds.includes(s.id)))
@@ -6876,21 +6878,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     .chain(_.get(ctc,"subContacts",[]))
                     .map(subContact => {
 
-                        const contactTransactionCode = _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"}), "code",""))
-                        const subContactTransactionCode = _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"}), "code",""))
+                        const contactTransactionCode = _.size(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
+                        const subContactTransactionCode = _.size(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                         const labOrProtocolTransactionCode = !!_.trim(subContactTransactionCode) ? _.trim(subContactTransactionCode) : !!_.trim(contactTransactionCode) ? _.trim(contactTransactionCode) : "unknown"
+                        const customTransactionCode = _.trim(_.get(_.find(_.get(subContact,"tags"), {type:"care.topaz.customTransaction"}), "code"))
 
                         // Imported file file
                         return !!(parseInt(_.get(subContact, "status", 0)) & (1 << 6)) ?
                             _.map(subContact.services, subContactService => {
                                 const svc = _.find(_.get(ctc,"services",[]), service => _.trim(_.get(service,"id","something")) === _.trim(_.get(subContactService,"serviceId","else")))
                                 const fileName = _.trim(_.get(svc,"content." + this.language + ".stringValue",""))
-                                const cdTransactionCode = _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"}), "code",""))
+                                const cdTransactionCode = _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                                 const docType = !!_.trim(cdTransactionCode) ? _.trim(cdTransactionCode) : "unknown"
 
                                 return !fileName || !!parseInt(_.get(svc,"endOfLife",0)) ? false : {
                                     name: fileName,
-                                    type: !!_.size(_.find(_.get(svc, "tags",[]), {type:"outgoingDocument"})) ? "" : this.localize('cd-transaction-' + docType, docType, this.language),
+                                    type: !!_.size(_.find(_.get(svc, "tags",[]), {type:"outgoingDocument"})) ? "" : _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? this.localize('cd-transaction-' + docType, docType, this.language) : _.trim(_.get(_.find(this.documentTypes, {code:docType}), "name", docType)),
                                     created: this._dateFormat(_.get(ctc,"created",undefined)),
                                     modified: this._dateFormat(_.get(ctc,"modified",undefined))
                                 }
@@ -6899,7 +6902,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             // Labresult or protocol
                             !!((parseInt(_.get(subContact, "status", 0)) & (1 << 0)) || (parseInt(_.get(subContact, "status", 0)) & (1 << 5))) ? {
                                 created: this._dateFormat(_.get(ctc,"created",undefined)),
-                                type: this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
+                                type: customTransactionCode ? _.trim(_.get(_.find(this.documentTypes, {code:customTransactionCode}), "name", customTransactionCode)) : this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
                                 name: !(parseInt(_.get(subContact, "status", 0)) & (1 << 0)) ? null : this.localize((!!(parseInt(_.get(subContact,"status",0))&(1<<4))?"com_res":"inc_res"), "Complete result", this.language)
                             } : false
                     })

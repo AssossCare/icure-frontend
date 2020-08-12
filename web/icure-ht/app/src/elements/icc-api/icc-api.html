@@ -986,14 +986,23 @@
                 "child-prevention",
                 "radiationexposuremonitoring",
                 "treatmentsuspension",
-                "telemonitoring"
+                "telemonitoring",
+                "triptyque"
             ]
 
-            return this.code().findCodes("be", "CD-TRANSACTION")
+            return Promise.all([
+                this.code().findCodes("be", "CD-TRANSACTION"),
+                this.code().findCodes("be", "care.topaz.customTransaction")
+            ])
                 .then(foundCodes => _
                     .chain(foundCodes)
+                    .flatten()
                     .filter(singleCode => exclusionList.indexOf(_.trim(_.get(singleCode,"code",""))) === -1)
-                    .map(singleCode => { const code = _.trim(_.get(singleCode,"code","")); return{code:code,name:_.upperFirst(_.trim(_.get(resources, language + ".cd-transaction-" + code, code)).toLowerCase())}})
+                    .map(singleCode => {
+                        const code = _.trim(_.get(singleCode,"code"));
+                        const type = _.trim(_.get(singleCode,"type"));
+                        return { id: _.trim(_.get(singleCode,"id")), type: type, code:code, name: _.upperFirst((type.toLowerCase() === "cd-transaction" ? _.trim(_.get(resources, language + ".cd-transaction-" + code, code)) : _.trim(_.get(singleCode,"label." + language))).toLowerCase()) }
+                    })
                     .orderBy(['name'],['asc'])
                     .value()
                 )
