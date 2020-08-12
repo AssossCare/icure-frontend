@@ -1,0 +1,664 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+
+
+<dom-module id="ht-admin-reports-technical-act">
+
+    <template>
+
+        <style include="shared-styles dialog-style buttons-style paper-tabs-style">
+            .panel{
+                margin: 5px;
+                height: calc(100% - 20px);
+                width: auto;
+            }
+
+            .panel-title{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-search{
+                height: 45px;
+                width: auto;
+                display: flex;
+            }
+
+            .panel-content{
+                height: calc(100% - 125px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .assurability--redStatus{
+                color: var(--app-status-color-nok);
+                height: 8px;
+                width: 8px;
+            }
+
+            .assurability--greenStatus{
+                color: var(--app-status-color-ok);
+                height: 8px;
+                width: 8px;
+            }
+
+            .invoice-status {
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .batchNumber{
+                color: var(--app-text-color-light);
+                border-radius: 25px;
+                min-height: 0;
+                margin-left: 8px;
+                font-size: .6em;
+                display: inline-block;
+                line-height: 0.8;
+                text-align: center;
+                height: 10px;
+                padding: 5px;
+                margin-top: 2px;
+            }
+
+            .table{
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .tr{
+                display: flex;
+                height: 22px;
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0;
+            }
+
+            .fg02{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg4{
+                flex-grow: 3.8;
+            }
+
+            .status{
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .info-icon{
+                height: 14px;
+                width: 14px;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+            .button{
+                display: inline-flex!important;
+                align-items: center!important;
+            }
+
+            .title{
+                display:flex;
+                padding: 5px;
+            }
+
+            .modalDialog{
+                height: 350px;
+                width: 600px;
+            }
+
+            .modalDialogContent{
+                height: calc(100% - 69px);
+                width: auto;
+                margin: 0;
+                background-color: white;
+                position: relative;
+                padding: 10px;
+            }
+
+            #checkBeforeSendingDialog{
+                height: 500px;
+                width: 800px;
+            }
+
+            .unsentInvoice{
+                height: 250px;
+                width: auto;
+            }
+
+            previousCheck{
+                height: 100px;
+                width: auto;
+            }
+
+            .errorBeforeSendInvoice{
+                color: var(--app-status-color-nok);
+                font-weight: bold;
+            }
+
+            #patientsWithoutAssurabilityGrid{
+                max-height: 200px;
+                overflow: auto;
+            }
+
+            .sendingSpinner{
+                height: 100px!important;
+                width: 100px!important;
+                margin: auto;
+            }
+
+            .prossessList{
+                height: calc(100% - 100px);
+                width: auto;
+                padding: 4px;
+            }
+
+            .content-container{
+                padding: 4px;
+                width: auto;
+            }
+
+            .previousCheckContainer{
+
+            }
+
+            .listOfUnsentInvoiceContainer{
+
+            }
+
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+            .mr5{
+                margin-right: 5px;
+            }
+        </style>
+
+        <div class="panel">
+            <div class="panel-title">
+                <div class="title">
+                    [[localize('rep-tec-act', 'Technical act', language)]]
+                    <span class="batchNumber batchPending">{{_forceZeroNum(listOfTechnicalAct)}}</span>
+                </div>
+            </div>
+            <div class="panel-search">
+                <vaadin-date-picker id="beginMoment" label="[[localize('start-date', 'Start date', language)]]" value="{{searchDate.startDate}}" class="mr5" i18n="[[i18n]]"></vaadin-date-picker>
+                <vaadin-date-picker id="endMoment" label="[[localize('end-date', 'End date', language)]]" value="{{searchDate.endDate}}" class="mr5" i18n="[[i18n]]"></vaadin-date-picker>
+                <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+            </div>
+            <div class="panel-content">
+                <div class="table">
+                    <div class="tr th">
+                        <div class="td fg02"></div>
+                        <div class="td fg05">[[localize('inv_mut','Mutual',language)]]</div>
+                        <div class="td fg2">[[localize('inv_pat','Patient',language)]]</div>
+                        <div class="td fg1">[[localize('inv_niss','Inss',language)]]</div>
+                        <div class="td fg1">[[localize('inv_date','Invoice date',language)]]</div>
+                        <div class="td fg1">[[localize('inv_nmcl','Nmcl',language)]]</div>
+                        <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_oa','Oa',language)]]</div>
+                        <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_pat','Patient',language)]]</div>
+                        <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_supp','Extra',language)]]</div>
+                        <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_tot','Total',language)]]</div>
+                    </div>
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                    <template is="dom-if" if="[[!isLoading]]">
+                        <template is="dom-repeat" items="[[filteredListOfTechnicalAct]]" as="group" id="invoiceList">
+                            <div class="tr tr-group">
+                                <div class="td fg4">[[_getGroupInformation(group)]]</div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'oa')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'pat')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'ext')]]€</div>
+                                <div class="td fg1">[[_getTotalOfGroup(group, 'tot')]]€</div>
+                            </div>
+                            <template is="dom-repeat" items="[[group]]" as="inv">
+                                <template is="dom-repeat" items="[[inv.invoice.invoicingCodes]]" as="nmcl">
+                                    <div class="tr tr-item" id="[[inv.invoiceId]]">
+                                        <div class="td fg02">
+                                            <template is="dom-if" if="[[inv.realizedByTrainee]]">
+                                                <iron-icon icon="vaadin:academy-cap" class="info-icon"></iron-icon>
+                                            </template>
+                                        </div>
+                                        <div class="td fg05">[[inv.insuranceCode]]</div>
+                                        <div class="td fg2">
+                                            <template is="dom-if" if="[[!inv.insurabilityCheck]]">
+                                                <iron-icon icon="vaadin:circle" class="assurability--redStatus"></iron-icon>
+                                            </template>
+                                            <template is="dom-if" if="[[inv.insurabilityCheck]]">
+                                                <iron-icon icon="vaadin:circle" class="assurability--greenStatus"></iron-icon>
+                                            </template>
+                                            [[inv.patientName]]
+                                        </div>
+                                        <div class="td fg1">[[inv.patientSsin]]</div>
+                                        <div class="td fg1">[[formatDate(inv.invoiceDate,'date')]]</div>
+                                        <div class="td fg1">[[nmcl.code]]</div>
+                                        <div class="td fg1">[[_formatAmount(nmcl.reimbursement)]]€</div>
+                                        <div class="td fg1">[[_formatAmount(nmcl.patientIntervention)]]€</div>
+                                        <div class="td fg1">[[_formatAmount(nmcl.doctorSupplement)]]€</div>
+                                        <div class="td fg1">[[_formatAmount(nmcl.totalAmount)]]€</div>
+                                    </div>
+                                </template>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </div>
+            <div class="panel-button">
+                <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
+                    <paper-button on-tap="_generateReport" class="button button--save">[[localize('rep-gen','Generate',language)]]</paper-button>
+                </template>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import { parse } from '../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../scripts/filters'
+        import '../../../../bower_components/js-xlsx/shim.js'
+        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
+
+        class HtAdminReportsTechnicalAct extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-reports-technical-act'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        noReset: true
+                    },
+                    user: {
+                        type: Object,
+                        noReset: true
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    },
+                    filteredListOfTechnicalAct:{
+                        type: Array,
+                        value: () => []
+                    },
+                    listOfTechnicalAct: {
+                        type: Array,
+                        value: () => []
+                    },
+                    filter:{
+                        type: String,
+                        value: null
+                    },
+                    searchDate:{
+                        type: Object,
+                        value: {
+                            startDate: null,
+                            endDate: null
+                        }
+                    }
+                }
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user)', '_filterValueChanged(filter)', '_dateFilterChanged(searchDate, searchDate.*)'];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _reset(){
+                this.set('searchDate', {startDate: moment().format("YYYY")+"-01-01", endDate: moment().format("YYYY")+"-12-31"})
+                this.set('listOfTechnicalAct', [])
+                this.set('filteredListOfTechnicalAct', [])
+            }
+
+            _initializeDataProvider(){
+                this._reset()
+                this.fetchTechnicalAct()
+            }
+
+            fetchTechnicalAct(){
+                this.set("isLoading",true)
+                let prom = Promise.resolve()
+
+                this.api.invoice().listToInsurancesUnsent(this.user.id).then(technicalAct => {
+                    const listOfInvoice = technicalAct.filter(iu => _.get(iu, 'sentMediumType', null) === "technicalAct" && _.get(iu, 'invoiceDate', null) && this.api.moment(_.get(iu, 'invoiceDate', null)).isSameOrBefore(_.get(this, 'searchDate.endDate', null)) && this.api.moment(_.get(iu, 'invoiceDate', null)).isSameOrAfter(_.get(this, 'searchDate.startDate', null)))
+
+                    listOfInvoice.forEach(eu =>
+                        prom = prom.then(listeOfTechnicalAct =>
+                            this.api.crypto().extractCryptedFKs(eu, this.user.healthcarePartyId).then(ids => _.concat(listeOfTechnicalAct, {invoice: eu, patientId: ids.extractedKeys[0]})))
+                    )
+                    prom = prom.then(listeOfTechnicalAct =>
+                        Promise.all([_.compact(listeOfTechnicalAct), this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(_.compact(listeOfTechnicalAct).map(x => x.patientId))}))])
+                            .then(([listeOfTechnicalAct, patientsList]) => listeOfTechnicalAct.map(efact => _.assign(efact, {patient: patientsList.find(p => p.id === efact.patientId)})))
+                    ).then(listeOfTechnicalAct =>
+                        Promise.all([listeOfTechnicalAct, this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.compact(listeOfTechnicalAct.map(e => e.invoice.recipientId || null)))}))])
+                            .then(([listeOfTechnicalAct, insuranceList]) => listeOfTechnicalAct.map(efact => _.assign(efact, {insurance: insuranceList.find(i => i.id === efact.invoice.recipientId) || null})))
+                    ).then(listeOfTechnicalAct =>
+                        Promise.all([listeOfTechnicalAct, this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.compact(listeOfTechnicalAct.map(e => _.get(e, 'insurance.parent', null))))}))])
+                            .then(([listeOfTechnicalAct, parentInsuranceList]) => listeOfTechnicalAct.map(efact => _.assign(efact, {parentInsurance: parentInsuranceList.find(ins => ins.id === _.get(efact, 'insurance.parent', null))})))
+                    ).then(listeOfTechnicalAct => listeOfTechnicalAct.map(invoice=> {
+                        let insurabilityComplete = false
+
+                        invoice.patient && invoice.patient.insurabilities ? invoice.patient.insurabilities = invoice.patient.insurabilities.filter(ins => ins.insuranceId && ins.insuranceId.length && ins.parameters && ins.parameters.tc1 && ins.parameters.tc1.length && ins.parameters.tc2 && ins.parameters.tc2.length) : []
+                        invoice.patient.insurabilities.length > 0 ? insurabilityComplete = true : insurabilityComplete = false
+
+                        return ({
+                            patientName: _.get(invoice, 'patient.lastName', null)+" "+_.get(invoice, 'patient.firstName', null),
+                            invoiceId: _.get(invoice, 'invoice.id', null),
+                            sentMediumType: _.get(invoice, 'invoice.sentMediumType', null),
+                            insuranceCode: _.get(invoice, 'insurance.code', null),
+                            insuranceParent: _.get(invoice, 'insurance.parent', null),
+                            invoiceReference: _.get(invoice, 'invoice.invoiceReference', null),
+                            patientSsin: _.get(invoice, 'patient.ssin', null),
+                            invoiceDate: _.get(invoice, 'invoice.invoiceDate', null),
+                            reimbursement: invoice.invoice.invoicingCodes ? invoice.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.reimbursement), 0).toFixed(2) : 0.00,
+                            patientIntervention: invoice.invoice.invoicingCodes ? invoice.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.patientIntervention), 0).toFixed(2) : 0.00,
+                            totalAmount: invoice.invoice.invoicingCodes ? invoice.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.totalAmount), 0).toFixed(2) : 0.00 ,
+                            doctorSupplement: invoice.invoice.invoicingCodes ? invoice.invoice.invoicingCodes.reduce((tot, m) => tot + Number(m.doctorSupplement), 0).toFixed(2) : 0.00,
+                            statut : (!!invoice.invoice.invoicingCodes.find(ic => ic.resent === true)) === true ? this.localize('inv_to_be_corrected','To be corrected',this.language) : this.localize('inv_to_be_send','To be send'),
+                            hasChildren : false,
+                            uuid : invoice.invoice.id,
+                            parentUuid : invoice.insurance && invoice.insurance.code ? invoice.insurance.code.charAt(0) : null,
+                            patient: _.get(invoice, 'patient', {}),
+                            invoice: _.get(invoice, 'invoice', {}),
+                            insuranceDto: _.get(invoice, 'insurance', {}),
+                            parentInsuranceDto: _.get(invoice, 'parentInsurance', {}),
+                            toBeCorrected: !!invoice.invoice.invoicingCodes.find(ic => ic.resent === true),
+                            error: invoice.invoice.error || "",
+                            insurabilityCheck: insurabilityComplete,
+                            realizedByTrainee : !!_.size(_.get(invoice, 'invoice.internshipNihii', [])),
+                            sendingFlag: insurabilityComplete,
+                            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(invoice, _.trim('patient.lastName'), ""), _.get(invoice, _.trim('patient.firstName'), ""), _.trim(_.get(invoice, 'invoice.invoiceReference', "")).toString(), _.trim(_.get(invoice, 'insurance.code', "")).toString(), _.trim(_.get(invoice, 'patient.ssin', "")).toString(), _.trim(_.get(invoice, 'invoice.invoiceDate', '')).toString()])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                        })
+                    })).then(invoices => {
+                        this.set('listOfTechnicalAct', invoices)
+                        this.set('filteredListOfTechnicalAct', _.map(_.groupBy(_.get(this, 'listOfTechnicalAct', []), 'parentInsuranceDto.code'), inv => inv))
+                    }).finally(() =>{
+                        this.set("isLoading",false)
+                    }).catch(e => console.log('Erreur lors de la récupération des actes techniques: ', e))
+                })
+            }
+
+            _refreshInvoiceList(){
+                this.set('listOfTechnicalAct', [])
+                this.set('filteredListOfTechnicalAct', [])
+                this.fetchTechnicalAct()
+            }
+
+            _formatAmount(amount){
+                return parseFloat(amount).toFixed(2)
+            }
+
+            formatDate(d,f) {
+                const input = d && d.toString() || _.trim(d)
+                const yyyy = input.slice(0,4), mm = input.slice(4,6), dd = input.slice(6,8)
+                switch(f) {
+                    case 'date' :
+                        return `${dd}/${mm}/${yyyy}`;
+                    case 'month' :
+                        const monthStr =
+                            (mm.toString() === '01') ? this.localize('Jan',this.language) :
+                                (mm.toString() === '02') ? this.localize('Feb',this.language) :
+                                    (mm.toString() === '03') ? this.localize('Mar',this.language) :
+                                        (mm.toString() === '04') ? this.localize('Apr',this.language) :
+                                            (mm.toString() === '05') ? this.localize('May',this.language) :
+                                                (mm.toString() === '06') ? this.localize('Jun',this.language) :
+                                                    (mm.toString() === '07') ? this.localize('Jul',this.language) :
+                                                        (mm.toString() === '08') ? this.localize('Aug',this.language) :
+                                                            (mm.toString() === '09') ? this.localize('Sep',this.language) :
+                                                                (mm.toString() === '10') ? this.localize('Oct',this.language) :
+                                                                    (mm.toString() === '11') ? this.localize('Nov',this.language) :
+                                                                        this.localize('Dec',this.language)
+                        return `${monthStr} ${yyyy}`
+                }
+            }
+
+            _getGroupInformation(group){
+                return _.get(_.head(group), 'parentInsuranceDto.code', null)+": "+_.get(_.head(group), 'parentInsuranceDto.name.'+this.language, null)
+            }
+
+            _getTotalOfGroup(group, type){
+                return type === "oa" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'reimbursement', 0.00))}, 0).toFixed(2) :
+                    type === "pat" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'patientIntervention', 0.00))}, 0).toFixed(2) :
+                        type === "ext" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'doctorSupplement', 0.00))}, 0).toFixed(2) :
+                            type === "tot" ? group.reduce((tot, inv) => {return tot + Number(_.get(inv, 'totalAmount', 0.00))}, 0).toFixed(2) : 0.00
+            }
+
+            _forceZeroNum(list) {
+                return (!list) ? '0' : _.size(_.flatten(list.map(inv => _.get(inv, 'invoice.invoicingCodes', []))))
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const invoiceSearchResults =  _.chain(_.get(this, "listOfTechnicalAct", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .orderBy(['code', 'label.' + this.language, 'id'], ['asc', 'asc', 'asc'])
+                                .value()
+                            this.set('filteredListOfTechnicalAct', _.map(_.groupBy(_.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
+
+                        }else{
+                            this.set('filteredListOfTechnicalAct', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfTechnicalAct', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredListOfTechnicalAct', _.map(_.groupBy(_.sortBy(_.get(this, 'listOfTechnicalAct', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv))
+                }
+            }
+
+            _dateFilterChanged(){
+                this.fetchTechnicalAct()
+            }
+
+            _generateReport(){
+                const invoices = _.map(_.groupBy(_.sortBy(_.get(this, 'listOfTechnicalAct', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv)
+                let data = [
+                    [
+                        this.localize('inv_mut','Mutual',this.language),
+                        this.localize('inv_pat','Patient',this.language),
+                        this.localize('inv_niss','Inss',this.language),
+                        this.localize('inv_date','Invoice date',this.language),
+                        this.localize('inv_nmcl','Nmcl',this.language),
+                        this.localize('inv_batch_amount','Amount',this.language)+" "+this.localize('inv_oa','Oa',this.language),
+                        this.localize('inv_batch_amount','Amount',this.language)+" "+this.localize('inv_pat','Patient',this.language),
+                        this.localize('inv_batch_amount','Amount',this.language)+" "+this.localize('inv_supp','Extra',this.language),
+                        this.localize('inv_batch_amount','Amount',this.language)+" "+this.localize('inv_tot','Total',this.language)
+                    ]
+                ]
+
+                invoices.map(invByOa => {
+                    invByOa.map(inv => _.get(inv, 'invoice.invoicingCodes', []).map(nmcl => {
+                        data.push([
+                            _.get(inv, 'insuranceCode', ''),
+                            _.get(inv, 'patientName', ''),
+                            _.get(inv, 'patientSsin', ''),
+                            this.formatDate(inv.invoiceDate,'date'),
+                            _.get(nmcl, 'code', ''),
+                            parseFloat(this._formatAmount(_.get(nmcl, 'reimbursement', 0.00))),
+                            parseFloat(this._formatAmount(_.get(nmcl, 'patientIntervention', 0.00))),
+                            parseFloat(this._formatAmount(_.get(nmcl, 'doctorSupplement', 0.00))),
+                            parseFloat(this._formatAmount(_.get(nmcl, 'totalAmount', 0.00)))
+                        ])
+                    }))
+                })
+
+                this.generateXlsFile(data, "technicalAct_"+moment().format("YYYYMMDD-HHmmss")+ ".xls", "Technical act ", "Topaz")
+
+            }
+
+            generateXlsFile(data, filename, title, author){
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: title, Author: author}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, title)
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = filename
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+            }
+
+
+        }
+
+        customElements.define(HtAdminReportsTechnicalAct.is, HtAdminReportsTechnicalAct)
+    </script>
+</dom-module>
