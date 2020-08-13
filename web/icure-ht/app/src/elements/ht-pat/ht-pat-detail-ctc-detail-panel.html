@@ -805,7 +805,7 @@
 
                     </template>
                 </div>
-				<filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>
+				<!--<filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>-->
 				<div class="layout-bar" >
 					<paper-icon-button id="list_icn" class$="list [[_activeIconClass(list)]]" icon="icons:view-list" on-tap="_list"></paper-icon-button>
 					<paper-icon-button id="table_icn" class$="table [[_activeIconClass(table)]]" icon="vaadin:table" on-tap="_table"></paper-icon-button>
@@ -2118,7 +2118,8 @@
             }
 
             refreshIcons() {
-                Polymer.dom(this.root).querySelector("#serviceFilterPanel").refreshIcons();
+				return null;
+                // this.shadowRoot.querySelector("#serviceFilterPanel").refreshIcons();
             }
 
             dropVarsFromProseJsonContent(proseJsonContent, variablesPath) {

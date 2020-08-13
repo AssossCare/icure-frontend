@@ -130,8 +130,20 @@
                 box-sizing: border-box;
             }
 
+            paper-button.iron-selected {
+                background-color: var(--app-background-color-darker);
+            }
+
             paper-item.iron-selected {
                 background-color: var(--app-primary-color);
+                color: var(--app-text-color-light);
+            }
+
+            paper-icon-button.selected {
+                padding:4px;
+                border-radius:30px;
+                background-color: var(--app-secondary-color-light);
+                border:1px solid var(--app-secondary-color-light);
                 color: var(--app-text-color-light);
             }
 
@@ -313,7 +325,7 @@
             selectMenu(e) {
                 if(e.detail.value.length !== 0) {
                     this.set('selectedFilters',e.detail.value.map(
-                        val => this.$.filterPanelMenu.modelForElement(val).menu.filter
+                        val => this.shadowRoot.querySelector('#filterPanelMenu').modelForElement(val).menu.filter
                     ))
                 } else {
                     this.set('selectedFilters',[])

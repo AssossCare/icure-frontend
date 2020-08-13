@@ -850,7 +850,7 @@ class HealthProblemSelector extends Polymer.TkLocalizerMixin(Polymer.Element) {
 			setTimeout(function () {
 				if (currentValue === this.filterValue) {
 					console.log("Triggering search for " + this.filterValue);
-					this.$['entities-list'].clearCache();
+					this.shadowRoot.querySelector('#entities-list').clearCache();
 				} else {
 					console.log("Skipping search for " + this.filterValue + " != " + currentValue);
 				}
@@ -868,7 +868,7 @@ class HealthProblemSelector extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	select(item) {
 		if (item) {
 			this.dispatchEvent(new CustomEvent('entity-selected', { detail: item, composed: true }));
-			this.$.dialog.close();
+			this.shadowRoot.querySelector('#dialog').close();
 		}
 	}
 
