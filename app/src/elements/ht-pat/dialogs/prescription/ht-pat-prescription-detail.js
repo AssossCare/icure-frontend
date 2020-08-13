@@ -16,6 +16,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
+import _ from "lodash"
 class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
@@ -107,6 +108,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         hcp="[[hcp]]" 
                         list-of-prescription="[[listOfPrescription]]" 
                         list-of-compound="[[listOfCompound]]"
+                        list-of-chronic="[[listOfChronic]]"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -124,6 +126,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             hcp="[[hcp]]" 
                             list-of-prescription="[[listOfPrescription]]" 
                             list-of-compound="[[listOfCompound]]"
+                            list-of-chronic="[[listOfChronic]]"
                             on-open-posology-view="_openPosologyView"    
                         ></ht-pat-prescription-detail-search>
                     </div>
@@ -143,6 +146,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             hcp="[[hcp]]" 
                             list-of-prescription="[[listOfPrescription]]" 
                             list-of-compound="[[listOfCompound]]"
+                            list-of-chronic="[[listOfChronic]]"
                             selected-drug-for-posology="[[selectedDrugForPosology]]"
                          ></ht-pat-prescription-detail-posology>
                     </div>
@@ -206,6 +210,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 type: Array,
                 value: () => []
             },
+            listOfChronic:{
+                type: Array,
+                value: () => []
+            },
             selectedDrugForPosology:{
                 type: Object,
                 value: {
@@ -231,22 +239,34 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             id: null,
             type: null
         })
+        this.set('listOfCompound', [])
+        this.set('listOfPrescription', [])
+        this.set('listOfChronic', [])
     }
 
     _open(e){
         this._reset()
-
         this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
             .then(hcp => this.set('hcp', hcp))
             .finally(() => {
                 this.set('listOfCompound', this._refreshCompoundList())
                 this.set('listOfPrescription', this._refreshHistoryList())
+                this.set('listOfChronic', this._refreshChronicList())
                 this.shadowRoot.querySelector('#prescriptionDetailDialog').open()
             })
     }
 
     _refreshHistoryList(){
-        const serviceList = _.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "ICURE" && _.get(tag, 'code', null) === "PRESC"))
+        const historyServiceList = _.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "ICURE" && _.get(tag, 'code', null) === "PRESC"))
+        return this._refreshList(historyServiceList)
+    }
+
+    _refreshChronicList(){
+        const chronicServiceList = _.uniqBy(_.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "CD-ITEM" && _.get(tag, 'code', null) === 'medication')), 'id').filter(s =>!_.get(s, 'endOfLife', null) && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day')))
+        return this._refreshList(chronicServiceList)
+    }
+
+    _refreshList(serviceList){
         return serviceList.map(service => {
             if(_.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null)){
                 if(_.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) || _.get(service, 'content.medicationValue.medicinalProduct', null)){
@@ -285,7 +305,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             atcCat: _.get(_.get(service, 'codes', []).find(cd => _.get(cd, 'type', null) === "CD-ATC"), 'code', null) ? _.get(_.get(service, 'codes', []).find(cd => _.get(cd, 'type', null) === "CD-ATC"), 'code', null).substring(0,1) : null,
             id: _.get(service, 'id', null),
             status:  null,
-            service: service
+            service: service,
+            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(drug, 'intendedname', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
         }
     }
 

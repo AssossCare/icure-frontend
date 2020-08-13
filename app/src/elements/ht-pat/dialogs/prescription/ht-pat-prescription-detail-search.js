@@ -10,6 +10,12 @@ import '../../../../styles/shared-styles';
 import '../../../../styles/buttons-style';
 import '../../../../styles/atc-styles';
 
+import './search/ht-pat-prescription-detail-search-chronic'
+import './search/ht-pat-prescription-detail-search-commercial'
+import './search/ht-pat-prescription-detail-search-compound'
+import './search/ht-pat-prescription-detail-search-history'
+import './search/ht-pat-prescription-detail-search-substance'
+
 
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
@@ -162,181 +168,28 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 <iron-pages selected="[[tabs]]">
                     <page>
                         <div class="page-content">
-                            <div class="table">
-                                <div class="tr th">                 
-                                    <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-                                </div>
-                                <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
-                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.label]]</div>
-                                        <div class="td fg05">
-                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
-                                        </div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.chapt4]]</div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
-                                    </div>
-                                </template>
-                            </div>                   
+                            <ht-pat-prescription-detail-search-chronic id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-chronic>              
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <div class="table">
-                                <div class="tr th">                 
-                                    <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-                                </div>
-                                <template is="dom-repeat" items="[[searchResult.history]]" as="drug">
-                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="history" on-tap="_openPosologyView"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.label]]</div>
-                                        <div class="td fg05">
-                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
-                                        </div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.chapt4]]</div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
-                                    </div>
-                                </template>
-                            </div>                   
+                            <ht-pat-prescription-detail-search-history id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-history>                   
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <div class="table">
-                                <div class="tr th">                 
-                                    <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-                                </div>
-                                <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
-                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.label]]</div>
-                                        <div class="td fg05">
-                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
-                                        </div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.chapt4]]</div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
-                                    </div>
-                                </template>
-                            </div>                   
+                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-commercial>          
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <div class="table">
-                                <div class="tr th">                 
-                                    <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-                                </div>
-                                <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
-                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="molecule" on-tap="_openPosologyView"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.label]]</div>
-                                        <div class="td fg05">
-                                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
-                                        </div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.chapt4]]</div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg05">[[drug.publicPrice]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
-                                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
-                                    </div>
-                                </template>
-                            </div>                   
+                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-substance>
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <div class="table">
-                                <div class="tr th">                 
-                                    <div class="td fg01">[[localize('','',language)]]</div>    
-                                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-                                </div>
-                                <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
-                                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                                        <div class="td fg2">[[drug.title]]</div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg05"></div>
-                                        <div class="td fg1"></div>
-                                        <div class="td fg1"></div> 
-                                    </div>
-                                </template>
-                            </div>                   
-                       </div>
+                            <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-compound>
+                        </div>
                     </page>
                 </iron-pages>
             </div>
@@ -404,12 +257,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             listOfPrescription: {
                 type: Array,
                 value: () => []
+            },
+            listOfChronic:{
+                type: Array,
+                value: () => []
             }
         };
     }
 
     static get observers() {
-        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfCompound.*, listOfPrescription.*)'];
+        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfChronic,  listOfCompound.*, listOfPrescription.*, listOfChronic.*)'];
     }
 
     ready() {
@@ -427,69 +284,191 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             commercialName: [],
             history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
             molecule: [],
-            chronic: []
+            chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
         })
+        this.set('drugsFilter', null)
     }
 
     _drugsFilterChanged(drugsFilter){
-        if(_.size(drugsFilter) > 1){
-            Promise.all([
-               this.api.besamv2().findPaginatedVmpsByLabel(this.language, drugsFilter),
-               this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
-               this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
-           ]).then(([vmps, vmpGroups, amps]) => {
-               const now = moment().valueOf();
-               this.set("searchResult.commercialName", _.orderBy(_.get(amps, 'rows', []).map(amp => {
-                   return {
-                       endDate: null,
-                       startDate: null,
-                       publicPrice: parseFloat(_.get(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'dmpps', []).find(dmpp => dmpp.deliveryEnvironment === "P")).find(reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now )), 'price', 0.00)).toFixed(2),
-                       chapt4: null,
-                       atc: _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null),
-                       label: _.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'prescriptionName.'+this.language, null) || _.get(_.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P"), 'prescriptionName.'+this.language, null) || _.get(ampp, 'abbreviatedName.'+this.language))) || "",
-                       delivery: null,
-                       cat: null,
-                       narcotic: null,
-                       reinPharmaVigi: null,
-                       pharmaVigi: null,
-                       severeRenalInsu: null,
-                       moderateRenalInsu: null,
-                       atcCat: _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null) ? _.get(_.head(_.get(amp, 'ampps', []).map(ampp => _.get(ampp, 'atcs', []).find(atc => _.get(atc, 'code', null)))), 'code', null).substring(0, 1) : null,
-                       id: _.get(amp, 'id', null),
-                       status:  _.get(amp, 'status', null)
-                   }
-               }).filter(amp => _.get(amp, 'label', null) && _.get(amp, 'status', null) === "AUTHORIZED"), ["label"], ["asc"]))
-
-                this.set("searchResult.molecule", _.orderBy(_.get(vmpGroups, 'rows', []).map(vmpGroup => {
-                    return {
-                        endDate: null,
-                        startDate: null,
-                        publicPrice: null,
-                        chapt4: null,
-                        atc: null,
-                        label: _.get(vmpGroup, 'name.'+this.language, null),
-                        delivery: null,
-                        cat: null,
-                        narcotic: null,
-                        reinPharmaVigi: null,
-                        pharmaVigi: null,
-                        severeRenalInsu: null,
-                        moderateRenalInsu: null,
-                        atcCat: null,
-                        id: _.get(vmpGroup, 'id', null),
-                        status: null
-                    }
-                }).filter(vmpGroup => _.get(vmpGroup, 'label', null)), ["label"], ["asc"]))
-            })
+        if(drugsFilter){
+            setTimeout(() => {
+                if(_.size(drugsFilter) > 2){
+                    Promise.all([
+                        this.api.besamv2().findPaginatedVmpsByLabel(this.language, drugsFilter),
+                        this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
+                        this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
+                    ]).then(([vmps, vmpGroups, amps]) => {
+                        this.set("searchResult.commercialName", this._prepareAmppsForDisplay(amps))
+                        this.set("searchResult.molecule", _.orderBy(_.get(vmpGroups, 'rows', []).map(vmpGroup => {
+                            return {
+                                endDate: null,
+                                startDate: null,
+                                publicPrice: null,
+                                chapt4: null,
+                                atc: null,
+                                label: _.get(vmpGroup, 'name.'+this.language, null),
+                                delivery: null,
+                                cat: null,
+                                narcotic: null,
+                                reinPharmaVigi: null,
+                                pharmaVigi: null,
+                                severeRenalInsu: null,
+                                moderateRenalInsu: null,
+                                atcCat: null,
+                                id: _.get(vmpGroup, 'id', null),
+                                status: null
+                            }
+                        }).filter(vmpGroup => _.get(vmpGroup, 'label', null)), ["label"], ["asc"]))
+                    })
+                        .finally(() => {
+                            this.set('searchResult.compound', this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])))
+                            this.set('searchResult.history', this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])))
+                            this.set('searchResult.chronic', this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])))
+                        })
+                }else{
+                    this.set('searchResult', {
+                        compound: _.get(this, 'listOfCompound', []),
+                        commercialName: [],
+                        history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
+                        molecule: [],
+                        chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+                    })
+                }
+            }, 100)
         }else{
             this.set('searchResult', {
                 compound: _.get(this, 'listOfCompound', []),
                 commercialName: [],
                 history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
                 molecule: [],
-                chronic: []
+                chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
             })
         }
+    }
+
+    _prepareAmppsForDisplay(ampps){
+        const level = 0
+        const insurability = _.get(_.get(this, 'patient', {}), 'insurabilities', []).find(ins => !_.get(ins, 'endDate', null) && _.get(ins, 'insuranceId', null) !== "")
+        const patientBim = parseInt(_.get(insurability, 'parameters.tc1', null) % 2) === 1
+        const hierarchicalAmpps = _.get(ampps, 'rows', []).reduce((ampps, row) => {
+            if (_.size(_.get(row, 'ampps', []))){
+                return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
+                    const now = moment().valueOf();
+                    const publicDmpp = _.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P")
+                    const currentReimbursement = _.get(publicDmpp, 'reimbursements', []).find(reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now ))
+                    const groupId = _.get(row, 'vmp.vmpGroup.id', null)
+                    const hasChildren = (level === 0) && !!groupId
+                    const id = _.get(publicDmpp, 'codeType', null) === 'CNK' && _.get(publicDmpp, 'code', null)
+                    const unit = _.get(row, "components[0].pharmaceuticalForms[0].name[" + this.language + "]", "")
+                    const atcCodes = _.get(ampp, 'atcs', []).map(atc => _.get(atc, 'code', null)) || []
+                    const allergies = _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && id === _.get(allergy, 'cnk', null)) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || ""));
+                    const dividable = !(_.get(row, "components[0].dividable", "") === "X");
+                    const samDate = _.get(publicDmpp, 'from', null) ? moment(_.get(publicDmpp, 'from', null)).format("DD/MM/YYYY") : null
+
+                    return Object.assign(ampp, {
+                        id: id,
+                        groupId: groupId,
+                        hasChildren: hasChildren,
+                        uuid: id,
+                        parentUuid: null,
+                        publicDmpp: publicDmpp,
+                        currentReimbursement: currentReimbursement,
+                        intendedName: (_.get(ampp, 'prescriptionName['+this.language+']', null)) || (_.get(publicDmpp, 'prescriptionName['+this.language+']', null)) || (_.get(ampp, 'abbreviatedName['+this.language+']', null)) || '',
+                        posologyNote: _.get(ampp, 'posologyNote['+this.language+']', null) || "",
+                        unit: unit,
+                        atcCodes: atcCodes,
+                        allergies: allergies,
+                        dividable: dividable,
+                        samDate: samDate,
+                        amp: row
+                    })
+                }));
+            }
+            return ampps;
+        }, [])
+        .filter(e => e.amp.status === "AUTHORIZED" && _.get(e, 'publicDmpp', null) && _.get(e, 'id', null) && _.get(e, 'intendedName', null) && (level === 0 || level === 1 && _.get(e, 'uuid', null) !== parentUuid))
+        .filter((e, i, a) => a.findIndex(x => _.get(x, 'id', null) === _.get(e, 'id', '')) === i)
+
+        let filteredAmpps = [];
+        if (level === 0) {
+            // build uuids
+            const uuids = hierarchicalAmpps.map(hierarchicalAmpp => _.get(hierarchicalAmpp, 'uuid', null))
+            filteredAmpps = hierarchicalAmpps.map(hierarchicalAmpp => Object.assign(hierarchicalAmpp, {uuids: uuids}))
+        } else {
+            // filter against parentUuids
+            filteredAmpps = hierarchicalAmpps.filter(hierarchicalAmpp => !parentUuids.includes(_.get(hierarchicalAmpp, 'uuid', null)))
+        }
+
+        const finalList = filteredAmpps
+            .map(filteredAmpp => {
+                const dmpp = _.get(filteredAmpp, 'publicDmpp', null)
+                const reimb = _.get(filteredAmpp, 'currentReimbursement', null)
+                const publicPrice =  !reimb ? parseFloat(dmpp.price || 0) :
+                    (_.get(reimb, 'referenceBasePrice', null) && _.get(reimb, 'copaymentSupplement', null)) ? (parseFloat(_.get(reimb, 'referenceBasePrice', 0)) + parseFloat(_.get(reimb, 'copaymentSupplement', 0))) :
+                        parseFloat(_.get(reimb, 'reimbursementBasePrice', 0))
+                const patientPrice = !reimb ? parseFloat(_.get(dmpp, 'price', 0)) :
+                    (_.size(_.get(reimb, 'copayments', []) === 2)) ? parseFloat(patientBim ? reimb.copayments[0].feeAmount : reimb.copayments[1].feeAmount) : 0
+                return Object.assign(filteredAmpp, {
+                    publicPrice: publicPrice,
+                    patientPrice: patientPrice,
+                    priceIndex: _.get(dmpp, 'cheapest', null) ? 0 : (_.get(dmpp, 'cheap', null) ? 1 : 2)
+                })
+            })
+            .sort((a, b) => _.get(a, 'priceIndex', null) !== _.get(b, 'priceIndex', '') ? (_.get(a, 'priceIndex', 0) - _.get(b, 'priceIndex', 0)) : (_.get(a, 'patientPrice', 0) - _.get(b, 'patientPrice', 0)));
+
+        if (_.size(finalList) === 0 && level > 0) {
+            finalList.push({
+                intendedName: this.localize("no_alt", "Pas d'alternative", this.language)
+            });
+        }
+
+        return this._formatAmpp(finalList)
+    }
+
+    _formatAmpp(amppList) {
+        return amppList.map(ampp => {
+                return {
+                    id: _.get(ampp, 'id', null),
+                    groupId: _.get(ampp, 'groupId', null),
+                    uuid: _.get(ampp, 'uuid', null),
+                    uuids: _.get(ampp, 'uuids', null),
+                    hasChildren: _.get(ampp, 'hasChildren', null),
+                    parentUuid: _.get(ampp, 'parentUuid', null),
+                    ctiExtended: _.get(ampp, 'ctiExtended', null),
+                    label: _.get(ampp, 'intendedName', null),
+                    reinfPharmaVigiIcon: this._reinfPharmaVigiIcon(_.get(ampp, "amp.blackTriangle", false)),
+                    atcCodes: _.get(ampp, 'atcCodes', null),
+                    atcCat: _.get(ampp, "atcCodes[0][0]", ""),
+                    allergies: _.get(ampp, 'allergies', []),
+                    allergyType: this._getAllergyType(ampp.allergies),
+                    patientPrice: _.get(ampp, 'id', null) && _.get(ampp, 'patientPrice', 0.00).toFixed(2) + " €",
+                    publicPrice: _.get(ampp, 'id', null) && _.get(ampp, 'publicPrice', 0.00).toFixed(2) + " €",
+                    priceIndex: _.get(ampp, 'id', null) && _.get(ampp, 'priceIndex', null) || 3,
+                    catIcon: this._catIconSamV2(ampp),
+                    unit: _.get(ampp, 'unit', null),
+                    amp: _.get(ampp, 'amp', null),
+                    posologyNote: _.get(ampp, 'posologyNote', null),
+                    dividable: _.get(ampp, 'dividable', null),
+                    packDisplayValue: _.get(ampp, 'packDisplayValue', null),
+                    samCode: _.get(ampp, "amp.code", ""),
+                    samDate: _.get(ampp, 'samDate', null),
+                    type: "medicine",
+                    narcoticIcon: null,
+                    compProhibIcon: null
+                }
+            })
+    }
+
+    _filterValue(drugsFilter, listOfDrugs){
+        const keywordsString = _.trim(drugsFilter).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+        const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+       return _.chain(listOfDrugs)
+            .chain(drugsFilter)
+            .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+            .compact()
+            .uniq()
+            .value()
     }
 
     _localizeDrugName(name){
@@ -508,14 +487,25 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         return cat ? this.localize('atc-' + cat, '') : null
     }
 
-    _getAtcColor(cat){
-        return cat ? "ATC--"+_.toUpper(cat) : null
+    _reinfPharmaVigiIcon(info) {
+        return info ? 'reinf-pharma-vigi' : null;
     }
 
-    _openPosologyView(e){
-        if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
-        }
+    _getAllergyType(allergies) {
+         return _.size(allergies) ? allergies.some(allergy => _.get(allergy, 'type', null) === "allergy") ? "allergy" : allergies.some(allergy => _.get(allergy, 'type', null) === "adr") ? "adr" : null : null
     }
+
+    _catIconSamV2(ampp) {
+        return _.get(ampp, 'publicDmpp', null) || _.get(ampp, 'currentReimbursement', null) ?
+                    _.get(ampp, 'publicDmpp.cheap', null) ?
+                        _.get(ampp, 'currentReimbursement.copaymentSupplement', null) ?
+                            null
+                        : "cat-cheap-noacm"
+                    : _.get(ampp, 'currentReimbursement.copaymentSupplement', null) ?
+                        null
+                    : "cat-notcheap-noacm"
+               : null
+    }
+
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);
