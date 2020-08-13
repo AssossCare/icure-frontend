@@ -857,7 +857,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
 
       if (this.patient.ssin && this.api.tokenId){ // if ehealth connected
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => Promise.all([hcp, "zIQP6eCzow62aHRfw1LJqw=="/*this.api.besamv2().getVersion1()*/])).then(([hcp, samVersion]) =>
+          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => Promise.all([hcp, this.api.besamv2().getSamVersion()])).then(([hcp, samVersion]) =>
               Promise.all(
                   splitColumns.map(c =>
                       this.api.fhc().Recipecontroller().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
@@ -866,7 +866,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                           feedback: false,
                           medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
                           deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD"),
-                          samVersion: samVersion
+                          samVersion: _.get(samVersion, 'version', null)
                       }).then(prescri => {
                           c.rid = prescri.rid
                           c.recipeResponse = prescri
