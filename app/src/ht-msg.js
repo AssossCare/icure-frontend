@@ -12,6 +12,7 @@ import './elements/ht-msg/ht-msg-detail.js';
 import './elements/ht-msg/ht-msg-menu.js';
 import './elements/ht-msg/ht-msg-list.js';
 import './elements/ht-msg/ht-msg-invoice.js';
+import './elements/ht-msg/ht-msg-electronic-flatrate-invoice';
 import './elements/ht-msg/ht-msg-flatrate-invoice.js';
 import './elements/ht-msg/ht-msg-flatrate-report.js';
 import './elements/ht-msg/ht-msg-mycarenet.js';
@@ -27,6 +28,8 @@ import "@polymer/paper-icon-button/paper-icon-button"
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "./elements/tk-localizer";
+import _ from "lodash";
+import moment from 'moment/src/moment';
 class HtMsg extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -264,6 +267,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 language="[[language]]"
                 resources="[[resources]]"
                 user="[[user]]"
+                group="invoicing"
                 on-selection-change="handleMenuChange"
             ></ht-msg-menu>
 
@@ -341,6 +345,18 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                                  route-data="[[routeData]]"
                                  on-selection-messages-change="handleMessageChange"
                                  on-initialize-batch-counter="callInitializeBatchCounter"></ht-msg-invoice>
+            </template>
+            
+            <template is="dom-if" if="[[electronicFlatRateInvoicesLayout]]">
+                    <ht-msg-electronic-flatrate-invoice id="msg-electronic-flatrate-invoice" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"
+                                 user="[[user]]"
+                                 select-list="[[selectList]]"
+                                 invoices-status="[[eFlatrateStatus]]"
+                                 route-data="[[routeData]]"
+                                 on-selection-messages-change="handleMessageChange"
+                                 on-initialize-batch-counter="initializeFlatrateBatchCounter"
+                                 on-do-route="_doRouteElectronicFlatRate"
+                             ></ht-msg-electronic-flatrate-invoice>
             </template>
 
             <template is="dom-if" if="[[flatrateinvoicesLayout]]">
@@ -431,6 +447,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 type: Boolean,
                 value: false
             },
+            electronicFlatRateInvoicesLayout:{
+              type: Boolean,
+              value: false
+            },
             documentLayout: {
                 type: Boolean,
                 value: false
@@ -444,6 +464,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
                 value: false
             },
             invoicesStatus:{
+                type: String,
+                value: null
+            },
+            eFlatrateStatus:{
                 type: String,
                 value: null
             },
@@ -498,6 +522,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             routeData:{
                 type: Object,
                 value: () => {}
+            },
+            mdaRequestsAlreadyRanThisMonth:{
+                type: Boolean,
+                value: false
             }
         }
     }
@@ -506,6 +534,7 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         return [
             '_setIsConnectedToEhbox(api.tokenId)',
             '_getCurrentAndParentHcps(user)',
+            '_loadMdaRequestsStatus(user)',
             '_forceRefreshList(forceRefresh)'
         ];
     }
@@ -539,23 +568,31 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
 
     handleMenuChange(e) {
 
-        const selectedItem = _.trim(_.get(e,"detail.selection.item",""))
+        let selectedItem = _.trim(_.get(e,"detail.selection.item",""))
+        let selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
         const selectedFolder = _.trim(_.get(e,"detail.selection.folder",""))
-        const selectedStatus = _.trim(_.get(e,"detail.selection.status",""))
-        const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox"]
+        const originalSelectedStatus = _.clone(selectedStatus)
+        const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox", "electronicFlatRateInvoicesLayout"]
+
+
+        // Do allow to go for toBeSenT page when mdaRequests weren't place this month yet
+        selectedStatus = selectedItem === "eflatrateInvocingMenuItem" && selectedStatus === "toBeSend" && !_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "ej20_mda" :
+            selectedItem === "flatRateeInvoicingMenuItem" && selectedStatus === "ej20_mda" && !!_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "toBeSend" :
+            selectedStatus
+
+        // Did we rewrite the route ? Tip user
+        originalSelectedStatus !== selectedStatus && selectedStatus === "ej20_mda" && (selectedItem="flatRateeInvoicingMenuItem"||true) &&setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").openRewriteRouteDialog("ej20_mda"); },200)
+        originalSelectedStatus !== selectedStatus && selectedStatus === "toBeSend" && (selectedItem="eflatrateInvocingMenuItem"||true) && setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").openRewriteRouteDialog("toBeSend"); },200)
 
         availableLayouts.map(i=>this.set(i,false))
-        console.log('selectedItem', selectedItem)
         if (selectedItem === 'e_invOut') {
             this.set('invoicesLayout', true)
             this.set('invoicesStatus', selectedStatus)
-            setTimeout(() =>{
-                this.shadowRoot.querySelector("#msg-invoice")._closeAllPanel()
-                this.shadowRoot.querySelector("#msg-invoice").getMessage()
-            },0)
-        } else if (selectedItem === 'e_flatrateinvOut') {
-            this.set('flatrateinvoicesLayout', true)
-            this.set('flatrateMenuSection', selectedStatus)
+            setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice") && this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
+        } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'eflatrateInvocingMenuItem' || selectedItem === 'flatRateeInvoicingMenuItem' ) {
+            this.set('electronicFlatRateInvoicesLayout', true)
+            this.set('eFlatrateStatus', selectedStatus)
+            selectedItem !== 'flatRateeInvoicingMenuItem' && setTimeout(() =>{ this.shadowRoot.querySelector("#msg-electronic-flatrate-invoice").getMessage(); },0)
         } else if (selectedItem === 'e_flatraterptOut' ){
             this.set('flatrateinvoicesReportLayout', true);
             this.set('flatrateMenuSection', selectedStatus)
@@ -566,7 +603,6 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             this.set('isEHealthBox', !(selectedFolder === "mycarenet"))
             if(selectedFolder === "mycarenet") setTimeout(() => this.shadowRoot.querySelector("#msg-mycarenet").refresh(),0)
         }
-        console.log('flatrateinvoicesReportLayout', this.flatrateinvoicesReportLayout)
         this.set('selectList', _.get(e,"detail",""))
         this._closeColumn(e)
     }
@@ -634,6 +670,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
         this.shadowRoot.querySelector("#msg-menu").initializeBatchCounterJ20(e)
     }
 
+    initializeFlatrateBatchCounter(e){
+        this.shadowRoot.querySelector("#msg-menu").initializeFlatrateBatchCounter(e)
+    }
+
     callPersonalInboxUpdateMenuFoldersTotals(e){
         this.shadowRoot.querySelector("#msg-menu") && typeof _.get(this.shadowRoot.querySelector("#msg-menu"), "updatePersonalInboxMenuFoldersTotals", false) === "function" && this.shadowRoot.querySelector("#msg-menu").updatePersonalInboxMenuFoldersTotals(e)
     }
@@ -641,9 +681,24 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
     _doRouteFlatRate(e){
         this.handleMenuChange({ detail: e.detail })
         _.get(this, "$['msg-menu'].shadowRoot", false)
-        && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
-        && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
-        && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+            && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
+            && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
+            && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+    }
+
+    _doRouteElectronicFlatRate(e){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => _.get(e,"detail.forceRefreshMdaRequestsStatus",false) ? this._loadMdaRequestsStatus() : promResolve)
+            .then(() => {
+                this.handleMenuChange({ detail: e.detail })
+                return _.get(this, "$['msg-menu'].shadowRoot", false)
+                    && typeof _.get(this, "$['msg-menu'].shadowRoot.querySelectorAll", "") === "function"
+                    && _.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']")
+                    && _.map(_.get(this, "$['msg-menu'].shadowRoot", false).querySelectorAll("[data-status='" + _.get(e, "detail.selection.status", "") + "']"),e=>{ try{e.click()}catch(e){}})
+            })
     }
 
     showErrorMessage(e) {
@@ -734,6 +789,28 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
     _userGotUpdatedFromList(e) {
         const updatedUser = _.get(e,"detail.updatedUser",{})
         return !!_.size(updatedUser) ? typeof _.get(this.shadowRoot.querySelector("#msg-detail"), "_doUpdateUser", false) === "function" && this.shadowRoot.querySelector("#msg-detail")._doUpdateUser(updatedUser) : false
+    }
+
+    _loadMdaRequestsStatus() {
+
+        const promResolve = Promise.resolve()
+        const exportedDate = moment().format("YYYYMM") + "01"
+
+        return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+            .then(pl => { return {
+                rows:_.filter(pl.rows, it => it &&
+                    _.get(it,'fromHealthcarePartyId',false)===this.user.healthcarePartyId &&
+                    _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                    _.trim(_.get(it, "metas.step5Validated")) === "true"
+                ),
+                nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                done: !pl.nextKeyPair
+            }})
+            .catch(()=>promResolve)
+        )
+        .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
+
     }
 
 }

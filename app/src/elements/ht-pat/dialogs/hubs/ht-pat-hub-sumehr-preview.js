@@ -1022,7 +1022,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                       .then(newDocInstance => this.api.document().createDocument(newDocInstance))
                       .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(message)))
                           .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                      .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                      .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                       .then(resourcesObject => {
                           //Import into currentContact
                           let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);
@@ -1062,7 +1062,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
   getAttachment(doc) {
       return this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations).then(
-          ({extractedKeys: enckeys}) => this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(','))
+          ({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(','))
       ).catch(err => {
           return err;
       })

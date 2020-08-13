@@ -43,7 +43,7 @@ class HtLabDetails extends TkLocalizerMixin(PolymerElement) {
     _attachementLoaded(){
 
 				if(!this.attachment && this.document){
-            this.api.document().getAttachment(this.document.id, this.document.attachmentId, null)
+            this.api.document().getDocumentAttachment(this.document.id, this.document.attachmentId, null)
                 .then(att => {
                     // TODO: mandatory for annexe in no UTF-8 encoding
                     // try {

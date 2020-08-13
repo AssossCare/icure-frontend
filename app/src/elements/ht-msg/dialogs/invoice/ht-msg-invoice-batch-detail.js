@@ -58,8 +58,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             
             .panel-error{
                 height: 40px;
+                max-height: 40px;
                 width: auto;
                 font-size: var(--font-size-normal);
+                overflow: auto;
             }
             
             .panel-content{
@@ -487,6 +489,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         super();
     }
 
+    ready() {
+        super.ready();
+    }
+
     static get observers() {
         return ['_initializeDataProvider(api, user, selectedInvoiceForDetail, selectedInvoiceForDetail.*)', '_filterValueChanged(filter)'];
     }
@@ -549,10 +555,10 @@ class HtMsgInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                     }))
                 })))
                 .then(infos => this.set('invoicesFromBatch', infos))
-                .then(() => this.api.message().getChildren(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
+                .then(() => this.api.message().getChildrenMessages(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
                 .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
                 .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
-                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId)))))
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(d.id, d.attachmentId)))))
                 .then((attachs) => {
                     this.api.setPreventLogging(false)
                     attachs.forEach( a => {

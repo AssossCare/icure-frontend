@@ -297,6 +297,9 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="usersManagementSubMenu">
                             <iron-icon class="sub-menu-icon" icon="social:group"></iron-icon> [[localize('users','Users',language)]]
                         </paper-item>
+                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="exportUsersMdaSubMenu">
+                            <iron-icon class="sub-menu-icon" icon="social:group"></iron-icon> [[localize('exportUsersMda','Export users (MDA)',language)]]
+                        </paper-item>
                         <!--
                         <paper-item class="one-line-menu menu-item flex-start" id="management" data-submenu="delegationsManagementSubMenu">
                             <iron-icon class="sub-menu-icon" icon="vaadin:key"></iron-icon> [[localize('deleg','My delegations',language)]]
@@ -372,13 +375,17 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="ageStructure">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('age_structure','Age structure',language)]]
                     </paper-item>
-
+ 
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="rashReport">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('rash','RASH',language)]]
                     </paper-item>
                     
                     <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="activityReport">
                         <iron-icon class="sub-menu-icon" icon="icons:timeline"></iron-icon> [[localize('activity','Activity',language)]]
+                    </paper-item>
+                    
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="technicalActReport">
+                        <iron-icon class="sub-menu-icon" icon="icons:description"></iron-icon> [[localize('technical-act','Technical act',language)]]
                     </paper-item>
 
                 </paper-listbox>

@@ -117,6 +117,10 @@ class IccApi extends PolymerElement {
           tmpLogging:{
               type:Boolean,
               value:false
+          },
+          flatRateEInvoicingDate: {
+              type: Number,
+              value: 202009
           }
       }
   }
@@ -870,7 +874,7 @@ class IccApi extends PolymerElement {
 
   isElectronAvailable() {
       return this.electron().checkAvailable()
-          .then(() => true)
+          .then(x => x)
           .catch(() => false)
   }
 

@@ -177,6 +177,10 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .fw2{
                 width: calc(100% / 2);
             }
+            
+            .fw4{
+                width: 100%;
+            }
 
             .succesContainer{
                 height: auto;
@@ -325,6 +329,16 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                         <span class="headerLabel">[[localize('mda-com-date', 'Communication date', language)]]: &nbsp;</span> [[_formatDate(p.communicationDate)]]
                                     </div>
                                 </div>
+                                <template is="dom-if" if="[[_isContractDateAvailable(p, p.*)]]">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-startDate', 'Start date', language)]]: &nbsp;</span> [[_formatDate(p.startDate)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-endDate', 'End date', language)]]: &nbsp;</span> [[_formatEndDate(p.endDate)]]
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </template>
@@ -392,6 +406,20 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                         </div>
                                         <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mda-endDate', 'End date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.endDate)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-street', 'Street', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.street]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-zip', 'Zip', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.zip]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-city', 'City', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.city]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-phone', 'Phone', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.telecom.phone]]
                                         </div>
                                     </div>
                                 </div>
@@ -575,9 +603,11 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                                         </div>
                                                         <div class="headerInfoField">
                                                             <span class="headerLabel">[[localize('mda-lastName', 'Last name', language)]]: &nbsp;</span> [[cp.carePath.specialist.lastName]]
-                                                        </div>
-                                                        <div class="headerInfoField">
-                                                            <span class="headerLabel">[[localize('mda-speciality', 'Speciality', language)]]: &nbsp;</span> [[cp.carePath.specialist.speciality]]
+                                                        </div>                                                     
+                                                    </div>
+                                                    <div class="headerInfoLine">
+                                                        <div class="headerInfoField fw4">
+                                                            <span class="headerLabel">[[localize('mda-speciality', 'Speciality', language)]]: &nbsp;</span> [[_getSpeciality(cp.carePath.specialist.speciality)]]
                                                         </div>
                                                     </div>
                                                 </div>
@@ -795,6 +825,10 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
         return date ? moment(parseInt(date)).format("DD/MM/YYYY"): null
     }
 
+    _formatEndDate(date){
+        return date ? moment(parseInt(date)).subtract(1, 'days').format("DD/MM/YYYY"): null
+    }
+
     _formatNissNumber(niss) {
         return niss ? ("" + niss).replace(/([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{3})([0-9]{2})/, '$1.$2.$3-$4.$5') : ''
     }
@@ -867,6 +901,14 @@ class HtPatMemberDataResponse extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _isAssertion(mdaResult){
         return _.size(_.get(mdaResult, 'assertions', []))
+    }
+
+    _isContractDateAvailable(period){
+        return !!(_.get(period, 'startDate', null) || _.get(period, 'endDate', null))
+    }
+
+    _getSpeciality(spec){
+      return _.get(spec, 'speciality.'+this.language, null)
     }
 }
 customElements.define(HtPatMemberDataResponse.is, HtPatMemberDataResponse);

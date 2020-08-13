@@ -425,8 +425,8 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 (_.size(_.get(selectedDoc, 'encryptionKeys', [])) || _.size(_.get(selectedDoc, 'delegations', [])) ?
                         this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this.user, 'healthcarePartyId', null), _.get(selectedDoc, 'id', null), _.size(_.get(selectedDoc, 'encryptionKeys', [])) ?
                             _.get(selectedDoc, 'encryptionKeys', []) : _.get(selectedDoc, 'delegations', []))
-                            .then(({extractedKeys: enckeys}) => this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null), enckeys.join(','))) :
-                        this.api.document().getAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null))
+                            .then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null), enckeys.join(','))) :
+                        this.api.document().getDocumentAttachment(_.get(selectedDoc, 'id', null), _.get(selectedDoc, 'attachmentId', null))
                 ).then(attachment => this._addAttachment(selectedDoc, attachment))
                     .then(attachmentResponse =>
                         _.parseInt(_.get(attachmentResponse, 'response.status', 0)) === 201 ? this._linkDocument(selectedDoc, _.get(attachmentResponse, 'content.id', null)) : this._showErrorNotification(_.get(attachmentResponse, 'response', 0), _.get(attachmentResponse, 'content', {}))
@@ -517,7 +517,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
             }))
             .then(newDocInstance => this.api.document().createDocument(newDocInstance))
             .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, content).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-            .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+            .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
             .then(resourcesObject => {
                 //Import into currentContact
                 let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);

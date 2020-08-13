@@ -952,7 +952,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       a.style = "display: none";
 
                       a.href = url;
-                      a.download = this.patient.firstName+"-"+this.patient.lastName+"-"+moment()+".pdf";
+                      a.download = _.get(this, 'patient.firstName', '')+"-"+_.get(this, 'patient.lastName', '')+"-"+moment()+".pdf";
                       a.click();
                       window.URL.revokeObjectURL(url);
                   }
@@ -1023,7 +1023,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       a.style = "display: none";
 
                       a.href = url;
-                      a.download = this.patient.firstName+"-"+this.patient.lastName+"-"+moment()+".pdf";
+                      a.download = _.get(this, 'patient.firstName', '')+"-"+_.get(this, 'patient.lastName', '')+"-"+moment()+".pdf";
                       a.click();
                       window.URL.revokeObjectURL(url);
                   }
@@ -1528,8 +1528,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
       //var dmgOwner = []
 
       this.api.patient().getPatientWithUser(this.user,this.patient.id).then(p => this.api.register(p, 'patient')).then(patient => {
-          const internalHcp = patient.delegations
-          const externalHcp = patient.patientHealthCareParties
+          const internalHcp = _.get(patient, 'delegations', [])
+          const externalHcp = _.get(patient, 'patientHealthCareParties', [])
 
           Promise.all([
               Promise.all(
@@ -1542,12 +1542,12 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
               Promise.all(
                   externalHcp.map(patientHcp =>
                       this.api.hcparty().getHealthcareParty(patientHcp.healthcarePartyId).then(hcp => {
-                          patientHcp.firstName = hcp.firstName;
-                          patientHcp.lastName = hcp.lastName;
-                          patientHcp.name = hcp.name;
-                          patientHcp.nihii = hcp.nihii;
-                          patientHcp.ssin = hcp.ssin;
-                          patientHcp.isDmg = patientHcp.referral;
+                          patientHcp.firstName = _.get(hcp, 'firstName', null)
+                          patientHcp.lastName = _.get(hcp, 'lastName', null)
+                          patientHcp.name = _.get(hcp, 'name', null)
+                          patientHcp.nihii = _.get(hcp, 'nihii', null)
+                          patientHcp.ssin = _.get(hcp, 'ssin', null)
+                          patientHcp.isDmg = _.get(patientHcp, 'referral', null)
                           externalTeam.push(hcp);
                           externalPatientHcpTeam.push(patientHcp);
                           }
@@ -1563,77 +1563,77 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           }).then(
               () => {
                   //this.set('currentDMGOwner', dmgOwner);
-                  if (this.patient.ssin && this.api.tokenId) {
-                      this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+                  if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)) {
+                      this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                           .then(hcp =>
-                              this.api.fhc().Dmgcontroller().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin)
+                              this.api.fhc().Dmgcontroller().consultDmgUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this, 'patient.ssin', null))
                           )
                           .then(dmgConsultResp => {
-                              const dmgNihii = dmgConsultResp.hcParty && dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY') ? dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY').value : ''
-                              if (dmgNihii && internalTeam.find(h => h.nihii === dmgNihii)) {
+                              const dmgNihii = _.get(dmgConsultResp, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY') ? _.get(_.get(dmgConsultResp, 'hcParty.ids', []).find(id => _.get(id, 's', null) === 'ID_HCPARTY'), 'value', null) : ''
+                              if (dmgNihii && internalTeam.find(h => _.get(h, 'nihii', null) === dmgNihii)) {
                                   // 3.1 Update user/party if exists
                                   console.log('dmg owner in internal team')
-                                  const hcpI = internalTeam.find(h => h.nihii === dmgNihii)
+                                  const hcpI = internalTeam.find(h => _.get(h, 'nihii', null) === dmgNihii)
                                   //TODO: show status
                                   return hcpI
-                              } else if (dmgNihii && externalTeam.find(h => h.nihii === dmgNihii)) {
+                              } else if (dmgNihii && externalTeam.find(h => _.get(h, 'nihii', null) === dmgNihii)) {
                                   // 3.1 Update user/party if exists
                                   console.log('dmg owner in external team')
-                                  let hcpE = externalTeam.find(h => h.nihii === dmgNihii)
-                                  hcpE.name = (!dmgConsultResp.hcParty.name) && dmgConsultResp.hcParty.name === '' ? dmgConsultResp.hcParty.familyname + ' ' + dmgConsultResp.hcParty.firstname : dmgConsultResp.hcParty.name
-                                  hcpE.lastName = dmgConsultResp.hcParty.familyname
-                                  hcpE.firstName = dmgConsultResp.hcParty.firstname
-                                  hcpE.nihii = dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY').value
+                                  let hcpE = externalTeam.find(h => _.get(h, 'nihii', null) === dmgNihii)
+                                  hcpE.name = (!_.get(dmgConsultResp, 'hcParty.name', null)) && _.get(dmgConsultResp, 'hcParty.name', null) === '' ? _.get(dmgConsultResp, 'hcParty.familyname', null) + ' ' + _.get(dmgConsultResp, 'hcParty.firstname', null) : _.get(dmgConsultResp, 'hcParty.name', null)
+                                  hcpE.lastName = _.get(dmgConsultResp, 'hcParty.familyname', null)
+                                  hcpE.firstName = _.get(dmgConsultResp, 'hcParty.firstname', null)
+                                  hcpE.nihii = _.get(_.get(dmgConsultResp, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY'), 'value', null)
 
                                   hcpE.addresses = []
-                                  if (dmgConsultResp.hcParty && dmgConsultResp.hcParty.addresses) {
-                                      dmgConsultResp.hcParty.addresses.map(addr => {
+                                  if (_.get(dmgConsultResp, 'hcParty', null) && !_.empty(_.get(dmgConsultResp, 'hcParty.addresses', []))) {
+                                      _.get(dmgConsultResp, 'hcParty.addresses', []).map(addr => {
                                           let hcAddr = {}
-                                          hcAddr.addressType = addr.cds.find(cd => cd.s === 'CD_ADDRESS') ? addr.cds.find(cd => cd.s === 'CD_ADDRESS').value : ''
-                                          hcAddr.street = addr.street ? addr.street : ''
-                                          hcAddr.city = addr.city ? addr.city : ''
-                                          hcAddr.postalCode = addr.zip ? addr.zip : ''
-                                          hcAddr.houseNumber = addr.housenumber ? addr.housenumber : ''
-                                          hcAddr.postboxNumber = addr.postboxnumber ? addr.postboxnumber : ''
-                                          hcAddr.country = addr.country && addr.country.cd && addr.country.cd.value ? addr.country.cd.value : ''
+                                          hcAddr.addressType = _.get(_.get(addr, 'cds', []).find(cd => _.get(cd, 's', null) === 'CD_ADDRESS'), 'value', null)
+                                          hcAddr.street = _.get(addr, 'street', null)
+                                          hcAddr.city = _.get(addr, 'city', null)
+                                          hcAddr.postalCode = _.get(addr, 'zip', null)
+                                          hcAddr.houseNumber = _.get(addr, 'housenumber', null)
+                                          hcAddr.postboxNumber = _.get(addr, 'postboxnumber', null)
+                                          hcAddr.country = _.get(addr, 'country.cd.value', null)
                                           hcpE.addresses.push(hcAddr)
                                       })
                                   }
 
-                                  if (dmgConsultResp.hcParty && dmgConsultResp.hcParty.cds) {
-                                      const cd = dmgConsultResp.hcParty.cds.find(cd => cd.s === 'CD_HCPARTY')
+                                  if (_.get(dmgConsultResp, 'hcParty', null) && !_.empty(_.get(dmgConsultResp, 'hcParty.cds', []))) {
+                                      const cd = _.get(dmgConsultResp, 'hcParty.cds', []).find(cd => _.get(cd, 's', null) === 'CD_HCPARTY')
                                       if (cd) {
-                                          hcpE.speciality = cd.value ? cd.value : ''
+                                          hcpE.speciality = _.get(cd, 'value', null)
                                       }
                                   }
                                   hcpE.referral = true
                                   hcpE.isDmg = true
                                   hcpE.referralPeriods = [{
-                                      startDate: dmgConsultResp.from,
-                                      endDate: dmgConsultResp.to
+                                      startDate: _.get(dmgConsultResp, 'from', null),
+                                      endDate: _.get(dmgConsultResp, 'to', null)
                                   }]
 
                                   return this.api.hcparty().modifyHealthcareParty(hcpE)
                                       .then(hcpE => {
                                           this.api.queue(this.patient, 'patient')
                                               .then(([patient, defer]) => {
-                                                  let phcpE = patient.patientHealthCareParties.find(phcp => phcp.healthcarePartyId === hcpE.id)
+                                                  let phcpE = _.get(patient, 'patientHealthCareParties', []).find(phcp => _.get(phcp, 'healthcarePartyId', null) === _.get(hcpE, 'id', ''))
                                                   if (!phcpE) {
-                                                      patient.patientHealthCareParties.push(phcpE = {healthcarePartyId: hcpE.id, referralPeriods: []})
+                                                      patient.patientHealthCareParties.push(phcpE = {healthcarePartyId: _.get(hcpE, 'id', null), referralPeriods: []})
                                                   }
-                                                  const currentReferralPeriod = phcpE.referralPeriods.find(rp => !rp.endDate)
+                                                  const currentReferralPeriod = _.get(phcpE, 'referralPeriods', []).find(rp => !_.get(rp, 'endDate', null))
                                                   let type = "other"
-                                                  if (dmgConsultResp.hcParty && dmgConsultResp.hcParty.cds) {
-                                                      const cd = dmgConsultResp.hcParty.cds.find(cd => cd.s === 'CD_HCPARTY')
+                                                  if (_.get(dmgConsultResp, 'hcParty', null) && _.get(dmgConsultResp, 'hcParty.cds', null)) {
+                                                      const cd = _.get(dmgConsultResp, 'hcParty.cds', []).find(cd => _.get(cd, 's', null) === 'CD_HCPARTY')
                                                       if (cd.value === 'orgprimaryhealthcarecenter') {
                                                           type = "medicalhouse"
                                                       } else if (cd.value === 'persphysician') {
                                                           type = "doctor"
                                                       }
                                                   }
-                                                  if (!currentReferralPeriod || !phcpE.referral || phcpE.type !== type) {
+                                                  if (!currentReferralPeriod || !_.get(phcpE, 'referral', null) || _.get(phcpE, 'type', null) !== type) {
                                                       phcpE.referralPeriods = [{
-                                                          startDate: dmgConsultResp.from,
+                                                          startDate: _.get(dmgConsultResp, 'from', null),
                                                           endDate: null
                                                       }]
                                                       phcpE.referral = true

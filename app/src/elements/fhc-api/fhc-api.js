@@ -17,7 +17,7 @@ class FhcApi extends PolymerElement {
       return {
           headers: {
               type: Object,
-              value: { "Content-Type": "application/json" }
+              value: { "Content-Type": "application/json",  "Authorization": "Basic: ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm" }
           },
           host: {
               type: String
@@ -36,22 +36,23 @@ class FhcApi extends PolymerElement {
   }
 
   refresh() {
-      this.addressbookcontrollerfhc = new api.fhcAddressbookcontrollerApi(this.host, this.headers);
-      this.consentcontrollerfhc = new api.fhcConsentcontrollerApi(this.host, this.headers);
-      this.chaptercontrollerfhc = new api.fhcChaptercontrollerApi(this.host, this.headers);
-      this.dmgcontrollerfhc = new api.fhcDmgcontrollerApi(this.host, this.headers);
-      this.eattestcontrollerfhc = new api.fhcEattestcontrollerApi(this.host, this.headers);
-      this.eattestv2controllerfhc = new api.fhcEattestvcontrollerApi(this.host, this.headers);
-      this.ehboxcontrollerfhc = new api.fhcEhboxcontrollerApi(this.host, this.headers);
-      this.efactcontrollerfhc = new api.fhcEfactcontrollerApi(this.host, this.headers);
-      this.geninscontrollerfhc = new api.fhcGeninscontrollerApi(this.host, this.headers);
-      this.hubcontrollerfhc = new api.fhcHubcontrollerApi(this.host, this.headers);
-      this.recipecontrollerfhc = new api.fhcRecipecontrollerApi(this.host, this.headers);
-      this.stscontrollerfhc = new api.fhcStscontrollerApi(this.host, this.headers);
-      this.tarificationcontrollerfhc = new api.fhcTarificationcontrollerApi(this.host, this.headers);
-      this.therlinkcontrollerfhc = new api.fhcTherlinkcontrollerApi(this.host, this.headers);
-      this.rnconsultcontrollerfhc = new api.fhcConsultrncontrollerApi(this.host, this.headers);
-      this.memberdatacontrollerfhc = new api.fhcMemberdatacontrollerApi(this.host, this.headers);
+      this.addressbookcontrollerfhc = new api.fhcAddressbookControllerApi(this.host, this.headers);
+      this.consentcontrollerfhc = new api.fhcConsentControllerApi(this.host, this.headers);
+      this.chaptercontrollerfhc = new api.fhcChapter4ControllerApi(this.host, this.headers);
+      this.dmgcontrollerfhc = new api.fhcDmgControllerApi(this.host, this.headers);
+      this.eattestcontrollerfhc = new api.fhcEattestControllerApi(this.host, this.headers);
+      this.eattestv2controllerfhc = new api.fhcEattestV2ControllerApi(this.host, this.headers);
+      this.ehboxcontrollerfhc = new api.fhcEhboxControllerApi(this.host, this.headers);
+      this.efactcontrollerfhc = new api.fhcEfactControllerApi(this.host, this.headers);
+      this.geninscontrollerfhc = new api.fhcGenInsControllerApi(this.host, this.headers);
+      this.hubcontrollerfhc = new api.fhcHubControllerApi(this.host, this.headers);
+      this.recipecontrollerfhc = new api.fhcRecipeControllerApi(this.host, this.headers);
+      this.stscontrollerfhc = new api.fhcStsControllerApi(this.host, this.headers);
+      this.tarificationcontrollerfhc = new api.fhcTarificationControllerApi(this.host, this.headers);
+      this.therlinkcontrollerfhc = new api.fhcTherLinkControllerApi(this.host, this.headers);
+      this.rnconsultcontrollerfhc = new api.fhcConsultrnControllerApi(this.host, this.headers);
+      this.memberdatacontrollerfhc = new api.fhcMemberDataControllerApi(this.host, this.headers);
+      this.mhmcontrollerfhc = new api.fhcMhmControllerApi(this.host, this.headers);
 
       this.dispatchEvent(new CustomEvent('refresh', {detail: {}}))
   }
@@ -76,6 +77,7 @@ class FhcApi extends PolymerElement {
     Therlinkcontroller() { return this.therlinkcontrollerfhc }
     RnConsultController(){return this.rnconsultcontrollerfhc}
     MemberDataController(){return this.memberdatacontrollerfhc}
+    MhmController(){return this.mhmcontrollerfhc}
 }
 
 customElements.define(FhcApi.is, FhcApi);

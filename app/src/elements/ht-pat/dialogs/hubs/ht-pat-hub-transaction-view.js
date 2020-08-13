@@ -1359,7 +1359,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
   saveMedicationSchemeAsDocument(transactionSetId, sXml){
       return this.api.document().newInstance(this.user, null, {documentType: 'medicationscheme', mainUti: "public.xml", name: "medicationscheme.xml"}).then(
           doc => this.api.document().createDocument(doc)).then(
-          doc => this.api.document().setAttachment(doc.id, undefined, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(sXml))).then(() => doc)
+          doc => this.api.document().setDocumentAttachment(doc.id, undefined, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(sXml))).then(() => doc)
       ).catch(error => console.log(error))
   }
 
@@ -1811,7 +1811,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                   .then(newDocInstance => this.api.document().createDocument(newDocInstance))
                   .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(this.selectedDocumentToBeImported.document.value))
                   .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                  .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                  .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                   .then(resourcesObject => {
                       //Import into currentContact
                       let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);

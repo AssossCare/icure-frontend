@@ -957,24 +957,24 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     </div>
                 </template>
                 <vaadin-grid id="patients-list" class="material" multi-sort="[[multiSort]]" active-item="{{activeItem}}" on-tap="clickOnRow">
-                    <template is="dom-if" if="[[onElectron]]">
-                        <vaadin-grid-column flex-grow="0" width="64px">
-                            <template class="header">
-                                <div class="cell frozen"></div>
-                            </template>
-                            <template>
-                                <div class="cell frozen">
-                                    <template is="dom-if" if="[[!_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
-                                        <paper-icon-button id="new-window-[[item.id]]" icon="icons:open-in-new" on-tap="openPatientOnElectron" data-item\$="[[item.id]]"></paper-icon-button>
-                                        <paper-tooltip for="new-window-[[item.id]]" position="right" style="white-space: nowrap;">[[localize('new_win','New window',language)]]</paper-tooltip>
-                                    </template>
-                                </div>
-                            </template>
-                        </vaadin-grid-column>
-                    </template>
+                    
+                    <vaadin-grid-column hidden="[[!onElectron]]" flex-grow="0" width="64px">
+                        <template class="header">
+                            <div class="cell frozen"></div>
+                        </template>
+                        <template>
+                            <div class="cell frozen">
+                                <template is="dom-if" if="[[!_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
+                                    <paper-icon-button id="new-window-[[item.id]]" icon="icons:open-in-new" on-tap="openPatientOnElectron" data-item\$="[[item.id]]"></paper-icon-button>
+                                    <paper-tooltip for="new-window-[[item.id]]" position="right" style="white-space: nowrap;">[[localize('new_win','New window',language)]]</paper-tooltip>
+                                </template>
+                            </div>
+                        </template>
+                    </vaadin-grid-column>
+                    
 
 
-                    <vaadin-grid-column flex-grow="0" width="52px">
+                    <vaadin-grid-column flex-grow="0" width="60px">
                         <template class="header">
                             <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
                                 <vaadin-checkbox checked="[[isAllPatientCheck]]" on-checked-changed="_checkAllPatientChanged"></vaadin-checkbox>
@@ -1019,7 +1019,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.firstName]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="104px">
+                    <vaadin-grid-column flex-grow="0" width="120px">
                         <template class="header">
                             <vaadin-grid-sorter path="dateOfBirth">[[localize('dat_of_bir','Date of birth',language)]]
                             </vaadin-grid-sorter>
@@ -1788,10 +1788,9 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   ready() {
       super.ready()
-
-      this.api && this.api.isElectronAvailable().then(electron => this.set('onElectron',electron))
-
       var grid = this.$['patients-list']
+
+      this.set('onElectron',this.api ? this.api.electron().isAvailable() : false)
 
       grid.lastParams = null //Used to prevent double calls
       grid.lastParamsWithIdx = null //Used to prevent double calls
@@ -2081,7 +2080,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption || this.preventionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       if(this.activeItem) {
           this.set('isLoadingPatient', true)
           const selected = this.activeItem
@@ -3249,7 +3248,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption) return
 
       // Must click on a row
-      if (e.path[0].nodeName === 'TABLE') return
+      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
       console.log(e.target.dataset.item)
       this.api.electron().getPatient(e.target.dataset.item)
           .then(response => {if(response.code!==0){

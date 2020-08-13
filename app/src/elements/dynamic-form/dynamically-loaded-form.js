@@ -542,9 +542,9 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                               x[label] = self.parentForm.getRawValue(label)
                               return x
                           }, {}): {},
-                          children: self.hasSubForms() ? self.subFormsMap.reduce((x,child) =>{
+                          children: self.hasSubForms() ? Object.keys(self.subFormsMap).map(key => self.subFormsMap[key]).reduce((x,child) =>{
                               x[child.template.name] = _.keys(this.servicesMap).reduce((y, label) => {
-                                  y[label] =	child.dataProvider.getRawValue(label)
+                                  y[label] = child.dataProvider.getRawValue(label)
                                   return y
                               }, {})
                               return x;
@@ -990,7 +990,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
               return !(data.types.length && words && words.length) ? Promise.resolve([]) : Promise.all(data.types.map(ct => {
                   const typeLng = this.api.code().languageForType(ct.type, this.language);
                   const sorter = x => [x.stringValue && x.stringValue.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").startsWith(words[0]) ? 0 : 1, x.stringValue]
-                  return this.api.code().filterBy(null, null, 1000, null, null, null, {filter: {'$type':'IntersectionFilter', 'filters':words.map(w => ({
+                  return this.api.code().filterCodesBy(null, null, 1000, null, null, null, {filter: {'$type':'IntersectionFilter', 'filters':words.map(w => ({
                           '$type': 'CodeByRegionTypeLabelLanguageFilter',
                           'region': 'be',
                           'type': ct.type,

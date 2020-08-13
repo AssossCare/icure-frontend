@@ -60,6 +60,7 @@ import './dialogs/care-path/ht-pat-care-path-detail-dialog.js'
 import './dialogs/care-path/ht-pat-care-path-list-dialog.js'
 import './dialogs/mda/ht-pat-member-data-detail.js'
 import './dialogs/ht-pat-other-form-dialog'
+import './dialogs/subscription/ht-pat-subscription-detail'
 
 import './dialogs/prescription/ht-pat-prescription-detail'
 
@@ -1806,6 +1807,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 width: 400px;
                 z-index: 3000;
             }
+            
+            vaadin-split-layout{
+                height: 100%;
+            }
 
         </style>
 
@@ -1959,10 +1964,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                             <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
                                         </template>
-                                        
-                                        <template is="dom-if" if="[[_isDisplayingConvention(patient)]]">
-                                            <paper-fab id="conventionStatus" mini icon="vaadin:handshake"></paper-fab>
-                                            <paper-tooltip position="top" for="conventionStatus">[[localize(conventionStatus,'statut de la convention',language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'subscription')]]">
+                                            <paper-fab id="subscriptionStatus" mini icon="icons:description" on-tap="_openSubscriptionDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="subscriptionStatus">[[localize('mhm-subscription', 'Subscription', language)]]</paper-tooltip>
                                         </template>
                                     </div>
                                 </div>
@@ -2458,7 +2462,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-write-linking-letter="writeLinkingLetter" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
+                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
                             </ht-pat-detail-ctc-detail-panel>
                             </template>
                             <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]">
@@ -2858,6 +2862,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-care-path-detail-dialog id="htPatCarePathDetailDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" contacts="[[contacts]]" current-contact="[[currentContact]]" resources="[[resources]]" selected-care-path-info="[[selectedCarePathInfo]]" active-health-elements="[[activeHealthElements]]" on-save-care-path="_refreshFromServices" on-closing-care-path="refreshPatient"></ht-pat-care-path-detail-dialog>
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
+        <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
         <ht-pat-prescription-detail id="htPatPrescriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]"></ht-pat-prescription-detail>
 
@@ -3342,8 +3347,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     hub: ["physician", "specialist"],
                     therLink: ["physician", "specialist"],
                     consent: ["physician", "specialist"],
-                    mda: ["physician"],
-                    insurability: ["medicalHouse", "specialist", "officedoctors"]
+                    mda: ["physician", "medicalHouse"],
+                    subscription: ["medicalHouse"],
+                    insurability: ["specialist", "officedoctors"]
                 }
             },
             errorIndicatorMessage: {
@@ -4355,29 +4361,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         let biometrics = {}
         const services = _.uniqBy(this.contacts.flatMap(contact => contact.services), 'id')
         services.forEach(service => this._getBiometricFromService(biometrics, service))
-        // this.contacts.forEach(contact => {
-        //     contact.subContacts.forEach(subcontact => {
-        //         subcontact.services.forEach(service => {
-        //             this._getBiometricFromService(biometrics, service);
-        //         });
-        //     });
-        //     contact.services.forEach(service => {
-        //         this._getBiometricFromService(biometrics, service);
-        //     });
-        // });
-
-        const values = this._biometrics.filter(b => b.key in biometrics).flatMap(b => biometrics[b.key].map(c => {
-                return {
-                    code: c.code,
-                    date: c.date,
-                    label: c.label,
-                    value: c.value,
-                    dateAsString: this.api.moment(c.date).format('DD/MM/YY'),
-                }
-            })
-        )
-
-        this._biometricsFiltered = values
+        this._biometricsFiltered = this._biometrics.filter(b => b.key in biometrics).flatMap(b => biometrics[b.key].map(c => _.assign(c,{dateAsString: this.api.moment(c.date).format('DD/MM/YY'),})))
 
         this._sortBiometrics("bio-label")
 
@@ -4410,7 +4394,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         if (this._compareValueDates(date, _.last(biometrics[biometric.key]).date) < 0)
                             biometrics[biometric.key].pop()
                     if (biometrics[biometric.key].length < 3) {
-                        biometrics[biometric.key].push({code: biometric.chart, date: date, label: label, value: value})
+                        biometrics[biometric.key].push({code: biometric.code,chart : biometric.chart, date: date, label: label, value: value})
                         biometrics[biometric.key].sort((a, b) => this._compareValueDates(a.date, b.date))
                     }
                 }
@@ -4585,7 +4569,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             }).finally(() => {
                 this.set('activeHealthElements', (this.activeHealthElements || []).concat(svcHes).filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement'))))
                 this.set('inactiveHealthElements', (this.inactiveHealthElements || []).concat(svcHes).filter(it => ((it.closingDate && this.api.moment(it.closingDate).isBefore(now)) || (it.status & 1) === 1) && (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement'))))
-                this.set('archivedHealthElements', (this.archivedHealthElements || []).concat(svcHes).filter(it => (it.status & 3) === 3))
+                this.set('archivedHealthElements', (this.archivedHealthElements || []).concat(svcHes).filter(it => (it.status & 2) === 2))
                 this.set('allergies', (this.allergies || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'allergy')))
                 this.set('risks', (this.risks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk'))))
                 this.set('familyrisks', (this.familyrisks || []).concat(svcHes).filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
@@ -4735,7 +4719,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this.set("patientWillServices", patientWillServices)
             })
             ctcs.forEach(ctc => this._normalizeMedications(ctc))
-            this.api.contact().filterServices(ctcs, s => s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)).then(hesAsServices => {
+            this.api.contact().filterServices(ctcs, s => (s.tags.find(c => c.type === 'CD-ITEM' && ['healthcareelement', 'healthissue', 'familyrisk', 'risk', 'socialrisk', 'adr', 'allergy', 'medication', 'surgery', 'professionalrisk'].includes(c.code)) && !idServicesInHes.includes(s.id)) || (_.get(s,"content.isSurgical.booleanValue",false) && s.tags.length && s.tags.find(t => t.code.includes("acts")))).then(hesAsServices => {
                 const svcHes = hesAsServices.filter(s => !s.tags.some(t => t.type === 'CD-ITEM' && t.code === 'medication')).map(svc => this._makeHeFromSvc(svc))
 
                 this.set('medications', _.sortBy(hesAsServices.filter(s => s.tags.some(c => c.type === 'CD-ITEM' && c.code === 'medication') && (!(this.api.contact().medicationValue(s, this.language) || {}).endMoment || this.api.moment((this.api.contact().medicationValue(s, this.language) || {}).endMoment).isSameOrAfter(moment(),'day') )).map(m => {
@@ -4773,18 +4757,18 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
                     this.set('activeHealthElements', combinedHes.filter(it => (!it.closingDate || (it.closingDate && this.api.moment(it.closingDate).isSameOrAfter(now))) && (it.status & 1) === 0 && ((it.status & 2) === 0 || (it.openingDate && this.api.moment(it.openingDate).isSameOrAfter(firstJanuary2018))) && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement' || c.code === 'diagnosis'))))
                     this.set('inactiveHealthElements', combinedHes.filter(it => (it.closingDate && this.api.moment(it.closingDate).isBefore(now) || (it.status & 1) === 1) && (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'healthissue' || c.code === 'healthcareelement' || c.code === 'diagnosis'))))
-                    this.set('archivedHealthElements', combinedHes.filter(it => (it.status & 3) === 3))
+                    this.set('archivedHealthElements', combinedHes.filter(it => (it.status & 2) === 2))
                     this.set('allergies', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => (c.type === 'CD-ITEM' || c.type === 'CD-ITEM-EXT-CHARACTERIZATION') && (c.code === 'allergy' || c.code === 'adr'))))
                     this.set('risks', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'risk' || c.code === 'socialrisk' || c.code === 'professionalrisk'))))
                     this.set('familyrisks', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'familyrisk')))
-                    this.set('surgicalHealthElements', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && c.code === 'surgery')))
+                    this.set('surgicalHealthElements', combinedHes.filter(it => (it.status & 2) === 0 && it.tags.find(c => c.type === 'CD-ITEM' && (c.code === 'surgery' || c.code==="acts"))))
 
                     this.set("allHealthElements", {
                         activeHealthElements: this.activeHealthElements,
                         inactiveHealthElements: this.inactiveHealthElements,
                         archivedHealthElements: this.archivedHealthElements,
                         allergies: this.allergies,
-                        medications: this.medications,//todo julien ?????? pourquoi pas medications ????
+                        medications: this.medications,
                         risks: this.risks,
                         familyrisks: this.familyrisks,
                         surgicalHealthElements: this.surgicalHealthElements
@@ -4975,6 +4959,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.hubPackageId = hubConfig.hubPackageId
         this.hubApplication = hubConfig.hubApplication
         this.set("supportBreakTheGlass", hubConfig.supportBreakTheGlass)
+        this.selectedTherLink = null
 
         this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>{
             _.get(hcp, 'type', '').toLowerCase() === "medicalhouse" ? this.set('hcpType', "medicalHouse") :
@@ -4990,26 +4975,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this._checkEhealthServiceForMedicalHouse(hcp)
             }else{
                 //No ehealth session or patient SSIN not present
-                this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('medicalHouse')
-                this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('noInsurance')
-                this.shadowRoot.querySelector('#insuranceStatus') && this.shadowRoot.querySelector('#insuranceStatus').classList.remove('insuranceOk')
-                this.shadowRoot.querySelector('#consentStatus') && this.shadowRoot.querySelector('#consentStatus').classList.remove('noConsent')
-                this.shadowRoot.querySelector('#consentStatus') && this.shadowRoot.querySelector('#consentStatus').classList.remove('consentOk')
-                this.shadowRoot.querySelector('#consentStatus') && this.shadowRoot.querySelector('#consentStatus').classList.remove('pendingConsent')
-                this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('noAccess')
-                this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('accessOk')
-                this.shadowRoot.querySelector('#sumehrStatus') && this.shadowRoot.querySelector('#sumehrStatus').classList.remove('noSumehr')
-                this.shadowRoot.querySelector('#sumehrStatus') && this.shadowRoot.querySelector('#sumehrStatus').classList.remove('sumehr')
-                this.shadowRoot.querySelector('#sumehrStatus') && this.shadowRoot.querySelector('#sumehrStatus').classList.remove('sumehrChange')
-                this.shadowRoot.querySelector('#tlStatus') && this.shadowRoot.querySelector('#tlStatus').classList.remove('noTl')
-                this.shadowRoot.querySelector('#tlStatus') && this.shadowRoot.querySelector('#tlStatus').classList.remove('tlOk')
-                this.shadowRoot.querySelector('#tlStatus') && this.shadowRoot.querySelector('#tlStatus').classList.remove('tlPending')
-                this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgPending')
-                this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgOk')
-                this.shadowRoot.querySelector('#edmgStatus') && this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgNOk')
-                this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultPending')
-                this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultNOk')
-                this.shadowRoot.querySelector('#rnConsultStatus') && this.shadowRoot.querySelector('#rnConsultStatus').classList.remove('rnConsultOk')
+                this._resetEhealthTooltip()
             }
         })
 
@@ -5029,143 +4995,51 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         return !!_.get(this, "matrixByHcpType." + wsType, []).find(hcp => hcp === hcpType)
     }
 
-    _checkEhealthServiceForPhysician(hcp) {
-        this.showPatientConsentState()
-        this.showPatientTherLinkState()
-        this.checkSumehrPresentOnHub()
-        if (!this.sumehrContentOnPatientLoad) {
-            this.getSumehrContent().then(res => this.set('sumehrContentOnPatientLoad', res))
+    _checkEhealthServiceForPhysician(hcp){
+        this._isAvailableForHcp(this.hcpType, 'consent') ? this.showPatientConsentState() : null
+        this._isAvailableForHcp(this.hcpType, 'therLink') ? this.showPatientTherLinkState() : null
+        this._isAvailableForHcp(this.hcpType, 'hub') ? this.checkSumehrPresentOnHub() : null
+        if(!this.sumehrContentOnPatientLoad){
+            this.getSumehrContent().then(res => this.set('sumehrContentOnPatientLoad', res));
         }
-        this.getSumehrContent().then(res => this.set('sumehrContentOnPatientRefresh', res))
-        this.updateEdmgStatus()
-        this._consultRnHistory(_.get(this, 'patient', null))
-        this._consultMda()
+        this._isAvailableForHcp(this.hcpType, 'hub') ? this.getSumehrContent().then(res => this.set('sumehrContentOnPatientRefresh', res)) : null
+        this._isAvailableForHcp(this.hcpType, 'edmg') ? this.updateEdmgStatus() : null
+        this._isAvailableForHcp(this.hcpType, 'rnConsult') ? this._consultRnHistory(_.get(this, 'patient', null)) : null
+        this._isAvailableForHcp(this.hcpType, 'mda') ? this._consultMda() : null
+        this._isAvailableForHcp(this.hcpType, 'insurability') ? this._requestGenins() : null
     }
 
-    _checkEhealthServiceForMedicalHouse(hcp) {
-        let dlg = this.root.querySelector('#genInsDialog')
-        let dStart = null
-        const date = new Date(), y = date.getFullYear(), m = date.getMonth()
-        dStart = new Date(y, m, 1).getTime()
+    _checkEhealthServiceForMedicalHouse(hcp){
+        this._isAvailableForHcp(this.hcpType, 'mda') ? this._consultMda() : null
+    }
 
-        if (!dlg.opened) this.set('curGenInsResp', null)
-        console.log("getGeneralInsurabilityUsingGET on date", dStart)
-        this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
-            this.cleanNiss(_.get(this.patient, 'ssin', null)),
-            _.get(this.api, "tokenIdMH", null),
-            _.get(this.api, 'keystoreIdMH', null),
-            _.get(this.api, 'credentials.ehpasswordMH', null),
-            _.get(this.api, 'nihiiMH', null),
-            _.get(this.api, 'MHContactPersonSsin', _.get(hcp, 'ssin', null)),
-            _.get(this.api, 'MHContactPersonName', _.get(hcp, 'name', _.get(hcp, 'lastName', null))),
-            "medicalhouse", dStart, null)
-            .then(gi => {
-                const genInsOk = !gi.faultCode && gi.insurabilities && gi.insurabilities.length && gi.insurabilities[0].ct1 && gi.insurabilities[0].ct1 !== '000' && !(gi.generalSituation && gi.generalSituation.length)
-                const medicalHouse = gi.medicalHouseInfo && gi.medicalHouseInfo.medical && this.api.before(gi.medicalHouseInfo.periodStart, +new Date()) && (!gi.medicalHouseInfo.periodEnd || this.api.after(gi.medicalHouseInfo.periodEnd + 24 * 3600 * 1000, +new Date()))
-
-                if (!dlg.opened) this.set('curGenInsResp', gi)
-
-                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('medicalHouse') : null
-                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('noInsurance') : null
-                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('insuranceOk') : null
-
-                this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.add(genInsOk ? medicalHouse ? 'medicalHouse' : 'insuranceOk' : 'noInsurance') : null
-                //Polymer.updateStyles(this.$.insuranceStatus)
-
-                if (genInsOk) {
-                    //TODO: expected behaviour:
-                    //1. if same mut and CT1/2 -> do nothing
-                    //2. if different mut or CT1/2 -> close previous insurability and create new insurability
-                    const ins = gi.insurabilities[0]
-                    this.api.insurance().listInsurancesByCode(ins.mutuality).then(out => {
-                        if (out && out.length) {
-                            //find all patient insurabilities where insuranceId = out[0].Id and endDate is null or > today
-                            let insuFound = false
-                            insuFound = patient.insurabilities.filter(l => out.some(insu => l.insuranceId === insu.id) && (!l.endDate || l.endDate === ""))
-                            if (insuFound && insuFound.length) {
-                                insuFound.map(p => {
-                                    //1 if found: check if CT1/2 is changed
-                                    if (
-                                        (ins.ct1 && (!p.parameters || p.parameters.tc1 !== ins.ct1))
-                                        || (ins.ct2 && (!p.parameters || p.parameters.tc2 !== ins.ct2))
-                                        || ins.period.periodStart < p.startDate
-                                    ) {
-                                        console.log('Insurability: CT1/2 changed or startdate changed')//1.2 if changed: close the found ins and create new with startdate today
-                                        const newP = {}
-                                        newP.identificationNumber = ins.regNrWithMut
-                                        newP.insuranceId = out[0].id
-                                        newP.startDate = ins.period.periodStart//moment().format('YYYYMMDD');
-                                        newP.parameters = {
-                                            tc1: ins.ct1,
-                                            preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
-                                            tc2: ins.ct2,
-                                            paymentapproval: !!ins.paymentApproval
-                                        }
-                                        //2.1 close all other
-                                        this.patient.insurabilities.map(p => {
-                                                if (!p.endDate) p.endDate = ins.period.periodStart//moment().format('YYYYMMDD');
-                                            }
-                                        )
-                                        //remove insurabilities with same startdate
-                                        this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart)
-                                        this.patient.insurabilities.push(newP)
-                                        if (patient === this.patient) {
-                                            this.api.queue(this.patient, 'patient').then(([pat, defer]) => {
-                                                return this.api.patient().modifyPatientWithUser(this.user, this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
-                                                    this.dispatchEvent(new CustomEvent("patient-saved", {
-                                                        bubbles: true,
-                                                        composed: true
-                                                    }))
-                                                    Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged()
-                                                })
-                                            })
-                                        }
-                                    } else {
-                                        //1.1 if not changed: do nothing
-                                        console.log('Insurability: Nothing changed')
-                                    }
-                                })
-                            } else {
-                                console.log('Insurability: Mutuality changed')//2 if not found: create new with startdate today
-                                const newP = {}
-                                newP.identificationNumber = ins.regNrWithMut
-                                newP.insuranceId = out[0].id
-                                newP.startDate = ins.period.periodStart//moment().format('YYYYMMDD');
-                                newP.parameters = {
-                                    tc1: ins.ct1,
-                                    preferentialstatus: parseInt(ins.ct1) % 2 === 1 ? true : false,
-                                    tc2: ins.ct2,
-                                    paymentapproval: !!ins.paymentApproval
-                                }
-                                //2.1 close all other
-                                this.patient.insurabilities.map(p => {
-                                        if (!p.endDate) p.endDate = ins.period.periodStart//moment().format('YYYYMMDD');
-                                    }
-                                )
-                                //remove insurabilities with same startdate
-                                this.patient.insurabilities = this.patient.insurabilities.filter(it => it.startDate !== ins.period.periodStart && it.startDate < ins.period.periodStart)
-                                this.push("patient.insurabilities", newP)
-                                if (patient === this.patient) {
-                                    this.api.queue(this.patient, 'patient').then(([pat, defer]) => {
-                                        return this.api.patient().modifyPatientWithUser(this.user, this.patient).catch(e => defer.resolve(this.patient)).then(pt => this.api.register(pt, 'patient', defer)).then(p => {
-                                            this.dispatchEvent(new CustomEvent("patient-saved", {
-                                                bubbles: true,
-                                                composed: true
-                                            }))
-                                            Polymer.dom(this.root).querySelector('#pat-admin-card').patientChanged()
-                                        })
-                                    })
-                                }
-                            }
-
-                        }
-                    })
-                }
-            }).catch(e => {
-            console.log("genins failed " + e.message)
-            this.set('isLoading', false)
-            return null
-        })
+    _resetEhealthTooltip(){
+        this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('medicalHouse'): null
+        this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('noInsurance'): null
+        this.shadowRoot.querySelector("#insuranceStatus") ? this.shadowRoot.querySelector("#insuranceStatus").classList.remove('insuranceOk'): null
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('medicalHouse'): null
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
+        this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('noConsent'): null
+        this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('consentOk'): null
+        this.shadowRoot.querySelector("#consentStatus") ? this.shadowRoot.querySelector("#consentStatus").classList.remove('pendingConsent'): null
+        this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.remove('noAccess'): null
+        this.shadowRoot.querySelector("#hubStatus") ? this.shadowRoot.querySelector("#hubStatus").classList.remove('accessOk'): null
+        this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('noSumehr'): null
+        this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehr'): null
+        this.shadowRoot.querySelector("#sumehrStatus") ? this.shadowRoot.querySelector("#sumehrStatus").classList.remove('sumehrChange'): null
+        this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('noTl'): null
+        this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlOk'): null
+        this.shadowRoot.querySelector("#tlStatus") ? this.shadowRoot.querySelector("#tlStatus").classList.remove('tlPending'): null
+        this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgPending'): null
+        this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgOk'): null
+        this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgNOk'): null
+        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultPending'): null
+        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultNOk'): null
+        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultOk'): null
+        this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
+        this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
+        this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
     }
 
     showPatientTherLinkState() {
@@ -6832,49 +6706,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.$['prose-editor-dialog-linking-letter'].close()
     }
 
-    writeLinkingLetter(e) {
-        this.$['prose-editor-dialog-linking-letter'].open()
-        const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
-        proseEditor.set("additionalCssClasses", "linkingLetter")
-        const ctcDetailPanel = this.shadowRoot.querySelector('#ctcDetailPanel')
-
-        ctcDetailPanel._getPatAndHcpCommonData({})
-            .then(dpData => _.assign({dpData: dpData}, {}))
-            .then(resourceObject => {
-
-                ctcDetailPanel.linkingLetterDpData = resourceObject.dpData
-                if (ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied) return
-
-                return ctcDetailPanel.api.doctemplate().findDocumentTemplatesByDocumentType('template')
-                    .then(docTemplates => _.get(_.filter(docTemplates, i => _.get(i, "mainUti", "") === "proseTemplate.linkingLetter." + this.language), "[0]", false) || _.get(_.filter(docTemplates, i => _.get(i, "mainUti", "") === "proseTemplate.linkingLetter.fr"), "[0]", {}))
-                    .then(dt => {
-                        return (dt && dt.id && dt.attachmentId) ?
-                            ctcDetailPanel.api.doctemplate().getAttachmentText(dt.id, dt.attachmentId).then(proseTemplate => {
-                                ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied = true
-                                proseEditor.setJSONContent(ctcDetailPanel.api.crypto().utils.ua2utf8(proseTemplate) || {})
-                            }).catch(e => {
-                            }) :
-                            ctcDetailPanel._createLinkingLettersProseTemplate().then(createdTemplate => {
-                                ctcDetailPanel.api.doctemplate().getAttachmentText(createdTemplate.id, createdTemplate.attachmentId).then(proseTemplate => {
-                                    ctcDetailPanel.proseEditorLinkingLetterTemplateAlreadyApplied = true
-                                    proseEditor.setJSONContent(ctcDetailPanel.api.crypto().utils.ua2utf8(proseTemplate) || {})
-                                }).catch(e => {
-                                })
-                            }).catch(e => {
-                            })
-                    })
-                    .catch(e => console.log(e))
-
-            })
-            .catch(e => console.log(e))
-            .finally(() => {
-                ctcDetailPanel._refreshContextLinkingLetter()
-                ctcDetailPanel._toggleAddActions()
-                ctcDetailPanel.busySpinner = false
-            })
-
-    }
-
     _closeLinkingLetterDialog() {
         this.$['prose-editor-dialog-linking-letter'].close()
         const ctcDetailPanel = this.shadowRoot.querySelector('#ctcDetailPanel')
@@ -7051,7 +6882,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         .then(newDocInstance => this.api.document().createDocument(newDocInstance))
                         .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
                             .then(encryptedFileContent => ({createdDocument, encryptedFileContent})))
-                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+                        .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                         .then(resourcesObject => {
                             console.log("resourcesObject", resourcesObject)
                             return this.api.bekmehr().importSumehrByItemId(resourcesObject.id, "dockey", false, this.patient.id, this.language, {}, itemId).then(results => {
@@ -7274,17 +7105,78 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.$["htPatMemberDataDetail"].openDialog({open: false})
     }
 
-    _updateMdaFlags(e) {
-        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('medicalHouse') : null
-        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk') : null
-        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance') : null
-        this.set('mdaResult', _.get(e, 'detail.mdaResult', {}))
-
+    _updateMdaFlags(e){
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('medicalHouse'): null
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('insuranceOk'): null
+        this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.remove('noInsurance'): null
+        this.set('mdaResult',  _.get(e, 'detail.mdaResult', {}))
+        this._verifySubscription()
         !_.isEmpty(_.get(e, 'detail', {})) ?
             _.get(e, 'detail.medicalHouse', 0) > 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('medicalHouse') : null :
-                _.get(e, 'detail.generalSituation', 0) === 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('insuranceOk') : null :
+                _.get(e, 'detail.generalSituation', 0) === 0 ? this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('insuranceOk'): null :
                     this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null :
             this.shadowRoot.querySelector("#mdaStatus") ? this.shadowRoot.querySelector("#mdaStatus").classList.add('noInsurance') : null
+
+        //set insu pat.
+        if(moment(_.get(e,"detail.mdaRequest.startDate","1900-01-01"),"YYYY-MM-DD").isSame(moment(),"month") && _.get(this,"mdaResult.formatedResponse.period",[]).length===1){
+            const mdaInsu=_.get(this,"mdaResult.formatedResponse.period.0",{})
+            const patInsu=_.get(this,"patient.insurabilities",[]).find(ins => !_.get(ins,"endDate",false) && _.get(ins,"startDate",false)) || {}
+
+            if(!(_.get(mdaInsu,"careReceiver.registrationNumber",false) && _.get(mdaInsu,"cb1",false) && _.get(mdaInsu,"cb2",false) && _.get(mdaInsu,"careReceiver.mutuality.code",false))){
+                return;
+            }
+
+            if(_.get(mdaInsu,"careReceiver.registrationNumber",false)!==_.get(patInsu,"identificationNumber",false) || _.get(mdaInsu,"cb1",false)!==_.get(patInsu,"parameters.tc1",false) || _.get(mdaInsu,"cb2",false)!==_.get(patInsu,"parameters.tc2",false)){
+                (_.get(mdaInsu,"careReceiver.mutuality.code",false) ? this.api.insurance().listInsurancesByCode(_.get(mdaInsu,"careReceiver.mutuality.code",false)) : Promise.resolve({}))
+                    .then(respInsu =>{
+                        if(patInsu.startDate && this.api.moment(patInsu.startDate).isSame(moment(),"month")){
+                            this.set("patient.insurabilities",_.get(this,"patient.insurabilities",[]).filter(ins => _.get(ins,"endDate",false)))
+                        }
+                        else{
+                            patInsu.endDate=_.parseInt(moment().subtract(1, 'months').endOf('month').format("YYYYMMDD"))
+                        }
+                        this.push("patient.insurabilities",{
+                            startDate: _.parseInt(moment().startOf('month').format("YYYYMMDD")),
+                            insuranceId : _.get(respInsu,"0.id",""),
+                            identificationNumber: _.get(mdaInsu,"careReceiver.registrationNumber",""),
+                            parameters : {
+                                tc1 :  _.get(mdaInsu,"cb1",""),
+                                tc2 :  _.get(mdaInsu,"cb2",""),
+                                preferentialstatus : (_.get(this,"mdaResult.formatedResponse.payment",[]).find(pay => Object.keys(pay).find(key => key.includes("paymentByIO"))) || {paymentByIO : (_.get(mdaInsu,"cb1",0)%2)===1}).paymentByIO
+                            },
+                            ambulatory : true,
+                            dental : false
+                        })
+                        return this.api.patient().modifyPatientWithUser(this.user,this.patient)
+                    })
+                    .then(pat => this.api.register(pat,"patient"))
+                    .then(pat => this._patientSaved())
+            }
+        }
+
+    }
+
+    _verifySubscription(){
+
+        const promResolve = Promise.resolve()
+        const mdaDidRespond = _.size(_.get(this,"mdaResult",null))
+        const patientMhcs = _.get(this, 'patient.medicalHouseContracts', [])
+        const mdaResult = _.map(_.get(this,"mdaResult.formatedResponse.medicalHouse",[]), it => _.get(it,"medicalHouse"))
+
+        return promResolve
+            .then(() => {
+                this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription')
+                this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk')
+                this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending')
+            })
+            .then(() => mdaDidRespond ?
+                this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
+                    !_.size(mdaResult) ? 'subscriptionNoSubscription' :
+                        !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
+                            _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
+                                'subscriptionPending'
+                ) : this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription")
+            )
 
     }
 
@@ -7390,6 +7282,20 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _isDisplayingConvention(){
         return !(_.get(this,"patient.medicalHouseContracts",[]).filter(contract => !contract.endOfContract || moment().isBefore(this.api.moment(contract.endOfContract))).length)
+    }
+
+    _isSpecialist(hcp){
+        return !!(_.get(hcp, 'nihii', null) && _.startsWith(_.get(hcp, 'nihii', null), "1", 0) && _.size(_.get(hcp, 'nihii', null)) === 11 && (_.get(hcp, 'nihii', null).substr(_.size(_.get(hcp, 'nihii', null)) - 3) >= 10))
+
+    }
+
+    _openSubscriptionDialog(e){
+        e.stopPropagation()
+        if(this._checkForEhealthSession() === true){
+            this.$["htPatSubscriptionDetail"]._openDialog()
+        }else{
+            this._ehealthErrorNotification()
+        }
     }
 }
 

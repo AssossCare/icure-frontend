@@ -823,15 +823,15 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
   }
 
   _inWeeks(self, s, dateOfBirth) {
-      return self.api.moment(s.valueDate).diff(dateOfBirth, 'weeks') < 13;
+      return s.valueDate && self.api.moment(s.valueDate).diff(dateOfBirth, 'weeks') < 13;
   }
 
   _inMonths(self, s, dateOfBirth) {
-      return self.api.moment(s.valueDate).diff(dateOfBirth, 'months') < 60;
+      return s.valueDate && self.api.moment(s.valueDate).diff(dateOfBirth, 'months') < 60;
   }
 
   _compareValueDates(a, b) {
-      return this.api.moment(b).diff(this.api.moment(a));
+      return  a && b && this.api.moment(b).diff(this.api.moment(a));
   }
 
   _newChart(id) {
@@ -869,7 +869,7 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
               info: {
                   type: 'line',
                   data: {
-                      labels: bpValues.map(bp => this.api.moment(bp.valueDate).format('DD/MM/YYYY')),
+                      labels: bpValues.map(bp => bp.valueDate && this.api.moment(bp.valueDate).format('DD/MM/YYYY')),
                       datasets: [{
                           label: this.localize('chart-sbp', 'Systolic blood pressure', this.language),
                           fillColor: "transparent",
