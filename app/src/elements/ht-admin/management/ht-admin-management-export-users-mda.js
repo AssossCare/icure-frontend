@@ -166,9 +166,6 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
 
     _doExportUsersForMdaExcel() {
 
-        console.log('XLS export');
-        return
-
         const promResolve = Promise.resolve()
         const zipArchive = new jsZip();
         const filename = moment().format("YYYY-MM-DD") + "-patients-export-mda";
@@ -178,10 +175,14 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
             .then(() => this.set("_isBusy",true))
             .then(() => this.api.hcparty().getCurrentHealthcareParty().then(hcp => _.trim(_.get(hcp,"nihii","")).replace(/[^\d]/gmi,"")))
             .then(mhNihii => !_.trim(mhNihii) ? promResolve : this._getPatients(mhNihii))
-
-            .then(patients => !_.size(patients) ? promResolve : zipArchive.file(filename + ".json", JSON.stringify(patients)).generateAsync({type:"arraybuffer",mimeType: "application/zip",compression: "DEFLATE",compressionOptions: { level: 9 }}))
-
-            .then(zipFile => !zipFile ? promResolve : this.api.triggerFileDownload(zipFile, "application/zip", filename + ".zip"))
+            .then(patients => {
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: "MH Invoicing patient list", Author: "Topaz"}
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(patients)
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'MH Invoicing patient list')
+                return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+            })
+            .then(xlsFile => !xlsFile ? promResolve : this.api.triggerFileDownload(xlsFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  "mh-invoicing-patient-list-" + moment().format("YYYYMMDD-HHmmss") + ".xls"))
             .finally(() => this.set("_isBusy",false))
 
     }
