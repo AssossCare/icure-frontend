@@ -16,8 +16,16 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style">
-
+            .posology-container{
+               height: 100%;
+               width: auto;
+               margin: 1px solid black;
+            }
         </style>
+        
+        <div class="posology-container">
+        
+        </div>
 
 `;
     }
