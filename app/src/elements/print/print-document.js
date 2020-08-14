@@ -1041,7 +1041,11 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
       const document = _.get(this,"_data.document",{})
       const targetServiceId = _.get(_.find(_.get(contact,"subContacts",[]), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))), "services[0].serviceId","")
       const targetService = _.find(_.get(contact,"services",[]), {id:targetServiceId})
-      const documentType = !!_.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) ? _.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) : "unknown"
+      const documentType = !!_.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+          !!_.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) ? _.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"CD-TRANSACTION"}), "code","")) :
+          !!_.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(targetService,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+          !!_.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"care.topaz.customTransaction"}), "code","")) ? _.trim(_.get(_.find(_.get(document,"docInfo.codes",[]),{type:"care.topaz.customTransaction"}), "code","")) :
+          "unknown"
       const documentInfoServices =  _.compact(_.map(_.get(document,"docInfo.services",{}), svc => svc))
 
       return !_.size(document) ? promResolve : promResolve
@@ -1054,7 +1058,9 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
                       (!!_.trim(_.get(document,"docInfo.labo","")) ? _.trim(_.get(document,"docInfo.labo","")) : _.trim(_.get(document,"attachment.filename", this.api.crypto().randomUuid() + ".topaz")) ) + (!!_.trim(_.get(document,"docInfo.protocol","")) ? " (" + this.localize("prot", "Protocol", this.language) + " #" + _.trim(_.get(document,"docInfo.protocol","")) + ")" : "" ) :
                       !!_.trim(_.get(targetService,"content." + this.language + ".stringValue","")) ? _.trim(_.get(targetService,"content." + this.language + ".stringValue","")) :
                           _.trim(_.get(document,"attachment.filename", this.api.crypto().randomUuid() + ".topaz")),
-                  type: !!_.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) ? _.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) : this.localize("cd-transaction-unknown","Unknown", this.language),
+                  type: !!_.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) ? _.trim(_.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:documentType}),"labelHr","")) :
+                      !!_.trim(_.get(_.find(_.get(this,"_data.codes['care.topaz.customTransaction']",[]), {code:documentType}),"labelHr","")) ? _.trim(_.get(_.find(_.get(this,"_data.codes['care.topaz.customTransaction']",[]), {code:documentType}),"labelHr","")) :
+                          this.localize("cd-transaction-unknown","Unknown", this.language),
                   body: !_.size(contact) && _.size(documentInfoServices) === 1 ? this._prettifyText(this._getServiceShortDescription(_.head(documentInfoServices))) :
                       !_.size(contact) && _.size(documentInfoServices) > 1 ? _.map(documentInfoServices, svc => { return {
                               isOutOfRange: !!this._isServiceOutOfRange(svc),
@@ -1103,7 +1109,9 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
 
               const documentServiceId = _.trim(_.get(_.find(_.get(contact,"subContacts",[]), sctc => !!((parseInt(_.get(sctc, "status", 0)) & (1 << 6)))),"services[0].serviceId",""))
               const documentService = _.find(_.get(contact,"services",[]),{id:documentServiceId})
-              const documentType = _.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:_.trim(_.get(_.find(_.get(documentService,"tags",[]),{type:"CD-TRANSACTION"}), "code", ""))}),"labelHr","")
+              const documentType = _.size(_.find(_.get(documentService,"tags",[]),{type:"CD-TRANSACTION"})) ? _.get(_.find(_.get(this,"_data.codes.CD-TRANSACTION",[]), {code:_.trim(_.get(_.find(_.get(documentService,"tags",[]),{type:"CD-TRANSACTION"}), "code", ""))}),"labelHr","") :
+                  _.find(_.get(documentService,"tags",[]),{type:"care.topaz.customTransaction"}) ? _.get(_.find(_.get(this,"_data.codes['care.topaz.customTransaction']",[]), {code:_.trim(_.get(_.find(_.get(documentService,"tags",[]),{type:"care.topaz.customTransaction"}), "code", ""))}),"labelHr","") :
+                  "unknown"
               const documentTitle = _.trim(_.get(documentService,"content." + this.language + ".stringValue",""))
 
               const contactOrDocumentType = !!_.trim(subContactType) ? _.trim(subContactType) : !!_.trim(contactType) ? _.trim(contactType) : _.trim(documentType)
@@ -1178,6 +1186,7 @@ class PrintDocument extends TkLocalizerMixin(PolymerElement) {
           .then(() => this._getPrettifiedHcp().then(hcp => _.assign(this._data, {currentHcp:hcp})))
           .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), patientId).then(patient => _.assign(this._data, {currentPatient:patient})))
           .then(() => this._getCodesByType("CD-TRANSACTION").then(codes => _.merge(this._data,{codes:codes})))
+          .then(() => this._getCodesByType("care.topaz.customTransaction").then(codes => _.merge(this._data,{codes:codes})))
           .then(() => this._getContact(_.get(this,"user",{}), contactId, _.get(this,"_data.currentPatient")).then(contact => _.assign(this._data,{contact:contact})))
           .then(() => this._getDocument(_.get(this,"user",{}), documentId).then(document => _.assign(this._data,{document:document})))
           .then(() => ((!_.size(_.get(this,"_data.document")) && !_.size(_.get(this,"_data.contact"))) ? promResolve : !!_.size(_.get(this,"_data.contact")) ? this._getContentFromContact() : this._getContentFromDocument()).then(content => _.assign(this._data,{content:content})))

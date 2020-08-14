@@ -1070,7 +1070,8 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
                     _.trim(_.get(data,"message.transportGuid")) === "PRESCRIPTION:IMAGING:ARCHIVE" ? this.localize("requestForImagingExam","Medical imaging exam",this.language) :
                     _.trim(_.get(data,"message.transportGuid")) === "MEDEX:OUT:PDF" ? this.localize("medicalCertificate","Medical certificate",this.language) + " Medex" :
                     _.trim(_.get(data,"message.transportGuid")) === "MEDEX:OUT:KHMER" ? "KHMER - " + this.localize("medicalCertificate","Medical certificate",this.language) + " Medex" :
-                    !!_.size(_.get(data,"service.tags",[])) ? _.trim(_.get(_.find(_.get(this,"_data.codes['CD-TRANSACTION']",[]), {code:_.get(_.find(_.get(data,"service.tags",[]), {type:"CD-TRANSACTION"}),"code","")}), "labelHr","")) :
+                    !!_.size(_.get(data,"service.tags",[])) && _.size(_.find(_.get(data,"service.tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(this,"_data.codes['CD-TRANSACTION']",[]), {code:_.get(_.find(_.get(data,"service.tags",[]), {type:"CD-TRANSACTION"}),"code","")}), "labelHr","")) :
+                    !!_.size(_.get(data,"service.tags",[])) && _.size(_.find(_.get(data,"service.tags",[]), {type:"care.topaz.customTransaction"})) ? _.trim(_.get(_.find(_.get(this,"_data.codes['care.topaz.customTransaction']",[]), {code:_.get(_.find(_.get(data,"service.tags",[]), {type:"care.topaz.customTransaction"}),"code","")}), "labelHr","")) :
                     !!_.size(_.get(data,"contact.tags",[])) ? _.trim(_.get(_.find(_.get(this,"_data.codes['BE-CONTACT-TYPE']",[]), {code:_.get(_.find(_.get(data,"contact.tags",[]), {type:"BE-CONTACT-TYPE"}),"code","")}), "labelHr","")) :
                     ""
 
@@ -1120,6 +1121,7 @@ class HtPatDocumentsDirectoryDialog extends TkLocalizerMixin(PolymerElement) {
           .then(() => this._getPrettifiedHcps().then(hcps => this.set("_data.currentHcp",_.head(hcps))))
           .then(() => this._getPrettifiedPatient(_.get(this,"user",{}), _.trim(_.get(this,"patient.id",""))).then(pat => this.set("_data.currentPatient", pat)))
           .then(() => this._getCodesByType("CD-TRANSACTION").then(codes => _.merge(this._data,{codes:codes})))
+          .then(() => this._getCodesByType("care.topaz.customTransaction").then(codes => _.merge(this._data,{codes:codes})))
           .then(() => this._getCodesByType("BE-CONTACT-TYPE").then(codes => _.merge(this._data,{codes:codes})))
           .then(() => this.api.setPreventLogging())
           .then(() => this._getDirectoryDocuments(_.get(this,"_data.currentPatient",{})).then(datas => this.set("_data.directoryDocuments", datas)))
