@@ -1,6 +1,6 @@
 {
   "name": "icure-ht",
-  "version": "0.0.534",
+  "version": "0.0.542",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
@@ -118,7 +118,7 @@
     "@polymer/paper-tooltip": "^3.0.1",
     "@polymer/polymer": "^3.0.5",
     "@polymer/promise-polyfill": "^3.0.0-pre.21",
-    "@taktik/icc-api": "^3.0.15",
+    "@taktik/icc-api": "^3.0.16",
     "@taktik/iron-selector-meta-shift": "^3.0.1",
     "@taktik/tk-token-field": "^3.0.1",
     "@types/base64-js": "^1.2.5",

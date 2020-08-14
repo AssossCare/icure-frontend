@@ -736,6 +736,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                                 [[localize('care-path', 'Care path', language)]]
                                             </paper-button>
                                             <paper-button on-tap="showEforms"><iron-icon icon="icons:description"></iron-icon>[[localize('eforms', 'E-forms', language)]]</paper-button>
+                                            <paper-button on-tap="_openOrgadon"><iron-icon icon="vaadin:clipboard-heart"></iron-icon>[[localize('Orgadon', 'Orgadon', language)]]</paper-button>
                                             <paper-button on-tap="_consultPcrValidationCode"><iron-icon icon="vaadin:rss-square"></iron-icon>[[localize('pcr-code', 'PCR following', language)]]</paper-button>
                                         </div>
                                     </div>
@@ -857,8 +858,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 
                             </template>
                         </div>
-                        <filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]"
-                                      i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>
+                        <!--<filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]"
+                                      i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>-->
                         <div class="layout-bar">
                             <paper-icon-button id="list_icn" class$="list [[_activeIconClass(list)]]" icon="icons:view-list"
                                                on-tap="_list"></paper-icon-button>
@@ -2368,7 +2369,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     refreshIcons() {
-        Polymer.dom(this.root).querySelector("#serviceFilterPanel").refreshIcons()
+        return null;
+        // Polymer.dom(this.root).querySelector("#serviceFilterPanel").refreshIcons()
     }
 
     dropVarsFromProseJsonContent(proseJsonContent, variablesPath) {
@@ -4775,6 +4777,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc, "content.fr", {})) && _.get(svc, "content.fr.documentId", "") === docId) || (!!_.size(_.get(svc, "content.nl", {})) && _.get(svc, "content.nl.documentId", "") === docId) || (!!_.size(_.get(svc, "content.en", {})) && _.get(svc, "content.en.documentId", "") === docId))
         const serviceLabel = !!_.trim(_.get(documentSvc, "content.fr.stringValue", "")) ? _.trim(_.get(documentSvc, "content.fr.stringValue", "")) : !!_.trim(_.get(documentSvc, "content.nl.stringValue", "")) ? _.trim(_.get(documentSvc, "content.nl.stringValue", "")) : !!_.trim(_.get(documentSvc, "content.en.stringValue", "")) ? _.trim(_.get(documentSvc, "content.en.stringValue", "")) : _.trim(_.get(documentSvc, "label", ""))
         const transactionCode = !!_.trim(_.get(_.find(_.get(documentSvc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : ""
+            !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+            !!_.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+            !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+            ""
 
         this.set("editLabelAndTransactionData.ctc", ctc)
         this.set("editLabelAndTransactionData.docId", docId)
@@ -4790,45 +4796,46 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
         if (!!_.get(this, "editLabelAndTransactionData.isServices", false)) return this._saveLabelAndTransactionDialogService()
 
-        const ctc = _.find(this.contacts, {id: _.get(this, "editLabelAndTransactionData.ctc.id", "")})
-        const docId = _.trim(_.get(this, "editLabelAndTransactionData.docId", ""))
-        const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc, "content.fr", {})) && _.get(svc, "content.fr.documentId", "") === docId) || (!!_.size(_.get(svc, "content.nl", {})) && _.get(svc, "content.nl.documentId", "") === docId) || (!!_.size(_.get(svc, "content.en", {})) && _.get(svc, "content.en.documentId", "") === docId))
-        const documentSctc = _.find(ctc.subContacts, sctc => !_.trim(_.get(sctc, "healthElementId", "")) && !!_.some(_.get(sctc, "services"), {serviceId: _.get(documentSvc, "id", "")}))
-        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(documentSctc, "tags", []), {type: "originalEhBoxMessageId"}), "id", ""))
+        const ctc = _.find(this.contacts, {id:_.get(this,"editLabelAndTransactionData.ctc.id","")})
+        const docId = _.trim(_.get(this,"editLabelAndTransactionData.docId",""))
+        const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc,"content.fr",{})) && _.get(svc,"content.fr.documentId","") === docId) || (!!_.size(_.get(svc,"content.nl",{})) && _.get(svc,"content.nl.documentId","") === docId) || (!!_.size(_.get(svc,"content.en",{})) && _.get(svc,"content.en.documentId","") === docId))
+        const documentSctc = _.find(ctc.subContacts, sctc => !_.trim(_.get(sctc,"healthElementId","")) && !!_.some(_.get(sctc,"services"),{serviceId:_.get(documentSvc,"id","")}))
+        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(documentSctc, "tags", []), {type:"originalEhBoxMessageId"}),"id",""))
 
-        const newLabel = _.trim(_.get(this, "editLabelAndTransactionData.label", ""))
-        const newTransactionCode = _.trim(_.get(this, "editLabelAndTransactionData.transactionCode", ""))
+        const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
+        const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+        const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
         return !_.size(ctc) ||
         !_.trim(docId) ||
         !_.size(documentSvc) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
             .then(() => {
 
-                if (isEhboxMessage) {
+                if(isEhboxMessage) {
 
                     ctc.descr = newLabel
                     documentSvc.label = newLabel
 
-                    ctc.tags = _.filter(_.get(ctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                    ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                    ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+                    ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
-                    if (!!_.size(documentSctc)) {
-                        documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                        documentSctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                    if(!!_.size(documentSctc)) {
+                        documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction")
+                        documentSctc.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
                     }
 
                 }
 
-                if (!!_.size(_.get(documentSvc, "content.fr", {}))) _.merge(documentSvc, {content: {fr: {stringValue: newLabel}}})
-                if (!!_.size(_.get(documentSvc, "content.nl", {}))) _.merge(documentSvc, {content: {nl: {stringValue: newLabel}}})
-                if (!!_.size(_.get(documentSvc, "content.en", {}))) _.merge(documentSvc, {content: {en: {stringValue: newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.fr",{}))) _.merge(documentSvc, {content:{fr:{stringValue:newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.nl",{}))) _.merge(documentSvc, {content:{nl:{stringValue:newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.en",{}))) _.merge(documentSvc, {content:{en:{stringValue:newLabel}}})
 
-                documentSvc.tags = _.filter(_.get(documentSvc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                documentSvc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                documentSvc.tags = _.filter(_.get(documentSvc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+                documentSvc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
             })
-            .then(() => this._saveContactAndRefreshContacts(ctc))
-            .finally(() => this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
+            .then(()=>this._saveContactAndRefreshContacts(ctc))
+            .finally(()=>this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
 
     }
 
@@ -4879,10 +4886,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     _editLabelAndTransactionDialogServices(e) {
 
-        const ctc = _.find(this.contacts, {id: _.get(e, "detail.contact.id", "")})
-        const sourceSubContact = _.find(_.get(ctc, "subContacts", []), sctc => ((_.get(sctc, "status", 0) & (1 << 0)) !== 0) || ((_.get(sctc, "status", 0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
-        const serviceLabel = !!_.trim(_.get(ctc, "descr", "")) ? _.trim(_.get(ctc, "descr", "")) : _.trim(_.get(sourceSubContact, "descr", ""))
-        const transactionCode = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+        const ctc = _.find(this.contacts, {id:_.get(e, "detail.contact.id","")})
+        const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
+        const serviceLabel = !!_.trim(_.get(ctc,"descr","")) ? _.trim(_.get(ctc,"descr","")) : _.trim(_.get(sourceSubContact,"descr",""))
+        const transactionCode =
+            !!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+                !!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+                    !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+                        _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", ""))
 
         this.set("editLabelAndTransactionData.ctc", ctc)
         this.set("editLabelAndTransactionData.docId", "")
@@ -4890,36 +4901,33 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set("editLabelAndTransactionData.label", serviceLabel)
         this.set("editLabelAndTransactionData.transactionCode", transactionCode)
 
-        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open()
+        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open();
 
     }
 
     _saveLabelAndTransactionDialogService() {
 
-        const ctc = _.find(this.contacts, {id: _.get(this, "editLabelAndTransactionData.ctc.id", "")})
-        const sourceSubContact = _.find(_.get(ctc, "subContacts", []), sctc => ((_.get(sctc, "status", 0) & (1 << 0)) !== 0) || ((_.get(sctc, "status", 0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
-        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "originalEhBoxMessageId"}), "id", ""))
+        const ctc = _.find(this.contacts, {id:_.get(this,"editLabelAndTransactionData.ctc.id","")})
+        const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
+        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type:"originalEhBoxMessageId"}),"id",""))
 
-        const newLabel = _.trim(_.get(this, "editLabelAndTransactionData.label", ""))
-        const newTransactionCode = _.trim(_.get(this, "editLabelAndTransactionData.transactionCode", ""))
+        const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
+        const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+        const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
         return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
             .then(() => {
 
                 ctc.descr = newLabel
-                isEhboxMessage && (ctc.tags = _.filter(_.get(ctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION"))
-                isEhboxMessage && ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                isEhboxMessage && (ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction"))
+                isEhboxMessage && ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
-                isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION"))
-                isEhboxMessage && sourceSubContact.tags.push({
-                    type: "CD-TRANSACTION",
-                    code: newTransactionCode,
-                    disabled: false
-                })
+                isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction"))
+                isEhboxMessage && sourceSubContact.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
 
             })
-            .then(() => this._saveContactAndRefreshContacts(ctc))
-            .finally(() => this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
+            .then(()=>this._saveContactAndRefreshContacts(ctc))
+            .finally(()=>this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
 
     }
 
@@ -4962,6 +4970,25 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set('showOutGoingDocContainer', false);
         return this.newReport_v2(null,null,{reOpen:true})
 
+    }
+
+    _openOrgadon(){
+            this.set('showAddEvaFormsContainer', false)
+            _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
+                    .then(bearerToken => {
+                        this._sendPostRequest({
+                            action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+                            params: [
+                                {
+                                    type: "hidden",
+                                    name: "RelayState",
+                                    value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/"
+                                },
+                                {type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
+                            ]
+                        })
+                    }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://orgadonacc.health.fgov.be/") : window.open("https://orgadon.health.fgov.be/")
     }
 
 }

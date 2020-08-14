@@ -1,11 +1,13 @@
-
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
 import jsZip from "jszip/dist/jszip.js";
+import XLSX from 'xlsx';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../tk-localizer";
+
 class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
+
     static get template() {
         return html`
        <style include="shared-styles dialog-style buttons-style paper-input-style paper-tabs-style">
@@ -37,8 +39,9 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
 
 
         <div class="users-panel p10">
-            <h4 class="panel-title">[[localize('exportUsersMda','Export users (MDA)',language)]]</h4>
-            <div class="mt30"><paper-button class="button button--save" style="width:180px" on-tap="_doExportUsersForMda"><iron-icon icon="icons:cloud-download"></iron-icon> &nbsp; [[localize('exportData','Export data',language)]]</paper-button></div>
+            <h4 class="panel-title">[[localize('exportUsersMda','Export Format users (MDA)',language)]]</h4>
+            <div class="mt30"><paper-button class="button button--save" style="width:280px" on-tap="_doExportUsersForMdaJson"><iron-icon icon="icons:cloud-download"></iron-icon> &nbsp; [[localize('exportData','Export data',language)]] (Format JSON)</paper-button></div>
+            <div class="mt30"><paper-button class="button button--save" style="width:280px" on-tap="_doExportUsersForMdaExcel"><iron-icon icon="icons:cloud-download"></iron-icon> &nbsp; [[localize('exportData','Export data',language)]] (Format Excel)</paper-button></div>
         </div>
 `;
     }
@@ -122,6 +125,8 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
                             }))
                             .filter(it=> _.get(it,"active", true) && _.trim(_.get(it,"ssin", "")) && _.size(_.get(it,"validMhc", null)))
                             .map(it => ({
+                                firstName: _.upperFirst(_.trim(_.get(it,"firstName","")).toLocaleLowerCase()),
+                                lastName: _.upperFirst(_.trim(_.get(it,"lastName","")).toLocaleLowerCase()),
                                 ssin: _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,""),
                                 contractId: _.trim(_.get(it, "validMhc.contractId")),
                                 startOfContract: _.trim(_.get(it, "validMhc.startOfContract")),
@@ -142,7 +147,7 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
 
     }
 
-    _doExportUsersForMda() {
+    _doExportUsersForMdaJson() {
 
         const promResolve = Promise.resolve()
         const zipArchive = new jsZip();
@@ -155,6 +160,29 @@ class HtAdminManagementExportUsersMda extends TkLocalizerMixin(PolymerElement) {
             .then(mhNihii => !_.trim(mhNihii) ? promResolve : this._getPatients(mhNihii))
             .then(patients => !_.size(patients) ? promResolve : zipArchive.file(filename + ".json", JSON.stringify(patients)).generateAsync({type:"arraybuffer",mimeType: "application/zip",compression: "DEFLATE",compressionOptions: { level: 9 }}))
             .then(zipFile => !zipFile ? promResolve : this.api.triggerFileDownload(zipFile, "application/zip", filename + ".zip"))
+            .finally(() => this.set("_isBusy",false))
+
+    }
+
+    _doExportUsersForMdaExcel() {
+
+        const promResolve = Promise.resolve()
+        const zipArchive = new jsZip();
+        const filename = moment().format("YYYY-MM-DD") + "-patients-export-mda";
+
+        return this._isBusy ? promResolve : promResolve
+            .then(() => this._resetComponentProperties())
+            .then(() => this.set("_isBusy",true))
+            .then(() => this.api.hcparty().getCurrentHealthcareParty().then(hcp => _.trim(_.get(hcp,"nihii","")).replace(/[^\d]/gmi,"")))
+            .then(mhNihii => !_.trim(mhNihii) ? promResolve : this._getPatients(mhNihii))
+            .then(patients => {
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: "MH Invoicing patient list", Author: "Topaz"}
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(patients)
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'MH Invoicing patient list')
+                return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+            })
+            .then(xlsFile => !xlsFile ? promResolve : this.api.triggerFileDownload(xlsFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  "mh-invoicing-patient-list-" + moment().format("YYYYMMDD-HHmmss") + ".xls"))
             .finally(() => this.set("_isBusy",false))
 
     }

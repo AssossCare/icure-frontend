@@ -3086,39 +3086,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             secondPanelItems: {
                 type: Array,
                 value: function () {
-                    return [{
-                        icon: "icure-svg-icons:laboratory",
-                        filter: [{type: 'CD-TRANSACTION', code: ['labresult']}],
-                        title: {en: "Lab Results", fr: "Résultats de laboratoire", nl: "Lab Results"},
-                        id: "LabResults"
-                    },
-                        {
-                            icon: "icure-svg-icons:imaging",
-                            filter: [{type: 'CD-TRANSACTION', code: ['result']}, {
-                                type: 'CD-HCPARTY',
-                                code: ['deptradiology']
-                            }],
-                            title: {en: "Imaging", fr: "Imagerie", nl: "Imaging"},
-                            id: "Imaging"
-                        },
-                        {
-                            icon: "icure-svg-icons:stethoscope",
-                            filter: [{type: 'CD-ENCOUNTER', code: ['consultation']}],
-                            title: {en: "Consultation", fr: "Consultation", nl: "Consultation"},
-                            id: "Consultation"
-                        },
-                        {
-                            icon: "editor:insert-drive-file",
-                            filter: [{type: 'CD-TRANSACTION', code: ['contactreport']}],
-                            title: {en: "Protocol", fr: "Protocole", nl: "Protocol"},
-                            id: "Protocol"
-                        },
-                        {
-                            icon: "icure-svg-icons:prescription",
-                            filter: [{type: 'CD-ITEM', code: ['treatment']}],
-                            title: {en: "Prescription", fr: "Prescription", nl: "Prescription"},
-                            id: "Prescription"
-                        }]
+                    return [{ icon: "icure-svg-icons:laboratory", filter:[{type:'CD-TRANSACTION',code:['labresult','report','result']}] , title: {en: "Lab Results", fr:"Résultats de laboratoire", nl:"Lab Results"}, id: "LabResults" },
+                        { icon: "icure-svg-icons:imaging", filter:[{type:'care.topaz.customTransaction',code:['imaging']},{type:'CD-HCPARTY',code:['deptradiology']}], title: {en: "Imaging", fr:"Imagerie", nl:"Imaging"}, id: "Imaging" },
+                        { icon: "icure-svg-icons:stethoscope", filter:[{type:'TZ-FORM-TITLE',code:['Rencontre MSOAP']}, {type:'CD-ENCOUNTER',code:['consultation']}, {type:'CD-TRANSACTION',code:['clinicalsummary']}], title: {en: "Consultation", fr:"Consultation", nl:"Consultation"}, id: "Consultation" },
+                        { icon: "editor:insert-drive-file", status: (1 << 5), filter:[{type:'CD-TRANSACTION',code:['contactreport','admission','note','notification','referral']}], title: {en: "Protocol", fr:"Protocole", nl:"Protocol"}, id: "Protocol" },
+                        { icon: "icure-svg-icons:prescription", filter:[{type:'ICURE',code:['PRESC']},{type:'TZ-FORM-TITLE',code:['Ordonnance']},{type:'CD-ITEM',code:['treatment','medication']},{type:'CD-TRANSACTION',code:['pharmaceuticalprescription','prescription','productdelivery']}], title: {en: "Prescription",  fr:"Prescription", nl:"Prescription"}, id: "Prescription" }];
                 }
             },
             dateStartAsString: {
@@ -3365,7 +3337,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     consent: ["physician", "specialist"],
                     mda: ["physician", "medicalHouse"],
                     subscription: ["medicalHouse"],
-                    insurability: ["medicalHouse", "specialist", "officedoctors"]
+                    insurability: ["specialist", "officedoctors"]
                 }
             },
             errorIndicatorMessage: {
@@ -4624,8 +4596,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
         setTimeout(() => {
             this._refreshFromServices()
-            this.set('selectedContactIds', ["ctc_" + e.detail.contact.id])
-            this.set('selectedContacts', [e.detail.contact])
+            _.trim(_.get(e,"detail.contact.id")) && this.set('selectedContactIds', ["ctc_" + _.trim(_.get(e,"detail.contact.id"))]);
+            _.size(_.get(e,"detail.contact")) && this.set('selectedContacts', [_.get(e,"detail.contact")]);
             this.shadowRoot.querySelector('#contactsList') && this.shadowRoot.querySelector('#contactsList').render()
             // setTimeout(() => {this.shadowRoot.querySelectorAll('#contactsHes') && this.shadowRoot.querySelectorAll('#contactsHes').forEach(x => x.render());},1000)
             this.set("refreshServicesDescription", this.refreshServicesDescription + 1)
@@ -5521,49 +5493,62 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     contactFilter() {
         return (ctc) => {
-            const regExp = this.contactSearchString && new RegExp(this.contactSearchString, "i")
+            const regExp = this.contactSearchString && new RegExp(_.trim(this.contactSearchString).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,''), "i");
 
-            const heHeIds = this.selectedHealthcareElements.map(he => he.healthElementId).filter(x => !!x)
-            const heIds = _.uniq(this.selectedHealthcareElements.map(he => he.id).concat((this.healthElements || []).filter(h => h.healthElementId && heHeIds.includes(h.healthElementId)).map(he => he.id)))
-            const poaIds = _.flatMap(this.selectedHealthcareElements, he => he.selectedPlansOfAction ? he.selectedPlansOfAction.map(p => p.id) : [])
-            const svcIds = this.selectedHealthcareElements.filter(he => !he.id).map(he => he.idService)
+            const heHeIds = this.selectedHealthcareElements.map(he => he.healthElementId).filter(x=>!!x);
+            const heIds = _.uniq(this.selectedHealthcareElements.map(he => he.id).concat((this.healthElements || []).filter(h => h.healthElementId && heHeIds.includes(h.healthElementId)).map(he => he.id)));
+            const poaIds = _.flatMap(this.selectedHealthcareElements, he => he.selectedPlansOfAction ? he.selectedPlansOfAction.map(p => p.id) : []);
+            const svcIds = this.selectedHealthcareElements.filter(he => !he.id).map(he => he.idService);
 
             return this.api.after(ctc.openingDate, this.timeSpanStart)
                 && this.api.before(ctc.openingDate, this.timeSpanEnd)
-                && (!regExp || ctc.subContacts.some(sc => sc.descr && sc.descr.match(regExp) && sc.services.length)
-                    || ctc.services.some(s => this.shortServiceDescription(s, this.language).match(regExp))
-                    || this.hcp(ctc).match(regExp))
-                && (!heIds.length && !poaIds.length && !svcIds.length
+                && (
+                    !regExp
+                    || (_.trim(_.get(ctc,"descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                    || (_.trim(_.get(ctc,"userDescr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                    || (_.trim(this.hcp(ctc)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                    || _.get(ctc,"subContacts",[]).some(sc => sc.descr && (_.trim(sc.descr).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp) && _.size(_.get(sc,"services",[])))
+                    || _.get(ctc,"services",[]).some(s => (
+                        (_.trim(this.shortServiceDescription(s, this.language)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                        || (_.trim(_.get(s, "label")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                        || (_.trim(_.get(s, "clearComment")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                        || (_.trim(_.get(s, "content." + this.language + ".stringValue")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                    ))
+                    || _.get(ctc,"healthElements",[]).some(he => (_.trim(_.get(he, "descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp))
+                )
+                && (
+                    !heIds.length && !poaIds.length && !svcIds.length
                     || ctc.subContacts.some(sc => (sc.healthElementId && heIds.includes(sc.healthElementId) || sc.planOfActionId && poaIds.includes(sc.planOfActionId)))
-                    || ctc.services.some(s => svcIds.includes(s.id)))
-                && (!this.contactFilters || !this.contactFilters.length
-                    || ctc.services.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code)))))
-                    || ctc.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code))))
-                    || ctc.subContacts.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code)))))
+                    || ctc.services.some(s => svcIds.includes(s.id))
                 )
                 && (
-                    this.statutFilter === "all" || this.contactStatutChecked.some(id => id === ctc.id)
+                    !this.contactFilters
+                    || !_.size(this.contactFilters)
+                    || ctc.services.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code)))))
+                    || ctc.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code))))
+                    || ctc.subContacts.some(s => (
+                        (s.tags && s.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code)))))
+                        || ((parseInt(_.get(s,"status",0))||0) && this.contactFilters.some(cf=> (parseInt(_.get(cf,"status",0))||0) && (parseInt(_.get(s, "status", 0)) & cf.status)))
+                    ))
                 )
+                && ( this.statutFilter==="all" || this.contactStatutChecked.some(id => id===ctc.id) )
+                && ( !this.moreOptionsUser || this.moreOptionsUser === ctc.author )
                 && (
-                    !this.moreOptionsUser || this.moreOptionsUser === ctc.author
-                )
-                && (
-                    this.contactStatusFilter === "all" || (
+                    this.contactStatusFilter === "all"
+                    || (
                         // 1<<0 = Labresult ; 1<<5 = Protocol ; 1<<6 = imported document
-                        (ctc.subContacts.some(s => !!(parseInt(_.get(s, "status", 0)) & (1 << 0)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 5)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 6)))) && (
-                            this.documentType === "all" || (
-                                ctc.tags && ctc.tags.some(tag => tag.code && tag.code === this.documentType) ||
-                                ctc.services && ctc.services.some(service => service.tags && service.tags.some(tag => tag.code && tag.code === this.documentType)) ||
-                                ctc.subContacts && ctc.subContacts.some(sctc => sctc.tags && sctc.tags.some(tag => tag.code && tag.code === this.documentType))
+                        (ctc.subContacts.some(s => !!(parseInt(_.get(s, "status", 0)) & (1 << 0)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 5)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 6)) ) )
+                        && (
+                            this.documentType === "all"
+                            || (
+                                ctc.tags && ctc.tags.some(tag => tag.code && tag.code === this.documentType)
+                                || ctc.services && ctc.services.some(service => service.tags && service.tags.some(tag => tag.code && tag.code === this.documentType))
+                                || ctc.subContacts && ctc.subContacts.some(sctc => sctc.tags && sctc.tags.some(tag => tag.code && tag.code === this.documentType))
                             )
                         )
                     )
                 )
-                || !ctc.closingDate
-
+                || !ctc.closingDate;
         }
     }
 
@@ -6517,21 +6502,22 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             .chain(_.get(ctc, "subContacts", []))
             .map(subContact => {
 
-                const contactTransactionCode = _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
-                const subContactTransactionCode = _.trim(_.get(_.find(_.get(subContact, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+                const contactTransactionCode = _.size(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
+                const subContactTransactionCode = _.size(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                 const labOrProtocolTransactionCode = !!_.trim(subContactTransactionCode) ? _.trim(subContactTransactionCode) : !!_.trim(contactTransactionCode) ? _.trim(contactTransactionCode) : "unknown"
+                const customTransactionCode = _.trim(_.get(_.find(_.get(subContact,"tags"), {type:"care.topaz.customTransaction"}), "code"))
 
                 // Imported file file
                 return !!(parseInt(_.get(subContact, "status", 0)) & (1 << 6)) ?
                     _.map(subContact.services, subContactService => {
                         const svc = _.find(_.get(ctc, "services", []), service => _.trim(_.get(service, "id", "something")) === _.trim(_.get(subContactService, "serviceId", "else")))
                         const fileName = _.trim(_.get(svc, "content." + this.language + ".stringValue", ""))
-                        const cdTransactionCode = _.trim(_.get(_.find(_.get(svc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+                        const cdTransactionCode = _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                         const docType = !!_.trim(cdTransactionCode) ? _.trim(cdTransactionCode) : "unknown"
 
                         return !fileName || !!parseInt(_.get(svc, "endOfLife", 0)) ? false : {
                             name: fileName,
-                            type: !!_.size(_.find(_.get(svc, "tags", []), {type: "outgoingDocument"})) ? "" : this.localize('cd-transaction-' + docType, docType, this.language),
+                            type: !!_.size(_.find(_.get(svc, "tags",[]), {type:"outgoingDocument"})) ? "" : _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? this.localize('cd-transaction-' + docType, docType, this.language) : _.trim(_.get(_.find(this.documentTypes, {code:docType}), "name", docType)),
                             created: this._dateFormat(_.get(ctc, "created", undefined)),
                             modified: this._dateFormat(_.get(ctc, "modified", undefined))
                         }
@@ -6540,7 +6526,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     // Labresult or protocol
                     !!((parseInt(_.get(subContact, "status", 0)) & (1 << 0)) || (parseInt(_.get(subContact, "status", 0)) & (1 << 5))) ? {
                         created: this._dateFormat(_.get(ctc, "created", undefined)),
-                        type: this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
+                        type: customTransactionCode ? _.trim(_.get(_.find(this.documentTypes, {code:customTransactionCode}), "name", customTransactionCode)) : this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
                         name: !(parseInt(_.get(subContact, "status", 0)) & (1 << 0)) ? null : this.localize((!!(parseInt(_.get(subContact, "status", 0)) & (1 << 4)) ? "com_res" : "inc_res"), "Complete result", this.language)
                     } : false
             })

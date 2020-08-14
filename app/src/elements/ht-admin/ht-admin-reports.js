@@ -7,10 +7,11 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import './reports/ht-admin-reports-list-of-attestations.js';
-import './reports/ht-admin-reports-age-structure.js';
+import './reports/ht-admin-reports-list-of-attestations.js'
+import './reports/ht-admin-reports-age-structure.js'
 import './reports/ht-admin-reports-rash.js'
 import './reports/ht-admin-reports-activity.js'
+import './reports/ht-admin-reports-technical-act.js'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
@@ -61,12 +62,14 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
             <ht-admin-reports-age-structure id="admin-reports-age-structure" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-age-structure>
         </template>
         <template is="dom-if" if="[[rashReport]]">            
-               <ht-admin-reports-rash id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-rash>        
+            <ht-admin-reports-rash id="admin-reports-rash" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-rash>        
         </template>
         <template is="dom-if" if="[[activityReport]]">            
-               <ht-admin-reports-activity id="admin-reports-activity" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-activity>        
+            <ht-admin-reports-activity id="admin-reports-activity" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-activity>        
         </template>
-
+        <template is="dom-if" if="[[technicalActReport]]">            
+            <ht-admin-reports-technical-act id="admin-reports-technical-act" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-technical-act>        
+        </template>
 `;
   }
 
@@ -104,6 +107,10 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: false
           },
+          technicalActReport:{
+            type: Boolean,
+            value: false,
+          },
           selection: {
               type: Object,
               observer: '_select'
@@ -136,6 +143,7 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
       this.set('ageStructure', this.selectedSubMenu === "ageStructure");
       this.set('rashReport', this.selectedSubMenu === "rashReport");
       this.set('activityReport', this.selectedSubMenu === "activityReport");
+      this.set('technicalActReport', this.selectedSubMenu === "technicalActReport");
   }
 }
 

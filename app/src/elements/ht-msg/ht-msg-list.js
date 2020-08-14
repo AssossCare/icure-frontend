@@ -1849,9 +1849,12 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
 
         const importDescription = /* _.trim(documentTypeLabel) + ": " + */ (!!_.trim(_.get(documentToAssign,"docInfo[0].labo","")) ? _.trim(_.get(documentToAssign,"docInfo[0].labo","")) : _.trim(_.get(givenMessage,"subject")) ) + ( !!_.trim(_.get(documentToAssign,"docInfo[0].protocol","")) ? " (Protocole #" + _.trim(_.get(documentToAssign,"docInfo[0].protocol","")) + ")" : " " )
         let annexInfosToUpdate = !annexesInfosAlreadyExist ? false : _.find(_.get(givenMessage,"annexesInfos",[]), {documentId:documentId})
+        let allDocumentTypes = []
 
         return (!documentId || !patientId || !_.size(documentToAssign)) ?
-            promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
+            promResolve : this.api.getDocumentTypes(this.resources, this.language)
+                .then(documentTypes => allDocumentTypes = _.concat([], documentTypes))
+                .then(() => this.api.patient().getPatientWithUser(this.user,patientId))
                 .then(patientObject => {
                     this.api.accesslog().newInstance(this.user,patientObject,{}).then(log =>{
                         log.detail="Save Assignment in Message panel"
@@ -1866,10 +1869,10 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                         responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
                         openingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
                         closingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
-                        encounterType: { type: "CD-TRANSACTION", version: "1", code: documentType },
+                        encounterType: { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), version: "1", code: documentType },
                         descr: _.trim(documentTitle) ? documentTitle : importDescription,
                         tags: [
-                            { type: 'CD-TRANSACTION', code: documentType },
+                            { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                             { type: "originalEhBoxDocumentId", id: documentId },
                             { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                         ],
@@ -1895,7 +1898,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                             // label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
                             label: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name","")),
                             tags: [
-                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                 { type: "originalEhBoxDocumentId", id: documentId },
                                 { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                             ],
@@ -1905,7 +1908,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                             status: 64,
                             services: [{serviceId: svc.id}],
                             tags: [
-                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                 { type: "originalEhBoxDocumentId", id: documentId },
                                 { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                             ],
@@ -1925,7 +1928,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                         )
                         .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{
                                 tags:[
-                                    { type: 'CD-TRANSACTION', code: documentType },
+                                    { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                     { type: "originalEhBoxDocumentId", id: documentId },
                                     { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                                 ],
