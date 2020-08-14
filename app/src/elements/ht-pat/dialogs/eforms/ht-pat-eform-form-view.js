@@ -33,7 +33,7 @@ import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../tk-localizer";
-class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
+class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
     static get template() {
         return html`
          <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style notification-style">
@@ -131,7 +131,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
     }
 
     static get is() {
-        return 'ht-pat-eform-dialog';
+        return 'ht-pat-eform-form-view';
     }
 
     static get properties() {
@@ -724,4 +724,4 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
 
 }
 
-customElements.define(HtPatEformDialog.is, HtPatEformDialog);
+customElements.define(HtPatEformFormView.is, HtPatEformFormView);

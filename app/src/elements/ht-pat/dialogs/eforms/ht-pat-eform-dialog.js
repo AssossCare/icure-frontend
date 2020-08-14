@@ -399,6 +399,10 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 type: Array,
                 value: () => []
             },
+            healthElements:{
+                type: Object,
+                value : () => {}
+            },
             availableDocumentList:{
                 type: Array,
                 value: () => []
@@ -628,8 +632,117 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
     }
 
     _generateSimplifiedSumehr(){
-        const promResolve = Promise.resolve()
-        return promResolve.then(() => {
+        const dmg= _.get(this,"patient.patientHealthCareParties",[]).find(hcp => hcp.referral && hcp.type==="doctor" && hcp.referralPeriods.length  && hcp.referralPeriods.find(p => p && (p.startDate && !p.endDate) || (p.startDate && p.endDate && moment().isBetween(this.api.moment(p.startDate),this.api.moment(p.endDate),'day') ) ))
+        const treatments = this.api.contact().filteredServices(this.contacts, s => s.label==="Actes")
+
+        const codesToGet = _.chunk(_.compact(_.uniq(_.flatten(_.flatMap(this.healthElements).map(he => he.codes.map(code => code.id))).concat(_.flatten(treatments.map(t => t.codes.map(code=> code.id)))))),100)
+
+        let cptId = 1
+
+        const _getDmgData = (hcp)=> {
+            if(hcp){
+                return '<item>' +
+                    '   <id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                    '   <cd S="CD-ITEM" SV="1.11">gmdmanager</cd>' +
+                    '   <content>' +
+                    '       <hcparty>' +
+                    '           <id S="ID-HCPARTY" SV="1.0">'+_.get(hcp,'nihii',null)+'</id>' +
+                    '           <cd S="CD-HCPARTY" SV="1.10">'+_.get(hcp,'speciality','persphysician')+'</cd>' +
+                    '           <firstname>'+_.get(hcp,'firstName',null)+'</firstname>' +
+                    '           <familyname>'+_.get(hcp,'lastName',null)+'</familyname>' +
+                    '       </hcparty>' +
+                    '   </content>' +
+                    '</item>'
+            }else{
+                return ''
+            }
+        }
+
+        const _getMedicationContent = ((he) => {
+            if(he){
+                const content =this.api.contact().preferredContent(he, this.language)
+                return '   <content>' +
+                    ( _.get(content,"medicationValue.medicinalProduct",false) ?
+                        '       <medicinalproduct>' +
+                        (_.get(content,"medicationValue.medicinalProduct.intendedcds",[]).reduce((accIcd, icd)=> accIcd+'<intendedcd SV="'+_.get(content,"medicationValue.beginMoment","")+'" S="'+_.get(icd,"type","CD-DRUG-CNK")+'">'+_.get(icd,"code","")+'</intendedcd>' ,''))+
+                        '           <intendedname>'+_.get(content,"medicationValue.medicinalProduct.intendedname","")+'</intendedname>' +
+                        '       </medicinalproduct>' :
+                    _.get(content,"medicationValue.substanceProduct ",false)?
+                        '<substanceproduct>' +
+                        (_.get(content,"medicationValue.substanceProduct.intendedcds",[]).reduce((accIcd, icd)=> accIcd+'<intendedcd SV="'+_.get(content,"medicationValue.beginMoment","")+'" S="'+_.get(icd,"type","")+'">'+_.get(icd,'code','')+'</intendedcd>' , ''))+
+                        '           <intendedname>'+_.get(content,"medicationValue.medicinalProduct.intendedname","")+'</intendedname>' +
+                        '</substanceproduct>' :'') +
+                '   </content>'
+                //todo compound
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        const _getHE = ((labels) => {
+            if(this.healthElements){
+                return _.flatMap(this.healthElements).reduce((accHe , he) =>
+                    accHe.toString() +'<item>' +
+                        '   <id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                        '   <cd S="CD-ITEM" SV="1.11">'+(_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code)+'</cd>' +
+                        '   <content>' +
+                        he.codes.reduce((accCode, code) => accCode.toString() + '<cd S="' + (code.type.includes("BE-THESAURUS") ? "CD-CLINICAL" : code.type) + '" SV="'+(code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") ? '10' : '1.0')+'" DN="' + (labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, '')) + '" L="' + this.language + '">' + code.code + '</cd>','') +
+                        '   </content>' +
+                        ((_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM") || {code : 'problem'}).code==="medication" ? _getMedicationContent(he) :'')+
+                        '   <content>' +
+                        '       <text L="'+this.language+'">'+_.get(he,'descr','')+'</text>' +
+                        '   </content>' +
+                        (_.get(he,'openingDate',false) ?
+                        '   <beginmoment>' +
+                        '       <date>'+this.api.moment(_.get(he,'openingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '   </beginmoment>' : '') +
+                        (_.get(he,'closingDate',false) ?
+                            '<endmoment>' +
+                            '   <date>'+this.api.moment(_.get(he,'closingDate','')).format("YYYY-MM-DD")+'</date>' +
+                            '</endmoment>'  : '')+
+                        (!['risk','medication'].find(code => _.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code.includes(code)) ?
+                            '   <lifecycle>' +
+                            '       <cd S="CD-LIFECYCLE" SV="1.9">'+(_.get(he,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE") ? _.get(he,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE").code : _.get(he,'status',1)!==0 ||  (_.get(he,'closingDate',false) && moment().isAfter(this.api.moment(_.get(he,'closingDate',false)),'day')  ) ? 'inactive' : 'active' )+'</cd>' +
+                            '   </lifecycle>' : '')+
+                        '</item>'
+                    ,'')
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        const _getTreatments = ((labels)=> {
+            if(treatments){
+                return treatments.reduce((accTreat, treatment) => accTreat+'<item>' +
+                    '<id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                    '<cd S="CD-ITEM" SV="1.11">treatment</cd>' +
+                    '<content>' +
+                    _.get(treatment,"codes",[]).reduce((accCode, code) => accCode.toString() + '<cd S="' + (code.type.includes("BE-THESAURUS") ? "ICD" : code.type) + '" SV="'+(code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") || code.type.includes("BE-THESAURUS")  ? '10' : '1.0')+'" DN="' + (labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, '')) + '" L="' + this.language + '">' + code.code + '</cd>','') +
+                    '</content>' +
+                    '<content>' +
+                    '   <text L="'+this.language+'">'+_.get(this.api.contact().preferredContent(treatment,this.language),'stringValue',"")+'</text>' +
+                    '</content>' +
+                    (_.get(treatment,'openingDate',false) ?
+                        '   <beginmoment>' +
+                        '       <date>'+this.api.moment(_.get(treatment,'openingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '   </beginmoment>' : '') +
+                    (_.get(treatment,'closingDate',false) ?
+                        '<endmoment>' +
+                        '   <date>'+this.api.moment(_.get(treatment,'closingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '</endmoment>'  : '')+
+                    '<lifecycle>' +
+                    '   <cd S="CD-LIFECYCLE" SV="1.9">'+_.get(_.get(treatment,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE"),'code','inactive')+'</cd>' +
+                    '</lifecycle>' +
+                    '</item>','')
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        return Promise.all(codesToGet.map(codes => this.api.code().getCodes(codes.join(',')))).then( (codes) => Promise.all([
+            _.get(dmg,"healthcarePartyId",false) ? this.api.hcparty().getHealthcareParty(_.get(dmg,"healthcarePartyId","")) : Promise.resolve(),
+            Promise.resolve(_.flatten(codes))
+        ])).then(([dmgHcp,codes]) => {
             const xml = '<?xml version="1.0" encoding="utf-8"?>' +
                 '<kmehrmessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.ehealth.fgov.be/standards/kmehr/schema/v1" xsi:schemaLocation="http://www.ehealth.fgov.be/standards/kmehr/schema/v1 kmehr_elements.xsd">' +
                 '   <header>' +
@@ -637,12 +750,12 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 '         <cd S="CD-STANDARD" SV="1.0">20161201</cd>' +
                 '       </standard>' +
                 '       <id S="ID-KMEHR" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'.'+this.api.crypto().randomUuid()+'</id>' +
-                '       <date>'+this.api.moment(new Date()).format('YYYY-MM-DD')+'</date>' +
-                '       <time>'+this.api.moment(new Date()).format('HH:mm:ss')+'</time>' +
+                '       <date>'+moment().format('YYYY-MM-DD')+'</date>' +
+                '       <time>'+moment().format('HH:mm:ss')+'</time>' +
                 '       <sender>' +
                 '           <hcparty>' +
                 '               <id S="ID-HCPARTY" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'</id>' +
-                '               <cd S="CD-HCPARTY" SV="1.10">persphysician</cd>' +
+                '               <cd S="CD-HCPARTY" SV="1.10">'+_.get(this,'hcp.speciality',"persphysician")+'</cd>' +
                 '               <firstname>'+_.get(this, 'hcp.firstName', null)+'</firstname>' +
                 '               <familyname>'+_.get(this, 'hcp.lastName', null)+'</familyname>' +
                 '               <telecom>' +
@@ -665,6 +778,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 '   </header>' +
                 '   <folder>' +
                 '       <id S="ID-KMEHR" SV="1.0">1</id>' +
+                // patient administrative data
                 '       <patient>' +
                 '           <id S="INSS" SV="1.0">'+_.get(this, 'patient.ssin', null)+'</id>' +
                 '           <firstname>'+_.get(this, 'patient.firstName', null)+'</firstname>' +
@@ -684,6 +798,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 '               <city>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'city', null))  && _.trim(_.get(adr, 'city', null)) !== ""), 'city', null)+'</city>' +
                 '               <street>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'street', null))  && _.trim(_.get(adr, 'street', null)) !== ""), 'street', null)+'</street>' +
                 '               <housenumber>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'houseNumber', null))  && _.trim(_.get(adr, 'houseNumber', null)) !== ""), 'houseNumber', null)+'</housenumber>' +
+                '               <postboxnumber>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'postboxNumber', null))  && _.trim(_.get(adr, 'postboxNumber', null)) !== ""), 'postboxNumber', null)+'</postboxnumber>' +
                 '           </address>' +
                 '           <telecom>' +
                 '               <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
@@ -692,6 +807,26 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 '           </telecom>' +
                 '           <usuallanguage>'+_.get(this, 'language', 'fr')+'</usuallanguage>' +
                 '       </patient>' +
+                '        <transaction>' +
+                '            <id S="ID-KMEHR" SV="1.0">1</id>' +
+                '            <cd S="CD-TRANSACTION" SV="1.9">sumehr</cd>' +
+                '            <date>'+moment().format('YYYY-MM-DD')+'</date>' +
+                '            <time>'+moment().format('HH:mm:ss')+'</time>' +
+                '            <author>' +
+                '                <hcparty>' +
+                '                    <id S="ID-HCPARTY" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'</id>' +
+                '                    <cd S="CD-HCPARTY" SV="1.10">'+_.get(this,'hcp.speciality','persphysician')+'</cd>' +
+                '                    <firstname>'+_.get(this, 'hcp.firstName', null)+'</firstname>' +
+                '                    <familyname>'+_.get(this, 'hcp.lastName', null)+'</familyname>' +
+                '                </hcparty>' +
+                '            </author>' +
+                '            <iscomplete>true</iscomplete>' +
+                '            <isvalidated>true</isvalidated>' +
+                // dmg data
+                _getDmgData(dmgHcp)+
+                _getHE(codes)+
+                _getTreatments(codes)+
+                '        </transaction>' +
                 '   </folder>' +
                 '</kmehrmessage>'
 

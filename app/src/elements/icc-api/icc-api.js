@@ -38,7 +38,7 @@ class IccApi extends PolymerElement {
       return {
           fhcHeaders:{
               type: Object,
-              value: {"Content-Type": "application/json",  "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers: {

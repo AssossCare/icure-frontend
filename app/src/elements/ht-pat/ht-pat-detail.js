@@ -68,6 +68,7 @@ import './dialogs/care-path/ht-pat-care-path-list-dialog.js'
 import './dialogs/mda/ht-pat-member-data-detail.js'
 import './dialogs/ht-pat-other-form-dialog'
 import './dialogs/subscription/ht-pat-subscription-detail'
+import './dialogs/eforms/ht-pat-eform-dialog'
 
 import '@vaadin/vaadin-split-layout/vaadin-split-layout'
 import '@polymer/paper-button/paper-button'
@@ -2881,7 +2882,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
-        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
 `
     }
 
