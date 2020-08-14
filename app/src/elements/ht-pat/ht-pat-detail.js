@@ -5493,7 +5493,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     contactFilter() {
         return (ctc) => {
-            const regExp = this.contactSearchString && new RegExp(_.trim(this.contactSearchString).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,''), "i");
+            const regExp = this.contactSearchString && new RegExp(_.trim(this.contactSearchString).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' '), "i");
 
             const heHeIds = this.selectedHealthcareElements.map(he => he.healthElementId).filter(x=>!!x);
             const heIds = _.uniq(this.selectedHealthcareElements.map(he => he.id).concat((this.healthElements || []).filter(h => h.healthElementId && heHeIds.includes(h.healthElementId)).map(he => he.id)));
@@ -5504,17 +5504,17 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 && this.api.before(ctc.openingDate, this.timeSpanEnd)
                 && (
                     !regExp
-                    || (_.trim(_.get(ctc,"descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                    || (_.trim(_.get(ctc,"userDescr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                    || (_.trim(this.hcp(ctc)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                    || _.get(ctc,"subContacts",[]).some(sc => sc.descr && (_.trim(sc.descr).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp) && _.size(_.get(sc,"services",[])))
+                    || (_.trim(_.get(ctc,"descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || (_.trim(_.get(ctc,"userDescr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || (_.trim(this.hcp(ctc)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || _.get(ctc,"subContacts",[]).some(sc => sc.descr && (_.trim(sc.descr).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp) && _.size(_.get(sc,"services",[])))
                     || _.get(ctc,"services",[]).some(s => (
-                        (_.trim(this.shortServiceDescription(s, this.language)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                        || (_.trim(_.get(s, "label")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                        || (_.trim(_.get(s, "clearComment")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
-                        || (_.trim(_.get(s, "content." + this.language + ".stringValue")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp)
+                        (_.trim(this.shortServiceDescription(s, this.language)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "label")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "clearComment")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "content." + this.language + ".stringValue")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
                     ))
-                    || _.get(ctc,"healthElements",[]).some(he => (_.trim(_.get(he, "descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,'')).match(regExp))
+                    || _.get(ctc,"healthElements",[]).some(he => (_.trim(_.get(he, "descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp))
                 )
                 && (
                     !heIds.length && !poaIds.length && !svcIds.length
