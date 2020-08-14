@@ -681,13 +681,14 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
 
         const _getHE = ((labels) => {
             if(this.healthElements){
-                return _.flatMap(this.healthElements).reduce((accHe , he) =>
+                return _.flatMap(this.healthElements).filter(he => !_.get(he,"codes",[{code : "*"}]).find(code => code.code.startsWith('*'))).reduce((accHe , he) =>
                     accHe.toString() +'<item>' +
                         '   <id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
-                        '   <cd S="CD-ITEM" SV="1.11">'+(_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code)+'</cd>' +
+                        '   <cd S="CD-ITEM" SV="1.11">'+(_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code==="healthissue" ? "healthelement" : _.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code)+'</cd>' +
+                        (he.codes.filter(code => _.get(code,"code","BE-ALLERGEN").includes("BE-ALLERGEN")).length ?
                         '   <content>' +
-                        he.codes.reduce((accCode, code) => accCode.toString() + '<cd S="' + (code.type.includes("BE-THESAURUS") ? "CD-CLINICAL" : code.type) + '" SV="'+(code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") ? '10' : '1.0')+'" DN="' + (labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, '')) + '" L="' + this.language + '">' + code.code + '</cd>','') +
-                        '   </content>' +
+                        he.codes.filter(code => _.get(code,"code","BE-ALLERGEN").includes("BE-ALLERGEN")).reduce((accCode, code) => accCode.toString() + '<cd S="' + (code.type.includes("BE-THESAURUS") ? "CD-CLINICAL" : code.type) + '" SV="'+(code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") ? '10' : '1.0')+'" DN="' + (labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, '')) + '" L="' + this.language + '">' + code.code + '</cd>','') +
+                        '   </content>' : "")+
                         ((_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM") || {code : 'problem'}).code==="medication" ? _getMedicationContent(he) :'')+
                         '   <content>' +
                         '       <text L="'+this.language+'">'+_.get(he,'descr','')+'</text>' +
