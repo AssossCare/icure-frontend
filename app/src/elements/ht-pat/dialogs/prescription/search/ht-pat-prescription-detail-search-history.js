@@ -130,9 +130,9 @@ class HtPatPrescriptionDetailSearchHistory extends TkLocalizerMixin(mixinBehavio
                 color: white;
             }
             
-            .atcIcon{
-                height: 12px;
-                width: 12px;
+             .atcIcon{
+                height: 8px;
+                width: 8px;
             }
             
         </style>
