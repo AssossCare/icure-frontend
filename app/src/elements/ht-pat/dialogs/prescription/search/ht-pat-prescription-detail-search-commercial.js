@@ -131,8 +131,25 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             }
             
             .atcIcon{
-                height: 14px;
-                width: 14px;
+                height: 12px;
+                width: 12px;
+            }
+            
+            .icon-code {
+                width: 12px;
+                height: 12px;
+                color: var(--app-primary-color-dark);
+            }
+            
+            .colour-code span{
+                content: '';
+                display: inline-block;
+                height: 8px;
+                width: 8px;
+                border-radius: 50%;
+                vertical-align: middle;
+                background-color: transparent;
+                margin-left: 2px;
             }
             
         </style>
@@ -154,13 +171,19 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                     <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
                     <div class="td fg2">[[drug.label]]</div>
                     <div class="td fg05">
-                        <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                        <template is="dom-if" if="[[_hasIcon(drug)]]">
+                            <iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon>
+                        </template>
+                        <template is="dom-if" if="[[_hasColor(drug)]]">
+                            <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label>
+                        </template>
+                        <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
                     </div>
                     <div class="td fg05">
                         <div class="icon-type-group">
-                            <iron-icon icon="medication-svg-icons:[[item.compProhibIcon]]" class="table-icon"></iron-icon>
-                            <iron-icon icon="medication-svg-icons:[[item.narcoticIcon]]" class="table-icon"></iron-icon>
-                            <iron-icon icon="medication-svg-icons:[[item.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
+                            <iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon>
+                            <iron-icon icon="medication-svg-icons:[[drug.narcoticIcon]]" class="table-icon"></iron-icon>
+                            <iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
                         </div>
                     </div>
                     <div class="td fg05">[[drug.chapt4]]</div>
@@ -224,5 +247,24 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
         return cat ? "ATC--"+_.toUpper(cat) : null
     }
 
+    _getIcon(item) {
+        return item.allergyType === "allergy" ? "image:filter-vintage" : (item.allergyType === "adr" ? "vaadin:pill" : "");
+    }
+
+    _getStyle(prefix, cat, el = "span") {
+        return cat ? prefix + '--' + cat.toUpperCase() + (el ? (' ' + el) : '') : null
+    }
+
+    _hasIcon(item) {
+        return !!item.allergyType
+    }
+
+    _hasColor(item) {
+        return !item.allergyType
+    }
+
+    _atcTooltip(cat) {
+        return cat ? this.localize('atc-' + cat, '') : null
+    }
 }
 customElements.define(HtPatPrescriptionDetailSearchCommercial.is, HtPatPrescriptionDetailSearchCommercial);

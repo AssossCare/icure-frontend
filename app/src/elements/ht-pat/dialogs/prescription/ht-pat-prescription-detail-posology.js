@@ -62,6 +62,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             currentContact:{
                 type: Object,
                 value: () => {}
+            },
+            allergies: {
+                type: Array,
+                value: () => []
             }
         };
     }

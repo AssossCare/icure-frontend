@@ -131,8 +131,25 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             }
             
             .atcIcon{
-                height: 14px;
-                width: 14px;
+                height: 12px;
+                width: 12px;
+            }
+            
+            .icon-code {
+                width: 12px;
+                height: 12px;
+                color: var(--app-primary-color-dark);
+            }
+            
+            .colour-code span{
+                content: '';
+                display: inline-block;
+                height: 8px;
+                width: 8px;
+                border-radius: 50%;
+                vertical-align: middle;
+                background-color: transparent;
+                margin-left: 2px;
             }
             
         </style>
@@ -143,26 +160,20 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                     <div class="td fg01">[[localize('','',language)]]</div>    
                     <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
                 </div>
-                <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
+                <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
                         <div class="td fg2">[[drug.label]]</div>
                         <div class="td fg05">
-                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                            <template is="dom-if" if="[[_hasIcon(drug)]]">
+                                <iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon>
+                            </template>
+                            <template is="dom-if" if="[[_hasColor(drug)]]">
+                                <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label>
+                            </template>
+                            <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
                         </div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05">[[drug.chapt4]]</div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05">[[drug.publicPrice]]</div>
-                        <div class="td fg05">[[drug.publicPrice]]</div>
                     </div>
                 </template>
             </div>                   
@@ -214,6 +225,22 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
     }
     _getAtcColor(cat){
         return cat ? "ATC--"+_.toUpper(cat) : null
+    }
+
+    _getStyle(prefix, cat, el = "span") {
+        return cat ? prefix + '--' + cat.toUpperCase() + (el ? (' ' + el) : '') : null
+    }
+
+    _hasIcon(item) {
+        return !!item.allergyType
+    }
+
+    _hasColor(item) {
+        return !item.allergyType
+    }
+
+    _atcTooltip(cat) {
+        return cat ? this.localize('atc-' + cat, '') : null
     }
 
 }

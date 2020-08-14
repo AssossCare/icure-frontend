@@ -131,8 +131,8 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             }
             
             .atcIcon{
-                height: 14px;
-                width: 14px;
+                height: 12px;
+                width: 12px;
             }
             
         </style>

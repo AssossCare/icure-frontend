@@ -109,6 +109,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         list-of-prescription="[[listOfPrescription]]" 
                         list-of-compound="[[listOfCompound]]"
                         list-of-chronic="[[listOfChronic]]"
+                        allergies="[[allergies]]"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -127,6 +128,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-prescription="[[listOfPrescription]]" 
                             list-of-compound="[[listOfCompound]]"
                             list-of-chronic="[[listOfChronic]]"
+                            allergies="[[allergies]]"
                             on-open-posology-view="_openPosologyView"    
                         ></ht-pat-prescription-detail-search>
                     </div>
@@ -148,6 +150,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-compound="[[listOfCompound]]"
                             list-of-chronic="[[listOfChronic]]"
                             selected-drug-for-posology="[[selectedDrugForPosology]]"
+                            allergies="[[allergies]]"
                          ></ht-pat-prescription-detail-posology>
                     </div>
                 </template>                           
@@ -193,6 +196,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             currentContact: {
                 type: Object,
                 value: () => {}
+            },
+            allergies:{
+              type: Array,
+              value: () => []
             },
             isPosologyView: {
                 type: Boolean,
