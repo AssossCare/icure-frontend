@@ -477,7 +477,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 //return this._generateSumehrV2()
                 return this._generateSimplifiedSumehr()
             }).then(sumehr => {
-                this.set('patientSumehr', sumehr)
+                this.set('patientSumehr', _.replace(sumehr,"&",'&amp;'))
                 return this._requestOAuthToken()
             }).then(oAuthResponse => {
                 _.parseInt(_.get(oAuthResponse, 'response.status', 0)) === 200 ? this.set('oAuthToken', _.get(oAuthResponse, 'content', {})) : this._showErrorNotification({
