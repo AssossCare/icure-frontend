@@ -88,6 +88,11 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                overflow: auto;
             }
             
+            .icon-type{
+                height: 12px;
+                width: 12px;
+            }
+            
         </style>
         
         <div class="container-drugs">
@@ -97,11 +102,15 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                         <div class="td fg05">[[localize('presc-qt','Quantity',language)]]</div>
                         <div class="td fg05">[[localize('presc-type','Type',language)]]</div>
                         <div class="td fg2">[[localize('presc-descr','Description',language)]]</div>
+                        <div class="td fg05"></div>
                     </div>
-                    <template is="dom-repeat" items="[[]]" as="[[drug]]">
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg2"></div>              
+                    <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">
+                        <div class="tr">
+                            <div class="td fg05"></div>
+                            <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>
+                            <div class="td fg2">[[_getDrugName(item.drug)]]</div>     
+                            <div class="td fg05"></div>      
+                        </div>   
                     </template>
                 </div>
             </div>
@@ -143,6 +152,10 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             currentContact: {
                 type: Object,
                 value: () => {}
+            },
+            drugsToBePrescribe:{
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -153,6 +166,18 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
 
     ready() {
         super.ready();
+    }
+
+    _refreshDrugList(){
+        this.shadowRoot.querySelector("#drugList").render()
+    }
+
+    _getDrugName(drug){
+        return _.get(drug, 'label', null)
+    }
+
+    _getDrugType(drug){
+        return _.get(drug, 'type', null) === "chronic" ? "icons:alarm-on" : _.get(drug, 'type', null) === "history" ? "vaadin:time-backward" : _.get(drug, 'type', null) === "commercial" ? "vaadin:copyright" : _.get(drug, 'type', null) === "substance" ? "vaadin:pill" : _.get(drug, 'type', null) === "compound" ? "vaadin:flask" : null
     }
 
 }

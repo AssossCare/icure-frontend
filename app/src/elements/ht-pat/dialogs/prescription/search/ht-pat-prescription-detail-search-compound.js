@@ -22,7 +22,7 @@ import _ from "lodash"
 class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
             .table{         
                 width: auto;
                 height: 100%;
@@ -137,7 +137,10 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             
         </style>
         
-       <div class="page-content">
+        <template is="dom-if" if="[[isLoading]]" restamp="true">
+            <ht-spinner active="[[isLoading]]"></ht-spinner>
+        </template>
+        <template is="dom-if" if="[[!isLoading]]" restamp="true">
             <div class="table">
                 <div class="tr th">                 
                     <div class="td fg01">[[localize('','',language)]]</div>    
@@ -151,8 +154,9 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                         <div class="td fg2">[[drug.formula]]</div>
                     </div>
                 </template>
-            </div>                   
-       </div>
+            </div>  
+        </template>                 
+       
 `;
     }
 
@@ -181,6 +185,10 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             searchResult:{
                 type: Object,
                 value: () => {}
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -195,7 +203,16 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
 
     _openPosologyView(e){
         if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
+            this.dispatchEvent(new CustomEvent('open-posology-view', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    id: _.get(e, 'currentTarget.id', null),
+                    product: _.get(this, 'searchResult.compound', []).find(c => _.get(c, 'id', null) === _.get(e, 'currentTarget.id', null)) ,
+                    type: _.get(e, 'currentTarget.dataset.type', null),
+                    bypassPosologyView: false
+                }
+            }))
         }
     }
 

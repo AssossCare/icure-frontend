@@ -110,6 +110,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         list-of-compound="[[listOfCompound]]"
                         list-of-chronic="[[listOfChronic]]"
                         allergies="[[allergies]]"
+                        drugs-to-be-prescribe="[[drugsToBePrescribe]]"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -151,12 +152,18 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-chronic="[[listOfChronic]]"
                             selected-drug-for-posology="[[selectedDrugForPosology]]"
                             allergies="[[allergies]]"
+                            reimbursement-type-list="[[reimbursementTypeList]]"
                          ></ht-pat-prescription-detail-posology>
                     </div>
                 </template>                           
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <template is="dom-if" if="[[isPosologyView]]">
+                    <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_validatePosology"><iron-icon icon="icons:check"></iron-icon> [[localize('pos-presc','Validate posology',language)]]</paper-button>
+                </template>
             </div>
         </paper-dialog>
 
@@ -227,6 +234,14 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     id: null,
                     type: null
                 }
+            },
+            drugsToBePrescribe:{
+                type: Array,
+                value: () => []
+            },
+            reimbursementTypeList:{
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -249,12 +264,18 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('listOfCompound', [])
         this.set('listOfPrescription', [])
         this.set('listOfChronic', [])
+        this.set('drugsToBePrescribe', [])
+        this.set('reimbursmentTypeList', [])
     }
 
     _open(e){
         this._reset()
         this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
-            .then(hcp => this.set('hcp', hcp))
+            .then(hcp => {
+                this.set('hcp', hcp)
+                return  this.api.code().findCodes('be', "CD-REIMBURSEMENT-RECIPE")
+            })
+            .then(reimbursementCode => this.set('reimbursementTypeList', reimbursementCode))
             .finally(() => {
                 this.set('listOfCompound', this._refreshCompoundList())
                 this.set('listOfPrescription', this._refreshHistoryList())
@@ -278,13 +299,13 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             if(_.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null)){
                 if(_.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) || _.get(service, 'content.medicationValue.medicinalProduct', null)){
                     const drug = _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) :  _.get(service, 'content.medicationValue.medicinalProduct', null)
-                    return this._composeHistory(drug, service)
+                    return this._composeHistory(drug, service, 'commercial')
                 }else if(_.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) || _.get(service, 'content.medicationValue.substanceProduct', null)){
                     const drug = _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) : _.get(service, 'content.medicationValue.substanceProduct', null)
-                    return this._composeHistory(drug, service)
+                    return this._composeHistory(drug, service, 'substance')
                 }else if(_.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) || _.get(service, 'content.medicationValue.compoundPrescription', null)){
                     const drug = _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) ? _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) : _.get(service, 'content.medicationValue.compoundPrescription', null)
-                    return this._composeHistory(drug, service)
+                    return this._composeHistory(drug, service, 'compound')
                 }
             }
         })
@@ -294,7 +315,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         return _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : null
     }
 
-    _composeHistory(drug, service){
+    _composeHistory(drug, service, drugType){
         return {
             endDate: _.get(service, 'content.'+this.language+'.medicationValue', null) ? _.get(service, 'content.'+this.language+'.medicationValue.endMoment', null) : _.get(service, 'content.medicationValue.endMoment', null),
             startDate: _.get(service, 'content.'+this.language+'.medicationValue', null) ? _.get(service, 'content.'+this.language+'.medicationValue.beginMoment', null) : _.get(service, 'content.medicationValue.beginMoment', null),
@@ -313,7 +334,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             id: _.get(service, 'id', null),
             status:  null,
             service: service,
-            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(drug, 'intendedname', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(drug, 'intendedname', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
+            drugType: drugType
         }
     }
 
@@ -323,14 +345,45 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _openPosologyView(e){
         if(_.get(e, 'detail.id', null) && _.get(e, 'detail.type', null)){
-            this.set('selectedDrugForPosology', {
-                id: _.get(e ,'detail.id', null),
-                type: _.get(e, 'detail.type', null)
-            })
-            this.set('isPosologyView', true)
-            this.set('isSearchView', false)
+            //chronic, history => get drug by id to check if it still exist
+            //commercial, substance, compound => no need to check if it still exist
+         ;(
+            _.get(e, 'detail.type', null) === "chronic" || _.get(e, 'detail.type', null) === "history" ? Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.get(e, 'detail.type', null) === "commercial" ? Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.get(e, 'detail.type', null) === "substance" ?  Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.get(e, 'detail.type', null) === "compound" ?  Promise.resolve(_.get(e, 'detail.product', null)) : Promise.resolve({})
+          ).then(drugInfo => {
+              this.set('selectedDrugForPosology', {
+                  id: _.get(e ,'detail.id', null),
+                  type: _.get(e, 'detail.type', null),
+                  drug: drugInfo
+              })
+              this.push('drugsToBePrescribe', {
+                  drug: drugInfo,
+                  type: _.get(e, 'detail.type', null),
+                  posology: {}
+              })
+          }).finally(() => {
+              if(!_.get(e, 'detail.bypassPosologyView', null)){
+                  this.set('isPosologyView', true)
+                  this.set('isSearchView', false)
+              }
+              this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList()
+          })
         }
+    }
 
+    _validatePosology(){
+        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._validatePosology()
+    }
+
+    _createMedication(){
+        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._createMedication()
+    }
+
+    _closePosologyView(){
+        this.set('isPosologyView', false)
+        this.set('isSearchView', true)
     }
 
 }

@@ -22,7 +22,7 @@ import _ from "lodash"
 class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
             .table{         
                 width: auto;
                 height: 100%;
@@ -154,7 +154,10 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             
         </style>
         
-         <div class="page-content">
+      <template is="dom-if" if="[[isLoading]]" restamp="true">
+            <ht-spinner active="[[isLoading]]"></ht-spinner>
+        </template>
+        <template is="dom-if" if="[[!isLoading]]" restamp="true">
             <div class="table">
                 <div class="tr th">                 
                     <div class="td fg01">[[localize('','',language)]]</div>    
@@ -163,7 +166,7 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 </div>
                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon></div>    
                         <div class="td fg2">[[drug.label]]</div>
                         <div class="td fg05">
                             <template is="dom-if" if="[[_hasIcon(drug)]]">
@@ -175,9 +178,9 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                             <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
                         </div>
                     </div>
-                </template>
-            </div>                   
-       </div>
+                </template>        
+            </div>
+        </template>
 `;
     }
 
@@ -202,6 +205,10 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             searchResult:{
                 type: Object,
                 value: () => {}
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -216,7 +223,16 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
 
     _openPosologyView(e){
         if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
+            this.dispatchEvent(new CustomEvent('open-posology-view', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    id: _.get(e, 'currentTarget.id', null),
+                    type: _.get(e, 'currentTarget.dataset.type', null),
+                    product: _.get(this, 'searchResult.substance', []).find(c => _.get(c, 'id', null) === _.get(e, 'currentTarget.id', null)),
+                    bypassPosologyView: false
+                }
+            }))
         }
     }
 

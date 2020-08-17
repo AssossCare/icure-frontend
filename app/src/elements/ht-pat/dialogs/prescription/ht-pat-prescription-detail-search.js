@@ -168,27 +168,27 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 <iron-pages selected="[[tabs]]">
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-chronic id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-chronic>              
+                            <ht-pat-prescription-detail-search-chronic id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-chronic>              
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-history id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-history>                   
+                            <ht-pat-prescription-detail-search-history id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-history>                   
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-commercial>          
+                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-commercial>          
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-substance>
+                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-substance>
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]"></ht-pat-prescription-detail-search-compound>
+                            <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-compound>
                         </div>
                     </page>
                 </iron-pages>
@@ -265,6 +265,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             allergies: {
                 type: Array,
                 value: () => []
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -294,9 +298,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _drugsFilterChanged(drugsFilter){
+        this.set('isLoading', true)
         if(drugsFilter){
             setTimeout(() => {
-                if(_.size(drugsFilter) > 2){
+                if(_.size(drugsFilter) >= 2){
                     Promise.all([
                         this.api.besamv2().findPaginatedVmpsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
@@ -310,6 +315,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         this.set('searchResult.compound', this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])))
                         this.set('searchResult.history', this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])))
                         this.set('searchResult.chronic', this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])))
+                        this.set('isLoading', false)
                     })
                 }else{
                     this.set('searchResult', {
@@ -319,6 +325,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         molecule: [],
                         chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
                     })
+                    this.set('isLoading', false)
                 }
             }, 100)
         }else{
@@ -329,6 +336,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 molecule: [],
                 chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
             })
+            this.set('isLoading', false)
         }
     }
 

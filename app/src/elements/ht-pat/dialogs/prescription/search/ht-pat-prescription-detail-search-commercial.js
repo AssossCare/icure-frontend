@@ -22,7 +22,7 @@ import _ from "lodash"
 class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
             .table{         
                 width: auto;
                 height: 100%;
@@ -154,46 +154,51 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             
         </style>
         
-         <div class="table">
-            <div class="tr th">                 
-                <div class="td fg01">[[localize('','',language)]]</div>    
-                <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
-            </div>
-            <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
-                <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                    <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
-                    <div class="td fg2">[[drug.label]]</div>
-                    <div class="td fg05">
-                        <template is="dom-if" if="[[_hasIcon(drug)]]">
-                            <iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon>
-                        </template>
-                        <template is="dom-if" if="[[_hasColor(drug)]]">
-                            <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label>
-                        </template>
-                        <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg05">
-                        <div class="icon-type-group">
-                            <iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon>
-                            <iron-icon icon="medication-svg-icons:[[drug.narcoticIcon]]" class="table-icon"></iron-icon>
-                            <iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
-                        </div>
-                    </div>
-                    <div class="td fg05">[[drug.chapt4]]</div>
-                    <div class="td fg05"></div>  
-                    <div class="td fg05"></div>
-                    <div class="td fg05">[[drug.patientPrice]]</div>
-                    <div class="td fg05">[[drug.publicPrice]]</div> 
+        <template is="dom-if" if="[[isLoading]]" restamp="true">
+            <ht-spinner active="[[isLoading]]"></ht-spinner>
+        </template>
+        <template is="dom-if" if="[[!isLoading]]" restamp="true">
+             <div class="table">
+                <div class="tr th">                 
+                    <div class="td fg01">[[localize('','',language)]]</div>    
+                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
                 </div>
-            </template>
-        </div>                      
+                <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
+                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg2">[[drug.label]]</div>
+                        <div class="td fg05">
+                            <template is="dom-if" if="[[_hasIcon(drug)]]">
+                                <iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon>
+                            </template>
+                            <template is="dom-if" if="[[_hasColor(drug)]]">
+                                <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label>
+                            </template>
+                            <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
+                        </div>
+                        <div class="td fg05">
+                            <div class="icon-type-group">
+                                <iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon>
+                                <iron-icon icon="medication-svg-icons:[[drug.narcoticIcon]]" class="table-icon"></iron-icon>
+                                <iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
+                            </div>
+                        </div>
+                        <div class="td fg05">[[drug.chapt4]]</div>
+                        <div class="td fg05"></div>  
+                        <div class="td fg05"></div>
+                        <div class="td fg05">[[drug.patientPrice]]</div>
+                        <div class="td fg05">[[drug.publicPrice]]</div> 
+                    </div>
+                </template>
+            </div>      
+        </template>                
 `;
     }
 
@@ -222,6 +227,10 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             searchResult:{
                 type: Object,
                 value: () => {}
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -236,7 +245,16 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
 
     _openPosologyView(e){
         if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
+            this.dispatchEvent(new CustomEvent('open-posology-view', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    id: _.get(e, 'currentTarget.id', null),
+                    product: _.get(this, 'searchResult.commercialName', []).find(cn => _.get(cn, 'id',  null) === _.get(e, 'currentTarget.id', null)),
+                    type: _.get(e, 'currentTarget.dataset.type', null),
+                    bypassPosologyView: false
+                }
+            }))
         }
     }
 

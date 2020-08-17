@@ -614,10 +614,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                 width: 42px;
             }
 
-            ht-spinner{
-                height: 30px;
-                width: 30px;
-            }
+           
 
             div.one-line {
                 display: flex;

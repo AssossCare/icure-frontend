@@ -22,7 +22,7 @@ import _ from "lodash"
 class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
+        <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
             .table{         
                 width: auto;
                 height: 100%;
@@ -134,39 +134,42 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
                 height: 8px;
                 width: 8px;
             }
-            
+        
         </style>
         
-        
-        <div class="table">
-            <div class="tr th">                 
-                <div class="td fg01">[[localize('','',language)]]</div>    
-                <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
-                <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
-            </div>
-            <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
-                <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                    <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
-                    <div class="td fg2">[[drug.label]]</div>
-                    <div class="td fg05">
-                        <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
-                    </div>
-                    <div class="td fg05"></div>
-                    <div class="td fg05">[[drug.chapt4]]</div>
-                    <div class="td fg05"></div>
-                    <div class="td fg05"></div>
-                    <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
-                    <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
+        <template is="dom-if" if="[[isLoading]]" restamp="true">
+            <ht-spinner active="[[isLoading]]"></ht-spinner>
+        </template>
+        <template is="dom-if" if="[[!isLoading]]" restamp="true">
+            <div class="table">
+                <div class="tr th">                 
+                    <div class="td fg01">[[localize('','',language)]]</div>    
+                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
+                    <div class="td fg1">[[localize('presc-sear-sta','Start',language)]]</div>
+                    <div class="td fg1">[[localize('presc-sear-end','End',language)]]</div> 
                 </div>
-            </template>
-        </div>                      
-  
+                <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
+                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg2">[[drug.label]]</div>
+                        <div class="td fg05">
+                            <iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon" id="[[drug.id]]"></iron-icon>
+                        </div>
+                        <div class="td fg05"></div>
+                        <div class="td fg05">[[drug.chapt4]]</div>
+                        <div class="td fg05"></div>
+                        <div class="td fg05"></div>
+                        <div class="td fg1">[[_formatDate(drug.startDate)]]</div>
+                        <div class="td fg1">[[_formatDate(drug.endDate)]]</div> 
+                    </div>
+                </template>
+            </div>     
+        </template>
 `;
     }
 
@@ -195,6 +198,10 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
             searchResult:{
                 type: Object,
                 value: () => {}
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -209,7 +216,16 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
 
     _openPosologyView(e){
         if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {bubbles: true, composed: true, detail: {id: _.get(e, 'currentTarget.id', null), type: _.get(e, 'currentTarget.dataset.type', null)}}))
+            this.dispatchEvent(new CustomEvent('open-posology-view', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    id: _.get(e, 'currentTarget.id', null),
+                    product: _.get(this, 'searchResult.chronic', []).find(c => _.get(c, 'id', null) === _.get(e, 'currentTarget.id', null)) ,
+                    type: _.get(e, 'currentTarget.dataset.type', null),
+                    bypassPosologyView: true
+                }
+            }))
         }
     }
 
