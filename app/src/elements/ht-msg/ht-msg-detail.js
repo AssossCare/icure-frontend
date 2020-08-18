@@ -2415,7 +2415,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   .then(foundContacts => _.map(alreadyAssignedDocuments, aad => {
                       const contactOfDocument = _.find(foundContacts, {id:_.trim(_.get(aad,"contactId",""))})
                       const contactCreatedOn = _.get(contactOfDocument, "created", null)
-                      const transactionTag = _.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"})
+                      const transactionTag = _.size(_.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"})) ? _.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"}) : _.find(_.get(contactOfDocument, "tags",[]), {type:"care.topaz.customTransaction"})
                       const serviceOfDocument = _.find(contactOfDocument.services, it => _.get(it,"content.fr.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.nl.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.en.documentId") === documentId)
                       return _.merge({}, aad, {
                           documentType: _.get(transactionTag, "code","labresult"),

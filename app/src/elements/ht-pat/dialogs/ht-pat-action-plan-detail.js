@@ -182,9 +182,6 @@ class HtPatActionPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                       <div class="cs1"><vaadin-checkbox style="margin-top: 14px" on-checked-changed="_isSurgical" checked="[[plannedAction.isSurgical]]" disabled="[[readonly]]">Chirurgical</vaadin-checkbox></div>
                   </div>
               </template>
-
-     
-
 `
     }
 
@@ -339,6 +336,10 @@ class HtPatActionPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
             nextDate: {
                 type: String
             },
+            searchReqIdx: {
+                type: Number,
+                value: 0
+            },
         }
     }
 
@@ -478,44 +479,44 @@ class HtPatActionPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
     }
 
     _proceduresDataProvider() {
+
         return {
             filter: function (proceduresFilterValue) {
-                return Promise.all([this.api.code().findPaginatedCodesByLabel('be', 'BE-THESAURUS-PROCEDURES', 'fr', proceduresFilterValue, null, null)]).then(results => {
-                    const procedureList = results[0]
-                    let filtered = procedureList.rows
-                    filtered = _.flatten(filtered.map(procedure => ({
-                        id: procedure.id,
-                        label: procedure.label,
-                        code: procedure.code,
-                        searchTerms: procedure.searchTerms
-                    })))
-                    return {totalSize: filtered.length, rows: filtered}
-                })
+                const keywords = _.trim(proceduresFilterValue).split(" ")
+                const normalizedKeywords = _.trim(proceduresFilterValue).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ').split(" ")
+                return Promise.all(_.map(keywords, keyword => this.api.code().findPaginatedCodesByLabel('be', 'BE-THESAURUS-PROCEDURES', _.get(this,"language", "fr"), keyword, null, null, 50)))
+                    .then(results => _
+                        .chain(results)
+                        .map("rows")
+                        .flatten()
+                        .filter(it => _.size(normalizedKeywords) === _.size(_.filter(normalizedKeywords, keyword => (_.trim(_.get(it,"label."+this.language))||_.chain(it).get("label").flatMap().compact().head().trim().value()).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ').includes(keyword))))
+                        .value()
+                    )
+                    .then(results => _.merge({},{totalSize:_.size(results), rows:results}))
             }.bind(this)
-        }
+        };
+
     }
 
     _proceduresFilterChanged(e) {
-        let latestSearchValue = e && e.detail.value
-        this.latestSearchValue = latestSearchValue
-        if (!latestSearchValue || latestSearchValue.length < 2) {
-            // //console.log("Cancelling empty search");
-            this.set('proceduresListItem', [])
-            return
-        }
-        this._proceduresDataProvider() && this._proceduresDataProvider().filter(latestSearchValue).then(res => {
-            if (latestSearchValue !== this.latestSearchValue) {
-                // //console.log("Cancelling obsolete search");
-                return []
-            }
-            if (!(res && res.rows && res.rows.length))
-                return []
-            return this.api.code().getCodes(res.rows.map(code => code.id))
-        })
-            .then(codes => {
-                this.set('proceduresListItem', codes)
-            })
+
+        const reqIdx = (this.searchReqIdx = (this.searchReqIdx || 0) + 1)
+        const latestSearchValue = _.trim(_.get(e,"detail.value"))
+
+        setTimeout(() => {
+
+            if (reqIdx !== this.searchReqIdx) return;
+            this.latestSearchValue = latestSearchValue;
+
+            return !latestSearchValue || latestSearchValue.length < 3 ?
+                this.set('proceduresListItem', []) || [] :
+                this._proceduresDataProvider() && this._proceduresDataProvider().filter(latestSearchValue)
+                    .then(res => latestSearchValue !== this.latestSearchValue || !_.size(_.get(res,"rows")) ? [] : this.api.code().getCodes(_.map(_.get(res,"rows"),"id")).then(codes => this.set('proceduresListItem', codes)))
+
+        }, 300)
+
     }
+
 
     _drugsChanged(e) {
         // console.log("drug changed")
