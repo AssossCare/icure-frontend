@@ -624,7 +624,7 @@
                             ).then(messageInfo => {
                                 promCarrier.push(messageInfo)
                                 this.set('fetchStep.1.count', _.size(_.flatten(promCarrier)))
-                            })
+                            }).catch(e => console.log(e))
                         })
                     })
 
