@@ -230,10 +230,9 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
                     <!--<template is="dom-if" if="[[showMoreOption]]">-->
                     <div class$="login-options-container visible-[[showMoreOption]]">
                         <div class$="login-options visible-[[showMoreOption]]">
-                            <ht-app-server-dialog id="icure-servers-list" title="iCure [[localize('server', 'server', language)]]" server-name="icure" local-url="[[defaultIcureUrl]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
+                            <ht-app-server-dialog id="icure-servers-list" title="iCure [[localize('server', 'server', language)]]" server-name="icure" db-server-selected="[[icureSelected]]" db-servers="[[icureServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
 
-                            <ht-app-server-dialog id="fhc-servers-list" title="Free Health Connector [[localize('server', 'server', language)]]" server-name="fhc" local-url="[[defaultFhcUrl]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
-
+                            <ht-app-server-dialog id="fhc-servers-list" title="Free Health Connector [[localize('server', 'server', language)]]" server-name="fhc" db-server-selected="[[fhcSelected]]" db-servers="[[fhcServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
                         </div>
                     </div>
                     <!--</template>-->
@@ -278,19 +277,6 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 					</div>
 				</div>
 		</paper-dialog>
-
-		<!-- <paper-dialog id="add-server-dialog" opened="{{addServerOpened}}">
-			<div class="top-gradient">&nbsp;</div>
-			<div style="text-align: center;">
-				<h3>Add a server</h3>
-			</div>
-			<form is="form" id="add-server-form">
-				<paper-input label="name" value="{{dbServerInput.name}}" type="name"></paper-input>
-				<paper-input label="url" value="{{dbServerInput.url}}" type="url" ></paper-input>
-				<paper-button dialog-dismiss elevation="0" animated aria-disabled="false" role="button" id="server-cancel" on-click="_handleCancel">[[localize('cancel','Cancel',language)]]</paper-button>
-				<paper-button raised="true" id="server-submit" type="submit" on-click="_handleServerAddition" autofocus>[[localize('add','Add',language)]]</paper-button>
-			</form>
-		</paper-dialog> -->
 `;
   }
 
@@ -302,6 +288,12 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
       return {
           credentials: {
               type: Object
+          },
+          api: {
+              type: Object,
+              noReset: true,
+              value: null,
+              observer : 'apiReady'
           },
           opened: {
               type: Boolean,
@@ -320,6 +312,30 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
               type: Boolean,
               value: true,
               noReset:true
+          },
+          icureServers:{
+              type: Array,
+              value : () => []
+          },
+          icureUrlSelected:{
+              type: String,
+              value : 0
+          },
+          icureSelected:{
+              type: Number,
+              value : 0
+          },
+          fhcServers:{
+              type: Array,
+              value : () => []
+          },
+          fhcUrlSelected:{
+              type: String,
+              value : 0
+          },
+          fhcSelected:{
+              type: Number,
+              value : 0
           }
       };
 	}
@@ -328,10 +344,35 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
       super();
 	}
 
+	apiReady() {
+        let servers = [{name: this.localize("online","Online"),url:"https://kraken.svc.icure.cloud"}]
+        let finder = this.icureUrlSelected
+        this.api && this.api.electron().checkAvailable().then(() =>this.api.electron().getConfigFile()).then(config => {
+            servers = servers.concat(_.uniq(_.get(config, 'servers', []).map(serv => {
+                return {
+                    name: serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
+                    url : serv
+                }
+            }).concat(_.get(config,"hasCouchDB",false) ? [{name: this.localize("locale","locale"),url: ""}] : [])
+                .concat(_.get(config,"isTester",false) ? [{name: "backend B",url : "https://backendb.svc.icure.cloud"}] : [])))
+            finder = _.get(config,"backend","")+"/rest/v1"
+        }).finally(()=>{
+            const find = servers.findIndex(serv => serv.url+"/rest/v1" === finder) || servers.length
+            if(find===servers.length)
+                servers.push({name : finder, url : finder})
+            this.set("icureServers",servers)
+            this.set("icureSelected",find)
+        })
+
+
+        this.set('fhcServers',[{name: this.localize("prod","Production"),url :"https://fhc"+(window.location.href.includes('https://tzb') ? "tz" : "prd" )+".icure.cloud"},{name: this.localize("acc","Acceptance"), url: "https://fhcacc.icure.cloud"}])
+    }
+
+
   login() {
 
-      const currentIcureServerUrl = this.$["icure-servers-list"].getSelectedServerURL()
-      const currentFhcServerUrl = this.$["fhc-servers-list"].getSelectedServerURL()
+      const currentIcureServerUrl = this.$["icure-servers-list"].getServersInfo()
+      const currentFhcServerUrl = this.$["fhc-servers-list"].getServersInfo()
 
       this.dispatchEvent(new CustomEvent('login', { detail: { credentials: this.credentials, icureurl: currentIcureServerUrl, fhcurl: currentFhcServerUrl}, bubbles: true, composed: true }))
 
@@ -369,6 +410,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
       }
       this.set('disabled', false)
 	}
+
 }
 
 customElements.define(HtAppLoginDialog.is, HtAppLoginDialog);
