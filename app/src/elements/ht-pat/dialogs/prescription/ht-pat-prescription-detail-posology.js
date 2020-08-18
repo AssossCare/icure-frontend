@@ -143,7 +143,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         <div class="posology-container">
             <div class="posology-title">
               <iron-icon class="header-icon" icon="[[_getDrugType(selectedDrugForPosology)]]"></iron-icon>
-              <span class="bold fs16">[[_getDrugName(selectedDrugForPosology)]]</span>&nbsp;&nbsp;[[_getDrugId(selectedDrugForPosology)]]           
+              <span class="bold fs16">[[_getDrugName(selectedDrugForPosology)]]</span>&nbsp;&nbsp;[[_getDrugId(selectedDrugForPosology)]]&nbsp;&nbsp;[[_getDrugCnk(selectedDrugForPosology)]]           
             </div>
             <div class="posology-container-content">
                 <div class="medication-container">
@@ -155,7 +155,14 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-chronical', 'Chronical', language)]]</vaadin-checkbox>
                             <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-confidential', 'Confidential', language)]]</vaadin-checkbox>
                             <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-known-usage', 'Known usage', language)]]</vaadin-checkbox>
-                        </div>                
+                        </div>
+                        <div class="medication-fields">
+                            Portion<br />
+                            Posologie (day)<br />
+                            Période<br />
+                            Posologie (texte)<br />
+                            Instruction pour le patient / posologie (texte)<br />
+                        </div>
                     </div>
                 </div>
                 <div class="prescription-container">
@@ -163,7 +170,15 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         [[localize('pos-presc', 'Prescription', language)]]
                     </div>
                     <div class="prescription-container-content">
-                    
+                        Date début<br />
+                        Date fin<br />
+                        Nombre de jours<br />
+                        Fin boite<br />
+                        Jours couverts<br />
+                        Substitution<br />
+                        Remboursement<br />
+                        Déliverable à partir du<br />
+                        Date de fin pour l'exécution<br />
                     </div>
                 </div>
             </div>  
@@ -258,6 +273,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _getDrugType(drug){
         return _.get(drug, 'type', null) === "chronic" ? "icons:alarm-on" : _.get(drug, 'type', null) === "history" ? "vaadin:time-backward" : _.get(drug, 'type', null) === "commercial" ? "vaadin:copyright" : _.get(drug, 'type', null) === "substance" ? "vaadin:pill" : _.get(drug, 'type', null) === "compound" ? "vaadin:flask" : null
+    }
+
+    _getDrugCnk(drug){
+        console.log("_getDrugCnk", drug)
+        return 'CNK: ' + _.get(drug, 'drug.samCode', '')
     }
 
 

@@ -2939,7 +2939,10 @@
 		"mhm-rep-run-pat" : "Patient being send",
 		"mhm-rep-ready" : "Ready for send recovery",
 		"mhm-rep-invalid-date" : "Recovery only possible between 01/10/2020 and 31/10/2020",
-		"mhm-rep-log" : "Log"
+		"mhm-rep-log" : "Log",
+		"pos-chronical": "Chronical",
+		"pos-confidential": "Confidential",
+		"pos-known-usage": "Known usage"
 	},
 	"fr": {
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -6056,7 +6059,10 @@
 		"mhm-rep-run-pat" : "Patient en cours",
 		"mhm-rep-ready" : "Prêt pour lancer reprise.",
 		"mhm-rep-invalid-date" : "Reprise seulement possible entre 1/10/2020 et 31/10/2020",
-		"mhm-rep-log" : "Log"
+		"mhm-rep-log" : "Log",
+		"pos-chronical": "Chronique",
+		"pos-confidential": "Confidentiel",
+		"pos-known-usage": "Usage connu"
 	},
 	"nl": {
 		"choose_url": "Choose your URL",
@@ -9122,6 +9128,9 @@
 		"mhm-rep-run-pat" : "Patient in verwerking",
 		"mhm-rep-ready" : "Klaar voor verzenden overname",
 		"mhm-rep-invalid-date" : "Overname enkel mogelijk tussen 1/10/2020 en 31/10/2020",
-		"mhm-rep-log" : "Log"
+		"mhm-rep-log" : "Log",
+		"pos-chronical": "Chronical",
+		"pos-confidential": "Confidential",
+		"pos-known-usage": "Known usage"
 	}
 }

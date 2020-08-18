@@ -148,9 +148,9 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                     <div class="td fg2">[[localize('presc-sear-formula','Formula',language)]]</div>
                 </div>
                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
-                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg1">[[drug.title]]</div>
+                    <div class="tr tr-item">
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.title]]</div>
                         <div class="td fg2">[[drug.formula]]</div>
                     </div>
                 </template>
@@ -202,18 +202,21 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
     }
 
     _openPosologyView(e){
-        if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    id: _.get(e, 'currentTarget.id', null),
-                    product: _.get(this, 'searchResult.compound', []).find(c => _.get(c, 'id', null) === _.get(e, 'currentTarget.id', null)) ,
-                    type: _.get(e, 'currentTarget.dataset.type', null),
-                    bypassPosologyView: false
-                }
-            }))
-        }
+
+        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+
+        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                id: drugId,
+                type: dataType,
+                bypassPosologyView: false,
+                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
+            }
+        }))
+
     }
 
     _formatDate(date){
