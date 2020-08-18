@@ -1,6 +1,7 @@
 import '../../../dynamic-form/dynamic-link.js';
 import '../../../dynamic-form/dynamic-pills.js';
 import '../../../ht-spinner/ht-spinner.js';
+import '../../../icons/icure-icons';
 import '../../../dynamic-form/dynamic-doc.js';
 import '../../../collapse-button/collapse-button.js';
 import '../../../../styles/dialog-style.js';
@@ -15,6 +16,7 @@ import './search/ht-pat-prescription-detail-search-commercial'
 import './search/ht-pat-prescription-detail-search-compound'
 import './search/ht-pat-prescription-detail-search-history'
 import './search/ht-pat-prescription-detail-search-substance'
+import './search/ht-pat-prescription-detail-search-otc'
 
 
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
@@ -164,6 +166,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:flask"></iron-icon> [[localize('presc-sear-comp','Compound',language)]] ([[_getDrugsCount(searchResult.compound, searchResult.compound.*)]])
                     </paper-tab>
+                    <!--
+                    <paper-tab>
+                        <iron-icon class="tabIcon" icon="vaadin:raster"></iron-icon> [[localize('presc-sear-otc','Otc',language)]] ([[_getDrugsCount(searchResult.otc, searchResult.otc.*)]])
+                    </paper-tab>
+                    -->
                 </paper-tabs>
                 <iron-pages selected="[[tabs]]">
                     <page>
@@ -191,6 +198,13 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-compound>
                         </div>
                     </page>
+                    <!--
+                    <page>
+                        <div class="page-content">
+                            <ht-pat-prescription-detail-search-otc id="htPatPrescriptionDetailSearchOtc" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-otc>
+                        </div>
+                    </page>
+                    -->
                 </iron-pages>
             </div>
         </div>
@@ -239,7 +253,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     commercialName: [],
                     history: [],
                     molecule: [],
-                    chronic: []
+                    chronic: [],
+                    otc: []
                 }
             },
             drugsFilter:{
@@ -292,7 +307,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             commercialName: [],
             history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
             molecule: [],
-            chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+            chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+            otc: []
         })
         this.set('drugsFilter', null)
     }
@@ -307,14 +323,15 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
                     ]).then(([vmpGroups, amps]) => {
-                        this.set("searchResult.commercialName", this._prepareCommercialForDisplay(amps, null, null))
+                        this.set("searchResult.commercialName", _.orderBy(this._prepareCommercialForDisplay(amps, null, null), ['label'], ['asc']))
                         return this._prepareMoleculeForDisplay(vmpGroups)
                     }).then(vmpGroupList =>
-                        this.set("searchResult.molecule", this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))))
+                        this.set("searchResult.molecule", _.orderBy(this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
                     ).finally(() => {
-                        this.set('searchResult.compound', this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])))
-                        this.set('searchResult.history', this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])))
-                        this.set('searchResult.chronic', this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])))
+                        this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
+                        this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
+                        this.set('searchResult.chronic',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])), ['startDate'], ['desc']))
+                        this.set('searchResult.otc', [])
                         this.set('isLoading', false)
                     })
                 }else{
@@ -323,7 +340,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         commercialName: [],
                         history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
                         molecule: [],
-                        chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+                        chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+                        otc: []
                     })
                     this.set('isLoading', false)
                 }
@@ -334,19 +352,21 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 commercialName: [],
                 history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
                 molecule: [],
-                chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+                chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+                otc: []
             })
             this.set('isLoading', false)
         }
     }
 
-    _searchCheaperAlternative(groupId, parentUuid, parentUuids){
+    _searchCheaperAlternative(groupId, parentUuid, parentUuids, parentDrug){
         this.api.besamv2().findPaginatedAmpsByGroupId(groupId).then(amps => {
             this.dispatchEvent(new CustomEvent('cheaper-drugs-list-loaded', {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    cheaperDrugsList: this._prepareCommercialForDisplay(amps, parentUuid, parentUuids)
+                    cheaperDrugsList: _.orderBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), ['label'], ['asc']),
+                    parentDrug: parentDrug
                 }
             }))
         })
@@ -472,7 +492,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         }))
                     ))
         )
-
         return prom
     }
 

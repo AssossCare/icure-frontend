@@ -175,7 +175,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             resources="[[resources]]"
                             hcp="[[hcp]]" 
                             cheaper-drugs-list="[[cheaperDrugsList]]"
+                            selected-parent-drug-for-cheaper="[[selectedParentDrugForCheaper]]"
                             on-open-posology-view="_openPosologyView"
+                            on-close-cheaper-drugs-view="_closeCheaperDrugsView"
                         /></ht-pat-prescription-detail-cheaper-drugs>
                      </div>
                 </template>                          
@@ -273,6 +275,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             cheaperDrugsList:{
                 type: Array,
                 value: () => []
+            },
+            selectedParentDrugForCheaper:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -298,6 +304,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('listOfChronic', [])
         this.set('drugsToBePrescribe', [])
         this.set('reimbursmentTypeList', [])
+        this.set('cheaperDrugsList', [])
+        this.set('selectedParentDrugForCheaper', {})
     }
 
     _open(e){
@@ -420,15 +428,25 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCheaperDrugView', false)
     }
 
+    _closeCheaperDrugsView(){
+        this.set('isPosologyView', false)
+        this.set('isSearchView', true)
+        this.set('isCheaperDrugView', false)
+    }
+
     _searchCheaperDrugs(e){
         if(_.get(e ,'detail.groupId', null)){
-            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchCheaperAlternative(_.get(e ,'detail.groupId', null), _.get(e ,'detail.uuid', null), _.get(e ,'detail.uuids', null))
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchCheaperAlternative(_.get(e ,'detail.groupId', null), _.get(e ,'detail.uuid', null), _.get(e ,'detail.uuids', null), _.get(e, 'detail.drug', null))
         }
     }
 
     _openCheaperDrugsView(e){
+        this.set('cheaperDrugsList', [])
+        this.set('selectedParentDrugForCheaper',{})
+
         if(_.get(e, 'detail.cheaperDrugsList', [])){
             this.set('cheaperDrugsList', _.get(e, 'detail.cheaperDrugsList', []))
+            this.set('selectedParentDrugForCheaper', _.get(e, 'detail.parentDrug', {}))
             this.set('isPosologyView', false)
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', true)

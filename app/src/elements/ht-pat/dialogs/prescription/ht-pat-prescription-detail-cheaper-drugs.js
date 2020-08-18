@@ -179,11 +179,22 @@ class HtPatPrescriptionDetailCheaperDrugs extends TkLocalizerMixin(mixinBehavior
                 text-align: center;
             }
             
+            .bold{
+                font-weight: bold;
+            }
+            
+            .btn-close{
+                float: right;
+                margin-top: -4px;
+                margin-right: -4px;
+            }
+            
         </style>
         
          <div class="cheaper-drugs-container">
             <div class="cheaper-drugs-title">
-                [[localize('presc-cheap-drug', 'Cheaper drugs', language)]]
+                <span class="bold">[[localize('presc-cheap-drug', 'Cheaper drugs for', language)]]: </span> [[selectedParentDrugForCheaper.label]]
+                <paper-icon-button id="" class="button button--other btn-close" icon="icons:close" on-tap="_closeCheaperDrugsView"></paper-icon-button>
             </div>
             <div class="cheaper-drugs-container-content">
                 <template is="dom-if" if="[[isLoading]]" restamp="true">
@@ -273,6 +284,10 @@ class HtPatPrescriptionDetailCheaperDrugs extends TkLocalizerMixin(mixinBehavior
             cheaperDrugsList:{
                 type: Array,
                 value: () => []
+            },
+            selectedParentDrugForCheaper:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -329,6 +344,13 @@ class HtPatPrescriptionDetailCheaperDrugs extends TkLocalizerMixin(mixinBehavior
 
     _isResult(drugList){
         return _.get(_.head(drugList), 'id', null) !== "no_alt"
+    }
+
+    _closeCheaperDrugsView(){
+        this.dispatchEvent(new CustomEvent('close-cheaper-drugs-view', {
+            bubbles: true,
+            composed: true
+        }))
     }
 }
 customElements.define(HtPatPrescriptionDetailCheaperDrugs.is, HtPatPrescriptionDetailCheaperDrugs);

@@ -1262,144 +1262,141 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
     }
 
     defaultSaveDocuments(e) {
-        if (!(e && e.detail && e.detail.documents && e.detail.documents.length)) return
-        const documents = e.detail.documents
-        let updatedContact = null
-        let documentList = []
-        const title = this.title
-        let docDate = moment()
+        if (!(e && e.detail && e.detail.documents && e.detail.documents.length)) return;
+        const documents = e.detail.documents;
+        let updatedContact = null;
+        let documentList = [];
+        const title = this.title;
+        let docDate = moment();
         if (this._documentDate && this._documentDate.length > 0)
-            docDate = moment(this._documentDate)
-        const docDateYMD = parseInt(docDate.format("YYYYMMDDHHmmss"))
-        const docDateMs = parseInt(docDate.format("x")) || new Date().getTime()
+            docDate = moment(this._documentDate);
+        const docDateYMD = parseInt(docDate.format("YYYYMMDDHHmmss"));
+        const docDateMs = parseInt(docDate.format("x")) || new Date().getTime();
         const docDateAsString = docDate.format("YYYY-MM-DD")
-        console.log("message to process ", documents.length)
-        Promise.all([this.api.user().findByHcpartyId(this.hcpId), this.api.message().newInstance(this.user)])
-            .then(([user, msg]) => this.api.message().createMessage(_.merge(msg, {
-                transportGuid: "DOC:IMPORT:IN",
-                recipients: [this.hcpId, (this.user.healthcarePartyId || this.hcpId || "")],
-                recipientsType: "org.taktik.icure.entities.HealthcareParty",
-                metas: {
-                    documentDate: docDateAsString,
-                    importDate: moment().format("YYYY-MM-DD")
-                },
-                toAddresses: [_.get(this.user, "email", _.get(this.user, "healthcarePartyId", "")), _.get(user, "email", this.hcpId)],
-                subject: title,
-                //@ToDo test on persphysician ==> traited or not
-                status: 1 << 1 | 1 << 25 | (this.patientId ? 1 << 26 : 0)
-            })))
-            .then(msg => new Promise(resolve => {
-                    if (this.patientId) {
-                        console.log("has patient for message ", msg.id)
-                        return this.api.patient().getPatientWithUser(this.user, this.patientId)
-                            .then(patient => this.api.register(patient, "patient"))
-                            .then(patient => {
-                                const contact = (this.contactOption === "current") && this.currentContact
-                                if (!contact) {
-                                    return this.api.contact().newInstance(this.user, patient, {
-                                        openingDate: docDateYMD,
-                                        closingDate: docDateYMD,
-                                        author: this.user.id,
-                                        responsible: this.user.healthcarePartyId,
-                                        subContacts: []
+        let documentTypes = [];
+
+        this.api.getDocumentTypes(this.resources, this.language)
+            .then(x => {
+                documentTypes = x
+                Promise.all([this.api.user().findByHcpartyId(this.hcpId), this.api.message().newInstance(this.user)])
+                    .then(([user, msg]) => this.api.message().createMessage(_.merge(msg, {
+                        transportGuid: "DOC:IMPORT:IN",
+                        recipients: [this.hcpId, (this.user.healthcarePartyId || this.hcpId || "")],
+                        recipientsType: "org.taktik.icure.entities.HealthcareParty",
+                        metas: {
+                            documentDate: docDateAsString,
+                            importDate: moment().format("YYYY-MM-DD")
+                        },
+                        toAddresses: [_.get(this.user, "email", _.get(this.user, "healthcarePartyId", "")), _.get(user, "email", this.hcpId)],
+                        subject: title,
+                        //@ToDo test on persphysician ==> traited or not
+                        status: 1 << 1 | 1 << 25 | (this.patientId ? 1 << 26 : 0)
+                    })))
+                    .then(msg => new Promise(resolve => {
+                            if (this.patientId) {
+                                console.log("has patient for message ", msg.id);
+                                return this.api.patient().getPatientWithUser(this.user, this.patientId)
+                                    .then(patient => this.api.register(patient, "patient"))
+                                    .then(patient => {
+                                        const contact = (this.contactOption === "current") && this.currentContact;
+                                        if (!contact) {
+                                            return this.api.contact().newInstance(this.user, patient, {
+                                                openingDate: docDateYMD,
+                                                closingDate: docDateYMD,
+                                                author: this.user.id,
+                                                responsible: this.user.healthcarePartyId,
+                                                subContacts: []
+                                            })
+                                        } else {
+                                            return contact;
+                                        }
                                     })
-                                } else {
-                                    return contact
-                                }
-                            })
-                            .then(contact => resolve(contact))
-                    } else {
-                        console.log("no patient for message ", msg.id)
-                        // return this._encryptInfo(msg, [{}])
-                        return resolve()
-                    }
-                })
-                    .then(contact => Promise.all(documents.map(doc => {
-                            let mimeType = _.toLower(doc.extension)
-                            mimeType = mimeType === 'jpg' ? 'jpeg' : mimeType === 'tif' ? 'tiff' : mimeType
-                            let name = doc.title.includes("." + doc.extension) ? _.trim(doc.title) : _.trim(doc.title) + "." + doc.extension
-                            return this.api.document().newInstance(this.user, msg, {
-                                documentType: doc.type,
-                                mainUti: this.api.document().uti(mimeType === "pdf" ? "application/pdf" : "image/" + mimeType),
-                                name: name,
-                                created: docDateMs
-                            })
-                                .then(newDoc => this.api.document().createDocument(newDoc))
-                                .then(createdDoc => this._encrypt(createdDoc, doc.comment)
-                                    .then(cryptedComment => {
-                                        console.log("1 - doc creation")
-                                        doc.docId = createdDoc.id
-                                        // doc.createdDoc = createdDoc;
-                                        documentList.push({
-                                            id: doc.docId,
-                                            // filename: doc.title,
-                                            comment: cryptedComment,
-                                            // type: doc.type,
-                                            scanned: (doc.isScanned ? 1 : 0)
-                                        })
-                                        console.log("-- 1 - documentList: ", documentList)
-
-                                        if (!contact) return
-                                        const svc = this.api.contact().service().newInstance(this.user, {
-                                            content: _.fromPairs([[this.language, {
-                                                documentId: doc.docId,
-                                                stringValue: doc.title
-                                            }]]),
-                                            created: docDateMs,
-                                            tags: [{type: 'CD-TRANSACTION', code: doc.type || 'report'}],
-                                            label: 'imported document',
-                                            comment: cryptedComment
-                                        })
-
-                                        if (contact.services === undefined) contact.services = [svc]
-                                        else contact.services.push(svc)
-
-                                        const sc = {status: 64, services: [{serviceId: svc.id}]}
-                                        contact.subContacts.push(sc)
-                                        console.log("2 - pushed sc")
+                                    .then(contact => resolve(contact))
+                            } else {
+                                console.log("no patient for message ", msg.id);
+                                // return this._encryptInfo(msg, [{}])
+                                return resolve();
+                            }
+                        })
+                            .then(contact => Promise.all(documents.map(doc => {
+                                    let mimeType = _.toLower(doc.extension);
+                                    mimeType = mimeType === 'jpg' ? 'jpeg' : mimeType === 'tif' ? 'tiff' : mimeType;
+                                    let name = doc.title.includes("." + doc.extension) ? _.trim(doc.title) : _.trim(doc.title) + "." + doc.extension;
+                                    return this.api.document().newInstance(this.user, msg, {
+                                        documentType: doc.type,
+                                        mainUti: this.api.document().uti(mimeType === "pdf" ? "application/pdf" : "image/" + mimeType),
+                                        name: name,
+                                        created: docDateMs
                                     })
-                                    .then(() => createdDoc)
-                                )
-                                .then(createdDoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob))
-                                .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent))
-                        }))
-                            .then(() => contact)
+                                        .then(newDoc => this.api.document().createDocument(newDoc))
+                                        .then(createdDoc => this._encrypt(createdDoc, doc.comment)
+                                            .then(cryptedComment => {
+                                                console.log("1 - doc creation")
+                                                doc.docId = createdDoc.id;
+                                                // doc.createdDoc = createdDoc;
+                                                documentList.push({
+                                                    id: doc.docId,
+                                                    // filename: doc.title,
+                                                    comment: cryptedComment,
+                                                    // type: doc.type,
+                                                    scanned: (doc.isScanned ? 1 : 0)
+                                                });
+                                                if (!contact) return;
+                                                const svc = this.api.contact().service().newInstance(this.user, {
+                                                    content: _.fromPairs([[this.language, {
+                                                        documentId: doc.docId,
+                                                        stringValue: doc.title
+                                                    }]]),
+                                                    created: docDateMs,
+                                                    tags: [{type: _.trim(_.get(_.find(documentTypes, {code:doc.type}), "type", "")), code: doc.type || 'report'}],
+                                                    label: 'imported document',
+                                                    comment: cryptedComment
+                                                });
+
+                                                if (contact.services === undefined) contact.services = [svc];
+                                                else contact.services.push(svc);
+
+                                                const sc = {status: 64, services: [{serviceId: svc.id}]};
+                                                contact.subContacts.push(sc);
+                                            })
+                                            .then(() => createdDoc)
+                                        )
+                                        .then(createdDoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob))
+                                        .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent))
+                                }))
+                                    .then(() => contact)
+                            )
+                            .then(contact => {
+                                if (!contact) return;
+                                return (this.contactOption === "new" ? this.api.contact().createContactWithUser(this.user, contact) : this.api.contact().modifyContactWithUser(this.user, contact))
+                                    .then(contact => this.api.register(contact, "contact"))
+                                    .then(contact => updatedContact = contact)
+                                    .then(contact => this._encryptInfo(msg, [{
+                                        'patientId': this.patientId,
+                                        'isAssigned': true,
+                                        'contactId': contact.id
+                                    }]))
+                            })
+                            .then(() => msg)
                     )
-                    .then(contact => {
-                        if (!contact) return
-                        console.log("3 - create or modify contact")
-                        return (this.contactOption === "new" ? this.api.contact().createContactWithUser(this.user, contact) : this.api.contact().modifyContactWithUser(this.user, contact))
-                            .then(contact => this.api.register(contact, "contact"))
-                            .then(contact => updatedContact = contact)
-                            .then(contact => this._encryptInfo(msg, [{
-                                'patientId': this.patientId,
-                                'isAssigned': true,
-                                'contactId': contact.id
-                            }]))
+                    .then(msg => {
+                        msg.metas.documentListJson = JSON.stringify(documentList);
+                        delete msg.metas.documentList;
+                        return this.api.message().modifyMessage(msg);
                     })
-                    .then(() => msg)
-            )
-            .then(msg => {
-                console.log("4 - stringify")
-                msg.metas.documentListJson = JSON.stringify(documentList)
-                delete msg.metas.documentList
-                console.log("-- 2 - documentList: ", documentList)
-                console.log("-- documentListJson: ", msg.metas.documentListJson)
-                return this.api.message().modifyMessage(msg)
-            })
-            .then(msg => {
-                console.log(msg)
-                return msg
-            })
-            .catch(error => console.log(error))
-            .finally(msg => {
-                console.log("5 - finally")
-                this.dispatchEvent(new CustomEvent("post-process", {
-                    detail: {
-                        messages: msg,
-                        contact: updatedContact
-                    }, bubbles: true
-                }))
+                    .then(msg => {
+                        console.log(msg);
+                        return msg;
+                    })
+                    .catch(error => console.log(error))
+                    .finally(msg => {
+                        this.dispatchEvent(new CustomEvent("post-process", {
+                            detail: {
+                                messages: msg,
+                                contact: updatedContact
+                            }, bubbles: true
+                        }))
+                    })
             })
     }
 
