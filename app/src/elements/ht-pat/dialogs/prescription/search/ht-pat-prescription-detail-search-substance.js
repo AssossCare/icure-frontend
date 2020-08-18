@@ -165,16 +165,12 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                     <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
                 </div>
                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
-                    <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg2">[[drug.label]]</div>
+                    <div class="tr tr-item">
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg2" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
                         <div class="td fg05">
-                            <template is="dom-if" if="[[_hasIcon(drug)]]">
-                                <iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon>
-                            </template>
-                            <template is="dom-if" if="[[_hasColor(drug)]]">
-                                <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label>
-                            </template>
+                            <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon></template>
+                            <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label></template>
                             <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
                         </div>
                     </div>
@@ -222,18 +218,21 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
     }
 
     _openPosologyView(e){
-        if(_.get(e, 'currentTarget.id', null) && _.get(e, 'currentTarget.dataset.type', null)){
-            this.dispatchEvent(new CustomEvent('open-posology-view', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    id: _.get(e, 'currentTarget.id', null),
-                    type: _.get(e, 'currentTarget.dataset.type', null),
-                    product: _.get(this, 'searchResult.substance', []).find(c => _.get(c, 'id', null) === _.get(e, 'currentTarget.id', null)),
-                    bypassPosologyView: false
-                }
-            }))
-        }
+
+        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+
+        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                id: drugId,
+                type: dataType,
+                bypassPosologyView: false,
+                product: _.get(this, 'searchResult.substance', []).find(h => _.get(h, 'id', null) === drugId)
+            }
+        }))
+
     }
 
     _formatDate(date){
