@@ -307,14 +307,14 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
                     ]).then(([vmpGroups, amps]) => {
-                        this.set("searchResult.commercialName", this._prepareCommercialForDisplay(amps, null, null))
+                        this.set("searchResult.commercialName", _.orderBy(this._prepareCommercialForDisplay(amps, null, null), ['label'], ['asc']))
                         return this._prepareMoleculeForDisplay(vmpGroups)
                     }).then(vmpGroupList =>
-                        this.set("searchResult.molecule", this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))))
+                        this.set("searchResult.molecule", _.orderBy(this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
                     ).finally(() => {
-                        this.set('searchResult.compound', this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])))
-                        this.set('searchResult.history', this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])))
-                        this.set('searchResult.chronic', this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])))
+                        this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
+                        this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
+                        this.set('searchResult.chronic',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])), ['startDate'], ['desc']))
                         this.set('isLoading', false)
                     })
                 }else{
