@@ -11,6 +11,7 @@ import moment from 'moment/src/moment';
 import './ht-pat-prescription-detail-drugs'
 import './ht-pat-prescription-detail-posology'
 import './ht-pat-prescription-detail-search'
+import './ht-pat-prescription-detail-cheaper-drugs'
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
@@ -81,6 +82,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             width: 80%;
         }
         
+        .content-cheaper-drug{
+            width: 80%;
+        }
+        
         .content-posology{
             width: 80%;
         }
@@ -131,6 +136,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-chronic="[[listOfChronic]]"
                             allergies="[[allergies]]"
                             on-open-posology-view="_openPosologyView"    
+                            on-search-cheaper-drugs="_searchCheaperDrugs"
+                            on-cheaper-drugs-list-loaded="_openCheaperDrugsView"
                         ></ht-pat-prescription-detail-search>
                     </div>
                 </template>
@@ -155,7 +162,23 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             reimbursement-type-list="[[reimbursementTypeList]]"
                          ></ht-pat-prescription-detail-posology>
                     </div>
-                </template>                           
+                </template> 
+                <template is="dom-if" if="[[isCheaperDrugView]]">
+                     <div class="content-cheaper-drug">
+                        <ht-pat-prescription-detail-cheaper-drugs
+                            id="htPatPrescriptionDetailCheaperDrug"
+                            api="[[api]]"
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]"
+                            hcp="[[hcp]]" 
+                            cheaper-drugs-list="[[cheaperDrugsList]]"
+                            on-open-posology-view="_openPosologyView"
+                        /></ht-pat-prescription-detail-cheaper-drugs>
+                     </div>
+                </template>                          
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
@@ -216,6 +239,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 type: Boolean,
                 value: false
             },
+            isCheaperDrugView:{
+                type: Boolean,
+                value: false
+            },
             listOfCompound: {
                 type: Array,
                 value: () => []
@@ -242,6 +269,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             reimbursementTypeList:{
                 type: Array,
                 value: () => []
+            },
+            cheaperDrugsList:{
+                type: Array,
+                value: () => []
             }
         };
     }
@@ -257,6 +288,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _reset(){
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
+        this.set('isCheaperDrugView', false)
         this.set('selectedDrugForPosology', {
             id: null,
             type: null
@@ -367,6 +399,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
               if(!_.get(e, 'detail.bypassPosologyView', null)){
                   this.set('isPosologyView', true)
                   this.set('isSearchView', false)
+                  this.set('isCheaperDrugView', false)
               }
               this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList()
           })
@@ -384,6 +417,23 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _closePosologyView(){
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
+        this.set('isCheaperDrugView', false)
+    }
+
+    _searchCheaperDrugs(e){
+        if(_.get(e ,'detail.groupId', null)){
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchCheaperAlternative(_.get(e ,'detail.groupId', null), _.get(e ,'detail.uuid', null), _.get(e ,'detail.uuids', null))
+        }
+    }
+
+    _openCheaperDrugsView(e){
+        if(_.get(e, 'detail.cheaperDrugsList', [])){
+            this.set('cheaperDrugsList', _.get(e, 'detail.cheaperDrugsList', []))
+            this.set('isPosologyView', false)
+            this.set('isSearchView', false)
+            this.set('isCheaperDrugView', true)
+        }
+
     }
 
 }

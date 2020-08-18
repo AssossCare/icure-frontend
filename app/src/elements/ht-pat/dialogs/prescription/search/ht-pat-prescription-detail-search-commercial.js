@@ -160,7 +160,8 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
         <template is="dom-if" if="[[!isLoading]]" restamp="true">
              <div class="table">
                 <div class="tr th">                 
-                    <div class="td fg01">[[localize('','',language)]]</div>    
+                    <div class="td fg01"></div> 
+                    <div class="td fg01"></div>    
                     <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
@@ -172,7 +173,8 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 </div>
                 <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
                     <div class="tr tr-item" id="[[drug.id]]" on-tap="">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" id="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>  
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:chevron-right" id="[[drug.id]]" on-tap="_searchCheaperDrugs"></div>   
                         <div class="td fg2">[[drug.label]]</div>
                         <div class="td fg05">
                             <template is="dom-if" if="[[_hasIcon(drug)]]">
@@ -283,6 +285,22 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
 
     _atcTooltip(cat) {
         return cat ? this.localize('atc-' + cat, '') : null
+    }
+
+    _searchCheaperDrugs(e){
+        if(_.get(e, 'currentTarget.id', null)){
+            const drug = _.get(this, 'searchResult.commercialName', []).find(cn => _.get(cn, 'id',  null) === _.get(e, 'currentTarget.id', null))
+            this.dispatchEvent(new CustomEvent('search-cheaper-drugs', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    id: _.get(drug, 'id', null),
+                    uuid: _.get(drug, 'uuid', null),
+                    groupId: _.get(drug, 'groupId', null),
+                    uuids: _.get(drug, 'uuids', [])
+                }
+            }))
+        }
     }
 }
 customElements.define(HtPatPrescriptionDetailSearchCommercial.is, HtPatPrescriptionDetailSearchCommercial);
