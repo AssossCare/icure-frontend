@@ -340,13 +340,14 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         }
     }
 
-    _searchCheaperAlternative(groupId, parentUuid, parentUuids){
+    _searchCheaperAlternative(groupId, parentUuid, parentUuids, parentDrug){
         this.api.besamv2().findPaginatedAmpsByGroupId(groupId).then(amps => {
             this.dispatchEvent(new CustomEvent('cheaper-drugs-list-loaded', {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    cheaperDrugsList: this._prepareCommercialForDisplay(amps, parentUuid, parentUuids)
+                    cheaperDrugsList: _.orderBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), ['label'], ['asc']),
+                    parentDrug: parentDrug
                 }
             }))
         })

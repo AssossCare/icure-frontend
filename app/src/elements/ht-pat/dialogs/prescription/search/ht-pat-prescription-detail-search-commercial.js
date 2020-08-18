@@ -174,7 +174,7 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
                     <div class="tr tr-item">
                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>  
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:chevron-right" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs"></div>   
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs" title="Alternative"></div>   
                         <div class="td fg2">[[drug.label]]</div>
                         <div class="td fg05">
                             <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon></template>
@@ -287,7 +287,6 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
     }
 
     _searchCheaperDrugs(e){
-
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const drug = _.get(this, 'searchResult.commercialName', []).find(cn => _.get(cn, 'id',  null) === drugId)
 
@@ -298,7 +297,8 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 id: _.get(drug, 'id', null),
                 uuid: _.get(drug, 'uuid', null),
                 groupId: _.get(drug, 'groupId', null),
-                uuids: _.get(drug, 'uuids', [])
+                uuids: _.get(drug, 'uuids', []),
+                drug: drug
             }
         }))
 
