@@ -297,17 +297,17 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set('drugsFilter', null)
     }
 
-    _drugsFilterChanged(drugsFilter){
+
+    _drugsFilterChanged(drugsFilter, parentUuid, groupId){
         this.set('isLoading', true)
         if(drugsFilter){
             setTimeout(() => {
                 if(_.size(drugsFilter) >= 2){
                     Promise.all([
-                        this.api.besamv2().findPaginatedVmpsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
-                    ]).then(([vmps, vmpGroups, amps]) => {
-                        this.set("searchResult.commercialName", this._prepareCommercialForDisplay(amps))
+                    ]).then(([vmpGroups, amps]) => {
+                        this.set("searchResult.commercialName", this._prepareCommercialForDisplay(amps, null, null))
                         return this._prepareMoleculeForDisplay(vmpGroups)
                     }).then(vmpGroupList =>
                         this.set("searchResult.molecule", this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))))
@@ -340,8 +340,20 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         }
     }
 
-    _prepareCommercialForDisplay(ampps){
-        const level = 0
+    _searchCheaperAlternative(groupId, parentUuid, parentUuids){
+        this.api.besamv2().findPaginatedAmpsByGroupId(groupId).then(amps => {
+            this.dispatchEvent(new CustomEvent('cheaper-drugs-list-loaded', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    cheaperDrugsList: this._prepareCommercialForDisplay(amps, parentUuid, parentUuids)
+                }
+            }))
+        })
+    }
+
+    _prepareCommercialForDisplay(ampps, parentUuid, parentUuids){
+        const level = parentUuid ? 1 : 0
         const insurability = _.get(_.get(this, 'patient', {}), 'insurabilities', []).find(ins => !_.get(ins, 'endDate', null) && _.get(ins, 'insuranceId', null) !== "")
         const patientBim = parseInt(_.get(insurability, 'parameters.tc1', null) % 2) === 1
         const hierarchicalAmpps = _.get(ampps, 'rows', []).reduce((ampps, row) => {
@@ -404,7 +416,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
         if (_.size(finalList) === 0 && level > 0) {
             finalList.push({
-                intendedName: this.localize("no_alt", "Pas d'alternative", this.language)
+                intendedName: this.localize("no_alt", "Pas d'alternative", this.language),
+                id: 'no_alt'
             });
         }
 
@@ -532,7 +545,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _narcoticIcon(info) {
-        return info.note === 'stupéfiant' ? 'stup' : null
+        return _.get(info, 'note', null) === 'stupéfiant' ? 'stup' : null
     }
 
 }
