@@ -1,6 +1,7 @@
 import '../../../dynamic-form/dynamic-link.js';
 import '../../../dynamic-form/dynamic-pills.js';
 import '../../../ht-spinner/ht-spinner.js';
+import '../../../icons/icure-icons';
 import '../../../dynamic-form/dynamic-doc.js';
 import '../../../collapse-button/collapse-button.js';
 import '../../../../styles/dialog-style.js';
@@ -15,6 +16,7 @@ import './search/ht-pat-prescription-detail-search-commercial'
 import './search/ht-pat-prescription-detail-search-compound'
 import './search/ht-pat-prescription-detail-search-history'
 import './search/ht-pat-prescription-detail-search-substance'
+import './search/ht-pat-prescription-detail-search-otc'
 
 
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
@@ -164,6 +166,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:flask"></iron-icon> [[localize('presc-sear-comp','Compound',language)]] ([[_getDrugsCount(searchResult.compound, searchResult.compound.*)]])
                     </paper-tab>
+                    <!--
+                    <paper-tab>
+                        <iron-icon class="tabIcon" icon="vaadin:raster"></iron-icon> [[localize('presc-sear-otc','Otc',language)]] ([[_getDrugsCount(searchResult.otc, searchResult.otc.*)]])
+                    </paper-tab>
+                    -->
                 </paper-tabs>
                 <iron-pages selected="[[tabs]]">
                     <page>
@@ -191,6 +198,13 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-compound>
                         </div>
                     </page>
+                    <!--
+                    <page>
+                        <div class="page-content">
+                            <ht-pat-prescription-detail-search-otc id="htPatPrescriptionDetailSearchOtc" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-otc>
+                        </div>
+                    </page>
+                    -->
                 </iron-pages>
             </div>
         </div>
@@ -239,7 +253,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     commercialName: [],
                     history: [],
                     molecule: [],
-                    chronic: []
+                    chronic: [],
+                    otc: []
                 }
             },
             drugsFilter:{
@@ -292,7 +307,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             commercialName: [],
             history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
             molecule: [],
-            chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+            chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+            otc: []
         })
         this.set('drugsFilter', null)
     }
@@ -315,6 +331,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
                         this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
                         this.set('searchResult.chronic',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])), ['startDate'], ['desc']))
+                        this.set('searchResult.otc', [])
                         this.set('isLoading', false)
                     })
                 }else{
@@ -323,7 +340,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         commercialName: [],
                         history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
                         molecule: [],
-                        chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+                        chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+                        otc: []
                     })
                     this.set('isLoading', false)
                 }
@@ -334,7 +352,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 commercialName: [],
                 history: _.orderBy(_.get(this, 'listOfPrescription', []), ['startDate'], ['desc']),
                 molecule: [],
-                chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc'])
+                chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
+                otc: []
             })
             this.set('isLoading', false)
         }
@@ -473,7 +492,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         }))
                     ))
         )
-
         return prom
     }
 

@@ -1,8 +1,6 @@
 import '../../../../dynamic-form/dynamic-link.js';
 import '../../../../dynamic-form/dynamic-pills.js';
 import '../../../../ht-spinner/ht-spinner.js';
-import '../../../../icons/medication-icons';
-import '../../../../icons/icure-icons';
 import '../../../../dynamic-form/dynamic-doc.js';
 import '../../../../collapse-button/collapse-button.js';
 import '../../../../../styles/dialog-style.js';
@@ -21,7 +19,7 @@ import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 import _ from "lodash"
-class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
@@ -137,85 +135,33 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 width: 8px;
             }
             
-            .icon-code {
-                width: 12px;
-                height: 12px;
-                color: var(--app-primary-color-dark);
-            }
-            
-            .colour-code span{
-                content: '';
-                display: inline-block;
-                height: 8px;
-                width: 8px;
-                border-radius: 50%;
-                vertical-align: middle;
-                background-color: transparent;
-                margin-left: 2px;
-            }
-            
-            .table-icon {
-                --iron-icon-height: 18px !important;
-                --iron-icon-width: 18px !important;
-                padding: 0px;
-            }
-
-            .small-table-icon {
-                --iron-icon-height: 14px !important;
-                --iron-icon-width: 14px !important;
-                padding: 0px;
-            }
-            
         </style>
         
         <template is="dom-if" if="[[isLoading]]" restamp="true">
             <ht-spinner active="[[isLoading]]"></ht-spinner>
         </template>
         <template is="dom-if" if="[[!isLoading]]" restamp="true">
-             <div class="table">
+            <div class="table">
                 <div class="tr th">                 
-                    <div class="td fg01"></div> 
-                    <div class="td fg01"></div>    
-                    <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
+                    <div class="td fg01">[[localize('','',language)]]</div>    
+                    <div class="td fg1">[[localize('presc-sear-name','Name',language)]]</div>
+                    <div class="td fg2"></div>
                 </div>
-                <template is="dom-repeat" items="[[searchResult.commercialName]]" as="drug">
+                <template is="dom-repeat" items="[[searchResult.otc]]" as="drug">
                     <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>  
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs" title="Alternative"></div>   
-                        <div class="td fg2">[[drug.label]]</div>
-                        <div class="td fg05">
-                            <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon></template>
-                            <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label></template>
-                            <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
-                        </div>
-                        <div class="td fg05">
-                            <div class="icon-type-group">
-                                <iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon>
-                                <iron-icon icon="medication-svg-icons:[[drug.narcoticIcon]]" class="table-icon"></iron-icon>
-                                <iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
-                            </div>
-                        </div>
-                        <div class="td fg05">[[drug.chapt4]]</div>
-                        <div class="td fg05"></div>  
-                        <div class="td fg05"><iron-icon icon="medication-svg-icons:[[drug.catIcon]]" class="table-icon"></iron-icon></div>
-                        <div class="td fg05">[[drug.patientPrice]]</div>
-                        <div class="td fg05">[[drug.publicPrice]]</div> 
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
+                        <div class="td fg2"></div>
                     </div>
                 </template>
-            </div>      
-        </template>                
+            </div>  
+        </template>                 
+       
 `;
     }
 
     static get is() {
-        return 'ht-pat-prescription-detail-search-commercial';
+        return 'ht-pat-prescription-detail-search-otc';
     }
 
     static get properties() {
@@ -267,7 +213,7 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 id: drugId,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.get(this, 'searchResult.commercialName', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
             }
         }))
 
@@ -280,42 +226,5 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
         return cat ? "ATC--"+_.toUpper(cat) : null
     }
 
-    _getIcon(item) {
-        return item.allergyType === "allergy" ? "image:filter-vintage" : (item.allergyType === "adr" ? "vaadin:pill" : "");
-    }
-
-    _getStyle(prefix, cat, el = "span") {
-        return cat ? prefix + '--' + cat.toUpperCase() + (el ? (' ' + el) : '') : null
-    }
-
-    _hasIcon(item) {
-        return !!item.allergyType
-    }
-
-    _hasColor(item) {
-        return !item.allergyType
-    }
-
-    _atcTooltip(cat) {
-        return cat ? this.localize('atc-' + cat, '') : null
-    }
-
-    _searchCheaperDrugs(e){
-        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const drug = _.get(this, 'searchResult.commercialName', []).find(cn => _.get(cn, 'id',  null) === drugId)
-
-        return !drugId ? null : this.dispatchEvent(new CustomEvent('search-cheaper-drugs', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                id: _.get(drug, 'id', null),
-                uuid: _.get(drug, 'uuid', null),
-                groupId: _.get(drug, 'groupId', null),
-                uuids: _.get(drug, 'uuids', []),
-                drug: drug
-            }
-        }))
-
-    }
 }
-customElements.define(HtPatPrescriptionDetailSearchCommercial.is, HtPatPrescriptionDetailSearchCommercial);
+customElements.define(HtPatPrescriptionDetailSearchOtc.is, HtPatPrescriptionDetailSearchOtc);
