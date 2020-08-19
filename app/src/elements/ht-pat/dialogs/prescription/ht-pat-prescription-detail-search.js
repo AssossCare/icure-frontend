@@ -383,9 +383,25 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     const now = moment().valueOf();
                     const publicDmpp = _.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P")
                     const atcCodes = _.get(ampp, 'atcs', []).map(atc => _.get(atc, 'code', null)) || []
+                    const drugCnk = _.trim(_.get(publicDmpp, 'codeType')) === 'CNK' && _.trim(_.get(publicDmpp, 'code'))
+
+                    // _.filter(_.get(this,"allergies",[]), patAllergy => {
+                    //
+                    //     const patAllergyAtcCodes = _
+                    //         .chain(patAllergy)
+                    //         .get("codes")
+                    //         .filter({type:"CD-ATC"})
+                    //         .map("code")
+                    //         .uniq()
+                    //         .compact()
+                    //         .value()
+                    //
+                    //     console.log("patAllergyAtcCodes", patAllergyAtcCodes);
+                    //
+                    // })
 
                     return _.assign(ampp, {
-                        id: _.get(publicDmpp, 'codeType', null) === 'CNK' && _.get(publicDmpp, 'code', null),
+                        id: drugCnk,
                         groupId: _.get(row, 'vmp.vmpGroup.id', null),
                         hasChildren: (level === 0) && !!_.get(row, 'vmp.vmpGroup.id', null),
                         uuid: _.get(publicDmpp, 'codeType', null) === 'CNK' && _.get(publicDmpp, 'code', null),
@@ -396,7 +412,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         posologyNote: _.get(ampp, 'posologyNote['+this.language+']', null) || "",
                         unit: _.get(row, "components[0].pharmaceuticalForms[0].name[" + this.language + "]", ""),
                         atcCodes: atcCodes,
-                        allergies: _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && id === _.get(allergy, 'cnk', null)) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || "")),
+                        allergies: _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && drugCnk === _.get(allergy, 'cnk', null)) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || "")),
                         dividable: !(_.get(row, "components[0].dividable", "") === "X"),
                         samDate: _.get(publicDmpp, 'from', null) ? moment(_.get(publicDmpp, 'from', null)).format("DD/MM/YYYY") : null,
                         amp: row
@@ -505,13 +521,17 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         _.get(vmpGroups, 'rows', []).map(vmpGroup =>
             prom = prom.then(vmpGroupList =>
                 this.api.besamv2().findPaginatedAmpsByGroupCode(_.get(vmpGroup, 'code', null), null, null, 1)
-                    .then(amps => _.concat(vmpGroupList, _.assign(vmpGroup, {
-                            id: _.get(vmpGroup, 'code', null),
-                            intendedName: _.get(vmpGroup, "name[" + this.language + "]", ""),
-                            unit: _.get(_.head(amps), "components[0].pharmaceuticalForms[0].name[" + this.language + "]", ""),
-                            atcCodes: _.get(_.get(_.head(amps), "ampps", []).find(ampp => !_.get(ampp, 'to', null) && _.size(_.get(ampp, 'atcs', [])) && _.get(ampp, 'dmpps', []).some(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === 'P' && _.get(dmpp, 'codeType', null) === 'CNK' && !_.get(dmpp, 'to', null))), 'atcs', []).map(atc => atc.code) || [],
-                            allergies: _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && (id === _.get(allergy, 'cnk', null))) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || ""))
-                        }))
+                    .then(amps => {
+                        const atcCodes = _.get(_.get(_.head(amps), "ampps", []).find(ampp => !_.get(ampp, 'to', null) && _.size(_.get(ampp, 'atcs', [])) && _.get(ampp, 'dmpps', []).some(dmpp => _.trim(_.get(dmpp, 'deliveryEnvironment')) === 'P' && _.trim(_.get(dmpp, 'codeType')) === 'CNK' && !_.get(dmpp, 'to', null))), 'atcs', []).map(atc => atc.code) || []
+                        const id = _.get(vmpGroup, 'code', null)
+                        return _.concat(vmpGroupList, _.assign(vmpGroup, {
+                                id: id,
+                                intendedName: _.get(vmpGroup, "name[" + this.language + "]", ""),
+                                unit: _.get(_.head(amps), "components[0].pharmaceuticalForms[0].name[" + this.language + "]", ""),
+                                atcCodes: atcCodes,
+                                allergies: _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && (id === _.get(allergy, 'cnk', null))) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || ""))
+                            }))
+                        }
                     ))
         )
         return prom
