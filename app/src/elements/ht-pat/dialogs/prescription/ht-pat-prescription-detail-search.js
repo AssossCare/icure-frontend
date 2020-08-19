@@ -322,6 +322,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     Promise.all([
                         this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
                         this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
+                        //this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
                     ]).then(([vmpGroups, amps]) => {
                         this.set("searchResult.commercialName", _.orderBy(this._prepareCommercialForDisplay(amps, null, null), ['label'], ['asc']))
                         return this._prepareMoleculeForDisplay(vmpGroups)
@@ -345,7 +346,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     })
                     this.set('isLoading', false)
                 }
-            }, 100)
+            }, 200)
         }else{
             this.set('searchResult', {
                 compound: _.get(this, 'listOfCompound', []),

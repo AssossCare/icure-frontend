@@ -38,17 +38,28 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             }
             
             .cnk-info-container-content{
-                 height: calc(100% - 30px);
+               height: calc(100% - 30px);
             }
+            
+            .btn-close{
+               float: right;
+               margin-top: -4px;
+               margin-right: -4px;
+            }
+            
+            .bold{
+                font-weight: bold;
+            }
+            
         </style>
         
          <div class="cnk-info-container">
             <div class="cnk-info-title">
-                <span class="bold">[[localize('presc-cheap-drug', 'Cheaper drugs for', language)]]: </span> [[selectedParentDrugForCheaper.label]]
+                <span class="bold">[[localize('presc-cnk-info', 'Informations about', language)]]: </span> [[selectedCnkForInformation.drug.label]]
                 <paper-icon-button id="" class="button button--other btn-close" icon="icons:close" on-tap="_closeCnkInfoView"></paper-icon-button>
             </div>
             <div class="cnk-info-container-content">
-                  
+                
             </div>
          </div>
                     
@@ -80,6 +91,10 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            selectedCnkForInformation:{
+                type: Object,
+                value: () => {}
             }
         };
     }
