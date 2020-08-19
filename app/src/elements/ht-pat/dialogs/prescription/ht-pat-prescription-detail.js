@@ -160,6 +160,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             selected-drug-for-posology="[[selectedDrugForPosology]]"
                             allergies="[[allergies]]"
                             reimbursement-type-list="[[reimbursementTypeList]]"
+                            on-open-additional-cnk-info="_openAdditionalCnkInfo"
                          ></ht-pat-prescription-detail-posology>
                     </div>
                 </template> 
@@ -451,6 +452,14 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', true)
         }
+
+    }
+
+    _openAdditionalCnkInfo(e) {
+
+        const product = _.get(e,"detail.product");
+
+        console.log("_openAdditionalCnkInfo", product)
 
     }
 

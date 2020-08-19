@@ -144,10 +144,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 }
                 
                 .posology-title{
-                    height: 30px;
                     padding: 5px;
                     background: var(--app-background-color-dark);
                     box-sizing: border-box;
+                    position: relative;
                 }
                 
                 .bold{
@@ -167,6 +167,17 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     width:24px;
                     height:24px;
                     padding:4px;
+                }
+
+                .infoIconBlue {
+                    color:#0054ff;
+                }
+                
+                .infoIconMore {
+                    position:absolute;
+                    top:5px;
+                    right:5px;
+                    color:var(--app-secondary-color);
                 }
                 
                 .regimen-line {
@@ -218,6 +229,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         padding: 0;
                     }
                 }
+                
                 .regimen-line.block paper-dropdown-menu {
                     margin-right: 8px;
                     --paper-dropdown-menu-input: {
@@ -308,24 +320,44 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             <div class="posology-container">
             
                 <div class="posology-title">
+                
+                    <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(selectedDrugForPosology)]]"></iron-icon> [[_getDrugName(selectedDrugForPosology)]]</h3>
+                    <p class="m0 mt5">
+                        <template is="dom-if" if="[[selectedDrugForPosology.drug.id]]">
+                            <paper-icon-button id="CBIPLink[[selectedDrugForPosology.drug.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
+                            <paper-tooltip id="tt_CBIPLink[[selectedDrugForPosology.drug.id]]" position="right" for="CBIPLink[[selectedDrugForPosology.drug.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
+                        </template>
+                        
+                        <template is="dom-if" if="[[_getRcpLink()]]">
+                            <paper-icon-button id="rcpLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon infoIconBlue" icon="vaadin:pill" role="button" on-tap="_openRcpLink"></paper-icon-button>
+                            <paper-tooltip id="tt_rcpLink_[[selectedDrugForPosology.drug.id]]" position="right" for="rcpLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_rcp','Résumé caractéristiques du produit (CBiP)',language)]]</paper-tooltip>
+                        </template>
+                        
+                        <template is="dom-if" if="[[_getLeafletLink()]]">
+                            <paper-icon-button id="leafletLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
+                            <paper-tooltip id="tt_leafletLink_[[selectedDrugForPosology.drug.id]]" position="right" for="leafletLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
+                        </template>                    
+                        [[_getDrugId(selectedDrugForPosology)]]&nbsp;&nbsp;[[_getDrugCnk(selectedDrugForPosology)]]
+                    </p>
                     
-                    <template is="dom-if" if="[[selectedDrugForPosology.drug.id]]">
-                        <paper-icon-button id="CBIPLink[[selectedDrugForPosology.drug.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
-                        <paper-tooltip id="tt_CBIPLink[[selectedDrugForPosology.drug.id]]" position="right" for="CBIPLink[[selectedDrugForPosology.drug.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
+                    <!--
+                    <div class="sam-code-item">
+                        <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_formatCnk(medicationDetail.id)]]</template>
+                        <template is="dom-if" if="[[medicationDetail.oldCnk]]">
+                            <iron-icon class="alert-icon" icon="icons:warning"></iron-icon>
+                            [[localize('', 'Attention', language)]] <span class="strikeOut">[[_formatCnk(medicationDetail.oldCnk)]]</span> [[localize('', 'devient', language)]] [[_formatCnk(medicationDetail.id)]]
+                        </template>
+                    </div>
+                    -->
+                    
+                    <template is="dom-if" if="[[_hasAllergies(medicationDetail)]]">
+                        <div class="allergy-alert">
+                            <div class="allergy-title"> <iron-icon class="alert-icon" icon="icons:warning"></iron-icon> [[localize('aller_int','Allergies et intolérances',language)]]</div>
+                            <div class="list"><template is="dom-repeat" items="[[medicationDetail.allergies]]" as="allergy"><div><iron-icon class$="code-icon [[_getAtcStyle(allergy)]]" icon="[[_getAllergyIcon(allergy)]]"></iron-icon>[[_getIcpcLabel(allergy)]]<i> [[_shortDateFormat(allergy.openingDate, allergy.valueDate)]]</i> [[allergy.descr]]</div></template></div>
+                        </div>
                     </template>
                     
-                    <template is="dom-if" if="[[_getRcpLink()]]">
-                        <paper-icon-button id="rcpLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon" icon="vaadin:pill" role="button" on-tap="_openRcpLink"></paper-icon-button>
-                        <paper-tooltip id="tt_rcpLink_[[selectedDrugForPosology.drug.id]]" position="right" for="rcpLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_rcp','Résumé caractéristiques du produit (CBiP)',language)]]</paper-tooltip>
-                    </template>
-                    
-                    <template is="dom-if" if="[[_getLeafletLink()]]">
-                        <paper-icon-button id="leafletLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
-                        <paper-tooltip id="tt_leafletLink_[[selectedDrugForPosology.drug.id]]" position="right" for="leafletLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
-                    </template>
-                    
-                    <iron-icon class="header-icon" icon="[[_getDrugType(selectedDrugForPosology)]]"></iron-icon>
-                    <span class="bold fs16">[[_getDrugName(selectedDrugForPosology)]]</span>&nbsp;&nbsp;[[_getDrugId(selectedDrugForPosology)]]&nbsp;&nbsp;[[_getDrugCnk(selectedDrugForPosology)]]
+                    <paper-icon-button class="infoIconMore" icon="icons:help-outline" on-tap="_openAdditionalCnkInfo"></paper-icon-button>
 
                 </div>
                 
@@ -351,68 +383,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     </div>
                                 </template>
                                 
-                                <div class="regimen-line display-type-regimen">
-                                    <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!targetAmpp.dividable]]">
-                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{posologyData.quantityFactor}}">
-                                            <template is="dom-repeat" items="[[quantityFactors]]"><paper-item id="[[item.id]]" value="[[item]]">[[localize(item.numLabel, item.numLabel, language)]]</paper-item></template>
-                                        </paper-listbox>
-                                    </paper-dropdown-menu>
-                                </div>
-                                
-                                <template is="dom-repeat" items="[[regimenKeys]]">
-                                    <ht-regimen-day
-                                        api="[[api]]" 
-                                        i18n="[[i18n]]" 
-                                        language="[[language]]" 
-                                        resources="[[resources]]"
-                                        period-config="[[periodConfig]]"
-                                        regimen-config="[[regimenConfig]]"
-                                        regimen="{{medicationContent.medicationValue.regimen}}"
-                                        key="[[item]]"
-                                        medication-unit="[[targetAmpp.unit]]" 
-                                        weekday-codes="[[weekdayCodes]]" 
-                                        occurrences="[[regimenKeys.length]]"
-                                        quantity-factor=[[quantityFactorValue]] 
-                                        on-regimen-changed="_regimenChanged" 
-                                        on-regimen-delete="_removeRegimen"
-                                    ></ht-regimen-day>
-                                </template>
-                                
-                                <div class="regimen-line display-type-regimen">
-                                    
-                                    <paper-dropdown-menu always-float-label id="peri" label="[[localize('peri', 'Période', language)]]">
-                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{periodConfig}}">
-                                            <template is="dom-repeat" items="[[periodConfigs]]"><paper-item value="[[item]]">[[localize(item.id, item.id, language)]]</paper-item></template>
-                                        </paper-listbox>
-                                    </paper-dropdown-menu>
-                                    
-                                    <template is="dom-if" if="[[_canAddRegimen(periodConfig)]]">
-                                        <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addRegimen"></paper-icon-button>
-                                        <paper-dropdown-menu always-float-label id="periodConfigDropDown" label="[[localize(periodConfig.label, periodConfig.label, language)]]" disabled=[[periodConfig.disabled]]>
-                                            <paper-listbox id="periodConfig" slot="dropdown-content" attr-for-selected="value" selected="{{regimenKey}}">
-                                                <template is="dom-repeat" items="[[availableRegimenKeys]]"><paper-item value="[[item]]">[[localize(item, item, language)]]</paper-item></template>
-                                            </paper-listbox>
-                                        </paper-dropdown-menu>
-                                    </template>
-                                    
-                                </div>
-                                
-                                <div class="regimen-line display-type-regimen comment">
-                                    <paper-input-container always-float-label="true">
-                                        <label slot="label" class="color-status">[[localize('pos','Posology',language)]]</label>
-                                        <iron-autogrow-textarea readonly slot="input" value="{{targetAmpp.posology}}"></iron-autogrow-textarea>
-                                    </paper-input-container>
-                                </div>
-                                
-                                <div class="regimen-line display-type-regimen comment">
-                                    <paper-input-container always-float-label="true">
-                                        <label slot="label" class="color-status">[[localize('instructions-for-patient','Instructions pour le patient',language)]]/[[localize('pos','Posology',language)]]</label>
-                                        <iron-autogrow-textarea slot="input" value="{{targetAmpp.commentForPatient}}"></iron-autogrow-textarea>
-                                    </paper-input-container>
-                                </div>
-                                
-                                
-                                
+                                Portion<br />
+                                Posologie (component)<br />
+                                Période<br />
+                                Posologie (text)<br />
+                                Instructions pour le patient<br />
+
                             </div>
                         </div>
                     </div>
@@ -431,74 +407,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             Remboursement<br />
                             Déliverable à partir du<br />
                             Date de fin pour l'exécution<br />
-                            
-                            <div class="regimen-line display-type-regimen">
-                            
-                                <vaadin-date-picker id="beginMoment" label="[[localize('start-date', 'Start date', language)]]" value="{{targetAmpp.beginMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]" required></vaadin-date-picker>
-                                
-                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
-                                
-                                    <vaadin-date-picker id="endMoment" label="[[localize('end-date', 'End date', language)]]" value="{{targetAmpp.endMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]" min="[[targetAmpp.beginMomentAsString]]"></vaadin-date-picker>
-                                    <paper-input always-float-label type="number" min="0" label="[[localize('','Nombre de jours',language)]]" value="{{duration}}" autovalidate pattern="^\\d*$"></paper-input>
-                                    
-                                    <template is="dom-if" if="[[canShowProvisionInfo]]">
-                                        <vaadin-date-picker id="endProvisionMoment" label="[[localize('', 'Fin boîte', language)]]" readonly value="[[endProvisionMomentAsString]]" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
-                                        <paper-input always-float-label type="number" min="0" readonly label="[[localize('provision-days','Jours couverts',language)]]" value="[[provisionDays]]"></paper-input>
-                                        <template is="dom-if" if="[[insufficientProvision]]"><div class="date-alert"><iron-icon class="alert-icon" icon="icons:warning"></iron-icon></div></template>
-                                    </template>
-                                    
-                                </template>
-                                
-                            </div>
-                                
-                            <div class="regimen-line display-type-regimen">
-                            
-                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
-                                    <paper-dropdown-menu always-float-label id="medicSubstitution" label="[[localize('', 'Substitution', language)]]">
-                                        <paper-listbox id="substitution" slot="dropdown-content" selected="{{targetAmpp.substitutionAllowed}}" attr-for-selected="value">
-                                            <paper-item value="true">[[localize('subtitutionAllowed','Autorisée',language)]]</paper-item>
-                                            <paper-item value="false">[[localize('subtitutionForbidden','Interdite',language)]]</paper-item>
-                                        </paper-listbox>
-                                    </paper-dropdown-menu>
-                                </template>
-                            
-                                <paper-dropdown-menu always-float-label id="medicReimbursement" label="[[localize('presc_reimb', 'Reimbursement', language)]]" class="regimen--reimbursement">
-                                    <paper-listbox id="reimbursementReason" slot="dropdown-content" class="dropdown-reimbursement" attr-for-selected="value" selected="{{reimbursementReason}}">
-                                        <template is="dom-repeat" items="[[reimbursementCodeRecipe]]"><paper-item value="[[item]]">[[_getCodeLabel(item.label)]]</paper-item></template>
-                                    </paper-listbox>
-                                </paper-dropdown-menu>
-                            
-                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
-                                    <vaadin-date-picker id="deliveryDate" label="[[localize('deliv_from', 'Délivrable à partir du', language)]]" readonly value="{{targetAmpp.deliveryMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
-                                    <vaadin-date-picker id="endExecDate" label="[[localize('EndDateForExecution', 'Date de fin pour excécution', language)]]" readonly value="{{targetAmpp.endExecMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
-                                </template>
-                                
-                            </div>
-                            
-                            <div class="regimen-line display-type-regimen">
-
-                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
-                                
-                                    <paper-dropdown-menu always-float-label id="medicRenewal" label="[[localize('renewal', 'Renouvellement', language)]]">
-                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{targetAmpp.renewal}}">
-                                            <paper-item value="allowed">[[localize('allowed','Permis',language)]]</paper-item>
-                                            <paper-item value="forbidden">[[localize('forbidden','Interdit',language)]]</paper-item>
-                                        </paper-listbox>
-                                    </paper-dropdown-menu>
-                                    
-                                    <template is="dom-if" if="[[_isAllowed(targetAmpp.renewal)]]">
-                                        <paper-input always-float-label type="number" min="0" label="[[localize('amount', 'Nombre', language)]]" max="100" value="{{medicationContent.medicationValue.renewal.decimal}}"></paper-input>
-                                        <paper-input always-float-label type="number" min="0" label="[[localize('everyX', 'tous le', language)]]" max="100" value="{{medicationContent.medicationValue.renewal.duration.value}}"></paper-input>
-                                        <paper-dropdown-menu always-float-label id="medicRenewalTimeUnit" label="[[localize('time_unit','Time unit',language)]]" class="regimen--renewalTimeUnit">
-                                            <paper-listbox id="renewalTimeUnit" slot="dropdown-content" class="dropdown-renewalTimeUnit" attr-for-selected="value" selected="{{renewalTimeUnit}}">
-                                                <template is="dom-repeat" items="[[timeUnits]]"><paper-item value="[[item]]">[[_getCodeLabel(item.label)]]</paper-item></template>
-                                            </paper-listbox>
-                                        </paper-dropdown-menu>
-                                    </template>
-                                    
-                                </template>
-                                
-                            </div>
                             
                         </div>
                     </div>
@@ -556,9 +464,136 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 type: Array,
                 value: () => []
             },
-            targetAmpp: {
+
+            // <Axel Stijns>
+            medicationDetail: {
                 type: Object,
                 value:() => {}
+            }, // The ampp corresponding to the CNK code we're being passed for drug X
+            medicationContent: {
+                type: Object,
+                value: null,
+                notify: true
+            },
+            medications: {
+                type: Array,
+                value: []
+            },
+            bufferUnit: {
+                type: String
+            },
+            bufferQuantity: {
+                type: Number,
+                value: 1
+            },
+            bufferNumberByFrequency: {
+                type: Number,
+                value: 1
+            },
+            bufferFrequency: {
+                type: String,
+                value: "daily"
+            },
+            bufferGeneralFrequency: {
+                type: Number,
+                value: 0
+            },
+            medicPriority: {
+                type: Number,
+                value: 0,
+                observer: "_changeMedicPriority"
+            },
+            selectedTab: {
+                type: Number,
+                value: 0
+            },
+            openAddDropDown: {
+                type: Boolean,
+                value: false
+            },
+            openAddColDropDown: {
+                type: Boolean,
+                value: false
+            },
+            reimbursementCodeRecipe: {
+                type: Array,
+                value: () => []
+            },
+            reimbursementItem:{
+                type: Object,
+                value: () => {}
+            },
+            reimbursementItemIdx:{
+                type: Number,
+                value: 0
+            },
+            timeUnits:{
+                type: Array,
+                value: () => []
+            },
+            renewalDurationUnitItem: {
+                type: Object,
+                value: () => {}
+            },
+            renewalTimeUnitIdx:{
+                type: Number,
+                value: 0
+            },
+            renewalDurationValue: {
+                type: Number,
+                value: 0
+            },
+            isRenewal:{
+                type: Boolean,
+                value: false
+            },
+            renewalDecimalValue:{
+                type: Number,
+                value: 0
+            },
+            medicationMustBeCreated:{
+                type: Boolean,
+                value: false
+            },
+            substitution: {
+                type: Number,
+                value: 0
+            },
+            duration: {
+                type: Number
+            },
+            time: {
+                type: String,
+                value: "10:00"
+            },
+            renewal: {
+                type: Number,
+                value: 0
+            },
+            quantityFactor: {
+                type: Object,
+                value: null
+            },
+            totalQuantity: {
+                type: Number,
+                value: 0
+            },
+            totalTakes: {
+                type: Number,
+                value: 0
+            },
+            regimenKeys: {
+                type: Array,
+                value: () => [],
+                notify: true
+            },
+            regimenKey: {
+                type: String,
+                value: ""
+            },
+            medicationId: {
+                type: String,
+                value: ""
             },
             quantityFactors: {
                 type: Array,
@@ -569,16 +604,112 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     {id: "quarter", label: "quantity_factor_quarter", numLabel: "1/4", denominator: 4}
                 ]
             },
-            posologyData: {
+            weekdayKeys: {
+                type: Array,
+                value: () => ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+            },
+            periodConfigs: {
+                type: Array,
+                value: () => [
+                    {id: "dailyPosology", title: "dai", keys: [], label: "", disabled: true, keyId: ""},
+                    {id: "weeklyPosology", title: "wee", keys: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], label: "dayOfWeek", disabled: false, keyId: "weekday"}
+                    // @ todo: dayNumber not supported in posologyString
+                    // {id: "monthly", keys: _.range(1, 32), label: "dayOfMonth", disabled: false, keyId: "dayNumber"}
+                ]
+            },
+            periodConfig: {
                 type: Object,
-                value:() => {}
+                value: {id: ""}
+            },
+            availableRegimenKeys: {
+                type: Array,
+                value: () => [""]
+            },
+            regimenConfig: {
+                type: Array,
+                value: () => [
+                    {id: "afterwakingup"},
+                    {id: "beforebreakfast", parentId: "morning"},
+                    {id: "morning"},
+                    {id: "duringbreakfast", parentId: "morning"},
+                    {id: "afterbreakfast", parentId: "morning"},
+                    {id: "betweenbreakfastandlunch"},
+                    {id: "beforelunch", parentId: "midday"},
+                    {id: "midday"},
+                    {id: "duringlunch", parentId: "midday"},
+                    {id: "afterlunch", parentId: "midday"},
+                    {id: "betweenlunchanddinner"},
+                    {id: "beforedinner", parentId: "evening"},
+                    {id: "evening"},
+                    {id: "duringdinner", parentId: "evening"},
+                    {id: "afterdinner", parentId: "evening"},
+                    {id: "thehourofsleep"}
+                ]
+            },
+            weekdayCodes: {
+                type: Array,
+                value: () => []
+            },
+            dayPeriodCodes: {
+                type: Array,
+                value: () => []
+            },
+            reimbursementReason: {
+                type: Object,
+                value: () => {}
+            },
+            insufficientProvision: {
+                type: Boolean,
+                value: false
+            },
+            renewalTimeUnit: {
+                type: Object,
+                value: () => {}
+            },
+            canShowProvisionInfo: {
+                type: Boolean,
+                value: false
+            },
+            canShowQuantityInfo: {
+                type: Boolean,
+                value: false
+            },
+            cachedBoxes: {
+                type: String,
+                value: ""
+            },
+            closable: {
+                type: Boolean,
+                value: false
+            },
+            initializingDate: {
+                type: Boolean,
+                value: false,
+            },
+            commentSeparator: {
+                type: String,
+                value: " - "
             }
+            // </Axel Stijns>
+
         };
     }
 
     static get observers() {
         return [
-            "_getTargetAmpp(user, selectedDrugForPosology)"
+            "_getMedicationDetail(user, selectedDrugForPosology)",
+            '_changeBeginMoment(medicationDetail.beginMomentAsString)',
+            '_changeEndMoment(medicationDetail.endMomentAsString)',
+            '_changeDuration(duration)',
+            '_regimenChanged(medicationContent.medicationValue, medicationDetail.commentForPatient, medicationContent.medicationValue.regimen.*)',
+            '_medicationChanged(medication, medication.*)',
+            '_quantityFactorChanged(quantityFactor)',
+            '_periodChanged(periodConfig)',
+            '_renewalChanged(medicationDetail.renewal)',
+            '_reimbursementReasonChanged(reimbursementReason)',
+            '_renewalTimeUnitChanged(renewalTimeUnit)',
+            '_isConfidentialChanged(medicationDetail.isConfidential)',
+            '_substitutionAllowedChanged(medicationDetail.substitutionAllowed)'
         ];
     }
 
@@ -596,16 +727,18 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             })
     }
 
-    _getTargetAmpp(user, selectedDrugForPosology) {
 
-        const targetAmpp = _
+
+    _getMedicationDetail(user, selectedDrugForPosology) {
+
+        const medicationDetail = _
             .chain(selectedDrugForPosology)
             .get("drug.amp.ampps")
             .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(selectedDrugForPosology, "id")))
             .omit(["amp.ampps"])
             .value()
 
-        return (this.set("targetAmpp", targetAmpp)||true) && targetAmpp
+        return (this.set("medicationDetail", medicationDetail)||true) && medicationDetail
 
     }
 
@@ -618,7 +751,14 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     _getDrugType(drug){
-        return _.get(drug, 'type', null) === "chronic" ? "icons:alarm-on" : _.trim(_.get(drug,'type')) === "history" ? "vaadin:time-backward" : _.trim(_.get(drug,'type')) === "commercial" ? "vaadin:copyright" : _.trim(_.get(drug,'type')) === "substance" ? "vaadin:pill" : _.trim(_.get(drug,'type')) === "compound" ? "vaadin:flask" : null
+
+        return _.trim(_.get(drug,'type')) === "chronic" ? "icons:alarm-on" :
+            _.trim(_.get(drug,'type')) === "history" ? "vaadin:time-backward" :
+            _.trim(_.get(drug,'type')) === "commercial" ? "vaadin:copyright" :
+            _.trim(_.get(drug,'type')) === "substance" ? "vaadin:pill" :
+            _.trim(_.get(drug,'type')) === "compound" ? "vaadin:flask" :
+            ""
+
     }
 
     _getDrugCnk(drug){
@@ -662,6 +802,697 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return targetUrl && window.open(targetUrl);
     }
 
+    _hasAllergies(item) {
+
+        return _.size(_.get(item,"allergies"))
+
+    }
+
+    _getAtcStyle(item) {
+
+        return !_.get(item,"atcCode[0]") ? "" : 'ATC--' + _.trim(_.head(_.get(item,"atcCode"))).toUpperCase();
+
+    }
+
+    _getAllergyIcon(item) {
+
+        return _.trim(_.get(item,"type")) === "allergy" ? "image:filter-vintage" : (_.trim(_.get(item,"type")) === "adr" ? "vaadin:pill" : "")
+
+    }
+
+    _getIcpcLabel(item) {
+
+        const icpc = _.find(_.get(item,"codes",[]), code => ["ICPC","ICPC2"].indexOf(_.trim(_.get(code,"type")).toUpperCase()) > -1)
+
+        return icpc && (icpc.code || icpc.id.split("|")[1]) || "";
+
+    }
+
+    _shortDateFormat(date, altDate) {
+
+        return (date || altDate) && this.api.moment((date || altDate)).format("YY") || "";
+
+    }
+
+    _openAdditionalCnkInfo() {
+
+        return this.dispatchEvent(new CustomEvent('open-additional-cnk-info', {bubbles:true,composed:true,detail:{product:this.selectedDrugForPosology}}))
+
+    }
+
+
+
+
+    // <Axel Stijns>
+
+    _formatCnk(id) {
+        return id && ("CNK " + id) || "";
+    }
+
+    _customContainer() {
+        return this.closable ? "container-prescription" : "container-standalone";
+    }
+
+    _isConfidentialChanged() {
+        if (!this.medicationDetail || !this.medicationDetail.newMedication) return;
+        const newMed = this.medicationDetail.newMedication;
+        const confType = "org.taktik.icure.entities.embed.Confidentiality";
+        ((newMed.tags || (newMed.tags = [])).find(tag => tag.type === confType) || (newMed.tags[newMed.tags.length] = {type: confType, version: "1"})).code = (this.medicationDetail.isConfidential ? "secret" : "notsecret");
+    }
+
+    _substitutionAllowedChanged() {
+        if (!this.medicationDetail) return;
+        this.set("medicationContent.medicationValue.substitutionAllowed", (this.medicationDetail.substitutionAllowed === "true"));
+    }
+
+    _close() {
+        this.dispatchEvent(new CustomEvent('close', {detail: {}, bubbles: true, composed: true}));
+    }
+
+    _editCompoundPrescription() {
+        this.dispatchEvent(new CustomEvent('edit-compound', {
+            detail: {
+                item : {
+                    title: this.medicationDetail.compoundTitle,
+                    formula: this.medicationDetail.intendedName,
+                    fromPrescription: {
+                        update: false,
+                        onChange: this._updateCompoundPrescription.bind(this)
+                    }
+                }
+            }, bubbles: true, composed: true
+        }));
+    }
+
+    _updateCompoundPrescription(compound) {
+        const medicationValue = _.get(this.medicationContent, "medicationValue", "");
+        if (medicationValue) {
+            medicationValue.compoundPrescription = compound.title + "\r\n" + compound.formula;
+            this.set("medicationDetail.compoundTitle", compound.title);
+            this.set("medicationDetail.intendedName", compound.formula);
+        }
+    }
+
+    _isPortion() {
+        return this.quantityFactor.denominator > 1;
+    }
+
+    _reimbursementReasonChanged() {
+        if (!this.reimbursementReason) {
+            this.set("medicationContent.medicationValue.reimbursementReason", null);
+        }
+        else {
+            this.set("medicationContent.medicationValue.reimbursementReason", this.reimbursementReason);
+        }
+    }
+
+    _renewalTimeUnitChanged() {
+        this.set("medicationContent.medicationValue.renewal.duration.unit", this.renewalTimeUnit);
+    }
+
+    _isAllowed(renewal) {
+        return renewal === "allowed";
+    }
+
+    _renewalChanged() {
+        if (!this.medicationDetail || !this.medicationContent) return;
+        if (this.medicationDetail.renewal === "allowed") {
+            const renewal = this.medicationContent.medicationValue.renewal || {
+                decimal: 1,
+                duration: {
+                    value: 1,
+                    unit: this.timeUnits.find(timeUnit => timeUnit.code === "mo")
+                }
+            };
+            this.set("medicationContent.medicationValue.renewal", renewal);
+            this.set("renewalTimeUnit", this.timeUnits.find(timeUnit => timeUnit.code === renewal.duration.unit.code));
+        } else {
+            delete this.medicationContent.medicationValue.renewal;
+            this.notifyPath("medicationContent.medicationValue.renewal");
+        }
+    }
+
+    _quantityFactorChanged() {
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (!regimen) return;
+        regimen.filter(reg => reg.administratedQuantity && reg.administratedQuantity.quantity || "")
+            .forEach(reg => {
+                const quantity = reg.administratedQuantity.quantity;
+                reg.administratedQuantity.unit = this.medicationDetail.unit || this.localize("uni", "Unités");
+                reg.administratedQuantity.quantity = this.quantityFactor.denominator > 1 && this.quantityFactor.numLabel || parseInt(quantity) || "";
+            });
+        this.set("quantityFactorValue", this.quantityFactor);
+        this.notifyPath("medicationContent.medicationValue", "changed");
+    }
+
+    _any(a,b,c,d,e) {
+        return a||b||c||d||e
+    }
+
+    _getCodeLabel(code){
+        return code && code[this.language]
+    }
+
+    _instructionOverride() {
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (regimen && regimen.length) {
+            this._resetAll()
+        }
+    }
+
+    _regimenChanged() {
+        if (!this.medicationContent || !this.medicationContent.medicationValue || !this.medicationDetail) return;
+        this._updateStats();
+        this.medicationContent.medicationValue.instructionForPatient = "";
+        const posology = this.api.contact().medication().posologyToString(this.medicationContent.medicationValue || {}, this.language);
+        this.set("medicationDetail.posology", posology);
+        const separator = posology && this.medicationDetail.commentForPatient && this.commentSeparator || "";
+        this.medicationContent.medicationValue.instructionForPatient = posology + separator + this.medicationDetail.commentForPatient;
+    }
+
+    _extractCommentForPatient() {
+        if (!this.medicationContent || !this.medicationContent.medicationValue) return;
+        const instructionForPatient = this.medicationContent.medicationValue.instructionForPatient;
+        this.medicationContent.medicationValue.instructionForPatient = "";
+        const posology = this.api.contact().medication().posologyToString(this.medicationContent.medicationValue || {}, this.language);
+        const comment = instructionForPatient && instructionForPatient.replace(posology, "") || "";
+        const index =  comment ? comment.indexOf(this.commentSeparator) : -1;
+        return (index < 0) ? comment : comment.slice(this.commentSeparator.length);
+    }
+
+    _updateStats() {
+        if (!this.quantityFactor) return;
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (!regimen) return;
+
+        const end = this._endMoment();
+        const begin = this._beginMoment();
+
+        let availableDoses = parseInt(_.get(this.medicationDetail, "packDisplayValue", 0), 10) * parseInt(_.get(this.medicationDetail, "boxes", 0), 10) * this.quantityFactor.denominator;
+        const keys= this.periodConfig.id === "weeklyPosology" ? this.weekdayKeys : [""];
+        let currentDayNumber = this.periodConfig.id === "weeklyPosology" ? begin.weekday() : 0;
+
+        let takes = keys.map(key => regimen.reduce((total, period) => {
+                if (!key || _.get(period, "weekday.code", 0) === key) {
+                    total += (this.quantityFactor.denominator > 1) && 1 || parseInt(period.administratedQuantity.quantity, 10) || 0;
+                }
+                return total;
+            }, 0)
+        );
+
+        const totalTakesPerPeriod = takes.reduce((total, quantity) => {
+            total += quantity;
+            return total;
+        }, 0);
+
+        // this.set("totalTakesPerPeriod", totalTakesPerPeriod);
+
+        const totalQuantityPerPeriod = Math.round(totalTakesPerPeriod / this.quantityFactor.denominator);
+
+        // this.set("totalQuantityPerPeriod", totalQuantityPerPeriod);
+        this.set("canShowProvisionInfo", this.medicationContent.isPrescription && availableDoses > 0 && totalTakesPerPeriod > 0);
+
+        let medicationDays = end ? end.diff(begin, "days") : 0;
+
+        this.set("canShowQuantityInfo", medicationDays && totalTakesPerPeriod);
+
+        let provisionDays = 0;
+        let totalTakes = 0;
+
+        if (totalTakesPerPeriod > 0) {
+            while (availableDoses > 0 || medicationDays > 0) {
+                const dailyTakes = (takes[(currentDayNumber++) % takes.length] || 0);
+                if (availableDoses > 0) {
+                    availableDoses -= dailyTakes;
+                    provisionDays += 1;
+                }
+                if (medicationDays > 0) {
+                    medicationDays -= 1;
+                    totalTakes += dailyTakes;
+                }
+            }
+
+            if (availableDoses < 0) {
+                provisionDays--;
+            }
+        }
+
+        const totalQuantity = Math.round(totalTakes / this.quantityFactor.denominator);
+
+        const endProvisionMoment = this._beginMoment().add(provisionDays, "days");
+
+        this.set("provisionDays", provisionDays);
+        this.set("totalTakes", totalTakes);
+        this.set("totalQuantity", totalQuantity);
+        this.set("endProvisionMomentAsString", endProvisionMoment.format("YYYY-MM-DD"));
+        this.set("insufficientProvision", (endProvisionMoment.isBefore(this._endMoment())));
+    }
+
+    _beginMoment() {
+        return this.api.moment(this.medicationDetail.beginMomentAsString, "YYYY-MM-DD");
+    }
+
+    _endMoment() {
+        return this.api.moment(this.medicationDetail.endMomentAsString, "YYYY-MM-DD");
+    }
+
+    _changeBeginMoment() {
+        if (this.medicationDetail) { // begin moment can NOT be empty
+            if (!this._beginMoment()) {
+                this.set("medicationDetail.beginMomentAsString", moment().format("YYYY-MM-DD"))
+            } else {
+                if (this.medicationDetail.endMomentAsString && !this.initializingDate) {
+                    const endMoment = this._beginMoment().add(this.duration, "days");
+                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
+                    this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
+                } else {
+                    this.set("medicationContent.medicationValue.endMoment", null);
+                }
+                this.set("medicationContent.medicationValue.beginMoment", parseInt(this._beginMoment().format("YYYYMMDD"), 10));
+                this._updateStats();
+            }
+        }
+    }
+
+    _changeEndMoment() {
+        if (this.medicationDetail && this._beginMoment()) {
+            if (!this._endMoment()) {
+                this.set("duration", "");
+            } else {
+                let endMoment = this._endMoment();
+                let duration = endMoment.diff(this._beginMoment(), "days");
+                if (duration < 0) {
+                    duration = 0;
+                    endMoment = this._beginMoment();
+                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
+                }
+                this.set("duration", duration.toString());
+                this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
+            }
+            this._updateStats();
+        }
+    }
+
+    _changeDuration() {
+        if (this.medicationDetail && this._beginMoment()) {
+            if (this.duration === "0") {
+                this.set("duration", "");
+            }
+            else if (!this.duration) {
+                this.set("medicationDetail.endMomentAsString", "");
+                this.set("medicationContent.medicationValue.endMoment", null);
+            } else {
+                const endMoment = this._beginMoment().add(this.duration, "days");
+                this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
+                this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
+            }
+            this._updateStats();
+        }
+    }
+
+    _isCompoundPrescription() {
+        return this.medicationDetail && this.medicationDetail.type === "compound";
+    }
+
+    _setSpinnerBusy() {
+        this.dispatchEvent(new CustomEvent('spinner-busy', {
+            detail: {}, bubbles: true, composed: true
+        }));
+    }
+
+    _setSpinnerIdle() {
+        this.dispatchEvent(new CustomEvent('spinner-idle', {
+            detail: {}, bubbles: true, composed: true
+        }));
+    }
+
+    extractContentWithIdFromMedicationService(m, isNew, isPres) {
+        const content = this.api.contact().preferredContent(m, this.language)  || (m.content[this.language] = {
+            medicationValue: {regimen: []}
+        });
+        return {
+            id: m.id,
+            codes: m.codes,
+            medicationValue: content.medicationValue,
+            isNew: isNew || false,
+            isPrescription: m.isPrescription || isPres || false,
+            isMedication: m.tags && m.tags.length && m.tags.some(tag => tag.type === "CD-ITEM" && tag.code === "medication") || false
+        };
+    }
+
+    _checkCnk(medication) {
+        if (medication.type === "medicine" && medication.id && !medication.samCode) {
+            return this.api.besamv2().findAmpsByDmppCode(medication.id)
+                .then(amps => {
+                    // get the latest version and compare cnk
+                    const now = moment().valueOf();
+                    const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
+                        if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
+                            return validAmpps.concat(amp.ampps.map(ampp => {
+                                return Object.assign(ampp, {
+                                    amp: amp,
+                                    publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
+                                });
+                            }));
+                        } else {
+                            return validAmpps;
+                        }
+                    }, []);
+
+                    const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
+                    const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
+                    const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
+                    Object.assign(medication, {
+                        spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
+                        leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
+                        ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
+                        posologyNote: updatedAmpp && updatedAmpp.posologyNote,
+                        dividable: updatedAmpp && updatedAmpp.dividable,
+                        packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
+                        samCode: _.get(updatedAmpp, "amp.code", ""),
+                        samDate: samDate,
+                    });
+                    if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
+                        // console.log("CNK ok");
+                    } else {
+                        const updatedCnk = updatedAmpp.publicDmpp.code;
+                        const oldCnk = medication.id;
+                        // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
+                        Object.assign(medication, {
+                            oldCnk: oldCnk,
+                            id: updatedCnk
+                        })
+                    }
+                    // @ todo also retrieve the current ampp to update data like displayPackage
+                    medication.updatedAmpp = updatedAmpp;
+                    return medication;
+                })
+                .catch(err => {
+                    console.log(err);
+                    return medication;
+                })
+        } else {
+            return Promise.resolve(medication);
+        }
+    }
+
+    _medicationChanged(medication) {
+        if (!medication) return;
+
+        this._setSpinnerBusy();
+        this._checkCnk(medication)
+            .then(medication => {
+                if (this.cachedBoxes && this.cachedBoxes !== medication.boxes) {
+                    this._updateStats();
+                }
+                this.cachedBoxes = medication.boxes;
+
+                this.set("medicationDetail", null);
+
+                const content = this.content || this.extractContentWithIdFromMedicationService(medication.newMedication, medication.options.isNew, medication.options.isPrescription);
+                this.set("medicationContent", content);
+
+                this._initmedicationContent();
+
+                const today = this.api.moment(Date.now());
+                this.set("initializingDate", true);
+
+                const commentForPatient = this._extractCommentForPatient();
+
+                this.set("medicationDetail", Object.assign(
+                    medication,
+                    {
+                        beginMomentAsString : this.api.moment((content && content.medicationValue && content.medicationValue.beginMoment) || (medication.newMedication && medication.newMedication.valueDate) || (medication.newMedication && medication.newMedication.openingDate) || Date.now()).format('YYYY-MM-DD') || null,
+                        endMomentAsString: this.api.moment((content && content.medicationValue && content.medicationValue.endMoment) || (medication.newMedication && medication.newMedication.closingDate)) ? this.api.moment(content.medicationValue.endMoment || (medication.newMedication && medication.newMedication.closingDate)).format("YYYY-MM-DD") : null,
+                        deliveryMomentAsString: today.format("YYYY-MM-DD"),
+                        endExecMomentAsString: today.add(3, "months").subtract(1, "days").format("YYYY-MM-DD"),
+                        dividable: medication.dividable === undefined ? true : medication.dividable,
+                        packDisplayValue: medication.packDisplayValue || 0,
+                        medicPriority : this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
+                        renewal: !!this.medicationContent.medicationValue.renewal ? "allowed" : "forbidden",
+                        isConfidential: ((medication.newMedication.tags || []).find(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || {code: ""}).code === "secret",
+                        substitutionAllowed: this.medicationContent.medicationValue.substitutionAllowed ? "true" : "false",
+                        commentForPatient: commentForPatient
+                    }
+                ));
+                this.set("initializingDate", false);
+
+                // this.set("renewalTimeUnit", this.medicationContent.medicationValue.renewal && this.medicationContent.medicationValue.renewal.duration.unit || this.timeUnits.find(timeUnit => timeUnit.code === "mo"));
+                const reimb = this.medicationContent.medicationValue.reimbursementReason;
+                this.reimbursementReason = null;
+                // this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || this.reimbursementCodeRecipe.find(item => item.code === "notreimbursable"));
+                this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || "");
+
+                const quantitySample = _.get(this.medicationContent, "medicationValue.regimen[0].administratedQuantity.quantity", "");
+                this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && this.quantityFactors.find(q => q.numLabel === quantitySample) || this.quantityFactors[0]);
+
+                // @todo: month (dayNumber) and date
+                const period = _.has(this.medicationContent, "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology" ;
+                if (this.periodConfig.id !== period) {
+                    this.set("periodConfig", this.periodConfigs.find(config => config.id === period));
+                } else {
+                    this._periodChanged();
+                }
+                this._updateStats();
+            })
+            .finally(() => this._setSpinnerIdle());
+    }
+
+    _periodChanged() {
+        if (!this.periodConfig.id) return;
+        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        this.set("medicationContent.medicationValue.regimen", regimen.filter(reg => this.periodConfig.id === "weeklyPosology" ? reg.weekday : !reg.weekday));
+        this._initRegimenKeys();
+    }
+
+    _initRegimenKeys() {
+        this.splice("regimenKeys", 0, this.regimenKeys.length);
+        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (this.periodConfig.id === "weeklyPosology") {
+            if (!regimen.length) {
+                this.push("regimenKeys", this.periodConfig.keys[0]);
+            } else {
+                const keyId = this.periodConfig.keyId;
+                if (keyId === "weekday") {
+                    const regimenKeys = regimen.filter((e, i, a) => a.findIndex(x => x[keyId].code === e[keyId].code) === i)
+                        .map(reg => reg[keyId].code)
+                        .filter(code => this.weekdayCodes.some(weekdayCode => weekdayCode.code === code));
+                    this.push("regimenKeys", ...regimenKeys)
+                } else {
+                    // @todo: dayNumber and date cases
+                }
+            }
+        } else {
+            this.push("regimenKeys", "none");
+        }
+        this._updatePeriodConfigs();
+    }
+
+    _updatePeriodConfigs() {
+        if (!this.periodConfig) return;
+        if (this.periodConfig.id !== "dailyPosology") {
+            this.splice("availableRegimenKeys", 0, this.availableRegimenKeys.length);
+            const availableRegimenKeys = this.periodConfig.keys.filter(key => !this.regimenKeys.some(regKey => regKey === key));
+            if (availableRegimenKeys.length) {
+                this.push("availableRegimenKeys", ...availableRegimenKeys);
+                this.set("regimenKey", availableRegimenKeys[0]);
+            }
+        }
+    }
+
+    _canAddRegimen() {
+        // @ todo
+        // return (this.periodConfig.id === "weeklyPosology") || (this.periodConfig.id === "monthlyPosology");
+        return (this.periodConfig.id === "weeklyPosology" && this.availableRegimenKeys.length);
+    }
+
+    _canDeleteRegimen() {
+        return (this.regimenKeys.length > 1);
+    }
+
+    _addRegimen() {
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (!regimen) return;
+        if (!this.regimenKey) return;
+        if (this.regimenKeys.includes(this.regimenKey))
+            return;
+        this.push("regimenKeys", this.regimenKey);
+        this._updatePeriodConfigs();
+    }
+
+    _removeRegimen(e) {
+        const key = _.get(e, "detail.key", "")
+        if (!key) return;
+        if (this.periodConfig.id === "dailyPosology") return;
+        if (this.regimenKeys.length < 2) return;
+        const keyId = this.periodConfig.keyId;
+        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (keyId === "weekday") {
+            regimen = regimen.filter(reg => reg.weekday && reg.weekday.code != key)
+        } else {
+            // @ todo dayNumber and date
+        }
+        this.set("medicationContent.medicationValue.regimen", regimen);
+        this.splice("regimenKeys", this.regimenKeys.indexOf(key), 1);
+        this._updatePeriodConfigs();
+    }
+
+
+    _all(a,b) { return a && b }
+
+    _regimenLines() {
+        return this.medicationContent && this.medicationContent.medicationValue && this.medicationContent.medicationValue.regimen || []
+    }
+
+    init() {
+        return new Promise(resolve => {
+            if (this.dayPeriodCodes && this.dayPeriodCodes.length) return resolve();
+            else return this.api.code().findCodes("be", "CD-DAYPERIOD")
+                .then(codes => this.api.code().findCodes("be", "care.topaz.customDayPeriod")
+                    .then(customCodes => this.push("dayPeriodCodes", ...codes.concat(customCodes))))
+                .then(() => Promise.all(this.regimenConfig.map(reg => {
+                        let dayPeriod = this.dayPeriodCodes.find(dayPeriod => dayPeriod.code === reg.id);
+                        if (!dayPeriod) {
+                            dayPeriod = {code: reg.id, type: "CD-DAYPERIOD"};
+                        }
+                        Object.assign(reg, {dayPeriod: dayPeriod});
+                        if (!dayPeriod.label || !dayPeriod.label[this.language]) {
+                            dayPeriod.label = _.fromPairs([[this.language, _.lowerCase(_.trim(this.localize(`ms_${reg.id}`, reg.id)))]]);
+                        }
+                    }))
+                )
+                .then(() => resolve())
+        })
+            .then(() => {
+                if (this.weekdayCodes && this.weekdayCodes.length) return Promise.resolve();
+                else return this.api.code().findCodes("be", "CD-WEEKDAY")
+                    .then(codes => this.push("weekdayCodes", ...codes.map(code => {
+                            const day = code.label[this.language] || "";
+                            const number = this.weekdayKeys.indexOf(code.code) || -1;
+                            return Object.assign(
+                                code,
+                                {
+                                    "weekday": day,
+                                    "weekNumber": (number > -1) && number || 0
+                                });
+                        })
+                    ))
+            })
+            .then (() => {
+                if (this.reimbursementCodeRecipe && this.reimbursementCodeRecipe.length) return Promise.resolve();
+                return this.api.code().findCodes("be", "CD-REIMBURSEMENT-RECIPE")
+                    .then(reimb => this.push("reimbursementCodeRecipe", "", ..._.orderBy(reimb, ['label.fr'], ['asc'])))
+            })
+            .then(() => {
+                if (this.timeUnits && this.timeUnits.length) return Promise.resolve();
+                return this.api.code().findCodes("be", "CD-TIMEUNIT")
+                    .then(timeUnits => this.push("timeUnits", ..._.orderBy(_.filter(timeUnits, i => ["ns", "us", "ms", "s", "min"].indexOf(_.trim(_.get(i, "code"))) === -1), ['label.fr'], 'asc')))
+            });
+    }
+
+    _resetAll() {
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (!regimen) return;
+        this.splice("medicationContent.medicationValue.regimen", 0, regimen.length);
+    }
+
+    _copyPosologyNote() {
+        this._resetAll();
+        this.set("medicationDetail.commentForPatient", this.medicationDetail.posologyNote);
+    }
+
+    _initmedicationContent(){
+        this.medicationContent.medicationValue && !this.medicationContent.medicationValue.regimen ? this.set('medicationContent.medicationValue.regimen', []) : null
+    }
+
+    openList(list) {
+        // ------------------if we want to create an array even when we have only one medication selected
+        // list && list.length > 0 ? this.set('medications', _.clone(list)) : (list.newMedication && this.set('medications',[list])) || this.set('medications', [])
+        // ----------------------------------------------------------------------------------------------
+        list && list.length > 0 ? this.set('medications', _.clone(list)) : this.set('medications', [])
+        if (this.medications.length) {
+            this.open(this.medications[0], this.extractContentWithIdFromMedicationService(this.medications[0].newMedication, true, this.medications[0].options.isPrescription), this.medications[0].boxes);
+            this.set('selectedMedication',0);
+        }
+    }
+
+    _localize(s) {
+        return this.api.contact().medication().localize(s, this.language);
+    }
+
+    _changeMedicPriority() {
+        // console.log('_changeMedicPriority')
+        if (this.medicationContent) {
+            const priority = this.medicationContent.medicationValue.priority?
+                this.medicationContent.medicationValue.priority=== 2 ? 'high' :
+                    this.medicationContent.medicationValue.priority=== 1 ? 'middle' : 'low' :
+                'low';
+            this.set("medicationContent.medicationValue.priority", priority);
+        }
+    }
+
+    cancel() {
+        this.close()
+    }
+
+    EOLAndClose(){
+        const today = parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)
+        this.set("medicationDetail.newMedication.endOfLife", today)
+        this.save()
+        this.close()
+    }
+
+    endAndClose(){
+        const yesterday = parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)
+        this.set("medicationContent.medicationValue.endMoment", yesterday)
+        this.save()
+        this.close()
+    }
+
+    saveAndClose() {
+        this.save() // instant save
+        this.close()
+    }
+
+    close() {
+        this.set("medicationContent", null)
+        this.set('medications', [])
+    }
+
+    test() {
+        const regs = this._register();
+        //console.log(regs);
+    }
+
+    _changeRenewalTimeUnitItem(item, unitValue, decimalValue){
+        if(item && item.id){
+            const timeUnitItem = this.timeUnit.find(r => r.id === item.id)
+            this.set("medicationContent.medicationValue.renewal", {
+                decimal: decimalValue,
+                duration: {
+                    value: unitValue,
+                    unit: timeUnitItem
+                }
+            })
+        }
+    }
+
+    _createMedication(e){
+        this.set('medicationDetail.options.createMedication', e.target.checked)
+        this.set('medicationContent.createMedication', e.target.checked)
+    }
+
+    _medicationName(svc) {
+        return this.api.contact().medication().medicationNameToString(this.api.contact().preferredContent(svc, this.language).medicationValue) || ''
+    }
+
+    // </Axel Stijns>
+
+
+
+
+
+    // Max
     _createMedication(){
 
     }
@@ -669,14 +1500,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     _validatePosology(){
 
     }
-
-    _debug(x) {
-
-        console.log("_debug", x)
-
-    }
-
-
 
 }
 customElements.define(HtPatPrescriptionDetailPosology.is, HtPatPrescriptionDetailPosology);
