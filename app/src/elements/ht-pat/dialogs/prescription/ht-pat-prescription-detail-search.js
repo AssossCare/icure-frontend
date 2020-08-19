@@ -455,7 +455,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     parentUuid: _.get(ampp, 'parentUuid', null),
                     ctiExtended: _.get(ampp, 'ctiExtended', null),
                     label: _.get(ampp, 'intendedName', null),
-                    reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
                     atcCodes: _.get(ampp, 'atcCodes', null),
                     atcCat: _.get(ampp, "atcCodes[0][0]", ""),
                     allergies: _.get(ampp, 'allergies', []),
@@ -472,8 +471,30 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     samCode: _.get(ampp, "amp.code", ""),
                     samDate: _.get(ampp, 'samDate', null),
                     type: "medicine",
+                    reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
                     narcoticIcon: this._narcoticIcon(_.get(ampp, "amp", null)),
-                    compProhibIcon: this._compProhibIconSamV2(_.get(ampp, 'vmpGroup',null))
+                    compProhibIcon: this._compProhibIconSamV2(_.get(ampp, 'vmpGroup',null)),
+                    informationsForPosology:{
+                        scpLink: _.get(ampp, 'spcLink', null),
+                        crmLink: _.get(ampp, 'crmLink', null),
+                        leafletLink: _.get(ampp, 'leafletLink', null),
+                        rmaLink: null,
+                        dhpcLink: null,
+                        novos: null,
+                        noswitch: null,
+                        cbipLink: null,
+                        dopingStatus: null,
+                        prescCondition: null,
+                        deliveryCondition: {
+                            deliveryModus: _.get(ampp, 'deliveryModus', null),
+                            deliveryModusCode: _.get(ampp, 'deliveryModusCode', null),
+                            deliveryModusSpecification: _.get(ampp, 'deliveryModusSpecification', null)
+                        },
+                        yellowLink: null,
+                        dividable: _.get(ampp, 'dividable', false),
+                        currentReimbursement: _.get(ampp, 'currentReimbursement', {}),
+                        vmp: _.get(ampp, 'amp.vmp', {})
+                    }
                 }
             })
     }
