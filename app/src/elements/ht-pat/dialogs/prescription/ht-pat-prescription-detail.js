@@ -12,6 +12,7 @@ import './ht-pat-prescription-detail-drugs'
 import './ht-pat-prescription-detail-posology'
 import './ht-pat-prescription-detail-search'
 import './ht-pat-prescription-detail-cheaper-drugs'
+import './ht-pat-prescription-detail-cnk-info'
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
@@ -180,7 +181,22 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             on-close-cheaper-drugs-view="_closeCheaperDrugsView"
                         /></ht-pat-prescription-detail-cheaper-drugs>
                      </div>
-                </template>                          
+                </template> 
+                <template is="dom-if" if="[[isCnkInfoView]]">
+                     <div class="content-cheaper-drug">
+                        <ht-pat-prescription-detail-cnk-info
+                            id="htPatPrescriptionDetailCnkInfo"
+                            api="[[api]]"
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]"
+                            hcp="[[hcp]]"                     
+                            on-close-cnk-info-view="_closeCnkInfoView"
+                        /></ht-pat-prescription-detail-cnk-info>
+                     </div>
+                </template>                             
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
@@ -245,6 +261,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 type: Boolean,
                 value: false
             },
+            isCnkInfoView:{
+                type: Boolean,
+                value: false
+            },
             listOfCompound: {
                 type: Array,
                 value: () => []
@@ -295,6 +315,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
         this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
         this.set('selectedDrugForPosology', {
             id: null,
             type: null
@@ -426,12 +447,21 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
         this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
     }
 
     _closeCheaperDrugsView(){
         this.set('isPosologyView', false)
         this.set('isSearchView', true)
         this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
+    }
+
+    _closeCnkInfoView(){
+        this.set('isPosologyView', true)
+        this.set('isSearchView', false)
+        this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
     }
 
     _searchCheaperDrugs(e){
