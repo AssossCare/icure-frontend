@@ -756,7 +756,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
         <ht-app-welcome-tz id="welcome" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" hidden="[[!showWelcomePage]]" on-login="login"></ht-app-welcome-tz>
 
-        <ht-app-login-dialog id="loginDialog"  api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" icure-url-selected="[[icureUrl]]"></ht-app-login-dialog>
+        <ht-app-login-dialog id="loginDialog"  api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" on-url-change="refreshUrl" icure-url-selected="[[icureUrl]]" fhc-url-selected="[[fhcUrl]]"></ht-app-login-dialog>
 
         <ht-app-entities-selector id="ht-app-account-selector" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" user="[[user]]" entities="[[entities]]" on-redirect-another-entity="_redirectToAnotherEntity"></ht-app-entities-selector>
 
@@ -1479,15 +1479,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _updateServerUrl(icureurl, fhcurl) {
-      this.api && this.api.electron().getConfigFile().then(config =>{
+      return this.api && this.api.electron().getConfigFile().then(config =>{
           if(config){
               config.servers = icureurl.servers.filter(serv => !["https://backend.svc.icure.cloud","https://backendb.svc.icure.cloud","https://kraken.svc.icure.cloud"].find(url => serv.url===url)).map(serv => serv.url)
               config.backend= icureurl.selected
               return this.api.electron().setConfigFile(config)
           }else{
-              if(icureurl) this.set('icureUrl',icureurl.selected)
+              if(icureurl) this.set('icureUrl',icureurl.selected+"/rest/v1")
               if(fhcurl) this.set('fhcUrl',fhcurl.selected)
-              return Pomise.resolve({})
+              return Promise.resolve({})
           }
       })
   }
@@ -2173,6 +2173,10 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       })
       return Promise.resolve(null);
   }
+
+    refreshUrl(event, loginObject){
+        this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl)
+    }
 
   login(event, loginObject) { /* this is called from mouseDown with 2 arguments */
       this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl).then(data => {

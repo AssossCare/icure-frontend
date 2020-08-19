@@ -233,6 +233,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
                             <ht-app-server-dialog id="icure-servers-list" title="iCure [[localize('server', 'server', language)]]" server-name="icure" db-server-selected="[[icureSelected]]" db-servers="[[icureServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
 
                             <ht-app-server-dialog id="fhc-servers-list" title="Free Health Connector [[localize('server', 'server', language)]]" server-name="fhc" db-server-selected="[[fhcSelected]]" db-servers="[[fhcServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
+                            <paper-button raised="true" id="submitButton" class="button button--save" type="submit" on-click="refreshUrl" autofocus="">[[localize('swap_connection','Swap Connection',language)]]</paper-button>
                         </div>
                     </div>
                     <!--</template>-->
@@ -319,7 +320,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
           },
           icureUrlSelected:{
               type: String,
-              value : 0
+              value : ""
           },
           icureSelected:{
               type: Number,
@@ -331,7 +332,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
           },
           fhcUrlSelected:{
               type: String,
-              value : 0
+              value : ""
           },
           fhcSelected:{
               type: Number,
@@ -345,9 +346,10 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 	}
 
 	apiReady() {
-        let servers = [{name: this.localize("online","Online"),url:"https://kraken.svc.icure.cloud"}]
+        let servers = [{name: this.localize("online","Online"),url:"https://backend.svc.icure.cloud"}]
         let finder = this.icureUrlSelected
         this.api && this.api.electron().checkAvailable().then(() =>this.api.electron().getConfigFile()).then(config => {
+            if(!config)return;
             servers = servers.concat(_.uniq(_.get(config, 'servers', []).map(serv => {
                 return {
                     name: serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
@@ -357,15 +359,19 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
                 .concat(_.get(config,"isTester",false) ? [{name: "backend B",url : "https://backendb.svc.icure.cloud"}] : [])))
             finder = _.get(config,"backend","")+"/rest/v1"
         }).finally(()=>{
-            const find = servers.findIndex(serv => serv.url+"/rest/v1" === finder) || servers.length
-            if(find===servers.length)
+            let find = servers.findIndex(serv => serv.url+"/rest/v1" === finder)
+            if(find===-1){
+                find=servers.length
                 servers.push({name : finder, url : finder})
+            }
+
             this.set("icureServers",servers)
             this.set("icureSelected",find)
+
+
+            this.set('fhcServers',_.uniqBy([{name: this.localize("prod","Production"),url :"https://fhcpr.icure.cloud"},{name: this.localize("acceptance","Acceptance"), url: "https://fhcacc.icure.cloud"},{name:this.fhcUrlSelected,url:this.fhcUrlSelected}],"url"))
+            this.set("fhcSelected",this.fhcServers.findIndex(serv => serv.url===this.fhcUrlSelected) || 0)
         })
-
-
-        this.set('fhcServers',[{name: this.localize("prod","Production"),url :"https://fhc"+(window.location.href.includes('https://tzb') ? "tz" : "prd" )+".icure.cloud"},{name: this.localize("acc","Acceptance"), url: "https://fhcacc.icure.cloud"}])
     }
 
 
@@ -410,6 +416,13 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
       }
       this.set('disabled', false)
 	}
+
+    refreshUrl(){
+        const currentIcureServerUrl = this.$["icure-servers-list"].getServersInfo()
+        const currentFhcServerUrl = this.$["fhc-servers-list"].getServersInfo()
+        this.dispatchEvent(new CustomEvent('url-change', { detail: {  icureurl: currentIcureServerUrl, fhcurl: currentFhcServerUrl}, bubbles: true, composed: true }))
+
+    }
 
 }
 
