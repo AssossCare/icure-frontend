@@ -28,6 +28,7 @@ import '../../../../styles/icpc-styles.js';
 import '../../../../styles/paper-input-style.js';
 import '../../../../styles/spinner-style.js';
 import '../../../../styles/tk-token-field-style.js';
+import '../../../../styles/atc-styles.js';
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
@@ -40,7 +41,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     static get template() {
         return html`
 
-            <style include="dialog-style scrollbar-style shared-styles buttons-style dropdown-style icd-styles icpc-styles paper-input-styles spinner-style tk-token-field-style">
+            <style include="dialog-style scrollbar-style shared-styles buttons-style dropdown-style icd-styles icpc-styles paper-input-styles spinner-style tk-token-field-style atc-styles">
             
                 .table{         
                     width: auto;
@@ -315,29 +316,39 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     padding: 0 12px;
                 }
                 
+                .allergy-alert {
+                    border:1px dashed var(--app-error-color-dark);
+                }
+                
+                .allergy-title {
+                    color: var(--app-error-color-dark);
+                }
+                
             </style>
+            
+            <template is="dom-if" if="[[isLoading]]" restamp="true"><ht-spinner active="[[isLoading]]"></ht-spinner></template>            
             
             <div class="posology-container">
             
                 <div class="posology-title">
                 
-                    <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(selectedDrugForPosology)]]"></iron-icon> [[_getDrugName(selectedDrugForPosology)]]</h3>
+                    <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(medication)]]"></iron-icon> [[medicationDetail.label]]</h3>
                     <p class="m0 mt5">
-                        <template is="dom-if" if="[[selectedDrugForPosology.drug.id]]">
-                            <paper-icon-button id="CBIPLink[[selectedDrugForPosology.drug.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
-                            <paper-tooltip id="tt_CBIPLink[[selectedDrugForPosology.drug.id]]" position="right" for="CBIPLink[[selectedDrugForPosology.drug.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
+                        <template is="dom-if" if="[[medicationDetail.id]]">
+                            <paper-icon-button id="CBIPLink[[medicationDetail.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
+                            <paper-tooltip id="tt_CBIPLink[[medicationDetail.id]]" position="right" for="CBIPLink[[medicationDetail.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
                         </template>
                         
-                        <template is="dom-if" if="[[_getRcpLink()]]">
-                            <paper-icon-button id="rcpLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon infoIconBlue" icon="vaadin:pill" role="button" on-tap="_openRcpLink"></paper-icon-button>
-                            <paper-tooltip id="tt_rcpLink_[[selectedDrugForPosology.drug.id]]" position="right" for="rcpLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_rcp','Résumé caractéristiques du produit (CBiP)',language)]]</paper-tooltip>
+                        <template is="dom-if" if="[[_getRcpLink(medicationDetail)]]">
+                            <paper-icon-button id="rcpLink_[[medicationDetail.id]]" class="infoIcon infoIconBlue" icon="vaadin:pill" role="button" on-tap="_openRcpLink"></paper-icon-button>
+                            <paper-tooltip id="tt_rcpLink_[[medicationDetail.id]]" position="right" for="rcpLink_[[medicationDetail.id]]">[[localize('med_rcp','Résumé caractéristiques du produit (CBiP)',language)]]</paper-tooltip>
                         </template>
                         
-                        <template is="dom-if" if="[[_getLeafletLink()]]">
-                            <paper-icon-button id="leafletLink_[[selectedDrugForPosology.drug.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
-                            <paper-tooltip id="tt_leafletLink_[[selectedDrugForPosology.drug.id]]" position="right" for="leafletLink_[[selectedDrugForPosology.drug.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
+                        <template is="dom-if" if="[[_getLeafletLink(medicationDetail)]]">
+                            <paper-icon-button id="leafletLink_[[medicationDetail.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
+                            <paper-tooltip id="tt_leafletLink_[[medicationDetail.id]]" position="right" for="leafletLink_[[medicationDetail.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
                         </template>                    
-                        [[_getDrugId(selectedDrugForPosology)]]&nbsp;&nbsp;[[_getDrugCnk(selectedDrugForPosology)]]
+                        [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;[[_getDrugCnk(medication)]]
                     </p>
                     
                     <!--
@@ -351,9 +362,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     -->
                     
                     <template is="dom-if" if="[[_hasAllergies(medicationDetail)]]">
-                        <div class="allergy-alert">
-                            <div class="allergy-title"> <iron-icon class="alert-icon" icon="icons:warning"></iron-icon> [[localize('aller_int','Allergies et intolérances',language)]]</div>
-                            <div class="list"><template is="dom-repeat" items="[[medicationDetail.allergies]]" as="allergy"><div><iron-icon class$="code-icon [[_getAtcStyle(allergy)]]" icon="[[_getAllergyIcon(allergy)]]"></iron-icon>[[_getIcpcLabel(allergy)]]<i> [[_shortDateFormat(allergy.openingDate, allergy.valueDate)]]</i> [[allergy.descr]]</div></template></div>
+                        <div class="allergy-alert p10 mt5 mb5">
+                            <div class="allergy-title fw700"> <iron-icon class="alert-icon mw15 mh15" icon="icons:warning"></iron-icon> [[localize('aller_int','Allergies et intolérances',language)]]: </div>
+                            <div class="list"><template is="dom-repeat" items="[[medicationDetail.allergies]]" as="allergy"><div><iron-icon class$="mw15 mh15 code-icon [[_getAtcStyle(allergy)]]" icon="[[_getAllergyIcon(allergy)]]"></iron-icon> ([[_getIcpcLabel(allergy)]])<i> [[_shortDateFormat(allergy)]]</i> [[allergy.descr]]</div></template></div>
                         </div>
                     </template>
                     
@@ -362,6 +373,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 </div>
                 
                 <div class="posology-container-content">
+                
                     <div class="medication-container">
                         
                         <div class="header-title">[[localize('pos-med', 'Medication', language)]]</div>
@@ -383,8 +395,33 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     </div>
                                 </template>
                                 
-                                Portion<br />
-                                Posologie (component)<br />
+                                <div class="regimen-line display-type-regimen">
+                                    <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!medicationDetail.dividable]]">
+                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{quantityFactor}}">
+                                            <template is="dom-repeat" items="[[quantityFactors]]"><paper-item id="[[item.id]]" value="[[item]]">[[localize(item.label, item.numLabel, language)]]</paper-item></template>
+                                        </paper-listbox>
+                                    </paper-dropdown-menu>
+                                </div>
+                                
+                                <template is="dom-repeat" items="[[regimenKeys]]">
+                                    <ht-regimen-day
+                                        api="[[api]]" 
+                                        i18n="[[i18n]]" 
+                                        language="[[language]]" 
+                                        resources="[[resources]]" 
+                                        period-config="[[periodConfig]]" 
+                                        regimen-config="[[regimenConfig]]" 
+                                        regimen="{{medicationContent.medicationValue.regimen}}" 
+                                        key="[[item]]" 
+                                        medication-unit="[[medicationDetail.unit]]" 
+                                        weekday-codes="[[weekdayCodes]]" 
+                                        occurrences="[[regimenKeys.length]]"
+                                        quantity-factor=[[quantityFactorValue]] 
+                                        on-regimen-changed="_regimenChanged" 
+                                        on-regimen-delete="_removeRegimen"
+                                    ></ht-regimen-day>
+                                </template>                                                                
+                                
                                 Période<br />
                                 Posologie (text)<br />
                                 Instructions pour le patient<br />
@@ -392,6 +429,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             </div>
                         </div>
                     </div>
+                    
                     <div class="prescription-container">
                         <div class="header-title">
                             [[localize('pos-presc', 'Prescription', language)]]
@@ -432,9 +470,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             language: {
                 type: String
             },
-            selectedDrugForPosology:{
-                type: Object,
-                value: () => {}
+            isLoading:{
+                type: Boolean,
+                value: false
             },
             listOfCompound: {
                 type: Array,
@@ -478,6 +516,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             medications: {
                 type: Array,
                 value: []
+            },
+            medication: {
+                type: Object,
+                value: null
             },
             bufferUnit: {
                 type: String
@@ -697,12 +739,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     static get observers() {
         return [
-            "_getMedicationDetail(user, selectedDrugForPosology)",
+            '_medicationChanged(user, medication, medication.*)',
+
             '_changeBeginMoment(medicationDetail.beginMomentAsString)',
             '_changeEndMoment(medicationDetail.endMomentAsString)',
             '_changeDuration(duration)',
             '_regimenChanged(medicationContent.medicationValue, medicationDetail.commentForPatient, medicationContent.medicationValue.regimen.*)',
-            '_medicationChanged(medication, medication.*)',
             '_quantityFactorChanged(quantityFactor)',
             '_periodChanged(periodConfig)',
             '_renewalChanged(medicationDetail.renewal)',
@@ -727,42 +769,27 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             })
     }
 
+    _getDrugId(drug) {
 
-
-    _getMedicationDetail(user, selectedDrugForPosology) {
-
-        const medicationDetail = _
-            .chain(selectedDrugForPosology)
-            .get("drug.amp.ampps")
-            .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(selectedDrugForPosology, "id")))
-            .omit(["amp.ampps"])
-            .value()
-
-        return (this.set("medicationDetail", medicationDetail)||true) && medicationDetail
+        return 'Sam: '+_.get(drug, 'samCode', '')+' ('+_.get(drug, 'samDate', '')+') CTI-ext: '+_.get(drug, 'ctiExtended', '')
 
     }
 
-    _getDrugName(drug){
-        return _.get(drug, 'drug.label', null)
-    }
+    _getDrugType(medication){
 
-    _getDrugId(drug){
-        return 'Sam: '+_.get(drug, 'drug.samCode', '')+' ('+_.get(drug, 'drug.samDate', '')+') CTI-ext: '+_.get(drug, 'drug.ctiExtended', '')
-    }
-
-    _getDrugType(drug){
-
-        return _.trim(_.get(drug,'type')) === "chronic" ? "icons:alarm-on" :
-            _.trim(_.get(drug,'type')) === "history" ? "vaadin:time-backward" :
-            _.trim(_.get(drug,'type')) === "commercial" ? "vaadin:copyright" :
-            _.trim(_.get(drug,'type')) === "substance" ? "vaadin:pill" :
-            _.trim(_.get(drug,'type')) === "compound" ? "vaadin:flask" :
+        return _.trim(_.get(medication,'type')) === "chronic" ? "icons:alarm-on" :
+            _.trim(_.get(medication,'type')) === "history" ? "vaadin:time-backward" :
+            _.trim(_.get(medication,'type')) === "commercial" ? "vaadin:copyright" :
+            _.trim(_.get(medication,'type')) === "substance" ? "vaadin:pill" :
+            _.trim(_.get(medication,'type')) === "compound" ? "vaadin:flask" :
             ""
 
     }
 
-    _getDrugCnk(drug){
-        return _.get(drug, 'drug.id', '') && 'CNK: ' + _.get(drug, 'drug.id', '')
+    _getDrugCnk(drug) {
+
+        return !_.trim(_.get(drug,"id")) ? "" : "CNK: " + _.trim(_.get(drug,"id"))
+
     }
 
     _getCbipPicture() {
@@ -770,35 +797,30 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     _openCbipLink() {
-        return window.open('http://www.cbip.be/' + this.language + '/contents/jump?cnk=' + _.trim(_.get(this, "selectedDrugForPosology.drug.id")));
+
+        return window.open('http://www.cbip.be/' + this.language + '/contents/jump?cnk=' + _.trim(_.get(this, "medicationDetail.id")));
+
     }
 
-    _getRcpLink() {
+    _getRcpLink(medicationDetail) {
 
-        return _
-            .chain(_.get(this,"selectedDrugForPosology.drug.amp.ampps"))
-            .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(this,"selectedDrugForPosology.id")))
-            .get("spcLink." + _.trim(_.get(this,"language","fr")))
-            .trim()
-            .value()
+        return _.trim(_.get(medicationDetail, "spcLink." + _.trim(_.get(this,"language","fr"))))
+
     }
 
-    _getLeafletLink() {
-        return _
-            .chain(_.get(this,"selectedDrugForPosology.drug.amp.ampps"))
-            .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(this,"selectedDrugForPosology.id")))
-            .get("leafletLink." + _.trim(_.get(this,"language","fr")))
-            .trim()
-            .value()
+    _getLeafletLink(medicationDetail) {
+
+        return _.trim(_.get(medicationDetail, "leafletLink." + _.trim(_.get(this,"language","fr"))))
+
     }
 
     _openRcpLink() {
-        const targetUrl = this._getRcpLink();
+        const targetUrl = this._getRcpLink(this.medicationDetail);
         return targetUrl && window.open(targetUrl);
     }
 
     _openLeafletLink() {
-        const targetUrl = this._getLeafletLink();
+        const targetUrl = this._getLeafletLink(this.medicationDetail);
         return targetUrl && window.open(targetUrl);
     }
 
@@ -810,13 +832,25 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _getAtcStyle(item) {
 
-        return !_.get(item,"atcCode[0]") ? "" : 'ATC--' + _.trim(_.head(_.get(item,"atcCode"))).toUpperCase();
+        const atcFirstLetter = _
+            .chain(item)
+            .get("codes")
+            .find({type:"CD-ATC"})
+            .get("code")
+            .trim()
+            .value()
+            .substr(0,1)
+            .toUpperCase()
+
+        return atcFirstLetter ? "ATC--" + atcFirstLetter : ""
 
     }
 
     _getAllergyIcon(item) {
 
-        return _.trim(_.get(item,"type")) === "allergy" ? "image:filter-vintage" : (_.trim(_.get(item,"type")) === "adr" ? "vaadin:pill" : "")
+        const cdItemType = _.trim(_.get(_.find(_.get(item,"tags",[]), {type:"CD-ITEM"}), "code"))
+
+        return cdItemType === "allergy" ? "image:filter-vintage" : cdItemType === "adr" ? "vaadin:pill" : ""
 
     }
 
@@ -828,25 +862,252 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
-    _shortDateFormat(date, altDate) {
+    _shortDateFormat(item) {
 
-        return (date || altDate) && this.api.moment((date || altDate)).format("YY") || "";
+        return !_.trim(_.get(item,"openingDate")) ? "" : moment(_.trim(_.get(item,"openingDate")),"YYYYMMDD").format("DD/MM/YYYY")
 
     }
 
     _openAdditionalCnkInfo() {
 
-        return this.dispatchEvent(new CustomEvent('open-additional-cnk-info', {bubbles:true,composed:true,detail:{product:this.selectedDrugForPosology}}))
+        return this.dispatchEvent(new CustomEvent('open-additional-cnk-info', {bubbles:true,composed:true,detail:{product:this.medicationDetail}}))
 
     }
+
+    _all(a,b) { return a && b }
+
+    _any(a,b,c,d,e) {
+        return a||b||c||d||e
+    }
+
+    _formatCnk(id) {
+
+        return !_.trim(id) ? "" : "CNK " + id
+
+    }
+
+    _getCodeLabel(code) {
+        return code && code[this.language]
+    }
+
+    _medicationChanged(user, medication) {
+
+        const promResolve = Promise.resolve();
+
+        // Todo: fz get later
+        // const medicationDetail = _
+        //     .chain(medication)
+        //     .get("drug.amp.ampps")
+        //     .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(medication, "drug.id")))
+        //     .omit(["amp.ampps"])
+        //     .assign({
+        //         label: _.trim(_.get(medication,"drug.label")),
+        //         informationsForPosology: _.get(medication,"drug.informationsForPosology"),
+        //         narcoticIcon: _.get(medication,"drug.narcoticIcon"),
+        //         samCode: _.trim(_.get(medication,"drug.samCode")),
+        //         productType: _.trim(_.get(medication,"type")),
+        //         type: _.trim(_.get(medication,"drug.type")),
+        //         allergyType: _.get(medication,"drug.allergyType"),
+        //         atcCat: _.trim(_.get(medication,"drug.atcCat")),
+        //         catIcon: _.trim(_.get(medication,"drug.catIcon")),
+        //         publicPriceHr: _.trim(_.get(medication,"drug.publicPrice")),
+        //     })
+        //     .value()
+
+        return !medication ? promResolve : promResolve
+            .then(() => this.set('isLoading', true))
+            .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
+                Promise.resolve(medication) :
+                promResolve
+                    .then(() => {
+
+                        const now = +new Date()
+                        const validAmpps = _.filter(_.get(medication,"drug.amp.ampps",[]), ampp => (
+                            _.trim(_.get(ampp,"status")) === "AUTHORIZED"
+                            && _.trim(_.get(ampp,"id")) === _.trim(_.get(medication, "id"))
+                            && (!_.get(ampp,"from") || _.get(ampp,"from") <= now)
+                            // Dmpps valid (from !!to)
+                            // Commercialisable (from !!to)
+                        ))
+
+                        // Assign
+                        // Check si cnk a changé + inject
+                        // Call max getByVmp (group id) -> get wada -> renvoyer à max (btn info)
+                        // Check currentReimboursment
+                        // Bien check code ci-dessous -> Je suis en train injecter _checkCnk direct ici
+
+                    })
+            )
+
+
+
+        // --------------------
+        // _checkCnk
+        // --------------------
+        // _checkCnk(medication, medicationDetail) {
+        //
+        //     // <Axel stijns>
+        //     if (medication.type === "medicine" && medication.id && !medication.samCode) {
+        //         return this.api.besamv2().findAmpsByDmppCode(medication.id)
+        //             .then(amps => {
+        //                 // get the latest version and compare cnk
+        //                 const now = moment().valueOf();
+        //                 const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
+        //                     if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
+        //                         return validAmpps.concat(amp.ampps.map(ampp => {
+        //                             return Object.assign(ampp, {
+        //                                 amp: amp,
+        //                                 publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
+        //                             });
+        //                         }));
+        //                     } else {
+        //                         return validAmpps;
+        //                     }
+        //                 }, []);
+        //
+        //                 const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
+        //                 const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
+        //                 const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
+        //                 Object.assign(medication, {
+        //                     spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
+        //                     leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
+        //                     ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
+        //                     posologyNote: updatedAmpp && updatedAmpp.posologyNote,
+        //                     dividable: updatedAmpp && updatedAmpp.dividable,
+        //                     packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
+        //                     samCode: _.get(updatedAmpp, "amp.code", ""),
+        //                     samDate: samDate,
+        //                 });
+        //                 if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
+        //                     // console.log("CNK ok");
+        //                 } else {
+        //                     const updatedCnk = updatedAmpp.publicDmpp.code;
+        //                     const oldCnk = medication.id;
+        //                     // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
+        //                     Object.assign(medication, {
+        //                         oldCnk: oldCnk,
+        //                         id: updatedCnk
+        //                     })
+        //                 }
+        //                 // @ todo also retrieve the current ampp to update data like displayPackage
+        //                 medication.updatedAmpp = updatedAmpp;
+        //                 return medication;
+        //             })
+        //             .catch(err => {
+        //                 console.log(err);
+        //                 return medication;
+        //             })
+        //     } else {
+        //         return Promise.resolve(medication);
+        //     }
+            // </Axel stijns>
+
+        // }
+
+        // --------------------
+        // /_checkCnk
+        // --------------------
+
+
+
+
+
+
+
+
+        // this._checkCnk(medication)
+        //     .then(medication => {
+        //         if (this.cachedBoxes && this.cachedBoxes !== medication.boxes) {
+        //             this._updateStats();
+        //         }
+        //         this.cachedBoxes = medication.boxes;
+        //
+        //         this.set("medicationDetail", null);
+        //
+        //         const content = this.content || this.extractContentWithIdFromMedicationService(medication.newMedication, medication.options.isNew, medication.options.isPrescription);
+        //         this.set("medicationContent", content);
+        //
+        //         this._initmedicationContent();
+        //
+        //         const today = this.api.moment(Date.now());
+        //         this.set("initializingDate", true);
+        //
+        //         const commentForPatient = this._extractCommentForPatient();
+        //
+        //         this.set("medicationDetail", Object.assign(
+        //             medication,
+        //             {
+        //                 beginMomentAsString : this.api.moment((content && content.medicationValue && content.medicationValue.beginMoment) || (medication.newMedication && medication.newMedication.valueDate) || (medication.newMedication && medication.newMedication.openingDate) || Date.now()).format('YYYY-MM-DD') || null,
+        //                 endMomentAsString: this.api.moment((content && content.medicationValue && content.medicationValue.endMoment) || (medication.newMedication && medication.newMedication.closingDate)) ? this.api.moment(content.medicationValue.endMoment || (medication.newMedication && medication.newMedication.closingDate)).format("YYYY-MM-DD") : null,
+        //                 deliveryMomentAsString: today.format("YYYY-MM-DD"),
+        //                 endExecMomentAsString: today.add(3, "months").subtract(1, "days").format("YYYY-MM-DD"),
+        //                 dividable: medication.dividable === undefined ? true : medication.dividable,
+        //                 packDisplayValue: medication.packDisplayValue || 0,
+        //                 medicPriority : this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
+        //                 renewal: !!this.medicationContent.medicationValue.renewal ? "allowed" : "forbidden",
+        //                 isConfidential: ((medication.newMedication.tags || []).find(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || {code: ""}).code === "secret",
+        //                 substitutionAllowed: this.medicationContent.medicationValue.substitutionAllowed ? "true" : "false",
+        //                 commentForPatient: commentForPatient
+        //             }
+        //         ));
+        //         this.set("initializingDate", false);
+        //
+        //         // this.set("renewalTimeUnit", this.medicationContent.medicationValue.renewal && this.medicationContent.medicationValue.renewal.duration.unit || this.timeUnits.find(timeUnit => timeUnit.code === "mo"));
+        //         const reimb = this.medicationContent.medicationValue.reimbursementReason;
+        //         this.reimbursementReason = null;
+        //         // this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || this.reimbursementCodeRecipe.find(item => item.code === "notreimbursable"));
+        //         this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || "");
+        //
+        //         const quantitySample = _.get(this.medicationContent, "medicationValue.regimen[0].administratedQuantity.quantity", "");
+        //         this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && this.quantityFactors.find(q => q.numLabel === quantitySample) || this.quantityFactors[0]);
+        //
+        //         // @todo: month (dayNumber) and date
+        //         const period = _.has(this.medicationContent, "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology" ;
+        //         if (this.periodConfig.id !== period) {
+        //             this.set("periodConfig", this.periodConfigs.find(config => config.id === period));
+        //         } else {
+        //             this._periodChanged();
+        //         }
+        //         this._updateStats();
+        //     })
+        //     .finally(() => this._setSpinnerIdle());
+    }
+
+
+
+
 
 
 
 
     // <Axel Stijns>
 
-    _formatCnk(id) {
-        return id && ("CNK " + id) || "";
+    _regimenChanged() {
+        console.log("_regimenChanged");
+        if (!this.medicationContent || !this.medicationContent.medicationValue || !this.medicationDetail) return;
+        this._updateStats();
+        this.medicationContent.medicationValue.instructionForPatient = "";
+        const posology = this.api.contact().medication().posologyToString(this.medicationContent.medicationValue || {}, this.language);
+        this.set("medicationDetail.posology", posology);
+        const separator = posology && this.medicationDetail.commentForPatient && this.commentSeparator || "";
+        this.medicationContent.medicationValue.instructionForPatient = posology + separator + this.medicationDetail.commentForPatient;
+    }
+
+    _removeRegimen(e) {
+        const key = _.get(e, "detail.key", "")
+        if (!key) return;
+        if (this.periodConfig.id === "dailyPosology") return;
+        if (this.regimenKeys.length < 2) return;
+        const keyId = this.periodConfig.keyId;
+        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (keyId === "weekday") {
+            regimen = regimen.filter(reg => reg.weekday && reg.weekday.code != key)
+        } else {
+            // @ todo dayNumber and date
+        }
+        this.set("medicationContent.medicationValue.regimen", regimen);
+        this.splice("regimenKeys", this.regimenKeys.indexOf(key), 1);
+        this._updatePeriodConfigs();
     }
 
     _customContainer() {
@@ -863,10 +1124,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     _substitutionAllowedChanged() {
         if (!this.medicationDetail) return;
         this.set("medicationContent.medicationValue.substitutionAllowed", (this.medicationDetail.substitutionAllowed === "true"));
-    }
-
-    _close() {
-        this.dispatchEvent(new CustomEvent('close', {detail: {}, bubbles: true, composed: true}));
     }
 
     _editCompoundPrescription() {
@@ -945,29 +1202,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         this.notifyPath("medicationContent.medicationValue", "changed");
     }
 
-    _any(a,b,c,d,e) {
-        return a||b||c||d||e
-    }
-
-    _getCodeLabel(code){
-        return code && code[this.language]
-    }
-
     _instructionOverride() {
         const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
         if (regimen && regimen.length) {
             this._resetAll()
         }
-    }
-
-    _regimenChanged() {
-        if (!this.medicationContent || !this.medicationContent.medicationValue || !this.medicationDetail) return;
-        this._updateStats();
-        this.medicationContent.medicationValue.instructionForPatient = "";
-        const posology = this.api.contact().medication().posologyToString(this.medicationContent.medicationValue || {}, this.language);
-        this.set("medicationDetail.posology", posology);
-        const separator = posology && this.medicationDetail.commentForPatient && this.commentSeparator || "";
-        this.medicationContent.medicationValue.instructionForPatient = posology + separator + this.medicationDetail.commentForPatient;
     }
 
     _extractCommentForPatient() {
@@ -1140,124 +1379,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         };
     }
 
-    _checkCnk(medication) {
-        if (medication.type === "medicine" && medication.id && !medication.samCode) {
-            return this.api.besamv2().findAmpsByDmppCode(medication.id)
-                .then(amps => {
-                    // get the latest version and compare cnk
-                    const now = moment().valueOf();
-                    const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
-                        if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
-                            return validAmpps.concat(amp.ampps.map(ampp => {
-                                return Object.assign(ampp, {
-                                    amp: amp,
-                                    publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
-                                });
-                            }));
-                        } else {
-                            return validAmpps;
-                        }
-                    }, []);
-
-                    const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
-                    const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
-                    const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
-                    Object.assign(medication, {
-                        spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
-                        leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
-                        ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
-                        posologyNote: updatedAmpp && updatedAmpp.posologyNote,
-                        dividable: updatedAmpp && updatedAmpp.dividable,
-                        packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
-                        samCode: _.get(updatedAmpp, "amp.code", ""),
-                        samDate: samDate,
-                    });
-                    if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
-                        // console.log("CNK ok");
-                    } else {
-                        const updatedCnk = updatedAmpp.publicDmpp.code;
-                        const oldCnk = medication.id;
-                        // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
-                        Object.assign(medication, {
-                            oldCnk: oldCnk,
-                            id: updatedCnk
-                        })
-                    }
-                    // @ todo also retrieve the current ampp to update data like displayPackage
-                    medication.updatedAmpp = updatedAmpp;
-                    return medication;
-                })
-                .catch(err => {
-                    console.log(err);
-                    return medication;
-                })
-        } else {
-            return Promise.resolve(medication);
-        }
-    }
-
-    _medicationChanged(medication) {
-        if (!medication) return;
-
-        this._setSpinnerBusy();
-        this._checkCnk(medication)
-            .then(medication => {
-                if (this.cachedBoxes && this.cachedBoxes !== medication.boxes) {
-                    this._updateStats();
-                }
-                this.cachedBoxes = medication.boxes;
-
-                this.set("medicationDetail", null);
-
-                const content = this.content || this.extractContentWithIdFromMedicationService(medication.newMedication, medication.options.isNew, medication.options.isPrescription);
-                this.set("medicationContent", content);
-
-                this._initmedicationContent();
-
-                const today = this.api.moment(Date.now());
-                this.set("initializingDate", true);
-
-                const commentForPatient = this._extractCommentForPatient();
-
-                this.set("medicationDetail", Object.assign(
-                    medication,
-                    {
-                        beginMomentAsString : this.api.moment((content && content.medicationValue && content.medicationValue.beginMoment) || (medication.newMedication && medication.newMedication.valueDate) || (medication.newMedication && medication.newMedication.openingDate) || Date.now()).format('YYYY-MM-DD') || null,
-                        endMomentAsString: this.api.moment((content && content.medicationValue && content.medicationValue.endMoment) || (medication.newMedication && medication.newMedication.closingDate)) ? this.api.moment(content.medicationValue.endMoment || (medication.newMedication && medication.newMedication.closingDate)).format("YYYY-MM-DD") : null,
-                        deliveryMomentAsString: today.format("YYYY-MM-DD"),
-                        endExecMomentAsString: today.add(3, "months").subtract(1, "days").format("YYYY-MM-DD"),
-                        dividable: medication.dividable === undefined ? true : medication.dividable,
-                        packDisplayValue: medication.packDisplayValue || 0,
-                        medicPriority : this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
-                        renewal: !!this.medicationContent.medicationValue.renewal ? "allowed" : "forbidden",
-                        isConfidential: ((medication.newMedication.tags || []).find(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || {code: ""}).code === "secret",
-                        substitutionAllowed: this.medicationContent.medicationValue.substitutionAllowed ? "true" : "false",
-                        commentForPatient: commentForPatient
-                    }
-                ));
-                this.set("initializingDate", false);
-
-                // this.set("renewalTimeUnit", this.medicationContent.medicationValue.renewal && this.medicationContent.medicationValue.renewal.duration.unit || this.timeUnits.find(timeUnit => timeUnit.code === "mo"));
-                const reimb = this.medicationContent.medicationValue.reimbursementReason;
-                this.reimbursementReason = null;
-                // this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || this.reimbursementCodeRecipe.find(item => item.code === "notreimbursable"));
-                this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || "");
-
-                const quantitySample = _.get(this.medicationContent, "medicationValue.regimen[0].administratedQuantity.quantity", "");
-                this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && this.quantityFactors.find(q => q.numLabel === quantitySample) || this.quantityFactors[0]);
-
-                // @todo: month (dayNumber) and date
-                const period = _.has(this.medicationContent, "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology" ;
-                if (this.periodConfig.id !== period) {
-                    this.set("periodConfig", this.periodConfigs.find(config => config.id === period));
-                } else {
-                    this._periodChanged();
-                }
-                this._updateStats();
-            })
-            .finally(() => this._setSpinnerIdle());
-    }
-
     _periodChanged() {
         if (!this.periodConfig.id) return;
         let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
@@ -1319,26 +1440,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         this.push("regimenKeys", this.regimenKey);
         this._updatePeriodConfigs();
     }
-
-    _removeRegimen(e) {
-        const key = _.get(e, "detail.key", "")
-        if (!key) return;
-        if (this.periodConfig.id === "dailyPosology") return;
-        if (this.regimenKeys.length < 2) return;
-        const keyId = this.periodConfig.keyId;
-        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
-        if (keyId === "weekday") {
-            regimen = regimen.filter(reg => reg.weekday && reg.weekday.code != key)
-        } else {
-            // @ todo dayNumber and date
-        }
-        this.set("medicationContent.medicationValue.regimen", regimen);
-        this.splice("regimenKeys", this.regimenKeys.indexOf(key), 1);
-        this._updatePeriodConfigs();
-    }
-
-
-    _all(a,b) { return a && b }
 
     _regimenLines() {
         return this.medicationContent && this.medicationContent.medicationValue && this.medicationContent.medicationValue.regimen || []
@@ -1431,10 +1532,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         }
     }
 
-    cancel() {
-        this.close()
-    }
-
     EOLAndClose(){
         const today = parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)
         this.set("medicationDetail.newMedication.endOfLife", today)
@@ -1457,11 +1554,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     close() {
         this.set("medicationContent", null)
         this.set('medications', [])
-    }
-
-    test() {
-        const regs = this._register();
-        //console.log(regs);
     }
 
     _changeRenewalTimeUnitItem(item, unitValue, decimalValue){

@@ -158,7 +158,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-prescription="[[listOfPrescription]]" 
                             list-of-compound="[[listOfCompound]]"
                             list-of-chronic="[[listOfChronic]]"
-                            selected-drug-for-posology="[[selectedDrugForPosology]]"
+                            medication="[[selectedDrugForPosology]]"
                             allergies="[[allergies]]"
                             reimbursement-type-list="[[reimbursementTypeList]]"
                             on-open-additional-cnk-info="_openAdditionalCnkInfo"
@@ -410,10 +410,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             //chronic, history => get drug by id to check if it still exist
             //commercial, substance, compound => no need to check if it still exist
          ;(
-            _.get(e, 'detail.type', null) === "chronic" || _.get(e, 'detail.type', null) === "history" ? Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.get(e, 'detail.type', null) === "commercial" ? Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.get(e, 'detail.type', null) === "substance" ?  Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.get(e, 'detail.type', null) === "compound" ?  Promise.resolve(_.get(e, 'detail.product', null)) : Promise.resolve({})
+            _.trim(_.get(e, 'detail.type')) === "chronic" || _.get(e, 'detail.type', null) === "history" ? Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.trim(_.get(e, 'detail.type')) === "commercial" ? Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.trim(_.get(e, 'detail.type')) === "substance" ?  Promise.resolve(_.get(e, 'detail.product', null)) :
+            _.trim(_.get(e, 'detail.type')) === "compound" ?  Promise.resolve(_.get(e, 'detail.product', null)) : Promise.resolve({})
           ).then(drugInfo => {
               this.set('selectedDrugForPosology', {
                   id: _.get(e ,'detail.id', null),

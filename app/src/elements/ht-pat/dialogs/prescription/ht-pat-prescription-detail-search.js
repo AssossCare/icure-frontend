@@ -381,23 +381,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
                     const now = moment().valueOf();
                     const publicDmpp = _.get(ampp, 'dmpps', []).find(dmpp => _.get(dmpp, 'deliveryEnvironment', null) === "P")
-                    const atcCodes = _.get(ampp, 'atcs', []).map(atc => _.get(atc, 'code', null)) || []
+                    const atcCodes = _.compact(_.map(_.get(ampp,"atcs",[]), "code"))
                     const drugCnk = _.trim(_.get(publicDmpp, 'codeType')) === 'CNK' && _.trim(_.get(publicDmpp, 'code'))
-
-                    // _.filter(_.get(this,"allergies",[]), patAllergy => {
-                    //
-                    //     const patAllergyAtcCodes = _
-                    //         .chain(patAllergy)
-                    //         .get("codes")
-                    //         .filter({type:"CD-ATC"})
-                    //         .map("code")
-                    //         .uniq()
-                    //         .compact()
-                    //         .value()
-                    //
-                    //     console.log("patAllergyAtcCodes", patAllergyAtcCodes);
-                    //
-                    // })
 
                     return _.assign(ampp, {
                         id: drugCnk,
@@ -411,7 +396,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         posologyNote: _.get(ampp, 'posologyNote['+this.language+']', null) || "",
                         unit: _.get(row, "components[0].pharmaceuticalForms[0].name[" + this.language + "]", ""),
                         atcCodes: atcCodes,
-                        allergies: _.get(this, 'allergies', []).filter(allergy => (_.get(allergy, 'cnk', null) && drugCnk === _.get(allergy, 'cnk', null)) || (atcCodes && atcCodes.some(atcCode => atcCode === _.get(allergy, 'atcCode', null)) || "")),
+                        allergies: _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
                         dividable: !(_.get(row, "components[0].dividable", "") === "X"),
                         samDate: _.get(publicDmpp, 'from', null) ? moment(_.get(publicDmpp, 'from', null)).format("DD/MM/YYYY") : null,
                         amp: row
@@ -553,8 +538,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _filterValue(drugsFilter, listOfDrugs){
-        const keywordsString = _.trim(drugsFilter).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
-        const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+        const keywordsString = _.trim(drugsFilter).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, " ")
+        const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), _.trim)))
 
        return _.chain(listOfDrugs)
             .chain(drugsFilter)
@@ -562,6 +548,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             .compact()
             .uniq()
             .value()
+
     }
 
     _localizeDrugName(name){
