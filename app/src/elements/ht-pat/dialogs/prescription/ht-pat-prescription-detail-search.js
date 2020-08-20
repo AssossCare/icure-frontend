@@ -463,57 +463,65 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _formatCommercial(amppList) {
         return amppList.map(ampp => {
-                return {
-                    id: _.get(ampp, 'id', null),
-                    groupId: _.get(ampp, 'groupId', null),
-                    uuid: _.get(ampp, 'uuid', null),
-                    uuids: _.get(ampp, 'uuids', null),
-                    hasChildren: _.get(ampp, 'hasChildren', null),
-                    parentUuid: _.get(ampp, 'parentUuid', null),
-                    ctiExtended: _.get(ampp, 'ctiExtended', null),
-                    label: _.get(ampp, 'intendedName', null),
-                    atcCodes: _.get(ampp, 'atcCodes', null),
-                    atcCat: _.get(ampp, "atcCodes[0][0]", ""),
-                    allergies: _.get(ampp, 'allergies', []),
-                    allergyType: this._getAllergyType(_.get(ampp, 'allergies', [])),
-                    patientPrice: _.get(ampp, 'id', null) && _.get(ampp, 'patientPrice', 0.00).toFixed(2) + " €",
-                    publicPrice: _.get(ampp, 'id', null) && _.get(ampp, 'publicPrice', 0.00).toFixed(2) + " €",
-                    priceIndex: _.get(ampp, 'id', null) && _.get(ampp, 'priceIndex', null) || 3,
-                    catIcon: this._catIconSamV2(ampp),
-                    unit: _.get(ampp, 'unit', null),
-                    amp: _.get(ampp, 'amp', null),
-                    posologyNote: _.get(ampp, 'posologyNote', null),
-                    dividable: _.get(ampp, 'dividable', null),
-                    packDisplayValue: _.get(ampp, 'packDisplayValue', null),
-                    samCode: _.get(ampp, "amp.code", ""),
-                    samDate: _.get(ampp, 'samDate', null),
-                    type: "medicine",
-                    reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
-                    narcoticIcon: this._narcoticIcon(_.get(ampp, "amp", null)),
-                    compProhibIcon: this._compProhibIconSamV2(_.get(ampp, 'vmpGroup',null)),
-                    informationsForPosology:{
-                        scpLink: _.get(ampp, 'spcLink', null),
-                        crmLink: _.get(ampp, 'crmLink', null),
-                        leafletLink: _.get(ampp, 'leafletLink', null),
-                        rmaLink: null,
-                        dhpcLink: null,
-                        novos: null,
-                        noswitch: null,
-                        cbipLink: null,
-                        dopingStatus: null,
-                        prescCondition: null,
-                        deliveryCondition: {
-                            deliveryModus: _.get(ampp, 'deliveryModus', null),
-                            deliveryModusCode: _.get(ampp, 'deliveryModusCode', null),
-                            deliveryModusSpecification: _.get(ampp, 'deliveryModusSpecification', null)
-                        },
-                        yellowLink: null,
-                        dividable: _.get(ampp, 'dividable', false),
-                        currentReimbursement: _.get(ampp, 'currentReimbursement', {}),
-                        vmp: _.get(ampp, 'amp.vmp', {})
-                    }
+            return {
+                id: _.get(ampp, 'id', null),
+                groupId: _.get(ampp, 'groupId', null),
+                uuid: _.get(ampp, 'uuid', null),
+                uuids: _.get(ampp, 'uuids', null),
+                hasChildren: _.get(ampp, 'hasChildren', null),
+                parentUuid: _.get(ampp, 'parentUuid', null),
+                ctiExtended: _.get(ampp, 'ctiExtended', null),
+                label: _.get(ampp, 'intendedName', null),
+                atcCodes: _.get(ampp, 'atcCodes', null),
+                atcCat: _.get(ampp, "atcCodes[0][0]", ""),
+                allergies: _.get(ampp, 'allergies', []),
+                allergyType: this._getAllergyType(_.get(ampp, 'allergies', [])),
+                patientPrice: _.get(ampp, 'id', null) && _.get(ampp, 'patientPrice', 0.00).toFixed(2) + " €",
+                publicPrice: _.get(ampp, 'id', null) && _.get(ampp, 'publicPrice', 0.00).toFixed(2) + " €",
+                priceIndex: _.get(ampp, 'id', null) && _.get(ampp, 'priceIndex', null) || 3,
+                catIcon: this._catIconSamV2(ampp),
+                unit: _.get(ampp, 'unit', null),
+                amp: _.get(ampp, 'amp', null),
+                posologyNote: _.get(ampp, 'posologyNote', null),
+                dividable: _.get(ampp, 'dividable', null),
+                packDisplayValue: _.get(ampp, 'packDisplayValue', null),
+                samCode: _.get(ampp, "amp.code", ""),
+                samDate: _.get(ampp, 'samDate', null),
+                type: "medicine",
+                reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
+                narcoticIcon: this._narcoticIcon(_.get(ampp, "amp", null)),
+                compProhibIcon: this._compProhibIconSamV2(_.get(ampp, 'vmpGroup',null)),
+                informations:{
+                    ampp: _.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')),
+                    crmLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'crmLink', null),
+                    currentReimbursement: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null),
+                    deliveryModus: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModus', null),
+                    deliveryModusSpecification: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModusSpecification', null),
+                    leafletLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'leafletLink', null),
+                    noGenericPrescriptionReasons:_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'noGenericPrescriptionReasons', null),
+                    posologyNote: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'posologyNote', null),
+                    speciallyRegulated: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'speciallyRegulated', null),
+                    supplyProblems: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null),
+                    currentSupplyProblem: this._getCurrentSupplyProblem(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null)),
+                    blackTriangle: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'amp.blackTriangle', null),
+                    company: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'compagny', null),
+                    commercializations: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null),
+                    currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
+                    vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
+                    vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
                 }
-            })
+            }
+        })
+    }
+
+    _getCurrentSupplyProblem(supplyProblems){
+        const now = moment().valueOf()
+        return supplyProblems && supplyProblems.find(prob => _.get(prob, 'from', null) < now && _.get(prob, 'to', null) ? _.get(prob, 'to', null) > now : true) || {}
+    }
+
+    _getCurrentCommercialization(commercializations){
+        const now = moment().valueOf()
+        return commercializations && commercializations.find(com => _.get(com, 'from', null) < now && _.get(com, 'to',  null) ? _.get(com, 'to',  null) > now : true) || {}
     }
 
     _prepareMoleculeForDisplay(vmpGroups){
