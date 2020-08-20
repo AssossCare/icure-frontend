@@ -10,6 +10,13 @@ import moment from 'moment/src/moment';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
+import '@polymer/paper-radio-button/paper-radio-button.js';
+import '@polymer/paper-radio-group/paper-radio-group.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light';
+import '@polymer/paper-listbox/paper-listbox';
+import '@polymer/paper-item/paper-item';
+
 class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -117,7 +124,7 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
 			}
 		</style>
 
-		<paper-dialog id="dialog" opened="{{opened}}">
+		<paper-dialog id="dialog" opened="{{opened}}" no-cancel-on-outside-click no-cancel-on-esc-key>
 			<h2 class="modal-title">[[entityType]]</h2>
 			<div class="content">
 				<div class="grid">
@@ -267,7 +274,8 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
       return {
           opened:{
               type: Boolean,
-              value:false
+              value:false,
+              observer: 'openedChanged'
           },
           columns: {
               type: Array,
@@ -1016,6 +1024,10 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
       }))
 
 	}
+
+    openedChanged(event){
+      console.log('prout')
+    }
 }
 
 customElements.define(HealthProblemSelector.is, HealthProblemSelector);
