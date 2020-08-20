@@ -1481,13 +1481,25 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _updateServerUrl(icureurl, fhcurl) {
       return this.api && this.api.electron().getConfigFile().then(config =>{
           if(config){
-              config.servers = icureurl.servers.filter(serv => !["https://backend.svc.icure.cloud","https://backendb.svc.icure.cloud","https://kraken.svc.icure.cloud"].find(url => serv.url===url)).map(serv => serv.url)
-              config.backend= icureurl.selected
-              return this.api.electron().setConfigFile(config)
+              if(fhcurl) this.set('fhcUrl',fhcurl.selected)
+              config.servers = _.compact(icureurl.servers.filter(serv => !["https://backend.svc.icure.cloud","https://backendb.svc.icure.cloud","https://kraken.svc.icure.cloud"].find(url => serv.url===url)).map(serv => serv.url))
+              if(icureurl.selected!==""){
+                  this.set('icureUrl',"http://127.0.0.1:16042/rest/v1")
+                  config.backend= icureurl.selected
+              }else{
+                  this.set('icureUrl',"http://127.0.0.1:16043/rest/v1")
+                  config = _.omit(config,"backend")
+              }
+
+              return this.api.electron().checkAvailable().then( electron => this.api.electron().setConfigFile(config)).then(data =>{
+                  this.$["loginDialog"].disable()
+                  return Promise.resolve(this._checkShowWelcomePage())
+              })
           }else{
               if(icureurl) this.set('icureUrl',icureurl.selected+"/rest/v1")
               if(fhcurl) this.set('fhcUrl',fhcurl.selected)
-              return Promise.resolve({})
+              this.$["loginDialog"].disable()
+              return Promise.resolve(this._checkShowWelcomePage())
           }
       })
   }
