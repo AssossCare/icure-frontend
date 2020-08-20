@@ -756,7 +756,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
         <ht-app-welcome-tz id="welcome" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" hidden="[[!showWelcomePage]]" on-login="login"></ht-app-welcome-tz>
 
-        <ht-app-login-dialog id="loginDialog"  api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" on-url-change="refreshUrl" icure-url-selected="[[icureUrl]]" fhc-url-selected="[[fhcUrl]]"></ht-app-login-dialog>
+        <ht-app-login-dialog id="loginDialog"  api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" on-url-change="refreshUrl" on-save="saveServers" icure-url-selected="[[icureUrl]]" fhc-url-selected="[[fhcUrl]]"></ht-app-login-dialog>
 
         <ht-app-entities-selector id="ht-app-account-selector" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" user="[[user]]" entities="[[entities]]" on-redirect-another-entity="_redirectToAnotherEntity"></ht-app-entities-selector>
 
@@ -1503,6 +1503,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           }
       })
   }
+
+    saveServers(event){
+        this.api && this.api.electron().getConfigFile().then(config => {
+            if (config) {
+                config.servers = _.compact(_.get(event, "detail.servers", []).filter(serv => !["https://backend.svc.icure.cloud", "https://backendb.svc.icure.cloud", "https://kraken.svc.icure.cloud"].find(url => serv.url === url)).map(serv => serv.url))
+                this.api.electron().setConfigFile(config)
+            }
+        })
+    }
 
   reset() {
       const props = HtAppTz.properties
