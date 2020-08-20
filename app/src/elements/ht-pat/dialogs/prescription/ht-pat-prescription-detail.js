@@ -194,6 +194,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             language="[[language]]" 
                             resources="[[resources]]"
                             hcp="[[hcp]]"                     
+                            selected-cnk-for-information="[[selectedCnkForInformation]]"
                             on-close-cnk-info-view="_closeCnkInfoView"
                         /></ht-pat-prescription-detail-cnk-info>
                      </div>
@@ -300,6 +301,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             selectedParentDrugForCheaper:{
                 type: Object,
                 value: () => {}
+            },
+            selectedCnkForInformation:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -328,6 +333,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('reimbursmentTypeList', [])
         this.set('cheaperDrugsList', [])
         this.set('selectedParentDrugForCheaper', {})
+        this.set('selectedCnkForInformation', {})
     }
 
     _open(e){
@@ -481,16 +487,19 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isPosologyView', false)
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', true)
+            this.set('isCnkInfoView', false)
         }
-
     }
 
     _openAdditionalCnkInfo(e) {
-
-        const product = _.get(e,"detail.product");
-
-        console.log("_openAdditionalCnkInfo", product)
-
+        if(_.get(e,"detail.product")) {
+            this.set('selectedCnkForInformation', _.get(e,"detail.product"))
+            this.set('isPosologyView', false)
+            this.set('isSearchView', false)
+            this.set('isCheaperDrugView', false)
+            this.set('isCnkInfoView', true)
+            console.log(_.get(e,"detail.product"))
+        }
     }
 
 }
