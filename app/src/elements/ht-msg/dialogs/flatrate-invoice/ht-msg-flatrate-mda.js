@@ -2893,7 +2893,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
         const promResolve = Promise.resolve();
 
-        return !_.size(requestedData) ? promResolve : this.api.fhc().MemberDataController().sendMemberDataRequestAsyncUsingPOST(
+        return !_.size(requestedData) ? promResolve : this.api.fhc().MemberData().sendMemberDataRequestAsyncUsingPOST(
             _.trim(_.get(this,"api.tokenIdMH")),
             _.trim(_.get(this,"api.keystoreId")),
             _.trim(_.get(this,"api.credentials.ehpassword")),
@@ -3027,7 +3027,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
         //     .then(([document,edKeys]) => this.api.document().getDocumentAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(',')))
         //     .then(attachment => JSON.parse(attachment))
 
-        return this.api.fhc().MemberDataController().getMemberDataMessageAsyncUsingPOST(
+        return this.api.fhc().MemberData().getMemberDataMessageAsyncUsingPOST(
             _.trim(_.get(this,"api.tokenIdMH")),
             _.trim(_.get(this,"api.keystoreId")),
             _.trim(_.get(this,"api.credentials.ehpassword")),
@@ -3046,7 +3046,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
 
         // return promResolve.then(() => console.log("[ACTIVATE FOR PROD] _e_confirmMdaMessagesByReferences", messageReferences))
 
-        return this.api.fhc().MemberDataController().confirmMemberDataMessagesAsyncUsingPOST(
+        return this.api.fhc().MemberData().confirmMemberDataMessagesAsyncUsingPOST(
             _.trim(_.get(this,"api.tokenIdMH")),
             _.trim(_.get(this,"api.keystoreId")),
             _.trim(_.get(this,"api.credentials.ehpassword")),
