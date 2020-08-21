@@ -955,7 +955,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                       softwareVersion : _.get(this, 'backendVersion', null)
                                   }
                               ).then(output =>
-                                  this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+                                  this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                                       .then(hcp =>{
                                           let reader = new FileReader();
                                           let me = this;
@@ -977,9 +977,9 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                               _.get(this, 'hcpZip', null),
                                               _.get(this, 'hubId', null),
                                               _.get(this, 'patient.ssin', null),
-                                              output,
                                               _.get(this, 'hubPackageId', null),
-                                              _.get(this, 'hubApplication', null)
+                                              _.get(this, 'hubApplication', null),
+                                              output
                                           )}
                                       ).then(putResp => {
                                           if (putResp) {
@@ -1337,7 +1337,9 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'breakTheGlassReason', null)
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
                       return tranResp ? tranResp: null
@@ -1375,9 +1377,9 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                       _.get(this, 'hcpZip', null),
                       _.get(this, 'hubId', null),
                       _.get(this, 'patient.ssin', null),
-                      new Blob([tsXML]),
                       _.get(this, 'hubPackageId', null),
-                      _.get(this, 'hubApplication', null)
+                      _.get(this, 'hubApplication', null),
+                      new Blob([tsXML])
                   )
               ).then(putResp => {
                   return putResp ? putResp: null

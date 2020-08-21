@@ -598,12 +598,12 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
                 _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
                 _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
                 _.get(this.sendSubscriptionRequest, 'signatureType', null),
-                true,
-                false,
                 this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
                 !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
-                .then(mhmResponse => {
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null,
+                true,
+                false
+            ).then(mhmResponse => {
                     console.log("sendSubscriptionLog ", mhmResponse)
                     //TODO, create an array of responses
                     this.set('sendSubscriptionResponse', mhmResponse)

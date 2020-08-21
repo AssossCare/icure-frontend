@@ -1072,6 +1072,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
   _isEhealthActive(){
       return this.api.tokenId && this.api.keystoreId && this.api.credentials.ehpassword ? true : false
   }
+
   _hcpFilterChanged(hcpType, hcpFilter) {
       if( _.trim(hcpFilter).length < 3 || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ) { this.set("filteredHcpList",[]); return; }
       const reqIdx = (this.hcpReqIdx = (this.hcpReqIdx || 0) + 1)
@@ -1089,29 +1090,30 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
           const isValidBce = !!patternsValidation.tenDigits.test(numericSearchQuery)
           const isValidEhp = !!patternsValidation.tenDigits.test(numericSearchQuery)
           const isValidSsin = !!patternsValidation.elevenDigits.test(numericSearchQuery)
+          const defaultPersonQualities = ["PHYSICIAN", "NURSE", "DOCTOR", "PHYSIOTHERAPIST"]
           let searchProm = hcpType.id === 'CBE' ?
               Promise.all([
-                  !isValidBce ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'cbe',false)).value()),
-                  this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value()),
-                  this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
+                  !isValidBce ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByCbeUsingGET(_.get(this, 'api.keystoreId', null),this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), numericSearchQuery, _.get(this, 'language', null)).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'cbe',false)).value()),
+                  this.api.fhc().Addressbook().searchHcpUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value()),
+                  this.api.fhc().Addressbook().searchOrgUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
               ]) :
               hcpType.id === 'EHP' ? Promise.all([
-                      !isValidEhp ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'ehp',false)).value()),
-                      this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value()),
-                      this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
+                      !isValidEhp ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByEhpUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'ehp',false)).value()),
+                      this.api.fhc().Addressbook().searchHcpUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value()),
+                      this.api.fhc().Addressbook().searchOrgUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
                   ]) :
                   hcpType.id === 'INSS' ? Promise.all([
-                          !isValidSsin ? Promise.resolve([]) : this.api.fhc().Addressbook().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),    // Looking for SSIN "53815994527" returns it but WITHOUT SSIN value, quite logical. Filtering on NIHII then
-                          this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value())
+                          !isValidSsin ? Promise.resolve([]) : this.api.fhc().Addressbook().getHcpBySsinUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),    // Looking for SSIN "53815994527" returns it but WITHOUT SSIN value, quite logical. Filtering on NIHII then
+                          this.api.fhc().Addressbook().searchHcpUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value())
                       ]) :
                       (hcpType.id === 'NIHII-HOSPITAL' || hcpType.id === 'NIHII-PHARMACY')  ? Promise.all([
-                              !isValidNihii ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),
-                              this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*', ( hcpType.id === 'NIHII-PHARMACY' ? "PHARMACY" : "HOSPITAL" ) ).then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
+                              !isValidNihii ? Promise.resolve([]) : this.api.fhc().Addressbook().getOrgByNihiiUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),
+                              this.api.fhc().Addressbook().searchOrgUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*', ( hcpType.id === 'NIHII-PHARMACY' ? "PHARMACY" : "HOSPITAL" ) ).then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'ehp',false)).uniqBy('ehp').value())
                           ]) :
                           // Default type = NIHII
                           Promise.all([
-                              !isValidNihii ? Promise.resolve([]) : this.api.fhc().Addressbook().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),
-                              this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value())
+                              !isValidNihii ? Promise.resolve([]) : this.api.fhc().Addressbook().getHcpByNihiiUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), numericSearchQuery ).then(searchResults=>_.chain([searchResults]).filter(i=>!!_.get(i,'nihii',false)).value()),
+                              this.api.fhc().Addressbook().searchHcpUsingGET(_.get(this, 'api.keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this, 'api.credentials.ehpassword', null), _.trim(hcpFilter) + '*').then(searchResults=>_.chain(searchResults).filter(i=>!!_.get(i,'nihii',false)).uniqBy('nihii').value())
                           ])
           searchProm
               .then(searchResults => { if (reqIdx === this.hcpReqIdx) {

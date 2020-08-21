@@ -928,7 +928,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                           _.get(_.get(dn, 'ids', []).find(id => id.s === 'LOCAL'), 'sl', null),
                           _.get(_.get(dn, 'ids', []).find(id => id.s === 'LOCAL'), 'value', null),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'breakTheGlassReason', null)
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       ).then(tr => _.concat(listOfTransaction, _.assign(tr, {transaction: dn})))
                   )
               })
@@ -1193,9 +1195,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                                       _.get(this, 'hcpZip', null),
                                       _.get(this, 'hubId', null),
                                       _.get(this, 'patient.ssin', null),
-                                      output,
                                       _.get(this, 'hubPackageId', null),
-                                      _.get(this, 'hubApplication', null)
+                                      _.get(this, 'hubApplication', null),
+                                      output
                                   )
                               )
                           })
@@ -1357,7 +1359,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(hcp, 'lastName', null),
                       _.get(hcp, 'firstName', null),
                       _.get(hcp, 'ssin', null),
-                      _.get(this, 'hcpZip', null)
+                      _.get(this, 'hcpZip', null),
+                      null
                   )
               ).then(consentResp => {
                       if (consentResp) {
@@ -1495,7 +1498,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(hcp, 'nihii', null),
                       _.get(hcp, 'ssin', null),
                       _.get(this, 'hcpZip', null),
-                      _.get(this, 'patient.ssin', null)
+                      _.get(this, 'patient.ssin', null),
+                      null
                   )
               ).then(consentResp => {
                   return consentResp ? consentResp : null
@@ -1530,7 +1534,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                   _.get(this, 'hcpZip', null),
                   _.get(this, 'patient.ssin', null),
                   _.get(this, 'hubPackageId', null),
-                  _.get(this, 'eidCardNumber', null)
+                  _.get(this, 'eidCardNumber', null),
+                  _.get(this, 'isiCardNumber', null)
               )
           ).then(consResp => {
               return _.get(consResp, 'therapeuticLink', null) ? _.get(consResp, 'therapeuticLink', null): Promise.resolve(null)
@@ -1592,7 +1597,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                   _.get(this, 'hcpZip', null),
                   _.get(this, 'patient.ssin', null),
                   _.get(this, 'hubPackageId', null),
-                  _.get(this, 'eidCardNumber', null)
+                  _.get(this, 'eidCardNumber', null),
+                  _.get(this, 'isiCardNumber', null)
               )
           ).then(therLinkResp => {
                   return _.get(therLinkResp, 'therapeuticLink', null) ? _.get(therLinkResp, 'therapeuticLink', null) : Promise.resolve(null)
@@ -1708,7 +1714,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
               this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                   .then(hcp =>
-                      this.api.fhc().Hub().getTransactionUsingGET(this.hubEndPoint,
+                      this.api.fhc().Hub().getTransactionUsingGET(
+                          _.get(this, 'hubEndPoint', null),
                           _.get(this, 'api.keystoreId', null),
                           _.get(this, 'api.tokenId', null),
                           _.get(this, 'api.credentials.ehpassword', null),
@@ -1722,7 +1729,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's',  null) === 'LOCAL'), 'value', null),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'breakTheGlassReason', null)
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
                       return tranResp ? tranResp : null
@@ -1758,7 +1767,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'breakTheGlassReason', null)
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
                       return tranResp ? tranResp : null;
@@ -1794,7 +1805,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
                           _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'breakTheGlassReason', null)
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
                       return tranResp ? tranResp : null
@@ -1825,23 +1838,24 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   _revokeHubTransaction(transaction){
       return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
            this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
-              .then(hcp => this.api.fhc().Hub().revokeTransactionUsingDELETE(
-                  _.get(this, 'hubEndPoint', null),
-                  _.get(this, 'api.keystoreId', null),
-                  _.get(this, 'api.tokenId', null),
-                  _.get(this, 'api.credentials.ehpassword', null),
-                  _.get(hcp, 'lastName', null),
-                  _.get(hcp, 'firstName', null),
-                  _.get(hcp, 'nihii', null),
-                  _.get(hcp, 'ssin', null),
-                  _.get(this, 'hcpZip', null),
-                  _.get(this, 'patient.ssin', null),
-                  _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sv', null),
-                  _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sl', null),
-                  _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'value', null),
-                  _.get(this, 'hubPackageId', null),
-                  null
-                  ) //TODO: add break the glass reason
+              .then(hcp =>
+                  this.api.fhc().Hub().revokeTransactionUsingDELETE(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sv', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sl', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'value', null),
+                      _.get(this, 'hubPackageId', null),
+                      _.get(this, 'breakTheGlassReason', null)
+                  )
               ).then(tranResp => {
                   return tranResp ? tranResp : null;
               }): Promise.resolve(null)
@@ -1943,9 +1957,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                           _.get(this, 'hcpZip', null),
                           _.get(this, 'hubId', null),
                           _.get(this, 'patient.ssin', null),
-                          new Blob([tsXML]),
                           _.get(this, 'hubPackageId', null),
-                          _.get(this, 'hubApplication', null)
+                          _.get(this, 'hubApplication', null),
+                          new Blob([tsXML])
                       )
                   ).then(putResp => {
                       return putResp ? putResp : null

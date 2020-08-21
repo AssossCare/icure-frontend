@@ -693,9 +693,19 @@ class HtMsgInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto: _.omit(iv.patient, ['personalStatus'])})), this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.api.fhc().Efact(),
-                        undefined,
-                        (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`), "doctor")
+                    prom = prom.then(() =>
+                        this.api.message().sendBatch(
+                            this.user,
+                            this.hcp,
+                            invoices.map(iv=>({invoiceDto:iv.invoice, patientDto: _.omit(iv.patient, ['personalStatus'])})),
+                            this.api.keystoreId,
+                            this.api.tokenId,
+                            this.api.credentials.ehpassword,
+                            this.api.fhc().Efact(),
+                            undefined,
+                            (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`),
+                            false
+                        )
                     ).then(message => {
                         this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
                         this.api.register(message,'message')

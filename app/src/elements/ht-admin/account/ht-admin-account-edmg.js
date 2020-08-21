@@ -612,11 +612,20 @@ class HtAdminAccountEdmg extends TkLocalizerMixin(PolymerElement) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp => {
                       return this.api.fhc().Dmg().registerDoctorUsingPOST(
-                          this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                          hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, reg.OA, reg.bic.replace(/ /g, '').toUpperCase(), reg.iban.replace(/ /g, '').toUpperCase())
-                          .then(r => this.api.logMcn(r, this.user, hcp.id, "DMG", "register"))
-                  }
-              ).then(regResp => {
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(this, 'hcp.nihii', null),
+                          _.get(this, 'hcp.ssin', null),
+                          _.get(this, 'hcp.firstName', null),
+                          _.get(this, 'hcp.lastName', null),
+                          _.get(reg, 'OA', null),
+                          _.get(reg, 'bic', null).replace(/ /g, '').toUpperCase(),
+                          _.get(reg, 'iban', null).replace(/ /g, '').toUpperCase()
+                      ).then(r =>
+                          this.api.logMcn(r, this.user, hcp.id, "DMG", "register")
+                      )
+              }).then(regResp => {
                       if (regResp) {
                           if (regResp.errors && regResp.errors.length > 0) {
                               const err = regResp.errors.find(er => er.code === '168')

@@ -700,8 +700,8 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
             prom = prom.then(nihiiList =>
                 (
                     this.api.patient().checkInami(_.get(nihii, 'nihii', null))  ?
-                        _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbook().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
-                            _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbook().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null),this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null)) :
+                        _.get(nihii, 'type', null) === 'org' ? this.api.fhc().Addressbook().getOrgByNihiiUsingGET(_.get(this.api, 'keystoreId', null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null), _.get(this, 'language', null)) :
+                            _.get(nihii, 'type', null) === 'hcp' ? this.api.fhc().Addressbook().getHcpByNihiiUsingGET(_.get(this.api, 'keystoreId', null),this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, 'credentials.ehpassword', null), _.get(nihii, 'nihii', null), _.get(this, 'language', null)) :
                                 _.get(nihii, 'type', null) === 'mm' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.medicalHouseList, 'medicalHouseList', []).find(mm => _.get(mm, 'nihii', null) === _.get(nihii, 'nihii', '')), {initialSearch: nihii}))) :
                                     Promise.resolve(_.concat(nihiiList, _.assign({}, {initialSearch: nihii}))) :
                         _.get(nihii, 'type', null) === 'pha' ? Promise.resolve(_.concat(nihiiList, _.assign(_.get(this.pharmacyList, 'pharmacyList', []).find(pha => _.get(pha, 'authorizationNumber', null) === _.get(nihii, 'nihii', '').substr(2)), {initialSearch: nihii}))) :
@@ -742,11 +742,38 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
     }
 
     consultMdaBySsin(){
-        return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberData().getMemberDataUsingGET(this.cleanData(_.get(this.patient, "ssin", null)), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null , this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other",  _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
+        return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberData().getMemberDataUsingGET(
+            this.cleanData(_.get(this.patient, "ssin", null)),
+            this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null),
+            _.get(this.api, "keystoreId", null),
+            _.get(this.api, "credentials.ehpassword", null),
+            this.cleanData(_.get(this.hcp, "nihii", null)),
+            this.cleanData(_.get(this.hcp, "ssin", null)),
+            this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null),
+            this._isMedicalHouse() ? "medicalhouse" : "doctor",
+            _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null ,
+            this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null,
+            _.get(this.mdaSearch, 'contactType', "other") !== "other",
+            _.get(this.mdaSearch, 'requestType', "information")
+        ) : Promise.resolve({})
     }
 
     consultMdaByMemberShip(){
-        return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberData().getMemberDataByMembershipUsingGET(_.get(this.mdaSearch, "mutuality", null), _.get(this.mdaSearch, "identificationNumber", null), this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null), _.get(this.api, "keystoreId", null), _.get(this.api, "credentials.ehpassword", null), this.cleanData(_.get(this.hcp, "nihii", null)), this.cleanData(_.get(this.hcp, "ssin", null)), this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null), this._isMedicalHouse() ? "medicalhouse" : "doctor", _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null, this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null, _.get(this.mdaSearch, 'contactType', "other") !== "other", _.get(this.mdaSearch, 'requestType', "information")) : Promise.resolve({})
+        return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberData().getMemberDataByMembershipUsingGET(
+            _.get(this.mdaSearch, "mutuality", null),
+            _.get(this.mdaSearch, "identificationNumber", null),
+            this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null),
+            _.get(this.api, "keystoreId", null),
+            _.get(this.api, "credentials.ehpassword", null),
+            this.cleanData(_.get(this.hcp, "nihii", null)),
+            this.cleanData(_.get(this.hcp, "ssin", null)),
+            this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null),
+            this._isMedicalHouse() ? "medicalhouse" : "doctor",
+            _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null,
+            this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null,
+            _.get(this.mdaSearch, 'contactType', "other") !== "other",
+            _.get(this.mdaSearch, 'requestType', "information")
+        ) : Promise.resolve({})
     }
 
     _selectedMdaConsultTypeChanged(){

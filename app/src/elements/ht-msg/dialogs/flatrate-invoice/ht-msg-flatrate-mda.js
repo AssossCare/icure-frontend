@@ -2899,18 +2899,22 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
             _.trim(_.get(this,"api.credentials.ehpassword")),
             _.trim(_.get(this,"hcp.nihii")),
             _.trim(_.get(this,"hcp.name")) ? _.trim(_.get(this,"hcp.name")) : _.trim(_.get(this,"hcp.lastName")),
-            {members:_.compact(_.map(requestedData, it => _.merge({},{
-                    hospitalized:false,
-                    ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
-                    io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
-                    ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
-                    uniqId: _.trim(_.get(it, 'reconcileKey'))
-                })))},
             "medicalhouse",
             moment().startOf("month").subtract(24, 'months').valueOf(),
             moment().startOf("month").endOf("month").valueOf(),
             false,
-            "information"
+            "information",
+            {
+                members:_.compact(_.map(requestedData, it => _.merge({},
+                    {
+                        hospitalized:false,
+                        ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
+                        io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
+                        ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
+                        uniqId: _.trim(_.get(it, 'reconcileKey'))
+                    }
+                    )))
+            }
         )
             .then(mdaResponse => !_.get(mdaResponse, "result",false) || !_.trim(_.get(mdaResponse, "tack.reference")) ? null : _.assign({}, {
                 message: mdaResponse,

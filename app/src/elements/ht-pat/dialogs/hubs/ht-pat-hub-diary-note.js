@@ -1008,13 +1008,21 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
                                                   console.log("diarynote = ", reader.result);
                                               }
                                               reader.readAsText(output);
-                                              return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
-                                                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                                  hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                                                  this.hubId,
-                                                  this.patient.ssin,
-                                                  output,
-                                                  this.hubPackageId, this.hubApplication
+                                              return this.api.fhc().Hub().putTransactionUsingPOST(
+                                                  _.get(this, 'hubEndPoint', null),
+                                                  _.get(this, 'api.keystoreId', null),
+                                                  _.get(this, 'api.tokenId', null),
+                                                  _.get(this, 'api.credentials.ehpassword', null),
+                                                  _.get(hcp, 'lastName', null),
+                                                  _.get(hcp, 'firstName', null),
+                                                  _.get(hcp, 'nihii', null),
+                                                  _.get(hcp, 'ssin', null),
+                                                  _.get(this, 'hcpZip', null),
+                                                  _.get(this, 'hubId', null),
+                                                  _.get(this, 'patient.ssin', null),
+                                                  _.get(this, 'hubPackageId', null),
+                                                  _.get(this, 'hubApplication', null),
+                                                  output
                                               )
                                           }
                                       ).then(putResp => {

@@ -507,31 +507,67 @@ class HtMsgMycarenet extends TkLocalizerMixin(PolymerElement) {
 
   getMessages() {
       this.set('isLoadingDmg', true)
-      this.api.fhc().Dmg().getDmgMessagesUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName,"", [])
-          .then( x => this.api.logMcn(x, this.user, this.hcp.id, "DMG", "loadMessages") )
-          .then(list => this.api.message().processDmgMessagesList(this.user,this.hcp,list,this.api.document()))
-          .then(([ackHashes, dmgHashes]) => Promise.all([
-              this.api.fhc().Dmg().confirmAcksUsingPOST(this.api.keystoreId, this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, ackHashes),
-              this.api.fhc().Dmg().confirmDmgMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, dmgHashes)
-          ])).finally(() => {
-              this.set('isLoadingDmg', false)
-              this.refresh()
-          })
+      this.api.fhc().Dmg().getDmgMessagesUsingPOST(
+          _.get(this, 'api.keystoreId', null),
+          _.get(this, 'api.tokenId', null),
+          _.get(this, 'api.credentials.ehpassword', null),
+          _.get(this, 'hcp.nihii', null),
+          _.get(this, 'hcp.ssin', null),
+          _.get(this, 'hcp.firstName', null),
+          _.get(this, 'hcp.lastName', null),
+          ""
+      ).then( x =>
+          this.api.logMcn(x, this.user, this.hcp.id, "DMG", "loadMessages")
+      ).then(list =>
+          this.api.message().processDmgMessagesList(this.user,this.hcp,list,this.api.document())
+      ).then(([ackHashes, dmgHashes]) =>
+          Promise.all([
+              this.api.fhc().Dmg().confirmAcksUsingPOST(
+                  _.get(this, 'api.keystoreId', null),
+                  _.get(this, 'api.tokenId', null),
+                  _.get(this, 'api.credentials.ehpassword', null),
+                  _.get(this, 'hcp.nihii', null),
+                  _.get(this, 'hcp.ssin', null),
+                  _.get(this, 'hcp.firstName', null),
+                  _.get(this, 'hcp.lastName', null),
+                  ackHashes
+              ),
+              this.api.fhc().Dmg().confirmDmgMessagesUsingPOST(
+                  _.get(this, 'api.keystoreId', null),
+                  _.get(this, 'api.tokenId', null),
+                  _.get(this, 'api.credentials.ehpassword', null),
+                  _.get(this, 'hcp.nihii', null),
+                  _.get(this, 'hcp.ssin', null),
+                  _.get(this, 'hcp.firstName', null),
+                  _.get(this, 'hcp.lastName', null),
+                  dmgHashes
+              )
+          ])
+      ).finally(() => {
+          this.set('isLoadingDmg', false)
+          this.refresh()
+      })
   }
 
   requestMessages(){
       this.set('isLoadingReq', true)
 
-      this.api.fhc().Dmg().postDmgsListRequestUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName)
-          .then( m => {
+      this.api.fhc().Dmg().postDmgsListRequestUsingPOST(
+          _.get(this, 'api.keystoreId', null),
+          _.get(this, 'api.tokenId', null),
+          _.get(this, 'api.credentials.ehpassword', null),
+          _.get(this, 'hcp.nihii', null),
+          _.get(this, 'hcp.ssin', null),
+          _.get(this, 'hcp.firstName', null),
+          _.get(this, 'hcp.lastName', null)
+      ).then( m => {
               return this.api.message().saveDmgsListRequest(this.user, m)
                   .then(x => this.api.logMcn(x, this.user, m.id, "DMG", "listrequest"))
                   .catch(e => this.api.logMcn(x, this.user, this.hcp.id, "DMG", "listrequest"))
-          })
-          .finally(() => {
-              this.set('isLoadingReq', false)
-              this.refresh()
-          })
+      }).finally(() => {
+          this.set('isLoadingReq', false)
+          this.refresh()
+      })
   }
 
   _formatDate(v1,v2){

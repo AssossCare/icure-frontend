@@ -1238,7 +1238,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
           this.set('checkedVerses', [])
           const paragraph = this.displayedParagraph.id.split('/')[0]
           this.set('_isLoadingParagraph',true)
-          ;(this.displayedParagraph.paragraphInfo ? Promise.resolve(this.displayedParagraph.paragraphInfo) : this.api.fhc().chaptercontrollerfhc.getParagraphInfosUsingGET('IV', paragraph))
+          ;(this.displayedParagraph.paragraphInfo ? Promise.resolve(this.displayedParagraph.paragraphInfo) : this.api.fhc().ChapterIV.getParagraphInfosUsingGET('IV', paragraph))
               .then(pi => {
                   console.log("pi",pi)
                   this.set('displayedParagraph.paragraphInfo', pi)
@@ -1377,7 +1377,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
           const content =  Object.values(svc.content).find(c => !!c.medicationValue && !!c.medicationValue.paragraphAgreements && Object.keys(c.medicationValue.paragraphAgreements).length)
           const agreements = content.medicationValue.paragraphAgreements
           return _.toPairs(agreements).map(([p, t]) => _.assign({}, t, { service: svc, paragraph: p, medications: [(content.medicationValue.medicinalProduct || {}).intendedname || (content.medicationValue.substanceProduct || {}).intendedname] }))
-      }).map(t => Promise.all([this.api.fhc().chaptercontrollerfhc.getVtmNamesForParagraphUsingGET('IV', t.paragraph, this.language), this.api.fhc().chaptercontrollerfhc.getParagraphInfosUsingGET('IV', t.paragraph)]).then(([vtm, pi]) => Object.assign(t, {
+      }).map(t => Promise.all([this.api.fhc().ChapterIV.getVtmNamesForParagraphUsingGET('IV', t.paragraph, this.language), this.api.fhc().ChapterIV.getParagraphInfosUsingGET('IV', t.paragraph)]).then(([vtm, pi]) => Object.assign(t, {
           paragraphName: this.localizeObjectKey(pi, 'keyString'),
           medications: (t.medications || []).concat(vtm),
           paragraphInfo: pi
@@ -1399,10 +1399,24 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
       this._isLoadingChapter = true;
       this.set('agreementResponse', [])
       this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-          this.api.fhc().ChapterIV().agreementRequestsConsultationUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-              hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-              this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender, null, this.selectedLoadParagraph !== "" ? this.selectedLoadParagraph : null,
-              this.api.moment(this.consultationStartDateAsString).valueOf(), this.consultationEndDateAsString !== "" ? this.api.moment(this.consultationEndDateAsString).valueOf() : null).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "consult") )
+          this.api.fhc().ChapterIV().agreementRequestsConsultationUsingGET(
+              _.get(this, 'api.keystoreId', null),
+              _.get(this, 'api.tokenId', null),
+              _.get(this, 'api.credentials.ehpassword', null),
+              _.get(hcp, 'nihii', null),
+              _.get(hcp, 'ssin',  null),
+              _.get(hcp, 'firstName', null),
+              _.get(hcp, 'lastName', null),
+              _.get(this, 'patient.ssin', null),
+              _.get(this, 'patient.dateOfBirth', null),
+              _.get(this, 'patient.firstName', null),
+              _.get(this, 'patient.lastName', null),
+              _.get(this, 'patient.gender', null),
+              null,
+              _.get(this, 'selectedLoadParagraph', null) !== "" ? _.get(this, 'selectedLoadParagraph', null) : null,
+              _.get(this, 'consultationStartDateAsString', null) ? this.api.moment(_.get(this, 'consultationStartDateAsString', null)).valueOf() : null,
+              _.get(this, 'consultationEndDateAsString', null) !== "" ? this.api.moment(_.get(this, 'consultationEndDateAsString', null)).valueOf() : null
+          ).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "consult") )
       ).then(agreements => {
           if (agreements.warnings && agreements.warnings.length) {
               this.set('warnings', agreements.warnings.map(w => this.localizeObjectKey(w,'msg') + (w.code||w.path?` [${w.code||''} : ${w.path||''}]` : '')))
@@ -1417,7 +1431,14 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
           console.log(agreements)
 
           return Promise.all(
-              agreements.transactions.map(t => Promise.all([this.api.fhc().chaptercontrollerfhc.getVtmNamesForParagraphUsingGET('IV', t.paragraph, this.language).catch(() => ''), this.api.fhc().chaptercontrollerfhc.getParagraphInfosUsingGET('IV', t.paragraph).catch(() => [])]).then(([vtm, pi]) => [t, vtm, pi]))
+              agreements.transactions.map(t => Promise.all([this.api.fhc().ChapterIV.getVtmNamesForParagraphUsingGET(
+                  'IV',
+                  _.get(t, 'paragraph', null),
+                  _.get(this, 'language', null)
+              ).catch(() => ''), this.api.fhc().ChapterIV.getParagraphInfosUsingGET(
+                  'IV',
+                  _.get(t, 'paragraph', null)
+              ).catch(() => [])]).then(([vtm, pi]) => [t, vtm, pi]))
           ).then((transactions) => {
               return (this.convertedMedications ? Promise.resolve(this.convertedMedications) : this._convertedMedications()).then(medications => {
                   const ioRequestReferences = medications.map(x => x.ioRequestReference)
@@ -1485,14 +1506,30 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                       })
                   ))
               ).then(appendices =>
-                  this.api.fhc().ChapterIV().requestAgreementUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-                      this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender,
-                      requestType, pi.paragraphVersion, pi.paragraphName,
-                      appendices, this.checkedVerses.join(','), !!this.incomplete,
-                      requestType === "complimentaryannex" ? null : requestType === "extension" ? this.api.moment(this.displayedParagraph.end).add(1, "days").valueOf() : this.api.moment(this.fromAsString).valueOf() , null,
-                      (requestType === "extension" || requestType === "noncontinuousextension" || requestType === "complimentaryannex") ? this.displayedParagraph.decisionReference : null, //Might want to set ioRequestReference here for complimentary appendices
-                      ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !this.displayedParagraph.decisionReference) ? this.displayedParagraph.ioRequestReference : null).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", requestType) )
+                  this.api.fhc().ChapterIV().requestAgreementUsingPOST(
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'patient.dateOfBirth', null),
+                      _.get(this, 'patient.firstName', null),
+                      _.get(this, 'patient.lastName', null),
+                      _.get(this, 'patient.gender', null),
+                      requestType,
+                      _.get(pi, 'paragraphVersion', null),
+                      _.get(pi, 'paragraphName', null),
+                      appendices,
+                      _.get(this, 'checkedVerses', []).join(','),
+                      !!_.get(this, 'incomplete', null),
+                      requestType === "complimentaryannex" ? null : requestType === "extension" ? _.get(this, 'displayedParagraph.end', null) ? this.api.moment(_.get(this, 'displayedParagraph.end', null)).add(1, "days").valueOf() : null : _.get(this, 'fromAsString', null) ? this.api.moment(_.get(this, 'fromAsString', null)).valueOf() : null,
+                      null,
+                      (requestType === "extension" || requestType === "noncontinuousextension" || requestType === "complimentaryannex") ? _.get(this, 'displayedParagraph.decisionReference', null) : null, //Might want to set ioRequestReference here for complimentary appendices
+                      ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !_.get(this, 'displayedParagraph.decisionReference', null)) ? _.get(this, 'displayedParagraph.ioRequestReference', null) : null
+                  ).then( x => this.api.logMcn(x, _.get(this, 'user', null), _.get(this, 'patient.id', null), "CHAPIV", requestType) )
               )
           ).then(res => {
               console.log(res)
@@ -1500,7 +1537,10 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
               this.set('tabs', 1)
 
               return Promise.all(((res || {}) && res.transactions || []).map(t =>
-                  this.api.fhc().ChapterIV().getMppsForParagraphUsingGET('IV', t.paragraph || pi.paragraphName).then(it => ({
+                  this.api.fhc().ChapterIV().getMppsForParagraphUsingGET(
+                      'IV',
+                      _.get(t, 'paragraph', null) || _.get(pi, 'paragraphName', null)
+                  ).then(it => ({
                       paragraph: t.paragraph || pi.paragraphName,
                       transaction: t,
                       mpps: it
@@ -1672,40 +1712,63 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
       this._isLoadingParagraph = true
       const selectedAgreement = this._agreements()[idx]
 
-      ;(selectedAgreement.paragraphInfo ? Promise.resolve(selectedAgreement.paragraphInfo) : this.api.fhc().chaptercontrollerfhc.getParagraphInfosUsingGET('IV', selectedAgreement.paragraph))
-          .then(pi => {
-              this.set('isAgreementSelected', true)
-              this.set('cbValue', '')
-              this.set('displayedParagraph', _.assign({}, selectedAgreement, {
-                  id: `${pi.paragraphName}/${pi.paragraphVersion}`,
-                  descr: `${pi.paragraphName} - ${this.localizeObjectKey(pi, 'keyString')}`,
-                  paragraphInfo : pi
-              }))
-              this.set('checkedVerses', selectedAgreement.verses)
-              this.set('agreementResponse', {
-                  transactions: [selectedAgreement]
-              })
+      ;(selectedAgreement.paragraphInfo ? Promise.resolve(selectedAgreement.paragraphInfo) : this.api.fhc().ChapterIV.getParagraphInfosUsingGET(
+          'IV',
+          _.get(selectedAgreement, 'paragraph', null)
+      )).then(pi => {
+          this.set('isAgreementSelected', true)
+          this.set('cbValue', '')
+          this.set('displayedParagraph', _.assign({}, selectedAgreement, {
+              id: `${pi.paragraphName}/${pi.paragraphVersion}`,
+              descr: `${pi.paragraphName} - ${this.localizeObjectKey(pi, 'keyString')}`,
+              paragraphInfo : pi
+          }))
+          this.set('checkedVerses', selectedAgreement.verses)
+          this.set('agreementResponse', {
+              transactions: [selectedAgreement]
+          })
 
-             this.api.fhc().ChapterIV().getMppsForParagraphUsingGET('IV', selectedAgreement.paragraph).then(it => ([{
-                  paragraph: selectedAgreement.paragraph || pi.paragraphName,
-                  transaction: selectedAgreement,
-                  mpps: it
-              }])).then(links =>{
-                 this.set('agreementMpps', links)
-                // this.set('displayedParagraph.selectedMedication', links[0].mpps.find(lnk => lnk.id.id === links[0].transaction.service.codes[0].code))
-             })
-              this._isLoadingParagraph = false
-              this.set('tabs', 0)
-              this.set('isAskingAgreement', false)
+         this.api.fhc().ChapterIV().getMppsForParagraphUsingGET(
+             'IV',
+             _.get(selectedAgreement, 'paragraph', null)
+         ).then(it => ([{
+              paragraph: selectedAgreement.paragraph || pi.paragraphName,
+              transaction: selectedAgreement,
+              mpps: it
+          }])).then(links =>{
+             this.set('agreementMpps', links)
+            // this.set('displayedParagraph.selectedMedication', links[0].mpps.find(lnk => lnk.id.id === links[0].transaction.service.codes[0].code))
+         })
+          this._isLoadingParagraph = false
+          this.set('tabs', 0)
+          this.set('isAskingAgreement', false)
        })
   }
 
   _closeChapter(e) {
       if (this.displayedParagraph) {
           this.set('isClosingAgreement', true)
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().chaptercontrollerfhc.closeAgreementUsingDELETE(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-              this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender, this.displayedParagraph.decisionReference, this.displayedParagraph.ioRequestReference).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "closure") ))
-              .then(res => {
+          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+              .then(hcp =>
+                  this.api.fhc().ChapterIV.closeAgreementUsingDELETE(
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this,'api.credentials.ehpassword', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'patient.dateOfBirth', null),
+                      _.get(this, 'patient.firstName', null),
+                      _.get(this, 'patient.lastName', null),
+                      _.get(this, 'patient.gender', null),
+                      _.get(this, 'displayedParagraph.decisionReference', null),
+                      _.get(this, 'displayedParagraph.ioRequestReference', null)
+                   ).then( x =>
+                        this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "closure")
+                   )
+              ).then(res => {
                   this.set('agreementResponse', res)
                   this.set('tabs', 1)
 
@@ -1729,9 +1792,27 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
   _cancelChapter(e) {
       if (this.displayedParagraph) {
           this.set('isClosingAgreement', true)
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().chaptercontrollerfhc.cancelAgreementUsingDELETE(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-              this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender, this.displayedParagraph.decisionReference, this.displayedParagraph.ioRequestReference).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "cancellation") ))
-              .then(res => {
+          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+              .then(hcp =>
+                  this.api.fhc().ChapterIV.cancelAgreementUsingDELETE(
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this,'api.credentials.ehpassword', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'patient.dateOfBirth', null),
+                      _.get(this, 'patient.firstName', null),
+                      _.get(this, 'patient.lastName', null),
+                      _.get(this, 'patient.gender', null),
+                      _.get(this, 'displayedParagraph.decisionReference', null),
+                      _.get(this, 'displayedParagraph.ioRequestReference', null)
+                  ).then( x =>
+                      this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "cancellation")
+                  )
+              ).then(res => {
                   this.set('agreementResponse', res)
                   this.set('tabs', 1)
                   console.log(res)

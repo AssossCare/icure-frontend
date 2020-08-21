@@ -3749,8 +3749,17 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                 return this.api.fhc().Genins().getGeneralInsurabilityByMembershipUsingGET(
                                     (this.genInsOA && this.genInsOA != '') ? this.genInsOA.trim() : insu.code,
                                     (this.genInsAFF && this.genInsAFF != '') ? this.genInsAFF.trim() : pi.identificationNumber,
-                                    asMMH ? this.api.tokenIdMH : this.api.tokenId, asMMH ? this.api.keystoreIdMH : this.api.keystoreId, asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
-                                    asMMH ? this.api.nihiiMH : hcp.nihii, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, asMMH ? 'medicalhouse' : 'doctor', dStart, asMMH ? Date.parse(this.genInsDateTo) : null, this.genInsHospitalized)
+                                    asMMH ? this.api.tokenIdMH : this.api.tokenId,
+                                    asMMH ? this.api.keystoreIdMH : this.api.keystoreId,
+                                    asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
+                                    asMMH ? this.api.nihiiMH : hcp.nihii,
+                                    this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin,
+                                    this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName,
+                                    asMMH ? 'medicalhouse' : 'doctor',
+                                    dStart,
+                                    asMMH ? Date.parse(this.genInsDateTo) : null,
+                                    this.genInsHospitalized
+                                )
                             }
                         ).then(genInsResp => {
                             if (genInsResp) {
@@ -7010,7 +7019,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _consultRnHistory(patient) {
         this.set('rnHistoryResult', {})
         if (this.api.tokenId) {
-            this.api.fhc().RnConsult().historyUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(patient, 'ssin', null)).then(resp => {
+            this.api.fhc().RnConsult().historyUsingGET(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null),
+                _.get(patient, 'ssin', null)
+            ).then(resp => {
                 this.set('rnHistoryResult', resp)
                 if (!_.isEmpty(resp)) {
                     if (_.get(resp, 'ssin.value', null) && !_.get(resp, 'ssin.replaces', null) && _.get(resp, 'ssin.canceled', null) !== true) {

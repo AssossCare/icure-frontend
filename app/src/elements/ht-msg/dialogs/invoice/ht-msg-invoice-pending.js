@@ -549,7 +549,17 @@ class HtMsgInvoicePending extends TkLocalizerMixin(PolymerElement) {
             this.push('progressItem', this.localize('inv-get-step-1', 'inv-get-step-1', this.language))
             this.set('cannotGet',true)
             localStorage.setItem('lastInvoicesGet', Date.now())
-            this.api.fhc().Efact().loadMessagesUsingGET(this.hcp.nihii, this.language, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, 100).then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
+            this.api.fhc().Efact().loadMessagesUsingGET(
+                this.hcp.nihii,
+                this.language,
+                this.api.keystoreId,
+                this.api.tokenId,
+                this.api.credentials.ehpassword,
+                this.hcp.ssin,
+                this.hcp.firstName,
+                this.hcp.lastName,
+                100
+            ).then( x => this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages") ).then(response => {
                 let prom = Promise.resolve()
                 this.push('progressItem', this.localize('inv-get-step-2', 'inv-get-step-2', this.language))
                 response.forEach(message => {
