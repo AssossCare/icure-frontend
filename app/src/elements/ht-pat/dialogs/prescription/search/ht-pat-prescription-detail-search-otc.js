@@ -135,6 +135,11 @@ class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([
                 width: 8px;
             }
             
+            ht-spinner{
+                height: 100px;
+                width: 100px;
+            }
+            
         </style>
         
         <template is="dom-if" if="[[isLoading]]" restamp="true">
@@ -145,13 +150,15 @@ class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([
                 <div class="tr th">                 
                     <div class="td fg01">[[localize('','',language)]]</div>    
                     <div class="td fg1">[[localize('presc-sear-name','Name',language)]]</div>
-                    <div class="td fg2"></div>
+                    <div class="td fg1">[[localize('presc-sear-distributor','Distributor',language)]]</div>
+                    <div class="td fg1">[[localize('presc-sear-producer','Producer',language)]]</div>
                 </div>
                 <template is="dom-repeat" items="[[searchResult.otc]]" as="drug">
                     <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
-                        <div class="td fg2"></div>
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="otc" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg1" data-id$="[[drug.id]]" data-type="otc" on-tap="_openPosologyView">[[drug.label]]</div>
+                        <div class="td fg1">[[drug.distributor]]</div>
+                        <div class="td fg1">[[drug.producer]]</div>
                     </div>
                 </template>
             </div>  

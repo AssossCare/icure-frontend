@@ -166,6 +166,11 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 padding: 0px;
             }
             
+            ht-spinner{
+                height: 100px;
+                width: 100px;
+            }
+            
         </style>
         
         <template is="dom-if" if="[[isLoading]]" restamp="true">
