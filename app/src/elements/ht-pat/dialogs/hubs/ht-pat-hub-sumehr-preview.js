@@ -718,8 +718,8 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
       this.set('hubSumehrReady', false);
       this.set('isLoading',true);
       this.set('parentDialog', parentDialog);
-      this.$['sumehrPreviewDialog'].open();
-      this.$['htPatHubTransactionPreViewer'].open(this,  null);
+      this.shadowRoot.querySelector('#sumehrPreviewDialog') ? this.shadowRoot.querySelector('#sumehrPreviewDialog').open() : null
+      this.shadowRoot.querySelector('#htPatHubTransactionPreViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionPreViewer').open(this,  null) : null
       this.set('message', null);
       this.set("uploading", false);
       this.set('updateList', []);
@@ -799,7 +799,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   _setHub(){
-      const hubConfig = this.$["htPatHubUtils"].getHubConfig(this.curHub, this.curEnv);
+      const hubConfig = this.shadowRoot.querySelector("#htPatHubUtils") ? this.shadowRoot.querySelector("#htPatHubUtils").getHubConfig(_.get(this, 'curHub', null), _.get(this, 'curEnv', null)) : null
       //this.set('isLoading',true);
       this.set('hcpHubConsent', null);
       this.set('patientHubConsent', null);
@@ -832,9 +832,9 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
   _openTransactionViewer(e){
       e.stopPropagation();
-      if(e && e.target && e.target.item) {
-          this.set("selectedTransaction", e.target.item)
-          if(this.$['htPatHubTransactionPreViewer']) this.$['htPatHubTransactionPreViewer'].open( e.target.item, this._getHubTransactionMessage( e.target.item));
+      if(_.get(e, 'target.item', null)) {
+          this.set("selectedTransaction", _.get(e, 'target.item', null))
+          this.shadowRoot.querySelector('#htPatHubTransactionPreViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionPreViewer').open( _.get(e, 'target.item', null), this._getHubTransactionMessage(_.get(e, 'target.item', null))) : null
       }
   }
 
@@ -842,20 +842,20 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
       e.stopPropagation();
       this.set("putError", null);
       this.set("isTest", false);
-      if(this.$['commentDialog']) this.$['commentDialog'].open();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').open() : null
   }
 
   _openCommentDialogTest(e){
       e.stopPropagation();
       this.set("putError", null);
       this.set("isTest", true);
-      if(this.$['commentDialog']) this.$['commentDialog'].open();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').open() : null
   }
 
   _closeCommentDialog(e){
       e.stopPropagation();
       this.set("uploading", false);
-      if(this.$['commentDialog']) this.$['commentDialog'].close();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').close() : null
   }
 
   _runPutSumehrV2WithGetTransaction(){
@@ -894,24 +894,24 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                   console.log("putNRevoke: id to revoke is same as new id, don't revoke", this.hubSumehr.folders[0].transactions[0].ids);
                                   this.parentDialog._runGetTransactionList();
                                   this.set("uploading", false);
-                                  if (this.$['commentDialog']) this.$['commentDialog'].close();
-                                  this.$["sumehrPreviewDialog"].close();
+                                  this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').close() : null
+                                  this.shadowRoot.querySelector("#sumehrPreviewDialog") ? this.shadowRoot.querySelector("#sumehrPreviewDialog").close() : null
                               } else {
                                   console.log("putNRevoke: id to revoke", this.hubSumehr.folders[0].transactions[0].ids);
                                   if (this.hubSumehr && this.hubSumehr.folders) this.parentDialog._revokeHubTransaction(this.hubSumehr.folders[0].transactions[0]).then(r => {
                                       console.log(r)
                                       this.parentDialog._runGetTransactionList();
                                       this.set("uploading", false);
-                                      if (this.$['commentDialog']) this.$['commentDialog'].close();
-                                      this.$["sumehrPreviewDialog"].close();
+                                      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').open() : null
+                                      this.shadowRoot.querySelector("#sumehrPreviewDialog") ? this.shadowRoot.querySelector("#sumehrPreviewDialog").close() : null
                                   });
                               }
                           } else {
                               console.log("there was no sumehr on the hub yet");
                               this.parentDialog._runGetTransactionList();
                               this.set("uploading", false);
-                              if (this.$['commentDialog']) this.$['commentDialog'].close();
-                              this.$["sumehrPreviewDialog"].close();
+                              this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').close() : null
+                              this.shadowRoot.querySelector("#sumehrPreviewDialog") ? this.shadowRoot.querySelector("#sumehrPreviewDialog").close() : null
                           }
                       });
                   });
@@ -1115,7 +1115,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   _getItemsToExclude(){
-      const items =  this.$['htPatHubTransactionPreViewer'].getIdsToExclude();
+      const items =  this.shadowRoot.querySelector('#htPatHubTransactionPreViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionPreViewer').getIdsToExclude() : null
       console.log("exclude = " + items);
       this.set("itemsToExclude", items);
       return items;
@@ -1188,8 +1188,8 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
 
                                   document.body.removeChild(a);
 
-                                  if(this.$['commentDialog']) this.$['commentDialog'].close();
-                                  this.$["sumehrPreviewDialog"].close();
+                                  this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').close() : null
+                                  this.shadowRoot.querySelector('#sumehrPreviewDialog') ? this.shadowRoot.querySelector('#sumehrPreviewDialog').close() : null
                               }).catch( error=> console.log(error))
                           })
                   ))
@@ -1319,27 +1319,29 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
       if(transaction && this._isTransactionSet(transaction)) {
           return this._getHubTransactionSet(transaction);
       } else {
-          if (this.patient.ssin && this.api.tokenId && transaction) {
-              return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+          return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+               this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                   .then(hcp =>
-                      this.api.fhc().Hub().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
-                          this.api.tokenId, this.api.credentials.ehpassword,
-                          hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                          this.patient.ssin,
-                          transaction.ids.find(id => id.s === 'LOCAL').sv, transaction.ids.find(id => id.s === 'LOCAL').sl, transaction.ids.find(id => id.s === 'LOCAL').value,
-                          this.hubPackageId, this.breakTheGlassReason
+                      this.api.fhc().Hub().getTransactionUsingGET(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sv', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'breakTheGlassReason', null)
                       )
                   ).then(tranResp => {
-                          if (tranResp) {
-                              return tranResp;
-                          } else {
-                              return null;
-                          }
-                      }
-                  )
-          } else {
-              return Promise.resolve(null)
-          }
+                      return tranResp ? tranResp: null
+                  }): Promise.resolve(null)
       }
   }
 
@@ -1357,30 +1359,29 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
       // patientSsin: string,
       // essage: string,
       // hubPackageId?: string, hubApplication?: string): Promise<models.PutTransactionSetResponse | any>;
-      const myblob = new Blob([tsXML]);
-      if (this.patient && this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                  .then(hcp => this.api.fhc().Hub().putTransactionSetUsingPOST(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.hubId,
-                      this.patient.ssin,
-                      myblob,
-                      this.hubPackageId, this.hubApplication
-                      )
-                  ).then(putResp => {
-                      if (putResp) {
-                          return putResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-          )
-      }else{
-          return Promise.resolve(null)
-      }
+
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
+              .then(hcp =>
+                  this.api.fhc().Hub().putTransactionSetUsingPOST(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'hubId', null),
+                      _.get(this, 'patient.ssin', null),
+                      new Blob([tsXML]),
+                      _.get(this, 'hubPackageId', null),
+                      _.get(this, 'hubApplication', null)
+                  )
+              ).then(putResp => {
+                  return putResp ? putResp: null
+              }): Promise.resolve(null)
   }
 
   xmlHubListener() {
@@ -1392,7 +1393,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   _closeDialogs(){
-      this.$['sumehrPreviewDialog'].close();
+      this.shadowRoot.querySelector('#sumehrPreviewDialog') ? this.shadowRoot.querySelector('#sumehrPreviewDialog').close() : null
   }
 
   _hubDownload(e){
@@ -1404,19 +1405,18 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   _showHistoryItem(e){
-      if(e.target && e.target.dataset && e.target.dataset.item) {
-          const item = JSON.parse(e.target.dataset.item);
-          console.log(item);
-          this.set("messageBefore", JSON.parse(item.oldatt));
-          this.set("messageAfter", JSON.parse(item.newatt));
-          this.$['htPatHubTransactionViewerBefore'].openHist(this.messageBefore);
-          this.$['htPatHubTransactionViewerAfter'].openHist(this.messageAfter);
-          this.$["historyViewer"].open();
+      if(_.get(e, 'target.dataset.item', null)) {
+          const item = JSON.parse(_.get(e, 'target.dataset.item', null))
+          this.set("messageBefore", JSON.parse(_.get(item, 'oldatt', null)))
+          this.set("messageAfter", JSON.parse(_.get(item, 'newatt', null)))
+          this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore').openHist(_.get(this, 'messageBefore', null)) : null
+          this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter').openHist(_.get(this, 'messageAfter', null)) : null
+          this.shadowRoot.querySelector("#historyViewer") ? this.shadowRoot.querySelector("#historyViewer").open() : null
       }
   }
 
   _closeHistoryViewer(){
-      this.$["historyViewer"].close();
+      this.shadowRoot.querySelector("#historyViewer") ? this.shadowRoot.querySelector("#historyViewer").close() : null
   }
 }
 customElements.define(HtPatHubSumehrPreview.is, HtPatHubSumehrPreview);
