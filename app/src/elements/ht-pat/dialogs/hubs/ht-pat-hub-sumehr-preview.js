@@ -942,14 +942,19 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                   .then(patientDto =>
                       this.api.crypto().extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)
                           .then(secretForeignKeys =>
-                              this.api.bekmehr().generateSumehrV2ExportWithEncryptionSupport(patientDto.id, this.user.healthcarePartyId, "fr", {
-                                  secretForeignKeys: secretForeignKeys.extractedKeys,
-                                  recipient: hcp,
-                                  comment: this.myComment,
-                                  excludedIds : excludedIds,
-                                  softwareName : "TOPAZ",
-                                  softwareVersion : this.backendVersion
-                              }).then(output =>
+                              this.api.bekmehr().generateSumehrV2ExportWithEncryptionSupport(
+                                  _.get(patientDto, 'id', null),
+                                  _.get(this, 'user.healthcarePartyId', null),
+                                  _.get(this, 'language', 'fr'),
+                                  {
+                                      secretForeignKeys: _.get(secretForeignKeys, 'extractedKeys', null),
+                                      recipient: hcp,
+                                      comment: _.get(this, 'myComment', null),
+                                      excludedIds : excludedIds,
+                                      softwareName : "TOPAZ",
+                                      softwareVersion : _.get(this, 'backendVersion', null)
+                                  }
+                              ).then(output =>
                                   this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                                       .then(hcp =>{
                                           let reader = new FileReader();
@@ -960,13 +965,21 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                           }
                                           reader.readAsText(output);
 
-                                          return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
-                                              this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                              hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                                              this.hubId,
-                                              this.patient.ssin,
+                                          return this.api.fhc().Hub().putTransactionUsingPOST(
+                                              _.get(this, 'hubEndPoint', null),
+                                              _.get(this, 'api.keystoreId', null),
+                                              _.get(this, 'api.tokenId', null),
+                                              _.get(this, 'api.credentials.ehpassword', null),
+                                              _.get(hcp, 'lastName', null),
+                                              _.get(hcp, 'firstName', null),
+                                              _.get(hcp, 'nihii', null),
+                                              _.get(hcp, 'ssin', null),
+                                              _.get(this, 'hcpZip', null),
+                                              _.get(this, 'hubId', null),
+                                              _.get(this, 'patient.ssin', null),
                                               output,
-                                              this.hubPackageId, this.hubApplication
+                                              _.get(this, 'hubPackageId', null),
+                                              _.get(this, 'hubApplication', null)
                                           )}
                                       ).then(putResp => {
                                           if (putResp) {
@@ -989,7 +1002,9 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   sumehrChanged(sumehr){
-      if(this.$['htPatHubTransactionPreViewer']) this.$['htPatHubTransactionPreViewer'].open(this,  sumehr, this.hubSumehr, this.hubSumehrXml);
+      this.shadowRoot.querySelector('#htPatHubTransactionPreViewer') ?
+          this.shadowRoot.querySelector('#htPatHubTransactionPreViewer').open(this,  sumehr, _.get(this, 'hubSumehr', null), _.get(this, 'hubSumehrXml', null)) :
+      null
   }
 
   _logUpdateMessage(message, messageName, updateReference, mime){

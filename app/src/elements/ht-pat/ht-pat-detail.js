@@ -3921,17 +3921,42 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _getConsents() {
-        return (this.patient.ssin && this.api.tokenId) ? this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-            Promise.all([
-                this.api.fhc().Consent().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
-                this.hubSupportsConsent ? this.api.fhc().Hub().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(hcp, "lastName", null), _.get(hcp, "firstName", null), _.get(hcp, "nihii", null), _.get(hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
-            ])
-                .then(([nationalResp, hubResp]) => {
+        return (this.patient.ssin && this.api.tokenId) ?
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                Promise.all([
+                    this.api.fhc().Consent().getPatientConsentUsingGET(
+                        _.get(this.api, 'keystoreId', null),
+                        _.get(this.api, 'tokenId', null),
+                        _.get(this.api, 'credentials.ehpassword', null),
+                        _.get(hcp, 'nihii', null),
+                        _.get(hcp, 'ssin', null),
+                        _.get(hcp, 'firstName', null),
+                        _.get(hcp, 'lastName', null),
+                        _.get(this.patient, 'ssin', null),
+                        _.get(this.patient, 'firstName', null),
+                        _.get(this.patient, 'lastName', null)
+                    ),
+                    this.hubSupportsConsent ?
+                        this.api.fhc().Hub().getPatientConsentUsingGET1(
+                            _.get(this, 'hubEndPoint', null),
+                            _.get(this.api, "keystoreId", null),
+                            _.get(this.api, "tokenId", null),
+                            _.get(this.api, "credentials.ehpassword", null),
+                            _.get(hcp, "lastName", null),
+                            _.get(hcp, "firstName", null),
+                            _.get(hcp, "nihii", null),
+                            _.get(hcp, "ssin", null),
+                            _.get(this, 'hcpZip', null),
+                            _.get(this.patient, "ssin", null)
+                        ) :
+                    null
+                ]).then(([nationalResp, hubResp]) => {
                     console.log("nationalTlResp", nationalResp)
                     console.log("hubTlResp", hubResp)
                     this.set('currentConsents', {nationalResp: nationalResp, hubResp: hubResp})
                     return {nationalResp: nationalResp, hubResp: hubResp}
-                })) : Promise.resolve({nationalResp: null, hubResp: null})
+                })) :
+            Promise.resolve({nationalResp: null, hubResp: null})
     }
 
     _toggleActionButton(e) {
