@@ -2280,7 +2280,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                     "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
                 },messageToBeSentWithEhbox.customMetas)
 
-                this.api.fhc().Ehbox().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
+                this.api.fhc().EhboxV3().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
                     .then(x=>sendMessageResponse=x)
                     .catch(x=>sendMessageResponse=x)
                     .finally(()=>{
