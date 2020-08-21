@@ -38,7 +38,7 @@ class IccApi extends PolymerElement {
       return {
           fhcHeaders:{
               type: Object,
-              value: {"Content-Type": "application/json"},
+              value: {"Content-Type": "application/json", "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
               notify: true
           },
           headers: {
@@ -725,7 +725,7 @@ class IccApi extends PolymerElement {
       if(((edmgNiss && edmgNiss !=='') || (patient.ssin && patient.ssin !== '')) && !(edmgOA && edmgOA !=='')){
           return this.hcparty().getHealthcareParty(user.healthcarePartyId)
               .then(hcp => {
-                  return this.fhc().Dmgcontroller().consultDmgUsingGET(
+                  return this.fhc().Dmg().consultDmgUsingGET(
                       this.keystoreId,
                       this.tokenId,
                       this.credentials.ehpassword,
@@ -749,7 +749,7 @@ class IccApi extends PolymerElement {
           this.insurance().getInsurance(pi.insuranceId).then(insu => {
               return this.hcparty().getHealthcareParty(user.healthcarePartyId)
                   .then(hcp => {
-                          return this.fhc().Dmgcontroller().consultDmgUsingGET(
+                          return this.fhc().Dmg().consultDmgUsingGET(
                               this.keystoreId,
                               this.tokenId,
                               this.credentials.ehpassword,

@@ -913,7 +913,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
               this.diaryNote.map(dn => {
                   prom = prom.then(listOfTransaction =>
-                      this.api.fhc().Hubcontroller().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.patient.ssin, dn.ids.find(id => id.s === 'LOCAL').sv, dn.ids.find(id => id.s === 'LOCAL').sl, dn.ids.find(id => id.s === 'LOCAL').value, this.hubPackageId, this.breakTheGlassReason)
+                      this.api.fhc().Hub().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.patient.ssin, dn.ids.find(id => id.s === 'LOCAL').sv, dn.ids.find(id => id.s === 'LOCAL').sl, dn.ids.find(id => id.s === 'LOCAL').value, this.hubPackageId, this.breakTheGlassReason)
                           .then(tr => _.concat(listOfTransaction, _.assign(tr, {transaction: dn})))
                   )
               })
@@ -1005,7 +1005,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   //                                         }
   //                                         reader.readAsText(output);
   //
-  //                                         return this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint,
+  //                                         return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
   //                                             this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
   //                                             hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
   //                                             this.hubId,
@@ -1160,7 +1160,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                                   recipient: hcp,
                                   comment: "mycomment"
                               }).then(output =>{
-                                  return this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(this.hubEndPoint,
+                                  return this.api.fhc().Hub().putTransactionSetUsingPOST(this.hubEndPoint,
                                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                                       this.hubId,
@@ -1319,7 +1319,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getHcpConsentUsingGET(this.hubEndPoint,
+                  this.api.fhc().Hub().getHcpConsentUsingGET(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.nihii, hcp.lastName, hcp.firstName, hcp.ssin, this.hcpZip)
               ).then(consentResp => {
@@ -1388,7 +1388,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getPatientUsingGET(this.hubEndPoint,
+                  this.api.fhc().Hub().getPatientUsingGET(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin)
@@ -1418,7 +1418,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().putPatientUsingPOST(this.hubEndPoint,
+                  this.api.fhc().Hub().putPatientUsingPOST(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin, this.patient.firstName, this.patient.lastName, this.patient.gender, this.patient.dateOfBirth)
@@ -1440,7 +1440,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, this.api.keystoreId,
+                  this.api.fhc().Hub().getPatientConsentUsingGET1(this.hubEndPoint, this.api.keystoreId,
                       this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin)
@@ -1472,7 +1472,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // patientEidCardNumber?: string): Promise<any | Boolean>;
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Hubcontroller().registerPatientConsentUsingPOST1(this.hubEndPoint,
+              this.api.fhc().Hub().registerPatientConsentUsingPOST1(this.hubEndPoint,
                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                   hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                   this.patient.ssin, this.hubPackageId, this.eidCardNumber)
@@ -1506,7 +1506,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTherapeuticLinksUsingGET(this.hubEndPoint,
+                  this.api.fhc().Hub().getTherapeuticLinksUsingGET(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName,  hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin,
@@ -1534,7 +1534,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // patientEidCardNumber?: string): Promise<any | Boolean>;
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Hubcontroller().registerTherapeuticLinkUsingPOST(this.hubEndPoint,
+              this.api.fhc().Hub().registerTherapeuticLinkUsingPOST(this.hubEndPoint,
                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                   hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                   this.patient.ssin,
@@ -1582,7 +1582,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionsListUsingGET(
+                  this.api.fhc().Hub().getTransactionsListUsingGET(
                       this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
@@ -1665,7 +1665,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           if (this.patient.ssin && this.api.tokenId && transaction) {
               return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
+                      this.api.fhc().Hub().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
                           this.api.tokenId, this.api.credentials.ehpassword,
                           hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                           this.patient.ssin,
@@ -1699,7 +1699,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           if (this.patient.ssin && this.api.tokenId && transaction) {
               return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
+                      this.api.fhc().Hub().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
                           this.api.tokenId, this.api.credentials.ehpassword,
                           hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                           this.patient.ssin,
@@ -1733,7 +1733,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           if (this.patient.ssin && this.api.tokenId && transaction) {
               return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
+                      this.api.fhc().Hub().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
                           this.api.tokenId, this.api.credentials.ehpassword,
                           hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                           this.patient.ssin,
@@ -1777,7 +1777,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   _revokeHubTransaction(transaction){
       if (this.patient.ssin && this.api.tokenId && transaction) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-              .then(hcp => this.api.fhc().Hubcontroller().revokeTransactionUsingDELETE(this.hubEndPoint,
+              .then(hcp => this.api.fhc().Hub().revokeTransactionUsingDELETE(this.hubEndPoint,
                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                   hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                   this.patient.ssin,
@@ -1810,7 +1810,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId && transaction) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionSetUsingGET(this.hubEndPoint, this.api.keystoreId,
+                  this.api.fhc().Hub().getTransactionSetUsingGET(this.hubEndPoint, this.api.keystoreId,
                       this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin,
@@ -1840,7 +1840,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId && transaction) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionSetMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
+                  this.api.fhc().Hub().getTransactionSetMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
                       this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.patient.ssin,
@@ -1878,7 +1878,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient && this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
               this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                  .then(hcp => this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(this.hubEndPoint,
+                  .then(hcp => this.api.fhc().Hub().putTransactionSetUsingPOST(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.hubId,

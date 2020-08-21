@@ -3719,7 +3719,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                     .then(hcp => {
                             console.log("getGenIns.getGeneralInsurabilityUsingGET on date", dStart)
-                            return this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+                            return this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
                                 this.genInsNiss ? this.genInsNiss.trim() : this.cleanNiss(this.patient.ssin),
                                 asMMH ? this.api.tokenIdMH : this.api.tokenId, asMMH ? this.api.keystoreIdMH : this.api.keystoreId, asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
                                 asMMH ? this.api.nihiiMH : hcp.nihii, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, asMMH ? 'medicalhouse' : 'doctor', dStart, asMMH ? Date.parse(this.genInsDateTo) : null, this.genInsHospitalized)
@@ -3746,7 +3746,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 return this.api.insurance().getInsurance(pi.insuranceId).then(insu => {
                     return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                         .then(hcp => {
-                                return this.api.fhc().Geninscontroller().getGeneralInsurabilityByMembershipUsingGET(
+                                return this.api.fhc().Genins().getGeneralInsurabilityByMembershipUsingGET(
                                     (this.genInsOA && this.genInsOA != '') ? this.genInsOA.trim() : insu.code,
                                     (this.genInsAFF && this.genInsAFF != '') ? this.genInsAFF.trim() : pi.identificationNumber,
                                     asMMH ? this.api.tokenIdMH : this.api.tokenId, asMMH ? this.api.keystoreIdMH : this.api.keystoreId, asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
@@ -3793,7 +3793,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                 // Get fhc keystore UUID in cache
                                 new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))) :
                                 // Upload new keystore
-                                this.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
+                                this.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
                                     .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
                         )
                 )
@@ -3907,7 +3907,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                 .then(hcp => Promise.all([
                     this.api.fhc().Therlinkcontroller().getAllTherapeuticLinksUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber, null, null, null, null),
-                    this.hubSupportsConsent ? this.api.fhc().Hubcontroller().getTherapeuticLinksUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.cleanNiss(this.patient.ssin)) : null
+                    this.hubSupportsConsent ? this.api.fhc().Hub().getTherapeuticLinksUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.cleanNiss(this.patient.ssin)) : null
                 ]))
                 .then(([nationalTlResp, hubTlResp]) => {
                     console.log("nationalTlResp", nationalTlResp)
@@ -3923,8 +3923,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _getConsents() {
         return (this.patient.ssin && this.api.tokenId) ? this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
             Promise.all([
-                this.api.fhc().Consentcontroller().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
-                this.hubSupportsConsent ? this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(hcp, "lastName", null), _.get(hcp, "firstName", null), _.get(hcp, "nihii", null), _.get(hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
+                this.api.fhc().Consent().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
+                this.hubSupportsConsent ? this.api.fhc().Hub().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(hcp, "lastName", null), _.get(hcp, "firstName", null), _.get(hcp, "nihii", null), _.get(hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
             ])
                 .then(([nationalResp, hubResp]) => {
                     console.log("nationalTlResp", nationalResp)

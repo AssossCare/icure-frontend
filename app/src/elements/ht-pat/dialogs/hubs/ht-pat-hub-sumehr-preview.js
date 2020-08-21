@@ -960,7 +960,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                           }
                                           reader.readAsText(output);
 
-                                          return this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint,
+                                          return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
                                               this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                               hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                                               this.hubId,
@@ -1307,7 +1307,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
           if (this.patient.ssin && this.api.tokenId && transaction) {
               return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
+                      this.api.fhc().Hub().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
                           this.api.tokenId, this.api.credentials.ehpassword,
                           hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                           this.patient.ssin,
@@ -1346,7 +1346,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
       if (this.patient && this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
               this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                  .then(hcp => this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(this.hubEndPoint,
+                  .then(hcp => this.api.fhc().Hub().putTransactionSetUsingPOST(this.hubEndPoint,
                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                       this.hubId,

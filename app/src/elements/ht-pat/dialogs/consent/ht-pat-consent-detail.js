@@ -766,8 +766,8 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
               this.set('hcpZip', _.get(_.get(this.hcp, 'addresses', []).find(adr => _.get(adr, 'addressType', null) === "work"), "postalCode", null))
           })
           .then(() => Promise.all([
-              this.api.fhc().Consentcontroller().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
-              this.hubSupportsConsent ? this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
+              this.api.fhc().Consent().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
+              this.hubSupportsConsent ? this.api.fhc().Hub().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
           ]))
           .then(([nationalResp, hubResp]) => {
               console.log(nationalResp)
@@ -799,8 +799,8 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
   _refreshConsentList(){
       Promise.all([
-          this.api.fhc().Consentcontroller().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
-          this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null))
+          this.api.fhc().Consent().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
+          this.api.fhc().Hub().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null))
       ])
       .then(([nationalResp, hubResp]) => {
           console.log(nationalResp)
@@ -953,7 +953,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   _revokeHubConsent(){
       this.set("isLoading",true)
       this._verifData(["keystoreId", "keystorePassword", "token", "hcpNihii", "hcpSsin", "hcpFirstName", "hcpLastName", "patientInss"]) ?
-          this.api.fhc().Hubcontroller().revokePatientConsentUsingDELETE(_.get(this, "hubEndPoint", null), _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), this.hcpZip, this.cleanNumberSequence(_.get(this.patient, "ssin", null)))
+          this.api.fhc().Hub().revokePatientConsentUsingDELETE(_.get(this, "hubEndPoint", null), _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), this.hcpZip, this.cleanNumberSequence(_.get(this.patient, "ssin", null)))
           .then(revokeResp => {
               console.log(revokeResp)
               if(!_.isEmpty(revokeResp) && (_.get(revokeResp, "acknowledge.isComplete", false) === true)){
@@ -972,8 +972,8 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
   _revokeNationalConsent(){
       this._verifData(["keystoreId", "keystorePassword", "token", "hcpNihii", "hcpSsin", "hcpFirstName", "hcpLastName", "patientInss", "patientFirstName", "patientLastName", "eidCardNumber"]) ?
-          this.api.fhc().Consentcontroller().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null))
-          .then(consent => !_.isEmpty(consent) ? this.api.fhc().Consentcontroller().revokePatientConsentUsingPOST(_.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "lastName", null), _.get(consent, 'consent', {}), _.get(this, "eidCardNumber", null), _.get(this, "isiCardNumber", null)): Promise.resolve({}))
+          this.api.fhc().Consent().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null))
+          .then(consent => !_.isEmpty(consent) ? this.api.fhc().Consent().revokePatientConsentUsingPOST(_.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "lastName", null), _.get(consent, 'consent', {}), _.get(this, "eidCardNumber", null), _.get(this, "isiCardNumber", null)): Promise.resolve({}))
           .then(revokeResp => {
               console.log(revokeResp)
               this._refreshConsentList()
@@ -994,7 +994,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
   _registerHubConsent(){
       this._verifData(["keystoreId", "keystorePassword", "token", "hcpNihii", "hcpSsin", "hcpFirstName", "hcpLastName", "patientInss", "patientFirstName", "patientLastName", "eidCardNumber", "dateOfBirth", "gender"]) ?
-      this.api.fhc().Hubcontroller().putPatientUsingPOST(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), this.hcpZip, _.get(this.patient, "ssin", null), _.get(this.patient, "firstName", null), _.get(this.patient, "lastName", null), _.get(this.patient, "gender", null), _.get(this.patient, "dateOfBirth", null))
+      this.api.fhc().Hub().putPatientUsingPOST(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(this.hcp, "lastName", null), _.get(this.hcp, "firstName", null), _.get(this.hcp, "nihii", null), _.get(this.hcp, "ssin", null), this.hcpZip, _.get(this.patient, "ssin", null), _.get(this.patient, "firstName", null), _.get(this.patient, "lastName", null), _.get(this.patient, "gender", null), _.get(this.patient, "dateOfBirth", null))
           .then(consentResp => {
               console.log(consentResp)
               if(!_.isEmpty(consentResp)){
@@ -1007,7 +1007,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
   _registerNationalConsent(){
       this._verifData(["keystoreId", "keystorePassword", "token", "hcpNihii", "hcpSsin", "hcpFirstName", "hcpLastName", "patientInss", "patientFirstName", "patientLastName", "eidCardNumber"]) ?
-          this.api.fhc().Consentcontroller().registerPatientConsentUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.nihii, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, this.cleanNumberSequence(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber)
+          this.api.fhc().Consent().registerPatientConsentUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.nihii, this.hcp.ssin, this.hcp.firstName, this.hcp.lastName, this.cleanNumberSequence(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber)
           .then(consentResp => {
               console.log(consentResp)
               if(!_.isEmpty(consentResp)){

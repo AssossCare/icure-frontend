@@ -507,12 +507,12 @@ class HtMsgMycarenet extends TkLocalizerMixin(PolymerElement) {
 
   getMessages() {
       this.set('isLoadingDmg', true)
-      this.api.fhc().Dmgcontroller().getDmgMessagesUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName,"", [])
+      this.api.fhc().Dmg().getDmgMessagesUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName,"", [])
           .then( x => this.api.logMcn(x, this.user, this.hcp.id, "DMG", "loadMessages") )
           .then(list => this.api.message().processDmgMessagesList(this.user,this.hcp,list,this.api.document()))
           .then(([ackHashes, dmgHashes]) => Promise.all([
-              this.api.fhc().Dmgcontroller().confirmAcksUsingPOST(this.api.keystoreId, this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, ackHashes),
-              this.api.fhc().Dmgcontroller().confirmDmgMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, dmgHashes)
+              this.api.fhc().Dmg().confirmAcksUsingPOST(this.api.keystoreId, this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, ackHashes),
+              this.api.fhc().Dmg().confirmDmgMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName, dmgHashes)
           ])).finally(() => {
               this.set('isLoadingDmg', false)
               this.refresh()
@@ -522,7 +522,7 @@ class HtMsgMycarenet extends TkLocalizerMixin(PolymerElement) {
   requestMessages(){
       this.set('isLoadingReq', true)
 
-      this.api.fhc().Dmgcontroller().postDmgsListRequestUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName)
+      this.api.fhc().Dmg().postDmgsListRequestUsingPOST(this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,this.hcp.lastName)
           .then( m => {
               return this.api.message().saveDmgsListRequest(this.user, m)
                   .then(x => this.api.logMcn(x, this.user, m.id, "DMG", "listrequest"))

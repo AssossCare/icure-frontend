@@ -1,4 +1,4 @@
-import * as fhcApi from 'fhc-api/dist/fhcApi'
+import * as fhcApi from '@taktik/fhc-api/dist/fhcApi'
 import * as iccApi from '@taktik/icc-api/dist/icc-api/iccApi'
 import * as iccXApi from '@taktik/icc-api/dist/icc-x-api/index'
 import {UtilsClass} from "@taktik/icc-api/dist/icc-x-api/crypto/utils"
@@ -31,7 +31,7 @@ onmessage = e => {
         const language              = e.data.language
 
         const iccPatientApi         = new iccApi.iccPatientApi(iccHost, iccHeaders)
-        const ehboxApi              = new fhcApi.fhcEhboxcontrollerApi(fhcHost, fhcHeaders)
+        const ehboxApi              = new fhcApi.fhcEhboxApi(fhcHost, fhcHeaders)
         const docApi                = new iccApi.iccDocumentApi(iccHost, iccHeaders)
         const msgApi                = new iccApi.iccMessageApi(iccHost, iccHeaders)
         const beResultApi           = new iccApi.iccBeResultImportApi(iccHost, iccHeaders)

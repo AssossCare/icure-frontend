@@ -1393,17 +1393,17 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
             const isValidNihii = (!!patternsValidation.heightDigits.test(numericSearchQuery) || !!patternsValidation.elevenDigits.test(numericSearchQuery)) /* && this.api.patient().checkInami(numericSearchQuery) */
 
             const getProms = _.compact([
-                (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
-                (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
-                (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
-                (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
-                (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([]))
+                (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbook().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
+                (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbook().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
+                (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
+                (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbook().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([])),
+                (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, numericSearchQuery).catch(() => Promise.resolve([]))
             ])
 
             const searchProms = _.compact(_.concat(
-                // [(!!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? false : this.api.fhc().Addressbookcontroller().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*').catch(()=>Promise.resolve([]))],
-                (!!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? [] : _.map(defaultPersonQualities, it => this.api.fhc().Addressbookcontroller().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*', "", it).catch(() => Promise.resolve([]))),
-                (!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? [] : _.map(_.filter(this.organizationQualities, "checked"), it => this.api.fhc().Addressbookcontroller().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*', _.trim(_.get(it, "id"))).catch(() => Promise.resolve([])))
+                // [(!!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? false : this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*').catch(()=>Promise.resolve([]))],
+                (!!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? [] : _.map(defaultPersonQualities, it => this.api.fhc().Addressbook().searchHcpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*', "", it).catch(() => Promise.resolve([]))),
+                (!this._recipientTypeIsOrg || !!isValidCbe || !!isValidEhp || !!isValidNihii || !!isValidSsin) ? [] : _.map(_.filter(this.organizationQualities, "checked"), it => this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, _.trim(recipientFilter) + '*', _.trim(_.get(it, "id"))).catch(() => Promise.resolve([])))
             ))
 
             Promise.all(_.concat(getProms, searchProms))
@@ -2056,11 +2056,11 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
         const isValidNihii = !!patternsValidation.heightDigits.test(getValue) || !!patternsValidation.elevenDigits.test(getValue)
 
         const getProms = _.compact([
-            (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
-            (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
-            (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
-            (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
-            (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([]))
+            (!this._recipientTypeIsOrg || !isValidCbe) ? false : this.api.fhc().Addressbook().getOrgByCbeUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
+            (!this._recipientTypeIsOrg || !isValidEhp) ? false : this.api.fhc().Addressbook().getOrgByEhpUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
+            (!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getOrgByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
+            (!!this._recipientTypeIsOrg || !isValidSsin) ? false : this.api.fhc().Addressbook().getHcpBySsinUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([])),
+            (!!this._recipientTypeIsOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getHcpByNihiiUsingGET(this.api.keystoreId, this.api.tokenId, this.credentials.ehpassword, getValue).catch(() => Promise.resolve([]))
         ])
 
         this.set("_recipientWithMultipleEHealthBoxes", {})
@@ -2165,9 +2165,9 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
         this.$['success'] && this.$['success'].classList && this.$['success'].classList.remove('displayNotification')
         this.$['failed'] && this.$['failed'].classList && this.$['failed'].classList.remove('displayNotification')
 
-        this.api.fhc().Ehboxcontroller().getInfosUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
+        this.api.fhc().Ehbox().getInfosUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
             .then(boxInfo => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp=>[boxInfo,currentHcp]))
-            .then(([boxInfo,currentHcp]) => this.api.fhc().Stscontroller().getKeystoreInfoUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.credentials.ehpassword")).then(keystoreInfo => [boxInfo,currentHcp,keystoreInfo]))
+            .then(([boxInfo,currentHcp]) => this.api.fhc().Sts().getKeystoreInfoUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.credentials.ehpassword")).then(keystoreInfo => [boxInfo,currentHcp,keystoreInfo]))
             .then(([boxInfo,currentHcp,keystoreInfo]) => {
 
                 let sendMessageResponse = false
@@ -2280,7 +2280,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                     "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
                 },messageToBeSentWithEhbox.customMetas)
 
-                this.api.fhc().Ehboxcontroller().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
+                this.api.fhc().Ehbox().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
                     .then(x=>sendMessageResponse=x)
                     .catch(x=>sendMessageResponse=x)
                     .finally(()=>{

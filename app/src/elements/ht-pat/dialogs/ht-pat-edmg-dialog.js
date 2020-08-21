@@ -594,7 +594,7 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
                   .then(hcp => {
                           return (this.asSupervisor && hcp.supervisorId ?
                               this.api.hcparty().getHealthcareParty(hcp.supervisorId).then(sup =>
-                                  this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
+                                  this.api.fhc().Dmg().notifyDmgUsingPOST(
                                       this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                       hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.nomenclature,
                                       this.edmgNiss ? this.edmgNiss.trim() : this.patient.ssin, null, null,
@@ -602,7 +602,7 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
                                       this.getGender(this.patient.ssin),
                                       requestDate, sup.ssin, sup.nihii, sup.firstName, sup.lastName))
                               :
-                              this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
+                              this.api.fhc().Dmg().notifyDmgUsingPOST(
                                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                   hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.nomenclature,
                                   this.edmgNiss ? this.edmgNiss.trim() : this.patient.ssin, null, null,
@@ -629,7 +629,7 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
               this.api.insurance().getInsurance(pi.insuranceId).then(insu => {
                   return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                       .then(hcp => {
-                              return this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
+                              return this.api.fhc().Dmg().notifyDmgUsingPOST(
                                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                   hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
                                   null, null, (this.genInsOA && this.genInsOA != '') ? this.genInsOA.trim() : insu.code,
@@ -668,7 +668,7 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
           this.edmgOA,
           this.genInsOA,
           this.genInsAFF                    ,
-          true    // Bypass cache, force hit on fhc().Dmgcontroller().consultDmgUsingGET()
+          true    // Bypass cache, force hit on fhc().Dmg().consultDmgUsingGET()
       ).then(edmgResp => {
           this.set('isLoading',false)
           this.set('consultDmgResp', edmgResp);

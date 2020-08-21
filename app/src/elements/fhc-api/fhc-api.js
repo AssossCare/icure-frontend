@@ -1,4 +1,4 @@
-import * as api from 'fhc-api/dist/fhcApi'
+import * as api from '@taktik/fhc-api/dist/fhcApi'
 
 import {PolymerElement, html} from '@polymer/polymer';
 class FhcApi extends PolymerElement {
@@ -36,23 +36,24 @@ class FhcApi extends PolymerElement {
   }
 
   refresh() {
-      this.addressbookcontrollerfhc = new api.fhcAddressbookControllerApi(this.host, this.headers);
-      this.consentcontrollerfhc = new api.fhcConsentControllerApi(this.host, this.headers);
-      this.chaptercontrollerfhc = new api.fhcChapter4ControllerApi(this.host, this.headers);
-      this.dmgcontrollerfhc = new api.fhcDmgControllerApi(this.host, this.headers);
-      this.eattestcontrollerfhc = new api.fhcEattestControllerApi(this.host, this.headers);
-      this.eattestv2controllerfhc = new api.fhcEattestV2ControllerApi(this.host, this.headers);
-      this.ehboxcontrollerfhc = new api.fhcEhboxControllerApi(this.host, this.headers);
-      this.efactcontrollerfhc = new api.fhcEfactControllerApi(this.host, this.headers);
-      this.geninscontrollerfhc = new api.fhcGenInsControllerApi(this.host, this.headers);
-      this.hubcontrollerfhc = new api.fhcHubControllerApi(this.host, this.headers);
-      this.recipecontrollerfhc = new api.fhcRecipeControllerApi(this.host, this.headers);
-      this.stscontrollerfhc = new api.fhcStsControllerApi(this.host, this.headers);
-      this.tarificationcontrollerfhc = new api.fhcTarificationControllerApi(this.host, this.headers);
-      this.therlinkcontrollerfhc = new api.fhcTherLinkControllerApi(this.host, this.headers);
-      this.rnconsultcontrollerfhc = new api.fhcConsultrnControllerApi(this.host, this.headers);
-      this.memberdatacontrollerfhc = new api.fhcMemberDataControllerApi(this.host, this.headers);
-      this.mhmcontrollerfhc = new api.fhcMhmControllerApi(this.host, this.headers);
+      this.addressbookfhc = new api.fhcAddressbookApi(this.host, this.headers);
+      this.consentfhc = new api.fhcConsentApi(this.host, this.headers);
+      this.chapterfhc = new api.fhcChapter4Api(this.host, this.headers);
+      this.dmgfhc = new api.fhcDmgApi(this.host, this.headers);
+      this.eattestfhc = new api.fhcEattestApi(this.host, this.headers);
+      this.eattestv2fhc = new api.fhcEattestV2Api(this.host, this.headers);
+      this.ehboxfhc = new api.fhcEhboxApi(this.host, this.headers);
+      this.ehboxV3fhc = new api.fhcEhboxV3Api(this.host, this.headers);
+      this.efactfhc = new api.fhcEfactApi(this.host, this.headers);
+      this.geninsfhc = new api.fhcGenInsApi(this.host, this.headers);
+      this.hubfhc = new api.fhcHubApi(this.host, this.headers);
+      this.recipefhc = new api.fhcRecipeApi(this.host, this.headers);
+      this.stsfhc = new api.fhcStsApi(this.host, this.headers);
+      this.tarificationfhc = new api.fhcTarificationApi(this.host, this.headers);
+      this.therlinkfhc = new api.fhcTherLinkApi(this.host, this.headers);
+      this.rnconsultfhc = new api.fhcConsultrnApi(this.host, this.headers);
+      this.memberdatafhc = new api.fhcMemberDataApi(this.host, this.headers);
+      this.mhmfhc = new api.fhcMhmApi(this.host, this.headers);
 
       this.dispatchEvent(new CustomEvent('refresh', {detail: {}}))
   }
@@ -61,23 +62,24 @@ class FhcApi extends PolymerElement {
       super();
   }
 
-    Addressbookcontroller() { return this.addressbookcontrollerfhc }
-    Consentcontroller() { return this.consentcontrollerfhc }
-    Chaptercontroller() { return this.chaptercontrollerfhc }
-    Dmgcontroller() { return this.dmgcontrollerfhc }
-    Eattestcontroller() { return this.eattestcontrollerfhc }
-    Eattestv2controller() { return this.eattestv2controllerfhc }
-    Efactcontroller() { return this.efactcontrollerfhc  }
-    Ehboxcontroller() { return this.ehboxcontrollerfhc }
-    Geninscontroller() { return this.geninscontrollerfhc }
-    Hubcontroller() { return this.hubcontrollerfhc }
-    Recipecontroller() { return this.recipecontrollerfhc }
-    Stscontroller() { return this.stscontrollerfhc }
-    Tarificationcontroller() { return this.tarificationcontrollerfhc }
-    Therlinkcontroller() { return this.therlinkcontrollerfhc }
-    RnConsultController(){return this.rnconsultcontrollerfhc}
-    MemberDataController(){return this.memberdatacontrollerfhc}
-    MhmController(){return this.mhmcontrollerfhc}
+    Addressbook() { return this.addressbookfhc }
+    Consent() { return this.consentfhc }
+    ChapterIV() { return this.chapterfhc }
+    Dmg() { return this.dmgfhc }
+    Eattest() { return this.eattestfhc }
+    Eattestv2() { return this.eattestv2fhc }
+    Efact() { return this.efactfhc  }
+    Ehbox() { return this.ehboxfhc }
+    EhboxV3() {return this.ehboxV3fhc}
+    Genins() { return this.geninsfhc }
+    Hub() { return this.hubfhc }
+    Recipe() { return this.recipefhc }
+    Sts() { return this.stsfhc }
+    Tarification() { return this.tarificationfhc }
+    Therlink() { return this.therlinkfhc }
+    RnConsult(){return this.rnconsultfhc}
+    MemberData(){return this.memberdatafhc}
+    Mhm(){return this.mhmfhc}
 }
 
 customElements.define(FhcApi.is, FhcApi);

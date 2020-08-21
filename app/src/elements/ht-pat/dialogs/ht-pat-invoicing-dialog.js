@@ -4067,7 +4067,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
         ;(this.selectedInvoice.careProviderType === "traineesupervised" ?
             this.api.hcparty().findBySsinOrNihii(this.selectedInvoice.internshipNihii, 0, 0, 1000, 'asc') : Promise.resolve({rows: []}))
-            .then(hcps => this.api.fhc().Eattestcontroller().sendAttestWithResponseUsingPOST(this.patient.ssin, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, (hcps.rows && hcps.rows.length && hcps.rows[0].nihii) || this.hcp.nihii, (hcps.rows && hcps.rows.length && hcps.rows[0].ssin) || this.hcp.ssin, (hcps.rows && hcps.rows.length && hcps.rows[0].firstName) || this.hcp.firstName, (hcps.rows && hcps.rows.length && hcps.rows[0].lastName) || this.hcp.lastName, (hcps.rows && hcps.rows.length && hcps.rows[0].cbe) || this.hcp.cbe, this.patient.firstName, this.patient.lastName, this.patient.gender, eattest, sentDate))
+            .then(hcps => this.api.fhc().Eattest().sendAttestWithResponseUsingPOST(this.patient.ssin, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, (hcps.rows && hcps.rows.length && hcps.rows[0].nihii) || this.hcp.nihii, (hcps.rows && hcps.rows.length && hcps.rows[0].ssin) || this.hcp.ssin, (hcps.rows && hcps.rows.length && hcps.rows[0].firstName) || this.hcp.firstName, (hcps.rows && hcps.rows.length && hcps.rows[0].lastName) || this.hcp.lastName, (hcps.rows && hcps.rows.length && hcps.rows[0].cbe) || this.hcp.cbe, this.patient.firstName, this.patient.lastName, this.patient.gender, eattest, sentDate))
             .then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
             .then(fhcEattest => {
                 if (fhcEattest.acknowledge.errors.length === 0 && fhcEattest.attest !== null) {
@@ -4585,7 +4585,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
     _getAdressesBookInfo() {
         this.set('isLoadingLocations', true)
-        this.api.fhc().Addressbookcontroller().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*' + this.searchOrgName + '*', this.locationType[this.selectedInvoice.encounterLocationNorm].location)
+        this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*' + this.searchOrgName + '*', this.locationType[this.selectedInvoice.encounterLocationNorm].location)
             .then(orgList => {
                 this.set('organisationList', orgList)
                 this.set('isLoadingLocations', false)
@@ -4730,7 +4730,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             null,
             this.patient.insurabilities.find(ins => moment(ins.startDate).isSameOrBefore(moment())),//OA
             this.genInsAFF,//AFF
-            true    // Bypass cache, force hit on fhc().Dmgcontroller().consultDmgUsingGET()
+            true    // Bypass cache, force hit on fhc().Dmg().consultDmgUsingGET()
         ).then(edmgResp => {
             this.set('isLoading', false)
             this.set('consultDmgResp', edmgResp)

@@ -1008,7 +1008,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
                                                   console.log("diarynote = ", reader.result);
                                               }
                                               reader.readAsText(output);
-                                              return this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint,
+                                              return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
                                                   this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                                   hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                                                   this.hubId,

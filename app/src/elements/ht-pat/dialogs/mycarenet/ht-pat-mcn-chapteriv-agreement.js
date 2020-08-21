@@ -1203,7 +1203,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
               if (this.latestSearchString !== searchString) {
                   return
               }
-              this.api.fhc().Chaptercontroller().findParagraphsUsingGET(searchString, this.language).then((paragraphs) => {
+              this.api.fhc().ChapterIV().findParagraphsUsingGET(searchString, this.language).then((paragraphs) => {
                   if (searchString === this.latestSearchString) {
                       this.set('searchResults', paragraphs.map(p => ({
                           id: `${p.paragraphName}/${p.paragraphVersion}`,
@@ -1243,7 +1243,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                   console.log("pi",pi)
                   this.set('displayedParagraph.paragraphInfo', pi)
                   this.set('_isLoadingParagraph',false)
-                  return this.api.fhc().Chaptercontroller().getAddedDocumentsUsingGET('IV', paragraph)
+                  return this.api.fhc().ChapterIV().getAddedDocumentsUsingGET('IV', paragraph)
               })
               .then(addedDocuments => {
                   console.log("added",addedDocuments)
@@ -1399,7 +1399,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
       this._isLoadingChapter = true;
       this.set('agreementResponse', [])
       this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-          this.api.fhc().Chaptercontroller().agreementRequestsConsultationUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
+          this.api.fhc().ChapterIV().agreementRequestsConsultationUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
               hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
               this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender, null, this.selectedLoadParagraph !== "" ? this.selectedLoadParagraph : null,
               this.api.moment(this.consultationStartDateAsString).valueOf(), this.consultationEndDateAsString !== "" ? this.api.moment(this.consultationEndDateAsString).valueOf() : null).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", "consult") )
@@ -1485,7 +1485,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                       })
                   ))
               ).then(appendices =>
-                  this.api.fhc().Chaptercontroller().requestAgreementUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
+                  this.api.fhc().ChapterIV().requestAgreementUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
                       this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender,
                       requestType, pi.paragraphVersion, pi.paragraphName,
@@ -1500,7 +1500,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
               this.set('tabs', 1)
 
               return Promise.all(((res || {}) && res.transactions || []).map(t =>
-                  this.api.fhc().Chaptercontroller().getMppsForParagraphUsingGET('IV', t.paragraph || pi.paragraphName).then(it => ({
+                  this.api.fhc().ChapterIV().getMppsForParagraphUsingGET('IV', t.paragraph || pi.paragraphName).then(it => ({
                       paragraph: t.paragraph || pi.paragraphName,
                       transaction: t,
                       mpps: it
@@ -1686,7 +1686,7 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                   transactions: [selectedAgreement]
               })
 
-             this.api.fhc().Chaptercontroller().getMppsForParagraphUsingGET('IV', selectedAgreement.paragraph).then(it => ([{
+             this.api.fhc().ChapterIV().getMppsForParagraphUsingGET('IV', selectedAgreement.paragraph).then(it => ([{
                   paragraph: selectedAgreement.paragraph || pi.paragraphName,
                   transaction: selectedAgreement,
                   mpps: it

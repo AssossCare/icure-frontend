@@ -61,7 +61,7 @@ index a838c98cf..257f1d924 100644
 +            _timeCheck(period = 14400000) {
                  setTimeout(() => {
                      if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
-                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
+                         this.api.fhc().Sts().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                              if (!isTokenValid) {
 +                                //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
 +                                this.set('api.isMH', null)
@@ -93,7 +93,7 @@ index a838c98cf..257f1d924 100644
 +            _timeCheckMH(period = 14400000){
                  setTimeout(() => {
                      if (this.api.tokenIdMH) {
-                         this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
+                         this.api.fhc().Sts().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                              if (!isTokenValid) {
 +                                //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
 +                                this.set('api.tokenIdMH', null)
@@ -120,8 +120,8 @@ index a838c98cf..257f1d924 100644
                  return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
                  {
                      const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
--                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
-+                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
+-                    return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
++                    return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpassword, isMH || this._isOtherInstitutionWithNihii(hcp) ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, "", this._getQuality(hcp)).then(res => {
 +                        this.set('api.fhcTokenInfo', res)
                          this.$.eHealthStatus.classList.remove('pending')
                          this.$.eHealthStatus.classList.remove('disconnected')
@@ -149,8 +149,8 @@ index a838c98cf..257f1d924 100644
                      .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
                      .then(hcpMH => {
                          this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
--                        return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH.nihii.substr(0, 8), this.api.keystoreIdMH, true).then(res => {
-+                        return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
+-                        return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH.nihii.substr(0, 8), this.api.keystoreIdMH, true).then(res => {
++                        return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "", "medicalhouse").then(res => {
 +                            this.set('api.fhcTokenInfo', res)
                              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                              if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')

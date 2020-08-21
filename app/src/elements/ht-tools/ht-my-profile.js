@@ -1131,7 +1131,7 @@ class HtExportKey extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior
           }
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp => {
-                      return this.api.fhc().Dmgcontroller().registerDoctorUsingPOST(
+                      return this.api.fhc().Dmg().registerDoctorUsingPOST(
                           this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                           hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, reg.OA, reg.bic.replace(/ /g, '').toUpperCase(), reg.iban.replace(/ /g, '').toUpperCase())
                           .then(r => this.api.logMcn(r, this.user, hcp.id, "DMG", "register"))

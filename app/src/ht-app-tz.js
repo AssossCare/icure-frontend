@@ -1700,7 +1700,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _timeCheck(period = 14400000) {
       setTimeout(() => {
           if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
+              this.api.fhc().Sts().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                   if (!isTokenValid) {
                       //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
                       this.set('api.isMH', null)
@@ -1728,7 +1728,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _timeCheckMH(period = 14400000){
       setTimeout(() => {
           if (this.api.tokenIdMH) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
+              this.api.fhc().Sts().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                   if (!isTokenValid) {
                       //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
                       this.set('api.tokenIdMH', null)
@@ -1867,7 +1867,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       //console.log("_checkKeystoreValidity: ", this.showKeystoreExpiredLabel, this.showKeystoreExpiresSoonLabel)
       const monthLimit = 2 // number of remaining months when to start warning the user
 
-      this.api.fhc().Stscontroller().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
+      this.api.fhc().Sts().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
           if(info.validity && info.validity - moment().valueOf() <= 0) {
               this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
               this._showToasterMessage("showKeystoreExpiredLabel")
@@ -1889,7 +1889,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _getToken() {
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
           const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
+          return this.$.api.fhc().Sts().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
               this.set('api.fhcTokenInfo', res)
               this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
               this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
@@ -1955,14 +1955,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _getMHToken() {
       //TODO: change the request for MH
-      //this.api.fhc().Stscontroller().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
+      //this.api.fhc().Sts().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
       //get the password from local storage
       //let mhPassword= "";
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse", null).then(res => {
+              return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse", null).then(res => {
                   this.set('api.fhcTokenInfo', res)
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
@@ -2119,7 +2119,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       if (this.credentials.ehpassword) {
           const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
           if (ehKeychain) {
-              return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+              return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
                   this.$.api.keystoreId = res.uuid
                   this._checkKeystoreValidity()
                   return this._getToken()
@@ -2157,7 +2157,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                               this.credentials.ehpasswordMH = password
                               const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH."+ this.user.healthcarePartyId)
                               if (ehKeychain) {
-                                  return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                                  return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
                                       this.$.api.keystoreIdMH = res.uuid
                                       return this._getMHToken()
                                   }).catch((e) => {
@@ -2271,7 +2271,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                       // Get fhc keystore UUID in cache
                       new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))):
                       // Upload new keystore
-                      this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
+                      this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
                           .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
 
               )
