@@ -143,6 +143,12 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 width: 14px;
             }
             
+            ht-spinner{
+                height: 20px;
+                width: 20px;
+                margin-left: 10px;
+            }
+            
         </style>
         
         <div class="search-container">
@@ -153,24 +159,29 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 <paper-tabs selected="{{tabs}}">
                     <paper-tab>
                         <iron-icon class="tabIcon" icon="icons:alarm-on"></iron-icon> [[localize('presc-sear-chro','Chronic',language)]] ([[_getDrugsCount(searchResult.chronic, searchResult.chronic.*)]])
+                        <ht-spinner active="[[isLoading]]"></ht-spinner>
                     </paper-tab> 
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:time-backward"></iron-icon> [[localize('presc-sear-hist','History',language)]] ([[_getDrugsCount(searchResult.history, searchResult.history.*)]])
+                        <ht-spinner active="[[isLoading]]"></ht-spinner>
                     </paper-tab>
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:copyright"></iron-icon> [[localize('presc-sear-comm','Commercial name',language)]] ([[_getDrugsCount(searchResult.commercialName, searchResult.commercialName.*)]])
+                        <ht-spinner active="[[isLoadingCommercial]]"></ht-spinner>
                     </paper-tab>
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:pill"></iron-icon> [[localize('presc-sear-mol','Molecule',language)]] ([[_getDrugsCount(searchResult.molecule, searchResult.molecule.*)]])
+                        <ht-spinner active="[[isLoadingSubstance]]"></ht-spinner>
                     </paper-tab>
                      <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:flask"></iron-icon> [[localize('presc-sear-comp','Compound',language)]] ([[_getDrugsCount(searchResult.compound, searchResult.compound.*)]])
+                        <ht-spinner active="[[isLoading]]"></ht-spinner>
                     </paper-tab>
-                    <!--
-                    <paper-tab>
+                     <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:raster"></iron-icon> [[localize('presc-sear-otc','Otc',language)]] ([[_getDrugsCount(searchResult.otc, searchResult.otc.*)]])
-                    </paper-tab>
-                    -->
+                        <ht-spinner active="[[isLoadingOtc]]"></ht-spinner>
+                     </paper-tab>
+                 
                 </paper-tabs>
                 <iron-pages selected="[[tabs]]">
                     <page>
@@ -185,12 +196,12 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-commercial>          
+                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingCommercial]]"></ht-pat-prescription-detail-search-commercial>          
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-substance>
+                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingSubstance]]"></ht-pat-prescription-detail-search-substance>
                        </div>
                     </page>
                     <page>
@@ -198,13 +209,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-compound>
                         </div>
                     </page>
-                    <!--
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-otc id="htPatPrescriptionDetailSearchOtc" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-otc>
+                            <ht-pat-prescription-detail-search-otc id="htPatPrescriptionDetailSearchOtc" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingOtc]]"></ht-pat-prescription-detail-search-otc>
                         </div>
                     </page>
-                    -->
                 </iron-pages>
             </div>
         </div>
@@ -281,6 +290,18 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 type: Array,
                 value: () => []
             },
+            isLoadingCommercial:{
+                type: Boolean,
+                value: false
+            },
+            isLoadingOtc:{
+                type: Boolean,
+                value: false
+            },
+            isLoadingSubstance:{
+                type: Boolean,
+                value: false
+            },
             isLoading:{
                 type: Boolean,
                 value: false
@@ -311,28 +332,45 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             otc: []
         })
         this.set('drugsFilter', null)
+        this.set('isLoadingCommercial', false)
+        this.set('isLoadingOtc', false)
+        this.set('isLoadingSubstance', false)
+        this.set('isLoading', false)
     }
 
 
     _drugsFilterChanged(drugsFilter, parentUuid, groupId){
+        this.set('isLoadingCommercial', true)
+        this.set('isLoadingOtc', true)
+        this.set('isLoadingSubstance', true)
         this.set('isLoading', true)
+        let prom = Promise.resolve({})
         if(drugsFilter){
             setTimeout(() => {
                 if(_.size(drugsFilter) >= 2){
-                    Promise.all([
-                        this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
-                        this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter)
-                        //this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
-                    ]).then(([vmpGroups, amps]) => {
+                    prom = prom.then(() => {
+                        this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
+                        this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
+                        this.set('searchResult.chronic',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])), ['startDate'], ['desc']))
+                        this.set('isLoading', false)
+                    }).then(() =>
+                        Promise.all([
+                            this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, drugsFilter),
+                            this.api.besamv2().findPaginatedAmpsByLabel(this.language, drugsFilter),
+                            this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
+                        ])
+                    ).then(([vmpGroups, amps, nmps]) => {
                         this.set("searchResult.commercialName", _.orderBy(this._prepareCommercialForDisplay(amps, null, null), ['label'], ['asc']))
+                        this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
+                        this.set('isLoadingCommercial', false)
+                        this.set('isLoadingOtc', false)
                         return this._prepareMoleculeForDisplay(vmpGroups)
                     }).then(vmpGroupList =>
                         this.set("searchResult.molecule", _.orderBy(this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
                     ).finally(() => {
-                        this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
-                        this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
-                        this.set('searchResult.chronic',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfChronic', [])), ['startDate'], ['desc']))
-                        this.set('searchResult.otc', [])
+                        this.set('isLoadingCommercial', false)
+                        this.set('isLoadingOtc', false)
+                        this.set('isLoadingSubstance', false)
                         this.set('isLoading', false)
                     })
                 }else{
@@ -344,6 +382,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
                         otc: []
                     })
+                    this.set('isLoadingCommercial', false)
+                    this.set('isLoadingOtc', false)
+                    this.set('isLoadingSubstance', false)
                     this.set('isLoading', false)
                 }
             }, 200)
@@ -356,6 +397,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 chronic: _.orderBy(_.get(this, 'listOfChronic', []), ['startDate'], ['desc']),
                 otc: []
             })
+            this.set('isLoadingCommercial', false)
+            this.set('isLoadingOtc', false)
+            this.set('isLoadingSubstance', false)
             this.set('isLoading', false)
         }
     }
@@ -544,6 +588,19 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     type: 'substance'
                 }
             })
+    }
+
+    _prepareOtcForDisplay(nmps){
+        return _.get(nmps, 'rows', []).map(nmp => {
+            return {
+                id: _.get(nmp, 'id', null),
+                label: _.get(nmp, 'name.'+this.language, null),
+                productId: _.get(nmp, 'productId', null),
+                code: _.get(nmp, 'code', null),
+                distributor: _.get(nmp, 'distributor.'+this.language, null),
+                producer: _.get(nmp, 'producer.'+this.language, null)
+            }
+        })
     }
 
     _filterValue(drugsFilter, listOfDrugs){

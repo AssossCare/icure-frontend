@@ -135,6 +135,11 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 width: 8px;
             }
             
+            ht-spinner{
+                height: 100px;
+                width: 100px;
+            }
+            
         </style>
         
         <template is="dom-if" if="[[isLoading]]" restamp="true">

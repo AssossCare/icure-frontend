@@ -152,6 +152,11 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 margin-left: 2px;
             }
             
+            ht-spinner{
+                height: 100px;
+                width: 100px;
+            }
+            
         </style>
         
       <template is="dom-if" if="[[isLoading]]" restamp="true">
