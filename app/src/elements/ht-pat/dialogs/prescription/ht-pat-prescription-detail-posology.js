@@ -892,7 +892,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _medicationChanged(user, medication) {
 
-        const promResolve = Promise.resolve();
+        const now = +new Date()
+        const promResolve = Promise.resolve()
 
         // Todo: fz get later
         // const medicationDetail = _
@@ -919,18 +920,39 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
                 Promise.resolve(medication) :
                 promResolve
-                    .then(() => {
+                    .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(medication,"id"))))
+                    .then(amps => {
 
-                        const now = +new Date()
-                        const validAmpps = _.filter(_.get(medication,"drug.amp.ampps",[]), ampp => (
-                            _.trim(_.get(ampp,"status")) === "AUTHORIZED"
-                            && _.trim(_.get(ampp,"id")) === _.trim(_.get(medication, "id"))
-                            && (!_.get(ampp,"from") || _.get(ampp,"from") <= now)
-                            // Dmpps valid (from !!to)
-                            // Commercialisable (from !!to)
-                        ))
+                        const validAmpps = _
+                            .chain(amps)
+                            .filter(amp => _.trim(_.get(amp,"status")) === "AUTHORIZED" && _.size(_.get(amp,"ampps")))
+                            .map(amp => _.map(_.get(amp, "ampps"), ampp => _.some(_.get(ampp,"commercializations"), com => com && (com.from||0) < now && (!com.to || com.to > now)) && _.assign(ampp, {
+                                amp: amp,
+                                publicDmpp: _.find(_.get(ampp,"dmpps",[]), dmpp => dmpp
+                                    && _.trim(_.get(dmpp,"deliveryEnvironment")) === "P"
+                                    && _.trim(_.get(dmpp,"codeType")) === "CNK"
+                                    && _.get(dmpp,"from",0) < now
+                                    && (!_.get(dmpp,"to",false) || _.get(dmpp,"to") > now)
+                                )
+                            })))
+                            .flatten()
+                            .compact()
+                            .value()
 
-                        // Assign
+                        const lastAmpps = _.filter(validAmpps,"publicDmpp")
+                        const updatedAmpp = _.head(_.orderBy(lastAmpps, ["from"], ["desc"]))||{}
+
+                        _.assign(medication, {
+                            spcLink: _.trim(_.get(updatedAmpp, "spcLink." + this.language)),
+                            leafletLink: _.trim(_.get(updatedAmpp, "leafletLink." + this.language)),
+                            ctiExtended: _.get(updatedAmpp,"ctiExtended"),
+                            posologyNote: _.trim(_.get(updatedAmpp,"posologyNote")),
+                            dividable: _.get(updatedAmpp,"dividable"),
+                            packDisplayValue: _.get(updatedAmpp,"packDisplayValue"),
+                            samCode: _.trim(_.get(updatedAmpp,"amp.code")),
+                            samDate: !_.trim(_.get(updatedAmpp,"publicDmpp.from")) ? null : moment(_.get(updatedAmpp,"publicDmpp.from")).format("DD/MM/YYYY"),
+                        })
+
                         // Check si cnk a changé + inject
                         // Call max getByVmp (group id) -> get wada -> renvoyer à max (btn info)
                         // Check currentReimboursment
@@ -938,75 +960,63 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
                     })
             )
+            .then(() => this.set('isLoading', false))
 
 
 
-        // --------------------
-        // _checkCnk
-        // --------------------
-        // _checkCnk(medication, medicationDetail) {
-        //
-        //     // <Axel stijns>
-        //     if (medication.type === "medicine" && medication.id && !medication.samCode) {
-        //         return this.api.besamv2().findAmpsByDmppCode(medication.id)
-        //             .then(amps => {
-        //                 // get the latest version and compare cnk
-        //                 const now = moment().valueOf();
-        //                 const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
-        //                     if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
-        //                         return validAmpps.concat(amp.ampps.map(ampp => {
-        //                             return Object.assign(ampp, {
-        //                                 amp: amp,
-        //                                 publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
-        //                             });
-        //                         }));
-        //                     } else {
-        //                         return validAmpps;
-        //                     }
-        //                 }, []);
-        //
-        //                 const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
-        //                 const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
-        //                 const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
-        //                 Object.assign(medication, {
-        //                     spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
-        //                     leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
-        //                     ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
-        //                     posologyNote: updatedAmpp && updatedAmpp.posologyNote,
-        //                     dividable: updatedAmpp && updatedAmpp.dividable,
-        //                     packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
-        //                     samCode: _.get(updatedAmpp, "amp.code", ""),
-        //                     samDate: samDate,
-        //                 });
-        //                 if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
-        //                     // console.log("CNK ok");
-        //                 } else {
-        //                     const updatedCnk = updatedAmpp.publicDmpp.code;
-        //                     const oldCnk = medication.id;
-        //                     // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
-        //                     Object.assign(medication, {
-        //                         oldCnk: oldCnk,
-        //                         id: updatedCnk
-        //                     })
-        //                 }
-        //                 // @ todo also retrieve the current ampp to update data like displayPackage
-        //                 medication.updatedAmpp = updatedAmpp;
-        //                 return medication;
-        //             })
-        //             .catch(err => {
-        //                 console.log(err);
-        //                 return medication;
-        //             })
-        //     } else {
-        //         return Promise.resolve(medication);
-        //     }
-            // </Axel stijns>
+        // _checkCnk(medication) {
 
-        // }
+                return this.api.besamv2().findAmpsByDmppCode(medication.id)
+                    .then(amps => {
+                        // get the latest version and compare cnk
+                        const now = moment().valueOf();
+                        const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
+                            if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
+                                return validAmpps.concat(amp.ampps.map(ampp => {
+                                    return Object.assign(ampp, {
+                                        amp: amp,
+                                        publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
+                                    });
+                                }));
+                            } else {
+                                return validAmpps;
+                            }
+                        }, []);
 
-        // --------------------
+                        const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
+                        const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
+                        const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
+                        Object.assign(medication, {
+                            spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
+                            leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
+                            ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
+                            posologyNote: updatedAmpp && updatedAmpp.posologyNote,
+                            dividable: updatedAmpp && updatedAmpp.dividable,
+                            packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
+                            samCode: _.get(updatedAmpp, "amp.code", ""),
+                            samDate: samDate,
+                        });
+                        if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
+                            // console.log("CNK ok");
+                        } else {
+                            const updatedCnk = updatedAmpp.publicDmpp.code;
+                            const oldCnk = medication.id;
+                            // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
+                            Object.assign(medication, {
+                                oldCnk: oldCnk,
+                                id: updatedCnk
+                            })
+                        }
+                        // @ todo also retrieve the current ampp to update data like displayPackage
+                        medication.updatedAmpp = updatedAmpp;
+                        return medication;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        return medication;
+                    })
+
         // /_checkCnk
-        // --------------------
 
 
 
