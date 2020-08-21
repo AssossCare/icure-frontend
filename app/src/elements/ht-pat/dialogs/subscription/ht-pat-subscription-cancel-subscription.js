@@ -491,7 +491,7 @@ class HtPatSubscriptionCancelSubscription extends TkLocalizerMixin(PolymerElemen
 
         this._checkBeforeSend()
         if (!_.size(_.get(this, 'requestError', []))) {
-            this.api.fhc().MhmController().cancelSubscriptionUsingPOST(
+            this.api.fhc().Mhm().cancelSubscriptionUsingPOST(
                 _.get(this.api, "keystoreId", null),
                 _.get(this.api, "tokenIdMH", null),
                 _.get(this.api, "credentials.ehpassword", null),

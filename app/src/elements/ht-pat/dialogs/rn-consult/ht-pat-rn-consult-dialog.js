@@ -697,7 +697,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _consultRnBySsin(){
-      return (_.get(this.rnSearch, 'ssin', null) !== '' && _.get(this.rnSearch, 'ssin', null) !== null ? this.api.fhc().RnConsultController().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.rnSearch, 'ssin', '').replace(/\D+/g, ''))) : Promise.resolve({})).then(result => {
+      return (_.get(this.rnSearch, 'ssin', null) !== '' && _.get(this.rnSearch, 'ssin', null) !== null ? this.api.fhc().RnConsult().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.rnSearch, 'ssin', '').replace(/\D+/g, ''))) : Promise.resolve({})).then(result => {
           console.log(result)
           return {
               errorInformations: _.get(result, 'errorInformations', {}),
@@ -709,7 +709,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _consultRnByPhonetic(){
-      return (_.get(this.rnSearch, 'birthDate', null) && _.get(this.rnSearch, 'lastName', null) ? this.api.fhc().RnConsultController().searchUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, parseInt(_.padEnd(_.trim(_.get(this.rnSearch, 'birthDate', '')), 8, 0)), _.trim(_.get(this.rnSearch, 'lastName', null)), _.trim(_.get(this.rnSearch, 'firstName', null)), _.trim(_.get(this.rnSearch, 'middleName', null)), _.trim(_.get(this.rnSearch, 'gender', null)), _.trim(_.get(this.rnSearch, 'tolerance', null)), 50) : Promise.resolve([])).then(result => {
+      return (_.get(this.rnSearch, 'birthDate', null) && _.get(this.rnSearch, 'lastName', null) ? this.api.fhc().RnConsult().searchUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, parseInt(_.padEnd(_.trim(_.get(this.rnSearch, 'birthDate', '')), 8, 0)), _.trim(_.get(this.rnSearch, 'lastName', null)), _.trim(_.get(this.rnSearch, 'firstName', null)), _.trim(_.get(this.rnSearch, 'middleName', null)), _.trim(_.get(this.rnSearch, 'gender', null)), _.trim(_.get(this.rnSearch, 'tolerance', null)), 50) : Promise.resolve([])).then(result => {
           console.log(result)
           return {
               errorInformations: _.get(result, 'errorInformations', {}),

@@ -3906,7 +3906,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         if (this.patient.ssin && this.api.tokenId) {
             return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                 .then(hcp => Promise.all([
-                    this.api.fhc().Therlinkcontroller().getAllTherapeuticLinksUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber, null, null, null, null),
+                    this.api.fhc().Therlink().getAllTherapeuticLinksUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber, null, null, null, null),
                     this.hubSupportsConsent ? this.api.fhc().Hub().getTherapeuticLinksUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.cleanNiss(this.patient.ssin)) : null
                 ]))
                 .then(([nationalTlResp, hubTlResp]) => {
@@ -6985,7 +6985,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _consultRnHistory(patient) {
         this.set('rnHistoryResult', {})
         if (this.api.tokenId) {
-            this.api.fhc().RnConsultController().historyUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(patient, 'ssin', null)).then(resp => {
+            this.api.fhc().RnConsult().historyUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(patient, 'ssin', null)).then(resp => {
                 this.set('rnHistoryResult', resp)
                 if (!_.isEmpty(resp)) {
                     if (_.get(resp, 'ssin.value', null) && !_.get(resp, 'ssin.replaces', null) && _.get(resp, 'ssin.canceled', null) !== true) {

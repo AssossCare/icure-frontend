@@ -252,7 +252,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
               })
               .then(p =>{
                   this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                      .then(hcp => this.api.fhc().Therlinkcontroller().registerTherapeuticLinkUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(p.ssin), p.firstName, p.lastName, this.card.logicalNumber, "", null, null, null, null, null))
+                      .then(hcp => this.api.fhc().Therlink().registerTherapeuticLinkUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(p.ssin), p.firstName, p.lastName, this.card.logicalNumber, "", null, null, null, null, null))
               })
               .finally(()=>{
                   this.dispatchEvent(new CustomEvent("force-reload-patient",{detail:{origin:"ht-auto-read-eid-opening",patient:id,reason:"data-changed"},bubbles:true,composed:true}))
@@ -347,7 +347,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
           .then( p => this.api.register(p, 'patient'))
           .then(p => {
               this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-                  this.api.fhc().Therlinkcontroller().registerTherapeuticLinkUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
+                  this.api.fhc().Therlink().registerTherapeuticLinkUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                       hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
                       p.ssin, p.firstName, p.lastName, this.card.logicalNumber, "", null, null, null, null, null)
 

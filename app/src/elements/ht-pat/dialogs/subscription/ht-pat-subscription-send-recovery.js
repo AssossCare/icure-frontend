@@ -586,7 +586,7 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         //const orMhc = _.cloneDeep(pat.)
 
         if(!_.size(requestError)){
-            return this.api.fhc().MhmController().sendSubscriptionUsingPOST(
+            return this.api.fhc().Mhm().sendSubscriptionUsingPOST(
                 _.get(this.api, "keystoreId", null),
                 _.get(this.api, "tokenIdMH", null),
                 _.get(this.api, "credentials.ehpassword", null),
