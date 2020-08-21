@@ -2839,7 +2839,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 .then(hcp =>
                     (this.selectedInvoice.careProviderType === 'traineesupervised' || this.selectedInvoice.careProviderType === 'trainee') && hcp.supervisorId ?
                         this.api.hcparty().getHealthcareParty(hcp.supervisorId).then(sup =>
-                            this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
+                            this.api.fhc().Tarification().consultTarificationUsingPOST(
                                 this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
                                 hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
                                 this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,
@@ -2847,7 +2847,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                             ).then(r => this.api.logMcn(r, this.user, this.selectedInvoice.id, "eTar", "consult")
                             ))
                         :
-                        this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
+                        this.api.fhc().Tarification().consultTarificationUsingPOST(
                             this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
                             hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
                             this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,

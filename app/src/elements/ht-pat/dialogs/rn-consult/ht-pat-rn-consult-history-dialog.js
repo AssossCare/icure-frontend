@@ -574,7 +574,7 @@ class HtPatRnConsultHistoryDialog extends TkLocalizerMixin(mixinBehaviors([IronR
 
   _openDialog(){
       this.set("rnSearch.ssin", _.get(this.historyResult, 'ssin.value', {}))
-      ;(_.get(this.historyResult, 'ssin.replaces', null) ? this.api.fhc().RnConsultController().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.historyResult, 'ssin.value', null).replace(/\D+/g, ''))) : Promise.resolve({}))
+      ;(_.get(this.historyResult, 'ssin.replaces', null) ? this.api.fhc().RnConsult().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.historyResult, 'ssin.value', null).replace(/\D+/g, ''))) : Promise.resolve({}))
           .then(response => {
               console.log(response)
               this.set('personResult', {person: [_.get(response, 'person', {})]})
