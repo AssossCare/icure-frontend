@@ -895,26 +895,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         const now = +new Date()
         const promResolve = Promise.resolve()
 
-        // Todo: fz get later
-        // const medicationDetail = _
-        //     .chain(medication)
-        //     .get("drug.amp.ampps")
-        //     .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(medication, "drug.id")))
-        //     .omit(["amp.ampps"])
-        //     .assign({
-        //         label: _.trim(_.get(medication,"drug.label")),
-        //         informationsForPosology: _.get(medication,"drug.informationsForPosology"),
-        //         narcoticIcon: _.get(medication,"drug.narcoticIcon"),
-        //         samCode: _.trim(_.get(medication,"drug.samCode")),
-        //         productType: _.trim(_.get(medication,"type")),
-        //         type: _.trim(_.get(medication,"drug.type")),
-        //         allergyType: _.get(medication,"drug.allergyType"),
-        //         atcCat: _.trim(_.get(medication,"drug.atcCat")),
-        //         catIcon: _.trim(_.get(medication,"drug.catIcon")),
-        //         publicPriceHr: _.trim(_.get(medication,"drug.publicPrice")),
-        //     })
-        //     .value()
-
         return !medication ? promResolve : promResolve
             .then(() => this.set('isLoading', true))
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
@@ -937,150 +917,198 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             })))
                             .flatten()
                             .compact()
+                            .filter("publicDmpp")
                             .value()
 
-                        const lastAmpps = _.filter(validAmpps,"publicDmpp")
-                        const updatedAmpp = _.head(_.orderBy(lastAmpps, ["from"], ["desc"]))||{}
+                        // Latest version
+                        const updatedAmpp = _.head(_.orderBy(validAmpps, ["from"], ["desc"]))||{}
 
-                        _.assign(medication, {
+                        _.merge(medication, {drug: {
                             spcLink: _.trim(_.get(updatedAmpp, "spcLink." + this.language)),
                             leafletLink: _.trim(_.get(updatedAmpp, "leafletLink." + this.language)),
-                            ctiExtended: _.get(updatedAmpp,"ctiExtended"),
-                            posologyNote: _.trim(_.get(updatedAmpp,"posologyNote")),
-                            dividable: _.get(updatedAmpp,"dividable"),
-                            packDisplayValue: _.get(updatedAmpp,"packDisplayValue"),
-                            samCode: _.trim(_.get(updatedAmpp,"amp.code")),
-                            samDate: !_.trim(_.get(updatedAmpp,"publicDmpp.from")) ? null : moment(_.get(updatedAmpp,"publicDmpp.from")).format("DD/MM/YYYY"),
-                        })
+                            ctiExtended: _.get(updatedAmpp, "ctiExtended"),
+                            posologyNote: _.trim(_.get(updatedAmpp, "posologyNote")),
+                            dividable: _.get(updatedAmpp, "dividable"),
+                            packDisplayValue: _.trim(_.get(updatedAmpp, "packDisplayValue")),
+                            samCode: _.trim(_.get(updatedAmpp, "amp.code")),
+                            samDate: !_.trim(_.get(updatedAmpp, "publicDmpp.from")) ? null : moment(_.get(updatedAmpp, "publicDmpp.from")).format("DD/MM/YYYY"),
+                            updatedAmpp: updatedAmpp,
+                        }})
 
-                        // Check si cnk a changé + inject
-                        // Call max getByVmp (group id) -> get wada -> renvoyer à max (btn info)
-                        // Check currentReimboursment
-                        // Bien check code ci-dessous -> Je suis en train injecter _checkCnk direct ici
+                        // Cnk changed / replaced ?
+                        return _.merge(medication, _.some(validAmpps, ampp=> _.trim(_.get(ampp,"publicDmpp.code")) === _.trim(_.get(medication,"id"))) ? {} : {id: _.trim(_.get(updatedAmpp,"publicDmpp.code")), drug: { id: _.trim(_.get(updatedAmpp,"publicDmpp.code")), oldCnk: _.trim(_.get(medication,"id")) } })
 
                     })
+                    .catch(e => (console.log("[ERROR]", e)||true) && medication)
             )
+            .then(medication => {
+
+                this.cachedBoxes && this.cachedBoxes !== _.get(medication,"drug.boxes") && this._updateStats();
+
+            })
             .then(() => this.set('isLoading', false))
 
 
 
-        // _checkCnk(medication) {
+        // Call max getByVmp (group id) -> get wada -> renvoyer à max (btn info)
+        // Check currentReimboursment
+        // omit dans medication.drug.amp.ampps.* la boucle infinie sur ampps
 
-                return this.api.besamv2().findAmpsByDmppCode(medication.id)
-                    .then(amps => {
-                        // get the latest version and compare cnk
-                        const now = moment().valueOf();
-                        const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
-                            if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
-                                return validAmpps.concat(amp.ampps.map(ampp => {
-                                    return Object.assign(ampp, {
-                                        amp: amp,
-                                        publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
-                                    });
-                                }));
-                            } else {
-                                return validAmpps;
-                            }
-                        }, []);
-
-                        const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
-                        const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
-                        const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
-                        Object.assign(medication, {
-                            spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
-                            leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
-                            ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
-                            posologyNote: updatedAmpp && updatedAmpp.posologyNote,
-                            dividable: updatedAmpp && updatedAmpp.dividable,
-                            packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
-                            samCode: _.get(updatedAmpp, "amp.code", ""),
-                            samDate: samDate,
-                        });
-                        if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
-                            // console.log("CNK ok");
-                        } else {
-                            const updatedCnk = updatedAmpp.publicDmpp.code;
-                            const oldCnk = medication.id;
-                            // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
-                            Object.assign(medication, {
-                                oldCnk: oldCnk,
-                                id: updatedCnk
-                            })
-                        }
-                        // @ todo also retrieve the current ampp to update data like displayPackage
-                        medication.updatedAmpp = updatedAmpp;
-                        return medication;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        return medication;
-                    })
-
-        // /_checkCnk
-
-
-
-
-
-
-
-
-        // this._checkCnk(medication)
-        //     .then(medication => {
-        //         if (this.cachedBoxes && this.cachedBoxes !== medication.boxes) {
-        //             this._updateStats();
-        //         }
-        //         this.cachedBoxes = medication.boxes;
-        //
-        //         this.set("medicationDetail", null);
-        //
-        //         const content = this.content || this.extractContentWithIdFromMedicationService(medication.newMedication, medication.options.isNew, medication.options.isPrescription);
-        //         this.set("medicationContent", content);
-        //
-        //         this._initmedicationContent();
-        //
-        //         const today = this.api.moment(Date.now());
-        //         this.set("initializingDate", true);
-        //
-        //         const commentForPatient = this._extractCommentForPatient();
-        //
-        //         this.set("medicationDetail", Object.assign(
-        //             medication,
-        //             {
-        //                 beginMomentAsString : this.api.moment((content && content.medicationValue && content.medicationValue.beginMoment) || (medication.newMedication && medication.newMedication.valueDate) || (medication.newMedication && medication.newMedication.openingDate) || Date.now()).format('YYYY-MM-DD') || null,
-        //                 endMomentAsString: this.api.moment((content && content.medicationValue && content.medicationValue.endMoment) || (medication.newMedication && medication.newMedication.closingDate)) ? this.api.moment(content.medicationValue.endMoment || (medication.newMedication && medication.newMedication.closingDate)).format("YYYY-MM-DD") : null,
-        //                 deliveryMomentAsString: today.format("YYYY-MM-DD"),
-        //                 endExecMomentAsString: today.add(3, "months").subtract(1, "days").format("YYYY-MM-DD"),
-        //                 dividable: medication.dividable === undefined ? true : medication.dividable,
-        //                 packDisplayValue: medication.packDisplayValue || 0,
-        //                 medicPriority : this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
-        //                 renewal: !!this.medicationContent.medicationValue.renewal ? "allowed" : "forbidden",
-        //                 isConfidential: ((medication.newMedication.tags || []).find(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || {code: ""}).code === "secret",
-        //                 substitutionAllowed: this.medicationContent.medicationValue.substitutionAllowed ? "true" : "false",
-        //                 commentForPatient: commentForPatient
-        //             }
-        //         ));
-        //         this.set("initializingDate", false);
-        //
-        //         // this.set("renewalTimeUnit", this.medicationContent.medicationValue.renewal && this.medicationContent.medicationValue.renewal.duration.unit || this.timeUnits.find(timeUnit => timeUnit.code === "mo"));
-        //         const reimb = this.medicationContent.medicationValue.reimbursementReason;
-        //         this.reimbursementReason = null;
-        //         // this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || this.reimbursementCodeRecipe.find(item => item.code === "notreimbursable"));
-        //         this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || "");
-        //
-        //         const quantitySample = _.get(this.medicationContent, "medicationValue.regimen[0].administratedQuantity.quantity", "");
-        //         this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && this.quantityFactors.find(q => q.numLabel === quantitySample) || this.quantityFactors[0]);
-        //
-        //         // @todo: month (dayNumber) and date
-        //         const period = _.has(this.medicationContent, "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology" ;
-        //         if (this.periodConfig.id !== period) {
-        //             this.set("periodConfig", this.periodConfigs.find(config => config.id === period));
-        //         } else {
-        //             this._periodChanged();
-        //         }
-        //         this._updateStats();
+        // Todo: fz get later
+        // const medicationDetail = _
+        //     .chain(medication)
+        //     .get("drug.amp.ampps")
+        //     .find(it => _.trim(_.get(it,"id")) === _.trim(_.get(medication, "drug.id")))
+        //     .omit(["amp.ampps"])
+        //     .assign({
+        //         label: _.trim(_.get(medication,"drug.label")),
+        //         informationsForPosology: _.get(medication,"drug.informationsForPosology"),
+        //         narcoticIcon: _.get(medication,"drug.narcoticIcon"),
+        //         samCode: _.trim(_.get(medication,"drug.samCode")),
+        //         productType: _.trim(_.get(medication,"type")),
+        //         type: _.trim(_.get(medication,"drug.type")),
+        //         allergyType: _.get(medication,"drug.allergyType"),
+        //         atcCat: _.trim(_.get(medication,"drug.atcCat")),
+        //         catIcon: _.trim(_.get(medication,"drug.catIcon")),
+        //         publicPriceHr: _.trim(_.get(medication,"drug.publicPrice")),
         //     })
-        //     .finally(() => this._setSpinnerIdle());
+        //     .value()
+
+
+
+
+
+
+
+
+
+
+        this._checkCnk(medication)
+            .then(medication => {
+                if (this.cachedBoxes && this.cachedBoxes !== medication.boxes) {
+                    this._updateStats();
+                }
+                this.cachedBoxes = medication.boxes;
+
+                this.set("medicationDetail", null);
+
+                const content = this.content || this.extractContentWithIdFromMedicationService(medication.newMedication, medication.options.isNew, medication.options.isPrescription);
+                this.set("medicationContent", content);
+
+                this._initmedicationContent();
+
+                const today = this.api.moment(Date.now());
+                this.set("initializingDate", true);
+
+                const commentForPatient = this._extractCommentForPatient();
+
+                this.set("medicationDetail", Object.assign(
+                    medication,
+                    {
+                        beginMomentAsString : this.api.moment((content && content.medicationValue && content.medicationValue.beginMoment) || (medication.newMedication && medication.newMedication.valueDate) || (medication.newMedication && medication.newMedication.openingDate) || Date.now()).format('YYYY-MM-DD') || null,
+                        endMomentAsString: this.api.moment((content && content.medicationValue && content.medicationValue.endMoment) || (medication.newMedication && medication.newMedication.closingDate)) ? this.api.moment(content.medicationValue.endMoment || (medication.newMedication && medication.newMedication.closingDate)).format("YYYY-MM-DD") : null,
+                        deliveryMomentAsString: today.format("YYYY-MM-DD"),
+                        endExecMomentAsString: today.add(3, "months").subtract(1, "days").format("YYYY-MM-DD"),
+                        dividable: medication.dividable === undefined ? true : medication.dividable,
+                        packDisplayValue: medication.packDisplayValue || 0,
+                        medicPriority : this.medicationContent.medicationValue.priority === "high" ? 2 : this.medicationContent.medicationValue.priority === "middle" ? 1 : 0,
+                        renewal: !!this.medicationContent.medicationValue.renewal ? "allowed" : "forbidden",
+                        isConfidential: ((medication.newMedication.tags || []).find(tag => tag.type === "org.taktik.icure.entities.embed.Confidentiality") || {code: ""}).code === "secret",
+                        substitutionAllowed: this.medicationContent.medicationValue.substitutionAllowed ? "true" : "false",
+                        commentForPatient: commentForPatient
+                    }
+                ));
+                this.set("initializingDate", false);
+
+                // this.set("renewalTimeUnit", this.medicationContent.medicationValue.renewal && this.medicationContent.medicationValue.renewal.duration.unit || this.timeUnits.find(timeUnit => timeUnit.code === "mo"));
+                const reimb = this.medicationContent.medicationValue.reimbursementReason;
+                this.reimbursementReason = null;
+                // this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || this.reimbursementCodeRecipe.find(item => item.code === "notreimbursable"));
+                this.set("reimbursementReason", reimb && this.reimbursementCodeRecipe.find(item => item.code === reimb.code) || "");
+
+                const quantitySample = _.get(this.medicationContent, "medicationValue.regimen[0].administratedQuantity.quantity", "");
+                this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && this.quantityFactors.find(q => q.numLabel === quantitySample) || this.quantityFactors[0]);
+
+                // @todo: month (dayNumber) and date
+                const period = _.has(this.medicationContent, "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology" ;
+                if (this.periodConfig.id !== period) {
+                    this.set("periodConfig", this.periodConfigs.find(config => config.id === period));
+                } else {
+                    this._periodChanged();
+                }
+                this._updateStats();
+            })
+            .finally(() => this._setSpinnerIdle());
+    }
+
+    _updateStats() {
+
+        if (!this.quantityFactor) return;
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        if (!regimen) return;
+
+        const end = this._endMoment();
+        const begin = this._beginMoment();
+
+        let availableDoses = parseInt(_.get(this.medicationDetail, "packDisplayValue", 0), 10) * parseInt(_.get(this.medicationDetail, "boxes", 0), 10) * this.quantityFactor.denominator;
+        const keys= this.periodConfig.id === "weeklyPosology" ? this.weekdayKeys : [""];
+        let currentDayNumber = this.periodConfig.id === "weeklyPosology" ? begin.weekday() : 0;
+
+        let takes = keys.map(key => regimen.reduce((total, period) => {
+                if (!key || _.get(period, "weekday.code", 0) === key) {
+                    total += (this.quantityFactor.denominator > 1) && 1 || parseInt(period.administratedQuantity.quantity, 10) || 0;
+                }
+                return total;
+            }, 0)
+        );
+
+        const totalTakesPerPeriod = takes.reduce((total, quantity) => {
+            total += quantity;
+            return total;
+        }, 0);
+
+        // this.set("totalTakesPerPeriod", totalTakesPerPeriod);
+
+        const totalQuantityPerPeriod = Math.round(totalTakesPerPeriod / this.quantityFactor.denominator);
+
+        // this.set("totalQuantityPerPeriod", totalQuantityPerPeriod);
+        this.set("canShowProvisionInfo", this.medicationContent.isPrescription && availableDoses > 0 && totalTakesPerPeriod > 0);
+
+        let medicationDays = end ? end.diff(begin, "days") : 0;
+
+        this.set("canShowQuantityInfo", medicationDays && totalTakesPerPeriod);
+
+        let provisionDays = 0;
+        let totalTakes = 0;
+
+        if (totalTakesPerPeriod > 0) {
+            while (availableDoses > 0 || medicationDays > 0) {
+                const dailyTakes = (takes[(currentDayNumber++) % takes.length] || 0);
+                if (availableDoses > 0) {
+                    availableDoses -= dailyTakes;
+                    provisionDays += 1;
+                }
+                if (medicationDays > 0) {
+                    medicationDays -= 1;
+                    totalTakes += dailyTakes;
+                }
+            }
+
+            if (availableDoses < 0) {
+                provisionDays--;
+            }
+        }
+
+        const totalQuantity = Math.round(totalTakes / this.quantityFactor.denominator);
+
+        const endProvisionMoment = this._beginMoment().add(provisionDays, "days");
+
+        this.set("provisionDays", provisionDays);
+        this.set("totalTakes", totalTakes);
+        this.set("totalQuantity", totalQuantity);
+        this.set("endProvisionMomentAsString", endProvisionMoment.format("YYYY-MM-DD"));
+        this.set("insufficientProvision", (endProvisionMoment.isBefore(this._endMoment())));
+
     }
 
 
@@ -1227,74 +1255,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         const comment = instructionForPatient && instructionForPatient.replace(posology, "") || "";
         const index =  comment ? comment.indexOf(this.commentSeparator) : -1;
         return (index < 0) ? comment : comment.slice(this.commentSeparator.length);
-    }
-
-    _updateStats() {
-        if (!this.quantityFactor) return;
-        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
-        if (!regimen) return;
-
-        const end = this._endMoment();
-        const begin = this._beginMoment();
-
-        let availableDoses = parseInt(_.get(this.medicationDetail, "packDisplayValue", 0), 10) * parseInt(_.get(this.medicationDetail, "boxes", 0), 10) * this.quantityFactor.denominator;
-        const keys= this.periodConfig.id === "weeklyPosology" ? this.weekdayKeys : [""];
-        let currentDayNumber = this.periodConfig.id === "weeklyPosology" ? begin.weekday() : 0;
-
-        let takes = keys.map(key => regimen.reduce((total, period) => {
-                if (!key || _.get(period, "weekday.code", 0) === key) {
-                    total += (this.quantityFactor.denominator > 1) && 1 || parseInt(period.administratedQuantity.quantity, 10) || 0;
-                }
-                return total;
-            }, 0)
-        );
-
-        const totalTakesPerPeriod = takes.reduce((total, quantity) => {
-            total += quantity;
-            return total;
-        }, 0);
-
-        // this.set("totalTakesPerPeriod", totalTakesPerPeriod);
-
-        const totalQuantityPerPeriod = Math.round(totalTakesPerPeriod / this.quantityFactor.denominator);
-
-        // this.set("totalQuantityPerPeriod", totalQuantityPerPeriod);
-        this.set("canShowProvisionInfo", this.medicationContent.isPrescription && availableDoses > 0 && totalTakesPerPeriod > 0);
-
-        let medicationDays = end ? end.diff(begin, "days") : 0;
-
-        this.set("canShowQuantityInfo", medicationDays && totalTakesPerPeriod);
-
-        let provisionDays = 0;
-        let totalTakes = 0;
-
-        if (totalTakesPerPeriod > 0) {
-            while (availableDoses > 0 || medicationDays > 0) {
-                const dailyTakes = (takes[(currentDayNumber++) % takes.length] || 0);
-                if (availableDoses > 0) {
-                    availableDoses -= dailyTakes;
-                    provisionDays += 1;
-                }
-                if (medicationDays > 0) {
-                    medicationDays -= 1;
-                    totalTakes += dailyTakes;
-                }
-            }
-
-            if (availableDoses < 0) {
-                provisionDays--;
-            }
-        }
-
-        const totalQuantity = Math.round(totalTakes / this.quantityFactor.denominator);
-
-        const endProvisionMoment = this._beginMoment().add(provisionDays, "days");
-
-        this.set("provisionDays", provisionDays);
-        this.set("totalTakes", totalTakes);
-        this.set("totalQuantity", totalQuantity);
-        this.set("endProvisionMomentAsString", endProvisionMoment.format("YYYY-MM-DD"));
-        this.set("insufficientProvision", (endProvisionMoment.isBefore(this._endMoment())));
     }
 
     _beginMoment() {
@@ -1589,6 +1549,70 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     // </Axel Stijns>
+
+
+
+
+
+    // <Not used anymore>
+
+    _checkCnk(medication) {
+        if (medication.type === "medicine" && medication.id && !medication.samCode) {
+            return this.api.besamv2().findAmpsByDmppCode(medication.id)
+                .then(amps => {
+                    // get the latest version and compare cnk
+                    const now = moment().valueOf();
+                    const validAmpps = amps && amps.length && amps.reduce((validAmpps, amp) => {
+                        if ((amp.status === "AUTHORIZED") && amp.ampps && amp.ampps.length) {
+                            return validAmpps.concat(amp.ampps.map(ampp => {
+                                return Object.assign(ampp, {
+                                    amp: amp,
+                                    publicDmpp: ampp.dmpps.find(dmpp => dmpp.deliveryEnvironment === "P" && dmpp.codeType === "CNK" && dmpp.from < now && (!dmpp.to || dmpp.to > now))
+                                });
+                            }));
+                        } else {
+                            return validAmpps;
+                        }
+                    }, []);
+
+                    const lastAmpps = validAmpps && validAmpps.filter(ampp => ampp.publicDmpp);
+                    const updatedAmpp = lastAmpps && lastAmpps.length && lastAmpps.sort((a, b) => b.publicDmpp.from - a.publicDmpp.from)[0];
+                    const samDate = updatedAmpp && updatedAmpp.publicDmpp && moment(updatedAmpp.publicDmpp.from).format("DD/MM/YYYY");
+                    Object.assign(medication, {
+                        spcLink: _.get(updatedAmpp, `spcLink.${this.language}`, ""),
+                        leafletLink: _.get(updatedAmpp, `leafletLink.${this.language}`, ""),
+                        ctiExtended: updatedAmpp && updatedAmpp.ctiExtended,
+                        posologyNote: updatedAmpp && updatedAmpp.posologyNote,
+                        dividable: updatedAmpp && updatedAmpp.dividable,
+                        packDisplayValue: updatedAmpp && updatedAmpp.packDisplayValue,
+                        samCode: _.get(updatedAmpp, "amp.code", ""),
+                        samDate: samDate,
+                    });
+                    if (lastAmpps.some(ampp => ampp.publicDmpp.code === medication.id)) {
+                        // console.log("CNK ok");
+                    } else {
+                        const updatedCnk = updatedAmpp.publicDmpp.code;
+                        const oldCnk = medication.id;
+                        // console.log("CNK too old: current CNK: " + oldCnk + "; latest: " + updatedCnk);
+                        Object.assign(medication, {
+                            oldCnk: oldCnk,
+                            id: updatedCnk
+                        })
+                    }
+                    // @ todo also retrieve the current ampp to update data like displayPackage
+                    medication.updatedAmpp = updatedAmpp;
+                    return medication;
+                })
+                .catch(err => {
+                    console.log(err);
+                    return medication;
+                })
+        } else {
+            return Promise.resolve(medication);
+        }
+    }
+
+    // </Not used anymore>
 
 
 
