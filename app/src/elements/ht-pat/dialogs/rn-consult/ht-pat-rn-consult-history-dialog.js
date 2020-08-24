@@ -586,14 +586,14 @@ class HtPatRnConsultHistoryDialog extends TkLocalizerMixin(mixinBehaviors([IronR
           this.set('personResult', {person: [_.get(response, 'person', {})]})
           this.set("selectedPersonData", _.get(response, 'person', null))
       }).finally(() => {
-          this.$['rnConsultHistoryDialog'].open()
+          this.shadowRoot.querySelector('#rnConsultHistoryDialog') ? this.shadowRoot.querySelector('#rnConsultHistoryDialog').open() : null
       })
   }
 
   _closeRnConsultDialog(){
       this.set('personResult', [])
       this.set('historyResult', {})
-      this.$['rnConsultHistoryDialog'].close()
+      this.shadowRoot.querySelector('#rnConsultHistoryDialog') ? this.shadowRoot.querySelector('#rnConsultHistoryDialog').close() : null
   }
 
 

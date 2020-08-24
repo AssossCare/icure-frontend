@@ -1810,7 +1810,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _viewChanged(view) {
       if (view.startsWith('auth')) {
-          this.$.loginDialog.open()
+          this.shadowRoot.querySelector('#loginDialog') ? this.shadowRoot.querySelector('#loginDialog').open() : null
           return
       }
       if (this.lazyPages[view]) {
@@ -1820,7 +1820,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       }
 
       if(this.view==="main"){
-          this.$["htmain"].apiReady && this.$["htmain"].apiReady()
+          this.shadowRoot.querySelector('#htmain').apiReady ? this.shadowRoot.querySelector('#htmain').apiReady() : null
       }
   }
 
@@ -1835,11 +1835,11 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _openExportKey() {
-      this.$['export-key'].open()
+      this.shadowRoot.querySelector('#export-key') ? this.shadowRoot.querySelector('#export-key').open() : null
   }
 
   _importKeychain() {
-      this.$['ht-import-keychain'].open()
+      this.shadowRoot.querySelector('#ht-import-keychain') ? this.shadowRoot.querySelector('#ht-import-keychain').open() : null
   }
 
   _inviteHCP() {
@@ -1847,15 +1847,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       this.set('lastName','')
       this.set('email','')
       this.set('warn','')
-      this.$['ht-invite-hcp'].open()
+      this.shadowRoot.querySelector('#ht-invite-hcp') ? this.shadowRoot.querySelector('#ht-invite-hcp').open() : null
   }
 
   _myProfile(tab) {
-      this.$['ht-my-profile'].open(tab)
+      this.shadowRoot.querySelector('#ht-my-profile') ? this.shadowRoot.querySelector('#ht-my-profile').open(tab) : null
   }
 
   _selectEntities(){
-      this.$['ht-app-account-selector'].open()
+      this.shadowRoot.querySelector('#ht-app-account-selector') ? this.shadowRoot.querySelector('#ht-app-account-selector').open() : null
   }
 
   _showToasterMessage(id) {
@@ -2124,22 +2124,21 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   this._checkKeystoreValidity()
                   return this._getToken()
               }).catch((e) => {
-                  this.$.eHealthStatus.classList.remove('pending')
-                  this.$.eHealthStatus.classList.remove('connected')
-                  this.$.eHealthStatus.classList.add('disconnected')
+                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('disconnected') : null
                   throw(e)
               })
           } else {
-              this.$.noehealth.classList.add("notification")
-
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('connected')
-              this.$.eHealthStatus.classList.add('disconnected')
+              this.shadowRoot.querySelector('#noehealth') ? this.shadowRoot.querySelector('#noehealth').classList.add('notification') : null
+              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
           }
       } else {
-          this.$.eHealthStatus.classList.remove('pending')
-          this.$.eHealthStatus.classList.remove('connected')
-          this.$.eHealthStatus.classList.add('disconnected')
+          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
       }
       return Promise.resolve(null);
   }
@@ -2212,7 +2211,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               this.registerKeyPairDialogResolution[0]([true, 'main/'])
           } else {
               this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
+              this.shadowRoot.querySelector('#registerKeyPairDialog') ? this.shadowRoot.querySelector('#registerKeyPairDialog').reset() : null
           }
       }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
   }
@@ -2231,7 +2230,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               this.registerKeyPairDialogResolution[0]([true, 'main/'])
           } else {
               this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
+              this.shadowRoot.querySelector('#registerKeyPairDialog') ? this.shadowRoot.querySelector('#registerKeyPairDialog').reset() : null
           }
       }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
   }

@@ -448,7 +448,7 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
               })
           })
       })
-      this.$['doc-list'].clearCache()
+      this.shadowRoot.querySelector('#doc-list') ? this.shadowRoot.querySelector('#doc-list').clearCache() : null
       this._updateView();
   }
 
@@ -629,12 +629,12 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
       vaadinUpload.set('i18n.addFiles.many', this.localize('upl_fil','Upload file',this.language))
       vaadinUpload.set('i18n.dropFiles.many', this.localize('uplabel','Drop files here...',this.language))
       this.set('files', []);
-      this.$['upload-dialog'].open();
+      this.shadowRoot.querySelector('#upload-dialog') ? this.shadowRoot.querySelector('#upload-dialog').open() : null
   }
 
   close() {
       this.set('files', []);
-      this.$['upload-dialog'].close();
+      this.shadowRoot.querySelector('#upload-dialog') ? this.shadowRoot.querySelector('#upload-dialog').close() : null
   }
 
   saveEvent() {
@@ -760,7 +760,7 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   closeErrorMessageBox() {
-      this.$['error-message-box'].close();
+      this.shadowRoot.querySelector('#error-message-box') ? this.shadowRoot.querySelector('#error-message-box').close() : null
   }
 }
 

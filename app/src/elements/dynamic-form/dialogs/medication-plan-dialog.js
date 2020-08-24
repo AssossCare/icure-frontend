@@ -1406,7 +1406,7 @@ class MedicationPlanDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   open(medicationPlan, selectedMedicationContentWithId) {
-      this.$['medication-plan'].open()
+      this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').open() : null
   }
 
   _setStatus(service, status) {

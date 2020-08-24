@@ -1102,7 +1102,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       this.set('patientMap',_.cloneDeep(this.patient));
 
                       if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                          this.$['dynamic-form-administrative'].loadDataMap();
+                          this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
                       } else {
                           this.$[this.root.activeElement.id].loadDataMap();
                       }
@@ -1112,7 +1112,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   this.set('patientMap',_.cloneDeep(this.patient))
 
                   if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                      this.$['dynamic-form-administrative'].loadDataMap();
+                      this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
                   } else {
                       this.$[this.root.activeElement.id].loadDataMap();
                   }
@@ -1469,13 +1469,13 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
   }
 
   showAddPersonToCareTeam() {
-      this.$['add-person-to-care-team'].open()
+      this.shadowRoot.querySelector('#add-person-to-care-team') ? this.shadowRoot.querySelector('#add-person-to-care-team').open() : null
       this.set('currentHcp', _.values(this.api.hcParties))
   }
 
   showAddNewPersonToCareTeamForm() {
-      this.$['add-person-to-care-team'].close()
-      this.$['add-new-person-to-care-team'].open()
+      this.shadowRoot.querySelector('#add-person-to-care-team') ? this.shadowRoot.querySelector('#add-person-to-care-team').close() : null
+      this.shadowRoot.querySelector('#add-new-person-to-care-team') ? this.shadowRoot.querySelector('#add-new-person-to-care-team').open() : null
   }
 
   addNewExternalPersonToCareTeam() {
@@ -1508,11 +1508,11 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       .then(p => this.api.register(p, 'patient', defer))
                       .then(() => {
                           this.set('patient.patientHealthCareParties', phcp)
-                          this.$['add-new-person-to-care-team'].close()
+                          this.shadowRoot.querySelector('#add-new-person-to-care-team') ? this.shadowRoot.querySelector('#add-new-person-to-care-team').close() : null
                           this.initCurrentCareTeam()
 
                           if (careProvider.Invite === true) {
-                              this.$['ht-invite-hcp-link'].open()
+                              this.shadowRoot.querySelector('#ht-invite-hcp-link') ? this.shadowRoot.querySelector('#ht-invite-hcp-link').open() : null
                               this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
                           }
                       })
@@ -1782,7 +1782,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
       let tmp = this.selectedCareProvider;
 
-	    this.$['showHcpInfo'].open();
+      this.shadowRoot.querySelector('#showHcpInfo') ? this.shadowRoot.querySelector('#showHcpInfo').open() : null
 
       const pphcTab = this.patient.patientHealthCareParties;
       const pphcTarget = pphcTab.find(pphc => pphc.healthcarePartyId === this.selectedCareProvider.id);
@@ -1895,7 +1895,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                           niss: this.cardData.nationalNumber
                       }
                   });
-                  this.$['warning-message-box'].open();
+                  this.shadowRoot.querySelector('#warning-message-box') ? this.shadowRoot.querySelector('#warning-message-box').open() : null
               } else if (this.patient.ssin !== this.cardData.nationalNumber) {
                   this.dispatchEvent(new CustomEvent('error-electron', {detail: { message:this.localize("error-elect-eid-ssin-diff","EID : the EID SSIN isn't the same as the patient's",this.language)}, bubbles: true, composed: true}));
               } else {
@@ -1961,7 +1961,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   this.set('patientMap', _.cloneDeep(this.patient));
 
                   if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                      this.$['dynamic-form-administrative'].loadDataMap();
+                      this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
                   } else {
                       this.$[this.root.activeElement.id].loadDataMap();
                   }
@@ -2116,8 +2116,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           }).finally(()=>{
               this.$["noSave"].classList.remove("notification")
               this.set('patientMap', _.cloneDeep(this.patient));
-              this.$['dynamic-form-administrative'].loadDataMap();
-              this.$['dynamic-form-partnerships'].loadDataMap();
+              this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
+              this.shadowRoot.querySelector('#dynamic-form-partnerships') ? this.shadowRoot.querySelector('#dynamic-form-partnerships').loadDataMap() : null
               this.set("activeItem",{})
           })
       }
@@ -2142,8 +2142,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           }).finally(()=>{
               this.$["noSave"].classList.remove("notification")
               this.set('patientMap', _.cloneDeep(this.patient));
-              this.$['dynamic-form-administrative'].loadDataMap();
-              this.$['dynamic-form-partnerships'].loadDataMap();
+              this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
+              this.shadowRoot.querySelector('#dynamic-form-partnerships') ? this.shadowRoot.querySelector('#dynamic-form-partnerships').loadDataMap() : null
               this.set("activeItem",{})
           })
       }

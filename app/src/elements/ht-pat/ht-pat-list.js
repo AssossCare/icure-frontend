@@ -2096,7 +2096,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       this.resetNewPatientDialog()
       this.checkForParentMedicalHouse()
 
-      this.$['add-patient-dialog'].open()
+      this.shadowRoot.querySelector('#add-patient-dialog') ? this.shadowRoot.querySelector('#add-patient-dialog').open() : null
   }
 
   _addPatientNoOpen() {
@@ -2311,7 +2311,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _openImportPatientFromMfDialog() {
-      this.$['import-mf-dialog'].open()
+      this.shadowRoot.querySelector('#import-mf-dialog') ? this.shadowRoot.querySelector('#import-mf-dialog').open() : null
   }
 
   generateXlsFile(data, filename, title, author) {
@@ -2512,7 +2512,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _saveFilter(e) {
-      this.$['saveFilterDialog'].open()
+      this.shadowRoot.querySelector('#saveFilterDialog') ? this.shadowRoot.querySelector('#saveFilterDialog').open() : null
   }
 
   deleteFilter(e) {
@@ -2670,7 +2670,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       ).then(pats => {
           this.set('shareOption', true)
           this.selectedPatientsForSharing = pats
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
       }).finally(() => {
           this.set('isImportingPatients', false)
       })
@@ -2678,7 +2678,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   _openPatientActionDialog() {
       if (this.shareOption) {
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
           this.set('hcp', _.orderBy(_.values(this.api.hcParties), ['lastName'], ['asc']))
           this.selectedPatientsForSharing = this.patientSelected.filter(pat => pat.check && pat.id)
       }
@@ -2727,7 +2727,9 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.set("patientSelected", this.patientSelected.filter(element => element.check === true))
           if (this.patientSelected.length > 1)
               this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids:_.uniq(this.patientSelected.map(pat => pat.id))}))
-                  .then(pats => this.$['fusion-dialog'].open(pats))
+                  .then(pats =>
+                      this.shadowRoot.querySelector('#fusion-dialog') ? this.shadowRoot.querySelector('#fusion-dialog').open(pats) : null
+                  )
       }
 
       if(this.preventionOption){
@@ -2803,7 +2805,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   confirmSharingNextStep(allHcp) {
-      this.$['sharePatientDialog'].close()
+      this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').close() : null
 
       //erase uncheck user
       if (this.shareAll ||(allHcp === true)) {
@@ -2825,14 +2827,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               this.set("hcpSelectedForSharing." + index + ".delegation", delegationTag)
       })
 
-      this.$['sharePatientDelegationDialog'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').open() : null
   }
 
   confirmSharing() {
       this.updateDelegation()
 
-      this.$['sharePatientDelegationDialog'].close()
-      this.$['sharingPatientStatus'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').close() : null
+      this.shadowRoot.querySelector('#sharingPatientStatus') ? this.shadowRoot.querySelector('#sharingPatientStatus').open() : null
 
       this._sharePatients(this.selectedPatientsForSharing)
   }
@@ -3261,7 +3263,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addPrimaryPrevention(){
-      this.$['htPatPrimaryPreventionDialog'].openPreventionDialog()
+      this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog') ? this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog').openPreventionDialog() : null
   }
 
   _closePrevention(){

@@ -754,7 +754,7 @@ class HtPatTherlinkDetail extends TkLocalizerMixin(mixinBehaviors([IronResizable
               this.set('errorList', [])
               this.set('availableTherlinkType', _.get(this, 'therlinkType').filter(tlType => !this.therlinkList.find(tll => tll.tlType === tlType.type)))
               this.set('selectedTherlinkType', _.head(_.get(this, 'availableTherlinkType', [])))
-              this.$['therlinkDetailDialog'].open();
+              this.shadowRoot.querySelector('#therlinkDetailDialog') ? this.shadowRoot.querySelector('#therlinkDetailDialog').open() : null
           })
   }
 
@@ -766,7 +766,7 @@ class HtPatTherlinkDetail extends TkLocalizerMixin(mixinBehaviors([IronResizable
       this.set('selectedTherlink', {})
       this.set('therlinkList', [])
       this.set('therlinkResponseError', [])
-      this.$['therlinkDetailDialog'].close();
+      this.shadowRoot.querySelector('#therlinkDetailDialog') ? this.shadowRoot.querySelector('#therlinkDetailDialog').close() : null
   }
 
   _isTherapeuticLink(){

@@ -1047,7 +1047,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
     }
 
     _closeComponent() {
-        this.$['new-msg'] && this.$['new-msg'].close()
+        this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').close() : null
     }
 
     _patientFilterChanged(patientSearchValue) {
@@ -1737,8 +1737,9 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                     this.set("_bodyOverlay", true)
                     this.$["unableToLinkPatDocument"].open()
                 })
-                .finally(() => this.$['new-msg'].open())
-
+                .finally(() =>
+                    this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open() : null
+                )
         }
 
         // Is case of forward / reply
@@ -1819,13 +1820,13 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                         "--------------------------------------------------------------------------\n",
                         _.trim(_.get(componentOpenParameters, "body", "")) + "\n\n"
                     ].join("\n\n"))
-                    this.$['new-msg'].open()
+                    this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open() : null
                 })
 
         }
 
         // Not from pat detail, not a forward / not a reply
-        if (!_.size(dataFromPatDetail) && !_.size(componentOpenParameters)) this.$['new-msg'].open()
+        if (!_.size(dataFromPatDetail) && !_.size(componentOpenParameters)) this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open() : null
 
     }
 
@@ -1833,7 +1834,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
 
         this._resetComponentData()
 
-        this.$['new-msg'].close()
+        this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').close() : null
 
         setTimeout(() => {
             this.$["success"].classList.add('displayNotification')
@@ -1856,7 +1857,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
             .then(() => {
                 this.set('_isMedex', true)
                 this._resetLoadingMessage()
-                this.$['new-msg'].open()
+                this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open() : null
                 this.set('_isLoading', true)
                 this._setLoadingMessage({message: this.localize('please_wait', this.language), icon: "arrow-forward"})
                 this.set('medexData', {
@@ -2145,8 +2146,9 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
         if (this.shadowRoot.querySelector('#linkedPatientComboxBox')) this.shadowRoot.querySelector('#linkedPatientComboxBox').value = ""
         this.shadowRoot.querySelector('#recipientsList') && this.shadowRoot.querySelector('#recipientsList').render()
         this.shadowRoot.querySelector('#additionalAnnexesFromPatDetail') && this.shadowRoot.querySelector('#additionalAnnexesFromPatDetail').render()
-        this.$['success'] && this.$['success'].classList && this.$['success'].classList.remove('displayNotification')
-        this.$['failed'] && this.$['failed'].classList && this.$['failed'].classList.remove('displayNotification')
+
+        this.shadowRoot.querySelector('#success') && this.shadowRoot.querySelector('#success').classList ? this.shadowRoot.querySelector('#success').classList.remove('displayNotification') : null
+        this.shadowRoot.querySelector('#mdaDetailDialog') && this.shadowRoot.querySelector('#mdaDetailDialog').classList ? this.shadowRoot.querySelector('#mdaDetailDialog').classList.remove('displayNotification') : null
 
     }
 
@@ -2162,8 +2164,9 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
         if( !!_.trim(errorScenarioDialog) ) { this.set("_bodyOverlay", true); this.$[errorScenarioDialog].open(); return; }
 
         this._showSendingMessagePreload()
-        this.$['success'] && this.$['success'].classList && this.$['success'].classList.remove('displayNotification')
-        this.$['failed'] && this.$['failed'].classList && this.$['failed'].classList.remove('displayNotification')
+
+        this.shadowRoot.querySelector('#success') && this.shadowRoot.querySelector('#success').classList ? this.shadowRoot.querySelector('#success').classList.remove('displayNotification') : null
+        this.shadowRoot.querySelector('#failed') && this.shadowRoot.querySelector('#failed').classList ? this.shadowRoot.querySelector('#failed').classList.remove('displayNotification') : null
 
         this.api.fhc().Ehbox().getInfosUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
             .then(boxInfo => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp=>[boxInfo,currentHcp]))

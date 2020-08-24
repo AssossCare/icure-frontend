@@ -500,13 +500,13 @@ class HtPatMemberDataDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
                     requestType: _.get(_.get(this, 'mdaRequestType', []).find(t => t.type === "information"), "type", "information"),
                     consultType: _.get(this.patient, 'ssin', null) ? _.get(_.get(this, 'mdaConsultType', []).find(t => t.type === "byNiss"), 'type', null) : _.get(_.get(this, 'mdaConsultType', []).find(t => t.type === "byIo"), 'type', null)
                 })
-                _.get(e, 'open', true) ? this.$['mdaDetailDialog'].open() : null
+                _.get(e, 'open', true) ?  this.shadowRoot.querySelector('#mdaDetailDialog') ? this.shadowRoot.querySelector('#mdaDetailDialog').open() : null : null
                 _.isEmpty(_.get(this, 'mdaResult', {})) ? _.get(this.mdaSearch, 'ssin', null) || ( _.get(this.mdaSearch, 'mutuality', null) && _.get(this.mdaSearch, 'identificationNumber', null)) ? this.consultMda() : null : null
             })
     }
 
     _closeDialog(){
-        this.$['mdaDetailDialog'].close()
+        this.shadowRoot.querySelector('#mdaDetailDialog') ? this.shadowRoot.querySelector('#mdaDetailDialog').close() : null
     }
 
     _resetComponentProperties() {

@@ -399,7 +399,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
                   .filter(allergy => allergy.atcCode && allergy.type);
               this.set("allergies", allergies);
           })
-          .then(() => this.$['medication-details'].init())
+          .then(() => this.shadowRoot.querySelector('#medication-details') ? this.shadowRoot.querySelector('#medication-details').init() : null)
           .catch(err => console.log(err))
           .finally(() => {
               const preferredContent = this.api.contact().preferredContent(service, this.language);
@@ -444,7 +444,7 @@ class MedicationDetailsDialog extends TkLocalizerMixin(PolymerElement) {
               });
               this.set('medicationMustBeCreated', false);
               this.set('openAddDropDown', false);
-              this.$['medication-details-dialog'].open();
+              this.shadowRoot.querySelector('#medication-details-dialog') ? this.shadowRoot.querySelector('#medication-details-dialog').open() : null
           });
   }
 

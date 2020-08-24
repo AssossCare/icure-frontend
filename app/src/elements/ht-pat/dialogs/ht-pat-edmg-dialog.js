@@ -751,13 +751,13 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
       this.set('consultDmgResp', null);
       this.set('notifyDmgResp', null);
       this.getRegistrationStatus();
-      this.$.dialog.open();
+      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').open() : null
       this.getBankInfo();
       this._consultDmg();
   }
 
   close() {
-      this.$.dialog.close();
+      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').close() : null
   }
 }
 customElements.define(HtPatEdmgDialog.is, HtPatEdmgDialog);

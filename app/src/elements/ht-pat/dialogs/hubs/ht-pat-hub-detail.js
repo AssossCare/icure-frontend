@@ -783,11 +783,11 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       this.set('revokableTransaction', false);
       this.set('showSumehrContainer', false);
       this.set('directToUpload', directToUpload ? true : false)
-      this.$['hubDetailDialog'].open();
+      this.shadowRoot.querySelector('#hubDetailDialog') ? this.shadowRoot.querySelector('#hubDetailDialog').open() : null
 
       this.set('selectedTransaction', null);
       this.set('selectedHub', {})
-      this.$['htPatHubTransactionViewer'].open(this,  null);
+      this.shadowRoot.querySelector('#htPatHubTransactionViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionViewer').open(this,  null) : null
 
       const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
           (this.user.properties[this.user.properties.length] = {
@@ -943,7 +943,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   close() {
-      this.$.dialog.close();
+      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').close() : null
   }
 
   _activeItemChanged(item){
@@ -956,7 +956,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           this._isOwnTransaction(selected).then(res => this.set('revokableTransaction',res));
           this.set('selectedTransaction', selected);
           console.log('current transactioninfo', selected);
-          this.$['htPatHubTransactionViewer'].open(this,  selected, this._getHubTransactionMessage( selected));
+          this.shadowRoot.querySelector('#htPatHubTransactionViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionViewer').open(this,  selected, this._getHubTransactionMessage( selected)) : null
           //this._getHubTransactionXML(selected).then(resp => console.log("xml", resp));
       }
   }
@@ -977,7 +977,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       e.stopPropagation();
       if(e && e.target && e.target.item) {
           this.set("selectedTransaction", e.target.item)
-          this.$['htPatHubTransactionViewer'].open( e.target.item, this._getHubTransactionMessage( e.target.item));
+          this.shadowRoot.querySelector('#htPatHubTransactionViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionViewer').open(_.get(e, 'target.item', null), this._getHubTransactionMessage(_.get(e, 'target.item', null))) : null
       }
   }
 
@@ -1051,17 +1051,19 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   _addDiaryNote(){
-      this.$['htPatHubDiaryNote'].open();
+      this.shadowRoot.querySelector('#htPatHubDiaryNote') ? this.shadowRoot.querySelector('#htPatHubDiaryNote').open() : null
   }
 
   _openPreviewSumehr(){
       this.set('showSumehrContainer', false);
-      this._getMostRecentSumehr().then(tr => this.$['htPatHubSumehrPreview'].open(tr ? this._getHubTransactionMessage(tr) : null, this, tr ? this._getHubTransactionXML(tr) : null));
+      this._getMostRecentSumehr().then(tr =>
+          this.shadowRoot.querySelector('#htPatHubSumehrPreview') ? this.shadowRoot.querySelector('#htPatHubSumehrPreview').open(tr ? this._getHubTransactionMessage(tr) : null, this, tr ? this._getHubTransactionXML(tr) : null) : null
+      )
   }
 
   _openHistoryViewer(){
       this.set('showSumehrContainer', false);
-      this.$['htPatHubHistoryViewer'].open();
+      this.shadowRoot.querySelector('#htPatHubHistoryViewer') ? this.shadowRoot.querySelector('#htPatHubHistoryViewer').open() : null
   }
 
   // _generateSumehrV2(){
@@ -1999,7 +2001,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
   _closeDialogs(){
       this.set('showSumehrContainer', false);
-      this.$['hubDetailDialog'].close();
+      this.shadowRoot.querySelector('#hubDetailDialog') ? this.shadowRoot.querySelector('#hubDetailDialog').close() : null
   }
 
   _hubDownload(e){

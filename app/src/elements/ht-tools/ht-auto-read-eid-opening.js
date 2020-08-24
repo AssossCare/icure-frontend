@@ -140,7 +140,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
           .then(pats => {
               if(pats.rows.length && pats.rows.find(pat => pat.ssin===this.card.nationalNumber)){
                   this.set("autoReadSelected",pats.rows.find(pat => pat.ssin===this.card.nationalNumber))
-                  this.$['eidFound'].classList.add('notification');
+                  this.shadowRoot.querySelector('#eidFound') ? this.shadowRoot.querySelector('#eidFound').classList.add('notification') : null
               }
               else{
                   this.searchPatientsEid();
@@ -192,7 +192,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
                   .then(patients => {
                       const grouped = _.groupBy(patients.rows, pat =>(this.card.firstName.includes(pat.firstName) && this.card.surname.includes(pat.lastName) && pat.dateOfBirth===this.card.dateOfBirth) ? 0 : this.card.firstName.includes(pat.firstName) && this.card.surname.includes(pat.lastName) ? 1 : this.card.surname.includes(pat.lastName) ? 2 : this.card.firstName.includes(pat.firstName) ? 3 : 4)
                       this.set("eidPatientsList",_.flatMap(grouped))
-                      this.$['eidOthersChoicesNotif'].classList.add('notification');
+                      this.shadowRoot.querySelector('#eidOthersChoicesNotif') ? this.shadowRoot.querySelector('#eidOthersChoicesNotif').classList.add('notification') : null
                   })
           }
       })
@@ -247,7 +247,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
               .then( p => this.api.patient().modifyPatientWithUser(this.user,p))
               .then( p => this.api.register(p, 'patient'))
               .then(p => {
-                  this.$['eidOthersChoicesNotif'].classList.remove('notification');
+                  this.shadowRoot.querySelector('#eidOthersChoicesNotif') ? this.shadowRoot.querySelector('#eidOthersChoicesNotif').classList.remove('notification') : null
                   return p;
               })
               .then(p =>{
@@ -293,7 +293,7 @@ class HtAutoReadEidOpening extends TkLocalizerMixin(PolymerElement) {
       this.api.patient().newInstance(this.user,pat)
           .then(p =>this.api.patient().createPatientWithUser(this.user,p))
           .then(p =>{
-              this.$['eidOthersChoicesNotif'].classList.remove('notification')
+              this.shadowRoot.querySelector('#eidOthersChoicesNotif') ? this.shadowRoot.querySelector('#eidOthersChoicesNotif').classList.remove('notification') : null
               location.replace(location.href.replace(/(.+?)#.*/, `$1#/pat/${p.id}`))
           })
   }

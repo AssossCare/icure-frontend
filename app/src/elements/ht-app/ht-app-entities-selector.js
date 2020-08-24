@@ -107,7 +107,7 @@ class HtAppEntitiesSelector extends TkLocalizerMixin(PolymerElement) {
               console.log(ent)
               this.set("entities", ent)
           })
-          .finally(()=> this.entities && this.entities.length > 1 ? this.$['accountSelectorDialog'].open() : null )
+          .finally(()=> this.entities && this.entities.length > 1 ? this.shadowRoot.querySelector('#accountSelectorDialog') ? this.shadowRoot.querySelector('#accountSelectorDialog').open() : null : null )
   }
 
   _redirectToSelectedEntity(){
@@ -119,7 +119,7 @@ class HtAppEntitiesSelector extends TkLocalizerMixin(PolymerElement) {
   }
 
   close() {
-      this.$['accountSelectorDialog'].close()
+      this.shadowRoot.querySelector('#accountSelectorDialog') ? this.shadowRoot.querySelector('#accountSelectorDialog').close() : null
   }
 }
 

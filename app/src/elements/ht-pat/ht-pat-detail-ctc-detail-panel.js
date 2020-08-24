@@ -1604,8 +1604,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _resetPatient() {
         this.proseEditorLinkingLetterTemplateAlreadyApplied = false
         this.dispatchEvent(new CustomEvent("reset-patient", {composed: true, bubbles: true, detail: {}}))
-
-        // this.$['prose-editor-dialog-linking-letter'].close()
     }
 
     _servicesFilter() {
@@ -1921,7 +1919,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     addOther() {
         this.set('showAddFormsContainer', false)
-        // this.$['add-form-dialog'].open();
         this.dispatchEvent(new CustomEvent("add-other", {composed: true, bubbles: true}))
     }
 
@@ -2306,9 +2303,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     loadTemplate() {
-        this.$['load-template-dialog'].open()
+        this.shadowRoot.querySelector('#load-template-dialog') ? this.shadowRoot.querySelector('#load-template-dialog').open() : null
         this.$['load-template-dialog'].filterValue = "  "
-        this.$['load-template-dialog'].refresh()
+        this.shadowRoot.querySelector('#load-template-dialog') ? this.shadowRoot.querySelector('#load-template-dialog').refresh() : null
         window.setTimeout(() => {
             this.$['load-template-dialog'].filterValue = ""
         }, 1000)
@@ -2507,7 +2504,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     _openTemplateDescriptionDialog() {
-        this.$['template-description-dialog'].open()
+        this.shadowRoot.querySelector('#template-description-dialog') ? this.shadowRoot.querySelector('#template-description-dialog').open() : null
     }
 
     printSubForm(e) {
@@ -2877,7 +2874,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             !printed && this.api.triggerFileDownload(pdfFileContent, "application/pdf", this.localize('rep', this.language) + '-' + this.user.healthcarePartyId + "-" + +new Date() + ".pdf")
         ).finally(() => {
             this.busySpinner = false
-            this.$['prose-editor-dialog'].close()
+            this.shadowRoot.querySelector('#prose-editor-dialog') ? this.shadowRoot.querySelector('#prose-editor-dialog').close() : null
             this._closeReportMenu()
         })
     }
@@ -4268,7 +4265,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             target: this.api.moment(e.detail.value),
         }
 
-        this.$['confirmDateChangeDialog'].open()
+        this.shadowRoot.querySelector('#confirmDateChangeDialog') ? this.shadowRoot.querySelector('#confirmDateChangeDialog').open() : null
     }
 
     _cancelDateChange() {
@@ -4302,13 +4299,15 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             .then(x => hcpAndPatData = x)
             .catch(e => {
             })
-            .finally(() => this.$['new-msg'].open({
-                dataFromPatDetail: {
-                    patient: _.get(this, "patient", false),
-                    hcpAndPatData: hcpAndPatData || false,
-                    documentId: documentId
-                }
-            }))
+            .finally(() =>
+                this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open({
+                    dataFromPatDetail: {
+                        patient: _.get(this, "patient", false),
+                        hcpAndPatData: hcpAndPatData || false,
+                        documentId: documentId
+                    }
+                }) : null
+            )
 
     }
 
@@ -4448,7 +4447,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     newReport(e) {
         this.editedReportDataProvider = e.detail.dataProvider
-        this.$['prose-editor-dialog'].open()
+        this.shadowRoot.querySelector('#prose-editor-dialog') ? this.shadowRoot.querySelector('#prose-editor-dialog').open() : null
         const prose = this.root.querySelector("#prose-editor")
 
         const globalVars = [{
@@ -4788,8 +4787,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set("editLabelAndTransactionData.label", serviceLabel)
         this.set("editLabelAndTransactionData.transactionCode", transactionCode)
 
-        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open()
-
+        return this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').open() : null
     }
 
     _saveLabelAndTransactionDialog() {
@@ -4808,7 +4806,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
         return !_.size(ctc) ||
         !_.trim(docId) ||
-        !_.size(documentSvc) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
+        !_.size(documentSvc) ? Promise.resolve(
+            this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+        ) : Promise.resolve()
             .then(() => {
 
                 if(isEhboxMessage) {
@@ -4835,8 +4835,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
             })
             .then(()=>this._saveContactAndRefreshContacts(ctc))
-            .finally(()=>this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
-
+            .finally(() =>
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            )
     }
 
     _linkServicesAndEs(e) {
@@ -4901,8 +4902,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set("editLabelAndTransactionData.label", serviceLabel)
         this.set("editLabelAndTransactionData.transactionCode", transactionCode)
 
-        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open();
-
+        return this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').open() : null
     }
 
     _saveLabelAndTransactionDialogService() {
@@ -4915,7 +4915,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
         const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
-        return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
+        return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve(
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            ) : Promise.resolve()
             .then(() => {
 
                 ctc.descr = newLabel
@@ -4927,7 +4929,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
             })
             .then(()=>this._saveContactAndRefreshContacts(ctc))
-            .finally(()=>this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
+            .finally(() =>
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            )
 
     }
 
@@ -4941,7 +4945,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             ctc: ctc,
             docId: docId,
             svcIds: svcIds.split(",")
-        }) || true) && this.$['deleteServiceDialog'] && this.$['deleteServiceDialog'].open()
+        }) || true) && this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').open() : null
 
     }
 
@@ -4950,12 +4954,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         const promResolve = Promise.resolve()
         const targetCtc = _.get(this, "_deleteServicesData.ctc", {})
 
-        return !_.size(_.get(this, "_deleteServicesData", {})) || !_.trim(_.get(targetCtc, "id")) || !_.size(this._deleteServicesData.svcIds) ? this.$['deleteServiceDialog'].close() : promResolve
+        return !_.size(_.get(this, "_deleteServicesData", {})) || !_.trim(_.get(targetCtc, "id")) || !_.size(this._deleteServicesData.svcIds) ? this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').close() : null : promResolve
             .then(() => _.assign(targetCtc, {services: _.filter(_.get(targetCtc, "services", []), svc => _.get(this, "_deleteServicesData.svcIds", []).indexOf(svc.id) === -1)}))
             .then(() => _.assign(targetCtc, {subContacts: _.map(_.get(targetCtc, "subContacts", []), subCtc => _.assign(subCtc, {services: _.filter(_.get(subCtc, "services", []), svc => _.get(this, "_deleteServicesData.svcIds", []).indexOf(svc.serviceId) === -1)}))}))
             .then(() => _.assign(targetCtc, {subContacts: _.filter(_.get(targetCtc, "subContacts", []), subCtc => _.size(_.get(subCtc, "services", [])))}))
             .then(() => !_.size(_.get(targetCtc, "services", [])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
-            .finally(() => this.$['deleteServiceDialog'].close())
+            .finally(() =>
+                this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').close() : null
+            )
 
     }
 

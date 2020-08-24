@@ -278,7 +278,7 @@ class HtPatPatientWillDialog extends TkLocalizerMixin(mixinBehaviors([IronResiza
 
   open(patientWillServices) {
       this.set("patientWillServices", patientWillServices);
-      this.$['patientWillDialog'].open();
+      this.shadowRoot.querySelector('#patientWillDialog') ? this.shadowRoot.querySelector('#patientWillDialog').open() : null
       this.getResultingPatientWill();
 
       this.set("patientWillFormItems",
@@ -382,7 +382,7 @@ class HtPatPatientWillDialog extends TkLocalizerMixin(mixinBehaviors([IronResiza
           console.log(itm.svc);
           this._sendServiceChanged(itm.svc);
       })
-      this.$['patientWillDialog'].close();
+      this.shadowRoot.querySelector('#patientWillDialog') ? this.shadowRoot.querySelector('#patientWillDialog').close() : null
   }
 
   _sendServiceChanged(svc) {
@@ -394,7 +394,7 @@ class HtPatPatientWillDialog extends TkLocalizerMixin(mixinBehaviors([IronResiza
   }
 
   close() {
-      this.$['patientWillDialog'].close();
+      this.shadowRoot.querySelector('#patientWillDialog') ? this.shadowRoot.querySelector('#patientWillDialog').close() : null
   }
 }
 customElements.define(HtPatPatientWillDialog.is, HtPatPatientWillDialog);

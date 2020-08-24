@@ -126,7 +126,7 @@ class HtHcpAdminCard extends TkLocalizerMixin(PolymerElement) {
               this.set('dataProvider', this.hcpDataProvider(this.hcp, '', this.hcp && this.hcp.id,codes));
               this.set("hcpMap", _.cloneDeep(this.hcp));
               if (!this.root.activeElement) {
-                  this.$['dynamic-form'].loadDataMap();
+                  this.shadowRoot.querySelector('#dynamic-form') ? this.shadowRoot.querySelector('#dynamic-form').loadDataMap() : null
               } else {
                   this.$[this.root.activeElement.id].loadDataMap();
               }

@@ -2400,7 +2400,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
             this.set("manualEncoding.typeInput", 0)
 
-            this.$['nmclGrid'].clearCache()
+            this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
         })
     }
 
@@ -2716,15 +2716,14 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                                 .then(invoice => this.api.invoice().createInvoice(invoice, prefix))
                                 .then(invoice => this.api.register(invoice, 'invoice'))
                                 .then(invoice => {
-                                    this.$['nmclGrid'].clearCache()
+                                    this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                     console.log(this.selectedInvoice)
                                     this.api.invoice().findBy(this.user.healthcarePartyId, this.patient)
                                         .then(invoices => invoices.map(i => this.api.register(i, 'invoice')))
                                         .then(invoices => {
                                             this.set('invoices', _.orderBy(invoices, ['invoiceDate'], ['desc']))
                                             this.set('selectedInvoiceIndex', _.findIndex(this.invoices, i => i.invoicingCodes.some(c => c.id.includes(icId))))
-                                            this.$['nmclGrid'].clearCache()
-
+                                            this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                             return invoice
                                         })
                                 })
@@ -2747,7 +2746,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                                     })
                                 }
                                 const registered = this.api.register(invoice, 'invoice')
-                                this.$['nmclGrid'].clearCache()
+                                this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                 this.updateGui(registered)
                                 return registered
                             })
@@ -2915,7 +2914,6 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                             this.set(`selectedInvoice.invoicingCodes.${idx}.valid`, true)
                             this.set(`selectedInvoice.invoicingCodes.${idx}.override3rdPayerCode`, c.justification)
 
-                            //this.$['nmclGrid'].clearCache()
                         })
                         this.calculateTotalOfInvoice()
                         console.log(this.selectedInvoice)
@@ -3035,7 +3033,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     ).then(x => {
                         this.calculateTotalOfInvoice()
                         this.updateGui(invoice)
-                        this.$['nmclGrid'].clearCache()
+                        this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                     })
 
                     return invoice
@@ -3061,7 +3059,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             this.set('selectedInvoice.paid', Number(this.selectedInvoice.invoicingCodes.reduce((tot, c) => tot + (_.get(this.selectedInvoice, 'sentMediumType', 'paper') !== "efact" ? (Number(c.reimbursement) || 0) : 0) + (Number(c.patientIntervention) || 0) + (Number(c.doctorSupplement) || 0), 0).toFixed(2)))
             this.set('selectedInvoice.paymentType', "cash")
         }
-        this.$['paymentCheckDialog'].open()
+        this.shadowRoot.querySelector('#paymentCheckDialog') ? this.shadowRoot.querySelector('#paymentCheckDialog').open() : null
     }
 
     _confirmPayment() {
@@ -3131,7 +3129,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
             this.set('activeNmclItem.totalAmount', Number(totalAmount).toFixed(2).replace(/\.?0*$/, ''))
             this.set('selectedInvoice.invoicingCodes.' + codeIdx, this.activeNmclItem)
-            this.$['nmclGrid'].clearCache()
+            this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
             this.calculateTotalOfInvoice()
             this.selectedInvoiceChanged()
         }
@@ -3755,20 +3753,19 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                                 .then(invoice => this.api.invoice().createInvoice(invoice, prefix))
                                 .then(invoice => this.api.register(invoice, 'invoice'))
                                 .then(invoice => {
-                                    this.$['nmclGrid'].clearCache()
+                                    this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                     this.api.invoice().findBy(this.user.healthcarePartyId, this.patient)
                                         .then(invoices => invoices.map(i => this.api.register(i, 'invoice')))
                                         .then(invoices => {
                                             this.set('invoices', _.orderBy(invoices, ['invoiceDate'], ['desc']))
                                             this.set('selectedInvoiceIndex', _.findIndex(this.invoices, i => i.id === invoice.id))
-                                            this.$['nmclGrid'].clearCache()
-
+                                            this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                             return invoice
                                         })
                                 })
                         } else {
                             const registered = this.api.register(invoice, 'invoice')
-                            this.$['nmclGrid'].clearCache()
+                            this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                             this.calculateTotalOfInvoice()
 
                             this.updateGui(registered)
@@ -3799,7 +3796,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                                 })
                             ).then(x => {
                                 this.set("selectedInvoice.invoicingCodes", this.selectedInvoice.invoicingCodes.map(x => x))
-                                this.$['nmclGrid'].clearCache()
+                                this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                                 this.calculateTotalOfInvoice()
                                 this.updateGui(invoice)
                             })
@@ -3925,16 +3922,16 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
     }
 
     _showManualEncodingDialog() {
-        this.$['eidDialog'].close()
-        this.$['manualEncodingDialog'].open()
+        this.shadowRoot.querySelector('#eidDialog') ? this.shadowRoot.querySelector('#eidDialog').close() : null
+        this.shadowRoot.querySelector('#manualEncodingDialog') ? this.shadowRoot.querySelector('#manualEncodingDialog').close() : null
     }
 
     _closeEidDialog() {
-        this.$['eidDialog'].close()
+        this.shadowRoot.querySelector('#eidDialog') ? this.shadowRoot.querySelector('#eidDialog').close() : null
     }
 
     _closeManualEncodingDialog() {
-        this.$['manualEncodingDialog'].close()
+        this.shadowRoot.querySelector('#manualEncodingDialog') ? this.shadowRoot.querySelector('#manualEncodingDialog').close() : null
     }
 
     _confirmManualEncodingDialog() {
@@ -3964,7 +3961,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     typeInput: 4
                 })
 
-                this.$['manualEncodingDialog'].close()
+                this.shadowRoot.querySelector('#manualEncodingDialog') ? this.shadowRoot.querySelector('#manualEncodingDialog').close() : null
             })
     }
 
@@ -4939,7 +4936,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 let invoiceList = _.cloneDeep(this.invoices)
                 _.remove(invoiceList, this.selectedInvoice)
                 this.set("invoices", invoiceList)
-                this.$['nmclGrid'].clearCache()
+                this.shadowRoot.querySelector('#nmclGrid') ? this.shadowRoot.querySelector('#nmclGrid').clearCache() : null
                 this.set('selectedInvoiceIndex', this.invoices.indexOf(_.head(_.get(this, 'invoices', []))))
                 this.set('selectedInvoice', _.head(_.get(this, 'invoices', [])))
             }

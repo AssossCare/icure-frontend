@@ -503,7 +503,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   open() {
-      this.$.dialog.open()
+      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').open() : null
       this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
           this.set('selectedContactForPrescription', ctc)
           this._refreshDrugsToBePrescribed()
@@ -569,8 +569,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       this.set('_printErrorDetails', rid)
       this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
 
-      this.$.loading.close();
-      setTimeout(() => this.$.confirmRevoke.open(),10) // dialog doesn't open a second time without setTimeout
+      this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+      this.shadowRoot.querySelector('#confirmRevoke') ? setTimeout(() => this.shadowRoot.querySelector('#confirmRevoke').open(), 10) : null
   }
 
   _revokeRID(rid) {
@@ -600,8 +600,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                               this.set('_printErrorDetails', error)
                               this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
 
-                              this.$.loading.close();
-                              setTimeout(() => this.$.tryAgainRevoke.open(),10) // dialog doesn't open a second time without setTimeout
+                              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                              this.shadowRoot.querySelector('#tryAgainRevoke') ?  setTimeout(() => this.shadowRoot.querySelector('#tryAgainRevoke').open(), 10) : null
                           })
                   )
               }
@@ -614,8 +614,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               }
               this.set('_printErrorDetails', "")
               this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
-              this.$.loading.close();
-              setTimeout(() => this.$.confirmNoRecipe.open(),10) // dialog doesn't open a second time without setTimeout
+              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+              this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').close(), 10) : null
           }
       } else {
           // not a recipe
@@ -727,11 +727,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   _isDrugAlreadyPrescribed(s) {
-      return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
+      return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
   }
 
   _isDrugNotPrescribed(s) {
-      return s && s.tags && s.tags.find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && !s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
+      return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && !s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
   }
 
   _drugsAlreadyPrescribed() {
@@ -791,7 +791,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
   }
 
   _importKeychain() { // open keychain importation window
-      this.$.prescriptionDialog.close()
+      this.shadowRoot.querySelector('#prescriptionDialog') ? this.shadowRoot.querySelector('#prescriptionDialog').close() : null
       this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'import-keychain'}}))
   }
 
@@ -847,8 +847,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           console.log("nothing to print")
           return
       }
-      this.$.confirmNoRecipe.close()
-      this.$.loading.open();
+      this.shadowRoot.querySelector('#confirmNoRecipe') ? this.shadowRoot.querySelector('#confirmNoRecipe').close() : null
+      this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').open() : null
       const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
       const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
       const element = this.root.querySelector("#barCode");
@@ -877,9 +877,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               .catch(error=>{
                   this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
                   this.set('_printErrorDetails', error)
-
-                  this.$.loading.close();
-                  setTimeout(() => this.$.confirmNoRecipe.open(),10) // dialog doesn't open a second time without setTimeout
+                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                  this.shadowRoot.querySelector('#confirmNoRecipe') ?  setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
                   throw "ERROR_WHILE_RECIPE"
               })
               .then(()=>{
@@ -888,7 +887,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               .then(()=>{
                   toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
                   this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
-                  this.$.loading.close();
+                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
               })
               .catch(error=>{
                   if(error !== "ERROR_WHILE_RECIPE") {
@@ -903,8 +902,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               this.set('_printError', this.localize('no_ehe_con', "You have no ehealth session.", this.language))
           }
           this.set('_printErrorDetails', "")
-          this.$.loading.close();
-          setTimeout(() => this.$.confirmNoRecipe.open(),10) // dialog doesn't open a second time without setTimeout
+          this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+          this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
       }
   } // print end
 

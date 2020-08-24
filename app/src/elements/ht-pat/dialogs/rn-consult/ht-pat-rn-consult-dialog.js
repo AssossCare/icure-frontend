@@ -671,7 +671,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                   birthDate: _.get(this.patient, 'dateOfBirth', null),
                   tolerance: null
               })
-              this.$['rnConsultDialog'].open()
+              this.shadowRoot.querySelector('#rnConsultDialog') ? this.shadowRoot.querySelector('#rnConsultDialog').open() : null
               ;(_.get(this.patient, 'ssin', null) || (_.get(this.patient, 'firstName', null) && _.get(this.patient, 'dateOfBirth', null))) ? this._consultRn() : null
       })
   }
@@ -681,7 +681,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
       this.set('rnConsultResult', {})
       this.set('selectedPersonData', {})
       this.set('tabs', 0)
-      this.$['rnConsultDialog'].close()
+      this.shadowRoot.querySelector('#rnConsultDialog') ? this.shadowRoot.querySelector('#rnConsultDialog').close() : null
   }
 
   _consultRn(){
@@ -755,7 +755,6 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
       if(_.get(e, 'currentTarget.dataset.item', null)){
           const selected = JSON.parse(_.get(e, 'currentTarget.dataset.item', null))
           this.set('selectedPersonData', selected);
-          //this.$['htPatHubTransactionViewer'].open(this,  selected, this._getHubTransactionMessage( selected));
       }
   }
 
@@ -832,7 +831,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _sendNotification(){
-      this.$['htPatRnConsultNotification']._sendNotification()
+      this.shadowRoot.querySelector('#htPatRnConsultNotification') ? this.shadowRoot.querySelector('#htPatRnConsultNotification')._sendNotification() : null
   }
 
   _notificationSuccess(e){

@@ -507,7 +507,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _searchOnIngredientsChanged() {
-      let grid = this.$['entities-list'];
+      let grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null;
       // Force bypass cache, we just checked / unchecked ingredient box
       if(grid && grid.drugsCache) { grid.drugsCache = null; grid.drugsCacheUpperSearchIndex = 0; grid.clearCache();}
   }
@@ -522,7 +522,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
       this.set('compound','')
       this.set('compoundPrescriptionText', '')
 
-      this.$['dialog'].open()
+      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').open() : null
 
       this.medications.map(m => {
           const letter = ((m && m.codes && m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0,1)
@@ -535,7 +535,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   ready() {
       super.ready()
 
-      let grid = this.$['entities-list'];
+      let grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null;
 
       grid.lastParams = null; //Used to prevent double calls
       grid.size = 0;
@@ -627,7 +627,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
 
   medicationTypeChanged(name) {
      if(this.medicationType === 'substanceProduct' || this.medicationType === 'medicinalProduct')  {
-         let grid = this.$['entities-list'];
+         let grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null;
          grid.clearCache()
      }
   }
@@ -645,7 +645,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addCnkDci(e) {
-      const grid = this.$['entities-list'];
+      const grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null;
       let med = null
       if(this.medicationType == 'substanceProduct') {
           med = grid.latestResults.find(d => this._id(d) === e.target.id)
@@ -775,7 +775,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
 
           //Trigger cheapAlternativeSearch
           if (this.selectedMedicationFromList && !this.selectedMedicationFromList.cheap) {
-              const grid = this.$['entities-list']
+              const grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
               grid.clearCache();
           }
 
@@ -836,7 +836,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
                   this.selectedMedicationFromList = null
                   this.cheapAlternativeSearchSeed = null
 
-                  const grid = this.$['entities-list']
+                  const grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
                   grid.drugsCache = null;
                   grid.drugsCacheUpperSearchIndex = 0;
                   grid.clearCache();
@@ -851,7 +851,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   skip() {
       this.set('filterValue','')
       this.set('medicationType','medicinalProduct')
-      this.$['entities-list'].clearCache();
+      this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
   }
 
   close() {
@@ -859,7 +859,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
           this._setFrequencyList()
       }
       this.set('filterValue','')
-      this.$['entities-list'].clearCache();
+      this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
       this.set('customFrequencyTable', false)
       this.set('flagTableFrequency', false)
   }
@@ -869,7 +869,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
           this.selectMedicationFromList(item);
           this.set('filterValue','')
           this.set('medicationType','medicinalProduct')
-          this.$['entities-list'].clearCache();
+          this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
       }
   }
 
@@ -890,7 +890,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _selectedMedicationFromListChanged(item) {
-      var grid = this.$['entities-list'];
+      var grid =  this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
       grid.selectedItems = item ? [item] : [];
   }
 
@@ -1055,7 +1055,7 @@ class MedicationsSelectionDialog extends TkLocalizerMixin(PolymerElement) {
                           )
                       )
                   }
-                  this.$['checkintol'].open()
+                  this.shadowRoot.querySelector('#checkintol') ? this.shadowRoot.querySelector('#checkintol').open() : null
               } else {
                   console.log("no intol")
                   return thenfun()
