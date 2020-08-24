@@ -427,13 +427,13 @@ class HtPatAdminTeamDialog extends TkLocalizerMixin(PolymerElement) {
                   })
                   this.set('he', {activeElements: this.activeHealthElements.filter(he => _.get(he, 'responsible', "") === this.selectedHcp.id), inactiveElements: this.inactiveHealthElements.filter(he => _.get(he, 'responsible', "") === this.selectedHcp.id)})
                   this.set('selectedHcpSpeciality', this.specialityList.find(spec => spec.code === this.selectedHcp.speciality) ? this.specialityList.find(spec => spec.code === this.selectedHcp.speciality) : this.specialityList.find(spec => spec.id === this.selectedHcp.speciality))
-                  this.$['hcpInfoDialog'].open()
+                  this.shadowRoot.querySelector('#hcpInfoDialog') ? this.shadowRoot.querySelector('#hcpInfoDialog').open() : null
               })
       }
   }
   _closeDialogs(){
       this.set('selectedHcpSpeciality', {})
-      this.$['hcpInfoDialog'].close()
+      this.shadowRoot.querySelector('#hcpInfoDialog') ? this.shadowRoot.querySelector('#hcpInfoDialog').close() : null
   }
   _getCode(he){
       return _.get(_.get(he, 'codes', []).find(c => c.type === "ICPC"), 'code', null)

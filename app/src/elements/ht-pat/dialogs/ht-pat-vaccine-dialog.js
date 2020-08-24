@@ -212,7 +212,7 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   }
 
   _openDialog(){
-      this.$['vaccineDialog'].open();
+      this.shadowRoot.querySelector('#vaccineDialog') ? this.shadowRoot.querySelector('#vaccineDialog').open() : null
       this.set("isLoading", true);
       this.api.contact().filterServices(this.contacts, s => s.label==='Actes')
           .then(services => {
@@ -239,8 +239,9 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                   this._detect(this._schemas.fr) ? this._schemas.fr :
                   this._detect(this._schemas.nl) ? this._schemas.nl : null;
               this._setSchema(schema);
-              this.$['schema'].initialize(this._schema, this._services);
-              this.$['history'].initialize(this._schemas, this._services);
+
+              this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').initialize(this._schema, this._services) : null
+              this.shadowRoot.querySelector('#history') ? this.shadowRoot.querySelector('#history').initialize(this._schema, this._services) : null
               this.set("detected", schema);
               this.set("isLoading", false);
           })
@@ -263,29 +264,27 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   _createSchema(e) {
       if (e.currentTarget.id == "fr") {
           this.$['schema'].region = "fr";
-          this.$['schema'].initialize(this._schemas.fr, this._services);
+          this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').initialize(this._schemas.fr, this._services) : null
       }
       if (e.currentTarget.id == "nl") {
           this.$['schema'].region = "nl";
-          this.$['schema'].initialize(this._schemas.nl, this._services);
+          this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').initialize(this._schemas.nl, this._services) : null
       }
       this.set("hasSchema", true);
   }
 
   _onUpdateService(e) {
       console.log("onUpdateService2");
-      if (e.detail.source != "history" )
-          this.$['history'].updateService(e.detail);
-      else this.$['schema'].updateService(e.detail);
+      _.get(e, 'detail.source', null) != "history" ? this.shadowRoot.querySelector('#history') ? this.shadowRoot.querySelector('#history').updateService(e.detail) : null : this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').updateService(e.detail) : null
   }
 
   _onSelectVaccines(e) {
       console.log("onSelectVaccines2");
-      this.$['vaccineSelectionDialog'].openDialog(e.detail);
+      this.shadowRoot.querySelector('#vaccineSelectionDialog') ? this.shadowRoot.querySelector('#vaccineSelectionDialog').openDialog(e.detail) : null
   }
 
   _onVaccinesSelected(e) {
-      this.$['schema'].selectVaccines(e.detail);
+      this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').selectVaccines(e.detail) : null
   }
 
   _onOpenAction(e) {
@@ -293,7 +292,7 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   }
 
   _createMedicationSchema() {
-      this.$['schema'].createMedicationSchema(this);
+      this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').createMedicationSchema(this) : null
   }
 
   _refresh() {
@@ -302,7 +301,7 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   }
 
   _clean(){
-      this.$['schema'].clean()
+      this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').clean() : null
       this.dispatchEvent(new CustomEvent("refresh-patient",{bubbles:true,composed:true}));
       this._close();
   }
@@ -311,17 +310,17 @@ class HtPatVaccineDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableB
       this._setSchema(this._schema != this._schemas.fr ?
           this._schemas.fr :
           this._schemas.nl);
-      this.$['schema'].toggle(this._schema, this._services);
+      this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').toggle(this._schema, this._services) : null
       this.dispatchEvent(new CustomEvent("refresh-patient",{bubbles:true,composed:true}));
   }
 
   _close(){
-      this.$['vaccineDialog'].close()
+      this.shadowRoot.querySelector('#vaccineDialog') ? this.shadowRoot.querySelector('#vaccineDialog').close() : null
   }
 
   _print() {
       const name = this.tabs < 1 ? "history.pdf" : "vaccine.pdf";
-      const html = this.tabs < 1 ? this.$['history'].print() : this.$['schema'].print();
+      const html = this.tabs < 1 ? this.shadowRoot.querySelector('#history') ? this.shadowRoot.querySelector('#history').print() : null : this.shadowRoot.querySelector('#schema') ? this.shadowRoot.querySelector('#schema').print() : null
       this.api.pdfReport(this._getHtml(html), {type:"unknown",completionEvent:"pdfDoneRenderingEvent"})
       .then(printedPdf => !printedPdf.printed && this.api.triggerFileDownload(printedPdf.pdf, "application/pdf", name, this.$['vaccineDialog']))
       .finally(() => {

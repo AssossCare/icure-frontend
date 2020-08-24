@@ -594,7 +594,7 @@ class HtPatPreventiveActsDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
   }
 
   _openDialog(healthElementId) {
-      this.$['preventiveActsDialog'].open();
+      this.shadowRoot.querySelector('#preventiveActsDialog') ? this.shadowRoot.querySelector('#preventiveActsDialog').open() : null
       this.set("title", this.localize("proc_list", "proc_list"));
       this.set("isLoading", true);
       this.filterLinks = healthElementId;
@@ -639,14 +639,14 @@ class HtPatPreventiveActsDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
       this._setClass("#detail-content", "hidden", !service);
 
       this.set("selectedItem", service)
-      this.$['detail'].show(service);
+      this.shadowRoot.querySelector('#detail') ? this.shadowRoot.querySelector('#detail').show(service) : null
   }
 
   _select(e) {
       console.log("_select");
       this._next = this.services.find(s => "id_" + s.id === e.currentTarget.id);
       if (this.changed) {
-          this.$['detail'].save();
+          this.shadowRoot.querySelector('#detail') ? this.shadowRoot.querySelector('#detail').save() : null
           return;
       }
       this._show(this._next);
@@ -655,7 +655,7 @@ class HtPatPreventiveActsDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
 
   _save(e) {
       this._next = this.selectedItem;
-      this.$['detail'].save();
+      this.shadowRoot.querySelector('#detail') ? this.shadowRoot.querySelector('#detail').save() : null
   }
 
   close() {
@@ -663,7 +663,7 @@ class HtPatPreventiveActsDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
   }
 
   _closeDialogs(){
-      this.$['preventiveActsDialog'].close();
+      this.shadowRoot.querySelector('#preventiveActsDialog') ? this.shadowRoot.querySelector('#preventiveActsDialog').close() : null
   }
 
   _formatDate(svc) {
@@ -829,7 +829,7 @@ class HtPatPreventiveActsDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
   }
 
   delete() {
-      this.$['detail'].delete();
+      this.shadowRoot.querySelector('#detail') ? this.shadowRoot.querySelector('#detail').delete() : null
   }
 }
 customElements.define(HtPatPreventiveActsDialog.is, HtPatPreventiveActsDialog);

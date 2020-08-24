@@ -908,7 +908,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
         //     })
         //         .then(pats => pats.rows.map(pat => this._pushDistinctPatient("listPat", pat)))
         // }
-        this.$['doc-list'].clearCache()
+        this.shadowRoot.querySelector('#doc-list') ? this.shadowRoot.querySelector('#doc-list').clearCache() : null
         this._updateView()
     }
 
@@ -1144,7 +1144,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
 
     _reset() {
         this.set("docList", [])
-        this.$['doc-list'].clearCache()
+        this.shadowRoot.querySelector('#doc-list') ? this.shadowRoot.querySelector('#doc-list').clearCache() : null
         this.set('files', [])
         this.set("selectedDoc", null)
     }
@@ -1251,13 +1251,13 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
             })
             .then((tempHcp) => this.set('hcpId', tempHcp.id))
 
-        this.$['upload-dialog'].open()
+        this.shadowRoot.querySelector('#upload-dialog') ? this.shadowRoot.querySelector('#upload-dialog').open() : null
         this._hasElectronChanged()
     }
 
     close() {
         this._reset()
-        this.$['upload-dialog'].close()
+        this.shadowRoot.querySelector('#upload-dialog') ? this.shadowRoot.querySelector('#upload-dialog').close() : null
         this.set('_bodyOverlay', false)
     }
 

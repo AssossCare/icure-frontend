@@ -859,7 +859,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _deleteConfirmation() {
-				this.$['delete-confirmation-dialog'].open();
+        this.shadowRoot.querySelector('#delete-confirmation-dialog') ? this.shadowRoot.querySelector('#delete-confirmation-dialog').open() : null
     }
 
 

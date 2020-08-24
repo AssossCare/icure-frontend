@@ -449,7 +449,7 @@ class HtPatVaccineSchema extends TkLocalizerMixin(mixinBehaviors([IronResizableB
       this._detail = e.detail;
       const periods = this._getPeriods(this._detail);
       if (periods.length > 0) {
-          this.$['confirmDate'].open();
+          this.shadowRoot.querySelector('#confirmDate') ? this.shadowRoot.querySelector('#confirmDate').open() : null
           return;
       }
       this._dispatchEvent("update-service", e.detail);
@@ -470,7 +470,7 @@ class HtPatVaccineSchema extends TkLocalizerMixin(mixinBehaviors([IronResizableB
       row.services = row.services.sort((a, b) => this.api.moment(a.valueDate).isBefore(this.api.moment(b.valueDate)) ? -1 : 0);
 
       this._dispatchEvent("update-service", this._detail);
-      this.$['confirmDate'].close();
+      this.shadowRoot.querySelector('#confirmDate') ? this.shadowRoot.querySelector('#confirmDate').close() : null
   }
 
   _dispatchEvent(code, detail) {

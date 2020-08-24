@@ -816,7 +816,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
               this.set('errorList', [])
               this.set('availableConsentType', _.get(this, 'consentType', []).filter(csType => !this.consentList.find(csl => csl.csType === csType.type)))
               this.set('selectedConsentType', _.head(_.get(this, 'availableConsentType', [])))
-              this.$['consentDetailDialog'].open();
+              this.shadowRoot.querySelector('#consentDetailDialog') ? this.shadowRoot.querySelector('#consentDetailDialog').open() : null
           })
   }
 
@@ -862,7 +862,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   }
 
   _closeDialogs(){
-      this.$['consentDetailDialog'].close();
+      this.shadowRoot.querySelector('#consentDetailDialog') ? this.shadowRoot.querySelector('#consentDetailDialog').close() : null
   }
 
 
@@ -981,13 +981,13 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
   _revokeEidDialog(){
       this.set('eidCardNumber', null)
       this.set('isiCardNumber', null)
-      _.get(this.patient, 'dateOfBirth', null) && moment().diff(moment(_.get(this.patient, 'dateOfBirth', null), "YYYYMMDD"), 'months', true) > 3 ? this.$['readEidInfoDialog'].open() : this._revoke()
+      _.get(this.patient, 'dateOfBirth', null) && moment().diff(moment(_.get(this.patient, 'dateOfBirth', null), "YYYYMMDD"), 'months', true) > 3 ? this.shadowRoot.querySelector('#readEidInfoDialog') ? this.shadowRoot.querySelector('#readEidInfoDialog').open() : null : this._revoke()
   }
 
   _closeEidDialog(){
       this.set('eidCardNumber', null)
       this.set('isiCardNumber', null)
-      this.$['readEidInfoDialog'].close()
+      this.shadowRoot.querySelector('#readEidInfoDialog') ? this.shadowRoot.querySelector('#readEidInfoDialog').close() : null
   }
 
   _revoke(){
@@ -1024,7 +1024,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
               }
           })
           .finally(() => {
-              this.$['readEidInfoDialog'].close()
+              this.shadowRoot.querySelector('#readEidInfoDialog') ? this.shadowRoot.querySelector('#readEidInfoDialog').close() : null
               this.set("isLoading",false)
           }) : this.set("isLoading",false)
   }
@@ -1062,7 +1062,7 @@ class HtPatConsentDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
               this.dispatchEvent(new CustomEvent('refresh-consent',{detail: {}, bubbles:true, composed:true}))
           })
           .finally(() =>{
-              this.$['readEidInfoDialog'].close()
+              this.shadowRoot.querySelector('#readEidInfoDialog') ? this.shadowRoot.querySelector('#readEidInfoDialog').close() : null
               this.set("isLoading",false)
           }) : this.set("isLoading",false)
   }

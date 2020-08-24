@@ -1306,7 +1306,7 @@ class HtPatCarePathDetailDialog extends TkLocalizerMixin(mixinBehaviors([IronRes
            this.set('availablePackageOfProcedure', _.get(this, 'packageOfProcedure', []).filter(pack => _.get(pack, 'qualifiedLinks.relatedCode', null).find(code => code === _.get(_.get(this, 'selectedHealthElement.codes', []).find(c => c.type === "BE-THESAURUS"), 'id', null))))
            this.set('contactsOfCarePath',this.contacts.filter(c => c.healthElements && c.healthElements.find(eh => eh.codes && eh.codes.find(c => c.type === "BE-THESAURUS" && c.id === _.get(this.selectedCarePathType, 'linkedHe.id', null)))).map(c => _.merge(c, {contactYear: this.api.moment(c.openingDate).format('YYYY')})))
            this._initializeChartsDataProvider()
-           this.$['care-path-detail'].open()
+           this.shadowRoot.querySelector('#care-path-detail') ? this.shadowRoot.querySelector('#care-path-detail').open() : null
        })
   }
 

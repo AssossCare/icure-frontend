@@ -1772,7 +1772,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
           this.set('selectedDocumentToBeImported.transaction', transaction)
           this.set('selectedDocumentToBeImported.document', document)
           this.set('selectedDocumentToBeImported.docType', docType)
-          this.$['importHubDocumentDialog'].open()
+          this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').open() : null
       }
   }
 
@@ -1783,7 +1783,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
           title: null,
           docType: null
       })
-      this.$['importHubDocumentDialog'].close()
+      this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
   }
 
   _importDocumentIntoPatient(){
@@ -1859,7 +1859,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                           title: null,
                           docType: null
                       })
-                      this.$['importHubDocumentDialog'].close()
+                      this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
                   }).catch(e => {
                       console.log("---error upload attachment---", e)
                   })

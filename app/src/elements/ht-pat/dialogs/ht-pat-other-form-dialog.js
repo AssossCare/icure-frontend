@@ -226,7 +226,7 @@ class HtPatOtherFormDialog extends TkLocalizerMixin(PolymerElement){
                 this._initFormsDataProvider()
             })
 
-        this.$['otherFormDialog'].open()
+        this.shadowRoot.querySelector('#otherFormDialog') ? this.shadowRoot.querySelector('#otherFormDialog').open() : null
     }
 
     _initFormsDataProvider() {
@@ -239,12 +239,12 @@ class HtPatOtherFormDialog extends TkLocalizerMixin(PolymerElement){
                 )
                 this.set('availableForm', _.sortBy(_.get(this, 'formList', []).filter(form => _.get(form, 'disabled', false) !== true && _.get(form,"tags",[]).find(t => t.type==="care.topaz.customLanguage" && t.code===this.language)), ['group.name']))
                 this.set('formFilter', null)
-                this.$['formList'].clearCache()
+                this.shadowRoot.querySelector('#formList') ? this.shadowRoot.querySelector('#formList').clearCache() : null
             })
     }
 
     _closeDialogs() {
-        this.$['otherFormDialog'].close()
+        this.shadowRoot.querySelector('#otherFormDialog') ? this.shadowRoot.querySelector('#otherFormDialog').close() : null
     }
 
     _localizeSpeciality(specialityCode) {

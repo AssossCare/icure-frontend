@@ -400,7 +400,7 @@ iron-pages{
         //     .finally(() => {
         //         this.set('tabs', 0)
         //         this._initializeMedicalHouseContract()
-        this.$['subscriptionRecoveryDialog'].open()
+        this.shadowRoot.querySelector('#subscriptionRecoveryDialog') ? this.shadowRoot.querySelector('#subscriptionRecoveryDialog').open() : null
         //     })
     }
 
@@ -415,7 +415,7 @@ iron-pages{
     }
 
     _closeDialog(){
-        this.$['subscriptionRecoveryDialog'].close()
+        this.shadowRoot.querySelector('#subscriptionRecoveryDialog') ? this.shadowRoot.querySelector('#subscriptionRecoveryDialog').close() : null
     }
 
     _sendRecovery(){

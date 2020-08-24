@@ -2243,7 +2243,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           // See if user exists first, based on email address
           this.api.user().getUserByEmail(this.email).then(existingUserDto => {
               if (existingUserDto && existingUserDto.id) {
-                  this.$['ht-invite-hcp-user-already-exists'].open()
+                  this.shadowRoot.querySelector('#ht-invite-hcp-user-already-exists') ? this.shadowRoot.querySelector('#ht-invite-hcp-user-already-exists').open() : null
               } else {
                   this.createAndInviteUser();
               }
@@ -2302,7 +2302,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _logList() {
-      this.$['ht-access-log'].open()
+      this.shadowRoot.querySelector('#ht-access-log') ? this.shadowRoot.querySelector('#ht-access-log').open() : null
   }
 
   _patientChanged(e) {
@@ -2347,7 +2347,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               "type": "database"
           }).then(usr => {
               this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
-              this.$['ht-invite-hcp-link'].open()
+              this.shadowRoot.querySelector('#ht-invite-hcp-link') ? this.shadowRoot.querySelector('#ht-invite-hcp-link').open() : null
           })
       })
   }
@@ -2355,7 +2355,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _redirectToAnotherEntity(e){
       if(e.detail){
           this.set("isMultiUser",false)
-          this.$['ht-app-account-selector'].close()
+          this.shadowRoot.querySelector('#ht-app-account-selector') ? this.shadowRoot.querySelector('#ht-app-account-selector').close() : null
           this.login(e, {credentials: e.detail})
       }
   }
@@ -2446,8 +2446,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                           token: applicationTokens.MIKRONO ? true : false,
                           error: false
                       })
-
-                      this.$['mikronoErrorDialog'].open()
+                      this.shadowRoot.querySelector('#mikronoErrorDialog') ? this.shadowRoot.querySelector('#mikronoErrorDialog').open() : null
                   }
               }
 
@@ -2542,7 +2541,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _checkForUpdateMessage(){
       if(this.user){
-          this.$['htUpdateDialog']._openDialog()
+          this.shadowRoot.querySelector('#htUpdateDialog') ? this.shadowRoot.querySelector('#htUpdateDialog')._openDialog() : null
       }
   }
 

@@ -444,7 +444,7 @@ class HtAdminManagementUsers extends TkLocalizerMixin(PolymerElement) {
 
                   hcpartyType ? this.set('selectedHcpSpecialityIdx', hcpartyType && this.hcpartyList && this.hcpartyList.findIndex(hcp => hcp.id === hcpartyType.id) || null) : null
 
-                  this.$['userInformationDialog'].open()
+                  this.shadowRoot.querySelector('#userInformationDialog') ? this.shadowRoot.querySelector('#userInformationDialog').open() : null
                   this.set('tabs',tab>0?tab:0)
               })
       }
@@ -467,7 +467,7 @@ class HtAdminManagementUsers extends TkLocalizerMixin(PolymerElement) {
           .then(users => {
               this.set('listOfActiveUsers', users.rows.filter(usr => usr.status === 'ACTIVE'))
               this.set('listOfInactiveUsers', users.rows.filter(usr => usr.status === 'DISABLED'))
-              this.$['userInformationDialog'].close()
+              this.shadowRoot.querySelector('#userInformationDialog') ? this.shadowRoot.querySelector('#userInformationDialog').close() : null
           })
   }
 

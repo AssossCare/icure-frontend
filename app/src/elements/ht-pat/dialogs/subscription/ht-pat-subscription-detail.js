@@ -595,7 +595,7 @@ class HtPatSubscriptionDetail extends TkLocalizerMixin(PolymerElement) {
                 })
                 this.set('tabs', 0)
                 this._initializeMedicalHouseContract()
-                this.$['subscriptionDetailDialog'].open()
+                this.shadowRoot.querySelector('#subscriptionDetailDialog') ? this.shadowRoot.querySelector('#subscriptionDetailDialog').open() : null
             })
     }
 
@@ -640,7 +640,7 @@ class HtPatSubscriptionDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _closeDialog() {
-        this.$['subscriptionDetailDialog'].close()
+        this.shadowRoot.querySelector('#subscriptionDetailDialog') ? this.shadowRoot.querySelector('#subscriptionDetailDialog').close() : null
     }
 
     _sendSubscription() {
