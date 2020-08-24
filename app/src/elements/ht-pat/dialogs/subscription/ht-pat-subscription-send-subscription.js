@@ -471,7 +471,7 @@ class HtPatSubscriptionSendSubscription extends TkLocalizerMixin(PolymerElement)
         console.log(this.sendSubscriptionRequest)
         this._checkBeforeSend()
         if(!_.size(_.get(this, 'requestError', []))){
-            this.api.fhc().MhmController().sendSubscriptionUsingPOST(
+            this.api.fhc().Mhm().sendSubscriptionUsingPOST(
                 _.get(this.api, "keystoreId", null),
                 _.get(this.api, "tokenIdMH", null),
                 _.get(this.api, "credentials.ehpassword", null),
@@ -483,12 +483,12 @@ class HtPatSubscriptionSendSubscription extends TkLocalizerMixin(PolymerElement)
                 _.parseInt(this.api.moment(_.get(this.sendSubscriptionRequest, 'startSubscriptionDate', null)).format('YYYYMMDD')),
                 _.get(this.sendSubscriptionRequest, 'isTrial', false).toString(),
                 _.get(this.sendSubscriptionRequest, 'signatureType', null),
-                _.get(this.sendSubscriptionRequest, 'isRecovery', false),
-                _.get(this.sendSubscriptionRequest, 'isTestForNotify', false),
                 this.cleanData( _.get(this.sendSubscriptionRequest, 'patientSsin', null)),
                 !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIo', null)) : null,
-                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null)
-                .then(mhmResponse => {
+                !_.get(this.sendSubscriptionRequest, 'patientSsin', null) ? this.cleanData(_.get(this.sendSubscriptionRequest, 'patientIoMembership', null)) : null,
+                _.get(this.sendSubscriptionRequest, 'isRecovery', false),
+                _.get(this.sendSubscriptionRequest, 'isTestForNotify', false)
+            ).then(mhmResponse => {
                     console.log(mhmResponse)
                     this.set('sendSubscriptionResponse', mhmResponse)
                     if(_.get(mhmResponse, 'reference', null)) {

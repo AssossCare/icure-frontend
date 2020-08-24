@@ -574,14 +574,20 @@ class HtPatRnConsultHistoryDialog extends TkLocalizerMixin(mixinBehaviors([IronR
 
   _openDialog(){
       this.set("rnSearch.ssin", _.get(this.historyResult, 'ssin.value', {}))
-      ;(_.get(this.historyResult, 'ssin.replaces', null) ? this.api.fhc().RnConsultController().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.historyResult, 'ssin.value', null).replace(/\D+/g, ''))) : Promise.resolve({}))
-          .then(response => {
-              console.log(response)
-              this.set('personResult', {person: [_.get(response, 'person', {})]})
-              this.set("selectedPersonData", _.get(response, 'person', null))
-          }).finally(() => {
-              this.$['rnConsultHistoryDialog'].open()
-          })
+      ;(_.get(this.historyResult, 'ssin.replaces', null) ?
+          this.api.fhc().RnConsult().identifyUsingGET(
+              _.get(this, 'api.keystoreId', null),
+              _.get(this, 'api.tokenId', null),
+              _.get(this, 'api.credentials.ehpassword', null),
+              _.trim(_.get(this.historyResult, 'ssin.value', null).replace(/\D+/g, ''))
+          ) : Promise.resolve({})
+      ).then(response => {
+          console.log(response)
+          this.set('personResult', {person: [_.get(response, 'person', {})]})
+          this.set("selectedPersonData", _.get(response, 'person', null))
+      }).finally(() => {
+          this.$['rnConsultHistoryDialog'].open()
+      })
   }
 
   _closeRnConsultDialog(){

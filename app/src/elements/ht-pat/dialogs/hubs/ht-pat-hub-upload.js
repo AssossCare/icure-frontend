@@ -236,7 +236,7 @@ class HtPatHubUpload extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
               })
 
 
-              this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.lastName, this.hcp.firstName, this.hcp.nihii, this.hcp.ssin, '6000',
+              this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.lastName, this.hcp.firstName, this.hcp.nihii, this.hcp.ssin, '6000',
                   this.hubId, this.patient.ssin, output, this.hubPackageId, this.hubApplication
               )
           })

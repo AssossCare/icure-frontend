@@ -2839,19 +2839,45 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 .then(hcp =>
                     (this.selectedInvoice.careProviderType === 'traineesupervised' || this.selectedInvoice.careProviderType === 'trainee') && hcp.supervisorId ?
                         this.api.hcparty().getHealthcareParty(hcp.supervisorId).then(sup =>
-                            this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
-                                this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
-                                hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
-                                this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,
-                                this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification, sup.ssin, sup.nihii, sup.firstName, sup.lastName
+                            this.api.fhc().Tarification().consultTarificationUsingPOST(
+                                this.patient.ssin,
+                                this.api.tokenId,
+                                this.api.keystoreId,
+                                this.api.credentials.ehpassword,
+                                hcp.firstName,
+                                hcp.lastName,
+                                hcp.nihii,
+                                hcp.ssin,
+                                this.selectedInvoice.invoiceDate,
+                                this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,
+                                this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification,
+                                sup.ssin,
+                                sup.nihii,
+                                sup.firstName,
+                                sup.lastName,
+                                this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code)
                             ).then(r => this.api.logMcn(r, this.user, this.selectedInvoice.id, "eTar", "consult")
                             ))
                         :
-                        this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
-                            this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
-                            hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
-                            this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,
-                            this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification
+                        this.api.fhc().Tarification().consultTarificationUsingPOST(
+                            this.patient.ssin,
+                            this.api.tokenId,
+                            this.api.keystoreId,
+                            this.api.credentials.ehpassword,
+                            hcp.firstName,
+                            hcp.lastName,
+                            hcp.nihii,
+                            hcp.ssin,
+                            this.selectedInvoice.invoiceDate,
+                            this.selectedInvoice.gnotionNihii === "" ? null : this.selectedInvoice.gnotionNihii,
+                            this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            this.selectedInvoice.invoicingCodes.filter(ic => ic.code !== "109955").map(ic => ic.code)
                         ).then(r => this.api.logMcn(r, this.user, this.selectedInvoice.id, "eTar", "consult"))
                 )
                 .then(r => {
@@ -3975,36 +4001,57 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
     }
 
     sendEattest() {
-        this.set('isLoadingJustif', true)
+        this.set('isLoadingJustif',true)
 
-        const eattest = {codes: []}
-        this.selectedInvoice.invoicingCodes.map(code => {
+        const eattest = { codes : [] };
+        this.selectedInvoice.invoicingCodes.map(code =>{
             let newCode = {
-                date: code.dateCode,
-                doctorSupplement: Number(code.doctorSupplement),
-                fee: Number(code.totalAmount),
-                quantity: code.units + (code.code === "109955" ? 6 : 0),
-                reglementarySupplement: Number(code.patientIntervention),
+                date : code.dateCode,
+                doctorSupplement : Number(code.doctorSupplement),
+                fee : Number(code.totalAmount),
+                quantity : code.units+(code.code==="109955" ? 6: 0),
+                reglementarySupplement : Number(code.patientIntervention),
                 reimbursement: Number(code.reimbursement),
-                riziv: code.code
+                riziv : code.code,
+                norm : 0
             }
 
-            if (this.selectedInvoice.idDocument && this.selectedInvoice.idDocument.eIdDocumentSupportType && this.selectedInvoice.idDocument.SupportSerialNumber && this.selectedInvoice.idDocument.reasonManualEncoding) {
-                newCode.cardReading = {
-                    date: null,
-                    inputType: this.manualEncoding.typeInput,
-                    manualInputReason: this.selectedInvoice.idDocument.reasonManualEncoding,
+            if(code.derogationMaxNumber){
+                newCode.justification = _.padStart(code.derogationMaxNumber,2,"0") || "00";
+            }
+
+            if(code.side){
+                newCode.side = code.side;
+            }
+
+            if(code.transplantationCode){
+                newCode.transplantationCode = code.transplantationCode;
+            }
+
+            if(this.selectedInvoice.idDocument && this.selectedInvoice.idDocument.eIdDocumentSupportType && this.selectedInvoice.idDocument.SupportSerialNumber && this.selectedInvoice.idDocument.timeReadingEIdDocument && this.selectedInvoice.idDocument.geteIdDocumentSupportType){
+                const date = moment(this.selectedInvoice.idDocument.timeReadingEIdDocument)
+                newCode.cardReading={
+                    date:date.format("YYYY-MM-DD"),
+                    inputType: this.selectedInvoice.idDocument.geteIdDocumentSupportType,
                     mediaType: this.selectedInvoice.idDocument.eIdDocumentSupportType,
                     serial: this.selectedInvoice.idDocument.SupportSerialNumber,
-                    time: null,
+                    time:date.format("HH:mm:ss"),
+                }
+
+                if(this.selectedInvoice.idDocument.reasonManualEncoding){
+                    newCode.cardReading.manualInputReason= this.selectedInvoice.idDocument.reasonManualEncoding
+                }
+
+                if(this.selectedInvoice.idDocument.reasonUsingVignette){
+                    newCode.cardReading.vignetteReason=this.selectedInvoice.idDocument.reasonUsingVignette;
                 }
             }
 
-            if (code.relatedCode) {
-                newCode.relativeService = code.relatedCode
+            if(code.relatedCode){
+                newCode.relativeService = code.relatedCode;
             }
-            if (this.selectedInvoice.gnotionNihii) {
-                newCode.gmdManager = {
+            if(this.selectedInvoice.gnotionNihii){
+                newCode.gmdManager={
                     cdHcParty: "persphysician",
                     firstName: null,
                     idHcParty: this.selectedInvoice.gnotionNihii,
@@ -4013,8 +4060,8 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 }
             }
 
-            if (this.selectedInvoice.internshipNihii && this.selectedInvoice.careProviderType === "trainee") {
-                newCode.internship = {
+            if(this.selectedInvoice.internshipNihii && this.selectedInvoice.careProviderType==="trainee"){
+                newCode.internship={
                     cdHcParty: "persphysician",
                     firstName: null,
                     idHcParty: this.selectedInvoice.internshipNihii,
@@ -4023,28 +4070,18 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 }
             }
 
-            if (this.selectedInvoice.internshipNihii && this.selectedInvoice.careProviderType === "traineesupervised") {
-                newCode.internship = {
-                    cdHcParty: "persphysician",
-                    firstName: null,
-                    idHcParty: this.hcp.nihii,
-                    idSsin: null,
-                    lastName: null
-                }
-            }
 
-
-            if (this.selectedInvoice.encounterLocationNorm && this.selectedInvoice.encounterLocationNorm !== "" && this.selectedInvoice.encounterLocationNorm !== 0) {
-                newCode.location = {
+            if(this.selectedInvoice.encounterLocationNorm && this.selectedInvoice.encounterLocationNorm!=="" && this.selectedInvoice.encounterLocationNorm!==0){
+                newCode.location={
                     cdHcParty: this.locationType[this.selectedInvoice.encounterLocationNorm].cdHcParty,
                     firstName: null,
-                    idHcParty: _.padEnd(this.selectedInvoice.encounterLocationNihii, 11, '0'),
+                    idHcParty: _.padEnd(this.selectedInvoice.encounterLocationNihii,11, '0'),
                     idSsin: null,
                     lastName: null
                 }
             }
 
-            if (this.prescriberType[code.prescriberNorm].prescriber) {
+            if(code.prescriberNorm && this.prescriberType[code.prescriberNorm].prescriber){
                 newCode.requestor = {
                     date: code.prescriptionDate,
                     hcp: {
@@ -4055,66 +4092,90 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                         lastName: null
                     }
                 }
+
+                newCode.requestorNorm=code.prescriberNorm;
             }
 
             eattest.codes.push(newCode)
         })
 
-        console.log("invoice", eattest)
+        console.log("invoice",eattest)
         console.log("envoie")
 
-        const sentDate = moment().format("YYYYMMDD")
 
-        ;(this.selectedInvoice.careProviderType === "traineesupervised" ?
-            this.api.hcparty().findBySsinOrNihii(this.selectedInvoice.internshipNihii, 0, 0, 1000, 'asc') : Promise.resolve({rows: []}))
-            .then(hcps => this.api.fhc().Eattestcontroller().sendAttestWithResponseUsingPOST(this.patient.ssin, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, (hcps.rows && hcps.rows.length && hcps.rows[0].nihii) || this.hcp.nihii, (hcps.rows && hcps.rows.length && hcps.rows[0].ssin) || this.hcp.ssin, (hcps.rows && hcps.rows.length && hcps.rows[0].firstName) || this.hcp.firstName, (hcps.rows && hcps.rows.length && hcps.rows[0].lastName) || this.hcp.lastName, (hcps.rows && hcps.rows.length && hcps.rows[0].cbe) || this.hcp.cbe, this.patient.firstName, this.patient.lastName, this.patient.gender, eattest, sentDate))
-            .then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
-            .then(fhcEattest => {
-                if (fhcEattest.acknowledge.errors.length === 0 && fhcEattest.attest !== null) {
-                    this.set('selectedInvoice.thirdPartyReference', fhcEattest.invoicingNumber)
-                    this.set("selectedInvoice.sentDate", sentDate)
-                    fhcEattest.attest.codes.map(code => {
-                        const currentCode = this.selectedInvoice.invoicingCodes.find(i => i.code === code.riziv)
-                        currentCode.conventionAmount = code.fee
+        const sentDate=moment().format("YYYYMMDD")
+
+        this.api.fhc().Eattestv2().sendAttestWithResponseUsingPOST1(
+            _.get(this, 'patient.ssin', null),
+            _.get(this, 'api.keystoreId', null),
+            _.get(this, 'api.tokenId', null),
+            _.get(this, 'api.credentials.ehpassword', null),
+            _.get(this, 'hcp.nihii', null),
+            _.get(this, 'hcp.ssin', null),
+            _.get(this, 'hcp.firstName', null),
+            _.get(this, 'hcp.lastName', null),
+            _.get(this, 'supervisor.cbe', null) || _.get(this, 'hcp.cbe', null),
+            _.get(this, 'patient.firstName', null),
+            _.get(this, 'patient.lastName', null),
+            _.get(this, 'patient.gender', null),
+            _.get(this,"selectedInvoice.reason","")==="" || _.get(this,"selectedInvoice.reason","0000")==="0000"  ? null : _.padStart(_.get(this,"selectedInvoice.reason",""),4,'0') ,
+            sentDate,
+            _.get(this, 'supervisor.ssin', null),
+            _.get(this, 'supervisor.nihii', null),
+            _.get(this, 'supervisor.firstName', null),
+            _.get(this, 'supervisor.lastName', null),
+            null,
+            null,
+            null,
+            eattest
+        ).then(fhcEattest =>
+            this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify')
+        ).then(fhcEattest => {
+            if(fhcEattest.acknowledge.errors.length===0 && fhcEattest.attest!==null) {
+                this.set('selectedInvoice.thirdPartyReference', fhcEattest.invoicingNumber)
+                this.set("selectedInvoice.sentDate", sentDate)
+                fhcEattest.attest.codes.map(code =>{
+                    const currentCode = this.selectedInvoice.invoicingCodes.find(i => i.code===code.riziv)
+                    currentCode.conventionAmount=code.fee;
+                })
+                this.set("errorMessage", null)
+
+                Promise.all([
+                    this.api.receipticc.createReceipt({
+                        documentId: this.selectedInvoice.id,
+                        references: Object.values(fhcEattest.commonOutput),
+                        category: "eattest",
+                        subCategory:"kmehr"
+                    }),
+                    this.api.receipticc.createReceipt({
+                        documentId: this.selectedInvoice.id,
+                        references: Object.values(fhcEattest.commonOutput),
+                        category: "eattest",
+                        subCategory:"xades"
                     })
-                    this.set("errorMessage", null)
-
-                    Promise.all([
-                        this.api.receipticc.createReceipt({
-                            documentId: this.selectedInvoice.id,
-                            references: Object.values(fhcEattest.commonOutput),
-                            category: "eattest",
-                            subCategory: "kmehr"
-                        }),
-                        this.api.receipticc.createReceipt({
-                            documentId: this.selectedInvoice.id,
-                            references: Object.values(fhcEattest.commonOutput),
-                            category: "eattest",
-                            subCategory: "xades"
-                        })
-                    ])
-                        .then(([kmehr, xades]) => Promise.all([
-                            this.api.receipt().setReceiptAttachment(kmehr.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.kmehrMessage))))),
-                            this.api.receipt().setReceiptAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.xades)))))
-                        ]))
-                        .then(([kmehr, xades]) => {
-                            kmehr.id && this.set('selectedInvoice.receipts', _.assign(this.selectedInvoice.receipts || {}, {kmehr: kmehr.id}))
-                            xades.id && this.set('selectedInvoice.receipts', _.assign(this.selectedInvoice.receipts || {}, {xades: xades.id}))
-                        })
-                        .finally(() => this.eattest(this.selectedInvoice))
-                } else {
-                    let errorMsg = ""
-                    if (fhcEattest.acknowledge && fhcEattest.acknowledge.errors && fhcEattest.acknowledge.errors.length !== 0)
-                        fhcEattest.acknowledge.errors.map(error => {
-                            console.log("Error :", error)
-                            errorMsg += error.code + " " + (this.language === "fr" ? error.msgFr : error.msgNl) + ", "
-                        })
-                    else {
-                        errorMsg += "Error : pas de message d'erreur renvoyé."
-                    }
-                    this.set("errorMessage", errorMsg)
+                ])
+                    .then(([kmehr,xades]) => Promise.all([
+                        this.api.receipt().setAttachment(kmehr.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.kmehrMessage))))),
+                        this.api.receipt().setAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(fhcEattest.xades)))))
+                    ]))
+                    .then(([kmehr, xades]) => {
+                        kmehr.id && this.set('selectedInvoice.receipts', _.assign(this.selectedInvoice.receipts || {}, {kmehr: kmehr.id}))
+                        xades.id && this.set('selectedInvoice.receipts', _.assign(this.selectedInvoice.receipts || {}, {xades: xades.id}))
+                    })
+                    .finally(() => this.eattest(this.selectedInvoice))
+            } else {
+                let errorMsg="";
+                if(fhcEattest.acknowledge && fhcEattest.acknowledge.errors && fhcEattest.acknowledge.errors.length!==0)
+                    fhcEattest.acknowledge.errors.map(error => {
+                        console.log("Error :",error)
+                        errorMsg+=error.code+" "+(this.language==="fr" ? error.msgFr : error.msgNl)+", "
+                    })
+                else{
+                    errorMsg+="Error : pas de message d'erreur renvoyé."
                 }
-            }).finally(() => this.set('isLoadingJustif', false))
+                this.set("errorMessage",errorMsg)
+            }
+        }).finally(() => this.set('isLoadingJustif', false))
     }
 
     _ifEattestSaved(item) {
@@ -4557,14 +4618,70 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
         this.$["cancelDialog"].open()
     }
 
-    _cancelEattest() {
+    _cancelEattest(){
 
         this.$["cancelDialog"].close()
-
-        const reason = this.reason + ":" + (this.reasonOfCancel.find(reason => reason.id === this.reason).label[this.language])
-
-        const url = "https://docs.google.com/forms/d/e/1FAIpQLSfUoc69iwFaTeOteXOaFHEghIv8SHLV5eZwOFRS0FJxVjzObQ/viewform?usp=pp_url&entry.1429469566=" + this.hcp.lastName + "&entry.156031164=" + this.hcp.firstName + "&entry.1335787920=" + this.hcp.nihii + "&entry.1193011163=" + this.user.email + "&entry.1773887602=" + this.selectedInvoice.thirdPartyReference + "&entry.802032397=" + reason
-        window.open(url, "cancel")
+        this.set("isLoadingJustif",true)
+        const cancelDate=moment().format("YYYYMMDD")
+        this.api.fhc().Eattestv2().cancelAttestUsingDELETE(
+            _.get(this, 'patient.ssin', null),
+            _.get(this, 'api.keystoreId', null),
+            _.get(this, 'api.tokenId', null),
+            _.get(this, 'api.credentials.ehpassword', null),
+            _.get(this, 'hcp.nihii', null),
+            _.get(this, 'hcp.ssin', null),
+            _.get(this, 'hcp.firstName', null),
+            _.get(this, 'hcp.lastName', null),
+            _.get(this, 'supervisor.cbe', null) || _.get(this, 'hcp.cbe', null),
+            _.get(this, 'patient.firstName', null),
+            _.get(this, 'patient.lastName', null),
+            _.get(this, 'patient.gender', null),
+            _.get(this, 'selectedInvoice.thirdPartyReference', null),
+            _.get(this, 'reason', null),
+            cancelDate,
+            _.get(this, 'supervisor.ssin', null),
+            _.get(this, 'supervisor.nihii', null),
+            _.get(this, 'supervisor.firstName', null),
+            _.get(this, 'supervisor.lastName', null),
+        ).then(fhcEattest =>
+            this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify')
+        ).then(fhcEattest => {
+                if(_.get(fhcEattest,'acknowledge.errors',[]).length){
+                    let errorMsg="";
+                    if(fhcEattest.acknowledge && fhcEattest.acknowledge.errors && fhcEattest.acknowledge.errors.length!==0)
+                        fhcEattest.acknowledge.errors.map(error => {
+                            console.log("Error :",error)
+                            errorMsg+=error.code+" "+(this.language==="fr" ? error.msgFr : error.msgNl)+", "
+                        })
+                    else{
+                        errorMsg+="Error : pas de message d'erreur renvoyé."
+                    }
+                    this.set("errorMessage",errorMsg)
+                }else{
+                    this.set("selectedInvoice.cancelDate",cancelDate);
+                    this.set("selectedInvoice.cancelReason",this.reason);
+                    this.set("errorMessage", null)
+                    this.api.invoice().modifyInvoice(this.selectedInvoice)
+                        .then(invoice => this.api.register(invoice,'invoice'))
+                        .then(invoice => {
+                            this.api.tarification().getTarifications(new models.ListOfIdsDto({ids: invoice.invoicingCodes.map(tar => tar.tarificationId)})).then(nmcls =>
+                                nmcls.map(nmcl =>{
+                                    let sns = invoice.invoicingCodes.filter(n => n.tarificationId === nmcl.id) || null
+                                    if(sns && sns.length){
+                                        sns.map(sn =>{
+                                            sn.prescriberNeeded = nmcl.needsPrescriber
+                                            sn.isRelativePrestation = nmcl.hasRelatedCode
+                                        })
+                                    }
+                                })
+                            ).finally(() => {
+                                this.updateGui(invoice)
+                                this.set("isLoadingJustif",false)
+                            })
+                            console.log("saved:",invoice)
+                        })
+                }
+            })
     }
 
     _isSelectedInvoiceEattest() {
@@ -4585,7 +4702,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
 
     _getAdressesBookInfo() {
         this.set('isLoadingLocations', true)
-        this.api.fhc().Addressbookcontroller().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*' + this.searchOrgName + '*', this.locationType[this.selectedInvoice.encounterLocationNorm].location)
+        this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*' + this.searchOrgName + '*', this.locationType[this.selectedInvoice.encounterLocationNorm].location)
             .then(orgList => {
                 this.set('organisationList', orgList)
                 this.set('isLoadingLocations', false)
@@ -4730,7 +4847,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             null,
             this.patient.insurabilities.find(ins => moment(ins.startDate).isSameOrBefore(moment())),//OA
             this.genInsAFF,//AFF
-            true    // Bypass cache, force hit on fhc().Dmgcontroller().consultDmgUsingGET()
+            true    // Bypass cache, force hit on fhc().Dmg().consultDmgUsingGET()
         ).then(edmgResp => {
             this.set('isLoading', false)
             this.set('consultDmgResp', edmgResp)

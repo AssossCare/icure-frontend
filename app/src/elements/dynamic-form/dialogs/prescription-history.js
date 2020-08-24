@@ -483,7 +483,7 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
       const rid = e.currentTarget.dataset.rid;
       console.log("_update " + rid);
       if (!this.hcp) return;
-      this.api.fhc().Recipecontroller().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
+      this.api.fhc().Recipe().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
       .then(result => {
           console.log("updated: ", result)
       })
@@ -496,7 +496,7 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
       const rid = e.currentTarget.dataset.rid;
       console.log("_notify " + rid);
       if (!this.hcp) return;
-      this.api.fhc().Recipecontroller().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
+      this.api.fhc().Recipe().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
       .then(result => {
           console.log("notified: ", result)
       })
@@ -519,7 +519,7 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
           const content = this._getContent(prescription.service);
           content && (content.medicationValue.status = STATUS_SENT | STATUS_REVOKED);
       });
-      this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
+      this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
           .then(isDeleted => {
               console.log("revoke1", isDeleted)
               return isDeleted ? this.api.contact().modifyContactWithUser(this.user, contact)
@@ -553,7 +553,7 @@ class PrescriptionHistory extends TkLocalizerMixin(PolymerElement) {
 
   _getPrescriptionFromRecipe(e){
       if(_.get(e, 'currentTarget.dataset.rid', null)){
-          this.api.fhc().Recipecontroller().getPrescriptionMessageUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e, 'currentTarget.dataset.rid', null)).then( pr => {
+          this.api.fhc().Recipe().getPrescriptionMessageUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e, 'currentTarget.dataset.rid', null)).then( pr => {
               console.log(pr)
           })
       }

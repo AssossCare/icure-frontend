@@ -1308,7 +1308,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
   _getTrail(transaction){
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-              .then(hcp => this.api.fhc().Hubcontroller().getPatientAuditTrailUsingGET(
+              .then(hcp => this.api.fhc().Hub().getPatientAuditTrailUsingGET(
                       _.get(this, 'parent.hubEndPoint', null),
                       _.get(this, 'api.keystoreId', null),
                       _.get(this, 'api.tokenId', null),

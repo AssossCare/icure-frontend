@@ -581,7 +581,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   this._markDrugsAsNotSent(group.drugs)
               } else {
                   this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                      this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
+                      this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
                           .then(isDeleted => {
                               console.log("delete rid: ", isDeleted)
                               if(isDeleted) {
@@ -690,7 +690,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       let endlist = []
       if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Recipecontroller().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
+              this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
                   .then(presclist => {
                       presclist = presclist.reverse()
                       console.log("presclist", presclist)
@@ -860,7 +860,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
               Promise.all(
                   splitColumns.map(c =>
-                      this.api.fhc().Recipecontroller().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                      this.api.fhc().Recipe().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                           patient: _.omit(this.patient, ['personalStatus']),
                           hcp: hcp,
                           feedback: false,

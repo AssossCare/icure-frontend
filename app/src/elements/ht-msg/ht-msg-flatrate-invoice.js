@@ -3295,7 +3295,7 @@ class HtMsgFlatrateInvoice extends TkLocalizerMixin(PolymerElement) {
             ib.invoices = _.orderBy(invoices, ["destInsuranceCode", "insuranceCode", "invoiceNumber"], ["asc", "asc","asc"]); //1 per patient
 
             //end loop patients of OA
-            return this.api.fhc().Efactcontroller().makeFlatFileCoreUsingPOST(ib).then(flatRes => {
+            return this.api.fhc().Efact().makeFlatFileCoreUsingPOST(ib).then(flatRes => {
                 return {
                     io:_.get(this.flatRateInvoicingDataObject.iosData.filter(io => io.code === _.trim(_.get(OA, "code", ""))), "[0].id", ""),
                     file: flatRes.flatFile,

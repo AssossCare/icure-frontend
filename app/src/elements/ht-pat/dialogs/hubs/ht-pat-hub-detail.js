@@ -913,8 +913,25 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
               this.diaryNote.map(dn => {
                   prom = prom.then(listOfTransaction =>
-                      this.api.fhc().Hubcontroller().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.patient.ssin, dn.ids.find(id => id.s === 'LOCAL').sv, dn.ids.find(id => id.s === 'LOCAL').sl, dn.ids.find(id => id.s === 'LOCAL').value, this.hubPackageId, this.breakTheGlassReason)
-                          .then(tr => _.concat(listOfTransaction, _.assign(tr, {transaction: dn})))
+                      this.api.fhc().Hub().getTransactionMessageUsingGET(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(_.get(dn, 'ids', []).find(id => id.s === 'LOCAL'), 'sv', null),
+                          _.get(_.get(dn, 'ids', []).find(id => id.s === 'LOCAL'), 'sl', null),
+                          _.get(_.get(dn, 'ids', []).find(id => id.s === 'LOCAL'), 'value', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
+                      ).then(tr => _.concat(listOfTransaction, _.assign(tr, {transaction: dn})))
                   )
               })
 
@@ -1005,7 +1022,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   //                                         }
   //                                         reader.readAsText(output);
   //
-  //                                         return this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint,
+  //                                         return this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint,
   //                                             this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
   //                                             hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
   //                                             this.hubId,
@@ -1155,19 +1172,33 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       this.api.crypto()
                           .extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)
                           .then(secretForeignKeys => {
-                              return this.api.bekmehr().generateMedicationSchemeWithEncryptionSupport(patientDto.id, this.user.healthcarePartyId, "fr", versionNumber, {
-                                  secretForeignKeys: secretForeignKeys.extractedKeys,
-                                  recipient: hcp,
-                                  comment: "mycomment"
-                              }).then(output =>{
-                                  return this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(this.hubEndPoint,
-                                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                                      this.hubId,
-                                      this.patient.ssin,
-                                      output,
-                                      this.hubPackageId, this.hubApplication
-                                  )}
+                              return this.api.bekmehr().generateMedicationSchemeWithEncryptionSupport(
+                                  _.get(patientDto, 'id', null),
+                                  _.get(this, 'user.healthcarePartyId', null),
+                                  _.get(this, 'language', 'fr'),
+                                  versionNumber,
+                                  {
+                                      secretForeignKeys: _.get(secretForeignKeys, 'extractedKeys', null),
+                                      recipient: hcp,
+                                      comment: "mycomment"
+                                  }
+                              ).then(output =>
+                                  this.api.fhc().Hub().putTransactionSetUsingPOST(
+                                      _.get(this, 'hubEndPoint', null),
+                                      _.get(this, 'api.keystoreId', null),
+                                      _.get(this, 'api.tokenId', null),
+                                      _.get(this, 'api.credentials.ehpassword', null),
+                                      _.get(hcp, 'lastName', null),
+                                      _.get(hcp, 'firstName', null),
+                                      _.get(hcp, 'nihii', null),
+                                      _.get(hcp, 'ssin', null),
+                                      _.get(this, 'hcpZip', null),
+                                      _.get(this, 'hubId', null),
+                                      _.get(this, 'patient.ssin', null),
+                                      _.get(this, 'hubPackageId', null),
+                                      _.get(this, 'hubApplication', null),
+                                      output
+                                  )
                               )
                           })
                   ))
@@ -1319,9 +1350,18 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getHcpConsentUsingGET(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.nihii, hcp.lastName, hcp.firstName, hcp.ssin, this.hcpZip)
+                  this.api.fhc().Hub().getHcpConsentUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      null
+                  )
               ).then(consentResp => {
                       if (consentResp) {
                           return consentResp;
@@ -1385,24 +1425,26 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   // hcpLastName: string, hcpFirstName: string, hcpNihii: string, hcpSsin: string, hcpZip: string,
   // patientSsin: string, hubPackageId?: string): Promise<models.Patient | any>;
   getHubPatient(){
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getPatientUsingGET(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin)
+                  this.api.fhc().Hub().getPatientUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      null
+                  )
               ).then(patResp => {
-                      if (patResp) {
-                          return patResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return patResp ? patResp : null
+              })
+      : Promise.resolve(null)
   }
 
   _runPutHubPatient(){
@@ -1415,46 +1457,54 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   // patientSsin: string, firstName: string, lastName: string, gender: string, dateOfBirth: number,
   // hubPackageId?: string): Promise<models.Patient | any>;
   putHubPatient(){
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().putPatientUsingPOST(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin, this.patient.firstName, this.patient.lastName, this.patient.gender, this.patient.dateOfBirth)
+                  this.api.fhc().Hub().putPatientUsingPOST(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'patient.firstName', null),
+                      _.get(this, 'patient.lastName', null),
+                      _.get(this, 'patient.gender', null),
+                      _.get(this, 'patient.dateOfBirth', null),
+                      null
+                  )
               ).then(patResp => {
-                      if (patResp) {
-                          return patResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return patResp ? patResp : null
+              }) :
+       Promise.resolve(null)
   }
 
   _getHubPatientConsent(){
       //getPatientConsentUsingGET1: function (endpoint, keystoreId, tokenId, passPhrase, hcpNihii, hcpSsin, hcpZip, patientSsin)
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, this.api.keystoreId,
-                      this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin)
+                  this.api.fhc().Hub().getPatientConsentUsingGET1(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      null
+                  )
               ).then(consentResp => {
-                      if (consentResp) {
-                          return consentResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return consentResp ? consentResp : null
+              }) :
+      Promise.resolve(null)
   }
 
   _runRegisterHubPatient(){
@@ -1470,27 +1520,27 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // patientSsin: string,
       // hubPackageId?: string,
       // patientEidCardNumber?: string): Promise<any | Boolean>;
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Hubcontroller().registerPatientConsentUsingPOST1(this.hubEndPoint,
-                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                  hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                  this.patient.ssin, this.hubPackageId, this.eidCardNumber)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null)).then(hcp =>
+              this.api.fhc().Hub().registerPatientConsentUsingPOST1(
+                  _.get(this, 'hubEndPoint', null),
+                  _.get(this, 'api.keystoreId', null),
+                  _.get(this, 'api.tokenId',  null),
+                  _.get(this, 'api.credentials.ehpassword', null),
+                  _.get(hcp, 'lastName', null),
+                  _.get(hcp, 'firstName', null),
+                  _.get(hcp, 'nihii', null),
+                  _.get(hcp, 'ssin', null),
+                  _.get(this, 'hcpZip', null),
+                  _.get(this, 'patient.ssin', null),
+                  _.get(this, 'hubPackageId', null),
+                  _.get(this, 'eidCardNumber', null),
+                  _.get(this, 'isiCardNumber', null)
+              )
           ).then(consResp => {
-                  if(consResp.therapeuticLink) {
-                      //this.showPatientTherLinkState()
-                      return(consResp.therapeuticLink)
-                  }
-                  else{
-                      return Promise.resolve(null)
-                  }
-              }
-          )
-      }
-      else
-      {
-          return Promise.resolve(null)
-      }
+              return _.get(consResp, 'therapeuticLink', null) ? _.get(consResp, 'therapeuticLink', null): Promise.resolve(null)
+          }) :
+      Promise.resolve(null)
   }
 
   _getHubTherapeuticLinks(){
@@ -1503,25 +1553,26 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // therLinkType?: string,
       // from?: Date,
       // to?: Date): Promise<Array<models.TherapeuticLink> | any>;
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+           this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTherapeuticLinksUsingGET(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName,  hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin,
-                      this.hubPackageId)
+                  this.api.fhc().Hub().getTherapeuticLinksUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'hubPackageId', null)
+                  )
               ).then(tlResp => {
-                      if (tlResp) {
-                          return tlResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return tlResp ? tlResp : null
+              })
+      : Promise.resolve(null)
   }
 
   _registerHubPatientTherapeuticLink(){
@@ -1532,29 +1583,26 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // patientSsin: string,
       // hubPackageId?: string,
       // patientEidCardNumber?: string): Promise<any | Boolean>;
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Hubcontroller().registerTherapeuticLinkUsingPOST(this.hubEndPoint,
-                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                  hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                  this.patient.ssin,
-                  this.hubPackageId,
-                  this.eidCardNumber)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null)).then(hcp =>
+              this.api.fhc().Hub().registerTherapeuticLinkUsingPOST(
+                  _.get(this, 'hubEndPoint', null),
+                  _.get(this, 'api.keystoreId', null),
+                  _.get(this, 'api.tokenId', null),
+                  _.get(this, 'api.credentials.ehpassword', null),
+                  _.get(hcp, 'lastName', null),
+                  _.get(hcp, 'firstName', null),
+                  _.get(hcp, 'nihii', null),
+                  _.get(hcp, 'ssin', null),
+                  _.get(this, 'hcpZip', null),
+                  _.get(this, 'patient.ssin', null),
+                  _.get(this, 'hubPackageId', null),
+                  _.get(this, 'eidCardNumber', null),
+                  _.get(this, 'isiCardNumber', null)
+              )
           ).then(therLinkResp => {
-                  if(therLinkResp.therapeuticLink) {
-                      //this.showPatientTherLinkState()
-                      return(therLinkResp.therapeuticLink)
-                  }
-                  else{
-                      return Promise.resolve(null)
-                  }
-              }
-          )
-      }
-      else
-      {
-          return Promise.resolve(null)
-      }
+                  return _.get(therLinkResp, 'therapeuticLink', null) ? _.get(therLinkResp, 'therapeuticLink', null) : Promise.resolve(null)
+          }) : Promise.resolve(null)
   }
 
   _revokeHubPatientTherapeuticLink(){
@@ -1562,10 +1610,11 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   _getMostRecentSumehr(){
-      if(!this.hubId){this._initHub()}
+      !_.get(this, 'hubId', null) ? this._initHub() : null
+
       return this._getHubTransactionList().then(tranResp => {
-          this.set('hubTransactionList', tranResp);
-          return tranResp ? _.first(_.orderBy(tranResp.filter(r => r.cds.find(cd => cd.value === "sumehr")), ['date', 'time'], ['desc', 'desc'])) : {};
+          this.set('hubTransactionList', tranResp)
+          return tranResp ? _.first(_.orderBy(tranResp.filter(r => _.get(r, 'cds', []).find(cd => cd.value === "sumehr")), ['date', 'time'], ['desc', 'desc'])) : {}
       })
   }
 
@@ -1579,77 +1628,77 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // from?: number, to?: number,
       // authorNihii?: string, authorSsin?:  string,
       // isGlobal?: boolean, breakTheGlassReason?: string): Promise<Array<models.TransactionSummary> | any>;
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionsListUsingGET(
-                      this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin,
-                      this.hubPackageId,
-                      null, null,
-                      null, null,
-                      true, this.breakTheGlassReason
+                  this.api.fhc().Hub().getTransactionsListUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(this, 'hubPackageId', null),
+                      null,
+                      null,
+                      null,
+                      null,
+                      true,
+                      _.get(this, 'breakTheGlassReason', null)
                   )
               ).then(tranResp => {
-                      if (tranResp) {
-                          this.set('hubTransactionList', tranResp);
-                          this.addSearchField();
-                          this.filterChanged();
-                          this.set('diaryNote', tranResp.filter(tr => tr.desc === "diarynote"));
-                          this.set('listOfDocumentCategory', _.uniq(_.flatMap(tranResp.map(trn => this._transactionCDHcParties(trn, false)))).map(type => {
-                              return {
-                                  code: type,
-                                  label: {
-                                      fr: this.localize('cd-hcp-'+type, type, this.language),
-                                      nl: this.localize('cd-hcp-'+type, type, this.language),
-                                      en: this.localize('cd-hcp-'+type, type, this.language)
-                                  }
+                  if (tranResp) {
+                      this.set('hubTransactionList', tranResp);
+                      this.addSearchField();
+                      this.filterChanged();
+                      this.set('diaryNote', tranResp.filter(tr => tr.desc === "diarynote"));
+                      this.set('listOfDocumentCategory', _.uniq(_.flatMap(tranResp.map(trn => this._transactionCDHcParties(trn, false)))).map(type => {
+                          return {
+                              code: type,
+                              label: {
+                                  fr: this.localize('cd-hcp-'+type, type, this.language),
+                                  nl: this.localize('cd-hcp-'+type, type, this.language),
+                                  en: this.localize('cd-hcp-'+type, type, this.language)
                               }
-                          }))
-                          this.set('listOfDocumentCategory', _.orderBy(_.get(this, 'listOfDocumentCategory', []), ['label.'+this.language], ["asc"]))
-                          this.set('listOfAuthor', _.uniqBy(_.flatten(tranResp.map(tr => _.get(tr, 'author', [])).map(auth => _.get(auth, 'hcparties', []))).map(hcp => {
-                              return {
-                                      id: _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "ID-HCPARTY"), 'value', null) || _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "INSS"), 'value', null) || _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "LOCAL"), 'value', null),
-                                      name: _.get(hcp, "name", null),
-                                      firstName: _.get(hcp, "firstname", null),
-                                      familyName: _.get(hcp, "familyname", null),
-                                      nameHr: _.trim(_.get(hcp, "name", null))+" "+_.trim(_.get(hcp, "firstname", null))+" "+_.trim(_.get(hcp, "familyname", null))
-                                  }
-                          }), "id"))
-                          this.set('listOfAuthor', _.orderBy(_.get(this, 'listOfAuthor', []), ["nameHr"], ["asc"]))
-                          this.set('listOfDocumentType', _.compact(_.uniqBy(tranResp.map(tr => {
-                              return {
-                                  code: _.get(tr, 'desc', null),
-                                  label: {
-                                      fr: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language),
-                                      nl: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language),
-                                      en: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language)
-                                  }
+                          }
+                      }))
+                      this.set('listOfDocumentCategory', _.orderBy(_.get(this, 'listOfDocumentCategory', []), ['label.'+this.language], ["asc"]))
+                      this.set('listOfAuthor', _.uniqBy(_.flatten(tranResp.map(tr => _.get(tr, 'author', [])).map(auth => _.get(auth, 'hcparties', []))).map(hcp => {
+                          return {
+                                  id: _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "ID-HCPARTY"), 'value', null) || _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "INSS"), 'value', null) || _.get(_.get(hcp, 'ids', []).find(id => _.get(id, 's', null) === "LOCAL"), 'value', null),
+                                  name: _.get(hcp, "name", null),
+                                  firstName: _.get(hcp, "firstname", null),
+                                  familyName: _.get(hcp, "familyname", null),
+                                  nameHr: _.trim(_.get(hcp, "name", null))+" "+_.trim(_.get(hcp, "firstname", null))+" "+_.trim(_.get(hcp, "familyname", null))
                               }
+                      }), "id"))
+                      this.set('listOfAuthor', _.orderBy(_.get(this, 'listOfAuthor', []), ["nameHr"], ["asc"]))
+                      this.set('listOfDocumentType', _.compact(_.uniqBy(tranResp.map(tr => {
+                          return {
+                              code: _.get(tr, 'desc', null),
+                              label: {
+                                  fr: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language),
+                                  nl: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language),
+                                  en: this.localize('cd-transaction-'+_.get(tr, 'desc', null), _.get(tr, 'desc', null), this.language)
+                              }
+                          }
 
-                          }), 'code')))
-                          this.set('listOfDocumentType', _.orderBy(_.get(this, 'listOfDocumentType', []), ["label."+this.language], ["asc"]))
-                          this._getDiaryNote();
-                          return tranResp;
-                      } else {
-                          return null;
-                      }
+                      }), 'code')))
+                      this.set('listOfDocumentType', _.orderBy(_.get(this, 'listOfDocumentType', []), ["label."+this.language], ["asc"]))
+                      this._getDiaryNote();
+                      return tranResp;
+                  } else {
+                      return null;
                   }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+              }) : Promise.resolve(null)
   }
 
   _isTransactionSet(tr){
-      let cd = tr && tr.cds ? tr.cds.find(cd => cd.value.toLowerCase()==='gettransactionset') : null;
-      if(cd){
-          return true;
-      } else {
-          return false;
-      }
+      return !!_.get(tr, 'cds', []).find(cd => _.get(cd, 'value', null).toLowerCase() === 'gettransactionset')
   }
 
   _getHubTransaction(transaction){
@@ -1661,28 +1710,32 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // hubPackageId?: string, breakTheGlassReason?: string): Promise<string | any>;
       if(transaction && this._isTransactionSet(transaction)) {
           return this._getHubTransactionSet(transaction);
-      } else {
-          if (this.patient.ssin && this.api.tokenId && transaction) {
-              return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      }else{
+          return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+              this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
-                          this.api.tokenId, this.api.credentials.ehpassword,
-                          hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                          this.patient.ssin,
-                          transaction.ids.find(id => id.s === 'LOCAL').sv, transaction.ids.find(id => id.s === 'LOCAL').sl, transaction.ids.find(id => id.s === 'LOCAL').value,
-                          this.hubPackageId, this.breakTheGlassReason
+                      this.api.fhc().Hub().getTransactionUsingGET(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sv', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's',  null) === 'LOCAL'), 'value', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
-                          if (tranResp) {
-                              return tranResp;
-                          } else {
-                              return null;
-                          }
-                      }
-                  )
-          } else {
-              return Promise.resolve(null)
-          }
+                      return tranResp ? tranResp : null
+                  }) : Promise.resolve(null)
       }
   }
 
@@ -1696,27 +1749,31 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if(transaction && this._isTransactionSet(transaction)) {
           return this._getHubTransactionSetMessage(transaction);
       } else {
-          if (this.patient.ssin && this.api.tokenId && transaction) {
-              return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+          return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+              this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
-                          this.api.tokenId, this.api.credentials.ehpassword,
-                          hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                          this.patient.ssin,
-                          transaction.ids.find(id => id.s === 'LOCAL').sv, transaction.ids.find(id => id.s === 'LOCAL').sl, transaction.ids.find(id => id.s === 'LOCAL').value,
-                          this.hubPackageId, this.breakTheGlassReason
+                      this.api.fhc().Hub().getTransactionMessageUsingGET(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sv', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
-                          if (tranResp) {
-                              return tranResp;
-                          } else {
-                              return null;
-                          }
-                      }
-                  )
-          } else {
-              return Promise.resolve(null)
-          }
+                      return tranResp ? tranResp : null;
+                  }): Promise.resolve(null)
       }
   }
 
@@ -1730,39 +1787,43 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       if(transaction && this._isTransactionSet(transaction)) {
           return null;
       } else {
-          if (this.patient.ssin && this.api.tokenId && transaction) {
-              return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+          return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+              this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                   .then(hcp =>
-                      this.api.fhc().Hubcontroller().getTransactionUsingGET(this.hubEndPoint, this.api.keystoreId,
-                          this.api.tokenId, this.api.credentials.ehpassword,
-                          hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                          this.patient.ssin,
-                          transaction.ids.find(id => id.s === 'LOCAL').sv, transaction.ids.find(id => id.s === 'LOCAL').sl, transaction.ids.find(id => id.s === 'LOCAL').value,
-                          this.hubPackageId, this.breakTheGlassReason
+                      this.api.fhc().Hub().getTransactionUsingGET(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sv', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'sl', null),
+                          _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) === 'LOCAL'), 'value', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'breakTheGlassReason', null),
+                          null,
+                          null
                       )
                   ).then(tranResp => {
-                          if (tranResp) {
-                              return tranResp;
-                          } else {
-                              return null;
-                          }
-                      }
-                  )
-          } else {
-              return Promise.resolve(null)
-          }
+                      return tranResp ? tranResp : null
+                  }) : Promise.resolve(null)
       }
   }
 
   _runRevokeHubTransaction(e){
       e.stopPropagation();
       this.set('revokableTransaction',false);
-      if(this.selectedTransaction) {
-          this._revokeHubTransaction(this.selectedTransaction).then(tranResp =>{
+      if(_.get(this, 'selectedTransaction', null)) {
+          this._revokeHubTransaction(_.get(this, 'selectedTransaction', null)).then(tranResp =>{
               this.set("revokeTransactionResp", tranResp);
               this._getHubTransactionList().then(tranResp => this.set('hubTransactionList', tranResp));
               this.set('selectedTransaction', null);
-              this.$['htPatHubTransactionViewer'].open(this,  null);
+              this.shadowRoot.querySelector('#htPatHubTransactionViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionViewer').open(this,  null) : null
           })
       }
   }
@@ -1775,28 +1836,29 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   // hubPackageId?: string, breakTheGlassReason?: string): Promise<string | any>;
 
   _revokeHubTransaction(transaction){
-      if (this.patient.ssin && this.api.tokenId && transaction) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-              .then(hcp => this.api.fhc().Hubcontroller().revokeTransactionUsingDELETE(this.hubEndPoint,
-                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                  hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                  this.patient.ssin,
-                  transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).sv,
-                  transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).sl,
-                  transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).value,
-                  this.hubPackageId, null
-                  ) //TODO: add break the glass reason
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+           this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
+              .then(hcp =>
+                  this.api.fhc().Hub().revokeTransactionUsingDELETE(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sv', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sl', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'value', null),
+                      _.get(this, 'hubPackageId', null),
+                      _.get(this, 'breakTheGlassReason', null)
+                  )
               ).then(tranResp => {
-                      if (tranResp) {
-                          return tranResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return tranResp ? tranResp : null;
+              }): Promise.resolve(null)
   }
 
   //breakTheGlassReason
@@ -1807,27 +1869,29 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // hcpLastName: string, hcpFirstName: string, hcpNihii: string, hcpSsin: string, hcpZip: string,
       // ssin: string, sv: string, sl: string, id: string,
       // hubPackageId?: string, breakTheGlassReason?: string): Promise<string | any>;
-      if (this.patient.ssin && this.api.tokenId && transaction) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+          this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionSetUsingGET(this.hubEndPoint, this.api.keystoreId,
-                      this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin,
-                      transaction.ids.find(id => id.s==='LOCAL').sv, transaction.ids.find(id => id.s==='LOCAL').sl, transaction.ids.find(id => id.s==='LOCAL').value,
-                      this.hubPackageId, this.breakTheGlassReason
+                  this.api.fhc().Hub().getTransactionSetUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'sv', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'sl', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'value', null),
+                      _.get(this, 'hubPackageId', null),
+                      _.get(this, 'breakTheGlassReason', null)
                   )
               ).then(tranResp => {
-                      if (tranResp) {
-                          return tranResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return tranResp ? tranResp : null
+              }): Promise.resolve(null)
   }
 
   _getHubTransactionSetMessage(transaction){
@@ -1837,27 +1901,29 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // hcpLastName: string, hcpFirstName: string, hcpNihii: string, hcpSsin: string, hcpZip: string,
       // ssin: string, sv: string, sl: string, id: string,
       // hubPackageId?: string, breakTheGlassReason?: string): Promise<string | any>;
-      if (this.patient.ssin && this.api.tokenId && transaction) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+      return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction ?
+           this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
               .then(hcp =>
-                  this.api.fhc().Hubcontroller().getTransactionSetMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
-                      this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.patient.ssin,
-                      transaction.ids.find(id => id.s==='LOCAL').sv, transaction.ids.find(id => id.s==='LOCAL').sl, transaction.ids.find(id => id.s==='LOCAL').value,
-                      this.hubPackageId, this.breakTheGlassReason
+                  this.api.fhc().Hub().getTransactionSetMessageUsingGET(
+                      _.get(this, 'hubEndPoint', null),
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(this, 'hcpZip', null),
+                      _.get(this, 'patient.ssin', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'sv', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'sl', null),
+                      _.get(_.get(transaction, 'ids', []).find(id => _.get(id, 's', null) ==='LOCAL'), 'value', null),
+                      _.get(this, 'hubPackageId', null),
+                      _.get(this, 'breakTheGlassReason', null)
                   )
               ).then(tranResp => {
-                      if (tranResp) {
-                          return tranResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+                  return tranResp ? tranResp :null
+              }) : Promise.resolve(null)
   }
 
   _putHubTransactionSet(tsXML){
@@ -1866,6 +1932,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       console.log(this.patient);
       console.log(this.patient.ssin);
       console.log(this.api.tokenId);
+
       //putTransactionSetUsingPOST(
       // endpoint: string,
       // xFHCKeystoreId: string, xFHCTokenId: string, xFHCPassPhrase: string,
@@ -1874,30 +1941,29 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       // patientSsin: string,
       // essage: string,
       // hubPackageId?: string, hubApplication?: string): Promise<models.PutTransactionSetResponse | any>;
-      const myblob = new Blob([tsXML]);
-      if (this.patient && this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+
+     return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
               this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                  .then(hcp => this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(this.hubEndPoint,
-                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                      hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                      this.hubId,
-                      this.patient.ssin,
-                      myblob,
-                      this.hubPackageId, this.hubApplication
+                  .then(hcp =>
+                      this.api.fhc().Hub().putTransactionSetUsingPOST(
+                          _.get(this, 'hubEndPoint', null),
+                          _.get(this, 'api.keystoreId', null),
+                          _.get(this, 'api.tokenId', null),
+                          _.get(this, 'api.credentials.ehpassword', null),
+                          _.get(hcp, 'lastName', null),
+                          _.get(hcp, 'firstName', null),
+                          _.get(hcp, 'nihii', null),
+                          _.get(hcp, 'ssin', null),
+                          _.get(this, 'hcpZip', null),
+                          _.get(this, 'hubId', null),
+                          _.get(this, 'patient.ssin', null),
+                          _.get(this, 'hubPackageId', null),
+                          _.get(this, 'hubApplication', null),
+                          new Blob([tsXML])
                       )
                   ).then(putResp => {
-                      if (putResp) {
-                          return putResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-          )
-      }else{
-          return Promise.resolve(null)
-      }
+                      return putResp ? putResp : null
+                  }) : Promise.resolve(null)
   }
 
   xmlHubListener() {

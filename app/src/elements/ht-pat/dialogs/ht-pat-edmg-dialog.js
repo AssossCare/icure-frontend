@@ -8,6 +8,7 @@ import {TkLocalizerMixin} from "../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
+import _ from "lodash"
 class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
   static get template() {
     return html`
@@ -592,25 +593,52 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
           if(((this.edmgNiss && this.edmgNiss !=='') || (this.patient.ssin && this.patient.ssin !== '')) && !(this.edmgOA && this.edmgOA !=='')){
               return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                   .then(hcp => {
-                          return (this.asSupervisor && hcp.supervisorId ?
-                              this.api.hcparty().getHealthcareParty(hcp.supervisorId).then(sup =>
-                                  this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
-                                      this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                      hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.nomenclature,
-                                      this.edmgNiss ? this.edmgNiss.trim() : this.patient.ssin, null, null,
-                                      this.patient.firstName, this.patient.lastName,
-                                      this.getGender(this.patient.ssin),
-                                      requestDate, sup.ssin, sup.nihii, sup.firstName, sup.lastName))
-                              :
-                              this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
-                                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                  hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.nomenclature,
-                                  this.edmgNiss ? this.edmgNiss.trim() : this.patient.ssin, null, null,
-                                  this.patient.firstName, this.patient.lastName,
-                                  this.getGender(this.patient.ssin),
-                                  requestDate)).then(dmgNotif => this.api.logMcn(dmgNotif, this.user, this.patient.id, "DMG", "notify"))
-                      }
-                  ).then(edmgResp => {
+                          return (_.get(this, 'asSupervisor', null) && _.get(hcp, 'supervisorId', null) ?
+                              this.api.hcparty().getHealthcareParty(hcp.supervisorId)
+                                  .then(sup =>
+                                        this.api.fhc().Dmg().notifyDmgUsingPOST(
+                                            _.get(this, 'api.keystoreId', null),
+                                            _.get(this, 'api.tokenId', null),
+                                            _.get(this, 'api.credentials.ehpassword', null),
+                                            _.get(this, 'hcp.nihii', null),
+                                            _.get(this, 'hcp.ssin', null),
+                                            _.get(this, 'hcp.firstName', null),
+                                            _.get(this, 'hcp.lastName', null),
+                                            _.get(this, 'nomenclature', null),
+                                            _.get(this, 'edmgNiss', null) ? _.get(this, 'edmgNiss', null).trim() : _.get(this, 'patient.ssin', null),
+                                            null,
+                                            null,
+                                            _.get(this, 'patient.firstName', null),
+                                            _.get(this, 'patient.lastName', null),
+                                            this.getGender(_.get(this, 'patient.ssin', null)),
+                                            requestDate,
+                                            _.get(sup, 'ssin', null),
+                                            _.get(sup, 'nihii', null),
+                                            _.get(sup, 'firstName', null),
+                                            _.get(sup, 'lastName', null)
+                                        )
+                                  ) :
+                              this.api.fhc().Dmg().notifyDmgUsingPOST(
+                                  _.get(this, 'api.keystoreId', null),
+                                  _.get(this, 'api.tokenId', null),
+                                  _.get(this, 'api.credentials.ehpassword', null),
+                                  _.get(this, 'hcp.nihii', null),
+                                  _.get(this, 'hcp.ssin', null),
+                                  _.get(this, 'hcp.firstName', null),
+                                  _.get(this, 'hcp.lastName', null),
+                                  _.get(this, 'nomenclature', null),
+                                  _.get(this, 'edmgNiss', null) ? _.get(this, 'edmgNiss', null).trim() : _.get(this, 'patient.ssin', null),
+                                  null,
+                                  null,
+                                  _.get(this, 'patient.firstName', null),
+                                  _.get(this, 'patient.lastName', null),
+                                  this.getGender(_.get(this, 'patient.ssin', null)),
+                                  requestDate
+                              )
+                          ).then(dmgNotif =>
+                              this.api.logMcn(dmgNotif, this.user, this.patient.id, "DMG", "notify")
+                          )
+                  }).then(edmgResp => {
                           if (edmgResp) {
                               this.set('isLoading',false)
                               return edmgResp;
@@ -629,14 +657,23 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
               this.api.insurance().getInsurance(pi.insuranceId).then(insu => {
                   return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                       .then(hcp => {
-                              return this.api.fhc().Dmgcontroller().notifyDmgUsingPOST(
-                                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                  hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-                                  null, null, (this.genInsOA && this.genInsOA != '') ? this.genInsOA.trim() : insu.code,
-                                  (this.genInsAFF && this.genInsAFF != '') ? this.genInsAFF.trim() : pi.identificationNumber,
-                                  requestDate).then(dmgNotif => this.api.logMcn(dmgNotif, this.user, this.patient.id, "DMG", "notify"))
-                          }
-                      ).then(edmgResp => {
+                              return this.api.fhc().Dmg().notifyDmgUsingPOST(
+                                  _.get(this, 'api.keystoreId', null),
+                                  _.get(this, 'api.tokenId', null),
+                                  _.get(this, 'api.credentials.ehpassword', null),
+                                  _.get(this, 'hcp.nihii', null),
+                                  _.get(this, 'hcp.ssin', null),
+                                  _.get(this, 'hcp.firstName', null),
+                                  _.get(this, 'hcp.lastName', null),
+                                  null,
+                                  null,
+                                  (_.get(this, 'genInsOA', null) && _.get(this, 'genInsOA', null) !== '') ? _.get(this, 'genInsOA', null).trim() : _.get(insu, 'code', null),
+                                  (_.get(this, 'genInsAFF', null) && _.get(this, 'genInsAFF', null) !== '') ? _.get(this, 'genInsAFF', null).trim() : _.get(pi, 'identificationNumber', null),
+                                  requestDate
+                              ).then(dmgNotif =>
+                                  this.api.logMcn(dmgNotif, this.user, this.patient.id, "DMG", "notify")
+                              )
+                      }).then(edmgResp => {
                               if (edmgResp) {
                                   this.set('isLoading',false)
                                   return edmgResp;
@@ -668,7 +705,7 @@ class HtPatEdmgDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBeha
           this.edmgOA,
           this.genInsOA,
           this.genInsAFF                    ,
-          true    // Bypass cache, force hit on fhc().Dmgcontroller().consultDmgUsingGET()
+          true    // Bypass cache, force hit on fhc().Dmg().consultDmgUsingGET()
       ).then(edmgResp => {
           this.set('isLoading',false)
           this.set('consultDmgResp', edmgResp);
