@@ -414,9 +414,9 @@ class HtPatRnConsultNotification extends TkLocalizerMixin(mixinBehaviors([IronRe
 
       if(_.size(this.errorList) === 0){
           this.api.fhc().RnConsult().registerPersonUsingPOST(
-              this.api.keystoreId,
-              this.api.tokenId,
-              this.api.credentials.ehpassword,
+              _.get(this, 'api.keystoreId', null),
+              _.get(this, 'api.tokenId', null),
+              _.get(this, 'api.credentials.ehpassword', null),
               mid
           ).then(resp => {
               this.set('notificationResponse', resp)

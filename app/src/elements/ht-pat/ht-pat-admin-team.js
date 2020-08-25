@@ -18,6 +18,7 @@ import './dialogs/team/ht-pat-admin-team-dialog.js';
 import moment from 'moment/src/moment';
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+import _ from "lodash"
 class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -781,8 +782,18 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
   _checkForDmgOwner(){
       if(this.patient && this.patient.ssin && this.api.tokenId){
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-              .then(hcp => this.api.fhc().Dmg().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin))
-              .then(rep => {
+              .then(hcp =>
+                  this.api.fhc().Dmg().consultDmgUsingGET(
+                      _.get(this, 'api.keystoreId', null),
+                      _.get(this, 'api.tokenId', null),
+                      _.get(this, 'api.credentials.ehpassword', null),
+                      _.get(hcp, 'nihii', null),
+                      _.get(hcp, 'ssin', null),
+                      _.get(hcp, 'firstName', null),
+                      _.get(hcp, 'lastName', null),
+                      _.get(this, 'patient.ssin', null)
+                  )
+              ).then(rep => {
                   const dmgNihii = _.get(rep, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY') ? _.get(_.get(rep, 'hcParty.ids', []).find(id => _.get(id, 's', null) === 'ID_HCPARTY'), 'value', null) : null
                   if(dmgNihii && _.get(this, 'patientTeam.internal', []).find(h => _.get(h, 'nihii', null) === dmgNihii)){
                       console.log('dmg owner in internal team')
@@ -840,7 +851,16 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
                   if (this.patient.ssin && this.api.tokenId) {
                       this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                           .then(hcp =>
-                              this.api.fhc().Dmg().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin)
+                              this.api.fhc().Dmg().consultDmgUsingGET(
+                                  _.get(this, 'api.keystoreId', null),
+                                  _.get(this, 'api.tokenId', null),
+                                  _.get(this, 'api.credentials.ehpassword', null),
+                                  _.get(hcp, 'nihii', null),
+                                  _.get(hcp, 'ssin', null),
+                                  _.get(hcp, 'firstName', null),
+                                  _.get(hcp, 'lastName', null),
+                                  _.get(this, 'patient.ssin', null)
+                              )
                           )
                           .then(dmgConsultResp => {
                               const dmgNihii = dmgConsultResp.hcParty && dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY') ? dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY').value : ''

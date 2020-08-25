@@ -1096,8 +1096,11 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
     _getBoxCapacity() {
         return !(_.get(this,"api.keystoreId",false) && _.get(this,"api.tokenId",false) && _.get(this,"api.credentials.ehpassword",false)) ?
             Promise.resolve() :
-            this.api.fhc().Ehbox().getInfosUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword)
-                .then(boxInfo=>{
+            this.api.fhc().Ehbox().getInfosUsingGET1(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null)
+            ).then(boxInfo=>{
                     this.set('nbrMessagesInStandBy',parseInt(_.get(boxInfo,"nbrMessagesInStandBy",0)))
                     this.set('ehBoxCurrentSize',parseInt(_.get(boxInfo,"currentSize",0)))
                     this.set('ehboxMaxStorageCapacity',parseInt(_.get(boxInfo,"maxSize",10485760))) // 1024^2 - 10 Mb

@@ -1891,12 +1891,12 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
           return this.$.api.fhc().Sts().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
               this.set('api.fhcTokenInfo', res)
-              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
-              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
+              this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
+              this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
 
               !_.isEmpty(res) ?
-                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('connected') : null :
-                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('disconnected') : null
+                  this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('connected') : null :
+                  this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('disconnected') : null
 
               this.set('api.isMH', isMH)
 
@@ -1930,9 +1930,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
               return res.tokenId
           }).catch((e) => {
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
               throw(e)
           })
         })
@@ -2124,21 +2124,21 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   this._checkKeystoreValidity()
                   return this._getToken()
               }).catch((e) => {
-                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
-                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
-                  this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('disconnected') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
                   throw(e)
               })
           } else {
-              this.shadowRoot.querySelector('#noehealth') ? this.shadowRoot.querySelector('#noehealth').classList.add('notification') : null
-              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
-              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
-              this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
+              this.shadowRoot.querySelector('#noehealth') && this.shadowRoot.querySelector('#noehealth').classList ? this.shadowRoot.querySelector('#noehealth').classList.add('notification') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
           }
       } else {
-          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
-          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
-          this.shadowRoot.querySelector('#eHealthStatus') ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
       }
       return Promise.resolve(null);
   }

@@ -716,7 +716,15 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
                 }, additionalCustomMetas)}))
             .then(message => {
                 Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
-                return this.api.fhc().EhboxV3().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, _.get(message,"usePublicationReceipt",false), _.get(message,"useReceivedReceipt",true), _.get(message,"useReadReceipt",false)).catch(e => e)
+                return this.api.fhc().EhboxV3().sendMessageUsingPOST1(
+                    _.get(this, "api.keystoreId", null),
+                    _.get(this, "api.tokenId", null),
+                    _.get(this, "api.credentials.ehpassword", null),
+                    message,
+                    _.get(message,"usePublicationReceipt",false),
+                    _.get(message,"useReceivedReceipt",true),
+                    _.get(message,"useReadReceipt",false)
+                ).catch(e => e)
             })
             .catch(e => null)
 
