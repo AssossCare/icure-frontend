@@ -1150,6 +1150,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return !medication ? this._init() : this._init()
             .then(() => this.set('isLoading', true))
             .then(() => _.assign(medication && medication.drug||(medication.drug={}), {newMedication: _.get(medication,"drug.newMedication")||{content: {}, codes: []}}))
+            .then(() => !_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")) ? null : this.api.besamv2().findPaginatedVmpsByGroupId(_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")),null,null,100).then(vmps => _.merge(medication, {drug:{vmps:_.size(_.get(vmps,"rows")) ? _.get(vmps,"rows") : null}})).catch(e => console.log("[ERROR]", e)))
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
                 Promise.resolve(_.get(medication,"drug")) :
                 promResolve
