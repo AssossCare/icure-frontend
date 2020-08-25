@@ -2168,143 +2168,153 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
         this.shadowRoot.querySelector('#success') && this.shadowRoot.querySelector('#success').classList ? this.shadowRoot.querySelector('#success').classList.remove('displayNotification') : null
         this.shadowRoot.querySelector('#failed') && this.shadowRoot.querySelector('#failed').classList ? this.shadowRoot.querySelector('#failed').classList.remove('displayNotification') : null
 
-        this.api.fhc().Ehbox().getInfosUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
-            .then(boxInfo => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp=>[boxInfo,currentHcp]))
-            .then(([boxInfo,currentHcp]) => this.api.fhc().Sts().getKeystoreInfoUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.credentials.ehpassword")).then(keystoreInfo => [boxInfo,currentHcp,keystoreInfo]))
-            .then(([boxInfo,currentHcp,keystoreInfo]) => {
+        this.api.fhc().Ehbox().getInfosUsingGET1(
+            _.get(this,"api.keystoreId"),
+            _.get(this,"api.tokenId"),
+            _.get(this,"api.credentials.ehpassword")
+        ).then(boxInfo => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp=>[boxInfo,currentHcp]))
+        .then(([boxInfo,currentHcp]) => this.api.fhc().Sts().getKeystoreInfoUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.credentials.ehpassword")).then(keystoreInfo => [boxInfo,currentHcp,keystoreInfo]))
+        .then(([boxInfo,currentHcp,keystoreInfo]) => {
 
-                let sendMessageResponse = false
-                const publicationId = +new Date
-                const messageSubject = _.trim(_.get(this,"newMessage.document.title",""))
-                const isSortingCenter = _.trim(_.get(boxInfo,"quality")).toLowerCase() === "sorting_center"
-                const mainRecipient = this._wrapRecipientData(_.head(_.get(this,"newMessage.recipients", [])))
+            let sendMessageResponse = false
+            const publicationId = +new Date
+            const messageSubject = _.trim(_.get(this,"newMessage.document.title",""))
+            const isSortingCenter = _.trim(_.get(boxInfo,"quality")).toLowerCase() === "sorting_center"
+            const mainRecipient = this._wrapRecipientData(_.head(_.get(this,"newMessage.recipients", [])))
 
-                const annexes = _.compact( _.concat(_.flatMap(_.get(this,"newMessage.annex",[])), _.map(_.compact(_.concat(_.get(this,"_additionalAnnexesFromPatDetail",[]), _.get(this,"_additionalAnnexesFromForward",[]))), _singleAdditionalAnnex => {
-                    return {
-                        content: this._arrayBufferToByteArray( typeof _singleAdditionalAnnex.content !== "string" ? _singleAdditionalAnnex.content : this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_singleAdditionalAnnex.content)) ),
-                        documentId: _singleAdditionalAnnex.documentId,
-                        filename: _singleAdditionalAnnex.filename,
-                        mimeType: _.trim(_.get(_singleAdditionalAnnex,"mimeType", "")) ? _.trim(_.get(_singleAdditionalAnnex,"mimeType", "")) : "text/plain",
-                        title: _singleAdditionalAnnex.title,
-                        size: _singleAdditionalAnnex.size
-                    }
-                })||[]))
-
-                const isImportant = !!_.get(this,"newMessage.important",false)
-                const isEncrypted = !!_.get(this,"newMessage.encrypted",false)
-
-                let customMetas = {
-                    "CM-AuthorID": isSortingCenter ? _.trim(_.get(boxInfo,"boxId")) : _.trim(_.get(currentHcp, "nihii", _.get(currentHcp, "ssin", ""))),
-                    "CM-AuthorIDType": isSortingCenter ? "NIHII" : _.trim(_.get(currentHcp, "nihii", "")) ? "NIHII" : "SSIN",
-                    "CM-AuthorType": isSortingCenter ? _.trim(_.get(boxInfo,"quality")) : _.trim(_.get(currentHcp, "civility", "doctor")).toUpperCase(),
-                    "CM-AuthorLastName": isSortingCenter ? "" : _.trim(_.get(currentHcp, "lastName", "")).toUpperCase(),
-                    "CM-AuthorFirstName": isSortingCenter ? "" : _.trim(_.get(currentHcp, "firstName", "")),
-                    "CM-AuthorName": isSortingCenter ? (_.trim(_.get(keystoreInfo,"owner")) ? _.trim(_.get(keystoreInfo,"owner")) : _.trim(_.get(currentHcp,"name"))) : (!_.trim(_.get(currentHcp, "lastName", "")) && !_.trim(_.get(currentHcp, "firstName", ""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
-
-                    "CM-RecipientID": _.trim(_.get(mainRecipient, "id", "")),
-                    "CM-RecipientIDType": _.trim(_.get(mainRecipient, "identifierType.type", "NIHII")),
-                    "CM-RecipientLastName": _.trim(_.get(mainRecipient, "lastName", "")).toUpperCase(),
-                    "CM-RecipientFirstName": _.trim(_.get(mainRecipient, "firstName", "")),
-                    "CM-RecipientName": (!_.trim(_.get(mainRecipient, "lastName", "")) && !_.trim(_.get(mainRecipient, "firstName", ""))) ? _.trim(_.get(mainRecipient, "name", _.get(mainRecipient, "companyName", ""))) : "",
-
-                    "CM-EhrMessage": false,
-                    "CM-EhrMessageType": "Functionnal",
-                    "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
-                    "CM-Requestnumber": publicationId,
-                    "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
+            const annexes = _.compact( _.concat(_.flatMap(_.get(this,"newMessage.annex",[])), _.map(_.compact(_.concat(_.get(this,"_additionalAnnexesFromPatDetail",[]), _.get(this,"_additionalAnnexesFromForward",[]))), _singleAdditionalAnnex => {
+                return {
+                    content: this._arrayBufferToByteArray( typeof _singleAdditionalAnnex.content !== "string" ? _singleAdditionalAnnex.content : this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_singleAdditionalAnnex.content)) ),
+                    documentId: _singleAdditionalAnnex.documentId,
+                    filename: _singleAdditionalAnnex.filename,
+                    mimeType: _.trim(_.get(_singleAdditionalAnnex,"mimeType", "")) ? _.trim(_.get(_singleAdditionalAnnex,"mimeType", "")) : "text/plain",
+                    title: _singleAdditionalAnnex.title,
+                    size: _singleAdditionalAnnex.size
                 }
+            })||[]))
 
-                // Sender = author
-                customMetas = _.merge({
-                    "CM-SenderID": _.get(customMetas, "CM-AuthorID",""),
-                    "CM-SenderIDType": _.get(customMetas, "CM-AuthorIDType",""),
-                    "CM-SenderType": _.get(customMetas, "CM-AuthorType",""),
-                    "CM-SenderLastName": _.get(customMetas, "CM-AuthorLastName",""),
-                    "CM-SenderFirstName": _.get(customMetas, "CM-AuthorFirstName",""),
-                    "CM-SenderName": _.get(customMetas, "CM-AuthorName",""),
-                },customMetas)
+            const isImportant = !!_.get(this,"newMessage.important",false)
+            const isEncrypted = !!_.get(this,"newMessage.encrypted",false)
 
-                // For medex
-                if(!!_.size(_.get(this,"medexData.customMetas",{}))) _.merge(customMetas, _.get(this,"medexData.customMetas",{}))
+            let customMetas = {
+                "CM-AuthorID": isSortingCenter ? _.trim(_.get(boxInfo,"boxId")) : _.trim(_.get(currentHcp, "nihii", _.get(currentHcp, "ssin", ""))),
+                "CM-AuthorIDType": isSortingCenter ? "NIHII" : _.trim(_.get(currentHcp, "nihii", "")) ? "NIHII" : "SSIN",
+                "CM-AuthorType": isSortingCenter ? _.trim(_.get(boxInfo,"quality")) : _.trim(_.get(currentHcp, "civility", "doctor")).toUpperCase(),
+                "CM-AuthorLastName": isSortingCenter ? "" : _.trim(_.get(currentHcp, "lastName", "")).toUpperCase(),
+                "CM-AuthorFirstName": isSortingCenter ? "" : _.trim(_.get(currentHcp, "firstName", "")),
+                "CM-AuthorName": isSortingCenter ? (_.trim(_.get(keystoreInfo,"owner")) ? _.trim(_.get(keystoreInfo,"owner")) : _.trim(_.get(currentHcp,"name"))) : (!_.trim(_.get(currentHcp, "lastName", "")) && !_.trim(_.get(currentHcp, "firstName", ""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
 
-                // EhBox won't allow for empty values
-                Object.keys(customMetas).forEach(k =>{ if(!_.trim(customMetas[k])) try { delete customMetas[k] } catch(e){} })
+                "CM-RecipientID": _.trim(_.get(mainRecipient, "id", "")),
+                "CM-RecipientIDType": _.trim(_.get(mainRecipient, "identifierType.type", "NIHII")),
+                "CM-RecipientLastName": _.trim(_.get(mainRecipient, "lastName", "")).toUpperCase(),
+                "CM-RecipientFirstName": _.trim(_.get(mainRecipient, "firstName", "")),
+                "CM-RecipientName": (!_.trim(_.get(mainRecipient, "lastName", "")) && !_.trim(_.get(mainRecipient, "firstName", ""))) ? _.trim(_.get(mainRecipient, "name", _.get(mainRecipient, "companyName", ""))) : "",
 
-                // Unread by default, then eval important, cyrpted & has annexes statuses
-                let messageStatus = 1<<1
-                messageStatus = isImportant ? messageStatus|1<<2 : messageStatus
-                messageStatus = isEncrypted ? messageStatus|1<<3 : messageStatus
-                messageStatus = !!_.size(annexes) ? messageStatus|1<<4 : messageStatus
+                "CM-EhrMessage": false,
+                "CM-EhrMessageType": "Functionnal",
+                "CM-EtkApplicationID": _.trim(_.get(this, "api.tokenId", "")),
+                "CM-Requestnumber": publicationId,
+                "CM-SendDateTime": moment().format('YYYY-MM-DD HH:mm:ss'),
+            }
 
-                // The envelope itself
-                const messageToBeSentWithEhbox = {
-                    id : this.api.crypto().randomUuid(),
-                    publicationId : publicationId,
-                    publicationDateTime : parseInt(moment().format('YYYYMMDD')),
-                    expirationDateTime : parseInt(moment().add(1,"years").format('YYYYMMDD')),
-                    customMetas : customMetas,
-                    document : { title: messageSubject, textContent: _.get(this,"newMessage.document.textContent",""), mimeType: 'text/plain', filename: messageSubject },
-                    freeText : _.get(this,"newMessage.document.textContent",""),
-                    freeInformationTableTitle : null,
-                    freeInformationTableRows : {},
-                    patientInss : !!_.trim(_.get(this,"newMessage.patientInss","")) ? _.trim(_.get(this,"newMessage.patientInss",null)) : null,
-                    annex : annexes,
-                    copyMailTo : [],
-                    documentTitle : messageSubject,
-                    annexList : annexes,
-                    useReceivedReceipt : !!_.get(this,"newMessage.useReceivedReceipt",false),
-                    useReadReceipt : !!_.get(this,"newMessage.useReadReceipt",false),
-                    usePublicationReceipt : !!_.get(this,"newMessage.usePublicationReceipt",false),
-                    hasAnnex : !!_.size(annexes),
-                    hasFreeInformations : false,
-                    important : isImportant,
-                    encrypted : isEncrypted,
-                    destinations : _.compact(_.map(_.get(this,"newMessage.recipients",[]), singleRecipient => this._wrapRecipientData(singleRecipient))),
-                    sender : {
-                        identifierType: "NIHII",
-                        id: isSortingCenter ? _.trim(_.get(boxInfo,"boxId")) : _.trim(_.get(currentHcp, "nihii", "")),
-                        quality: isSortingCenter ? _.trim(_.get(boxInfo,"quality")) : _.trim(_.get(currentHcp,"quality","doctor")).toUpperCase(),
-                        applicationId: "",
-                        lastName: isSortingCenter ? null : _.trim(_.get(currentHcp,"lastName","")),
-                        firstName: isSortingCenter ? null : _.trim(_.get(currentHcp,"firstName","")),
-                        organizationName: isSortingCenter ? (_.trim(_.get(keystoreInfo,"owner")) ? _.trim(_.get(keystoreInfo,"owner")) : _.trim(_.get(currentHcp,"name"))) : (!_.trim(_.get(currentHcp,"lastName","")) && !_.trim(_.get(currentHcp,"firstName",""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
-                        personInOrganisation: !isSortingCenter ? "" : _.trim(_.get(currentHcp, "lastName", "")).toUpperCase() + " " + _.trim(_.get(currentHcp, "firstName", ""))
-                    },
-                    fromHealthcarePartyId: _.get(currentHcp,"id",""),
-                    status: messageStatus
-                };
+            // Sender = author
+            customMetas = _.merge({
+                "CM-SenderID": _.get(customMetas, "CM-AuthorID",""),
+                "CM-SenderIDType": _.get(customMetas, "CM-AuthorIDType",""),
+                "CM-SenderType": _.get(customMetas, "CM-AuthorType",""),
+                "CM-SenderLastName": _.get(customMetas, "CM-AuthorLastName",""),
+                "CM-SenderFirstName": _.get(customMetas, "CM-AuthorFirstName",""),
+                "CM-SenderName": _.get(customMetas, "CM-AuthorName",""),
+            },customMetas)
 
-                _.merge({
-                    "CM-SenderID": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorID",""),
-                    "CM-SenderIDType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorIDType",""),
-                    "CM-SenderType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorType",""),
-                    "CM-SenderLastName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorLastName",""),
-                    "CM-SenderFirstName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorFirstName",""),
-                    "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
-                },messageToBeSentWithEhbox.customMetas)
+            // For medex
+            if(!!_.size(_.get(this,"medexData.customMetas",{}))) _.merge(customMetas, _.get(this,"medexData.customMetas",{}))
 
-                this.api.fhc().EhboxV3().sendMessageUsingPOST( this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, messageToBeSentWithEhbox, messageToBeSentWithEhbox.usePublicationReceipt, messageToBeSentWithEhbox.useReceivedReceipt, messageToBeSentWithEhbox.useReadReceipt )
-                    .then(x=>sendMessageResponse=x)
-                    .catch(x=>sendMessageResponse=x)
-                    .finally(()=>{
+            // EhBox won't allow for empty values
+            Object.keys(customMetas).forEach(k =>{ if(!_.trim(customMetas[k])) try { delete customMetas[k] } catch(e){} })
 
-                        this._resetLoadingMessage();
-                        this.set('_isLoading', false );
+            // Unread by default, then eval important, cyrpted & has annexes statuses
+            let messageStatus = 1<<1
+            messageStatus = isImportant ? messageStatus|1<<2 : messageStatus
+            messageStatus = isEncrypted ? messageStatus|1<<3 : messageStatus
+            messageStatus = !!_.size(annexes) ? messageStatus|1<<4 : messageStatus
 
-                        // [Either] went well
-                        // [OR] couldn't find ETK (missing recipient public key) - when crypting message
-                        // [OR] (hardcoded) -> "successfull" (labellisation)
-                        return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
+            // The envelope itself
+            const messageToBeSentWithEhbox = {
+                id : this.api.crypto().randomUuid(),
+                publicationId : publicationId,
+                publicationDateTime : parseInt(moment().format('YYYYMMDD')),
+                expirationDateTime : parseInt(moment().add(1,"years").format('YYYYMMDD')),
+                customMetas : customMetas,
+                document : { title: messageSubject, textContent: _.get(this,"newMessage.document.textContent",""), mimeType: 'text/plain', filename: messageSubject },
+                freeText : _.get(this,"newMessage.document.textContent",""),
+                freeInformationTableTitle : null,
+                freeInformationTableRows : {},
+                patientInss : !!_.trim(_.get(this,"newMessage.patientInss","")) ? _.trim(_.get(this,"newMessage.patientInss",null)) : null,
+                annex : annexes,
+                copyMailTo : [],
+                documentTitle : messageSubject,
+                annexList : annexes,
+                useReceivedReceipt : !!_.get(this,"newMessage.useReceivedReceipt",false),
+                useReadReceipt : !!_.get(this,"newMessage.useReadReceipt",false),
+                usePublicationReceipt : !!_.get(this,"newMessage.usePublicationReceipt",false),
+                hasAnnex : !!_.size(annexes),
+                hasFreeInformations : false,
+                important : isImportant,
+                encrypted : isEncrypted,
+                destinations : _.compact(_.map(_.get(this,"newMessage.recipients",[]), singleRecipient => this._wrapRecipientData(singleRecipient))),
+                sender : {
+                    identifierType: "NIHII",
+                    id: isSortingCenter ? _.trim(_.get(boxInfo,"boxId")) : _.trim(_.get(currentHcp, "nihii", "")),
+                    quality: isSortingCenter ? _.trim(_.get(boxInfo,"quality")) : _.trim(_.get(currentHcp,"quality","doctor")).toUpperCase(),
+                    applicationId: "",
+                    lastName: isSortingCenter ? null : _.trim(_.get(currentHcp,"lastName","")),
+                    firstName: isSortingCenter ? null : _.trim(_.get(currentHcp,"firstName","")),
+                    organizationName: isSortingCenter ? (_.trim(_.get(keystoreInfo,"owner")) ? _.trim(_.get(keystoreInfo,"owner")) : _.trim(_.get(currentHcp,"name"))) : (!_.trim(_.get(currentHcp,"lastName","")) && !_.trim(_.get(currentHcp,"firstName",""))) ? _.trim(_.get(currentHcp, "name", _.get(currentHcp, "companyName", ""))) : "",
+                    personInOrganisation: !isSortingCenter ? "" : _.trim(_.get(currentHcp, "lastName", "")).toUpperCase() + " " + _.trim(_.get(currentHcp, "firstName", ""))
+                },
+                fromHealthcarePartyId: _.get(currentHcp,"id",""),
+                status: messageStatus
+            };
 
-                    })
+            _.merge({
+                "CM-SenderID": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorID",""),
+                "CM-SenderIDType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorIDType",""),
+                "CM-SenderType": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorType",""),
+                "CM-SenderLastName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorLastName",""),
+                "CM-SenderFirstName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorFirstName",""),
+                "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
+            },messageToBeSentWithEhbox.customMetas)
 
-            })
-            .catch(e=>{
+            this.api.fhc().EhboxV3().sendMessageUsingPOST1(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null),
+                messageToBeSentWithEhbox,
+                _.get(messageToBeSentWithEhbox, 'usePublicationReceipt', null),
+                _.get(messageToBeSentWithEhbox, 'useReceivedReceipt', null),
+                _.get(messageToBeSentWithEhbox, 'useReadReceipt', null)
+            ).then(x=>sendMessageResponse=x)
+            .catch(x=>sendMessageResponse=x)
+            .finally(()=>{
+
                 this._resetLoadingMessage();
                 this.set('_isLoading', false );
-                this.$["failed"].classList.add('displayNotification')
-                console.log("ERROR with getCurrentHealthcareParty while _doSendMessageWithEhBox: ", e);
+
+                // [Either] went well
+                // [OR] couldn't find ETK (missing recipient public key) - when crypting message
+                // [OR] (hardcoded) -> "successfull" (labellisation)
+                return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
+
             })
+
+        })
+        .catch(e=>{
+            this._resetLoadingMessage();
+            this.set('_isLoading', false );
+            this.$["failed"].classList.add('displayNotification')
+            console.log("ERROR with getCurrentHealthcareParty while _doSendMessageWithEhBox: ", e);
+        })
 
     }
 

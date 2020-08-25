@@ -118,7 +118,7 @@
     "@polymer/paper-tooltip": "^3.0.1",
     "@polymer/polymer": "^3.0.5",
     "@polymer/promise-polyfill": "^3.0.0-pre.21",
-    "@taktik/fhc-api": "^0.3.1",
+    "@taktik/fhc-api": "^0.3.2",
     "@taktik/icc-api": "^3.0.30",
     "@taktik/iron-selector-meta-shift": "^3.0.1",
     "@taktik/tk-token-field": "^3.0.1",

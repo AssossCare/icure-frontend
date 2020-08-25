@@ -1566,7 +1566,16 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)) {
                       this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                           .then(hcp =>
-                              this.api.fhc().Dmg().consultDmgUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this, 'patient.ssin', null))
+                              this.api.fhc().Dmg().consultDmgUsingGET(
+                                  _.get(this, 'api.keystoreId', null),
+                                  _.get(this, 'api.tokenId', null),
+                                  _.get(this, 'api.credentials.ehpassword', null),
+                                  _.get(hcp, 'nihii', null),
+                                  _.get(hcp, 'ssin', null),
+                                  _.get(hcp, 'firstName', null),
+                                  _.get(hcp, 'lastName', null),
+                                  _.get(this, 'patient.ssin', null)
+                              )
                           )
                           .then(dmgConsultResp => {
                               const dmgNihii = _.get(dmgConsultResp, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY') ? _.get(_.get(dmgConsultResp, 'hcParty.ids', []).find(id => _.get(id, 's', null) === 'ID_HCPARTY'), 'value', null) : ''
