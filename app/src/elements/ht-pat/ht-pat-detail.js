@@ -6511,13 +6511,13 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             args[code.type] = !args[code.type] ? code.code : args[code.type] + "," + code.code
         }, {})
 
-        ctc.subContacts.filter(sbctc => sbctc.tags && sbctc.tags.find(t => templateKeys[t.type])).map(sbct => sbct.tags && sbct.tags.filter(t => templateKeys[t.type]).map(tag => {
+        /*ctc.subContacts.filter(sbctc => sbctc.tags && sbctc.tags.find(t => templateKeys[t.type])).map(sbct => sbct.tags && sbct.tags.filter(t => templateKeys[t.type]).map(tag => {
             args[tag.type] = !args[tag.type] ? tag.code : args[tag.type] + "," + tag.code
         }, {}))
 
         ctc.subContacts.filter(sbctc => sbctc.codes && sbctc.codes.find(code => templateKeys[code.type])).map(sbct => sbct.codes && sbct.codes.filter(code => templateKeys[code.type]).map(code => {
             args[code.type] = !args[code.type] ? code.code : args[code.type] + "," + code.code
-        }, {}))
+        }, {}))*/
 
         ctc.userDescr = this.api.template(descrPattern, args)
 

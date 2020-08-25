@@ -9,7 +9,7 @@ class DynamicPill extends TkLocalizerMixin(PolymerElement) {
                 -webkit-border-radius: 10px;
                 -moz-border-radius: 10px;
                 padding: 0px 6px 1px 8px;
-                background-color: #fffdfd91;
+                background-color: white;
                 max-width: 100px;
                 width: auto;
                 white-space: nowrap;
@@ -25,8 +25,8 @@ class DynamicPill extends TkLocalizerMixin(PolymerElement) {
                 color: var(--app-text-color-light);
             }
             .ICPC-2-fallback { color: var(--paper-blue-grey-500) !important;}
-            .ICPC-2-fallback-back { background: var(--paper-blue-grey-500) !important; color: white !important; }
-            .ICPC-2-fallback span{ background: var(--paper-blue-grey-500) !important; }
+            .ICPC-2-fallback-back { background: black !important; color: white !important; }
+            .ICPC-2-fallback span{ background: white !important; }
 
             .closePillsBtn{
                 height: 10px;
