@@ -1172,6 +1172,19 @@ class IccApi extends PolymerElement {
         return new Promise((resolve) => setTimeout(resolve, time));
     }
 
+    _arrayBufferToByteArray(arrayBuffer) {
+        let fileByteArray = []
+        new Uint8Array(arrayBuffer).forEach(int8 => fileByteArray.push(int8))
+        return fileByteArray
+    }
+
+    toHexString(byteArray){
+        return Array.prototype.map.call(byteArray, function(byte) {
+            return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+        }).join('')
+    }
+
+
 }
 
 customElements.define(IccApi.is, IccApi)
