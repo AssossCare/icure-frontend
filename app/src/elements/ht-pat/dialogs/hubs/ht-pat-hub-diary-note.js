@@ -794,7 +794,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
       this.set('myComment', comment);
       if(docId) this.set("documentId", docId);
       this.set("attachmentId", "");
-      this.$['diaryNoteDialog'].open();
+      this.shadowRoot.querySelector('#diaryNoteDialog') ? this.shadowRoot.querySelector('#diaryNoteDialog').open() : null
 
       //Clear form:
       if(this.enableExtendedProperties) this.cdDiary.forEach(cd => this.shadowRoot.querySelector('#cdDiarySelection_' + cd).checked = false);
@@ -877,18 +877,18 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
   _openCommentDialog(e){
       e.stopPropagation();
       this.set("isTest", false);
-      if(this.$['commentDialog']) this.$['commentDialog'].open();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').open() : null
   }
 
   _openCommentDialogTest(e){
       e.stopPropagation();
       this.set("isTest", true);
-      if(this.$['commentDialog']) this.$['commentDialog'].open();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').open() : null
   }
 
   _closeCommentDialog(e){
       e.stopPropagation();
-      if(this.$['commentDialog']) this.$['commentDialog'].close();
+      this.shadowRoot.querySelector('#commentDialog') ? this.shadowRoot.querySelector('#commentDialog').close() : null
   }
 
   _isEqual(a,b) {
@@ -896,7 +896,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
   }
 
   sumehrChanged(sumehr){
-      if(this.$['htPatHubTransactionPreViewer']) this.$['htPatHubTransactionPreViewer'].open(this,  sumehr, this.hubSumehr, this.hubSumehrXml);
+      this.shadowRoot.querySelector('#htPatHubTransactionPreViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionPreViewer').open(this,  sumehr, this.hubSumehr, this.hubSumehrXml) : null
   }
 
   _logUpdateMessage(message, messageName, updateReference, mime){
@@ -1008,13 +1008,21 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
                                                   console.log("diarynote = ", reader.result);
                                               }
                                               reader.readAsText(output);
-                                              return this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint,
-                                                  this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                                  hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                                                  this.hubId,
-                                                  this.patient.ssin,
-                                                  output,
-                                                  this.hubPackageId, this.hubApplication
+                                              return this.api.fhc().Hub().putTransactionUsingPOST(
+                                                  _.get(this, 'hubEndPoint', null),
+                                                  _.get(this, 'api.keystoreId', null),
+                                                  _.get(this, 'api.tokenId', null),
+                                                  _.get(this, 'api.credentials.ehpassword', null),
+                                                  _.get(hcp, 'lastName', null),
+                                                  _.get(hcp, 'firstName', null),
+                                                  _.get(hcp, 'nihii', null),
+                                                  _.get(hcp, 'ssin', null),
+                                                  _.get(this, 'hcpZip', null),
+                                                  _.get(this, 'hubId', null),
+                                                  _.get(this, 'patient.ssin', null),
+                                                  _.get(this, 'hubPackageId', null),
+                                                  _.get(this, 'hubApplication', null),
+                                                  output
                                               )
                                           }
                                       ).then(putResp => {
@@ -1142,7 +1150,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
   }
 
   _closeDialogs(){
-      this.$['diaryNoteDialog'].close();
+      this.shadowRoot.querySelector('#diaryNoteDialog') ? this.shadowRoot.querySelector('#diaryNoteDialog').close() : null
   }
 
   _localizeHcpType(type){

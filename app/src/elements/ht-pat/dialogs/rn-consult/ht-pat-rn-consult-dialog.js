@@ -671,7 +671,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                   birthDate: _.get(this.patient, 'dateOfBirth', null),
                   tolerance: null
               })
-              this.$['rnConsultDialog'].open()
+              this.shadowRoot.querySelector('#rnConsultDialog') ? this.shadowRoot.querySelector('#rnConsultDialog').open() : null
               ;(_.get(this.patient, 'ssin', null) || (_.get(this.patient, 'firstName', null) && _.get(this.patient, 'dateOfBirth', null))) ? this._consultRn() : null
       })
   }
@@ -681,7 +681,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
       this.set('rnConsultResult', {})
       this.set('selectedPersonData', {})
       this.set('tabs', 0)
-      this.$['rnConsultDialog'].close()
+      this.shadowRoot.querySelector('#rnConsultDialog') ? this.shadowRoot.querySelector('#rnConsultDialog').close() : null
   }
 
   _consultRn(){
@@ -697,7 +697,14 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _consultRnBySsin(){
-      return (_.get(this.rnSearch, 'ssin', null) !== '' && _.get(this.rnSearch, 'ssin', null) !== null ? this.api.fhc().RnConsultController().identifyUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, _.trim(_.get(this.rnSearch, 'ssin', '').replace(/\D+/g, ''))) : Promise.resolve({})).then(result => {
+      return (_.get(this.rnSearch, 'ssin', null) !== '' && _.get(this.rnSearch, 'ssin', null) !== null ?
+          this.api.fhc().RnConsult().identifyUsingGET(
+              _.get(this, 'api.keystoreId', null),
+              _.get(this, 'api.tokenId', null),
+              _.get(this, 'api.credentials.ehpassword', null),
+              _.trim(_.get(this.rnSearch, 'ssin', '').replace(/\D+/g, ''))
+          ) : Promise.resolve({})
+      ).then(result => {
           console.log(result)
           return {
               errorInformations: _.get(result, 'errorInformations', {}),
@@ -709,7 +716,20 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _consultRnByPhonetic(){
-      return (_.get(this.rnSearch, 'birthDate', null) && _.get(this.rnSearch, 'lastName', null) ? this.api.fhc().RnConsultController().searchUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, parseInt(_.padEnd(_.trim(_.get(this.rnSearch, 'birthDate', '')), 8, 0)), _.trim(_.get(this.rnSearch, 'lastName', null)), _.trim(_.get(this.rnSearch, 'firstName', null)), _.trim(_.get(this.rnSearch, 'middleName', null)), _.trim(_.get(this.rnSearch, 'gender', null)), _.trim(_.get(this.rnSearch, 'tolerance', null)), 50) : Promise.resolve([])).then(result => {
+      return (_.get(this.rnSearch, 'birthDate', null) && _.get(this.rnSearch, 'lastName', null) ?
+          this.api.fhc().RnConsult().searchUsingGET(
+              _.get(this, 'api.keystoreId', null),
+              _.get(this, 'api.tokenId', null),
+              _.get(this, 'api.credentials.ehpassword', null),
+              parseInt(_.padEnd(_.trim(_.get(this.rnSearch, 'birthDate', '')), 8, 0)),
+              _.trim(_.get(this.rnSearch, 'lastName', null)),
+              _.trim(_.get(this.rnSearch, 'firstName', null)),
+              _.trim(_.get(this.rnSearch, 'middleName', null)),
+              _.trim(_.get(this.rnSearch, 'gender', null)),
+              _.trim(_.get(this.rnSearch, 'tolerance', null)),
+              50
+          ) : Promise.resolve([])
+      ).then(result => {
           console.log(result)
           return {
               errorInformations: _.get(result, 'errorInformations', {}),
@@ -735,7 +755,6 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
       if(_.get(e, 'currentTarget.dataset.item', null)){
           const selected = JSON.parse(_.get(e, 'currentTarget.dataset.item', null))
           this.set('selectedPersonData', selected);
-          //this.$['htPatHubTransactionViewer'].open(this,  selected, this._getHubTransactionMessage( selected));
       }
   }
 
@@ -812,7 +831,7 @@ class HtPatRnConsultDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
   }
 
   _sendNotification(){
-      this.$['htPatRnConsultNotification']._sendNotification()
+      this.shadowRoot.querySelector('#htPatRnConsultNotification') ? this.shadowRoot.querySelector('#htPatRnConsultNotification')._sendNotification() : null
   }
 
   _notificationSuccess(e){

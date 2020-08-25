@@ -568,11 +568,11 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
         const isValidNihii = !!patternsValidation.heightDigits.test(recipientId) || !!patternsValidation.elevenDigits.test(recipientId)
 
         const getProms = _.compact([
-            (!isOrg || !isValidCbe) ? false : this.api.fhc().Addressbookcontroller().getOrgByCbeUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
-            (!isOrg || !isValidEhp) ? false : this.api.fhc().Addressbookcontroller().getOrgByEhpUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
-            (!isOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getOrgByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
-            (isOrg || !isValidSsin) ? false : this.api.fhc().Addressbookcontroller().getHcpBySsinUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
-            (isOrg || !isValidNihii) ? false : this.api.fhc().Addressbookcontroller().getHcpByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([]))
+            (!isOrg || !isValidCbe) ? false : this.api.fhc().Addressbook().getOrgByCbeUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+            (!isOrg || !isValidEhp) ? false : this.api.fhc().Addressbook().getOrgByEhpUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+            (!isOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getOrgByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+            (isOrg || !isValidSsin) ? false : this.api.fhc().Addressbook().getHcpBySsinUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([])),
+            (isOrg || !isValidNihii) ? false : this.api.fhc().Addressbook().getHcpByNihiiUsingGET(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), recipientId).catch(()=>Promise.resolve([]))
         ])
 
         return !_.trim(recipientId) ? Promise.resolve(true) : Promise.all(getProms)
@@ -716,7 +716,15 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
                 }, additionalCustomMetas)}))
             .then(message => {
                 Object.keys(message.customMetas).forEach(k => { if (!_.trim(message.customMetas[k])) try { delete message.customMetas[k] } catch (e) {}})
-                return this.api.fhc().Ehboxcontroller().sendMessageUsingPOST(_.get(this, "api.keystoreId", null), _.get(this, "api.tokenId", null), _.get(this, "api.credentials.ehpassword", null), message, _.get(message,"usePublicationReceipt",false), _.get(message,"useReceivedReceipt",true), _.get(message,"useReadReceipt",false)).catch(e => e)
+                return this.api.fhc().EhboxV3().sendMessageUsingPOST1(
+                    _.get(this, "api.keystoreId", null),
+                    _.get(this, "api.tokenId", null),
+                    _.get(this, "api.credentials.ehpassword", null),
+                    message,
+                    _.get(message,"usePublicationReceipt",false),
+                    _.get(message,"useReceivedReceipt",true),
+                    _.get(message,"useReadReceipt",false)
+                ).catch(e => e)
             })
             .catch(e => null)
 

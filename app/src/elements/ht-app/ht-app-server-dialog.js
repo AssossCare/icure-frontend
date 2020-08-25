@@ -105,7 +105,6 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 		</style>
         <paper-dropdown-menu close-on-activate="false" label="[[title]]" horizontal-align="left">
             <paper-listbox class="server-list" slot="dropdown-content" selected="{{dbServerSelected}}" selected-item="{{dbServerObject}}">
-                <paper-item data-server\$="[[localUrl]]">[[localize("default","Default",language)]]</paper-item>
                 <template is="dom-repeat" items="[[dbServers]]" as="server" index-as="index">
                     <paper-item class="server-item" data-server\$="[[server.url]]">
                         <div>
@@ -123,7 +122,7 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
             </paper-listbox>
         </paper-dropdown-menu>
 
-        <paper-dialog id="add-server-dialog" opened="{{addServerOpened}}" horizontal-align="center" on-changed="_handleAddOpen">
+        <!--<paper-dialog id="add-server-dialog" opened="{{addServerOpened}}" horizontal-align="center" on-changed="_handleAddOpen">
             <div class="top-gradient">&nbsp;</div>
             <div style="text-align: center;">
                 <h3>[[localize("add_server","Add a server", language)]]</h3>
@@ -134,7 +133,7 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
                 <paper-button dialog-dismiss="" elevation="0" animated="" aria-disabled="false" role="button" id="server-cancel" on-click="_handleCancel">[[localize('cancel','Cancel',language)]]</paper-button>
                 <paper-button dialog-confirm="" raised="true" id="server-submit" type="submit" on-click="_handleServerAddition" autofocus="">[[localize('add','Add',language)]]</paper-button>
             </form>
-        </paper-dialog>
+        </paper-dialog>-->
 `;
   }
 
@@ -169,9 +168,6 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
           },
           serverName: {
               type: String
-          },
-          localUrl: {
-              type: String
           }
       };
   }
@@ -182,20 +178,18 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
   ready() {
       super.ready()
-      this.set("dbServers", JSON.parse(localStorage.getItem("server-list-" + this.serverName)) || [])
-      this.set("dbServerSelected",localStorage.getItem("server-selected" + this.serverName) || 0)
   }
 
-  getSelectedServerURL() {
-
-      this.saveServers()
-      return this.dbServerObject.dataset.server
-
-  }
+    getServersInfo() {
+       return {
+           servers : this.dbServers,
+           selected : this.dbServerObject.dataset.server
+       }
+    }
 
   _handleServerSelect(value, oldValue) {
 
-      if (value == this.dbServers.length + 1) {
+      if (value === this.dbServers.length) {
           this.dbServerSelected = oldValue
           this.set("addServerOpened", true)
       }
@@ -249,11 +243,6 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
   _handleAddOpen(e){
       console.log(e)
-  }
-
-  saveServers() {
-      localStorage.setItem("server-list-"+ this.serverName, JSON.stringify(this.dbServers))
-      localStorage.setItem("server-selected" + this.serverName, this.dbServerSelected)
   }
 }
 

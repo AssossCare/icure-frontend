@@ -201,7 +201,7 @@ class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
     }
 
     _generateReport(){
-        this.$['processDialog'].open()
+        this.shadowRoot.querySelector('#processDialog') ? this.shadowRoot.querySelector('#processDialog').open() : null
         this.set('isLoading', true)
         this.set("processStep",[])
         this.push('processStep',"lancement du rapport")
@@ -330,7 +330,7 @@ class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
                         {title: this.localize("act_rep_yearOldMoy","act_rep_yearOldMoy"), info: _.round(_.mean(yearOldMoy),2)}
                     ].concat(errorMessages))
                     this.set('isLoading', false)
-                    this.$['processDialog'].close()
+                    this.shadowRoot.querySelector('#processDialog') ? this.shadowRoot.querySelector('#processDialog').close() : null
                 })
             })
     }

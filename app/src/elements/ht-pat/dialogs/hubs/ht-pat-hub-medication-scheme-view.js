@@ -1529,13 +1529,13 @@ class HtPatHubMedicationSchemeView extends TkLocalizerMixin(PolymerElement) {
       this.set('selectedMedication', {})
       if(e.currentTarget.dataset.medication){
           this.set('selectedMedication', JSON.parse(e.currentTarget.dataset.medication))
-          this.$['medicationDetailDialog'].open()
+          this.shadowRoot.querySelector('#medicationDetailDialog') ? this.shadowRoot.querySelector('#medicationDetailDialog').open() : null
       }
   }
 
   _closeMedicationDetailDialog(){
       this.set('selectedMedication', {})
-      this.$['medicationDetailDialog'].close()
+      this.shadowRoot.querySelector('#medicationDetailDialog') ? this.shadowRoot.querySelector('#medicationDetailDialog').close() : null
   }
 
   _medicationClass(m) {

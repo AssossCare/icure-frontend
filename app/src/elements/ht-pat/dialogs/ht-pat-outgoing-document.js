@@ -873,8 +873,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
     }
 
     _openDialogSaveTemplate() {
-
-        this.$['saveTemplateDialog'].open()
+        this.shadowRoot.querySelector('#saveTemplateDialog') ? this.shadowRoot.querySelector('#saveTemplateDialog').open() : null
 
     }
 
@@ -1466,7 +1465,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 console.log("[ERROR] _doSaveTemplate", e)
                 this._confirmTemplateNotSaved()
             })
-            .finally(() => (this.set("_isBusy", false) || true) && this.$['saveTemplateDialog'].close())
+            .finally(() => (this.set("_isBusy", false) || true) && this.shadowRoot.querySelector('#saveTemplateDialog') ? this.shadowRoot.querySelector('#saveTemplateDialog').close() : null)
 
     }
 

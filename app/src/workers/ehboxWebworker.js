@@ -1,4 +1,4 @@
-import * as fhcApi from 'fhc-api/dist/fhcApi'
+import * as fhcApi from '@taktik/fhc-api/dist/fhcApi'
 import * as iccApi from '@taktik/icc-api/dist/icc-api/iccApi'
 import * as iccXApi from '@taktik/icc-api/dist/icc-x-api/index'
 import {UtilsClass} from "@taktik/icc-api/dist/icc-x-api/crypto/utils"
@@ -30,11 +30,12 @@ onmessage = e => {
         const alternateKeystores    = e.data.alternateKeystores
         const language              = e.data.language
 
+        const authApi               = new iccApi.iccAuthApi(iccHost, iccHeaders)
         const iccPatientApi         = new iccApi.iccPatientApi(iccHost, iccHeaders)
-        const ehboxApi              = new fhcApi.fhcEhboxcontrollerApi(fhcHost, fhcHeaders)
+        const ehboxApi              = new fhcApi.fhcEhboxV3Api(fhcHost, fhcHeaders)
         const docApi                = new iccApi.iccDocumentApi(iccHost, iccHeaders)
         const msgApi                = new iccApi.iccMessageApi(iccHost, iccHeaders)
-        const beResultApi           = new iccApi.iccBeResultImportApi(iccHost, iccHeaders)
+        const beResultApi           = new iccApi.iccBeresultimportApi(iccHost, iccHeaders)
         const iccHcpartyApi         = new iccApi.iccHcpartyApi(iccHost, iccHeaders)
         const accesslogApi          = new iccApi.iccAccesslogApi(iccHost, iccHeaders)
         const iccCryptoXApi         = new iccXApi.IccCryptoXApi(iccHost, iccHeaders, iccHcpartyApi,iccPatientApi)
@@ -47,15 +48,16 @@ onmessage = e => {
         Object.keys(e.data.keyPairs).forEach( k => iccCryptoXApi.cacheKeyPair(e.data.keyPairs[k], k) )
 
         const iccHcpartyXApi        = new iccXApi.IccHcpartyXApi(iccHost, iccHeaders)
-        const iccDocumentXApi       = new iccXApi.IccDocumentXApi(iccHost, iccHeaders, iccCryptoXApi)
+        const iccDocumentXApi       = new iccXApi.IccDocumentXApi(iccHost, iccHeaders, iccCryptoXApi, authApi)
         const iccContactXApi	    = new iccXApi.IccContactXApi(iccHost, iccHeaders,iccCryptoXApi)
         const iccHelementXApi  	    = new iccXApi.IccHelementXApi(iccHost, iccHeaders,iccCryptoXApi)
         const iccReceiptXApi	    = new iccXApi.IccReceiptXApi(iccHost, iccHeaders,iccCryptoXApi)
         const iccIccInvoiceXApi     = new iccXApi.IccInvoiceXApi(iccHost, iccHeaders,iccCryptoXApi, iccEntityrefApi)
         const iccClassificationXApi = new iccXApi.IccClassificationXApi(iccHost, iccHeaders,iccCryptoXApi)
+        const iccCalendarItemXApi   = new iccXApi.IccCalendarItemXApi(iccHost, iccHeaders, iccCryptoXApi)
 
         const iccFormXApi		    = new iccXApi.IccFormXApi(iccHost, iccHeaders,iccCryptoXApi)
-        const iccPatientXApi        = new iccXApi.IccPatientXApi(iccHost, iccHeaders, iccCryptoXApi, iccContactXApi, iccFormXApi, iccHelementXApi, iccIccInvoiceXApi, iccDocumentXApi, iccHcpartyXApi, iccClassificationXApi)
+        const iccPatientXApi        = new iccXApi.IccPatientXApi(iccHost, iccHeaders, iccCryptoXApi, iccContactXApi, iccFormXApi, iccHelementXApi, iccIccInvoiceXApi, iccDocumentXApi, iccHcpartyXApi, iccClassificationXApi, iccCalendarItemXApi)
         const iccMessageXApi        = new iccXApi.IccMessageXApi(iccHost, iccHeaders, iccCryptoXApi, iccInsuranceApi, iccEntityrefApi, iccIccInvoiceXApi, iccDocumentXApi, iccReceiptXApi, iccPatientXApi)
 
         const electronApi        = new ElectronApi(electronHost)
@@ -77,7 +79,7 @@ onmessage = e => {
         const createDbMessageWithAppendicesAndTryToAssign =  (message,boxId) => {
 
             const promResolve = Promise.resolve()
-            return ehboxApi.getFullMessageUsingPOST(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
+            return ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
                 .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
                 .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, fullMessageFromEHealthBox, _.head(_.get(foundExistingMessage,"rows",[{}]))))
                 .catch(() => promResolve )
@@ -94,8 +96,8 @@ onmessage = e => {
             return !_.size(icureMessageToDeleted) || !sourceBox || !eHealthBoxMessageId ?
                 promResolve :
                 !!sourceBox.startsWith("BIN") ?
-                    ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                    ehboxApi.moveMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(() => promResolve )
+                    ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, [eHealthBoxMessageId]).catch(() => promResolve ) :
+                    ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId]).catch(() => promResolve )
 
         }
 
@@ -378,7 +380,7 @@ onmessage = e => {
                     .then(() => totalNewMessages[boxId]++ ) :
 
                 // Auto-clean of EH BOX
-                !!(parseInt(_.get(foundExistingMessage, "created", Date.now())) < oneMonthAgo) ? removeMsgFromEhboxServer(foundExistingMessage) :
+                (parseInt(_.get(foundExistingMessage, "created", Date.now())) < oneMonthAgo) ? removeMsgFromEhboxServer(foundExistingMessage) :
 
                 promResolve.then(()=>{
 
@@ -515,9 +517,9 @@ onmessage = e => {
                     return !_.size(singleMessage) || !sourceBox || !eHealthBoxMessageId ?
                         promResolve :
                         (!!sourceBox.startsWith("BIN") ?
-                            ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                            ehboxApi.moveMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox)
-                                .then(() => ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], destinationBox).catch(() => promResolve ))
+                            ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, [eHealthBoxMessageId]).catch(() => promResolve ) :
+                            ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId])
+                                .then(() => ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, destinationBox, [eHealthBoxMessageId]).catch(() => promResolve ))
                                 .catch(() => promResolve )
                         )
                         .then(() => !!(_.get(singleMessage,"status",0)&(1<<26)) ?
@@ -604,7 +606,7 @@ onmessage = e => {
 
             let promisesCarrier = []
             let prom = Promise.resolve()
-            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
+            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST1(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
                 _.map(_.filter(messagesFromEHealthBox, m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
                     .then(promisesCarrier => createDbMessageWithAppendicesAndTryToAssign(singleMessage, singleBoxId))
                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))

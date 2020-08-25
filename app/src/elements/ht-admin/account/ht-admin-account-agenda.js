@@ -313,7 +313,7 @@ class HtAdminAccountAgenda extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addAgenda(){
-      this.$['addDisplayedAgendaDialog'].open()
+      this.shadowRoot.querySelector('#addDisplayedAgendaDialog') ? this.shadowRoot.querySelector('#addDisplayedAgendaDialog').open() : null
   }
 
   _sharingAgenda(item){
@@ -380,7 +380,7 @@ class HtAdminAccountAgenda extends TkLocalizerMixin(PolymerElement) {
               const listOfDisplayedAgendaIds = JSON.parse(displayedAgendasProperty.typedValue.stringValue) || null
               this.listOfActivesUsersWithAgenda.map(u => listOfDisplayedAgendaIds.map(ua => u.id === ua ? this.push('listOfVisibleAgendas', u) : null))
 
-              this.$['addDisplayedAgendaDialog'].close()
+              this.shadowRoot.querySelector('#addDisplayedAgendaDialog') ? this.shadowRoot.querySelector('#addDisplayedAgendaDialog').close() : null
           })
   }
 

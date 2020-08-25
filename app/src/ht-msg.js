@@ -651,11 +651,11 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
     }
 
     _triggerCreateNewMessage() {
-        return !!_.get(this,"ehealthSession",false) ? this.$['new-msg'].open() : false
+        return !!_.get(this,"ehealthSession",false) ? this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open() : null : false
     }
 
     _triggerReplyToOrForwardMessage(e) {
-        return !!_.get(this,"ehealthSession",false) ? this.$['new-msg'].open(_.get(e,"detail",null)) : false
+        return !!_.get(this,"ehealthSession",false) ? this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open(_.get(e,"detail",null)) : null : false
     }
 
     callInitializeDocCounter(e){

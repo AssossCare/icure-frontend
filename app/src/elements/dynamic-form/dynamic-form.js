@@ -333,6 +333,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
                 --paper-menu-button-dropdown: {
                     transform-origin: top right;
                     height: 500px;
+                    width : 500px;
                 }
             }
 
@@ -848,7 +849,8 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _linkForm(e) {
-        const he = this.healthElements.find(he => he.id === e.target.id || he.idService === e.target.id);
+        const id = e.target.id || e.currentTarget.id
+        const he = this.healthElements.find(he => he.id === id || he.idService === id);
         this.dispatchEvent(new CustomEvent('link-form', {detail: {healthElement: he}, composed: true, bubbles: true}));
     }
 
@@ -859,7 +861,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _deleteConfirmation() {
-				this.$['delete-confirmation-dialog'].open();
+        this.shadowRoot.querySelector('#delete-confirmation-dialog') ? this.shadowRoot.querySelector('#delete-confirmation-dialog').open() : null
     }
 
 

@@ -363,7 +363,7 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
       this.set('flatRateNmclSelectedItemIdx', 0)
       this.set('flatRateTarification.monthValidity', parseInt(moment().format('MM')))
       this.set('flatRateTarification.yearValidity', parseInt(moment().format('YYYY')))
-      this.$['addedFlatRateTarificationDialog'].open()
+      this.shadowRoot.querySelector('#addedFlatRateTarificationDialog') ? this.shadowRoot.querySelector('#addedFlatRateTarificationDialog').open() : null
 
   }
 
@@ -471,7 +471,7 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
     }
 
   _selectedPriceChanged(e){
-     //this.$['addedFlatRateTarificationDialog'].open()
+      //this.shadowRoot.querySelector('#addedFlatRateTarificationDialog') ? this.shadowRoot.querySelector('#addedFlatRateTarificationDialog').open() : null
   }
 }
 

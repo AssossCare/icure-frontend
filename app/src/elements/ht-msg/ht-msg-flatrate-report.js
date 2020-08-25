@@ -2146,7 +2146,7 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
           return limit(() => {
               const dStart = this.getRequestDateFromRes(res);
               //TODO: only check patients where needed: niss-ok, mh-contract-ok
-              return this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+              return this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
                   _.get(res, 'pat.ssin', null),
                   useMHSession ? _.get(this, 'api.tokenIdMH', null) : _.get(this, 'api.tokenId'),
                   useMHSession ? _.get(this, 'api.keystoreIdMH', null) : _.get(this, 'api.keystoreId'),

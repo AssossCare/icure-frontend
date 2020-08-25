@@ -899,6 +899,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     margin-right: 4px;
                     box-sizing: border-box;
                 }
+                
+                #datePickerCreation{
+                    margin-top: -12px;
+                };
 
 
             </style>
@@ -1202,9 +1206,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                         
                         <paper-input always-float-label="" label="[[localize('fir_nam','First name',language)]]" value="{{firstName}}"></paper-input>
                         
-                        <vaadin-date-picker-light id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" can-be-fuzzy>
-                            <paper-input always-float-label="" label="[[localize('dat_of_bir','Date of birth',language)]]" value="{{dateAsString}}"></paper-input>
-                        </vaadin-date-picker-light>
+                        <vaadin-date-picker id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" can-be-fuzzy label="[[localize('dat_of_bir','Date of birth',language)]]"  value="{{dateAsString}}"></vaadin-date-picker>
                         
                         <paper-input always-float-label="" label="[[localize('niss','Ssin',language)]]" value="{{ssin}}" on-keyup="_searchDuplicate"></paper-input>
                         
@@ -2096,7 +2098,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       this.resetNewPatientDialog()
       this.checkForParentMedicalHouse()
 
-      this.$['add-patient-dialog'].open()
+      this.shadowRoot.querySelector('#add-patient-dialog') ? this.shadowRoot.querySelector('#add-patient-dialog').open() : null
   }
 
   _addPatientNoOpen() {
@@ -2117,7 +2119,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               if (res.cards[0]) {
                   this.set('firstName', res.cards[0].firstName)
                   this.set('lastName', res.cards[0].surname)
-                  this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('DD/MM/YYYY'))
+                  this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('DD-MM-YYYY'))
                   this.set('ssin', res.cards[0].nationalNumber)
                   this.set('valueGender', res.cards[0].gender === 'M' ? 'male' : 'female')
                   this.set('newPatCardData',res.cards[0])
@@ -2311,7 +2313,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _openImportPatientFromMfDialog() {
-      this.$['import-mf-dialog'].open()
+      this.shadowRoot.querySelector('#import-mf-dialog') ? this.shadowRoot.querySelector('#import-mf-dialog').open() : null
   }
 
   generateXlsFile(data, filename, title, author) {
@@ -2366,7 +2368,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               lastName: this.lastName,
               firstName: this.firstName,
               active: true,
-              dateOfBirth: this.dateAsString && this.dateAsString.length && parseInt(_.padEnd(this.dateAsString.split("/").reverse().map(str => _.padStart(str,2,"0")).join(""),8,"0")) || null,
+              dateOfBirth: this.dateAsString && this.dateAsString.length && moment(this.dateAsString).format("YYYYMMDD") || null,
               ssin: this.ssin,
               gender: this.valueGender,
               medicalHouseContracts: [this.medicalHouseContractShadowObject]
@@ -2512,7 +2514,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _saveFilter(e) {
-      this.$['saveFilterDialog'].open()
+      this.shadowRoot.querySelector('#saveFilterDialog') ? this.shadowRoot.querySelector('#saveFilterDialog').open() : null
   }
 
   deleteFilter(e) {
@@ -2670,7 +2672,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       ).then(pats => {
           this.set('shareOption', true)
           this.selectedPatientsForSharing = pats
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
       }).finally(() => {
           this.set('isImportingPatients', false)
       })
@@ -2678,7 +2680,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   _openPatientActionDialog() {
       if (this.shareOption) {
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
           this.set('hcp', _.orderBy(_.values(this.api.hcParties), ['lastName'], ['asc']))
           this.selectedPatientsForSharing = this.patientSelected.filter(pat => pat.check && pat.id)
       }
@@ -2727,7 +2729,9 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.set("patientSelected", this.patientSelected.filter(element => element.check === true))
           if (this.patientSelected.length > 1)
               this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids:_.uniq(this.patientSelected.map(pat => pat.id))}))
-                  .then(pats => this.$['fusion-dialog'].open(pats))
+                  .then(pats =>
+                      this.shadowRoot.querySelector('#fusion-dialog') ? this.shadowRoot.querySelector('#fusion-dialog').open(pats) : null
+                  )
       }
 
       if(this.preventionOption){
@@ -2803,7 +2807,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   confirmSharingNextStep(allHcp) {
-      this.$['sharePatientDialog'].close()
+      this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').close() : null
 
       //erase uncheck user
       if (this.shareAll ||(allHcp === true)) {
@@ -2825,14 +2829,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               this.set("hcpSelectedForSharing." + index + ".delegation", delegationTag)
       })
 
-      this.$['sharePatientDelegationDialog'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').open() : null
   }
 
   confirmSharing() {
       this.updateDelegation()
 
-      this.$['sharePatientDelegationDialog'].close()
-      this.$['sharingPatientStatus'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').close() : null
+      this.shadowRoot.querySelector('#sharingPatientStatus') ? this.shadowRoot.querySelector('#sharingPatientStatus').open() : null
 
       this._sharePatients(this.selectedPatientsForSharing)
   }
@@ -2919,7 +2923,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       const dateOfBirthFilter = (/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/.test(this.dateAsString)) && ({
           '$type': 'PatientByHcPartyDateOfBirthFilter',
           'healthcarePartyId': this.user.healthcarePartyId,
-          'dateOfBirth': this.dateAsString.replace(/-/g, "")
+          'dateOfBirth': moment(this.dateAsString).format("YYYYMMDD")
       })
       const ssinFilter = /^[0-9]{11}$/.test(this.ssin) && ({
           '$type': 'PatientByHcPartyAndSsinFilter',
@@ -2957,7 +2961,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                           if (_.toUpper(_.get(row, 'firstName', null)) === _.toUpper(_.get(this, 'firstName', "")) && _.toUpper(_.get(row, 'lastName', null)) === _.toUpper(_.get(this, "lastName", ""))) {
                               row.remarks = this.localize("rem_Ty1_CreatPat", "Même nom et prénom!", this.language)
 
-                              if (_.get(row, "dateOfBirth", null).toString() === this.dateAsString.replace(/-/g, '')) {
+                              if (_.get(row, "dateOfBirth", null).toString() === moment(this.dateAsString).format('YYYYMMDD')) {
                                   flagRem = true
                                   row.remarks = this.localize("rem_Ty4_CreatPat", "Même nom, prénom et date de naissance!", this.language)
                               }
@@ -3261,7 +3265,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addPrimaryPrevention(){
-      this.$['htPatPrimaryPreventionDialog'].openPreventionDialog()
+      this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog') ? this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog').openPreventionDialog() : null
   }
 
   _closePrevention(){
@@ -3323,6 +3327,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.set('nbPatientSelected', _.size(_.get(this, 'patientSelected', []).filter(patient => patient.check)))
       }
   }
+
+    focusInput(event){
+      console.log(event)
+    }
 }
 
 customElements.define(HtPatList.is, HtPatList)

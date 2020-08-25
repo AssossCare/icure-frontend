@@ -701,7 +701,7 @@ class HtAdminManagementForms extends TkLocalizerMixin(PolymerElement) {
           this.api.form().getFormTemplate(this.selectedForm.id)
               .then(form => this.set('selectedFormData', _.assign(form, {formDataAsString: JSON.stringify(form.layout)})))
               .finally(() => {
-                  this.$['formInformationDialog'].open()
+                  this.shadowRoot.querySelector('#formInformationDialog') ? this.shadowRoot.querySelector('#formInformationDialog').open() : null
                   this.set('tabs',tab>0?tab:0)
               })
 

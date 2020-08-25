@@ -776,7 +776,7 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
 
   open(code) {
       this._code = code ? code : 'bmi';
-      this.$['chartsDialog'].open();
+      this.shadowRoot.querySelector('#chartsDialog') ? this.shadowRoot.querySelector('#chartsDialog').open() : null
       this._initialize();
 
       this.set("isLoading", true);
@@ -934,7 +934,7 @@ class HtPatChartsDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
   }
 
   _closeDialogs(){
-      this.$['chartsDialog'].close();
+      this.shadowRoot.querySelector('#chartsDialog') ? this.shadowRoot.querySelector('#chartsDialog').close() : null
   }
 
   _print() {

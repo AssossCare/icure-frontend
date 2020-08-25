@@ -561,7 +561,7 @@ class HtPatHeTreeDetail extends TkLocalizerMixin(PolymerElement) {
       const he = this.he;
       if(_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) || _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null)){
           _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-          this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(this.hcp, 'ssin', null),_.get(this, 'api.keystoreId', null))
+          this.api.fhc().Sts().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(this.hcp, 'ssin', null),_.get(this, 'api.keystoreId', null))
               .then(bearerToken => {
                   this._sendPostRequest({
                       action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",

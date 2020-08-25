@@ -1216,7 +1216,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
   _layoutDialog(e){
       e.stopPropagation()
       e.preventDefault()
-      this.$['layoutDialog'].open()
+      this.shadowRoot.querySelector('#layoutDialog') ? this.shadowRoot.querySelector('#layoutDialog').open() : null
 	}
 
   _dragWidgetStart(e) {
@@ -1362,7 +1362,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
 
     updateSelected(e){
         this.set('selectedUpdate', e.detail)
-        this.$['updateDialog'].open()
+        this.shadowRoot.querySelector('#updateDialog') ? this.shadowRoot.querySelector('#updateDialog').open() : null
     }
 
     _isNews(update){

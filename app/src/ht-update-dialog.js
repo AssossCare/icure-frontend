@@ -229,14 +229,14 @@ class HtUpdateDialog extends TkLocalizerMixin(PolymerElement) {
 
         if ((localStorage && !localStorage.getItem('last_update_confirm')) || (localStorage && localStorage.getItem('last_update_confirm') && (moment(localStorage.getItem('last_update_confirm')).format("YYYY-MM-DD") < moment(dateOfNewUpdate).format("YYYY-MM-DD")))) {
             this.set('_bodyOverlay', true)
-            this.$['updateMessageDialog'].open()
+            this.shadowRoot.querySelector('#updateMessageDialog') ? this.shadowRoot.querySelector('#updateMessageDialog').open() : null
         }
 
     }
 
     _closeDialog() {
         this.set('_bodyOverlay', false)
-        this.$['updateMessageDialog'].close()
+        this.shadowRoot.querySelector('#updateMessageDialog') ? this.shadowRoot.querySelector('#updateMessageDialog').close() : null
     }
 
 
@@ -247,7 +247,7 @@ class HtUpdateDialog extends TkLocalizerMixin(PolymerElement) {
     _confirmUpdate() {
         localStorage.setItem('last_update_confirm', _.get(this, 'displayedUpdate[0].updateDate', moment().format('YYYY-MM-DD')))
         this.set('_bodyOverlay', false)
-        this.$['updateMessageDialog'].close()
+        this.shadowRoot.querySelector('#updateMessageDialog') ? this.shadowRoot.querySelector('#updateMessageDialog').close() : null
     }
 
     _isNews(news) {

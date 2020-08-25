@@ -1308,7 +1308,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
   _getTrail(transaction){
       if (this.patient.ssin && this.api.tokenId) {
           return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-              .then(hcp => this.api.fhc().Hubcontroller().getPatientAuditTrailUsingGET(
+              .then(hcp => this.api.fhc().Hub().getPatientAuditTrailUsingGET(
                       _.get(this, 'parent.hubEndPoint', null),
                       _.get(this, 'api.keystoreId', null),
                       _.get(this, 'api.tokenId', null),
@@ -1772,7 +1772,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
           this.set('selectedDocumentToBeImported.transaction', transaction)
           this.set('selectedDocumentToBeImported.document', document)
           this.set('selectedDocumentToBeImported.docType', docType)
-          this.$['importHubDocumentDialog'].open()
+          this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').open() : null
       }
   }
 
@@ -1783,7 +1783,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
           title: null,
           docType: null
       })
-      this.$['importHubDocumentDialog'].close()
+      this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
   }
 
   _importDocumentIntoPatient(){
@@ -1859,7 +1859,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                           title: null,
                           docType: null
                       })
-                      this.$['importHubDocumentDialog'].close()
+                      this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
                   }).catch(e => {
                       console.log("---error upload attachment---", e)
                   })

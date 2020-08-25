@@ -712,7 +712,7 @@ class HtHcpList extends TkLocalizerMixin(PolymerElement) {
               if (currentValue === this.filterValue) {
                   this.set('isLoadingHcp',true)
                   console.log("Triggering search for " + this.filterValue);
-                  this.$['hcps-list'].clearCache();
+                  this.shadowRoot.querySelector('#hcps-list') ? this.shadowRoot.querySelector('#hcps-list').clearCache() : null
                   this.set('isLoadingHcp',false)
               } else {
                   console.log("Skipping search for " + this.filterValue + " != " + currentValue);
@@ -775,7 +775,7 @@ class HtHcpList extends TkLocalizerMixin(PolymerElement) {
   _openAddHcpDialog(){
 	    this.set('listDoublon',[])
       this.set("newHcp",{})
-	    this.$['newHcpDialog'].open()
+      this.shadowRoot.querySelector('#newHcpDialog') ? this.shadowRoot.querySelector('#newHcpDialog').open() : null
 
 	}
 
@@ -954,7 +954,7 @@ class HtHcpList extends TkLocalizerMixin(PolymerElement) {
 	}
 
   _openFusionDialog(){
-      this.$['fusionDialog'].open()
+      this.shadowRoot.querySelector('#fusionDialog') ? this.shadowRoot.querySelector('#fusionDialog').open() : null
 	}
 
   _hcpSelected(item) {

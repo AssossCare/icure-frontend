@@ -754,9 +754,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
         <ht-app-setup-prompt id="setupPrompt"></ht-app-setup-prompt>
 
-        <ht-app-welcome-tz id="welcome" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" hidden="[[!showWelcomePage]]" on-login="login" default-icure-url="[[defaultIcureUrl]]" default-fhc-url="[[defaultFhcUrl]]"></ht-app-welcome-tz>
+        <ht-app-welcome-tz id="welcome" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" hidden="[[!showWelcomePage]]" on-login="login"></ht-app-welcome-tz>
 
-        <ht-app-login-dialog id="loginDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" default-icure-url="[[defaultIcureUrl]]" default-fhc-url="[[defaultFhcUrl]]"></ht-app-login-dialog>
+        <ht-app-login-dialog id="loginDialog"  api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" on-login="login" on-url-change="refreshUrl" icure-url-selected="[[icureUrl]]" fhc-url-selected="[[fhcUrl]]"></ht-app-login-dialog>
 
         <ht-app-entities-selector id="ht-app-account-selector" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" credentials="[[credentials]]" api="[[api]]" user="[[user]]" entities="[[entities]]" on-redirect-another-entity="_redirectToAnotherEntity"></ht-app-entities-selector>
 
@@ -1476,13 +1476,32 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       this.set('electronUrl', params.electronUrl || (params.icureUrl && !params.icureUrl.includes(":16043") && !params.icureUrl.includes("https") && _.replace(params.icureUrl,"/rest/v1","")) || "http://127.0.0.1:16042")
       this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
-      this.set('defaultIcureUrl', this.icureUrl)
-      this.set('defaultFhcUrl', this.fhcUrl)
   }
 
   _updateServerUrl(icureurl, fhcurl) {
-      if(icureurl) this.set('icureUrl',icureurl)
-      if(fhcurl) this.set('fhcUrl',fhcurl)
+      return this.api && this.api.electron().getConfigFile().then(config =>{
+          if(config){
+              if(fhcurl) this.set('fhcUrl',fhcurl.selected)
+              config.servers = _.compact(icureurl.servers.filter(serv => !["https://backend.svc.icure.cloud","https://backendb.svc.icure.cloud","https://kraken.svc.icure.cloud"].find(url => serv.url===url)).map(serv => serv.url))
+              if(icureurl.selected!==""){
+                  this.set('icureUrl',"http://127.0.0.1:16042/rest/v1")
+                  config.backend= icureurl.selected
+              }else{
+                  this.set('icureUrl',"http://127.0.0.1:16043/rest/v1")
+                  config = _.omit(config,"backend")
+              }
+
+              return this.api.electron().checkAvailable().then( electron => this.api.electron().setConfigFile(config)).then(data =>{
+                  this.$["loginDialog"].disable()
+                  return Promise.resolve(this._checkShowWelcomePage())
+              })
+          }else{
+              if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+              if(fhcurl) this.set('fhcUrl',fhcurl.selected)
+              this.$["loginDialog"].disable()
+              return Promise.resolve(this._checkShowWelcomePage())
+          }
+      })
   }
 
   reset() {
@@ -1681,7 +1700,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _timeCheck(period = 14400000) {
       setTimeout(() => {
           if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
+              this.api.fhc().Sts().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                   if (!isTokenValid) {
                       //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
                       this.set('api.isMH', null)
@@ -1709,7 +1728,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _timeCheckMH(period = 14400000){
       setTimeout(() => {
           if (this.api.tokenIdMH) {
-              this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
+              this.api.fhc().Sts().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                   if (!isTokenValid) {
                       //reset api token: not need more checkTokenValid if it's invalid and we fail the first call
                       this.set('api.tokenIdMH', null)
@@ -1791,7 +1810,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _viewChanged(view) {
       if (view.startsWith('auth')) {
-          this.$.loginDialog.open()
+          this.shadowRoot.querySelector('#loginDialog') ? this.shadowRoot.querySelector('#loginDialog').open() : null
           return
       }
       if (this.lazyPages[view]) {
@@ -1801,7 +1820,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       }
 
       if(this.view==="main"){
-          this.$["htmain"].apiReady && this.$["htmain"].apiReady()
+          this.shadowRoot.querySelector('#htmain').apiReady ? this.shadowRoot.querySelector('#htmain').apiReady() : null
       }
   }
 
@@ -1816,11 +1835,11 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _openExportKey() {
-      this.$['export-key'].open()
+      this.shadowRoot.querySelector('#export-key') ? this.shadowRoot.querySelector('#export-key').open() : null
   }
 
   _importKeychain() {
-      this.$['ht-import-keychain'].open()
+      this.shadowRoot.querySelector('#ht-import-keychain') ? this.shadowRoot.querySelector('#ht-import-keychain').open() : null
   }
 
   _inviteHCP() {
@@ -1828,15 +1847,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       this.set('lastName','')
       this.set('email','')
       this.set('warn','')
-      this.$['ht-invite-hcp'].open()
+      this.shadowRoot.querySelector('#ht-invite-hcp') ? this.shadowRoot.querySelector('#ht-invite-hcp').open() : null
   }
 
   _myProfile(tab) {
-      this.$['ht-my-profile'].open(tab)
+      this.shadowRoot.querySelector('#ht-my-profile') ? this.shadowRoot.querySelector('#ht-my-profile').open(tab) : null
   }
 
   _selectEntities(){
-      this.$['ht-app-account-selector'].open()
+      this.shadowRoot.querySelector('#ht-app-account-selector') ? this.shadowRoot.querySelector('#ht-app-account-selector').open() : null
   }
 
   _showToasterMessage(id) {
@@ -1848,14 +1867,17 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       //console.log("_checkKeystoreValidity: ", this.showKeystoreExpiredLabel, this.showKeystoreExpiresSoonLabel)
       const monthLimit = 2 // number of remaining months when to start warning the user
 
-      this.api.fhc().Stscontroller().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
-          if(info.validity && info.validity - moment().valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+      this.api.fhc().Sts().getKeystoreInfoUsingGET(
+          _.get(this, 'api.keystoreId', null),
+          _.get(this, 'credentials.ehpassword', null)
+      ).then(info => {
+          if(_.get(info, 'validity', null) && _.get(info, 'validity', null) - moment().valueOf() <= 0) {
+              this.keyStoreValidityLabel = moment(_.get(info, 'validity', null)).format("DD/MM/YYYY")
               this._showToasterMessage("showKeystoreExpiredLabel")
               this.set("showKeystoreExpiredStatusIcon", true)
               this.set("showKeystoreExpiresSoonStatusIcon", false)
-          } else if(info.validity && info.validity - moment().add(monthLimit, 'months').valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+          } else if(_.get(info, 'validity', null) && _.get(info, 'validity', null) - moment().add(monthLimit, 'months').valueOf() <= 0) {
+              this.keyStoreValidityLabel = moment(_.get(info, 'validity', null)).format("DD/MM/YYYY")
               this._showToasterMessage("showKeystoreExpiresSoonLabel")
               this.set("showKeystoreExpiresSoonStatusIcon", true)
               this.set("showKeystoreExpiredStatusIcon", false)
@@ -1870,14 +1892,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _getToken() {
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
           const isMH = _.get(hcp, 'type', '') && _.get(hcp, 'type', '').toLowerCase() === 'medicalhouse';
-          return this.$.api.fhc().Stscontroller().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
+          return this.$.api.fhc().Sts().requestTokenUsingGET(_.get(this, 'credentials.ehpassword', null), isMH || this._isOtherInstitutionWithNihii(hcp) ? _.get(hcp, 'nihii', null).substr(0,8): _.get(hcp, 'ssin', null), _.get(this.api, 'keystoreId', null), this._getQuality(hcp)).then(res => {
               this.set('api.fhcTokenInfo', res)
-              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
-              this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
+              this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('pending') : null
+              this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.remove('disconnected') : null
 
               !_.isEmpty(res) ?
-                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('connected') : null :
-                  this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('disconnected') : null
+                  this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('connected') : null :
+                  this.shadowRoot.querySelector("#eHealthStatus") && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector("#eHealthStatus").classList.add('disconnected') : null
 
               this.set('api.isMH', isMH)
 
@@ -1911,9 +1933,9 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
               return res.tokenId
           }).catch((e) => {
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
-              this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector("#eHealthStatus").classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
               throw(e)
           })
         })
@@ -1936,14 +1958,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _getMHToken() {
       //TODO: change the request for MH
-      //this.api.fhc().Stscontroller().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
+      //this.api.fhc().Sts().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
       //get the password from local storage
       //let mhPassword= "";
       return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
           .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
           .then(hcpMH => {
               this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-              return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse", null).then(res => {
+              return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpasswordMH, _.get(hcpMH, 'nihii', null).substr(0, 8), this.api.keystoreIdMH, "medicalhouse", null).then(res => {
                   this.set('api.fhcTokenInfo', res)
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                   if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
@@ -2100,27 +2122,26 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       if (this.credentials.ehpassword) {
           const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
           if (ehKeychain) {
-              return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+              return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(ehKeychain, it => this.api.toHexString(it)).join("")))).then(res => {
                   this.$.api.keystoreId = res.uuid
                   this._checkKeystoreValidity()
                   return this._getToken()
               }).catch((e) => {
-                  this.$.eHealthStatus.classList.remove('pending')
-                  this.$.eHealthStatus.classList.remove('connected')
-                  this.$.eHealthStatus.classList.add('disconnected')
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+                  this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
                   throw(e)
               })
           } else {
-              this.$.noehealth.classList.add("notification")
-
-              this.$.eHealthStatus.classList.remove('pending')
-              this.$.eHealthStatus.classList.remove('connected')
-              this.$.eHealthStatus.classList.add('disconnected')
+              this.shadowRoot.querySelector('#noehealth') && this.shadowRoot.querySelector('#noehealth').classList ? this.shadowRoot.querySelector('#noehealth').classList.add('notification') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+              this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
           }
       } else {
-          this.$.eHealthStatus.classList.remove('pending')
-          this.$.eHealthStatus.classList.remove('connected')
-          this.$.eHealthStatus.classList.add('disconnected')
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('pending') : null
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.remove('connected') : null
+          this.shadowRoot.querySelector('#eHealthStatus') && this.shadowRoot.querySelector('#eHealthStatus').classList ? this.shadowRoot.querySelector('#eHealthStatus').classList.add('disconnected') : null
       }
       return Promise.resolve(null);
   }
@@ -2138,7 +2159,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                               this.credentials.ehpasswordMH = password
                               const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH."+ this.user.healthcarePartyId)
                               if (ehKeychain) {
-                                  return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                                  return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(ehKeychain, it => this.api.toHexString(it)).join("")))).then(res => {
                                       this.$.api.keystoreIdMH = res.uuid
                                       return this._getMHToken()
                                   }).catch((e) => {
@@ -2167,13 +2188,15 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       return Promise.resolve(null);
   }
 
+    refreshUrl(event, loginObject){
+        this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl)
+    }
+
   login(event, loginObject) { /* this is called from mouseDown with 2 arguments */
-      this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl )
-
-      this.set('credentials', loginObject && loginObject.credentials)
-
-
-      this.loginAndRedirect(loginObject && loginObject.page)
+      this._updateServerUrl( loginObject.icureurl, loginObject.fhcurl).then(data => {
+          this.set('credentials', loginObject && loginObject.credentials)
+          this.loginAndRedirect(loginObject && loginObject.page)
+      })
   }
 
   importPrivateKey(e, selectedRsaFile) {
@@ -2191,7 +2214,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               this.registerKeyPairDialogResolution[0]([true, 'main/'])
           } else {
               this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
+              this.shadowRoot.querySelector('#registerKeyPairDialog') ? this.shadowRoot.querySelector('#registerKeyPairDialog').reset() : null
           }
       }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
   }
@@ -2210,7 +2233,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               this.registerKeyPairDialogResolution[0]([true, 'main/'])
           } else {
               this.set("registerKeyPairDialogMessage", "Invalid key file")
-              this.$.registerKeyPairDialog.reset()
+              this.shadowRoot.querySelector('#registerKeyPairDialog') ? this.shadowRoot.querySelector('#registerKeyPairDialog').reset() : null
           }
       }.bind(this)).catch(e => {console.log(e); this.registerKeyPairDialogResolution[1](e)})
   }
@@ -2223,7 +2246,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
           // See if user exists first, based on email address
           this.api.user().getUserByEmail(this.email).then(existingUserDto => {
               if (existingUserDto && existingUserDto.id) {
-                  this.$['ht-invite-hcp-user-already-exists'].open()
+                  this.shadowRoot.querySelector('#ht-invite-hcp-user-already-exists') ? this.shadowRoot.querySelector('#ht-invite-hcp-user-already-exists').open() : null
               } else {
                   this.createAndInviteUser();
               }
@@ -2250,7 +2273,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                       // Get fhc keystore UUID in cache
                       new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))):
                       // Upload new keystore
-                      this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
+                      this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
                           .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
 
               )
@@ -2282,7 +2305,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   }
 
   _logList() {
-      this.$['ht-access-log'].open()
+      this.shadowRoot.querySelector('#ht-access-log') ? this.shadowRoot.querySelector('#ht-access-log').open() : null
   }
 
   _patientChanged(e) {
@@ -2327,7 +2350,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               "type": "database"
           }).then(usr => {
               this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
-              this.$['ht-invite-hcp-link'].open()
+              this.shadowRoot.querySelector('#ht-invite-hcp-link') ? this.shadowRoot.querySelector('#ht-invite-hcp-link').open() : null
           })
       })
   }
@@ -2335,7 +2358,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
   _redirectToAnotherEntity(e){
       if(e.detail){
           this.set("isMultiUser",false)
-          this.$['ht-app-account-selector'].close()
+          this.shadowRoot.querySelector('#ht-app-account-selector') ? this.shadowRoot.querySelector('#ht-app-account-selector').close() : null
           this.login(e, {credentials: e.detail})
       }
   }
@@ -2426,8 +2449,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                           token: applicationTokens.MIKRONO ? true : false,
                           error: false
                       })
-
-                      this.$['mikronoErrorDialog'].open()
+                      this.shadowRoot.querySelector('#mikronoErrorDialog') ? this.shadowRoot.querySelector('#mikronoErrorDialog').open() : null
                   }
               }
 
@@ -2522,7 +2544,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
 
   _checkForUpdateMessage(){
       if(this.user){
-          this.$['htUpdateDialog']._openDialog()
+          this.shadowRoot.querySelector('#htUpdateDialog') ? this.shadowRoot.querySelector('#htUpdateDialog')._openDialog() : null
       }
   }
 

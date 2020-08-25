@@ -1096,8 +1096,11 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
     _getBoxCapacity() {
         return !(_.get(this,"api.keystoreId",false) && _.get(this,"api.tokenId",false) && _.get(this,"api.credentials.ehpassword",false)) ?
             Promise.resolve() :
-            this.api.fhc().Ehboxcontroller().getInfosUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword)
-                .then(boxInfo=>{
+            this.api.fhc().Ehbox().getInfosUsingGET1(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null)
+            ).then(boxInfo=>{
                     this.set('nbrMessagesInStandBy',parseInt(_.get(boxInfo,"nbrMessagesInStandBy",0)))
                     this.set('ehBoxCurrentSize',parseInt(_.get(boxInfo,"currentSize",0)))
                     this.set('ehboxMaxStorageCapacity',parseInt(_.get(boxInfo,"maxSize",10485760))) // 1024^2 - 10 Mb
@@ -1252,7 +1255,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const newStatus = action === "delete" ? (_.get(singleSelectedMessage,"status",0)|(1<<20)) : (_.get(singleSelectedMessage,"status",0)^(1<<20))
                 return !eHealthBoxMessageId || !sourceBox || !destinationBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().moveMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(e=>{})
+                    this.api.fhc().EhboxV3().moveMessagesUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId]).catch(e=>{})
                         .then(()=> this.api.message().modifyMessage(_.merge(singleSelectedMessage, {transportGuid:destinationBox+":"+eHealthBoxMessageId, status:newStatus})).then(modifiedMessage=>_.concat(promisesCarrier, {action:action, message:modifiedMessage, success:true})).catch(e=>{console.log("ERROR with modifyMessage: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })
@@ -1713,7 +1716,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const action = "deleteForEver"
                 return !eHealthBoxMessageId || !sourceBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().deleteMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox).catch(e=>{})
+                    this.api.fhc().EhboxV3().deleteMessagesUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, sourceBox, [eHealthBoxMessageId]).catch(e=>{})
                         .then(()=> this.api.message().deleteMessages(_.trim(_.get(singleSelectedMessage,"id",""))).then(deletetionResult=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:!!deletetionResult})).catch(e=>{console.log("ERROR with deleteMessages: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })

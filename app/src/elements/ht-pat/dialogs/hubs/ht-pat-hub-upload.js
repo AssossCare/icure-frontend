@@ -197,13 +197,13 @@ class HtPatHubUpload extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
       if (!this.selectedDocumentIdToUpload) return;
 
-      this.$['uploadDocumentOnHubDialog'].open()
+      this.shadowRoot.querySelector('#uploadDocumentOnHubDialog') ? this.shadowRoot.querySelector('#uploadDocumentOnHubDialog').open() : null
 
       if(this.ehealthSession && this.haveTherLinks && this.patientConsent.complete === true && this.patientConsent.consent){
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
               this.set('hcp', hcp)
               this.set('uploadedDocumentInfo', {})
-              this.$['uploadDocumentOnHubDialog'].open()
+              this.shadowRoot.querySelector('#uploadDocumentOnHubDialog') ? this.shadowRoot.querySelector('#uploadDocumentOnHubDialog').open() : null
           })
       }else{
           !this.ehealthSession ? this.push('hubUploadControlError', {errorDescription: this.localize("notConnectedToeHealth", "You are not connected to your ehealth yet", this.language)}) : null
@@ -236,7 +236,7 @@ class HtPatHubUpload extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
               })
 
 
-              this.api.fhc().Hubcontroller().putTransactionUsingPOST(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.lastName, this.hcp.firstName, this.hcp.nihii, this.hcp.ssin, '6000',
+              this.api.fhc().Hub().putTransactionUsingPOST(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, this.hcp.lastName, this.hcp.firstName, this.hcp.nihii, this.hcp.ssin, '6000',
                   this.hubId, this.patient.ssin, output, this.hubPackageId, this.hubApplication
               )
           })
@@ -248,7 +248,7 @@ class HtPatHubUpload extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   _closeUploadDialog(){
-      this.$['uploadDocumentOnHubDialog'].close()
+      this.shadowRoot.querySelector('#uploadDocumentOnHubDialog') ? this.shadowRoot.querySelector('#uploadDocumentOnHubDialog').close() : null
   }
 
   _getCodeLabel(label){
