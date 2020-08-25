@@ -1867,14 +1867,17 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       //console.log("_checkKeystoreValidity: ", this.showKeystoreExpiredLabel, this.showKeystoreExpiresSoonLabel)
       const monthLimit = 2 // number of remaining months when to start warning the user
 
-      this.api.fhc().Sts().getKeystoreInfoUsingGET(this.api.keystoreId, this.credentials.ehpassword).then(info => {
-          if(info.validity && info.validity - moment().valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+      this.api.fhc().Sts().getKeystoreInfoUsingGET(
+          _.get(this, 'api.keystoreId', null),
+          _.get(this, 'credentials.ehpassword', null)
+      ).then(info => {
+          if(_.get(info, 'validity', null) && _.get(info, 'validity', null) - moment().valueOf() <= 0) {
+              this.keyStoreValidityLabel = moment(_.get(info, 'validity', null)).format("DD/MM/YYYY")
               this._showToasterMessage("showKeystoreExpiredLabel")
               this.set("showKeystoreExpiredStatusIcon", true)
               this.set("showKeystoreExpiresSoonStatusIcon", false)
-          } else if(info.validity && info.validity - moment().add(monthLimit, 'months').valueOf() <= 0) {
-              this.keyStoreValidityLabel = moment(info.validity).format("DD/MM/YYYY")
+          } else if(_.get(info, 'validity', null) && _.get(info, 'validity', null) - moment().add(monthLimit, 'months').valueOf() <= 0) {
+              this.keyStoreValidityLabel = moment(_.get(info, 'validity', null)).format("DD/MM/YYYY")
               this._showToasterMessage("showKeystoreExpiresSoonLabel")
               this.set("showKeystoreExpiresSoonStatusIcon", true)
               this.set("showKeystoreExpiredStatusIcon", false)
