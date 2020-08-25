@@ -348,22 +348,14 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             <paper-icon-button id="leafletLink_[[medicationDetail.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
                             <paper-tooltip id="tt_leafletLink_[[medicationDetail.id]]" position="right" for="leafletLink_[[medicationDetail.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
                         </template>                    
-                        [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;[[_getDrugCnk(medication)]]
+                        [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;
+                        <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_getDrugCnk(medicationDetail)]]</template>
+                        <template is="dom-if" if="[[medicationDetail.oldCnk]]"><iron-icon class="alert-icon darkRed" icon="icons:warning"></iron-icon>[[localize('', 'Attention', language)]] <span class="strikeOut">CNK: [[medicationDetail.oldCnk]]</span> [[localize('', 'devient', language)]] <b>[[_getDrugCnk(medicationDetail)]]</b></template>                        
                     </p>
-                    
-                    <!--
-                    <div class="sam-code-item">
-                        <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_formatCnk(medicationDetail.id)]]</template>
-                        <template is="dom-if" if="[[medicationDetail.oldCnk]]">
-                            <iron-icon class="alert-icon" icon="icons:warning"></iron-icon>
-                            [[localize('', 'Attention', language)]] <span class="strikeOut">[[_formatCnk(medicationDetail.oldCnk)]]</span> [[localize('', 'devient', language)]] [[_formatCnk(medicationDetail.id)]]
-                        </template>
-                    </div>
-                    -->
                     
                     <template is="dom-if" if="[[_hasAllergies(medicationDetail)]]">
                         <div class="allergy-alert p10 mt5 mb5">
-                            <div class="allergy-title fw700"> <iron-icon class="alert-icon mw15 mh15" icon="icons:warning"></iron-icon> [[localize('aller_int','Allergies et intolérances',language)]]: </div>
+                            <div class="allergy-title fw700"> <paper-icon-button class="infoIcon" icon="icons:warning"></paper-icon-button> [[localize('aller_int','Allergies et intolérances',language)]]: </div>
                             <div class="list"><template is="dom-repeat" items="[[medicationDetail.allergies]]" as="allergy"><div><iron-icon class$="mw15 mh15 code-icon [[_getAtcStyle(allergy)]]" icon="[[_getAllergyIcon(allergy)]]"></iron-icon> ([[_getIcpcLabel(allergy)]])<i> [[_shortDateFormat(allergy)]]</i> [[allergy.descr]]</div></template></div>
                         </div>
                     </template>
@@ -420,11 +412,40 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         on-regimen-changed="_regimenChanged" 
                                         on-regimen-delete="_removeRegimen"
                                     ></ht-regimen-day>
-                                </template>                                                                
+                                </template>
                                 
-                                Période<br />
-                                Posologie (text)<br />
-                                Instructions pour le patient<br />
+                                <div class="regimen-line display-type-regimen">
+                                
+                                    <paper-dropdown-menu always-float-label id="peri" label="[[localize('peri', 'Période', language)]]">
+                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{periodConfig}}">
+                                            <template is="dom-repeat" items="[[periodConfigs]]"><paper-item value="[[item]]">[[localize(item.id, item.id, language)]]</paper-item></template>
+                                        </paper-listbox>
+                                    </paper-dropdown-menu>
+                                
+                                    <template is="dom-if" if="[[_canAddRegimen(periodConfig)]]">
+                                        <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addRegimen"></paper-icon-button>
+                                        <paper-dropdown-menu always-float-label id="periodConfigDropDown" label="[[localize(periodConfig.label, periodConfig.label, language)]]" disabled=[[periodConfig.disabled]]>
+                                            <paper-listbox id="periodConfig" slot="dropdown-content" attr-for-selected="value" selected="{{regimenKey}}">
+                                                <template is="dom-repeat" items="[[availableRegimenKeys]]"><paper-item value="[[item]]">[[localize(item, item, language)]]</paper-item></template>
+                                            </paper-listbox>
+                                        </paper-dropdown-menu>
+                                    </template>
+                                    
+                                </div>
+                                
+                                <div class="regimen-line display-type-regimen comment">
+                                    <paper-input-container always-float-label="true" class="w100pc">
+                                        <label slot="label" class="color-status">[[localize('pos','Posology',language)]]</label>
+                                        <iron-autogrow-textarea readonly slot="input" value="{{medicationDetail.posology}}"></iron-autogrow-textarea>
+                                    </paper-input-container>
+                                </div>
+                                
+                                <div class="regimen-line display-type-regimen comment">
+                                    <paper-input-container always-float-label="true" class="w100pc">
+                                        <label slot="label" class="color-status">[[localize('instructions-for-patient','Instructions pour le patient',language)]]/[[localize('pos','Posology',language)]]</label>
+                                        <iron-autogrow-textarea slot="input" value="{{medicationDetail.commentForPatient}}"></iron-autogrow-textarea>
+                                    </paper-input-container>
+                                </div>                                
 
                             </div>
                         </div>
@@ -436,16 +457,79 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         </div>
                         <div class="prescription-container-content">
                         
-                            Date début<br />
-                            Date fin<br />
-                            Nombre de jours<br />
-                            Fin boite<br />
-                            Jours couverts<br />
-                            Substitution<br />
-                            Remboursement<br />
-                            Déliverable à partir du<br />
-                            Date de fin pour l'exécution<br />
+                        
+                        
+                            <div class="regimen-line display-type-regimen">
                             
+                                <vaadin-date-picker id="beginMoment" label="[[localize('start-date', 'Start date', language)]]" value="{{medicationDetail.beginMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]" required></vaadin-date-picker>
+                                
+                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
+                                    <vaadin-date-picker id="endMoment" label="[[localize('end-date', 'End date', language)]]" value="{{medicationDetail.endMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]" min="[[medicationDetail.beginMomentAsString]]"></vaadin-date-picker>
+                                    <paper-input always-float-label type="number" min="0" label="[[localize('','Nombre de jours',language)]]" value="{{duration}}" autovalidate pattern="^\\d*$"></paper-input>
+                                
+                                    <template is="dom-if" if="[[canShowProvisionInfo]]">
+                                        <vaadin-date-picker id="endProvisionMoment" label="[[localize('', 'Fin boîte', language)]]" readonly value="[[endProvisionMomentAsString]]" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
+                                        <paper-input always-float-label type="number" min="0" readonly label="[[localize('provision-days','Jours couverts',language)]]" value="[[provisionDays]]"></paper-input>
+                                        <template is="dom-if" if="[[insufficientProvision]]"><div class="date-alert"><iron-icon class="alert-icon" icon="icons:warning"></iron-icon></div></template>
+                                    </template>
+                                
+                                </template>
+                                
+                            </div>
+                            
+                            
+                            
+                            <div class="regimen-line display-type-regimen">
+                            
+                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
+                                    <paper-dropdown-menu always-float-label id="medicSubstitution" label="[[localize('', 'Substitution', language)]]">
+                                        <paper-listbox id="substitution" slot="dropdown-content" selected="{{medicationDetail.substitutionAllowed}}" attr-for-selected="value">
+                                            <paper-item value="true">[[localize('subtitutionAllowed','Autorisée',language)]]</paper-item>
+                                            <paper-item value="false">[[localize('subtitutionForbidden','Interdite',language)]]</paper-item>
+                                        </paper-listbox>
+                                    </paper-dropdown-menu>
+                                </template>
+                            
+                                <paper-dropdown-menu always-float-label id="medicReimbursement" label="[[localize('presc_reimb', 'Reimbursement', language)]]" class="regimen--reimbursement">
+                                    <paper-listbox id="reimbursementReason" slot="dropdown-content" class="dropdown-reimbursement" attr-for-selected="value" selected="{{reimbursementReason}}">
+                                        <template is="dom-repeat" items="[[reimbursementCodeRecipe]]"><paper-item value="[[item]]">[[_getCodeLabel(item.label)]]</paper-item></template>
+                                    </paper-listbox>
+                                </paper-dropdown-menu>
+                            
+                                <template is="dom-if" if="[[medicationContent.isPrescription]]">
+                                    <vaadin-date-picker id="deliveryDate" label="[[localize('deliv_from', 'Délivrable à partir du', language)]]" readonly value="{{medicationDetail.deliveryMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
+                                    <vaadin-date-picker id="endExecDate" label="[[localize('EndDateForExecution', 'Date de fin pour excécution', language)]]" readonly value="{{medicationDetail.endExecMomentAsString}}" class="regimen--datepicker" i18n="[[i18n]]"></vaadin-date-picker>
+                                </template>
+                                
+                            </div>
+                            
+                            
+                            
+                            <template is="dom-if" if="[[medicationContent.isPrescription]]">
+                                <div class="regimen-line display-type-regimen">
+                                
+                                    <paper-dropdown-menu always-float-label id="medicRenewal" label="[[localize('renewal', 'Renouvellement', language)]]">
+                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{medicationDetail.renewal}}">
+                                            <paper-item value="allowed">[[localize('allowed','Permis',language)]]</paper-item>
+                                            <paper-item value="forbidden">[[localize('forbidden','Interdit',language)]]</paper-item>
+                                        </paper-listbox>
+                                    </paper-dropdown-menu>
+                            
+                                    <template is="dom-if" if="[[_isAllowed(medicationDetail.renewal)]]">
+                                        <paper-input always-float-label type="number" min="0" label="[[localize('amount', 'Nombre', language)]]" max="100" value="{{medicationContent.medicationValue.renewal.decimal}}"></paper-input>
+                                        <paper-input always-float-label type="number" min="0" label="[[localize('everyX', 'tous le', language)]]" max="100" value="{{medicationContent.medicationValue.renewal.duration.value}}"></paper-input>
+                                        <paper-dropdown-menu always-float-label id="medicRenewalTimeUnit" label="[[localize('time_unit','Time unit',language)]]" class="regimen--renewalTimeUnit">
+                                            <paper-listbox id="renewalTimeUnit" slot="dropdown-content" class="dropdown-renewalTimeUnit" attr-for-selected="value" selected="{{renewalTimeUnit}}">
+                                                <template is="dom-repeat" items="[[timeUnits]]"><paper-item value="[[item]]">[[_getCodeLabel(item.label)]]</paper-item></template>
+                                            </paper-listbox>
+                                        </paper-dropdown-menu>
+                                    </template>
+                                    
+                                </div>
+                            </template>
+
+
+
                         </div>
                     </div>
                 </div>  
@@ -741,7 +825,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return [
             '_medicationChanged(user, medication, medication.*)',
 
-            // Todo: refactor those beauties
+            // Todo: refactor these beauties
             '_changeBeginMoment(medicationDetail.beginMomentAsString)',
             '_changeEndMoment(medicationDetail.endMomentAsString)',
             '_changeDuration(duration)',
@@ -996,9 +1080,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _updateStats() {
 
-        const regimen = _.get(this, "medicationContent.medicationValue.regimen", "")
+        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
 
-        if (!regimen || !_.get(this,"quantityFactor")) return
+        if (!_.size(regimen) || !_.get(this,"quantityFactor")) return
 
         const endMoment = this._endMoment(), beginMoment = this._beginMoment()
         const keys = _.trim(_.get(this,"periodConfig.id")) === "weeklyPosology" ? _.get(this,"weekdayKeys") : [""]
@@ -1104,13 +1188,13 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _instructionOverride() {
 
-        return !_.size(_.get(this, "medicationContent.medicationValue.regimen", "")) ? null :  this._resetAll()
+        return !_.size(_.get(this, "medicationContent.medicationValue.regimen", [])) ? null :  this._resetAll()
 
     }
 
     _resetAll() {
 
-        const regimen = _.get(this, "medicationContent.medicationValue.regimen", "")
+        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
 
         return !regimen ? null : this.splice("medicationContent.medicationValue.regimen", 0, _.size(regimen))
 
@@ -1140,6 +1224,26 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     _copyPosologyNote() {
 
         return (this._resetAll()||true) &&  this.set("medicationDetail.commentForPatient", _.get(this, "medicationDetail.posologyNote"))
+    }
+
+    _addRegimen() {
+
+        return !_.size(_.get(this, "medicationContent.medicationValue.regimen", [])) || !_.get(this,"regimenKey") || _.get(this,"regimenKeys",[]).includes(_.get(this,"regimenKey")) ? null : (this.push("regimenKeys", _.get(this,"regimenKey"))||true) && this._updatePeriodConfigs();
+
+    }
+
+    _removeRegimen(e) {
+
+        const key = _.trim(_.get(e, "detail.key"))
+        const medicationRegimen = _.get(this, "medicationContent.medicationValue.regimen", [])
+
+        if(!key || _.trim(_.get(this,"periodConfig.id")) === "dailyPosology" || _.size(_.get(this,"regimenKeys")) < 2) return;
+
+        this.set("medicationContent.medicationValue.regimen", _.trim(_.get(this,"periodConfig.keyId")) !== "weekday" ? medicationRegimen : _.filter(medicationRegimen, reg => _.trim(_.get(reg,"weekday.code")) !== key));
+        this.splice("regimenKeys", _.get(this,"regimenKeys",[]).indexOf(key), 1);
+
+        this._updatePeriodConfigs();
+
     }
 
     _medicationChanged(user, medication) {
@@ -1189,7 +1293,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         })
 
                         // Cnk changed / replaced ?
-                        return _.merge(_.get(medication,"drug"), _.some(validAmpps, ampp=> _.trim(_.get(ampp,"publicDmpp.code")) === _.trim(_.get(medication,"id"))) ? {} : {id: _.trim(_.get(latestAmpp,"publicDmpp.code")), drug: { id: _.trim(_.get(latestAmpp,"publicDmpp.code")), oldCnk: _.trim(_.get(medication,"id")) } })
+                        return _.get(_.merge(medication, _.some(validAmpps, ampp=> _.trim(_.get(ampp,"publicDmpp.code")) === _.trim(_.get(medication,"id"))) ? {} : {id: _.trim(_.get(latestAmpp,"publicDmpp.code")), drug: { id: _.trim(_.get(latestAmpp,"publicDmpp.code")), oldCnk: _.trim(_.get(medication,"id")) } }), "drug")
 
                     })
                     .catch(e => (console.log("[ERROR]", e)||true) && _.get(medication,"drug"))
@@ -1202,7 +1306,15 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 this.set("medicationContent", content);
 
                 // Used to be this._initmedicationContent()
-                _.get(this,"medicationContent.medicationValue") && !_.get(this,"medicationContent.medicationValue.regimen") ? this.set('medicationContent.medicationValue.regimen', []) : null
+                _.get(this,"medicationContent.medicationValue") && !_.size(_.get(this,"medicationContent.medicationValue.regimen")) ? this.set('medicationContent.medicationValue.regimen', []) : null
+
+                // Avoid infinitely nested objects
+                _.assign(_.get(medicationWithAmpps,"amp.ampps"), _
+                    .chain(medicationWithAmpps)
+                    .get("amp.ampps")
+                    .map(it => _.omit(it,["amp.ampps"]))
+                    .value()
+                )
 
                 const beginMoment = _.get(content,"medicationValue.beginMoment") ? _.get(content,"medicationValue.beginMoment") :
                     _.get(medicationWithAmpps,"newMedication.valueDate") ? _.get(medicationWithAmpps,"newMedication.valueDate") :
@@ -1224,19 +1336,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     isConfidential: _.chain(medicationWithAmpps).get("newMedication.tags").find(tag => _.trim(_.get(tag,"type")).toLowerCase().indexOf("confidentiality") > -1).get("code").trim().lowerCase().value() === "secret",
                     substitutionAllowed: _.get(this,"medicationContent.medicationValue.substitutionAllowed") ? "true" : "false",
                     commentForPatient: this._extractCommentForPatient(),
-
-                    // Todo: FZ need this [OR] double check previous class structure % displayed infos % axel
-                    // label: _.trim(_.get(medication,"drug.label")),
-                    // informationsForPosology: _.get(medication,"drug.informationsForPosology"),
-                    // narcoticIcon: _.get(medication,"drug.narcoticIcon"),
-                    // samCode: _.trim(_.get(medication,"drug.samCode")),
-                    // productType: _.trim(_.get(medication,"type")),
-                    // type: _.trim(_.get(medication,"drug.type")),
-                    // allergyType: _.get(medication,"drug.allergyType"),
-                    // atcCat: _.trim(_.get(medication,"drug.atcCat")),
-                    // catIcon: _.trim(_.get(medication,"drug.catIcon")),
-                    // publicPriceHr: _.trim(_.get(medication,"drug.publicPrice")),
-
+                    productType: _.trim(_.get(this,"medication.type")),
                 }))
                 this.set("initializingDate", false);
 
@@ -1253,14 +1353,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
             })
             .catch(e => console.log("[ERROR]", e))
-            .finally(() => this.set('isLoading', false))
-
-
-
-        // Todo: Call 4 Max getByVmp (group id) -> get wada -> throw back 2 max (info btn)
-        // Todo: Check currentReimboursment
-        // Todo: .omit(["amp.ampps"]) avoid infinite / deep loop
-        // Todo: make sure class.medication object equals previous lines of code (embeded object with ..drug, .type .id)
+            .finally(() => (console.log("Medication", this.medication)||true) && (console.log("MedicationDetail", this.medicationDetail)||true) && this.set('isLoading', false))
 
     }
 
@@ -1286,23 +1379,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         this.set("medicationDetail.posology", posology);
         const separator = posology && this.medicationDetail.commentForPatient && this.commentSeparator || "";
         this.medicationContent.medicationValue.instructionForPatient = posology + separator + this.medicationDetail.commentForPatient;
-    }
-
-    _removeRegimen(e) {
-        const key = _.get(e, "detail.key", "")
-        if (!key) return;
-        if (this.periodConfig.id === "dailyPosology") return;
-        if (this.regimenKeys.length < 2) return;
-        const keyId = this.periodConfig.keyId;
-        let regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
-        if (keyId === "weekday") {
-            regimen = regimen.filter(reg => reg.weekday && reg.weekday.code != key)
-        } else {
-            // @ todo dayNumber and date
-        }
-        this.set("medicationContent.medicationValue.regimen", regimen);
-        this.splice("regimenKeys", this.regimenKeys.indexOf(key), 1);
-        this._updatePeriodConfigs();
     }
 
     _isConfidentialChanged() {
@@ -1355,7 +1431,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     _quantityFactorChanged() {
-        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
+        const regimen = _.get(this.medicationContent, "medicationValue.regimen", []);
         if (!regimen) return;
         regimen.filter(reg => reg.administratedQuantity && reg.administratedQuantity.quantity || "")
             .forEach(reg => {
@@ -1419,16 +1495,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             }
             this._updateStats();
         }
-    }
-
-    _addRegimen() {
-        const regimen = _.get(this.medicationContent, "medicationValue.regimen", "");
-        if (!regimen) return;
-        if (!this.regimenKey) return;
-        if (this.regimenKeys.includes(this.regimenKey))
-            return;
-        this.push("regimenKeys", this.regimenKey);
-        this._updatePeriodConfigs();
     }
 
     openList(list) {

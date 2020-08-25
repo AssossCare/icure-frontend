@@ -1016,6 +1016,10 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
             .displayFlex {display:flex;}
             .displayInlineFlex {display:inline-flex;}
             .displayInherit {display:inherit;}
+            
+            .strikeOut {
+                text-decoration-line: line-through;
+            }            
 
 
 		</style>
