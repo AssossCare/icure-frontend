@@ -3802,8 +3802,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                 // Get fhc keystore UUID in cache
                                 new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))) :
                                 // Upload new keystore
-                                this.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
-                                    .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
+                                this.api.fhc().Sts().uploadKeystoreUsingPOST(
+                                    this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)), it => this.api.toHexString(it)).join("")))
+                                ).then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
                         )
                 )
         )

@@ -2122,7 +2122,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
       if (this.credentials.ehpassword) {
           const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
           if (ehKeychain) {
-              return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+              return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(ehKeychain, it => this.api.toHexString(it)).join("")))).then(res => {
                   this.$.api.keystoreId = res.uuid
                   this._checkKeystoreValidity()
                   return this._getToken()
@@ -2159,7 +2159,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                               this.credentials.ehpasswordMH = password
                               const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH."+ this.user.healthcarePartyId)
                               if (ehKeychain) {
-                                  return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                                  return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(ehKeychain, it => this.api.toHexString(it)).join("")))).then(res => {
                                       this.$.api.keystoreIdMH = res.uuid
                                       return this._getMHToken()
                                   }).catch((e) => {
