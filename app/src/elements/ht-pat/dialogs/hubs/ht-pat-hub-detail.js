@@ -868,36 +868,34 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
   _setHub(){
 
-      this._getHubHcpConsent().then(consentResp => this.set('hcpHubConsent', consentResp))
-
-      if (this.hubSupportsConsent) this._getHubHcpConsent().then(consentResp => this.set('hcpHubConsent', consentResp)).catch(error => {
-          console.log(error);
-      });
-
-      if (this.hubSupportsConsent) this._getHubPatientConsent().then(consentResp => this.set('patientHubConsent', consentResp)).catch(error => {
-          console.log(error);
-      });
-
-      if (this.hubSupportsConsent) this._getHubTherapeuticLinks().then(tlResp => this.set('patientHubTherLinks', tlResp)).catch(error => {
-          console.log(error);
-      });
-
-      this._getHubTransactionList().then(tranResp => {
-          this.set('isLoading', false);
+      (_.get(this, 'hubSupportsConsent', null) ?
+      this._getHubHcpConsent()
+          .then(hcpConsentResp => {
+              this.set('hcpHubConsent', hcpConsentResp)
+              return this._getHubPatientConsent()
+          })
+          .then(patConsentResp => {
+              this.set('patientHubConsent', patConsentResp)
+              return this._getHubTherapeuticLinks()
+          })
+          .then(tlResp => this.set('patientHubTherLinks', tlResp))
+          .then(() => this.putHubPatient())
+          .then(patHutResp => {
+              return this.getHubPatient()
+          })
+          .then(hubPat => this.set('patientHubInfo', hubPat)) : Promise.resolve({})
+      ).then(() => this._getHubTransactionList())
+      .then(tranResp => {
           if(this.directToUpload){
-              this.set('directToUpload', false);
-              this._openPreviewSumehr();
+              this.set('directToUpload', false)
+              this._openPreviewSumehr()
           }
+      }).finally(() => {
+          this.set('isLoading', false)
       }).catch(error => {
-          this.set('isLoading', false);
+          this.set('isLoading', false)
           console.log(error);
-      });
-
-      if (this.hubSupportsConsent){
-          this.putHubPatient().then(putResp => {
-              this.getHubPatient().then(hubPat => this.set('patientHubInfo', hubPat)).catch(error => {console.log(error);})
-          }).catch(error => {console.log(error);})
-      }
+      })
   }
 
   addSearchField(){
@@ -1358,8 +1356,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
   _getHubHcpConsent(){
       //getHcpConsentUsingGET: function (endpoint, keystoreId, tokenId, passPhrase, hcpNihii, hcpSsin, hcpZip)
-      if (this.patient.ssin && this.api.tokenId) {
-          return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+     return _.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) ?
+           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
               .then(hcp =>
                   this.api.fhc().Hub().getHcpConsentUsingGET(
                       _.get(this, 'hubEndPoint', null),
@@ -1373,17 +1371,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(this, 'hcpZip', null),
                       null
                   )
-              ).then(consentResp => {
-                      if (consentResp) {
-                          return consentResp;
-                      } else {
-                          return null;
-                      }
-                  }
-              )
-      } else {
-          return Promise.resolve(null)
-      }
+              ): Promise.resolve(null)
   }
 
   _getHubPatientInfoDesc(pi){
@@ -1488,9 +1476,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(this, 'patient.dateOfBirth', null),
                       null
                   )
-              ).then(patResp => {
-                  return patResp ? patResp : null
-              }) :
+              ) :
        Promise.resolve(null)
   }
 
@@ -1512,10 +1498,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(this, 'patient.ssin', null),
                       null
                   )
-              ).then(consentResp => {
-                  return consentResp ? consentResp : null
-              }) :
-      Promise.resolve(null)
+              ) : Promise.resolve(null)
   }
 
   _runRegisterHubPatient(){
@@ -1580,10 +1563,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                       _.get(this, 'patient.ssin', null),
                       _.get(this, 'hubPackageId', null)
                   )
-              ).then(tlResp => {
-                  return tlResp ? tlResp : null
-              })
-      : Promise.resolve(null)
+              ) : Promise.resolve(null)
   }
 
   _registerHubPatientTherapeuticLink(){
