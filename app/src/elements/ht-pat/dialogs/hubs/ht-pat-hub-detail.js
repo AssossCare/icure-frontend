@@ -750,6 +750,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
 
   ready() {
       super.ready();
+      this._initializeHubEnv()
       document.addEventListener('xmlHubUpdated', () => this.xmlHubListener() );
   }
 
@@ -789,6 +790,13 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       this.set('selectedHub', {})
       this.shadowRoot.querySelector('#htPatHubTransactionViewer') ? this.shadowRoot.querySelector('#htPatHubTransactionViewer').open(this,  null) : null
 
+      this._initializeHubEnv()
+
+      this._refresh();
+
+  }
+
+  _initializeHubEnv(){
       const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
           (this.user.properties[this.user.properties.length] = {
               type: {identifier: 'org.taktik.icure.user.preferredhub'},
@@ -799,12 +807,9 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
               type: {identifier: 'org.taktik.icure.user.eHealthEnv'},
               typedValue: {type: 'STRING', stringValue: 'prd'}
           })
-      this.set("curHub", propHub.typedValue.stringValue);
-      this.set("curEnv", propEnv.typedValue.stringValue);
+      this.set("curHub", _.get(propHub, 'typedValue.stringValue', null))
+      this.set("curEnv", _.get(propEnv, 'typedValue.stringValue', null))
       this.set("selectedHub", _.get(this, 'listOfAvailableHub', []).find(hub => _.get(hub, 'id', null) === _.get(propHub, 'typedValue.stringValue', '')))
-
-      this._refresh();
-
   }
 
   _refresh(){
@@ -833,16 +838,16 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
       this._setHub();
   }
 
-    selectedHubChanged(){
-        if(_.get(this, 'selectedHub', null)){
-            this.set("curHub", _.get(this.selectedHub, 'id', null));
-        }
+  selectedHubChanged(){
+    if(!_.isEmpty(_.get(this, 'selectedHub', null))){
+        this.set("curHub", _.get(this, 'selectedHub.id', null))
     }
+  }
 
   _initHub(){
       this.set("supportBreakTheGlass", false);
 
-      const hubConfig = this.$["htPatHubUtils"].getHubConfig(this.curHub, this.curEnv);
+      const hubConfig = this.shadowRoot.querySelector('#htPatHubUtils') ? this.shadowRoot.querySelector('#htPatHubUtils').getHubConfig(this.curHub, this.curEnv) : null
 
       this.set('isLoading',true);
       this.set('hcpHubConsent', null);
@@ -862,17 +867,21 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
   }
 
   _setHub(){
-      this._initHub();
+
+      this._getHubHcpConsent().then(consentResp => this.set('hcpHubConsent', consentResp))
 
       if (this.hubSupportsConsent) this._getHubHcpConsent().then(consentResp => this.set('hcpHubConsent', consentResp)).catch(error => {
           console.log(error);
       });
+
       if (this.hubSupportsConsent) this._getHubPatientConsent().then(consentResp => this.set('patientHubConsent', consentResp)).catch(error => {
           console.log(error);
       });
+
       if (this.hubSupportsConsent) this._getHubTherapeuticLinks().then(tlResp => this.set('patientHubTherLinks', tlResp)).catch(error => {
           console.log(error);
       });
+
       this._getHubTransactionList().then(tranResp => {
           this.set('isLoading', false);
           if(this.directToUpload){
