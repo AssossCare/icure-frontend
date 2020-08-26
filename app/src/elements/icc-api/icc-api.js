@@ -169,7 +169,7 @@ class IccApi extends PolymerElement {
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
 
       this.patienticcLight = new api.iccPatientApi(this.host, this.headers)
-      this.cryptoicc = new IccCryptoXApi(this.host, this.headers, this.hcpartyiccLight, this.patienticcLight)
+      this.cryptoicc = new IccCryptoXApi(this.host, this.headers, this.hcpartyicc, this.patienticcLight)
 
       this.calendaritemicc = new IccCalendarItemXApi(this.host, this.headers, this.cryptoicc)
       this.classificationicc = new IccClassificationXApi(this.host, this.headers, this.cryptoicc)
