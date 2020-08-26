@@ -2717,7 +2717,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
             getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
                 this.worker.postMessage({
                     action: "loadEhboxMessage",
-                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    hcpartyBaseApi: this.api.hcparty(),
                     fhcHost: this.api.fhc().host,
                     fhcHeaders: JSON.stringify(this.api.fhc().headers),
                     language: this.language,

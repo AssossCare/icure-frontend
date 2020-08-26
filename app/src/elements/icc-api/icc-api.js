@@ -165,7 +165,6 @@ class IccApi extends PolymerElement {
 
       this.codeicc = new IccCodeXApi(this.host, this.headers)
 
-      this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
 
       this.patienticcLight = new api.iccPatientApi(this.host, this.headers)
@@ -265,10 +264,6 @@ class IccApi extends PolymerElement {
 
   hcparty() {
       return this.hcpartyicc
-  }
-
-  hcpartyLight() {
-      return this.hcpartyiccLight
   }
 
   helement() {
