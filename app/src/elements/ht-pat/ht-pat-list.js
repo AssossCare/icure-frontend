@@ -1101,7 +1101,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                 </div>
 
                 <div class="line bottom-line">
-                    <vaadin-checkbox class="show-all-patients" checked="{{showInactive}}">
+                    <vaadin-checkbox class="show-all-patients" on-change="_showInactiveChanged">
                     </vaadin-checkbox>
                     <span class="show-all-patients-txt">[[localize('show_inactive_patients','Show inactive patients',language)]]</span>
 
@@ -1809,7 +1809,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           const endIndex = ((params.page || 0) + 1) * pageSize
 
           const thisParams = this.filterValue + "|" + sort + "|" + (desc ? "<|" : ">|") + pageSize + ":" + JSON.stringify(this.selectedFilters || [])
-          const thisParamsWithIdx = thisParams + ":" + startIndex
+          const thisParamsWithIdx = thisParams + ":" + startIndex + ':'+ this.showInactive
 
           //100ms cooldown period
 
@@ -3330,6 +3330,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
     focusInput(event){
       console.log(event)
+    }
+
+    _showInactiveChanged(event){
+      this.set("showInactive",_.get(event,'target.checked',false))
     }
 }
 
