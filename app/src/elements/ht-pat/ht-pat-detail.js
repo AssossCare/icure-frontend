@@ -5201,16 +5201,19 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('accessOk')
         this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('noAccess')
 
-        this.set("hubReady", !this.hubSupportsConsent ? true :
-            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? true : false)
+        this.set("hubReady", !this.hubSupportsConsent ? true : !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})))
 
-        !this.hubSupportsConsent ? this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
-            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
-                this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('noAccess')
+        !this.hubSupportsConsent ?
+            this.shadowRoot.querySelector('#hubStatus') ?
+                this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
+        null :
+            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ?
+                    this.shadowRoot.querySelector('#hubStatus') ? this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') : null :
+                    this.shadowRoot.querySelector('#hubStatus') ? this.shadowRoot.querySelector('#hubStatus').classList.add('noAccess') : null
     }
 
     unselectAdminFile() {
-        this.$.adminFileMenu.select(null)
+        this.shadowRoot.querySelector("#adminFileMenu") ? this.shadowRoot.querySelector("#adminFileMenu").select() : null
     }
 
     newContact(e) {
@@ -5360,7 +5363,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _selectToday() {
-        this.$.adminFileMenu.select(1)
+        this.shadowRoot.querySelector("#adminFileMenu") ? this.shadowRoot.querySelector("#adminFileMenu").select(1) : null
 
         this.set('timeSpanStart', parseInt(moment().startOf('day').format('YYYYMMDD')))
         this.set('timeSpanEnd', null)
