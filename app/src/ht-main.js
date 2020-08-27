@@ -1064,7 +1064,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
           const sort = 'valueDate';
           const desc = 'desc';
 
-          const planningFilter = { '$type': 'UnionFilter', 'filters': [{ '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start, endValueDate: end }, { '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start * 1000000, endValueDate: end * 1000000 }] };
+          const planningFilter =  { '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start * 1000000, endValueDate: end * 1000000 };
           this.api.contact().filterServicesBy(null, 1000, new models.FilterChainService({ filter: planningFilter })) //todo wtf JSON not valid
           .then(planningList => {
               const svcDict = planningList.rows.reduce((acc, s) => {

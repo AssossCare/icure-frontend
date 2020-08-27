@@ -978,7 +978,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     
 
 
-                    <vaadin-grid-column flex-grow="0" width="60px">
+                    <vaadin-grid-column flex-grow="0" width="60px" frozen>
                         <template class="header">
                             <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
                                 <vaadin-checkbox checked="[[isAllPatientCheck]]" on-checked-changed="_checkAllPatientChanged"></vaadin-checkbox>
@@ -996,7 +996,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             </template>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="100px">
+                    <vaadin-grid-column flex-grow="0" width="100px" resizable frozen>
                         <template class="header">
                             <vaadin-grid-sorter path="externalId">[[localize('ext_id_short', 'File N°', language)]]
                             </vaadin-grid-sorter>
@@ -1005,7 +1005,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.externalId]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
+                    <vaadin-grid-column flex-grow="0" width="10%" resizable>
                         <template class="header">
                             <vaadin-grid-sorter path="lastName">[[localize('las_nam','Last name',language)]]
                             </vaadin-grid-sorter>
@@ -1014,7 +1014,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.lastName]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
+                    <vaadin-grid-column flex-grow="0" width="10%" resizable>
                         <template class="header">
                             <vaadin-grid-sorter path="firstName">[[localize('fir_nam','First name',language)]]
                             </vaadin-grid-sorter>
@@ -1023,7 +1023,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.firstName]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="120px">
+                    <vaadin-grid-column flex-grow="0" width="120px" resizable>
                         <template class="header">
                             <vaadin-grid-sorter path="dateOfBirth">[[localize('dat_of_bir','Date of birth',language)]]
                             </vaadin-grid-sorter>
@@ -1033,7 +1033,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                         </template>
                     </vaadin-grid-column>
 
-                    <vaadin-grid-column flex-grow="0" width="120px">
+                    <vaadin-grid-column flex-grow="0" width="150px" resizable>
                         <template class="header">
                             <div class="cell numeric">[[localize('pho','Phone',language)]]</div>
                         </template>
@@ -1049,7 +1049,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell numeric">[[item.mobile]]</div>
                         </template>
                     </vaadin-grid-column> -->
-                    <vaadin-grid-column flex-grow="1">
+                    <vaadin-grid-column flex-grow="1" resizable>
                         <template class="header">
                             <div class="cell frozen">[[localize('postalAddress','Address',language)]]</div>
                         </template>
@@ -1057,7 +1057,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             <div class="cell frozen">[[item.postalAddress]]</div>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="17%">
+                    <vaadin-grid-column flex-grow="0" width="10%" resizable>
                         <template class="header">
                             <div class="cell frozen">[[localize('ema','Email',language)]]</div>
                         </template>
@@ -1101,7 +1101,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                 </div>
 
                 <div class="line bottom-line">
-                    <vaadin-checkbox class="show-all-patients" checked="{{showInactive}}">
+                    <vaadin-checkbox class="show-all-patients" on-change="_showInactiveChanged">
                     </vaadin-checkbox>
                     <span class="show-all-patients-txt">[[localize('show_inactive_patients','Show inactive patients',language)]]</span>
 
@@ -1809,7 +1809,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           const endIndex = ((params.page || 0) + 1) * pageSize
 
           const thisParams = this.filterValue + "|" + sort + "|" + (desc ? "<|" : ">|") + pageSize + ":" + JSON.stringify(this.selectedFilters || [])
-          const thisParamsWithIdx = thisParams + ":" + startIndex
+          const thisParamsWithIdx = thisParams + ":" + startIndex + ':'+ this.showInactive
 
           //100ms cooldown period
 
@@ -3330,6 +3330,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
     focusInput(event){
       console.log(event)
+    }
+
+    _showInactiveChanged(event){
+      this.set("showInactive",_.get(event,'target.checked',false))
     }
 }
 
