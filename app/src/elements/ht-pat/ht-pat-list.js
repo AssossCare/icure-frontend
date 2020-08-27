@@ -2015,8 +2015,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           _.trim(_.get(address,"postalCode","")),
           _.trim(_.get(address,"city",""))
       ]).join(" ");
-      p.lastName = _.lowerFirst(p.lastName)
-      p.firstName = _.lowerFirst(p.firstName)
       p.dateOfBirthFormated = this.formatDateOfBirth(p.dateOfBirth)
       return p
   }
