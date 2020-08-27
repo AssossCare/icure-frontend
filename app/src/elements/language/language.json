@@ -2946,6 +2946,7 @@
 		"mhm-rep-invalid-date" : "Recovery only possible between 01/10/2020 and 31/10/2020",
 		"mhm-rep-log" : "Log",
 		"pos-chronical": "Chronical",
+		"pos-chronical-update": "Chronical (update)",
 		"pos-confidential": "Confidential",
 		"pos-known-usage": "Known usage"
 	},
@@ -6071,6 +6072,7 @@
 		"mhm-rep-invalid-date" : "Reprise seulement possible entre 1/10/2020 et 31/10/2020",
 		"mhm-rep-log" : "Log",
 		"pos-chronical": "Chronique",
+		"pos-chronical-update": "Chronique (mise à jour)",
 		"pos-confidential": "Confidentiel",
 		"pos-known-usage": "Usage connu"
 	},
@@ -9145,6 +9147,7 @@
 		"mhm-rep-invalid-date" : "Overname enkel mogelijk tussen 1/10/2020 en 31/10/2020",
 		"mhm-rep-log" : "Log",
 		"pos-chronical": "Chronical",
+		"pos-chronical-update": "Chronical (update)",
 		"pos-confidential": "Confidential",
 		"pos-known-usage": "Known usage"
 	}

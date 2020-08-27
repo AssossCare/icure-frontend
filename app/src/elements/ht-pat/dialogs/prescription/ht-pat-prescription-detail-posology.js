@@ -146,7 +146,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 
                 .posology-title{
                     padding: 5px;
-                    background: var(--app-background-color-dark);
                     box-sizing: border-box;
                     position: relative;
                 }
@@ -317,7 +316,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 }
                 
                 .allergy-alert {
-                    border:1px dashed var(--app-error-color-dark);
                 }
                 
                 .allergy-title {
@@ -354,7 +352,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     </p>
                     
                     <template is="dom-if" if="[[_hasAllergies(medicationDetail)]]">
-                        <div class="allergy-alert p10 mt5 mb5">
+                        <div class="allergy-alert mt5 mb5">
                             <div class="allergy-title fw700"> <paper-icon-button class="infoIcon" icon="icons:warning"></paper-icon-button> [[localize('aller_int','Allergies et intolérances',language)]]: </div>
                             <div class="list"><template is="dom-repeat" items="[[medicationDetail.allergies]]" as="allergy"><div><iron-icon class$="mw15 mh15 code-icon [[_getAtcStyle(allergy)]]" icon="[[_getAllergyIcon(allergy)]]"></iron-icon> ([[_getIcpcLabel(allergy)]])<i> [[_shortDateFormat(allergy)]]</i> [[allergy.descr]]</div></template></div>
                         </div>
@@ -372,7 +370,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         
                         <div class="medication-container-content">
                             <div>
-                                <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-chronical', 'Chronical', language)]]</vaadin-checkbox>
+                                <vaadin-checkbox class="checkbox" id="isNew" checked="{{medicationDetail.options.createMedication}}" on-checked-changed=""><template is="dom-if" if="[[!medicationContent.isMedication]]">[[localize('pos-chronical', 'Chronical', language)]]</template><template is="dom-if" if="[[medicationContent.isMedication]]">[[localize('pos-chronical-update', 'Chronical update', language)]]</template></vaadin-checkbox>
                                 <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-confidential', 'Confidential', language)]]</vaadin-checkbox>
                                 <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-known-usage', 'Known usage', language)]]</vaadin-checkbox>
                             </div>
@@ -739,7 +737,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 value: () => [
                     {id: "dailyPosology", title: "dai", keys: [], label: "", disabled: true, keyId: ""},
                     {id: "weeklyPosology", title: "wee", keys: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], label: "dayOfWeek", disabled: false, keyId: "weekday"}
-                    // @ todo: dayNumber not supported in posologyString
+                    // todo: dayNumber not supported in posologyString
                     // {id: "monthly", keys: _.range(1, 32), label: "dayOfMonth", disabled: false, keyId: "dayNumber"}
                 ]
             },
@@ -815,9 +813,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             commentSeparator: {
                 type: String,
                 value: " - "
-            }
+            },
             // </Axel Stijns>
-
         };
     }
 
@@ -1253,7 +1250,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
         return !medication ? this._init() : this._init()
             .then(() => this.set('isLoading', true))
-            .then(() => _.assign(medication && medication.drug||(medication.drug={}), {newMedication: _.get(medication,"drug.newMedication")||{content: {}, codes: []}}))
             .then(() => !_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")) ? null : this.api.besamv2().findPaginatedVmpsByGroupId(_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")),null,null,100).then(vmps => _.merge(medication, {drug:{vmps:_.size(_.get(vmps,"rows")) ? _.get(vmps,"rows") : null}})).catch(e => console.log("[ERROR]", e)))
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
                 Promise.resolve(_.get(medication,"drug")) :
@@ -1337,6 +1333,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     substitutionAllowed: _.get(this,"medicationContent.medicationValue.substitutionAllowed") ? "true" : "false",
                     commentForPatient: this._extractCommentForPatient(),
                     productType: _.trim(_.get(this,"medication.type")),
+                    boxes: 1, // Todo: eval number of boxes: either 1 (when new) or X boxes (vs. service)
                 }))
                 this.set("initializingDate", false);
 

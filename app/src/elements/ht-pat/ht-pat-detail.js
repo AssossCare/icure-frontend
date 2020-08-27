@@ -5869,19 +5869,34 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
 
-    openMedicationDialog(e){
-        _.get(e, 'detail.isNew', null) ?
-            this.shadowRoot.querySelector('#htPatPrescriptionDetail') ? this.shadowRoot.querySelector('#htPatPrescriptionDetail')._open(_.get(e, 'detail.service', null), { isPrescription : true }, _.get(e, 'detail.onSave', null)) : null :
-            this.shadowRoot.querySelector('#htPatPrescriptionDetail') ? this.shadowRoot.querySelector('#htPatPrescriptionDetail')._open(_.get(e, 'detail.onSave', null) , _.get(e, 'detail.service', null), _.get(e, 'detail.content', null)) : null
+    openMedicationDialog(e) {
+
+        const isNew = _.get(e, 'detail.isNew', false)
+
+        return this.shadowRoot.querySelector('#htPatPrescriptionDetail') && this.shadowRoot.querySelector('#htPatPrescriptionDetail')._open({
+            onSave: _.get(e, 'detail.onSave', null),
+            service: isNew && _.get(e, 'detail.service', {}),
+            content: !isNew && _.get(e, 'detail.content', {}),
+            isPrescription : isNew,
+        })
+
     }
 
     _medicationsDetail(e) {
-        this.currentMedicationDetailEventDetail = e.detail
-        this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').openList(e.detail.services) : null
+
+        this.currentMedicationDetailEventDetail = _.get(e,"detail",null)
+
+        return this.shadowRoot.querySelector('#medication-detail') && this.shadowRoot.querySelector('#medication-detail').openList(_.get(e,"detail.services",null))
+
     }
 
     _healthElementsSelectorColumns() {
-        return [{key: 'descr', title: 'Description'}, {key: 'plansOfActionDescr', title: 'Plans of action'}]
+
+        return [
+            {key: 'descr', title: 'Description'},
+            {key: 'plansOfActionDescr', title: 'Plans of action'}
+        ]
+
     }
 
     _healthElementsSelectorDataProvider() {
