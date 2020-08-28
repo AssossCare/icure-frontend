@@ -508,7 +508,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 patientPrice: _.get(ampp, 'id', null) && _.get(ampp, 'patientPrice', 0.00).toFixed(2) + " €",
                 publicPrice: _.get(ampp, 'id', null) && _.get(ampp, 'publicPrice', 0.00).toFixed(2) + " €",
                 priceIndex: _.get(ampp, 'id', null) && _.get(ampp, 'priceIndex', null) || 3,
-                catIcon: this._catIconSamV2(ampp),
                 unit: _.get(ampp, 'unit', null),
                 amp: _.get(ampp, 'amp', null),
                 officialName: _.get(ampp, 'amp.officialName', null),
@@ -519,10 +518,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 samDate: _.get(ampp, 'samDate', null),
                 type: "medicine",
                 reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
-                narcoticIcon: this._narcoticIcon(_.get(ampp, "amp", null)),
-                compProhibIcon: this._compProhibIconSamV2(_.get(ampp, 'vmpGroup',null)),
                 informations:{
                     ampp: _.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')),
+                    dmpp: this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P')),
                     crmLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'crmLink', null),
                     currentReimbursement: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null),
                     deliveryModus: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModus', null),
@@ -539,6 +537,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
                     vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
                     vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
+                    rmaLink: _.get(ampp, 'rmaPatientLink', {}),
+                    rmaProfessionalLink: _.get(ampp, 'rmaProfessionalLink', {}),
+                    rma: !_.isEmpty(_.get(ampp, 'rmaPatientLink', {}))
                 }
             }
         })
@@ -552,6 +553,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     _getCurrentCommercialization(commercializations){
         const now = moment().valueOf()
         return commercializations && commercializations.find(com => _.get(com, 'from', null) < now && _.get(com, 'to',  null) ? _.get(com, 'to',  null) > now : true) || {}
+    }
+
+    _getCurrentDmpp(dmpps){
+        const now = moment().valueOf()
+        return dmpps && dmpps.find(dmpp => _.get(dmpp, 'from', null) < now && _.get(dmpp, 'to',  null) ? _.get(dmpp, 'to',  null) > now : true) || {}
     }
 
     _prepareMoleculeForDisplay(vmpGroups){
@@ -638,29 +644,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         return _.get(info, 'blackTriangle', null) ? 'reinf-pharma-vigi' : null
     }
 
-    _compProhibIconSamV2(vmpGroup) {
-        return _.get(vmpGroup, 'noGenericPrescriptionReason.code', null) === "5" ? 'cat-doping-prod' : null
-    }
-
     _getAllergyType(allergies) {
          return _.size(allergies) ? allergies.some(allergy => _.get(allergy, 'type', null) === "allergy") ? "allergy" : allergies.some(allergy => _.get(allergy, 'type', null) === "adr") ? "adr" : null : null
     }
-
-    _catIconSamV2(ampp) {
-        return _.get(ampp, 'publicDmpp', null) || _.get(ampp, 'currentReimbursement', null) ?
-                    _.get(ampp, 'publicDmpp.cheap', null) ?
-                        _.get(ampp, 'currentReimbursement.copaymentSupplement', null) ?
-                            null
-                        : "cat-cheap-noacm"
-                    : _.get(ampp, 'currentReimbursement.copaymentSupplement', null) ?
-                        null
-                    : "cat-notcheap-noacm"
-               : null
-    }
-
-    _narcoticIcon(info) {
-        return _.get(info, 'note', null) === 'stupéfiant' ? 'stup' : null
-    }
-
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);

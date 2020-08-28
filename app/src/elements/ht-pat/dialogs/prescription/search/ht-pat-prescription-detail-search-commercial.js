@@ -12,7 +12,6 @@ import '../../../../../styles/shared-styles';
 import '../../../../../styles/buttons-style';
 import '../../../../../styles/atc-styles';
 
-
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
@@ -46,7 +45,32 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                 display: flex;
                 height: 22px;            
                 border-bottom: 1px solid var(--app-background-color-dark);   
-                padding: 4px;                
+                padding: 4px;   
+                z-index: 1;             
+            }
+            
+            .tr-tooltip{
+                display: flex;
+                height: 15px;              
+                padding: 4px;   
+                z-index: 1;        
+            }
+            
+            .td-tooltip{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;               
+                font-size: 12px;
+                text-overflow: ellipsis;
             }
             
             .tr-group{
@@ -58,7 +82,7 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             }
             
             .td{
-               position: relative;
+                position: relative;
                 display: flex;
                 flex-flow: row nowrap;
                 align-items: center;
@@ -205,9 +229,22 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             
             .tooltipSupply{
                 height: 100px;
-                width: 200px;
+                width: 300px;
+                font-size: 12px;
             }
             
+            .notRel{
+                position: initial;
+            }
+            
+            .fs12{
+                font-size: 12px;
+            }
+            
+            .cheapestDrug{
+                background-color: #dfffdf;
+            }
+      
         </style>
         
         <template is="dom-if" if="[[isLoading]]" restamp="true">
@@ -241,54 +278,61 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                         <div class="td fg05"></div>
                     </div>
                     <template is="dom-repeat" items="[[group]]" as="drug">
-                        <div class="tr tr-item">
+                        <div class$="tr tr-item [[_isCheapestDrugLine(drug)]]">
                             <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>  
                             <div class="td fg01"><iron-icon class="addIcon" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs" title="Alternative"></div>   
-                            <div class="td fg2" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView">
+                            <div class="td fg2 notRel" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView">
                             [[drug.label]]
                             <template is="dom-if" if="[[_isNewDrug(drug)]]">
-                                <span class="newDrug">[[localize('pos-new', 'New', language)]]</span>
+                                <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
                             </template>
                             <template is="dom-if" if="[[_isSupplyProblem(drug)]]">
-                                <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>
-                                <paper-tooltip for="supply_[[drug.id]]" position="right" animation-delay="0">
-                                    <div>
-                                        [[localize('', 'Temporarily unavailable', language)]]
+                                <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>   
+                                <paper-tooltip class="tooltipSupply" for="supply_[[drug.id]]" position="right" animation-delay="0">
+                                    <div class="fs12">
+                                        [[localize('presc-sup-prob-una', 'Temporarily unavailable', language)]]
                                     </div>
                                     <div>
                                         <div class="table">
-                                             <div class="tr th">
-                                                <div class="td fg05">[[localize('', 'From', language)]]</div>
-                                                <div class="td fg05">[[_getStartOfUnavailability(drug)]]</div>
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-from', 'From', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getStartOfUnavailability(drug)]]</div>
                                              </div>
-                                             <div class="tr th">
-                                                <div class="td fg05">[[localize('', 'Until', language)]]</div>
-                                                <div class="td fg05">[[_getEndOfUnavailability(drug)]]</div>
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-until', 'Until', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getEndOfUnavailability(drug)]]</div>
                                              </div>
-                                             <div class="tr th">
-                                                <div class="td fg05">[[localize('', 'Reason', language)]]</div>
-                                                <div class="td fg05">[[_getReasonOfUnavailability(drug)]]</div>
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-reason', 'Reason', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getReasonOfUnavailability(drug)]]</div>
                                              </div>
                                         </div>
                                     </div>
-                                </paper-tooltip>
+                                </paper-tooltip>                  
                             </template>
                             </div>
-                            <div class="td fg05">
-                                <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon></template>
-                                <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label></template>
-                                <paper-tooltip class="tooltipSupply" z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
+                            <div class="td fg05 notRel">
+                                <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]] id="tt_[[drug.atcCat]]_[[drug.id]]"></iron-icon></template>
+                                <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]" id="tt_[[drug.atcCat]]_[[drug.id]]" ><span></span></label></template>
+                                <paper-tooltip for="tt_[[drug.atcCat]]_[[drug.id]]" position="right" animation-delay="0">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
                             </div>
-                            <div class="td fg05">
+                            <div class="td fg05 notRel">
                                 <div class="icon-type-group">
-                                    <iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon>
-                                    <iron-icon icon="medication-svg-icons:[[drug.narcoticIcon]]" class="table-icon"></iron-icon>
-                                    <iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon>                  
+                                    <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon></template>-->
+                                    <template is="dom-if" if="[[_isDoping(drug)]]"><iron-icon icon="medication-svg-icons:[[_getDopingIcon(drug)]]" id="doping_[[drug.id]]" class="table-icon"</iron-icon></template>
+                                    <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon></template>-->
+                                    <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><iron-icon icon="medication-svg-icons:[[_getBlackTriangleIcon(drug)]]" id="bt_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
+                                    <template is="dom-if" if="[[_isRma(drug)]]"><iron-icon icon="medication-svg-icons:[[_getRmaIcon(drug)]]" id="rma_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
                                 </div>
+                                <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-prohib', 'Prohibited drug', language)]]</paper-tooltip> </template>-->
+                                <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-rein', 'Renal failure', language)]]</paper-tooltip> </template>-->
+                                <template is="dom-if" if="[[_isDoping(drug)]]"><paper-tooltip for="doping_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-narco', 'Doping', language)]]</paper-tooltip></template>
+                                <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-act-ing', 'New active ingredient', language)]]</paper-tooltip></template>
+                                <template is="dom-if" if="[[_isRma(drug)]]"><paper-tooltip for="rma_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>
                             </div>
                             <div class="td fg05">[[drug.chapt4]]</div>
                             <div class="td fg05"></div>  
-                            <div class="td fg05"><iron-icon icon="medication-svg-icons:[[drug.catIcon]]" class="table-icon"></iron-icon></div>
+                            <div class="td fg05"><iron-icon icon="medication-svg-icons:[[_isCheapestDrug(drug)]]" class="table-icon"></iron-icon></div>
                             <div class="td fg05">[[drug.patientPrice]]</div>
                             <div class="td fg05">[[drug.publicPrice]]</div> 
                         </div>
@@ -403,14 +447,47 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
     }
 
     _getReasonOfUnavailability(drug){
-        return _.get(drug, 'informations.currentSupplyProblem.reason', null)
+        return _.get(drug, 'informations.currentSupplyProblem.reason.'+this.language, null)
     }
 
     _getEndOfUnavailability(drug){
-        return _.get(drug, 'informations.currentSupplyProblem.to', null)
+        return _.get(drug, 'informations.currentSupplyProblem.expectedEndOn', null) ? this.api.moment(_.get(drug, 'informations.currentSupplyProblem.expectedEndOn', null)).format('DD/MM/YYYY') : null
     }
+
     _getStartOfUnavailability(drug){
-        return _.get(drug, 'informations.currentSupplyProblem.from', null)
+        return _.get(drug, 'informations.currentSupplyProblem.from', null) ? this.api.moment(_.get(drug, 'informations.currentSupplyProblem.from', null)).format('DD/MM/YYYY') : null
+    }
+
+    _isCheapestDrugLine(drug){
+        return _.get(drug, 'informations.dmpp.cheap', false) ? 'cheapestDrug' : ''
+    }
+
+    _isCheapestDrug(drug){
+        return _.get(drug, 'informations.dmpp.cheap', false) ? 'cat-cheap-noacm' : 'cat-notcheap-noacm'
+    }
+
+    _getDopingIcon(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null ? 'cat-doping-prod' : ''
+    }
+
+    _getBlackTriangleIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'blackTriangle' : ''
+    }
+
+    _isDoping(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null
+    }
+
+    _isBlackTriangle(drug){
+        return _.get(drug, 'informations.blackTriangle', false)
+    }
+
+    _isRma(drug){
+        return _.get(drug, 'informations.rma', false)
+    }
+
+    _getRmaIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'rma-pharma-vigi' : ''
     }
 
     _searchCheaperDrugs(e){

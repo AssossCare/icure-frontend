@@ -1144,6 +1144,14 @@ $_documentContainer.innerHTML = `<iron-iconset-svg name="medication-svg-icons" s
              11.38,15.62 31.96,53.61 31.96,53.61
              31.96,53.61 52.52,15.62 52.52,15.62 Z"></path>
             </g>
+            
+            <g id="blackTriangle">       
+              <path stroke="none" d="M 52.52,15.62
+               C 52.52,15.62 11.38,15.62 11.38,15.62
+                 11.38,15.62 31.96,53.61 31.96,53.61
+                 31.96,53.61 52.52,15.62 52.52,15.62 Z"></path>
+            </g>
+            
             <g id="cat-doping-prod">
                 <path fill="none" stroke="black" stroke-width="5" d="M 23.31,45.68
            C 23.31,45.68 35.35,45.68 35.35,45.68
