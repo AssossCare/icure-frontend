@@ -1337,7 +1337,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     substitutionAllowed: _.get(this,"medicationContent.medicationValue.substitutionAllowed") ? "true" : "false",
                     commentForPatient: this._extractCommentForPatient(),
                     productType: _.trim(_.get(this,"medication.type")),
-                    boxes: 1, // Todo: eval number of boxes: either 1 (when new) or X boxes (vs. service)
                 }))
                 this.set("initializingDate", false);
 
