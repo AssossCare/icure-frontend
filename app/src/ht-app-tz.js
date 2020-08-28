@@ -2726,7 +2726,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                 }
                 return ([hcp, keyPairs])
             })
-            this.$.ehBoxMessage.classList.remove('notification')
+            this.shadowRoot.querySelector("#ehBoxMessage") ? this.shadowRoot.querySelector("#ehBoxMessage").classList.remove('notification') : null
             if (!this.worker) { this.worker = new Worker() }
             getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
                 this.worker.postMessage({
