@@ -451,7 +451,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
 
 
-
+/*
                 let newMed = med.service;
                 const medicationValue = newMed && this.api.contact().medicationValue(newMed, this.language);
                 const hasMedication = !!(medicationValue);
@@ -522,7 +522,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 }
 
 
-
+*/
 
             // ------------------------------------
 
