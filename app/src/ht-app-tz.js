@@ -2072,10 +2072,24 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               }
               //only 1 instance
               if(!this.timeLaunched){
+                  if(!window.location.href.includes("localhost:9001")){
+                      this._getQuality(hcp) === "medicalhouse" ?
+                          this.set("api.fhcHeaders" ,_.assign(this.api.fhcHeaders, {
+                              "Content-Type": "application/json",
+                              "Authorization": "Basic ZDM3NjYyOTItMzZkYy00NjI1LWE0MDgtMTNiMDgyZGQ0OTUzOmQ1ODI5MjM3LTBmODItNDg1NS1hZDc2LTA5NGU3YmY1MWU0Mw=="
+                          })) :
+                          this.set("api.fhcHeaders", _.assign(this.api.fhcHeaders, {
+                              "Content-Type": "application/json",
+                              "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"
+                          }))
+                      this.api.fhc().refresh()
+                  }
                   this.set("timeLaunched",true)
                   this._timeCheck()
                   this._timeCheckMH(0)//Should launch directly, no wait in this case!!!
-              }              this._inboxMessageCheck()
+              }
+
+              this._inboxMessageCheck()
               this._checkForUpdateMessage()
               //this._correctionGenderPatients();
 
@@ -2712,12 +2726,12 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                 }
                 return ([hcp, keyPairs])
             })
-            this.$.ehBoxMessage.classList.remove('notification')
+            this.shadowRoot.querySelector("#ehBoxMessage") ? this.shadowRoot.querySelector("#ehBoxMessage").classList.remove('notification') : null
             if (!this.worker) { this.worker = new Worker() }
             getParents(this.user.healthcarePartyId, {}).then(([hcp, kp]) => this.getAlternateKeystores().then(alternateKeystores => {
                 this.worker.postMessage({
                     action: "loadEhboxMessage",
-                    hcpartyBaseApi: this.api.hcpartyLight(),
+                    hcpartyBaseApi: this.api.hcparty(),
                     fhcHost: this.api.fhc().host,
                     fhcHeaders: JSON.stringify(this.api.fhc().headers),
                     language: this.language,

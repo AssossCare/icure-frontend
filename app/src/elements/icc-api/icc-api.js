@@ -39,7 +39,7 @@ class IccApi extends PolymerElement {
       return {
           fhcHeaders:{
               type: Object,
-              value: {"Content-Type": "application/json", "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers: {
@@ -165,7 +165,6 @@ class IccApi extends PolymerElement {
 
       this.codeicc = new IccCodeXApi(this.host, this.headers)
 
-      this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
 
       this.patienticcLight = new api.iccPatientApi(this.host, this.headers)
@@ -265,10 +264,6 @@ class IccApi extends PolymerElement {
 
   hcparty() {
       return this.hcpartyicc
-  }
-
-  hcpartyLight() {
-      return this.hcpartyiccLight
   }
 
   helement() {
@@ -1183,8 +1178,6 @@ class IccApi extends PolymerElement {
             return ('0' + (byte & 0xFF).toString(16)).slice(-2);
         }).join('')
     }
-
-
 }
 
 customElements.define(IccApi.is, IccApi)

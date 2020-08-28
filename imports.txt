@@ -728,6 +728,7 @@ import "@vaadin/vaadin-date-picker/vaadin-date-picker"
 import "@vaadin/vaadin-date-picker-light/vaadin-date-picker-light"
 import "@vaadin/vaadin-grid/vaadin-grid"
 import "@vaadin/vaadin-grid-column/vaadin-grid-column"
+import "@vaadin/vaadin-grid/vaadin-grid-sort-column"
 import "@vaadin/vaadin-grid-sorter/vaadin-grid-sorter"
 import "@vaadin/vaadin-progress-bar/vaadin-progress-bar"
 ./elements/ht-pat/ht-pat-he-tree-settings.js:

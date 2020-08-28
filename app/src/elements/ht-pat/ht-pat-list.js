@@ -23,6 +23,8 @@ import './dialogs/reporting/ht-pat-primary-prevention-dialog.js';
 import '../../styles/table-style';
 import '../../styles/paper-tabs-style';
 
+import "@vaadin/vaadin-grid/vaadin-grid-sort-column"
+
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
 import { parse } from '../../../scripts/icure-reporting'
@@ -978,7 +980,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     
 
 
-                    <vaadin-grid-column flex-grow="0" width="60px">
+                    <vaadin-grid-column flex-grow="0" width="60px" frozen>
                         <template class="header">
                             <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
                                 <vaadin-checkbox checked="[[isAllPatientCheck]]" on-checked-changed="_checkAllPatientChanged"></vaadin-checkbox>
@@ -996,75 +998,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             </template>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="100px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="externalId">[[localize('ext_id_short', 'File N°', language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.externalId]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
-                        <template class="header">
-                            <vaadin-grid-sorter path="lastName">[[localize('las_nam','Last name',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.lastName]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
-                        <template class="header">
-                            <vaadin-grid-sorter path="firstName">[[localize('fir_nam','First name',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.firstName]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="120px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="dateOfBirth">[[localize('dat_of_bir','Date of birth',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[formatDateOfBirth(item.dateOfBirth)]]</div>
-                        </template>
-                    </vaadin-grid-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="100px" resizable frozen header="[[localize('ext_id_short', 'File N°', language)]]" path="externalId"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="10%" resizable header="[[localize('las_nam','Last name',language)]]" path="lastName"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="10%" resizable header="[[localize('fir_nam','First name',language)]]" path="firstName"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="120px" resizable header="[[localize('dat_of_bir','Date of birth',language)]]" path="dateOfBirthFormated"></vaadin-grid-sort-column>
 
-                    <vaadin-grid-column flex-grow="0" width="120px">
-                        <template class="header">
-                            <div class="cell numeric">[[localize('pho','Phone',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell numeric">[[_getPhone(item)]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <!-- <vaadin-grid-column flex-grow="0" width="150px">
-                        <template class="header">
-                            <div class="cell numeric">[[localize('mob','Mobile',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell numeric">[[item.mobile]]</div>
-                        </template>
-                    </vaadin-grid-column> -->
-                    <vaadin-grid-column flex-grow="1">
-                        <template class="header">
-                            <div class="cell frozen">[[localize('postalAddress','Address',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.postalAddress]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="17%">
-                        <template class="header">
-                            <div class="cell frozen">[[localize('ema','Email',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.email]]</div>
-                        </template>
-                    </vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="0" width="150px" resizable header="[[localize('pho','Phone',language)]]" path="phone"></vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="1" resizable header="[[localize('postalAddress','Address',language)]]" path="postalAddress"></vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="0" width="10%" resizable header="[[localize('ema','Email',language)]]" path="email"></vaadin-grid-column>
                 </vaadin-grid>
 
                 <div class="add-btn-mobile">
@@ -1101,7 +1042,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                 </div>
 
                 <div class="line bottom-line">
-                    <vaadin-checkbox class="show-all-patients" checked="{{showInactive}}">
+                    <vaadin-checkbox class="show-all-patients" on-change="_showInactiveChanged">
                     </vaadin-checkbox>
                     <span class="show-all-patients-txt">[[localize('show_inactive_patients','Show inactive patients',language)]]</span>
 
@@ -1809,7 +1750,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           const endIndex = ((params.page || 0) + 1) * pageSize
 
           const thisParams = this.filterValue + "|" + sort + "|" + (desc ? "<|" : ">|") + pageSize + ":" + JSON.stringify(this.selectedFilters || [])
-          const thisParamsWithIdx = thisParams + ":" + startIndex
+          const thisParamsWithIdx = thisParams + ":" + startIndex + ':'+ this.showInactive
 
           //100ms cooldown period
 
@@ -1930,7 +1871,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                       if (res.length > 0 || startIndex > 0) {
                           this.btnSelectionPatient = true
                       }
-                      callback(res.map(this.pimpPatient.bind(this)), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
+                      callback(_.orderBy(res.map(this.pimpPatient.bind(this)),[sort],[desc ? "desc" : "asc" ]), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
                   }).finally(() => {
                       this.set('hideSpinner', true)
                       this.set('isLoadingPatient', false)
@@ -1944,7 +1885,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                       if (res.length > 0 || startIndex > 0) {
                           this.btnSelectionPatient = true
                       }
-                      callback(res.map(this.pimpPatient.bind(this)), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
+                      callback(_.orderBy(res.map(this.pimpPatient.bind(this)),[sort],[desc ? "desc" : "asc" ]), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
                   })
               }
           })
@@ -2065,8 +2006,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   pimpPatient(p) {
       p.email = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'email').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
-      p.phone = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'phone').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
-      p.mobile = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'mobile').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
+      p.phone = this._getPhone(p)
       const address = _.find(_.get(p,"addresses",[]), {addressType:"home"}) || _.find(_.get(p,"addresses",[]), {addressType:"work"}) || _.get(p,"addresses[0]",[])
       p.postalAddress = _.compact([
           _.trim(_.get(address,"street","")),
@@ -2075,6 +2015,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           _.trim(_.get(address,"postalCode","")),
           _.trim(_.get(address,"city",""))
       ]).join(" ");
+      p.dateOfBirthFormated = this.formatDateOfBirth(p.dateOfBirth)
       return p
   }
 
@@ -2082,7 +2023,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption || this.preventionOption) return
 
       // Must click on a row
-      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
+      if (e.composedPath().find(ele => ele.nodeName && ele.nodeName.includes("THEAD"))) return
       if(this.activeItem) {
           this.set('isLoadingPatient', true)
           const selected = this.activeItem
@@ -2136,8 +2077,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           "dateOfBirth",
           "ssin",
           "email",
-          "phone",
-          "mobile"
+          "phone"
       ]
 
       // Human readable columns
@@ -2148,8 +2088,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.localize('birthdate', 'Birthdate'),
           this.localize('ssin', 'SSIN'),
           this.localize('email_address', 'Email address'),
-          this.localize('phone_number', 'Phone number'),
-          this.localize('mobile_number', 'Mobile number')
+          this.localize('phone_number', 'Phone number')
       ]
 
       // Define csv content, header = column names
@@ -3330,6 +3269,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
     focusInput(event){
       console.log(event)
+    }
+
+    _showInactiveChanged(event){
+      this.set("showInactive",_.get(event,'target.checked',false))
     }
 }
 

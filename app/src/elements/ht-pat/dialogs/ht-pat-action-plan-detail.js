@@ -163,25 +163,29 @@ class HtPatActionPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronResizab
         </template>
         
         <template is="dom-if" if="[[isStatusComplete]]">
-                  <div class="row h1">
-                     <div class="row cs1">
-                         <vaadin-date-picker style="min-width: 180px" label="Prochaine échéance" value="{{nextDate}}" i18n="[[i18n]]" need-full-date="[[fullDateMode]]" accuracy="{{accuracy}}"></vaadin-date-picker>
-                         <paper-menu-button id="button" style="padding-top:10px">
-                             <!-- vaadin:alarm ; vaadin:timer ; vaadin:date-input; vaadin:calendar-clock -->
-                             <paper-icon-button id="iconButton" icon="vaadin:alarm" slot="dropdown-trigger"></paper-icon-button>
-                             <paper-listbox slot="dropdown-content">
-                                 <paper-item class="paperItem" data-months="1" on-tap="_setNextDate">[[localize('alarm1','1 month',language)]]</paper-item>
-                                 <paper-item class="paperItem" data-months="3" on-tap="_setNextDate">[[localize('alarm3','3 months',language)]]</paper-item>
-                                 <paper-item class="paperItem" data-months="6" on-tap="_setNextDate">[[localize('alarm6','6 months',language)]]</paper-item>
-                                 <paper-item class="paperItem" data-months="12" on-tap="_setNextDate">[[localize('alarm12','1 year',language)]]</paper-item>
-                                 <paper-item class="paperItem" data-months="24" on-tap="_setNextDate">[[localize('alarm24','2 years',language)]]</paper-item>
-                                 <paper-item class="paperItem" data-months="36" on-tap="_setNextDate">[[localize('alarm36','3 years',language)]]</paper-item>
-                             </paper-listbox>
-                         </paper-menu-button>
-                     </div>
-                      <div class="cs1"><vaadin-checkbox style="margin-top: 14px" on-checked-changed="_isSurgical" checked="[[plannedAction.isSurgical]]" disabled="[[readonly]]">Chirurgical</vaadin-checkbox></div>
-                  </div>
-              </template>
+            <div class="row h1">
+                <div class="row cs1">
+                    <vaadin-date-picker style="min-width: 180px" label="Prochaine échéance" value="{{nextDate}}" i18n="[[i18n]]" need-full-date="[[fullDateMode]]" accuracy="{{accuracy}}"></vaadin-date-picker>
+                </div>
+                <div class="cs1"><vaadin-checkbox style="margin-top: 14px" on-checked-changed="_isSurgical" checked="[[plannedAction.isSurgical]]" disabled="[[readonly]]">Chirurgical</vaadin-checkbox></div>
+                <div class="cs1">
+                    <paper-menu-button id="button" style="padding-top:10px">
+                        <!-- vaadin:alarm ; vaadin:timer ; vaadin:date-input; vaadin:calendar-clock -->
+                        <paper-icon-button id="iconButton" icon="vaadin:alarm" slot="dropdown-trigger"></paper-icon-button>
+                        <paper-listbox slot="dropdown-content">
+                            <paper-item class="paperItem" data-months="1" on-tap="_setNextDate">[[localize('alarm1','1 month',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="3" on-tap="_setNextDate">[[localize('alarm3','3 months',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="6" on-tap="_setNextDate">[[localize('alarm6','6 months',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="12" on-tap="_setNextDate">[[localize('alarm12','1 year',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="24" on-tap="_setNextDate">[[localize('alarm24','2 years',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="36" on-tap="_setNextDate">[[localize('alarm36','3 years',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="60" on-tap="_setNextDate">[[localize('alarm60','5 years',language)]]</paper-item>
+                            <paper-item class="paperItem" data-months="120" on-tap="_setNextDate">[[localize('alarm120','120 years',language)]]</paper-item>
+                        </paper-listbox>
+                    </paper-menu-button>
+                </div>
+            </div>
+        </template>
 `
     }
 

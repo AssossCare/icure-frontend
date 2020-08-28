@@ -1,6 +1,6 @@
 {
   "name": "icure-ht",
-  "version": "0.0.542",
+  "version": "0.0.548",
   "scripts": {
     "dev": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.js",
     "dev-tz": "node $NODE_DEBUG_OPTION node_modules/webpack/bin/webpack.js --config webpack.config.tz.js",
@@ -9,7 +9,7 @@
     "start": "node --max_old_space_size=4096 node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --progress --port 9000 --open-page \"?icureUrl=http%3A%2F%2F127.0.0.1%3A16043%2Frest%2Fv1&fhcUrl=http%3A%2F%2F127.0.0.1%3A8090#/\" --config webpack.config.js",
     "start-tz": "node --max_old_space_size=4096 node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --progress --port 9001 --open-page \"?icureUrl=http%3A%2F%2F127.0.0.1%3A16043%2Frest%2Fv1&fhcUrl=http%3A%2F%2F127.0.0.1%3A8090#/\" --config webpack.config.tz.js",
     "publish": "docker build -t docker.taktik.be/icure-frontend:$npm_package_version . && docker push docker.taktik.be/icure-frontend:$npm_package_version",
-    "publish-tz": "docker build --build-arg wpc=webpack.config.tz.js --build-arg task=build-tz  --build-arg dist=dist-tz -t docker.taktik.be/topaz-frontend:$npm_package_version . && docker push docker.taktik.be/topaz-frontend:$npm_package_version",
+    "publish-tz": "docker build --build-arg wpc=webpack.config.tz.js --build-arg task=build-tz  --build-arg dist=dist-tz -t topazapp/topaz-frontend:$npm_package_version . && docker push topazapp/topaz-frontend:$npm_package_version",
     "webpack-defaults": "webpack-defaults",
     "defaults": "webpack-defaults",
     "demo": "polymer serve --port 3000 --open",
