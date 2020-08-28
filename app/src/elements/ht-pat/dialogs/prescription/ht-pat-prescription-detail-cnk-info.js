@@ -67,7 +67,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             }
             
             .cnk-info-delivery-container{
-                height: 100px;
+                height: 115px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
@@ -81,7 +81,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             }
             
             .cnk-info-drug-container{
-                height: 100px;
+                height: 115px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
@@ -115,7 +115,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             }
             
             .td{
-               position: relative;
+                position: relative;
                 display: flex;
                 flex-flow: row nowrap;
                 align-items: center;
@@ -155,11 +155,21 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 flex-grow: 4.6;
             }
             
+            .warningColor{
+                color: var(--paper-red-500);
+            }
+            
+            .warningIcon{
+                height: 14px;
+                width: 14px;
+                padding: 4px;
+            }
+            
         </style>
         
          <div class="cnk-info-container">
             <div class="cnk-info-title">
-                <span class="bold">[[localize('presc-cnk-info', 'Informations about', language)]]: </span> [[selectedCnkForInformation.drug.label]]
+                <span class="bold">[[localize('presc-cnk-info', 'Informations about', language)]]: </span> [[selectedCnkForInformation.label]]
                 <paper-icon-button id="" class="button button--other btn-close" icon="icons:close" on-tap="_closeCnkInfoView"></paper-icon-button>
             </div>
             <div class="cnk-info-container-content">
@@ -171,16 +181,23 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                         <div class="table">
                              <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Drug name',language)]]</div>    
-                                <div class="td fg1">[[selectedCnkForInformation.drug.label]]</div>
+                                <div class="td fg1">[[selectedCnkForInformation.label]]</div>
                                 <div class="td fg1 bold">[[localize('','',language)]]</div>
                                 <div class="td fg1"></div>   
                              </div>
                              <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Vmp',language)]]</div>    
-                                <div class="td fg1">[[_getVmp(selectedCnkForInformation.drug)]]</div>
+                                <div class="td fg1">[[_getVmp(selectedCnkForInformation)]]</div>
                                 <div class="td fg1 bold">[[localize('','Vmp group',language)]]</div>
-                                <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation.drug)]]</div>   
+                                <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div>   
                              </div>
+                             <template is="dom-if" if="[[_isWadaSpecification(selectedCnkForInformation)]]">
+                                 <div class="tr">
+                                    <div class="td fg1 warningColor">
+                                        <iron-icon icon='vaadin:warning' class="warningIcon"></iron-icon> [[_isNarcotic(selectedCnkForInformation)]]
+                                    </div>
+                                 </div>
+                             </template>
                         </div>
                     </div>
                 </div>
@@ -192,9 +209,9 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                         <div class="table">
                             <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Start of commercialisation',language)]]</div>    
-                                <div class="td fg1">[[_getStartDateOfCommercialization(selectedCnkForInformation.drug)]]</div>
+                                <div class="td fg1">[[_getStartDateOfCommercialization(selectedCnkForInformation)]]</div>
                                 <div class="td fg1 bold">[[localize('','End of commercialisation',language)]]</div>
-                                <div class="td fg1">[[_getEndDateOfCommercialization(selectedCnkForInformation.drug)]]</div>
+                                <div class="td fg1">[[_getEndDateOfCommercialization(selectedCnkForInformation)]]</div>
                              </div>
                              <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Start of prescribing',language)]]</div>    
@@ -213,17 +230,21 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                         <div class="table">
                             <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Delivery modus',language)]]</div>    
-                                <div class="td fg1">[[_getDeliveryModus(selectedCnkForInformation.drug)]]</div>
-                                <div class="td fg1 bold">[[localize('','',language)]]</div>
-                                <div class="td fg1"></div>   
-                             </div>
-                             <div class="tr">
+                                <div class="td fg1">[[_getDeliveryModus(selectedCnkForInformation)]]</div>
                                 <div class="td fg1 bold">[[localize('','Condition of prescription',language)]]</div>    
-                                <div class="td fg1">[[_getDeliveryModusSpecification(selectedCnkForInformation.drug)]]</div>
-                                <div class="td fg1 bold">[[localize('','',language)]]</div>
-                                <div class="td fg1"></div>   
+                                <div class="td fg1">[[_getDeliveryModusSpecification(selectedCnkForInformation)]]</div>
                              </div>
                         </div>
+                        <template is="dom-repeat" items="[[_getWadaSpecification(selectedCnkForInformation)]]" as="wada">
+                            <div class="table">
+                                 <div class="tr">
+                                    <div class="td fg1">[[_getWadaName(wada)]]</div>
+                                 </div>
+                                 <div class="tr">
+                                    <div class="td fg1">[[_getWadaDescr(wada)]]</div>
+                                 </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 <div class="cnk-info-reimbursement-container">
@@ -313,6 +334,32 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
 
     _getEndDateOfCommercialization(drug){
         return  _.get(drug, 'informations.currentCommercialization.to', null) ? this.api.moment(_.get(drug, 'informations.currentCommercialization.to', null)).format('DD/MM/YYYY') : "-"
+    }
+
+    _getWadaSpecification(drug){
+        const now = moment().valueOf()
+        const currentVmp = _.get(drug, 'vmps', []).find(vmp => _.get(vmp, 'from', null) < now && _.get(vmp, 'to', null) ? _.get(vmp, 'to', null) > now : true)
+        return _.get(currentVmp, 'wadas', [])
+    }
+
+    _isNarcotic(drug){
+        const now = moment().valueOf()
+        const currentVmp = _.get(drug, 'vmps', []).find(vmp => _.get(vmp, 'from', null) < now && _.get(vmp, 'to', null) ? _.get(vmp, 'to', null) > now : true)
+        return _.get(_.head(_.get(currentVmp, 'wadas', [])), 'name.'+this.language, null)
+    }
+
+    _isWadaSpecification(drug){
+        const now = moment().valueOf()
+        const currentVmp = _.get(drug, 'vmps', []).find(vmp => _.get(vmp, 'from', null) < now && _.get(vmp, 'to', null) ? _.get(vmp, 'to', null) > now : true)
+        return _.size(_.get(currentVmp, 'wadas', [])) > 0
+    }
+
+    _getWadaName(wada){
+        return _.get(wada, 'name.'+this.language, null)
+    }
+
+    _getWadaDescr(wada){
+        return _.get(wada, 'description.'+this.language, null)
     }
 
 }

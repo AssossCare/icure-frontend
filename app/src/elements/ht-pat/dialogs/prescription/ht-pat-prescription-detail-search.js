@@ -360,7 +360,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
                         ])
                     ).then(([vmpGroups, amps, nmps]) => {
-                        this.set("searchResult.commercialName", _.orderBy(this._prepareCommercialForDisplay(amps, null, null), ['label'], ['asc']))
+                        this.set("searchResult.commercialName",_.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
                         this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
                         this.set('isLoadingCommercial', false)
                         this.set('isLoadingOtc', false)
@@ -511,6 +511,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 catIcon: this._catIconSamV2(ampp),
                 unit: _.get(ampp, 'unit', null),
                 amp: _.get(ampp, 'amp', null),
+                officialName: _.get(ampp, 'amp.officialName', null),
                 posologyNote: _.get(ampp, 'posologyNote', null),
                 dividable: _.get(ampp, 'dividable', null),
                 packDisplayValue: _.get(ampp, 'packDisplayValue', null),
