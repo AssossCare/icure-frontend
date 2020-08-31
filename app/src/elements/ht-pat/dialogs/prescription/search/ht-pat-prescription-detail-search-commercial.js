@@ -333,8 +333,8 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                             <div class="td fg05">[[drug.chapt4]]</div>
                             <div class="td fg05"></div>  
                             <div class="td fg05"><iron-icon icon="medication-svg-icons:[[_isCheapestDrug(drug)]]" class="table-icon"></iron-icon></div>
-                            <div class="td fg05">[[drug.patientPrice]]</div>
-                            <div class="td fg05">[[drug.publicPrice]]</div> 
+                            <div class="td fg05">[[drug.informations.patientPrice]] €</div>
+                            <div class="td fg05">[[drug.informations.publicPrice]] €</div> 
                         </div>
                     </template>
                 </template>
@@ -447,7 +447,7 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
     }
 
     _getReasonOfUnavailability(drug){
-        return _.get(drug, 'informations.currentSupplyProblem.reason.'+this.language, null)
+        return _.get(drug, "informations.currentSupplyProblem.reason."+this.language, null)
     }
 
     _getEndOfUnavailability(drug){

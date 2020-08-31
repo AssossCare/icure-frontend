@@ -410,7 +410,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 bubbles: true,
                 composed: true,
                 detail: {
-                    cheaperDrugsList: _.orderBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), ['label'], ['asc']),
+                    cheaperDrugsList: _.map(_.groupBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), 'officialName'), group => group),
                     parentDrug: parentDrug
                 }
             }))
@@ -419,8 +419,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _prepareCommercialForDisplay(ampps, parentUuid, parentUuids){
         const level = parentUuid ? 1 : 0
-        const insurability = _.get(_.get(this, 'patient', {}), 'insurabilities', []).find(ins => !_.get(ins, 'endDate', null) && _.get(ins, 'insuranceId', null) !== "")
-        const patientBim = parseInt(_.get(insurability, 'parameters.tc1', null) % 2) === 1
         const hierarchicalAmpps = _.get(ampps, 'rows', []).reduce((ampps, row) => {
             if (_.size(_.get(row, 'ampps', []))){
                 return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
@@ -463,35 +461,20 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             filteredAmpps = hierarchicalAmpps.filter(hierarchicalAmpp => !parentUuids.includes(_.get(hierarchicalAmpp, 'uuid', null)))
         }
 
-        const finalList = filteredAmpps
-            .map(filteredAmpp => {
-                const dmpp = _.get(filteredAmpp, 'publicDmpp', null)
-                const reimb = _.get(filteredAmpp, 'currentReimbursement', null)
-                const publicPrice =  !reimb ? parseFloat(dmpp.price || 0) :
-                    (_.get(reimb, 'referenceBasePrice', null) && _.get(reimb, 'copaymentSupplement', null)) ? (parseFloat(_.get(reimb, 'referenceBasePrice', 0)) + parseFloat(_.get(reimb, 'copaymentSupplement', 0))) :
-                        parseFloat(_.get(reimb, 'reimbursementBasePrice', 0))
-                const patientPrice = !reimb ? parseFloat(_.get(dmpp, 'price', 0)) :
-                    (_.size(_.get(reimb, 'copayments', []) === 2)) ? parseFloat(patientBim ? reimb.copayments[0].feeAmount : reimb.copayments[1].feeAmount) : 0
-                return Object.assign(filteredAmpp, {
-                    publicPrice: publicPrice,
-                    patientPrice: patientPrice,
-                    priceIndex: _.get(dmpp, 'cheapest', null) ? 0 : (_.get(dmpp, 'cheap', null) ? 1 : 2)
-                })
-            })
-            .sort((a, b) => _.get(a, 'priceIndex', null) !== _.get(b, 'priceIndex', '') ? (_.get(a, 'priceIndex', 0) - _.get(b, 'priceIndex', 0)) : (_.get(a, 'patientPrice', 0) - _.get(b, 'patientPrice', 0)));
-
-        if (_.size(finalList) === 0 && level > 0) {
-            finalList.push({
+        if (_.size(filteredAmpps) === 0 && level > 0) {
+            filteredAmpps.push({
                 intendedName: this.localize("no_alt", "Pas d'alternative", this.language),
                 id: 'no_alt'
             });
         }
 
-        return this._formatCommercial(finalList)
+        return this._formatCommercial(filteredAmpps).sort((a, b) => _.get(a, 'informations.priceIndex', null) !== _.get(b, 'informations.priceIndex', '') ? (_.get(a, 'informations.priceIndex', 0) - _.get(b, 'informations.priceIndex', 0)) : (_.get(a, 'informations.patientPrice', 0) - _.get(b, 'informations.patientPrice', 0)))
     }
 
     _formatCommercial(amppList) {
         return amppList.map(ampp => {
+            const currentDmpp = this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P'))
+            const currentReimbursement = _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null)
             return {
                 id: _.get(ampp, 'id', null),
                 groupId: _.get(ampp, 'groupId', null),
@@ -505,9 +488,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 atcCat: _.get(ampp, "atcCodes[0][0]", ""),
                 allergies: _.get(ampp, 'allergies', []),
                 allergyType: this._getAllergyType(_.get(ampp, 'allergies', [])),
-                patientPrice: _.get(ampp, 'id', null) && _.get(ampp, 'patientPrice', 0.00).toFixed(2) + " €",
-                publicPrice: _.get(ampp, 'id', null) && _.get(ampp, 'publicPrice', 0.00).toFixed(2) + " €",
-                priceIndex: _.get(ampp, 'id', null) && _.get(ampp, 'priceIndex', null) || 3,
                 unit: _.get(ampp, 'unit', null),
                 amp: _.get(ampp, 'amp', null),
                 officialName: _.get(ampp, 'amp.officialName', null),
@@ -520,9 +500,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
                 informations:{
                     ampp: _.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')),
-                    dmpp: this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P')),
+                    dmpp: currentDmpp,
                     crmLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'crmLink', null),
-                    currentReimbursement: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null),
+                    currentReimbursement: currentReimbursement,
                     deliveryModus: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModus', null),
                     deliveryModusSpecification: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModusSpecification', null),
                     leafletLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'leafletLink', null),
@@ -539,7 +519,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
                     rmaLink: _.get(ampp, 'rmaPatientLink', {}),
                     rmaProfessionalLink: _.get(ampp, 'rmaProfessionalLink', {}),
-                    rma: !_.isEmpty(_.get(ampp, 'rmaPatientLink', {}))
+                    rma: !_.isEmpty(_.get(ampp, 'rmaPatientLink', {})),
+                    patientPrice: this._getPatientPrice(currentReimbursement, currentDmpp),
+                    publicPrice: this._getPublicPrice(currentReimbursement, currentDmpp),
+                    priceIndex: this._getPriceIndex(currentDmpp)
                 }
             }
         })
@@ -646,6 +629,31 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _getAllergyType(allergies) {
          return _.size(allergies) ? allergies.some(allergy => _.get(allergy, 'type', null) === "allergy") ? "allergy" : allergies.some(allergy => _.get(allergy, 'type', null) === "adr") ? "adr" : null : null
+    }
+
+    _getPublicPrice(reimbursement, dmpp){
+        return _.isEmpty(reimbursement) ?
+            parseFloat(_.get(dmpp, 'price', 0.00)).toFixed(2) :
+        _.get(reimbursement, 'referenceBasePrice', null) && _.get(reimbursement, 'copaymentSupplement', null) ?
+            parseFloat(parseFloat(_.get(reimbursement, 'referenceBasePrice', 0.00)) + parseFloat(_.get(reimbursement, 'copaymentSupplement', 0.00))).toFixed(2) :
+        parseFloat(_.get(reimbursement, 'reimbursementBasePrice', 0.00)).toFixed(2)
+    }
+
+    _getPatientPrice(reimbursement, dmpp){
+        const insurability = _.get(_.get(this, 'patient', {}), 'insurabilities', []).find(ins => !_.get(ins, 'endDate', null) && _.get(ins, 'insuranceId', null) !== "")
+        const patientBim = parseInt(_.get(insurability, 'parameters.tc1', null) % 2) === 1
+
+        return _.isEmpty(reimbursement) ?
+            parseFloat(_.get(dmpp, 'price', 0.00)).toFixed(2) :
+        _.size(_.get(reimbursement, 'copayments', [])) === 2 ?
+            patientBim ?
+                parseFloat(_.get(reimbursement, 'copayments[0].feeAmount', 0.00)).toFixed(2) :
+            parseFloat(_.get(reimbursement, 'copayments[1].feeAmount', 0.00)).toFixed(2) :
+        parseFloat(0.00).toFixed(2)
+    }
+
+    _getPriceIndex(dmpp){
+        return _.get(dmpp, 'cheapest', null) ? 0 : (_.get(dmpp, 'cheap', null) ? 1 : 2)
     }
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);
