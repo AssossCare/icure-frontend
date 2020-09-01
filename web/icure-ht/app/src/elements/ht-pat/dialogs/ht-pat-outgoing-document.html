@@ -747,8 +747,15 @@
                 return [
                     { key: 'name', title: this.localize('name',this.language) },
                     { key: 'descr', title: this.localize('des',this.language) },
-                    { key: 'createdHr', title: this.localize('creation',this.language) }
+                    { key: 'createdHr', title: this.localize('creation',this.language) },
+                    { key: this._deleteTemplateButton.bind(this), title: this.localize('del', 'Delete', this.language) }
                 ]
+
+            }
+
+            _deleteTemplateButton(item) {
+
+                return !item || _.trim(_.get(item,"guid")) ? "" : (console.log("this", this)||true) && (console.log("item", item)||true) && "Delete"
 
             }
 
@@ -1379,7 +1386,8 @@
                                 contactId: _.trim(_.get(messageObject, "metas.contactId", "")),
                                 messageObject: messageObject,
                             }))
-                            .then(()=>this._flushProseEditorContent())
+                            // 20200901 - Don't flush anymore, to ease post-changes when required
+                            //.then(()=>this._flushProseEditorContent())
                             .then(()=>this.set("_data.proseEditorSelectedTemplate",{}))
                             .then(()=>this.shadowRoot.querySelector('#outgoingDocumentDialog').close())
 
@@ -1488,7 +1496,7 @@
                     .then(foundTemplates => _
                         .chain(foundTemplates)
                         .filter(it => _.trim(_.get(it,"mainUti","")) === "prose.template.json." + this.language && !parseInt(_.get(it,"deleted",0)))
-                        .map(it =>_.merge({},it,{createdHr:moment(it.created).format('DD/MM/YYYY - HH:mm:ss')}))
+                        .map(it =>_.merge({},it,{createdHr:moment(it.created).format('DD/MM/YYYY - HH:mm:ss'), deleteItem: _.trim(_.get(it,"guid")) ? "" : {key:(item) => {return item.id}} }))
                         .map(it =>_.merge({},it,{searchTerms: _.trim(_.trim(_.get(it,"id") + " " + _.get(it,"name") + " " + _.get(it,"descr")).normalize('NFD').replace(/[\u0300-\u036f ]/g, "").toLowerCase()) }))
                         .orderBy(["name", "crdate"],["asc", "asc"])
                         .value()
