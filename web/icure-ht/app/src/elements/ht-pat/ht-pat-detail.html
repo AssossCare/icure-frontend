@@ -6246,9 +6246,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             openMedicationDialog(e){
                 //e.detail.service, {isPrescription: false}
                 if(e.detail.isNew) {
-                    this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+                    //todo @julien enlever ce quick fix quand le module prescription est terminé
+                    this.saveCurrentContact().then(() => {
+                        this.$['medication-prescription'].open(e.detail.service, {isPrescription: true}, e.detail.onSave);
+                    })
                 }else{
-                    this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
+                    const ctc = this.selectedContacts.find(sctc => sctc.services.find(s => s.id===e.detail.service.id));
+                    (ctc ? this.saveContact(ctc) : Promise.resolve({})).then(()=> {
+                        this.$['medication-detail'].open(e.detail.onSave, e.detail.service, e.detail.content);
+                    })
                 }
             }
 
