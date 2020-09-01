@@ -414,6 +414,10 @@
                     unlinkBtnAvailable:{
                         type: Boolean,
                         value: false
+                    },
+                    healthElements:{
+                        type: Array,
+                        value : ()=> []
                     }
                 };
             }
@@ -815,7 +819,6 @@
                         '            </author>' +
                         '            <iscomplete>true</iscomplete>' +
                         '            <isvalidated>true</isvalidated>' +
-                        // dmg data
                         _getDmgData(dmgHcp)+
                         _getHE(codes)+
                         _getTreatments(codes)+
