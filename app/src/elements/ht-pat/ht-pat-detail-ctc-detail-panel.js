@@ -1964,7 +1964,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _prescribe(e) {
         e.stopPropagation()
         // this.$.prescriptionDialog.open();
-        this.dispatchEvent(new CustomEvent("prescribe", {detail:{currentContact: this.currentContact, servicesMaps: this.servicesMap, globalHcp: this.globalHcp, contactId: _.get(e, 'detail.contactId', null)}, composed: true, bubbles: true}))
+        this.dispatchEvent(new CustomEvent("prescribe", {
+            detail: {
+                currentContact: this.currentContact,
+                servicesMaps: this.servicesMap,
+                globalHcp: this.globalHcp,
+                contactId: _.get(e, 'detail.contactId', null)
+            }, composed: true, bubbles: true
+        }))
     }
 
     _handlePdfReport(e) {

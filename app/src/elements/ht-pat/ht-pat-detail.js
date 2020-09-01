@@ -5879,9 +5879,15 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     openMedicationDialog(e){
         if(e.detail.isNew) {
-            this.shadowRoot.querySelector('#medication-prescription') ? this.shadowRoot.querySelector('#medication-prescription').open(e.detail.service,{isPrescription : true},e.detail.onSave) : null
+            //todo @julien enlever ce quick fix quand le module prescription est terminé
+            this.saveCurrentContact().then(() => {
+                this.shadowRoot.querySelector('#medication-prescription') ? this.shadowRoot.querySelector('#medication-prescription').open(e.detail.service, {isPrescription: true}, e.detail.onSave) : null
+            })
         }else{
-            this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').open(e.detail.onSave,e.detail.service, e.detail.content) : null
+            const ctc = this.selectedContacts.find(sctc => sctc.services.find(s => s.id===e.detail.service.id));
+            (ctc ? this.saveContact(ctc) : Promise.resolve({})).then(()=>{
+                this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').open(e.detail.onSave,e.detail.service, e.detail.content) : null
+            })
         }
     }
 
