@@ -1200,6 +1200,7 @@
                     <div class="patient-info">
                         <div class="patient-name">[[getGender(patient.gender)]] [[patient.firstName]] [[patient.lastName]]</div>
                         <div class="patient-birthdate">°[[_timeFormat(patient.dateOfBirth)]] °[[_ageFormat(patient.dateOfBirth)]] [[patient.ssin]]</div>
+                        <div class="patient-birthdate">[[lastInsur.identificationNumber]] : [[lastInsur.parameters.tc1]]-[[lastInsur.parameters.tc2]]</div>
                     </div>
                 </div>
                 <div class="invoice-panel-list">
@@ -2694,6 +2695,10 @@
                     hasErrorPayment:{
                         type:String,
                         value:""
+                    },
+                    lastInsur:{
+                        type: Object,
+                        value: ()=>{}
                     }
                 }
             }
@@ -2816,22 +2821,24 @@
                             supervisor && supervisor.id ? this.set('supervisor', supervisor) : null
                             const invoiceOfDay = invoices.find( i=> i.invoiceDate+'' === moment().format("YYYYMMDD") && !i.printedDate )
 
+                            this.set("lastInsur",parseInt(this.patient.insurabilities.length) ?
+                                _.chain(this.patient.insurabilities)
+                                    .filter(ins =>_.get(ins,"startDate",0) && parseInt(_.get(ins,"startDate",0)) <= moment().format("YYYYMMDD") && !parseInt(_.get(ins,"endDate",0)) && _.get(ins,"insuranceId",0))
+                                    .orderBy(["startDate"],["desc"])
+                                    .head()
+                                    .value()
+                                : null)
+
                             if(!invoiceOfDay){
-                                const lastInsur = parseInt(this.patient.insurabilities.length) ?
-                                    _.chain(this.patient.insurabilities)
-                                        .filter(ins =>_.get(ins,"startDate",0) && parseInt(_.get(ins,"startDate",0)) <= moment().format("YYYYMMDD") && !parseInt(_.get(ins,"endDate",0)) && _.get(ins,"insuranceId",0))
-                                        .orderBy(["startDate"],["desc"])
-                                        .head()
-                                        .value()
-                                    : null
+
 
                                 const newInvoice = {
                                     invoicingCodes: [],
                                     invoiceDate: moment().format("YYYYMMDD"),
                                     invoiceReference: null,
-                                    thirdPartyPaymentJustification: lastInsur ? ((lastInsur.parameters.tc1 % 2 === 1) ? "3" : "0") : "0",
-                                    invoiceType: lastInsur ? ((lastInsur.parameters.tc1 % 2 === 1) ? "mutualfund" : "patient") : 'patient',
-                                    sentMediumType: lastInsur ? ((lastInsur.parameters.tc1 % 2 === 1) ? "efact" : "eattest") : 'paper',
+                                    thirdPartyPaymentJustification: this.lastInsur ? ((this.lastInsur.parameters.tc1 % 2 === 1) ? "3" : "0") : "0",
+                                    invoiceType: this.lastInsur ? ((this.lastInsur.parameters.tc1 % 2 === 1) ? "mutualfund" : "patient") : 'patient',
+                                    sentMediumType: this.lastInsur ? ((this.lastInsur.parameters.tc1 % 2 === 1) ? "efact" : "eattest") : 'paper',
                                     invoicePeriod: 0,
                                     longDelayJustification: 0,
                                     gnotionNihii: null,
