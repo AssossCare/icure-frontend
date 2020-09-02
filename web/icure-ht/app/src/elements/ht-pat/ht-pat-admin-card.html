@@ -1909,11 +1909,11 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 return tot;
             })
 
-            this.set("patient.lastTimeEidRead",parseInt(moment().format('YYYYMMDD')))
+            this.set("patient.timestampOfLatestEidReading",parseInt(moment().format('YYYYMMDD')))
             this.set("patient.lastName", this.cardData.surname)
             this.set("patient.firstName", this.cardData.firstName)
             this.set("patient.placeOfBirth", this.cardData.locationOfBirth)
-            this.set("patient.dateOfBirth", parseInt(this.api.moment(this.cardData.dateOfBirth * 1000).format('YYYYMMDD')))
+            this.set("patient.dateOfBirth", this.api.moment(this.cardData.dateOfBirth * 1000).format('YYYYMMDD') && parseInt(this.api.moment(this.cardData.dateOfBirth * 1000).format('YYYYMMDD')))
             this.set("patient.nationality", this.cardData.nationality)
             this.set("patient.picture", this.cardData.picture)
             this.set("patient.gender", this.cardData.gender === 'M' ? 'male' : 'female')
