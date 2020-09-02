@@ -166,18 +166,14 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             <div class="table">
                 <div class="tr th">                 
                     <div class="td fg01">[[localize('','',language)]]</div>    
+                    <div class="td fg01">[[localize('','',language)]]</div>    
                     <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
                 </div>
                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                     <div class="tr tr-item">
                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg01"><iron-icon class="addIcon" icon="vaadin:copyright" data-id$="[[drug.id]]" data-type="substance" on-tap="_openCommercialBySubstanceView"></iron-icon></div>    
                         <div class="td fg2" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
-                        <div class="td fg05">
-                            <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]]"></iron-icon></template>
-                            <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]"><span></span></label></template>
-                            <paper-tooltip z-index="1000" id="tt_[[drug.atcCat]]_[[drug.id]]" for="[[drug.atcCat]]_[[drug.id]]">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
-                        </div>
                     </div>
                 </template>        
             </div>
@@ -238,7 +234,7 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 id: drugId,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.get(this, 'searchResult.substance', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.get(this, 'searchResult.molecule', []).find(h => _.get(h, 'id', null) === drugId)
             }
         }))
 
@@ -265,6 +261,20 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
 
     _atcTooltip(cat) {
         return cat ? this.localize('atc-' + cat, '') : null
+    }
+
+    _openCommercialBySubstanceView(e){
+        const id = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const molecule =  _.flatten(_.get(this, 'searchResult.molecule', [])).find(h => _.get(h, 'id', null) === id)
+
+        return !id ? null : this.dispatchEvent(new CustomEvent('search-commercial-by-substance-view', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                id: _.get(molecule, 'id', null),
+                molecule: molecule
+            }
+        }))
     }
 
 }

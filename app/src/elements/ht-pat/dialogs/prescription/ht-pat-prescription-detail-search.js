@@ -424,14 +424,12 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
                         ])
                     ).then(([vmpGroups, amps, nmps]) => {
-                        this.set("searchResult.commercialName",_.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
+                        this.set("searchResult.commercialName", _.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
+                        this.set("searchResult.molecule", _.orderBy(this._formatIngredient(_.get(vmpGroups, 'rows', []).filter(vpmGroup => _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
                         this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
                         this.set('isLoadingCommercial', false)
                         this.set('isLoadingOtc', false)
-                        return this._prepareMoleculeForDisplay(vmpGroups)
-                    }).then(vmpGroupList =>
-                        this.set("searchResult.molecule", _.orderBy(this._formatIngredient(vmpGroupList.filter(vpmGroup => _.get(vpmGroup, 'intendedName', null) && _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
-                    ).finally(() => {
+                    }).finally(() => {
                         this.set('isLoadingCommercial', false)
                         this.set('isLoadingOtc', false)
                         this.set('isLoadingSubstance', false)
@@ -479,6 +477,20 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 }
             }))
         })
+    }
+
+    _searchCommercialBySubstance(vmpGroupId, parentMolecule){
+            this.set('amppsByVmpGroupList', [])
+            this.api.besamv2().findPaginatedAmpsByGroupId(vmpGroupId).then(amps => {
+                this.dispatchEvent(new CustomEvent('amps-by-vmp-group-loaded', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        ampsByVmpGroupList: _.map(_.groupBy(this._prepareCommercialForDisplay(amps), 'officialName'), group => group),
+                        parentMolecule: parentMolecule
+                    }
+                }))
+            })
     }
 
     _prepareCommercialForDisplay(ampps, parentUuid, parentUuids){
@@ -637,15 +649,16 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     _formatIngredient(vmpGroups) {
          return vmpGroups.map(vmpGroup => {
                return  {
-                    id: _.get(vmpGroup, 'id', null),
-                    label: _.get(vmpGroup, 'intendedName', null),
-                    atcCodes: _.get(vmpGroup, 'atcCodes', null),
-                    atcCat: _.get(vmpGroup, "atcCodes[0][0]", ""),
-                    allergies: _.get(vmpGroup, 'allergies', []),
-                    allergyType: this._getAllergyType(_.get(vmpGroup, 'allergies', [])),
-                    unit: _.get(vmpGroup, 'unit', null),
-                    noSwitchReason: _.get(vmpGroup, 'noSwitchReason', null),
-                    type: 'substance'
+                   id: _.get(vmpGroup, 'id', null),
+                   code: _.get(vmpGroup, 'code', null),
+                   label: _.get(vmpGroup, 'name.'+this.language, null),
+                   vmpGroup:  vmpGroup,
+                   informations:{
+                       commercialization:{
+                           from: _.get(vmpGroup, 'from', null),
+                           to: _.get(vmpGroup, 'to', null)
+                       }},
+                   type: 'substance'
                 }
             })
     }
