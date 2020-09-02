@@ -159,9 +159,7 @@ class EntitySelector extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	}
 
 	_cellContent(item, column) {
-
 		return _.isFunction(column.key) ? column.key(item) : _.get(item, column.key);
-
 	}
 
 	_key(column) {
