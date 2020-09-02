@@ -32,12 +32,6 @@ import './dialogs/ht-pat-charts-dialog.js'
 import './dialogs/ht-pat-action-plan-dialog.js'
 import './dialogs/ht-pat-prescription-dialog.js'
 import './dialogs/ht-pat-preventive-acts-dialog.js'
-import '../dynamic-form/dialogs/medication-selection-dialog.js'
-import '../dynamic-form/dialogs/medications-selection-dialog.js'
-import '../dynamic-form/dialogs/medication-details-dialog.js'
-import '../dynamic-form/dialogs/medication-details-dialog-old.js'
-import '../dynamic-form/dialogs/medication-plan-dialog.js'
-import '../dynamic-form/dialogs/medication-prescription-dialog.js'
 import './dialogs/ht-pat-edmg-dialog.js'
 import './dialogs/hubs/ht-pat-hub-transaction-view.js'
 import '../ht-msg/ht-msg-import-doc-dialog.js'
@@ -2884,6 +2878,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-prescription-detail id="htPatPrescriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" allergies="[[allergies]]"></ht-pat-prescription-detail>
 `
     }
 
@@ -4527,7 +4522,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.root.querySelector('#cb_alhelb').opened = false
             this.root.querySelector('#cb_rhelb').opened = false
         }
-        this.root.querySelector('#medication-plan').reset()
+        //this.root.querySelector('#medication-plan').reset()
 
 
         this.set('selectedHealthcareElements', [])
