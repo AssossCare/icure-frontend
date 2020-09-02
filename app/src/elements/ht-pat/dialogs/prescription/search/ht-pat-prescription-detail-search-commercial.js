@@ -343,7 +343,10 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                                 <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-act-ing', 'New active ingredient', language)]]</paper-tooltip></template>
                                 <template is="dom-if" if="[[_isRma(drug)]]"><paper-tooltip for="rma_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>
                             </div>
-                            <div class="td fg05">[[drug.chapt4]]</div>
+                            <div class="td fg05 notRel">
+                                <span id="reimbCateg_[[drug.id]]">[[_getCategOfReimbursement(drug)]]</span>
+                                <paper-tooltip for="reimbCateg_[[drug.id]]" position="right" animation-delay="0">[[_getDescriptionOfCategForReimbursement(drug)]]</paper-tooltip>
+                            </div>
                             <div class="td fg05"></div>  
                             <div class="td fg05"><iron-icon icon="medication-svg-icons:[[_isCheapestDrug(drug)]]" class="table-icon"></iron-icon></div>
                             <div class="td fg05">[[drug.informations.patientPrice]] €</div>
@@ -598,8 +601,12 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
         return _.get(drug, 'amp.name.'+this.language, null)+' '+(_.get(drug, 'packDisplayValue', null) ? _.get(drug, 'packDisplayValue', null)+'x' : null)+' ('+this.localize('presc-not-available', 'not available from', this.language)+' '+this._getEndOfCommercialization(_.get(drug, 'commercializations', []))+')'
     }
 
-    _showamppFinished(e){
-        console.log(e)
+    _getCategOfReimbursement(drug){
+        return _.get(drug, 'informations.currentReimbursement.reimbursementCriterion.category', null)
+    }
+
+    _getDescriptionOfCategForReimbursement(drug){
+        return _.get(drug, 'informations.currentReimbursement.reimbursementCriterion.description.'+this.language, null)
     }
 }
 customElements.define(HtPatPrescriptionDetailSearchCommercial.is, HtPatPrescriptionDetailSearchCommercial);
