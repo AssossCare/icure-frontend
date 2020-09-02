@@ -32,6 +32,12 @@ import './dialogs/ht-pat-charts-dialog.js'
 import './dialogs/ht-pat-action-plan-dialog.js'
 import './dialogs/ht-pat-prescription-dialog.js'
 import './dialogs/ht-pat-preventive-acts-dialog.js'
+import '../dynamic-form/dialogs/medication-selection-dialog.js'
+import '../dynamic-form/dialogs/medications-selection-dialog.js'
+import '../dynamic-form/dialogs/medication-details-dialog.js'
+import '../dynamic-form/dialogs/medication-details-dialog-old.js'
+import '../dynamic-form/dialogs/medication-plan-dialog.js'
+import '../dynamic-form/dialogs/medication-prescription-dialog.js'
 import './dialogs/ht-pat-edmg-dialog.js'
 import './dialogs/hubs/ht-pat-hub-transaction-view.js'
 import '../ht-msg/ht-msg-import-doc-dialog.js'
@@ -2878,8 +2884,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
-        <ht-pat-prescription-detail id="htPatPrescriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" allergies="[[allergies]]"></ht-pat-prescription-detail>
-
 `
     }
 
@@ -3085,7 +3089,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 value: function () {
                     return [{ icon: "icure-svg-icons:laboratory", filter:[{type:'CD-TRANSACTION',code:['labresult','report','result']}] , title: {en: "Lab Results", fr:"Résultats de laboratoire", nl:"Lab Results"}, id: "LabResults" },
                         { icon: "icure-svg-icons:imaging", filter:[{type:'care.topaz.customTransaction',code:['imaging']},{type:'CD-HCPARTY',code:['deptradiology']}], title: {en: "Imaging", fr:"Imagerie", nl:"Imaging"}, id: "Imaging" },
-                        { icon: "icure-svg-icons:stethoscope", filter:[{type:'TZ-FORM-TITLE',code:['Rencontre MSOAP']}, {type:'CD-ENCOUNTER',code:['consultation']}, {type:'CD-TRANSACTION',code:['clinicalsummary']}], title: {en: "Consultation", fr:"Consultation", nl:"Consultation"}, id: "Consultation" },
+                        { icon: "icure-svg-icons:stethoscope", filter:[{type:'TZ-FORM-TITLE',code:['Rencontre MSOAP']}, {type:'CD-ENCOUNTER',code:['consultation']}, {type:'BE-CONTACT-TYPE',code:['1']}, {type:'CD-TRANSACTION',code:['clinicalsummary']}], title: {en: "Consultation", fr:"Consultation", nl:"Consultation"}, id: "Consultation" },
                         { icon: "editor:insert-drive-file", status: (1 << 5), filter:[{type:'CD-TRANSACTION',code:['contactreport','admission','note','notification','referral']}], title: {en: "Protocol", fr:"Protocole", nl:"Protocol"}, id: "Protocol" },
                         { icon: "icure-svg-icons:prescription", filter:[{type:'ICURE',code:['PRESC']},{type:'TZ-FORM-TITLE',code:['Ordonnance']},{type:'CD-ITEM',code:['treatment','medication']},{type:'CD-TRANSACTION',code:['pharmaceuticalprescription','prescription','productdelivery']}], title: {en: "Prescription",  fr:"Prescription", nl:"Prescription"}, id: "Prescription" }];
                 }
@@ -4523,6 +4527,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.root.querySelector('#cb_alhelb').opened = false
             this.root.querySelector('#cb_rhelb').opened = false
         }
+        this.root.querySelector('#medication-plan').reset()
+
 
         this.set('selectedHealthcareElements', [])
         this.set('contacts', [])
@@ -6269,8 +6275,15 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _chapter4(e) {
         e.stopPropagation()
         e.preventDefault()
+    }
 
-        //this.$['chapterivdialog'].open()
+
+    _medicationPlan(e) {
+        e.stopPropagation()
+        e.preventDefault()
+
+        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').open() : null
+        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').setContacts(this.contacts) : null
     }
 
     updateEdmgClassList(cssClassToAssign) {
