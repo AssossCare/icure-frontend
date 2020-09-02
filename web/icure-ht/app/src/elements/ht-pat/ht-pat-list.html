@@ -1274,9 +1274,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 </template>
                                 <paper-input always-float-label label="[[localize('las_nam','Last name',language)]]" style="min-width:200px" value="{{lastName}}"></paper-input>
                                 <paper-input always-float-label label="[[localize('fir_nam','First name',language)]]" value="{{firstName}}"></paper-input>
-                                <vaadin-date-picker-light id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" need-full-date="[[fullDateMode]]">
-                                    <paper-input always-float-label label="[[localize('dat_of_bir','Date of birth',language)]]" value="{{dateAsString}}"></paper-input>
-                                </vaadin-date-picker-light>
+                                <vaadin-date-picker id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" need-full-date="[[fullDateMode]]" label="[[localize('dat_of_bir','Date of birth',language)]]" value="{{dateAsString}}"></vaadin-date-picker>
                                 <paper-input always-float-label label="[[localize('niss','Ssin',language)]]" value="{{ssin}}" on-keyup="_searchDuplicate"></paper-input>
                                 <paper-input-container>
                                     <label slot="label">[[localize("gender","Gender",language)]]
@@ -2253,7 +2251,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         if (res.cards[0]) {
                             this.set('firstName', res.cards[0].firstName)
                             this.set('lastName', res.cards[0].surname)
-                            this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('DD/MM/YYYY'))
+                            this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('YYYY-MM-DD'))
                             this.set('ssin', res.cards[0].nationalNumber)
                             this.set('valueGender', res.cards[0].gender === 'M' ? 'male' : 'female')
                             this.set('newPatCardData',res.cards[0])
@@ -2503,7 +2501,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         lastName: this.lastName,
                         firstName: this.firstName,
                         active: true,
-                        dateOfBirth: this.dateAsString && this.dateAsString.length && parseInt(_.padEnd(this.dateAsString.split("/").reverse().join(""),8,"0")) || null,
+                        dateOfBirth: this.dateAsString && this.dateAsString.length && this.dateAsString.replace(/-/g, '') || null,
                         ssin: this.ssin,
                         gender: this.valueGender,
                         medicalHouseContracts: [this.medicalHouseContractShadowObject]
