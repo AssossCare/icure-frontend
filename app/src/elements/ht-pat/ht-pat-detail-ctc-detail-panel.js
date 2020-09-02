@@ -668,6 +668,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                             height: 200px;
                             width: 400px;
                         }
+                        
+                        .delete-ogdt {
+                        
+                            justify-content: flex-end!important;
+                            min-width: 1px;
+                        
+                        }
+                                                
                 </style>
                
                 <template is="dom-if" if="[[_bodyOverlay]]">
@@ -764,7 +772,12 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             
                                             <template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
                                                 <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
-                                                <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                
+                                                <div class="displayFlex">
+                                                    <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                    <template is="dom-if" if=[[!outGoingDocumentTemplate.guid]]><paper-button on-tap="_confirmDeleteTemplateDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class="delete-ogdt"><iron-icon icon="icons:delete"></iron-icon></paper-button></template>
+                                                </div>
+                                                
                                                 <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
                                             </template>
                                             <paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
@@ -1279,6 +1292,15 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     </div>
                 </paper-dialog>
                 
+                <paper-dialog class="modalDialog modalDialogSmall" id="deleteTemplateDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title">[[localize('areYouSure','Are you sure?',language)]]</h2>
+                    <div class="content pt40 pr20 pl20 textaligncenter fw700">[[localize('pleaseConfirm','Please confirm',language)]].</div>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_doDeleteTemplate"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>                
+                
                 </template>
     `
     }
@@ -1567,6 +1589,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     }
                 }
             },
+            _templateIdToBeDeleted: {
+                type: String,
+                value: ""
+            }
         }
     }
 
@@ -1957,7 +1983,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _prescribe(e) {
         e.stopPropagation()
         // this.$.prescriptionDialog.open();
-        this.dispatchEvent(new CustomEvent("prescribe", {detail:{currentContact: this.currentContact, servicesMaps: this.servicesMap, globalHcp: this.globalHcp, contactId: _.get(e, 'detail.contactId', null)}, composed: true, bubbles: true}))
+        this.dispatchEvent(new CustomEvent("prescribe", {
+            detail: {
+                currentContact: this.currentContact,
+                servicesMaps: this.servicesMap,
+                globalHcp: this.globalHcp,
+                contactId: _.get(e, 'detail.contactId', null)
+            }, composed: true, bubbles: true
+        }))
     }
 
     _handlePdfReport(e) {
@@ -4988,6 +5021,29 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                             ]
                         })
                     }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://orgadonacc.health.fgov.be/") : window.open("https://orgadon.health.fgov.be/")
+    }
+
+    _confirmDeleteTemplateDialog(e) {
+
+        const targetButton = !!_.size(_.get(e, "target", "")) && _.get(e, "target.nodeName", "") === "PAPER-BUTTON" ? _.get(e, "target", {}) : _.find(_.get(e, "path", []), p => _.get(p, "nodeName", "") === "PAPER-BUTTON")
+        const outGoingDocumentTemplateId = _.trim(_.get(targetButton, "dataset.ogdtTemplateId",""))
+
+        return !outGoingDocumentTemplateId ? null : (this.set("_templateIdToBeDeleted", outGoingDocumentTemplateId)||true) && this.$['deleteTemplateDialog'] && this.$['deleteTemplateDialog'].open();
+
+    }
+
+    _doDeleteTemplate(e) {
+
+        const promResolve = Promise.resolve()
+
+        // Get id of template to delete by making sure it exists within the class
+        const templateIdToDelete = _.trim(_.get(_.find(_.get(this,"outGoingDocumentTemplates"), {id:_.trim(_.get(this,"_templateIdToBeDeleted"))}), "id"))
+
+        return (this.set("_templateIdToBeDeleted", null) && false) || (this.$['deleteTemplateDialog'] && this.$['deleteTemplateDialog'].close() && false) || !templateIdToDelete ? null : promResolve
+            .then(() => this.api.doctemplate().deleteDocumentTemplate(templateIdToDelete).catch(e=>console.log(e)))
+            .then(() => this.set("outGoingDocumentTemplates", _.filter(_.get(this,"outGoingDocumentTemplates"), it => _.trim(_.get(it,"id")) !== templateIdToDelete)))
+            .then(() => this.shadowRoot.querySelector('#outGoingDocumentTemplates') && this.shadowRoot.querySelector('#outGoingDocumentTemplates').render())
+
     }
 
 }
