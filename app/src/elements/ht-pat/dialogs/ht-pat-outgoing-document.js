@@ -1403,7 +1403,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                         contactId: _.trim(_.get(messageObject, "metas.contactId", "")),
                         messageObject: messageObject,
                     }))
-                    .then(() => this._flushProseEditorContent())
+                    // 20200901 - Don't flush anymore, to ease post-changes when required
+                    //.then(()=>this._flushProseEditorContent())
                     .then(() => this.set("_data.proseEditorSelectedTemplate", {}))
                     .then(() => this.shadowRoot.querySelector('#outgoingDocumentDialog').close())
 
