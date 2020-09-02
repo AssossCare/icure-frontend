@@ -196,6 +196,10 @@ class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }

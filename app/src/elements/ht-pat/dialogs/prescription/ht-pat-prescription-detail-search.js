@@ -186,32 +186,92 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                 <iron-pages selected="[[tabs]]">
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-chronic id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-chronic>              
+                            <ht-pat-prescription-detail-search-chronic 
+                                id="htPatPrescriptionDetailSearchHistory" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoading]]"
+                                sam-version="[[samVersion]]"
+                             ></ht-pat-prescription-detail-search-chronic>              
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-history id="htPatPrescriptionDetailSearchHistory" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-history>                   
+                            <ht-pat-prescription-detail-search-history 
+                                id="htPatPrescriptionDetailSearchHistory" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoading]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-history>                   
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-commercial id="htPatPrescriptionDetailSearchCommercial" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingCommercial]]"></ht-pat-prescription-detail-search-commercial>          
+                            <ht-pat-prescription-detail-search-commercial 
+                                id="htPatPrescriptionDetailSearchCommercial" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoadingCommercial]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-commercial>          
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-substance id="htPatPrescriptionDetailSearchSubstance" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingSubstance]]"></ht-pat-prescription-detail-search-substance>
+                            <ht-pat-prescription-detail-search-substance 
+                                id="htPatPrescriptionDetailSearchSubstance" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoadingSubstance]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-substance>
                        </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-compound id="htPatPrescriptionDetailSearchCompound" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoading]]"></ht-pat-prescription-detail-search-compound>
+                            <ht-pat-prescription-detail-search-compound 
+                                id="htPatPrescriptionDetailSearchCompound" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoading]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-compound>
                         </div>
                     </page>
                     <page>
                         <div class="page-content">
-                            <ht-pat-prescription-detail-search-otc id="htPatPrescriptionDetailSearchOtc" api="[[api]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" search-result="[[searchResult]]" resources="[[resources]]" is-loading="[[isLoadingOtc]]"></ht-pat-prescription-detail-search-otc>
+                            <ht-pat-prescription-detail-search-otc 
+                                id="htPatPrescriptionDetailSearchOtc" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[searchResult]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoadingOtc]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-otc>
                         </div>
                     </page>
                 </iron-pages>
@@ -305,6 +365,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -515,6 +579,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     company: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'compagny', null),
                     commercializations: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null),
                     currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
+                    amppFinished: this._getFinishedCommercializations(_.get(ampp, 'amp.ampps', [])),
                     vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
                     vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
                     rmaLink: _.get(ampp, 'rmaPatientLink', {}),
@@ -536,6 +601,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     _getCurrentCommercialization(commercializations){
         const now = moment().valueOf()
         return commercializations && commercializations.find(com => _.get(com, 'from', null) < now && _.get(com, 'to',  null) ? _.get(com, 'to',  null) > now : true) || {}
+    }
+
+    _getFinishedCommercializations(ampps){
+       const now = moment().valueOf()
+       return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))) || []
     }
 
     _getCurrentDmpp(dmpps){

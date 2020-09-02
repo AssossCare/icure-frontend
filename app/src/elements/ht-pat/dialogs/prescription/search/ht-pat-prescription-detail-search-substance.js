@@ -210,6 +210,10 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }

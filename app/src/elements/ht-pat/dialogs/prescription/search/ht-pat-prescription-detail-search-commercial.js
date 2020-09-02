@@ -244,6 +244,19 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             .cheapestDrug{
                 background-color: #dfffdf;
             }
+            
+            .deletedDrug{
+                color: red;
+            }
+            
+            .deletedIcon{
+                height: 14px;
+                width: 14px;
+                margin-left: 5px;
+                color: red;
+                margin-top: -3px;
+                opacity: 1;
+            }
       
         </style>
         
@@ -258,7 +271,7 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                     <div class="td fg2">[[localize('presc-sear-name','Name',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-atc','ATC',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-type','Type',language)]]</div>
-                    <div class="td fg05">[[localize('presc-sear-iv','IV',language)]]</div>
+                    <div class="td fg05">[[localize('presc-sear-remb','Remb',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-del','Del',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-cat','Cat',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
@@ -336,6 +349,52 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
                             <div class="td fg05">[[drug.informations.patientPrice]] €</div>
                             <div class="td fg05">[[drug.informations.publicPrice]] €</div> 
                         </div>
+                        <template is="dom-if" if="[[_isFinishedCommercializations(drug)]]">
+                            <template is="dom-repeat" items="[[drug.informations.amppFinished]]" as="amppFinished">
+                                <div class="tr deletedDrug">
+                                    <div class="td fg01"></iron-icon></div>  
+                                    <div class="td fg01"></div>   
+                                    <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
+                                        [[_getAmppFinishedName(amppFinished)]]
+                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]" class="deletedIcon"</iron-icon>
+                                        <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]" position="right" animation-delay="0">
+                                            <div class="fs12">
+                                                [[localize('presc-rec-del', 'Recent deletion', language)]]
+                                            </div>
+                                            <div>
+                                                <div class="table">
+                                                     <div class="tr-tooltip">
+                                                        <div class="td-tooltip fg05">[[localize('presc-del-from', 'From', language)]]: </div>
+                                                        <div class="td-tooltip fg1">[[_getStartOfCommercialization(amppFinished.commercializations)]]</div>
+                                                     </div>
+                                                     <div class="tr-tooltip">
+                                                        <div class="td-tooltip fg05">[[localize('presc-del-until', 'Until', language)]]: </div>
+                                                        <div class="td-tooltip fg1">[[_getEndOfCommercialization(amppFinished.commercializations)]]</div>
+                                                     </div>
+                                                     <div class="tr-tooltip">
+                                                        <div class="td-tooltip fg05">[[localize('presc-del-reason', 'Reason', language)]]: </div>
+                                                        <div class="td-tooltip fg1">[[_getReasonOfEndOfCommercialization(amppFinished.commercializations)]]</div>
+                                                     </div>
+                                                </div>
+                                            </div>
+                                        </paper-tooltip>   
+                                    </div>
+                                    <div class="td fg05 notRel">
+                                        
+                                    </div>
+                                    <div class="td fg05 notRel">
+                                        <div class="icon-type-group">
+                                                                                 
+                                        </div>
+                                    </div>
+                                    <div class="td fg05"></div>
+                                    <div class="td fg05"></div>  
+                                    <div class="td fg05"></div>
+                                    <div class="td fg05"></div>
+                                    <div class="td fg05"></div> 
+                                </div>
+                            </template>
+                        </template>
                     </template>
                 </template>
             </div>
@@ -372,6 +431,10 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -507,6 +570,36 @@ class HtPatPrescriptionDetailSearchCommercial extends TkLocalizerMixin(mixinBeha
             }
         }))
 
+    }
+
+    _isFinishedCommercializations(drug){
+        return !!_.size(_.get(drug, 'informations.amppFinished', []))
+    }
+
+    _getReasonOfEndOfCommercialization(commercializations){
+        const now = moment().valueOf()
+        const com = commercializations && commercializations.find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))
+        return _.get(com, 'reason', null)
+    }
+
+    _getEndOfCommercialization(commercializations){
+        const now = moment().valueOf()
+        const com = commercializations && commercializations.find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))
+        return _.get(com, 'to', null) ? this.api.moment(_.get(com, 'to', null)).format('DD/MM/YYYY') : null
+    }
+
+    _getStartOfCommercialization(commercializations){
+        const now = moment().valueOf()
+        const com = commercializations && commercializations.find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))
+        return _.get(com, 'from', null) ? this.api.moment(_.get(com, 'from', null)).format('DD/MM/YYYY') : null
+    }
+
+    _getAmppFinishedName(drug){
+        return _.get(drug, 'amp.name.'+this.language, null)+' '+(_.get(drug, 'packDisplayValue', null) ? _.get(drug, 'packDisplayValue', null)+'x' : null)+' ('+this.localize('presc-not-available', 'not available from', this.language)+' '+this._getEndOfCommercialization(_.get(drug, 'commercializations', []))+')'
+    }
+
+    _showamppFinished(e){
+        console.log(e)
     }
 }
 customElements.define(HtPatPrescriptionDetailSearchCommercial.is, HtPatPrescriptionDetailSearchCommercial);

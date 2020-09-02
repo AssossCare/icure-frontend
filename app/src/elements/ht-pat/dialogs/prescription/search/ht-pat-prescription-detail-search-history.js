@@ -207,6 +207,10 @@ class HtPatPrescriptionDetailSearchHistory extends TkLocalizerMixin(mixinBehavio
             isLoading:{
                 type: Boolean,
                 value: false
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }

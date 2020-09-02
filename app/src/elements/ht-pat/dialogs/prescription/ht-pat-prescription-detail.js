@@ -90,6 +90,17 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         .content-posology{
             width: 80%;
         }
+        
+        .samVersion{
+            float: right;
+            font-size: 12px;
+            margin-right: 10px;
+            font-weight: normal;
+        }
+        
+        .bold{
+            font-weight: bold;
+        }
 
         </style>
         
@@ -97,6 +108,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             <div class="content-header">
                 <div class="content-header-txt">
                     [[localize('presc', 'Prescription', language)]]
+                    <div class="samVersion"><span class="bold">[[localize('presc-sam-vers', 'Sam version', language)]]:</span> [[samVersion.version]] ([[_formatDate(samVersion.date)]])</div>
                 </div>          
             </div>
             <div class="content">
@@ -117,6 +129,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         list-of-chronic="[[listOfChronic]]"
                         allergies="[[allergies]]"
                         drugs-to-be-prescribe="[[drugsToBePrescribe]]"
+                        sam-version="[[samVersion]]"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -136,6 +149,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             list-of-compound="[[listOfCompound]]"
                             list-of-chronic="[[listOfChronic]]"
                             allergies="[[allergies]]"
+                            sam-version="[[samVersion]]"
                             on-open-posology-view="_openPosologyView"    
                             on-search-cheaper-drugs="_searchCheaperDrugs"
                             on-cheaper-drugs-list-loaded="_openCheaperDrugsView"
@@ -163,6 +177,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             reimbursement-type-list="[[reimbursementTypeList]]"
                             on-open-additional-cnk-info="_openAdditionalCnkInfo"
                             open-parameters="[[openParameters]]"
+                            sam-version="[[samVersion]]"
                          ></ht-pat-prescription-detail-posology>
                     </div>
                 </template> 
@@ -178,6 +193,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             resources="[[resources]]"
                             hcp="[[hcp]]" 
                             cheaper-drugs-list="[[cheaperDrugsList]]"
+                            sam-version="[[samVersion]]"
                             selected-parent-drug-for-cheaper="[[selectedParentDrugForCheaper]]"
                             on-open-posology-view="_openPosologyView"
                             on-close-cheaper-drugs-view="_closeCheaperDrugsView"
@@ -194,14 +210,15 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             patient="[[patient]]" 
                             language="[[language]]" 
                             resources="[[resources]]"
-                            hcp="[[hcp]]"                     
+                            hcp="[[hcp]]"               
+                            sam-version="[[samVersion]]"      
                             selected-cnk-for-information="[[selectedCnkForInformation]]"
                             on-close-cnk-info-view="_closeCnkInfoView"
                         /></ht-pat-prescription-detail-cnk-info>
                      </div>
                 </template>                             
             </div>
-            <div class="buttons">
+            <div class="buttons">      
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[isPosologyView]]">
                     <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
@@ -310,6 +327,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             openParameters:{
                 type: Object,
                 value: () => {}
+            },
+            samVersion:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -337,21 +358,21 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('selectedParentDrugForCheaper', {})
         this.set('selectedCnkForInformation', {})
         this.set('openParameters', {})
+        this.set('samVersion', null)
     }
 
     _open( openParameters ) {
-
         return (this._reset()||true) && (this.set('openParameters', openParameters||{})||true) && this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
             .then(hcp => (this.set('hcp', hcp)||true) && this.api.code().findCodes('be', "CD-REIMBURSEMENT-RECIPE"))
             .then(reimbursementCode => this.set('reimbursementTypeList', reimbursementCode))
+            .then(() => this.api.besamv2().getSamVersion())
+            .then(v => this.set('samVersion', v))
             .finally(() => {
-
                 this.set('listOfCompound', this._refreshCompoundList())
                 this.set('listOfPrescription', this._refreshHistoryList())
                 this.set('listOfChronic', this._refreshChronicList())
 
                 this.shadowRoot.querySelector('#prescriptionDetailDialog').open()
-
             })
     }
 
@@ -588,6 +609,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCnkInfoView', true)
             console.log(_.get(e,"detail.product"))
         }
+    }
+
+    _formatDate(date){
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : ''
     }
 
 }
