@@ -2736,8 +2736,8 @@
 	},
 	"fr": {
 		"pathology_current" : "Courante",
-		"pathology_list_e": "Liste E (lourdes)",
-		"pathology_list_f" : "Liste F (chroniques)",
+		"pathology_list_e": "Liste E (lourde)",
+		"pathology_list_f" : "Liste F (chronique)",
 		"show-all-HE": "Ne pas cacher les éléments de soin d'avant janvier 2018",
 		"open_first_volet": "Ouvrir tous les éléments du premier volet lors de l'ouverture du dossier",
 		"eattest_reason_cancel_A": "Erreur de patient",
