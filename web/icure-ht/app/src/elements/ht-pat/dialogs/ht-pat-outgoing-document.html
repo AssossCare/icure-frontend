@@ -652,6 +652,7 @@
                     getVariableValue: (value) => {
                         return _.trim(
                             value === "todaysDate" ? this.localize('day_' + parseInt(moment().day()), this.language) + ` ` + moment().format('DD') + ` `+ (this.localize('month_' + parseInt(moment().format('M')), this.language)).toLowerCase() + ` ` + moment().format('YYYY') :
+                            value === "todaysDateNumbersOnly" ? moment().format('DD/MM/YYYY') :
                                 value === "documentTitle" ? _.trim(_.get(this,"_data.proseEditorSelectedTemplate.descr",this.localize('hub-doc-title', 'Document title', this.language))) :
                                     value === "time" ? "" + moment().format('HH:mm') :
                                         ""
@@ -2077,6 +2078,7 @@
                     subVars: [
                         {name: this.localize('hub-doc-title', 'Document title', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("documentTitle")'}},{type:'text', text: ' '}]},
                         {name: this.localize('todaysDate', 'Todays date', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("todaysDate")'}},{type:'text', text: ' '}]},
+                        {name: this.localize('todaysDateNumbersOnly', 'Todays date (numbers only)', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("todaysDateNumbersOnly")'}},{type:'text', text: ' '}]},
                         {name: this.localize('hour', 'Time', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("time")'}},{type:'text', text: ' '}]},
                     ]
                  }
