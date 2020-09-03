@@ -181,6 +181,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 			#submitButton{
 				height: 32px;
 				min-width: 100px;
+				z-index: -1;
 			}
 
 		</style>
@@ -359,7 +360,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
             if(!config)return;
             servers = servers.concat(_.uniq(_.get(config, 'servers', []).map(serv => {
                 return {
-                    name: serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
+                    name:  serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/) && serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
                     url : serv,
                     removable : true
                 }
@@ -405,6 +406,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 
   _toggleMoreOption() {
       this.set('showMoreOption',!this.showMoreOption)
+      this.$["loginDialog"].notifyResize()
   }
 
   disable() {

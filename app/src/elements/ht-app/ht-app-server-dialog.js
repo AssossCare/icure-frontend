@@ -101,6 +101,12 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 			#cancelButton {
 			    align-self: flex-end;
 			}
+			
+			paper-listbox {
+			    width : 295px;
+			}
+			
+			
 
 		</style>
         <paper-dropdown-menu close-on-activate="false" label="[[title]]" horizontal-align="left">
@@ -119,7 +125,7 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
                     <paper-item class="server-item">
                         <iron-icon role="button" icon="icons:add" class="server-icon server-icon--add"></iron-icon>
                         <div>
-                            [[localize("add_server","Add a server", language)]]
+                            [[localize("add_server","Add a server ", language)]]
                         </div>
                     </paper-item>
                 </template>  
