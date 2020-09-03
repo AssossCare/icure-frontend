@@ -2889,7 +2889,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               }
               console.log(unionFilter)
               //research
-              this.api.patient().filterByWithUser(this.user, null, null, 50, 0, 1, 'desc', {filter: unionFilter}).then(tb => {
+              this.api.patient().filterByWithUser(this.user, null, null, 50, 0, 1, true, {filter: unionFilter}).then(tb => {
                   console.log("result of the research : " + JSON.stringify(tb))
 
                   //construct of the table
