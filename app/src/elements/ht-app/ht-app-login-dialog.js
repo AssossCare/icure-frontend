@@ -181,9 +181,11 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 			#submitButton{
 				height: 32px;
 				min-width: 100px;
-				z-index: -1;
 			}
 
+            ht-app-server-dialog{
+                z-index:1;
+            }
 		</style>
 
 		<paper-dialog id="loginDialog" opened="{{opened}}" modal="">

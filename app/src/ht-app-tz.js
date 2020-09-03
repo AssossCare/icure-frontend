@@ -1484,7 +1484,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
               if(fhcurl) this.set('fhcUrl',fhcurl.selected)
               config.servers = _.compact(icureurl.servers.filter(serv => !["https://backend.svc.icure.cloud","https://backendb.svc.icure.cloud","https://kraken.svc.icure.cloud"].find(url => serv.url===url)).map(serv => serv.url))
               if(icureurl.selected!==""){
-                  this.set('icureUrl',"http://127.0.0.1:16042/rest/v1")
+                  this.set('icureUrl',_.get(this,"electronUrl","http://127.0.0.1:16042")+"/rest/v1")
                   config.backend= icureurl.selected
               }else{
                   this.set('icureUrl',"http://127.0.0.1:16043/rest/v1")
