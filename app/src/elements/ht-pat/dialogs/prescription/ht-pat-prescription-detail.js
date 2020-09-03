@@ -268,6 +268,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 </template>                           
             </div>
             <div class="buttons">      
+                <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="icons:vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[isPosologyView]]">
                     <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
@@ -726,6 +727,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _isOutdatedVersion(samStatus){
         return samStatus && samStatus === "redVersion"
+    }
+
+    _notifyYellowCard(){
+        window.open("https://famhp-vons.prd.pub.vascloud.be/"+this.language+"/form/PVH")
     }
 
 
