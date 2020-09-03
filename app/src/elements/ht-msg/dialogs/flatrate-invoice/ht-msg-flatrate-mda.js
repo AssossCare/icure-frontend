@@ -1842,7 +1842,16 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                 </div>
             </div>
             
-            <div class="panel-button"><paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button></div>
+            <div class="panel-button">
+                <paper-menu-button class="button-left" horizontal-align="left" dynamic-align="true" vertical-offset="26">
+                    <paper-button class="button button--other" slot="dropdown-trigger" alt="menu"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.technicalDetails","Technical details",language)]]</paper-button>
+                    <paper-listbox slot="dropdown-content">
+                        <paper-item on-tap="_triggerDownloadCalls" data-request-type="request">[[localize("mh_eInvoicing.downloadRequest","Download request",language)]]</paper-item>
+                        <paper-item on-tap="_triggerDownloadCalls" data-request-type="responses">[[localize("mh_eInvoicing.downloadResponses","Download responses",language)]]</paper-item>
+                    </paper-listbox>
+                </paper-menu-button>
+                <paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button>
+            </div>
             
         </template>
 
