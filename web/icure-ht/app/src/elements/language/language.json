@@ -1,5 +1,8 @@
 {
 	"en": {
+		"current" : "Current",
+		"list_e": "List E (heavy)",
+		"list_f" : "List F (chronic)",
 		"treatMessageStep" : "Treat message",
 		"getMessageStep": "Get all message",
 		"show-all-HE": "don't hide actif health element before january 2018",
@@ -2731,6 +2734,9 @@
 		"openEditor": "Open editor"
 	},
 	"fr": {
+		"current" : "Courante",
+		"list_e": "Liste E (lourdes)",
+		"list_f" : "Liste F (chroniques)",
 		"show-all-HE": "Ne pas cacher les éléments de soin d'avant janvier 2018",
 		"open_first_volet": "Ouvrir tous les éléments du premier volet lors de l'ouverture du dossier",
 		"eattest_reason_cancel_A": "Erreur de patient",
@@ -5553,6 +5559,9 @@
 		"openEditor": "Rouvrir l'éditeur"
 	},
 	"nl": {
+		"current" : "Courante",
+		"list_e": "Liste E (lourdes)",
+		"list_f" : "Liste F (chroniques)",
 		"show-all-HE": "don't hide actif health element before january 2018",
 		"open_first_volet": "Open all elements of the first volet with patient folder",
 		"eattest_reason_cancel_A": "Patiëntfout",
