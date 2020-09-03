@@ -479,7 +479,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         })
     }
 
-    _searchCommercialBySubstance(vmpGroupId, parentMolecule){
+    _searchAmpsByVmpGroup(vmpGroupId, parentMolecule){
             this.set('amppsByVmpGroupList', [])
             this.api.besamv2().findPaginatedAmpsByGroupId(vmpGroupId).then(amps => {
                 this.dispatchEvent(new CustomEvent('amps-by-vmp-group-loaded', {

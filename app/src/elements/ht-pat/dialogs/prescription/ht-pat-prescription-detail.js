@@ -8,12 +8,13 @@ import '../../../../styles/scrollbar-style.js';
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
+import './search/ht-pat-prescription-detail-search-cheaper-drugs'
+import './search/ht-pat-prescription-detail-search-amps-by-vmp-group'
 import './ht-pat-prescription-detail-drugs'
 import './ht-pat-prescription-detail-posology'
 import './ht-pat-prescription-detail-search'
-import './ht-pat-prescription-detail-cheaper-drugs'
 import './ht-pat-prescription-detail-cnk-info'
-import './ht-pat-prescription-detail-commercial-by-substance'
+
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
@@ -88,6 +89,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             width: 80%;
         }
         
+        .content-amps-by-vmp-group{
+            width: 80%;
+        }
+        
         .content-posology{
             width: 80%;
         }
@@ -155,7 +160,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             on-search-cheaper-drugs="_searchCheaperDrugs"
                             on-cheaper-drugs-list-loaded="_openCheaperDrugsView"
                             on-search-commercial-by-substance-view="_searchCommercialBySubstance"
-                            on-amps-by-vmp-group-loaded="_openCommercialBySubstanceView"
+                            on-amps-by-vmp-group-loaded="_openAmpsByVmpGroupView"
                         ></ht-pat-prescription-detail-search>
                     </div>
                 </template>
@@ -186,8 +191,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 </template> 
                 <template is="dom-if" if="[[isCheaperDrugView]]">
                      <div class="content-cheaper-drug">
-                        <ht-pat-prescription-detail-cheaper-drugs
-                            id="htPatPrescriptionDetailCheaperDrug"
+                        <ht-pat-prescription-detail-search-cheaper-drugs
+                            id="htPatPrescriptionDetailSearchCheaperDrug"
                             api="[[api]]"
                             i18n="[[i18n]]" 
                             user="[[user]]" 
@@ -200,7 +205,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             selected-parent-drug-for-cheaper="[[selectedParentDrugForCheaper]]"
                             on-open-posology-view="_openPosologyView"
                             on-close-cheaper-drugs-view="_closeCheaperDrugsView"
-                        ></ht-pat-prescription-detail-cheaper-drugs>
+                        ></ht-pat-prescription-detail-search-cheaper-drugs>
                      </div>
                 </template> 
                 <template is="dom-if" if="[[isCnkInfoView]]">
@@ -220,10 +225,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         ></ht-pat-prescription-detail-cnk-info>
                      </div>
                 </template>
-                <template is="dom-if" if="[[isCommercialBySubstanceView]]">
-                    <div class="">
-                        <ht-pat-prescription-detail-commercial-by-substance
-                            id="htPatPrescriptionDetailCommercialBySubstance"
+                <template is="dom-if" if="[[isAmpsByVmpGroupView]]">
+                    <div class="content-amps-by-vmp-group">
+                        <ht-pat-prescription-detail-search-amps-by-vmp-group
+                            id="htPatPrescriptionDetailSearchAmpsByVmpGroup"
                             api="[[api]]"
                             i18n="[[i18n]]" 
                             user="[[user]]" 
@@ -231,9 +236,11 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             language="[[language]]" 
                             resources="[[resources]]"
                             hcp="[[hcp]]"               
-                            sam-version="[[samVersion]]"                  
-                            on-close-commercial-by-substance-view="_closeCommercialBySubstanceView"
-                        ></ht-pat-prescription-detail-commercial-by-substance>                    
+                            sam-version="[[samVersion]]" 
+                            amps-by-vmp-group-list="[[ampsByVmpGroupList]]"      
+                            selected-molecule-for-amps="[[selectedMoleculeForAmps]]" 
+                            on-close-commercial-by-substance-view="_closeAmpsByVmpGroupView"
+                        ></ht-pat-prescription-detail-search-amps-by-vmp-group>                    
                     </div>                
                 </template>                           
             </div>
@@ -304,7 +311,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 type: Boolean,
                 value: false
             },
-            isCommercialBySubstanceView:{
+            isAmpsByVmpGroupView:{
                 type: Boolean,
                 value: false
             },
@@ -390,7 +397,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('selectedCnkForInformation', {})
         this.set('openParameters', {})
         this.set('samVersion', null)
-        this.set('isCommercialBySubstanceView', false)
+        this.set('isAmpsByVmpGroupView', false)
         this.set('ampsByVmpGroupList', [])
         this.set('selectedMoleculeForAmps', {})
     }
@@ -406,7 +413,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 this.set('listOfPrescription', this._refreshHistoryList())
                 this.set('listOfChronic', this._refreshChronicList())
 
-                this.shadowRoot.querySelector('#prescriptionDetailDialog').open()
+                this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').open() : null
             })
     }
 
@@ -466,9 +473,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _closeDialog(){
-
-        return this.shadowRoot.querySelector('#prescriptionDetailDialog') && this.shadowRoot.querySelector('#prescriptionDetailDialog').close()
-
+        return this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').close() : null
     }
 
     _serviceDescription(s) {
@@ -579,61 +584,61 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 this.set('isCheaperDrugView', false)
             }
 
-            this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList()
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
 
         })
 
     }
 
     _validatePosology(){
-        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._validatePosology()
+        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._validatePosology() : null
     }
 
     _createMedication(){
-        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._createMedication()
+        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._createMedication() : null
     }
 
     _closePosologyView(){
         this.set('isPosologyView', false)
-        this.set('isSearchView', true)
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
-        this.set('isCommercialBySubstanceView', false)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isSearchView', true)
     }
 
     _closeCheaperDrugsView(){
         this.set('isPosologyView', false)
-        this.set('isSearchView', true)
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
-        this.set('isCommercialBySubstanceView', false)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isSearchView', true)
     }
 
     _closeCnkInfoView(){
-        this.set('isPosologyView', true)
         this.set('isSearchView', false)
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
-        this.set('isCommercialBySubstanceView', false)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isPosologyView', true)
     }
 
-    _closeCommercialBySubstanceView(){
+    _closeAmpsByVmpGroupView(){
         this.set('isPosologyView', false)
-        this.set('isSearchView', false)
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
-        this.set('isCommercialBySubstanceView', true)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isSearchView', true)
     }
 
     _searchCheaperDrugs(e){
         if(_.get(e ,'detail.groupId', null)){
-            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchCheaperAlternative(_.get(e ,'detail.groupId', null), _.get(e ,'detail.uuid', null), _.get(e ,'detail.uuids', null), _.get(e, 'detail.drug', null))
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchCheaperAlternative(_.get(e ,'detail.groupId', null), _.get(e ,'detail.uuid', null), _.get(e ,'detail.uuids', null), _.get(e, 'detail.drug', null)) : null
         }
     }
 
     _searchCommercialBySubstance(e){
         if(_.get(e, 'detail.id', null)){
-            this.shadowRoot.querySelector("#htPatPrescriptionDetailCommercialBySubstance")._searchCommercialBySubstance(_.get(e, 'detail.molecule.vmpGroup.id', null), _.get(e, 'detail.molecule'))
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._searchAmpsByVmpGroup(_.get(e, 'detail.molecule.vmpGroup.id', null), _.get(e, 'detail.molecule')) : null
         }
     }
 
@@ -648,7 +653,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', true)
             this.set('isCnkInfoView', false)
-            this.set('isCommercialBySubstanceView', false)
+            this.set('isAmpsByVmpGroupView', false)
         }
     }
 
@@ -659,14 +664,15 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', false)
             this.set('isCnkInfoView', true)
-            this.set('isCommercialBySubstanceView', false)
+            this.set('isAmpsByVmpGroupView', false)
             console.log(_.get(e,"detail.product"))
         }
     }
 
-    _openCommercialBySubstanceView(e){
+    _openAmpsByVmpGroupView(e){
         this.set('ampsByVmpGroupList', [])
         this.set('selectedMoleculeForAmps',{})
+
         if(_.get(e, 'detail.ampsByVmpGroupList', [])){
             this.set('ampsByVmpGroupList', _.get(e, 'detail.ampsByVmpGroupList', []))
             this.set('selectedMoleculeForAmps', _.get(e, 'detail.parentMolecule', {}))
@@ -674,7 +680,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isSearchView', false)
             this.set('isCheaperDrugView', false)
             this.set('isCnkInfoView', false)
-            this.set('isCommercialBySubstanceView', true)
+            this.set('isAmpsByVmpGroupView', true)
         }
     }
 
