@@ -181,6 +181,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 			#submitButton{
 				height: 32px;
 				min-width: 100px;
+				z-index: -1;
 			}
 
 		</style>
@@ -230,7 +231,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
                     <!--<template is="dom-if" if="[[showMoreOption]]">-->
                     <div class$="login-options-container visible-[[showMoreOption]]">
                         <div class$="login-options visible-[[showMoreOption]]">
-                            <ht-app-server-dialog id="icure-servers-list" title="iCure [[localize('server', 'server', language)]]" server-name="icure" db-server-selected="[[icureSelected]]" db-servers="[[icureServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
+                            <ht-app-server-dialog id="icure-servers-list" title="iCure [[localize('server', 'server', language)]]" editable="[[electron]]" server-name="icure" db-server-selected="[[icureSelected]]" db-servers="[[icureServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
 
                             <ht-app-server-dialog id="fhc-servers-list" title="Free Health Connector [[localize('server', 'server', language)]]" server-name="fhc" db-server-selected="[[fhcSelected]]" db-servers="[[fhcServers]]" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]"></ht-app-server-dialog>
                             <paper-button raised="true" id="submitButton" class="button button--save" type="submit" on-click="refreshUrl" autofocus="">[[localize('swap_connection','Swap Connection',language)]]</paper-button>
@@ -337,6 +338,10 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
           fhcSelected:{
               type: Number,
               value : 0
+          },
+          electron:{
+              type: Boolean,
+              value: false
           }
       };
 	}
@@ -348,12 +353,16 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 	apiReady() {
         let servers = [{name: this.localize("online","Online"),url:"https://backend.svc.icure.cloud"}]
         let finder = this.icureUrlSelected
-        this.api && this.api.electron().checkAvailable().then(() =>this.api.electron().getConfigFile()).then(config => {
+        this.api && this.api.electron().checkAvailable().then((electron) =>{
+            this.set("electron",electron)
+            return this.api.electron().getConfigFile()
+        }).then(config => {
             if(!config)return;
             servers = servers.concat(_.uniq(_.get(config, 'servers', []).map(serv => {
                 return {
-                    name: serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
-                    url : serv
+                    name:  serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/) && serv.match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/)[0] || serv,
+                    url : serv,
+                    removable : true
                 }
             }).concat(_.get(config,"hasCouchDB",false) ? [{name: this.localize("locale","locale"),url: ""}] : [])
                 .concat(_.get(config,"isTester",false) ? [{name: "backend B",url : "https://backendb.svc.icure.cloud"}] : [])))
@@ -397,6 +406,7 @@ class HtAppLoginDialog extends TkLocalizerMixin(PolymerElement) {
 
   _toggleMoreOption() {
       this.set('showMoreOption',!this.showMoreOption)
+      this.$["loginDialog"].notifyResize()
   }
 
   disable() {
