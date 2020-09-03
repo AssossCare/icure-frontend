@@ -369,6 +369,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             samVersion:{
                 type: Object,
                 value: () => {}
+            },
+            reqIdx:{
+                type: Number,
+                value: 0
             }
         };
     }
@@ -409,9 +413,13 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set('isLoadingSubstance', true)
         this.set('isLoading', true)
         let prom = Promise.resolve({})
+
+        const reqIdx = (this.reqIdx = (this.reqIdx || 0) + 1)
+
         if(drugsFilter){
             setTimeout(() => {
-                if(_.size(drugsFilter) >= 2){
+                if (reqIdx !== this.reqIdx) return
+                if(_.size(_.trim(drugsFilter)) >= 2){
                     prom = prom.then(() => {
                         this.set('searchResult.compound',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']))
                         this.set('searchResult.history',  _.orderBy(this._filterValue(drugsFilter, _.get(this, 'listOfPrescription', [])), ['startDate'], ['desc']))
@@ -424,11 +432,13 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                             this.api.besamv2().findPaginatedNmpsByLabel(this.language, drugsFilter)
                         ])
                     ).then(([vmpGroups, amps, nmps]) => {
-                        this.set("searchResult.commercialName", _.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
-                        this.set("searchResult.molecule", _.orderBy(this._formatIngredient(_.get(vmpGroups, 'rows', []).filter(vpmGroup => _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
-                        this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
-                        this.set('isLoadingCommercial', false)
-                        this.set('isLoadingOtc', false)
+                        if (reqIdx === this.reqIdx){
+                            this.set("searchResult.commercialName", _.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
+                            this.set("searchResult.molecule", _.orderBy(this._formatIngredient(_.get(vmpGroups, 'rows', []).filter(vpmGroup => _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
+                            this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
+                            this.set('isLoadingCommercial', false)
+                            this.set('isLoadingOtc', false)
+                        }
                     }).finally(() => {
                         this.set('isLoadingCommercial', false)
                         this.set('isLoadingOtc', false)
@@ -449,7 +459,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     this.set('isLoadingSubstance', false)
                     this.set('isLoading', false)
                 }
-            }, 200)
+            }, 300)
         }else{
             this.set('searchResult', {
                 compound: _.get(this, 'listOfCompound', []),

@@ -228,7 +228,6 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
             }
             
             .tooltipSupply{
-                height: 100px;
                 width: 300px;
                 font-size: 12px;
             }
@@ -292,41 +291,46 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                     </div>
                     <template is="dom-repeat" items="[[group]]" as="drug">
                         <div class$="tr tr-item [[_isCheapestDrugLine(drug)]]">
-                            <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon></div>  
-                            <div class="td fg01">
+                            <div class="td fg01 notRel">
+                                <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon>
+                                <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
+                            </div>  
+                            <div class="td fg01 notRel">
                                 <template is="dom-if" if="[[_isAvailableCheaperDrugsSearch(origin)]]">
-                                    <iron-icon class="addIcon" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs" title="Alternative">
+                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs">
+                                    <paper-tooltip for="alt_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
                                 </template>
                             </div>   
                             <div class="td fg2 notRel" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView">
-                            [[drug.label]]
-                            <template is="dom-if" if="[[_isNewDrug(drug)]]">
-                                <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
-                            </template>
-                            <template is="dom-if" if="[[_isSupplyProblem(drug)]]">
-                                <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>   
-                                <paper-tooltip class="tooltipSupply" for="supply_[[drug.id]]" position="right" animation-delay="0">
-                                    <div class="fs12">
-                                        [[localize('presc-sup-prob-una', 'Temporarily unavailable', language)]]
-                                    </div>
-                                    <div>
-                                        <div class="table">
-                                             <div class="tr-tooltip">
-                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-from', 'From', language)]]: </div>
-                                                <div class="td-tooltip fg1">[[_getStartOfUnavailability(drug)]]</div>
-                                             </div>
-                                             <div class="tr-tooltip">
-                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-until', 'Until', language)]]: </div>
-                                                <div class="td-tooltip fg1">[[_getEndOfUnavailability(drug)]]</div>
-                                             </div>
-                                             <div class="tr-tooltip">
-                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-reason', 'Reason', language)]]: </div>
-                                                <div class="td-tooltip fg1">[[_getReasonOfUnavailability(drug)]]</div>
-                                             </div>
+                                [[drug.label]]
+                                <template is="dom-if" if="[[_isNewDrug(drug)]]">
+                                    <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isSupplyProblem(drug)]]">
+                                    <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>   
+                                    <paper-tooltip class="tooltipSupply" for="supply_[[drug.id]]" position="right" animation-delay="0">
+                                        <div class="fs12">
+                                            <iron-icon icon="vaadin:truck" class="supplyIcon"></iron-icon>&nbsp;&nbsp;
+                                            [[localize('presc-sup-prob-una', 'Temporarily unavailable', language)]]
                                         </div>
-                                    </div>
-                                </paper-tooltip>                  
-                            </template>
+                                        <div>
+                                            <div class="table">
+                                                 <div class="tr-tooltip">
+                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-from', 'From', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getStartOfUnavailability(drug)]]</div>
+                                                 </div>
+                                                 <div class="tr-tooltip">
+                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-until', 'Until', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getEndOfUnavailability(drug)]]</div>
+                                                 </div>
+                                                 <div class="tr-tooltip">
+                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-reason', 'Reason', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getReasonOfUnavailability(drug)]]</div>
+                                                 </div>
+                                            </div>
+                                        </div>
+                                    </paper-tooltip>                  
+                                </template>
                             </div>
                             <div class="td fg05 notRel">
                                 <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]] id="tt_[[drug.atcCat]]_[[drug.id]]"></iron-icon></template>
@@ -363,9 +367,10 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                                     <div class="td fg01"></div>   
                                     <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
                                         [[_getAmppFinishedName(amppFinished)]]
-                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]" class="deletedIcon"</iron-icon>
+                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]" class="deletedIcon"></iron-icon>
                                         <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]" position="right" animation-delay="0">
                                             <div class="fs12">
+                                                <iron-icon icon="medication-svg-icons:deletedDrug" class="deletedIcon"></iron-icon>&nbsp;&nbsp;
                                                 [[localize('presc-rec-del', 'Recent deletion', language)]]
                                             </div>
                                             <div>
@@ -588,7 +593,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
     _getReasonOfEndOfCommercialization(commercializations){
         const now = moment().valueOf()
         const com = commercializations && commercializations.find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))
-        return _.get(com, 'reason', null)
+        return _.get(com, 'reason.'+this.language , null)
     }
 
     _getEndOfCommercialization(commercializations){

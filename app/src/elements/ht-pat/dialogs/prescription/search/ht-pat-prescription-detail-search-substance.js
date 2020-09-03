@@ -157,6 +157,10 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 width: 100px;
             }
             
+             .notRel{
+                position: initial;
+            }
+            
         </style>
         
       <template is="dom-if" if="[[isLoading]]" restamp="true">
@@ -171,8 +175,14 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 </div>
                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                     <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg01"><iron-icon class="addIcon" icon="vaadin:copyright" data-id$="[[drug.id]]" data-type="substance" on-tap="_openCommercialBySubstanceView"></iron-icon></div>    
+                        <div class="td fg01 notRel">
+                            <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon>
+                            <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
+                        </div>    
+                        <div class="td fg01 notRel">
+                            <iron-icon class="addIcon" id="amps_[[drug.id]]" icon="vaadin:copyright" data-id$="[[drug.id]]" data-type="substance" on-tap="_openCommercialBySubstanceView"></iron-icon>
+                            <paper-tooltip for="amps_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-amps', 'Search amps', language)]]</paper-tooltip>
+                        </div>    
                         <div class="td fg2" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
                     </div>
                 </template>        

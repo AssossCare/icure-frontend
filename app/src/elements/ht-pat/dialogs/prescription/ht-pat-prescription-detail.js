@@ -82,30 +82,47 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         }
         
         .content-search{
-            width: 80%;
+           width: 80%;
         }
         
         .content-cheaper-drug{
-            width: 80%;
+           width: 80%;
         }
         
         .content-amps-by-vmp-group{
-            width: 80%;
+           width: 80%;
         }
         
         .content-posology{
-            width: 80%;
+           width: 80%;
         }
         
         .samVersion{
-            float: right;
-            font-size: 12px;
-            margin-right: 10px;
-            font-weight: normal;
+           float: right;
+           font-size: 12px;
+           margin-right: 10px;
+           font-weight: normal;
         }
         
         .bold{
-            font-weight: bold;
+           font-weight: bold;
+        }
+        
+        .redVersion{
+           color: var(--app-status-color-nok);
+        }
+        
+        .orangeVersion{
+           color: var(--app-status-color-pending);
+        }
+        
+        .greenVersion{
+           color: var(--app-status-color-ok);
+        }
+        
+        .samStatusIcon{
+            height: 10px;
+            width: 10px;
         }
 
         </style>
@@ -114,7 +131,13 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             <div class="content-header">
                 <div class="content-header-txt">
                     [[localize('presc', 'Prescription', language)]]
-                    <div class="samVersion"><span class="bold">[[localize('presc-sam-vers', 'Sam version', language)]]:</span> [[samVersion.version]] ([[_formatDate(samVersion.date)]])</div>
+                    <div class="samVersion">
+                        <span class="bold">
+                            [[localize('presc-sam-vers', 'Sam version', language)]]:
+                        </span> 
+                        [[samVersion.version]] <span class$="[[_getStatusOfSam(samVersion)]]">([[_formatDate(samVersion.date)]])</span>
+                        <iron-icon icon="vaadin:circle" class$="samStatusIcon [[_getStatusOfSam(samVersion)]]"></iron-icon>
+                    </div>
                 </div>          
             </div>
             <div class="content">
@@ -686,6 +709,23 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _formatDate(date){
         return date ? this.api.moment(date).format('DD/MM/YYYY') : ''
+    }
+
+    _getStatusOfSam(samVersion){
+        const now = moment().valueOf()
+        return _.get(samVersion, 'date', null) ?
+            now === _.get(samVersion, 'date', null) ?
+                'greenVersion' :
+            this.api.moment(_.get(samVersion, 'date', null)).add(5, 'day').valueOf() > now ?
+                'orangeVersion' :
+            this.api.moment(_.get(samVersion, 'date', null)).add(14, 'day').valueOf() > now ?
+                'redVersion' :
+            'redVersion' :
+        'redVersion'
+    }
+
+    _isOutdatedVersion(samStatus){
+        return samStatus && samStatus === "redVersion"
     }
 
 
