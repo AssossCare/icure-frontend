@@ -1062,7 +1062,6 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
           const end = parseInt(moment().add(1, 'month').format('YYYYMMDD'));
           const maxplanningsize = 10;
           const sort = 'valueDate';
-          const desc = 'desc';
 
           const planningFilter =  { '$type': 'ServiceByHcPartyTagCodeDateFilter', healthcarePartyId: hcp.id, tagCode: 'planned', tagType: 'CD-LIFECYCLE', startValueDate: start * 1000000, endValueDate: end * 1000000 };
           this.api.contact().filterServicesBy(null, 1000, new models.FilterChainService({ filter: planningFilter })) //todo wtf JSON not valid
@@ -1086,7 +1085,7 @@ class HtMain extends TkLocalizerMixin(PolymerElement) {
                   const decodedPatIds = patIds.map(ua => this.api.crypto().utils.ua2text(ua).split(':')[1]);
                   s.patId = decodedPatIds.find(id => id != null);return decodedPatIds;
               })))).then(arraysOfArraysOfPatIdsAsUa => {
-                  return this.api.patient().filterByWithUser(this.user, null, null, maxplanningsize, /*index*/null, sort, desc, {
+                  return this.api.patient().filterByWithUser(this.user, null, null, maxplanningsize, /*index*/null, sort, true, {
                       filter: {
                           '$type': 'PatientByIdsFilter',
                           'ids': _.uniqBy(_.compact(_.flatMap(arraysOfArraysOfPatIdsAsUa)))
