@@ -8,6 +8,7 @@ import '../../../../styles/scrollbar-style.js';
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
+import './compound/ht-pat-prescription-compound-management'
 import './search/ht-pat-prescription-detail-search-cheaper-drugs'
 import './search/ht-pat-prescription-detail-search-amps-by-vmp-group'
 import './ht-pat-prescription-detail-drugs'
@@ -124,6 +125,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             height: 10px;
             width: 10px;
         }
+        
+        .content-compound-management{
+          width: 80%;
+        }
 
         </style>
         
@@ -184,6 +189,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             on-cheaper-drugs-list-loaded="_openCheaperDrugsView"
                             on-search-commercial-by-substance-view="_searchCommercialBySubstance"
                             on-amps-by-vmp-group-loaded="_openAmpsByVmpGroupView"
+                            on-open-compound-management-view="_openCompoundManagement"
                         ></ht-pat-prescription-detail-search>
                     </div>
                 </template>
@@ -265,16 +271,33 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             on-close-commercial-by-substance-view="_closeAmpsByVmpGroupView"
                         ></ht-pat-prescription-detail-search-amps-by-vmp-group>                    
                     </div>                
+                </template>  
+                <template is="dom-if" if="[[isCompoundManagementView]]">
+                    <div class="content-compound-management">
+                        <ht-pat-prescription-compound-management
+                            id="htPatPrescriptionCompoundManagement"
+                            api="[[api]]"
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]"
+                            hcp="[[hcp]]"               
+                            sam-version="[[samVersion]]" 
+                            on-close-compound-management-view="_closeCompoundManagementView"
+                        ></ht-pat-prescription-compound-management>                    
+                    </div>                
                 </template>                           
             </div>
             <div class="buttons">      
-                <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="icons:vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
-                <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
                 <template is="dom-if" if="[[isPosologyView]]">
                     <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_validatePosology"><iron-icon icon="icons:check"></iron-icon> [[localize('pos-presc','Validate posology',language)]]</paper-button>
                 </template>
+                <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Compound management',language)]]</paper-button>
+                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -336,6 +359,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 value: false
             },
             isAmpsByVmpGroupView:{
+                type: Boolean,
+                value: false
+            },
+            isCompoundManagementView:{
                 type: Boolean,
                 value: false
             },
@@ -424,6 +451,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isAmpsByVmpGroupView', false)
         this.set('ampsByVmpGroupList', [])
         this.set('selectedMoleculeForAmps', {})
+        this.set('isCompoundManagementView', false)
     }
 
     _open( openParameters ) {
@@ -432,11 +460,14 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .then(reimbursementCode => this.set('reimbursementTypeList', reimbursementCode))
             .then(() => this.api.besamv2().getSamVersion())
             .then(v => this.set('samVersion', v))
+            .then(() => this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true))
+            .then(compoundTemplateList => {
+                const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : null
+                this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))
+            })
             .finally(() => {
-                this.set('listOfCompound', this._refreshCompoundList())
                 this.set('listOfPrescription', this._refreshHistoryList())
                 this.set('listOfChronic', this._refreshChronicList())
-
                 this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').open() : null
             })
     }
@@ -468,8 +499,35 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         })
     }
 
-    _refreshCompoundList(){
-        return _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : null
+    _prepareCompoundFromUserForDisplay(compoundFromUser){
+        return compoundFromUser.map(comp => {
+            return {
+                label: _.get(comp, 'title', null),
+                description: null,
+                formula: _.get(comp, 'formula', null),
+                author: _.get(this, 'user.id', null),
+                id: _.get(comp, 'id', null),
+                drugType: 'compound',
+                atcClass: null,
+                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(comp, 'descr', "")), _.trim(_.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+            }
+        })
+    }
+
+    _prepareCompoundFromTemplateForDisplay(compoundTemplate){
+        return compoundTemplate.map(comp => {
+            return {
+                label: _.get(comp, 'descr', null),
+                description: null,
+                formula: _.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', null),
+                author: _.get(comp, 'userId', null),
+                id: _.get(comp, 'id', null),
+                entityTemplate: comp,
+                drugType: 'compound',
+                atcClass: null,
+                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(comp, 'descr', "")), _.trim(_.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+            }
+        })
     }
 
     _composeHistory(drug, service, drugType){
@@ -627,6 +685,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
         this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', false)
         this.set('isSearchView', true)
     }
 
@@ -635,6 +694,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
         this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', false)
         this.set('isSearchView', true)
     }
 
@@ -643,6 +703,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
         this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', false)
         this.set('isPosologyView', true)
     }
 
@@ -651,6 +712,16 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCheaperDrugView', false)
         this.set('isCnkInfoView', false)
         this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', false)
+        this.set('isSearchView', true)
+    }
+
+    _closeCompoundManagementView(){
+        this.set('isPosologyView', false)
+        this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', false)
         this.set('isSearchView', true)
     }
 
@@ -678,6 +749,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCheaperDrugView', true)
             this.set('isCnkInfoView', false)
             this.set('isAmpsByVmpGroupView', false)
+            this.set('isCompoundManagementView', false)
         }
     }
 
@@ -689,7 +761,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCheaperDrugView', false)
             this.set('isCnkInfoView', true)
             this.set('isAmpsByVmpGroupView', false)
-            console.log(_.get(e,"detail.product"))
+            this.set('isCompoundManagementView', false)
         }
     }
 
@@ -705,7 +777,18 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCheaperDrugView', false)
             this.set('isCnkInfoView', false)
             this.set('isAmpsByVmpGroupView', true)
+            this.set('isCompoundManagementView', false)
         }
+    }
+
+    _openCompoundManagement(e){
+        this.set('isPosologyView', false)
+        this.set('isSearchView', false)
+        this.set('isCheaperDrugView', false)
+        this.set('isCnkInfoView', false)
+        this.set('isAmpsByVmpGroupView', false)
+        this.set('isCompoundManagementView', true)
+        this.shadowRoot.querySelector("#htPatPrescriptionCompoundManagement") ? this.shadowRoot.querySelector("#htPatPrescriptionCompoundManagement")._initializeData(_.get(e, 'detail.id', null), _.get(e, 'detail.product', {})) : null
     }
 
     _formatDate(date){
@@ -732,7 +815,6 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _notifyYellowCard(){
         window.open("https://famhp-vons.prd.pub.vascloud.be/"+this.language+"/form/PVH")
     }
-
 
 }
 customElements.define(HtPatPrescriptionDetail.is, HtPatPrescriptionDetail);

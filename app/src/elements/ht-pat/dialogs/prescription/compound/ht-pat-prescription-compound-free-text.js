@@ -19,7 +19,7 @@ import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 import _ from "lodash"
-class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
@@ -42,13 +42,11 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             
             .tr{
                 display: flex;
-                height: 22px;            
-                border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
             }
             
             .td{
-               position: relative;
+                position: relative;
                 display: flex;
                 flex-flow: row nowrap;
                 align-items: center;
@@ -140,35 +138,53 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 width: 100px;
             }
             
+            .bold{
+                font-weight: bold;
+            }
+            
+            .compound-free-text-container{
+                height: calc(100% - 10px);
+                width: auto;
+                margin: 5px;
+            }
+            
+            .textarea-style{
+                width: 100%;
+            }
+            
+            .w100{
+                width: 100%;
+            }
+            
+            .mtm6{
+                margin-top: -6px;
+            }
+            
         </style>
         
-        <template is="dom-if" if="[[isLoading]]" restamp="true">
-            <ht-spinner active="[[isLoading]]"></ht-spinner>
-        </template>
-        <template is="dom-if" if="[[!isLoading]]" restamp="true">
+        <div class="compound-free-text-container">
             <div class="table">
-                <div class="tr th">                 
-                    <div class="td fg01"></div>    
-                    <div class="td fg01"></div>    
-                    <div class="td fg1">[[localize('presc-sear-name','Name',language)]]</div>
-                    <div class="td fg2">[[localize('presc-sear-formula','Formula',language)]]</div>
-                </div>
-                <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
-                    <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg01"><iron-icon class="addIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>    
-                        <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
-                        <div class="td fg2">[[drug.formula]]</div>
+                <div class="tr">
+                    <div class="td fg1">
+                        <vaadin-combo-box class="w100 mtm6" label="[[localize('presc-comp-class', 'Class', language)]]" filter="{{atcClassFilter}}" selected-item="{{selectedAtcClass}}" filtered-items="[[atcClassList]]" item-label-path="label.[[language]]">
+                           <template>[[_getLabel(item.label)]]</template>
+                        </vaadin-combo-box>
                     </div>
-                </template>
-            </div>  
-        </template>                 
+                    <div class="td fg2">
+                        <dynamic-text-field label="[[localize('presc-comp-name', 'Name', language)]]*" value="{{selectedCompound.label}}"></dynamic-text-field>
+                    </div>
+                </div>
+                <div class="tr">
+                    <vaadin-text-area class="textarea-style" label="[[localize('presc-comp-formula','Formula',language)]]" value="{{selectedCompound.formula}}"></vaadin-text-area>
+                </div>
+            </div>
+        </div>
        
 `;
     }
 
     static get is() {
-        return 'ht-pat-prescription-detail-search-compound';
+        return 'ht-pat-prescription-compound-free-text';
     }
 
     static get properties() {
@@ -189,10 +205,6 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 type: String,
                 value: null
             },
-            searchResult:{
-                type: Object,
-                value: () => {}
-            },
             isLoading:{
                 type: Boolean,
                 value: false
@@ -200,59 +212,41 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             samVersion:{
                 type: Object,
                 value: () => {}
+            },
+            atcClassList: {
+                type: Array,
+                value: () => []
+            },
+            selectedAtcClass:{
+                type: Object,
+                value: () => {}
+            },
+            selectedCompound: {
+                type: Object,
+                value: () => {}
             }
         };
     }
 
     static get observers() {
-        return [];
+        return ['_selectedAtcClassChanged(selectedAtcClass)'];
     }
 
     ready() {
         super.ready();
     }
 
-    _openPosologyView(e){
-
-        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
-
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                id: drugId,
-                type: dataType,
-                bypassPosologyView: false,
-                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
-            }
-        }))
+    _reset(){
 
     }
 
-    _formatDate(date){
-        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+    _getLabel(label){
+        return label && _.get(label, this.language, null)
     }
 
-    _getAtcColor(cat){
-        return cat ? "ATC--"+_.toUpper(cat) : null
-    }
+    _selectedAtcClassChanged(){
 
-    _openCompoundManagementView(e){
-        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
-
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-compound-management-view', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                id: drugId,
-                type: dataType,
-                bypassPosologyView: false,
-                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
-            }
-        }))
     }
 
 }
-customElements.define(HtPatPrescriptionDetailSearchCompound.is, HtPatPrescriptionDetailSearchCompound);
+customElements.define(HtPatPrescriptionCompoundFreeText.is, HtPatPrescriptionCompoundFreeText);
