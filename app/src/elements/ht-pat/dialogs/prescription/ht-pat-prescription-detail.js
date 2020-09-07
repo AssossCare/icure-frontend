@@ -190,6 +190,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             on-search-commercial-by-substance-view="_searchCommercialBySubstance"
                             on-amps-by-vmp-group-loaded="_openAmpsByVmpGroupView"
                             on-open-compound-management-view="_openCompoundManagement"
+                            on-tab-changed="_showBtnFromTab"
                         ></ht-pat-prescription-detail-search>
                     </div>
                 </template>
@@ -289,15 +290,19 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     </div>                
                 </template>                           
             </div>
-            <div class="buttons">      
-                <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
+            <div class="buttons">
+                <template is="dom-if" if="[[!isCompoundSearchView]]">
+                    <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
+                </template>      
                 <template is="dom-if" if="[[isPosologyView]]">
                     <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_validatePosology"><iron-icon icon="icons:check"></iron-icon> [[localize('pos-presc','Validate posology',language)]]</paper-button>
                 </template>
-                <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Compound management',language)]]</paper-button>
-                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <template is="dom-if" if="[[isCompoundSearchView]]">
+                    <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Create compound',language)]]</paper-button>
+                </template>
+                <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -357,6 +362,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             isCnkInfoView:{
                 type: Boolean,
                 value: false
+            },
+            isCompoundSearchView:{
+              type: Boolean,
+              value: false
             },
             isAmpsByVmpGroupView:{
                 type: Boolean,
@@ -452,6 +461,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('ampsByVmpGroupList', [])
         this.set('selectedMoleculeForAmps', {})
         this.set('isCompoundManagementView', false)
+        this.set('isCompoundSearchView', false)
     }
 
     _open( openParameters ) {
@@ -798,7 +808,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _getStatusOfSam(samVersion){
         const now = moment().valueOf()
         return _.get(samVersion, 'date', null) ?
-            now === _.get(samVersion, 'date', null) ?
+            _.parseInt(this.api.moment(now).format('YYYYMMDD')) === _.get(samVersion, 'date', null) ?
                 'greenVersion' :
             this.api.moment(_.get(samVersion, 'date', null)).add(5, 'day').valueOf() > now ?
                 'orangeVersion' :
@@ -814,6 +824,12 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _notifyYellowCard(){
         window.open("https://famhp-vons.prd.pub.vascloud.be/"+this.language+"/form/PVH")
+    }
+
+    _showBtnFromTab(e){
+        if(_.get(e, 'detail.tabNumber', null)){
+            _.get(e, 'detail.tabNumber', 0) === 4 ? this.set('isCompoundSearchView', true) : this.set('isCompoundSearchView', false)
+        }
     }
 
 }

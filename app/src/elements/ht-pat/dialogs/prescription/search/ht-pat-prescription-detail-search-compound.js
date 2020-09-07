@@ -123,11 +123,22 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
             }
             
             .addIcon{
-                background-color: var(--app-secondary-color);
-                height: 14px;
-                width: 14px;
-                cursor: pointer;
-                color: white;
+               background-color: var(--app-secondary-color);
+               height: 12px;
+               width: 12px;
+               cursor: pointer;
+               color: white;
+               padding: 2px;
+            }
+            
+            .modifyIcon{
+               background-color: var(--app-secondary-color);
+               height: 10px;
+               width: 10px;
+               cursor: pointer;
+               color: white;
+               padding: 4px;
+               border-radius: 50%;
             }
             
              .atcIcon{
@@ -156,7 +167,7 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
                     <div class="tr tr-item">
                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg01"><iron-icon class="addIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>    
+                        <div class="td fg01"><iron-icon class="modifyIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>    
                         <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
                         <div class="td fg2">[[drug.formula]]</div>
                     </div>

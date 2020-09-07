@@ -122,12 +122,13 @@ class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([
             
             }
             
-            .addIcon{
-                background-color: var(--app-secondary-color);
-                height: 14px;
-                width: 14px;
-                cursor: pointer;
-                color: white;
+             .addIcon{
+               background-color: var(--app-secondary-color);
+               height: 12px;
+               width: 12px;
+               cursor: pointer;
+               color: white;
+               padding: 2px;
             }
             
              .atcIcon{

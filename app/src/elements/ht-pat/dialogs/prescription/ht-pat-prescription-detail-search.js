@@ -378,7 +378,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     static get observers() {
-        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfChronic,  listOfCompound.*, listOfPrescription.*, listOfChronic.*)'];
+        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfChronic,  listOfCompound.*, listOfPrescription.*, listOfChronic.*)', '_selectedTabChanged(tabs)'];
     }
 
     ready() {
@@ -747,6 +747,17 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _getPriceIndex(dmpp){
         return _.get(dmpp, 'cheapest', null) ? 0 : (_.get(dmpp, 'cheap', null) ? 1 : 2)
+    }
+
+    _selectedTabChanged(tabs){
+        this.dispatchEvent(new CustomEvent('tab-changed', {
+            bubbles: true,
+            composed: true,
+            detail: {
+               tabNumber: _.get(this, 'tabs', 0),
+               tabName: _.get(this, 'tabs', 0) === 0 ? 'chronic' : _.get(this, 'tabs', 0) === 1 ? 'history' : _.get(this, 'tabs', 0) === 2 ? 'commercial' : _.get(this, 'tabs', 0) === 3 ? 'substance' : _.get(this, 'tabs', 0) === 4 ? 'compound' : _.get(this, 'tabs', 0) === 5 ? 'otc' : null
+            }
+        }))
     }
 }
 customElements.define(HtPatPrescriptionDetailSearch.is, HtPatPrescriptionDetailSearch);

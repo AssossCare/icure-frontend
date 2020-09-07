@@ -78,6 +78,7 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
                 <paper-icon-button id="" class="button button--other btn-close" icon="icons:close" on-tap="_closeCompoundManagementView"></paper-icon-button>
             </div>
             <div class="compound-management-container">
+            <!--
                 <paper-tabs selected="{{tabs}}">
                     <paper-tab>
                         <iron-icon class="tabIcon" icon="vaadin:edit"></iron-icon> [[localize('presc-comp-free','Free text',language)]]
@@ -121,6 +122,21 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
                         ></ht-pat-prescription-compound-codified>
                     </page>
                 </iron-pages>
+                -->
+                
+                 <ht-pat-prescription-compound-free-text
+                    id="htPatPrescriptionCompoundFreeText"
+                    api="[[api]]"
+                    i18n="[[i18n]]" 
+                    user="[[user]]" 
+                    patient="[[patient]]" 
+                    language="[[language]]" 
+                    resources="[[resources]]"
+                    hcp="[[hcp]]"               
+                    sam-version="[[samVersion]]" 
+                    atc-class-list="[[atcClassList]]"
+                    selected-compound="[[selectedCompound]]"
+                ></ht-pat-prescription-compound-free-text>
             </div>
         </div>
         

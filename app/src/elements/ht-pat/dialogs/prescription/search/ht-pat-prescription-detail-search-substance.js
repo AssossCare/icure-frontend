@@ -123,14 +123,15 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
             }
             
             .addIcon{
-                background-color: var(--app-secondary-color);
-                height: 14px;
-                width: 14px;
-                cursor: pointer;
-                color: white;
+               background-color: var(--app-secondary-color);
+               height: 12px;
+               width: 12px;
+               cursor: pointer;
+               color: white;
+               padding: 2px;
             }
             
-             .atcIcon{
+            .atcIcon{
                 height: 8px;
                 width: 8px;
             }
@@ -157,7 +158,7 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 width: 100px;
             }
             
-             .notRel{
+            .notRel{
                 position: initial;
             }
             

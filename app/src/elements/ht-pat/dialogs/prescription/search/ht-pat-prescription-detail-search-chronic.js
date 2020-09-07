@@ -139,6 +139,15 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
                 height: 100px;
                 width: 100px;
             }
+            
+             .addIcon{
+               background-color: var(--app-secondary-color);
+               height: 12px;
+               width: 12px;
+               cursor: pointer;
+               color: white;
+               padding: 2px;
+            }
         
         </style>
         

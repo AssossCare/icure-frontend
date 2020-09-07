@@ -112,15 +112,7 @@ class HtPatPrescriptionCompoundCodified extends TkLocalizerMixin(mixinBehaviors(
                 width: 14px;
                 margin-right: 6px;
             }
-            
-            .addIcon{
-                background-color: var(--app-secondary-color);
-                height: 14px;
-                width: 14px;
-                cursor: pointer;
-                color: white;
-            }
-            
+                     
              .atcIcon{
                 height: 8px;
                 width: 8px;
@@ -157,10 +149,11 @@ class HtPatPrescriptionCompoundCodified extends TkLocalizerMixin(mixinBehaviors(
             
             .addIcon{
                background-color: var(--app-secondary-color);
-               height: 14px;
-               width: 14px;
+               height: 12px;
+               width: 12px;
                cursor: pointer;
                color: white;
+               padding: 2px;
             }
             
             .w100{
@@ -277,7 +270,7 @@ class HtPatPrescriptionCompoundCodified extends TkLocalizerMixin(mixinBehaviors(
                            <div class="td fg2">[[localize('presc-comp-name', 'Name', language)]]</div>
                            <div class="td fg1">[[localize('presc-comp-qt', 'Quantity', language)]]</div>
                         </div> 
-                        <template is="dom-repeat" items="[[selectedCompound.codifiedFormula]]" as="sub">
+                        <template is="dom-repeat" id="formulaList" items="[[selectedCompound.codifiedFormula]]" as="sub">
                              <div class="tr noH">
                                <div class="td fg01">
                                    <iron-icon class="addIcon" icon="vaadin:close-circle-o" data-id$="[[sub.code]]" on-tap="_removeSubstanceFromCompound"></iron-icon>
@@ -404,6 +397,7 @@ class HtPatPrescriptionCompoundCodified extends TkLocalizerMixin(mixinBehaviors(
             let form = _.get(this, 'selectedCompound.codifiedFormula', [])
             _.remove(form, co => _.get(co, 'code', '') === _.get(e, 'currentTarget.dataset.id', null))
             this.set('selectedCompound.codifiedFormula', form)
+            this.shadowRoot.querySelector("#formulaList") ? this.shadowRoot.querySelector("#formulaList").render() : null
         }
     }
 
