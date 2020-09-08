@@ -1786,86 +1786,69 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
       this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
   }
 
-  _importDocumentIntoPatient(){
-      if(this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.transaction && this.selectedDocumentToBeImported.document){
-          this.api.message().newInstance(this.user)
-              .then(nmi => this.api.message().createMessage(_.merge(nmi, {
-                  transportGuid: "HUB:IN:IMPORTED-DOCUMENT",
-                  recipients: [this.user && this.user.healthcarePartyId],
-                  metas: {filename: this.selectedDocumentToBeImported.title,
-                  mediaType: this.tranformHubTypeToUti(this.selectedDocumentToBeImported.document)},
-                  toAddresses: [_.get(this.user, 'email', this.user && this.user.healthcarePartyId)],
-                  subject: "Import document from hub: "+ this.selectedDocumentToBeImported.title || null,
-                  status : 0 | 1<<25 | (this.patient.id ? 1<<26 : 0)
-                  }))
-                  .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : this.patient.id, isAssigned: true}))))]))
-                  .then(([createdMessage, cryptedMeta]) => {
-                      createdMessage.metas.cryptedInfo = Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedMeta)))
-                      return this.api.message().modifyMessage(createdMessage)
-                  })
-                  .then(createdMessage => this.api.document().newInstance(this.user, createdMessage, {
-                      documentType: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.docType ? this.selectedDocumentToBeImported.docType : 'report',
-                      mainUti: this.api.document().uti(this.tranformHubTypeToUti(this.selectedDocumentToBeImported.document)),
-                      name: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.title ? "documentDownloadFromHub_" + this.selectedDocumentToBeImported.title : "documentDownloadFromHub_"+moment().format("YYYYMMDDhhmmss")
-                  }))
-                  .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                  .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(this.selectedDocumentToBeImported.document.value))
-                  .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
-                  .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
-                  .then(resourcesObject => {
-                      //Import into currentContact
-                      let sc = this.currentContact.subContacts.find(sbc => (sbc.status || 0) & 64);
-                      if (!sc) {
-                          sc = { status: 64, services: [] };
-                          this.currentContact.subContacts.push(sc);
-                      }
-                      const svc = this.api.contact().service().newInstance(this.user, {
-                          content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]),
-                          label: 'document',
-                          tags: [
-                              {type: 'CD-TRANSACTION', code: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.docType ? this.selectedDocumentToBeImported.docType : 'report'},
-                              {type: 'HUB-TRANSACTION', code: 'download'},
-                          ]
-                      });
-                      this.currentContact.services.push(svc);
-                      sc.services.push({ serviceId: svc.id });
+    _importDocumentIntoPatient() {
 
-                      this.saveCurrentContact().then(c => {
-                          this.dispatchEvent(new CustomEvent('hub-download', {}))
-                      })
+        const documentTitle = _.trim(_.get(this,"selectedDocumentToBeImported.title")) ? _.trim(_.get(this,"selectedDocumentToBeImported.title")) : this.api.crypto().randomUuid()
+        const documentMime = this.tranformHubTypeToUti(_.get(this,"selectedDocumentToBeImported.document"))
+        const documentUti = _.trim(this.api.document().uti(documentMime))
+        const documentExtension = _.chain(this.api.document().utiExts).map((v,k) => v === documentUti ? k : null).compact().get("[0]","txt").value()
+        const documentFileName = moment().format("YYYYMMDD-HHmmss-") + _.kebabCase(documentTitle) + "." + documentExtension
+        const documentDate = parseInt(_.get(this,"selectedDocumentToBeImported.transaction.date.millis",0)||0)
+        const documentType = _.trim(_.get(this,"selectedDocumentToBeImported.docType")) ? _.trim(_.get(this,"selectedDocumentToBeImported.docType")) : 'report'
+        const cdTransactionTag = { type: "CD-TRANSACTION", version: "1", code: documentType }
 
-                      /*
-                      //Import in new contact
-                      this.api.contact().newInstance(this.user, this.patient, {
-                          created: new Date().getTime() ,
-                          modified: new Date().getTime() ,
-                          author: this.user.id,
-                          responsible: this.user.healthcarePartyId,
-                          subContacts: []
-                      }).then(ctc => {
-                          if (resourcesObject && resourcesObject.id) {
-                              const svc = this.api.contact().service().newInstance(this.user, { content: _.fromPairs([[this.language, { documentId: resourcesObject.id, stringValue: resourcesObject.name }]]), label: 'Hub document'});
-                              ctc.services.push(svc);
-                              ctc.subContacts = [{ status: 64, services: [{serviceId: svc.id }]}]
-                              this.api.contact().createContactWithUser(this.user, ctc).then(c=>{
-                                  this.api.register(c,'contact')
-                              })
-                          }
-                      })*/
-                  }).finally(() => {
-                      this.set('selectedDocumentToBeImported', {
-                          transaction : null,
-                          document: null,
-                          title: null,
-                          docType: null
-                      })
-                      this.shadowRoot.querySelector('#importHubDocumentDialog') ? this.shadowRoot.querySelector('#importHubDocumentDialog').close() : null
-                  }).catch(e => {
-                      console.log("---error upload attachment---", e)
-                  })
-              )
-      }
-  }
+        return !this.patient || !_.get(this,"selectedDocumentToBeImported.transaction") || !_.get(this,"selectedDocumentToBeImported.document") ? ((this.set('selectedDocumentToBeImported', {transaction:null, document:null, title:null, docType:null})||true) && this.$['importHubDocumentDialog'].close()) : this.api.message().newInstance(this.user)
+            .then(newMessageInstance => this.api.message().createMessage(_.merge(newMessageInstance, {
+                transportGuid: "HUB:IN:IMPORTED-DOCUMENT",
+                recipients: [_.get(this,"user.healthcarePartyId")],
+                metas: { filename: documentFileName, mediaType: documentMime, },
+                toAddresses: [_.get(this,"user.healthcarePartyId")],
+                subject: "[HUB] "+ documentTitle,
+                status : 0 | 1<<25 | (_.trim(_.get(this,"patient.id")) ? 1<<26 : 0)
+            })))
+            .then(createdMessage => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.trim(_.get(this,"patient.id")), isAssigned: true})))).then(encryptedContent => [createdMessage,encryptedContent]).catch(e=>[createdMessage,null]))
+            .then(([createdMessage, cryptedData]) => this.api.message().modifyMessage(_.merge(createdMessage, {metas:{cryptedInfo:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedData))||null)}})))
+            .then(modifiedMessage => this.api.document().newInstance(this.user, modifiedMessage, {
+                documentType: documentType,
+                mainUti: documentUti,
+                name: documentFileName
+            }))
+            .then(newDocInstance => this.api.document().createDocument(newDocInstance))
+            .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(_.get(this,"selectedDocumentToBeImported.document.value")))
+                .then(encryptedFileContent => [createdDocument,encryptedFileContent])
+                .catch(e => [createdDocument,this.api.crypto().utils.base64toArrayBuffer(_.get(this,"selectedDocumentToBeImported.document.value"))])
+            )
+            .then(([createdDocument, encryptedFileContent]) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
+            .then(createdDocument => this.api.contact().newInstance(this.user, this.patient, {
+                groupId: this.api.crypto().randomUuid(),
+                created: +new Date,
+                modified: +new Date,
+                author: _.trim(_.get(this,"user.id","")),
+                responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
+                openingDate: parseInt(moment((documentDate||+new Date())).format('YYYYMMDDHHmmss')),
+                closingDate: parseInt(moment((documentDate||+new Date())).format('YYYYMMDDHHmmss')),
+                encounterType: cdTransactionTag,
+                descr: _.trim(_.get(this,"selectedDocumentToBeImported.title")) ? documentTitle : "[HUB] "+ documentTitle,
+                tags: [ cdTransactionTag, {type: 'HUB-TRANSACTION', code: 'download'}],
+                subContacts: []
+            }).then(contactInstance => [createdDocument,contactInstance]))
+            .then(([createdDocument,contactInstance]) => {
+
+                const svc = this.api.contact().service().newInstance( this.user, {
+                    content: _.fromPairs([[this.language, {documentId: _.trim(_.get(createdDocument,"id")), stringValue: _.trim(documentFileName)}]]),
+                    label: _.trim(documentTitle),
+                    tags: [cdTransactionTag, {type: 'HUB-TRANSACTION', code: 'download'}],
+                })
+                contactInstance.services = [svc]
+                contactInstance.subContacts.push({ status: 64, services: [{serviceId: svc.id}], tags: [ cdTransactionTag, {type: 'HUB-TRANSACTION', code: 'download'}] })
+
+                return this.api.contact().createContactWithUser(this.user, contactInstance)
+            })
+            .then(() => this.dispatchEvent(new CustomEvent('hub-download', {detail: {}, bubbles: true, composed: true})))
+            .finally(() => (this.set('selectedDocumentToBeImported', {transaction:null, document:null, title:null, docType:null})||true) && this.$['importHubDocumentDialog'].close())
+            .catch(e => console.log(e))
+
+    }
 
   tranformHubTypeToUti(docInfo){
       return docInfo && docInfo.mediatype ? _.toLower(_.split(docInfo.mediatype,'_').join('/')) : "application/pdf"

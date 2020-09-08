@@ -3215,6 +3215,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             }
         })
 
+        // Localized value
+        const pathologyType = _.find(subFormFieldsAndValues,{name:"pathologyType"})
+
         this._getPatAndHcpCommonData({
             downloadFileName: _.kebabCase([this.localize("requestForKineCare_header1", this.language), _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
             healthCarTypeData: [
@@ -3223,6 +3226,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 _.get(_.filter(subFormFieldsAndValues, {name: "Demande d'avis consultatif kiné"}), "[0]", {}),
                 _.get(_.filter(subFormFieldsAndValues, {name: "Demande d'avis"}), "[0]", {}),
                 _.get(_.filter(subFormFieldsAndValues, {name: "Diagnostic"}), "[0]", {}),
+                _.merge(pathologyType, { value: !_.trim(_.get(pathologyType, "value")) ? "" : this.localize(_.trim(_.get(pathologyType, "value")), "", this.language)}),
             ],
             treatmentModalityData: [
                 _.get(_.filter(subFormFieldsAndValues, {name: "Massage"}), "[0]", {}),
@@ -4403,10 +4407,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     ` + this._getPatientVignetteHtmlCode(pdfPrintingData.patientData) + `
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box2_clinicalInfo", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "InfoClinPert"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "InfoClinPert"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box3_explanationRequestForImaging", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExplicationDemandeDiag"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExplicationDemandeDiag"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box4_additionalInfo", this.language) + `</div>
                     <div class="borderedBox">` + this._getFormCheckboxesAndLabelHtmlCode(pdfPrintingData.additionalRelevantInformation, 3) + `</div>
@@ -4415,7 +4419,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     <div class="borderedBox">` + this._getFormCheckboxesAndLabelHtmlCode(pdfPrintingData.previousRelevantExams, 3) + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_suggestedExams", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExamProp"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExamProp"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     ` + this._getDoctorDetailsHtmlCode(pdfPrintingData.hcpData) + `
                 </div>` +

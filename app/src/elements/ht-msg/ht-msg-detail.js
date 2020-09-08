@@ -2169,34 +2169,33 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       .catch(() => { return Promise.resolve() }),
               p => ( !!_.get(p,"active",false) && ( !!_.trim(_.get(p,"dateOfBirth","")) || !!_.trim(_.get(p,"ssin","")) ) ), 0, 50, []
           )
-              .then(searchResults => { if (reqIdx === this._patientSearchReqIdx) {
-                  return this.set("_manualSearchResultsForAssignments", _
-                      .chain(searchResults)
-                      .map(patientData =>{return {
-                          isAssigned: false,
-                          documentType: "labresult",
-                          documentId: documentId,
-                          patientData: {
-                              id: _.trim(_.get(patientData, "id", "")),
-                              firstName: _.map(_.trim(_.get(patientData, "firstName", "")).split(" "), i => _.capitalize(i)).join(" "),
-                              lastName: _.map(_.trim(_.get(patientData, "lastName", "")).split(" "), i => _.capitalize(i)).join(" "),
-                              dateOfBirth: _.trim(_.get(patientData, "dateOfBirth", "")),
-                              dateOfBirthHr: (_.parseInt(_.trim(_.get(patientData, "dateOfBirth", ""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData, "dateOfBirth", "")))) : ""),
-                              ssin: _.trim(_.get(patientData, "ssin", "")),
-                              sex: (_.trim(_.get(patientData, "gender", "male")).toLowerCase() === "male" ? "M" : "F"),
-                              picture: _.trim(_.get(patientData, "picture", "")),
-                              address: _.chain(_.get(patientData, "addresses", {})).filter({addressType: "home"}).head().value() ||
-                                  _.chain(_.get(patientData, "addresses", {})).filter({addressType: "work"}).head().value() ||
-                                  _.chain(_.get(patientData, "addresses", {})).head().value() ||
-                                  {},
-                              lastModifiedHr: parseInt(_.get(patientData, "modified", null)) ? moment(_.get(patientData, "modified", null)).format("DD/MM/YYYY - HH:mm:ss") : "-"
-                          }
-                      }})
-                      .orderBy(['lastName','firstName', 'dateOfBirth','modified'],['asc','asc','desc','desc'])
-                      .uniqBy('patientData.id')
-                      .value()
-                  )
-              }})
+              .then(searchResults => reqIdx !== this._patientSearchReqIdx ? null : this.set("_manualSearchResultsForAssignments", _
+                  .chain(searchResults)
+                  .map(patientData => _.merge({}, {
+                      isAssigned: false,
+                      documentType: "labresult",
+                      documentId: documentId,
+                      patientData: {
+                          id: _.trim(_.get(patientData, "id", "")),
+                          firstName: _.map(_.trim(_.get(patientData, "firstName", "")).split(" "), i => _.capitalize(i)).join(" "),
+                          lastName: _.map(_.trim(_.get(patientData, "lastName", "")).split(" "), i => _.capitalize(i)).join(" "),
+                          dateOfBirth: _.trim(_.get(patientData, "dateOfBirth", "")),
+                          dateOfBirthHr: (_.parseInt(_.trim(_.get(patientData, "dateOfBirth", ""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData, "dateOfBirth", "")))) : ""),
+                          ssin: _.trim(_.get(patientData, "ssin", "")),
+                          sex: (_.trim(_.get(patientData, "gender", "male")).toLowerCase() === "male" ? "M" : "F"),
+                          picture: _.trim(_.get(patientData, "picture", "")),
+                          address: _.chain(_.get(patientData, "addresses", {})).filter({addressType: "home"}).head().value() ||
+                              _.chain(_.get(patientData, "addresses", {})).filter({addressType: "work"}).head().value() ||
+                              _.chain(_.get(patientData, "addresses", {})).head().value() ||
+                              {},
+                          lastModifiedHr: parseInt(_.get(patientData, "modified", null)) ? moment(_.get(patientData, "modified", null)).format("DD/MM/YYYY - HH:mm:ss") : "-"
+                      }
+                  }))
+                  .orderBy(['lastName','firstName', 'dateOfBirth','modified'],['asc','asc','desc','desc'])
+                  .uniqBy('patientData.id')
+                  .value()
+              ))
+              .then(() => this._setDefaultDocumentLabel())
               .catch(e=>{console.log("ERROR with _manualSearchForPatients: ", e);})
               .finally(() => this.set("_assignmentDialogIsLoading", false))
       }, 300)
@@ -2472,6 +2471,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
               }
               this.set("_assignmentDialogIsLoading", false)
               this.api.setPreventLogging(false)
+              this._setDefaultDocumentLabel()
               return prom
 
           })
@@ -2581,6 +2581,16 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       const printDocumentComponent = this.shadowRoot.querySelector("#printDocument")
       return printDocumentComponent && typeof _.get(printDocumentComponent,"printDocument", false) === "function"  && printDocumentComponent.printDocument(_.get(e,"detail",{}))
   }
+
+    _setDefaultDocumentLabel() {
+
+        const docInfo = _.get(_.find(this.documentsOfMessage, {id:this._assignmentCurrentDocumentId}), "docInfo[0]")
+        const defaultLabel = !docInfo ? "" : " " + (_.trim(_.get(docInfo,"labo")) ? _.trim(_.get(docInfo,"labo")) : _.trim(_.get(this,"selectedMessage.fromAddress")) ) + ( _.trim(_.get(docInfo,"protocol")) ? " (Protocole #" + _.trim(_.get(docInfo,"protocol")) + ")" : " " )
+
+        if(!_.trim(_.get(this,"newPat.documentTitle"))) this.set("newPat.documentTitle", defaultLabel)
+        return setTimeout(() => { _.map(this.shadowRoot.querySelectorAll(".documentTitleInput"), it => _.trim(_.get(it,"value")) ? null : _.merge(it, {value:defaultLabel}) ) }, 500)
+
+    }
 
 }
 
