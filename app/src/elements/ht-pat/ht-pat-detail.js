@@ -1962,10 +1962,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                                 </template>
                                             </paper-tooltip>
                                         </template>                                        
-                                        <paper-fab id="ebmPracticeNet" mini on-tap="_linkToEbPracticeNet" src="[[_ebmPicture()]]"></paper-fab>
-                                        <paper-tooltip position="top" for="ebmPracticeNet">[[localize('adm_ebm','ebmPracticeNet',language)]]</paper-tooltip>
-                                        <paper-fab id="cbipLink" mini on-tap="_linkToCBIP" src="[[_cbipPicture()]]"></paper-fab>
-                                        <paper-tooltip position="top" for="cbipLink">[[localize('cbip','CBIP',language)]]</paper-tooltip>
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
                                             <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
@@ -6336,16 +6332,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.set('isLoading', false)
         })
 
-    }
-
-    _linkToEbPracticeNet(e) {
-        e.stopPropagation()
-        window.open("https://www.ebpnet.be/fr/Pages/default.aspx", '_blank')
-    }
-
-    _linkToCBIP(e) {
-        e.stopPropagation()
-        window.open("http://www.cbip.be/fr/start", '_blank')
     }
 
     _ebmPicture() {
