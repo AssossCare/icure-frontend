@@ -977,12 +977,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         const content = m && this.api.contact().preferredContent(m, this.language) || m && m.content && (m.content[this.language] = { medicationValue: {regimen: []} });
 
         return {
-            id: _.get(m,"id"),
-            codes: _.get(m,"codes"),
-            medicationValue: _.get(content,"medicationValue"),
+            id: _.get(m, "id"),
+            codes: _.get(m, "codes"),
+            medicationValue: _.get(content, "medicationValue"),
             isNew: isNew || false,
-            isPrescription: _.get(m,"isPrescription") || isPres || false,
-            isMedication: _.size(_.get(m,"tags")) && _.some(_.get(m,"tags"), tag => tag && tag.type === "CD-ITEM" && tag.code === "medication") || false
+            isPrescription: _.get(m, "isPrescription") || isPres || false,
+            isMedication: _.size(_.get(m, "tags")) && _.some(_.get(m, "tags"), tag => tag && tag.type === "CD-ITEM" && tag.code === "medication") || false
         };
 
     }
@@ -1243,6 +1243,22 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    _renewalChanged() {
+
+        const promResolve = Promise.resolve()
+
+        return !this.medicationDetail || !this.medicationContent ? promResolve : promResolve
+            .then(() => _.trim(_.get(this,"medicationDetail.renewal")) !== "allowed" ?
+                (_.merge(this, {medicationContent: {medicationValue: {renewal: {}}}})||true) && this.notifyPath("medicationContent.medicationValue.renewal") :
+                promResolve.then(() => {
+                    const renewal = _.get(this,"medicationContent.medicationValue.renewal",null) || { decimal: 1, duration: { value: 1, unit: this.timeUnits.find(timeUnit => timeUnit && timeUnit.code === "mo")}}
+                    this.set("medicationContent.medicationValue.renewal", renewal)
+                    this.set("renewalTimeUnit", _.find(_.get(this,"timeUnits"), timeUnit => _.trim(_.get(timeUnit,"code")) === _.trim(_.get(renewal,"duration.unit.code"))))
+                })
+            )
+
+    }
+
     _medicationChanged(user, medication) {
 
         const now = +new Date()
@@ -1337,6 +1353,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     substitutionAllowed: _.get(this,"medicationContent.medicationValue.substitutionAllowed") ? "true" : "false",
                     commentForPatient: this._extractCommentForPatient(),
                     productType: _.trim(_.get(this,"medication.type")),
+                    patientPrice: _.trim(_.get(medicationWithAmpps,"informations.patientPrice")),
+                    publicPrice: _.trim(_.get(medicationWithAmpps,"informations.publicPrice")),
+                    unit: _.trim(_.get(medicationWithAmpps,"informations.ampp.unit")),
                 }))
                 this.set("initializingDate", false);
 
@@ -1409,24 +1428,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             medicationValue.compoundPrescription = compound.title + "\r\n" + compound.formula;
             this.set("medicationDetail.compoundTitle", compound.title);
             this.set("medicationDetail.intendedName", compound.formula);
-        }
-    }
-
-    _renewalChanged() {
-        if (!this.medicationDetail || !this.medicationContent) return;
-        if (this.medicationDetail.renewal === "allowed") {
-            const renewal = this.medicationContent.medicationValue.renewal || {
-                decimal: 1,
-                duration: {
-                    value: 1,
-                    unit: this.timeUnits.find(timeUnit => timeUnit.code === "mo")
-                }
-            };
-            this.set("medicationContent.medicationValue.renewal", renewal);
-            this.set("renewalTimeUnit", this.timeUnits.find(timeUnit => timeUnit.code === renewal.duration.unit.code));
-        } else {
-            delete this.medicationContent.medicationValue.renewal;
-            this.notifyPath("medicationContent.medicationValue.renewal");
         }
     }
 
