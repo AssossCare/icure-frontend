@@ -806,8 +806,9 @@
 
                 return (!prose || !_.get(selectedTemplate,"attachmentFileContent")) ? promResolve : promResolve
                     .then(() => this._flushProseEditorContent())
-                    .then(() => this.set("_data.proseEditorSelectedTemplate",selectedTemplate))
-                    .then(() => JSON.parse(this.api.crypto().utils.ua2utf8(_.get(this,"_data.proseEditorSelectedTemplate.attachmentFileContent"))))
+                    .then(() => this.set("_data.proseEditorSelectedTemplate", selectedTemplate))
+                    .then(() => _.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent"))
+                    .then(templateContent => JSON.parse( templateContent instanceof ArrayBuffer ? this.api.crypto().utils.ua2utf8(templateContent) : templateContent)) // Icc-api legacy used to return as AB while icc-api now returns as string
                     .then(jsonTemplate => { jsonTemplate.content[0].content =  _
                             .chain(_.get(jsonTemplate,"content[0].content",{}))
                             .map(node => node.type !== "dynamicNodes" ?
