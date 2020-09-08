@@ -25,7 +25,7 @@ class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors(
         <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles spinner-style">
             .table{         
                 width: auto;
-                height: 100%;
+                height: calc(100% - 25px);
                 overflow: auto;
                 font-size: var(--font-size-normal);
             }
@@ -161,6 +161,14 @@ class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors(
                 margin-top: -6px;
             }
             
+            .btnCompound{
+                float: right;
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: flex-start;
+                align-items: center;
+            }
+            
         </style>
         
         <div class="compound-free-text-container">
@@ -178,6 +186,10 @@ class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors(
                 <div class="tr">
                     <vaadin-text-area class="textarea-style" label="[[localize('presc-comp-formula','Formula',language)]]" value="{{selectedCompound.formula}}"></vaadin-text-area>
                 </div>
+            </div>
+            <div class="btnCompound">
+                <paper-button class="button button--save" on-tap="_updateCompound"><iron-icon icon="save"></iron-icon> [[localize('save','Save',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_closeCompoundManagementView"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </div>
        
@@ -230,7 +242,7 @@ class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors(
     }
 
     static get observers() {
-        return ['_selectedAtcClassChanged(selectedAtcClass)'];
+        return ['_selectedCompoundChanged(selectedCompound, selectedCompound.*)', '_selectedAtcClassChanged(selectedAtcClass)'];
     }
 
     ready() {
@@ -238,15 +250,40 @@ class HtPatPrescriptionCompoundFreeText extends TkLocalizerMixin(mixinBehaviors(
     }
 
     _reset(){
+        this.set('selectedAtcClass', {})
+    }
 
+    _selectedCompoundChanged(selectedCompound){
+        if(_.get(selectedCompound, 'id',  null)){
+            this.set('selectedAtcClass', _.get(this, 'atcClassList', []).find(a => _.get(a, 'id', null) === _.get(selectedCompound, 'atcClass', '') || _.get(a, 'id', null) === _.get(selectedCompound, 'atcClass.id', '')))
+        }
     }
 
     _getLabel(label){
         return label && _.get(label, this.language, null)
     }
 
-    _selectedAtcClassChanged(){
+    _selectedAtcClassChanged(selectedAtcClass){
+        if(selectedAtcClass){
+            this.set('selectedCompound.atcClass', selectedAtcClass)
+        }
+    }
 
+    _updateCompound(){
+        this.dispatchEvent(new CustomEvent('update-compound', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                selectedCompound: this.selectedCompound
+            }
+        }))
+    }
+
+    _closeCompoundManagementView(){
+        this.dispatchEvent(new CustomEvent('close-compound-management-view', {
+            bubbles: true,
+            composed: true
+        }))
     }
 
 }

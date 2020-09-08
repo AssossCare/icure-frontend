@@ -136,6 +136,8 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
                     sam-version="[[samVersion]]" 
                     atc-class-list="[[atcClassList]]"
                     selected-compound="[[selectedCompound]]"
+                    on-update-compound="_updateCompound"
+                    on-close-compound-management-view="_closeCompoundManagementView"
                 ></ht-pat-prescription-compound-free-text>
             </div>
         </div>
@@ -177,6 +179,10 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
             substancesList: {
                 type: Array,
                 value: () => []
+            },
+            selectedAtcClass:{
+                type: Object,
+                value: () => {}
             },
             tabs:{
                type: Number,
@@ -221,6 +227,7 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
         this.set('substancesList', [])
         this.set('filteredSubstanceList', [])
         this.set('isLoading', false)
+        this.set('selectedAtcClass', {})
     }
 
     _initializeData(drugId, product){
@@ -263,8 +270,69 @@ class HtPatPrescriptionCompoundManagement extends TkLocalizerMixin(mixinBehavior
             bubbles: true,
             composed: true
         }))
+
+        this.dispatchEvent(new CustomEvent('hidde-compound-management-btn', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                lock: false
+            }
+        }))
     }
 
+    _updateCompound(e){
+        if(_.get(e, 'detail.selectedCompound', null)){
+            const selectedCompound = _.get(e, 'detail.selectedCompound', null)
+            if(_.get(selectedCompound, 'entityTemplate.id', null)){
+                this.api.entitytemplate().modifyEntityTemplate(_.assign(_.omit(_.get(selectedCompound, 'entityTemplate', null), ['descr', 'entity']),{
+                    descr : _.get(selectedCompound, 'label', null),
+                    entity : [{
+                        compoundPrescription: _.get(selectedCompound, 'formula', null),
+                        atcClass: _.get(selectedCompound, 'atcClass.id', null)
+                    }]
+                })).then(entityTemplate => {
+                    this.dispatchEvent(new CustomEvent('refresh-compound-list', {
+                        bubbles: true,
+                        composed: true
+                    }))
+                }).finally(() => {
+                    this._closeCompoundManagementView()
+                })
 
+            }else{
+                this.api.entitytemplate().createEntityTemplate({
+                    id: this.api.crypto().randomUuid(),
+                    userId: _.get(this, 'user.id', null),
+                    descr : _.get(selectedCompound, 'label', null),
+                    entityType : "org.taktik.icure.entities.embed.Medication",
+                    subType : "topaz-magistral",
+                    entity : [{
+                       compoundPrescription: _.get(selectedCompound, 'formula', null),
+                        atcClass: _.get(selectedCompound, 'atcClass.id', null)
+                    }]
+                }).then(entityTemplate => {
+                    this.dispatchEvent(new CustomEvent('refresh-compound-list', {
+                        bubbles: true,
+                        composed: true
+                    }))
+
+                    if(_.get(selectedCompound, 'origin', null) === "user"){
+                        const properties = _.get(this, 'user.properties', [])
+                        const compoundProperties = properties.find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds")
+                        const values = _.get(compoundProperties, 'typedValue.stringValue', null) ? JSON.parse(_.get(compoundProperties, 'typedValue.stringValue', null)) : []
+                        _.remove(values, v => _.get(v, 'id', null) === _.get(selectedCompound, 'id', ''))
+                        _.size(values) === 0 ? _.remove(properties, p => _.get(p, 'type.identifier', null) === "org.taktik.icure.user.compounds" ) : null
+                        this.set('user.properties', properties)
+                        this.api.user().modifyUser(_.get(this, 'user', {}))
+                            .then(user => this.api.register(user, 'user'))
+                            .then(user => this.set('user', user))
+                            .finally(() => console.log(this.user))
+                    }
+                }).finally(() => {
+                    this._closeCompoundManagementView
+                })
+            }
+        }
+    }
 }
 customElements.define(HtPatPrescriptionCompoundManagement.is, HtPatPrescriptionCompoundManagement);

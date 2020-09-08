@@ -286,12 +286,14 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             hcp="[[hcp]]"               
                             sam-version="[[samVersion]]" 
                             on-close-compound-management-view="_closeCompoundManagementView"
+                            on-hidde-compound-management-btn="_hiddeCompoundManagementBtn"
+                            on-refresh-compound-list="_refreshCompoundList"
                         ></ht-pat-prescription-compound-management>                    
                     </div>                
                 </template>                           
             </div>
             <div class="buttons">
-                <template is="dom-if" if="[[!isCompoundSearchView]]">
+                <template is="dom-if" if="[[isYellowCardIsAvailable]]">
                     <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
                 </template>      
                 <template is="dom-if" if="[[isPosologyView]]">
@@ -372,6 +374,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 value: false
             },
             isCompoundManagementView:{
+                type: Boolean,
+                value: false
+            },
+            isYellowCardIsAvailable:{
                 type: Boolean,
                 value: false
             },
@@ -462,6 +468,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('selectedMoleculeForAmps', {})
         this.set('isCompoundManagementView', false)
         this.set('isCompoundSearchView', false)
+        this.set('isYellowCardIsAvailable', false)
     }
 
     _open( openParameters ) {
@@ -470,15 +477,19 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .then(reimbursementCode => this.set('reimbursementTypeList', reimbursementCode))
             .then(() => this.api.besamv2().getSamVersion())
             .then(v => this.set('samVersion', v))
-            .then(() => this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true))
-            .then(compoundTemplateList => {
-                const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : null
-                this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))
-            })
+            .then(() => this._refreshCompoundList())
             .finally(() => {
                 this.set('listOfPrescription', this._refreshHistoryList())
                 this.set('listOfChronic', this._refreshChronicList())
                 this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').open() : null
+            })
+    }
+
+    _refreshCompoundList(){
+         this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
+            .then(compoundTemplateList => {
+                const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : []
+                this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))
             })
     }
 
@@ -512,6 +523,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _prepareCompoundFromUserForDisplay(compoundFromUser){
         return compoundFromUser.map(comp => {
             return {
+                origin: 'user',
                 label: _.get(comp, 'title', null),
                 description: null,
                 formula: _.get(comp, 'formula', null),
@@ -519,6 +531,19 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 id: _.get(comp, 'id', null),
                 drugType: 'compound',
                 atcClass: null,
+                entityTemplate: {
+                    id: null,
+                    userId: _.get(this, 'user.id', null),
+                    descr: _.get(comp, 'title', null),
+                    entityType: "org.taktik.icure.entities.embed.Medication",
+                    subType: "topaz-magistral",
+                    entity: [
+                        {
+                            "compoundPrescription": _.get(comp, 'formula', null)
+                        }
+                    ],
+                    java_type: "org.taktik.icure.entities.EntityTemplate"
+                },
                 normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(comp, 'descr', "")), _.trim(_.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
             }
         })
@@ -527,6 +552,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _prepareCompoundFromTemplateForDisplay(compoundTemplate){
         return compoundTemplate.map(comp => {
             return {
+                origin: 'formTemplate',
                 label: _.get(comp, 'descr', null),
                 description: null,
                 formula: _.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', null),
@@ -534,7 +560,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 id: _.get(comp, 'id', null),
                 entityTemplate: comp,
                 drugType: 'compound',
-                atcClass: null,
+                atcClass: _.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'atcClass', null)), 'atcClass', null),
                 normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(comp, 'descr', "")), _.trim(_.get(_.get(comp, 'entity', []).find(ent => _.get(ent, 'compoundPrescription', null)), 'compoundPrescription', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
             }
         })
@@ -798,7 +824,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('isCnkInfoView', false)
         this.set('isAmpsByVmpGroupView', false)
         this.set('isCompoundManagementView', true)
-        this.shadowRoot.querySelector("#htPatPrescriptionCompoundManagement") ? this.shadowRoot.querySelector("#htPatPrescriptionCompoundManagement")._initializeData(_.get(e, 'detail.id', null), _.get(e, 'detail.product', {})) : null
+        this.set('isCompoundSearchView', false)
+        this.root.querySelector("#htPatPrescriptionCompoundManagement") ? this.root.querySelector("#htPatPrescriptionCompoundManagement")._initializeData(_.get(e, 'detail.id', null), _.get(e, 'detail.product', {})) : null
     }
 
     _formatDate(date){
@@ -829,6 +856,13 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _showBtnFromTab(e){
         if(_.get(e, 'detail.tabNumber', null)){
             _.get(e, 'detail.tabNumber', 0) === 4 ? this.set('isCompoundSearchView', true) : this.set('isCompoundSearchView', false)
+            _.get(e, 'detail.tabNumber', 0) === 4 ? this.set('isYellowCardIsAvailable', false) : this.set('isYellowCardIsAvailable', true)
+        }
+    }
+
+    _hiddeCompoundManagementBtn(e){
+        if(_.get(e, 'detail.lock', null)){
+            _.get(e, 'detail.lock', false) ? this.set('isCompoundSearchView', false) : this.set('isCompoundSearchView', true)
         }
     }
 

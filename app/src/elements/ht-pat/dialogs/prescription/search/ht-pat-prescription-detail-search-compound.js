@@ -161,14 +161,16 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 <div class="tr th">                 
                     <div class="td fg01"></div>    
                     <div class="td fg01"></div>    
+                    <div class="td fg05">[[localize('atc-categ','Category',language)]]</div>
                     <div class="td fg1">[[localize('presc-sear-name','Name',language)]]</div>
                     <div class="td fg2">[[localize('presc-sear-formula','Formula',language)]]</div>
                 </div>
                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
                     <div class="tr tr-item">
                         <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg01"><iron-icon class="modifyIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>    
-                        <div class="td fg1" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
+                        <div class="td fg01"><iron-icon class="modifyIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>  
+                        <div class="td fg05">[[_getAtcClass(drug.atcClass)]]</div>
+                        <div class="td fg1">[[drug.label]]</div>
                         <div class="td fg2">[[drug.formula]]</div>
                     </div>
                 </template>
@@ -263,6 +265,10 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
             }
         }))
+    }
+
+    _getAtcClass(atcClass){
+        return this.localize('atc_'+atcClass, atcClass, this.language)
     }
 
 }
