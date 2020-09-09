@@ -370,17 +370,17 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         
                         <div class="medication-container-content">
                             <div>
-                                <vaadin-checkbox class="checkbox" id="isNew" checked="{{medicationDetail.options.createMedication}}" on-checked-changed=""><template is="dom-if" if="[[!medicationContent.isMedication]]">[[localize('pos-chronical', 'Chronical', language)]]</template><template is="dom-if" if="[[medicationContent.isMedication]]">[[localize('pos-chronical-update', 'Chronical update', language)]]</template></vaadin-checkbox>
-                                <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-confidential', 'Confidential', language)]]</vaadin-checkbox>
-                                <vaadin-checkbox class="checkbox" id="" checked="" on-checked-changed="">[[localize('pos-known-usage', 'Known usage', language)]]</vaadin-checkbox>
+                                <vaadin-checkbox class="checkbox" checked="{{medicationDetail.options.createMedication}}" on-checked-changed=""><template is="dom-if" if="[[!medicationContent.isMedication]]">[[localize('pos-chronical', 'Chronical', language)]]</template><template is="dom-if" if="[[medicationContent.isMedication]]">[[localize('pos-chronical-update', 'Chronical update', language)]]</template></vaadin-checkbox>
+                                <vaadin-checkbox class="checkbox" checked="{{medicationDetail.isConfidential}}" on-checked-changed="">[[localize('pos-confidential', 'Confidential', language)]]</vaadin-checkbox>
+                                <vaadin-checkbox class="checkbox" checked="{{medicationContent.medicationValue.knownUsage}}" on-checked-changed="">[[localize('pos-known-usage', 'Known usage', language)]]</vaadin-checkbox>
                             </div>
                             <div class="medication-fields">
                                 
-                                <template is="dom-if" if="[[targetAmpp.posologyNote]]">
+                                <template is="dom-if" if="[[medicationDetail.posologyNote]]">
                                     <div class="regimen-line display-type-regimen comment">
                                         <paper-input-container always-float-label="true" class="w100pc">
                                             <label slot="label" class="color-status">[[localize('proposed_posology','Posologie proposée',language)]]</label>
-                                            <iron-autogrow-textarea slot="input" disabled value="[[targetAmpp.posologyNote]]"></iron-autogrow-textarea>
+                                            <iron-autogrow-textarea slot="input" disabled value="[[medicationDetail.posologyNote]]"></iron-autogrow-textarea>
                                         </paper-input-container>
                                     </div>
                                 </template>
@@ -886,13 +886,13 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _getRcpLink(medicationDetail) {
 
-        return _.trim(_.get(medicationDetail, "spcLink." + _.trim(_.get(this,"language","fr"))))
+        return _.trim(_.get(medicationDetail, "spcLink"))
 
     }
 
     _getLeafletLink(medicationDetail) {
 
-        return _.trim(_.get(medicationDetail, "leafletLink." + _.trim(_.get(this,"language","fr"))))
+        return _.trim(_.get(medicationDetail, "leafletLink"))
 
     }
 
@@ -1259,6 +1259,223 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    _regimenChanged() {
+
+        const promResolve = Promise.resolve()
+        const currentPosology = this.api.contact().medication().posologyToString(_.get(this,"medicationContent.medicationValue",{}), this.language)
+        const instructionsForPatient = _.trim(_.get(this,"medicationDetail.commentForPatient"))
+
+        return !_.get(this,"medicationContent.medicationValue") || !this.medicationDetail ? promResolve : promResolve
+            .then(() => this._updateStats())
+            .then(() => this.set("medicationContent.medicationValue.instructionForPatient", ""))
+            .then(() => this.set("medicationDetail.posology", currentPosology))
+            .then(() => this.set("medicationContent.medicationValue.instructionForPatient", _.trim(currentPosology) + (currentPosology && instructionsForPatient ? this.commentSeparator : "") + instructionsForPatient))
+
+    }
+
+    _isConfidentialChanged() {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(this,"medicationDetail.newMedication") ? promResolve : promResolve
+            .then(() =>  _.get(this,"medicationDetail.newMedication",false) && _.assign(this.medicationDetail.newMedication, {tags: _
+                .chain(_.get(this, "medicationDetail.newMedication.tags", []))
+                .filter(tag => _.trim(_.get(tag, "type")) !== "org.taktik.icure.entities.embed.Confidentiality")
+                .concat({type: "org.taktik.icure.entities.embed.Confidentiality", version: "1", code: (_.get(this, "medicationDetail.isConfidential", false) ? "secret" : "notsecret")})
+                .value()
+        }))
+
+    }
+
+    _editCompoundPrescription() {
+
+        return this.dispatchEvent(new CustomEvent('edit-compound', {
+            detail: {
+                item : {
+                    title: _.trim(_.get(this,"medicationDetail.compoundTitle")),
+                    formula: _.trim(_.get(this, "medicationDetail.intendedName")),
+                    fromPrescription: { update: false, onChange: this._updateCompoundPrescription.bind(this) }
+                }
+            },
+            bubbles: true,
+            composed: true
+        }))
+
+    }
+
+    _updateCompoundPrescription(compound) {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(this, "medicationContent.medicationValue", false) ? promResolve : promResolve
+            .then(() => this.set("medicationContent.medicationValue.compoundPrescription", _.trim(_.get(compound,"title")) + "\r\n" + _.trim(_.get(compound,"formula"))))
+            .then(() => this.set("medicationDetail.compoundTitle", _.trim(_.get(compound,"title"))))
+            .then(() => this.set("medicationDetail.intendedName", _.trim(_.get(compound,"formula"))))
+            .then(() => this.set("medicationDetail.label", _.trim(_.get(compound,"formula"))))
+
+    }
+
+    _quantityFactorChanged() {
+
+        const promResolve = Promise.resolve()
+        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
+
+        return !regimen ? promResolve : promResolve
+            .then(() => _
+                .chain(regimen)
+                .filter(it => _.trim(_.get(it,"administratedQuantity.quantity")))
+                .map(it => _.merge(it, {administratedQuantity: {
+                        unit: this.medicationDetail.unit || this.localize("uni", "Unités"),
+                        quantity: _.get(this,"quantityFactor.denominator",0) > 1 && this.quantityFactor.numLabel || parseInt(_.get(it,"administratedQuantity.quantity")) || ""
+                    }}))
+                .value()
+            )
+            .then(() => this.set("quantityFactorValue", _. get(this,"quantityFactor")))
+            .then(() => this.notifyPath("medicationContent.medicationValue", "changed"))
+
+    }
+
+    _changeBeginMoment() {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(this,"medicationDetail") ? promResolve : promResolve
+            .then(() => !this._beginMoment() ? this.set("medicationDetail.beginMomentAsString", moment().format("YYYY-MM-DD")) : promResolve.then(() => {
+
+                if (_.trim(_.get(this,"medicationDetail.endMomentAsString")) && !_.get(this,"initializingDate")) {
+
+                    const endMoment = this._beginMoment().add(this.duration, "days")
+                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"))
+                    this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10))
+
+                } else {
+
+                    this.set("medicationContent.medicationValue.endMoment", null)
+
+                }
+
+                this.set("medicationContent.medicationValue.beginMoment", parseInt(this._beginMoment().format("YYYYMMDD"), 10));
+                this._updateStats();
+
+            }))
+
+    }
+
+    _changeEndMoment() {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(this,"medicationDetail") || !this._beginMoment() ? promResolve : promResolve
+            .then(() => !!this._endMoment() ? this.set("duration", "") : promResolve
+                .then(() => {
+
+                    let endMoment = this._endMoment()
+                    let duration = endMoment.diff(this._beginMoment(), "days")
+                    if (duration < 0) { duration = 0; endMoment = this._beginMoment(); this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD")); }
+
+                    this.set("duration", _.trim(duration))
+                    this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
+
+                })
+            )
+            .then(() => this._updateStats())
+
+    }
+
+    _changeDuration() {
+
+        const promResolve = Promise.resolve()
+
+        return !_.get(this,"medicationDetail") || !this._beginMoment() ? promResolve : promResolve
+            .then(() => {
+
+                if (this.duration === "0") {
+
+                    this.set("duration", "")
+
+                } else if (!_.get(this,"duration")) {
+
+                    this.set("medicationDetail.endMomentAsString", "")
+                    this.set("medicationContent.medicationValue.endMoment", null)
+
+                } else {
+
+                    const endMoment = this._beginMoment().add(this.duration, "days")
+                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"))
+                    this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10))
+
+                }
+
+            })
+            .then(() => this._updateStats())
+
+    }
+
+    _changeMedicPriority() {
+
+        const currentPriority = _.trim(_.get(this,"medicationContent.medicationValue.priority"))
+        return !_.get(this,"medicationContent") ? null : this.set("medicationContent.medicationValue.priority",  currentPriority === "2" ? "high" : currentPriority === "1" ? "middle" : "low")
+
+    }
+
+    // To do: handle this
+    EOLAndClose() {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.set("medicationDetail.newMedication.endOfLife", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
+            .then(() => this.save())
+            .then(() => this.close())
+
+    }
+
+    endAndClose(){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.set("medicationContent.medicationValue.endMoment", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
+            .then(() => this.save())
+            .then(() => this.close())
+
+    }
+
+    close() {
+
+        return (this.set("medicationContent", null)||true) && this.set('medications', [])
+
+    }
+
+    saveAndClose() {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.save())
+            .then(() => this.close())
+
+    }
+
+    _changeRenewalTimeUnitItem(item, unitValue, decimalValue){
+
+        return !_.get(item,"id") ? null : this.set("medicationContent.medicationValue.renewal", { decimal: decimalValue, duration: { value: unitValue, unit: _.find(_.get(this,"timeUnit",[]), it => it && it.id === item.id)} })
+
+    }
+
+    _createMedication(e){
+
+        this.set('medicationDetail.options.createMedication', _.get(e,"target.checked"))
+        this.set('medicationContent.createMedication', _.get(e,"target.checked"))
+
+    }
+
+    _medicationName(svc) {
+
+        return this.api.contact().medication().medicationNameToString(this.api.contact().preferredContent(svc, this.language).medicationValue) || ''
+
+    }
+
     _medicationChanged(user, medication) {
 
         const now = +new Date()
@@ -1379,194 +1596,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
 
 
-
-
-
-
-
-
-
-    // <Axel Stijns>
-    // Refactor the whole mess
-
-    _regimenChanged() {
-        console.log("_regimenChanged");
-        if (!this.medicationContent || !this.medicationContent.medicationValue || !this.medicationDetail) return;
-        this._updateStats();
-        this.medicationContent.medicationValue.instructionForPatient = "";
-        const posology = this.api.contact().medication().posologyToString(this.medicationContent.medicationValue || {}, this.language);
-        this.set("medicationDetail.posology", posology);
-        const separator = posology && this.medicationDetail.commentForPatient && this.commentSeparator || "";
-        this.medicationContent.medicationValue.instructionForPatient = posology + separator + this.medicationDetail.commentForPatient;
-    }
-
-    _isConfidentialChanged() {
-        if (!this.medicationDetail || !this.medicationDetail.newMedication) return;
-        const newMed = this.medicationDetail.newMedication;
-        const confType = "org.taktik.icure.entities.embed.Confidentiality";
-        ((newMed.tags || (newMed.tags = [])).find(tag => tag.type === confType) || (newMed.tags[newMed.tags.length] = {type: confType, version: "1"})).code = (this.medicationDetail.isConfidential ? "secret" : "notsecret");
-    }
-
-    _editCompoundPrescription() {
-        this.dispatchEvent(new CustomEvent('edit-compound', {
-            detail: {
-                item : {
-                    title: this.medicationDetail.compoundTitle,
-                    formula: this.medicationDetail.intendedName,
-                    fromPrescription: {
-                        update: false,
-                        onChange: this._updateCompoundPrescription.bind(this)
-                    }
-                }
-            }, bubbles: true, composed: true
-        }));
-    }
-
-    _updateCompoundPrescription(compound) {
-        const medicationValue = _.get(this.medicationContent, "medicationValue", "");
-        if (medicationValue) {
-            medicationValue.compoundPrescription = compound.title + "\r\n" + compound.formula;
-            this.set("medicationDetail.compoundTitle", compound.title);
-            this.set("medicationDetail.intendedName", compound.formula);
-        }
-    }
-
-    _quantityFactorChanged() {
-        const regimen = _.get(this.medicationContent, "medicationValue.regimen", []);
-        if (!regimen) return;
-        regimen.filter(reg => reg.administratedQuantity && reg.administratedQuantity.quantity || "")
-            .forEach(reg => {
-                const quantity = reg.administratedQuantity.quantity;
-                reg.administratedQuantity.unit = this.medicationDetail.unit || this.localize("uni", "Unités");
-                reg.administratedQuantity.quantity = this.quantityFactor.denominator > 1 && this.quantityFactor.numLabel || parseInt(quantity) || "";
-            });
-        this.set("quantityFactorValue", this.quantityFactor);
-        this.notifyPath("medicationContent.medicationValue", "changed");
-    }
-
-    _changeBeginMoment() {
-        if (this.medicationDetail) { // begin moment can NOT be empty
-            if (!this._beginMoment()) {
-                this.set("medicationDetail.beginMomentAsString", moment().format("YYYY-MM-DD"))
-            } else {
-                if (this.medicationDetail.endMomentAsString && !this.initializingDate) {
-                    const endMoment = this._beginMoment().add(this.duration, "days");
-                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
-                    this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
-                } else {
-                    this.set("medicationContent.medicationValue.endMoment", null);
-                }
-                this.set("medicationContent.medicationValue.beginMoment", parseInt(this._beginMoment().format("YYYYMMDD"), 10));
-                this._updateStats();
-            }
-        }
-    }
-
-    _changeEndMoment() {
-        if (this.medicationDetail && this._beginMoment()) {
-            if (!this._endMoment()) {
-                this.set("duration", "");
-            } else {
-                let endMoment = this._endMoment();
-                let duration = endMoment.diff(this._beginMoment(), "days");
-                if (duration < 0) {
-                    duration = 0;
-                    endMoment = this._beginMoment();
-                    this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
-                }
-                this.set("duration", duration.toString());
-                this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
-            }
-            this._updateStats();
-        }
-    }
-
-    _changeDuration() {
-        if (this.medicationDetail && this._beginMoment()) {
-            if (this.duration === "0") {
-                this.set("duration", "");
-            }
-            else if (!this.duration) {
-                this.set("medicationDetail.endMomentAsString", "");
-                this.set("medicationContent.medicationValue.endMoment", null);
-            } else {
-                const endMoment = this._beginMoment().add(this.duration, "days");
-                this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"));
-                this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10));
-            }
-            this._updateStats();
-        }
-    }
-
-    openList(list) {
-        // ------------------if we want to create an array even when we have only one medication selected
-        // list && list.length > 0 ? this.set('medications', _.clone(list)) : (list.newMedication && this.set('medications',[list])) || this.set('medications', [])
-        // ----------------------------------------------------------------------------------------------
-        list && list.length > 0 ? this.set('medications', _.clone(list)) : this.set('medications', [])
-        if (this.medications.length) {
-            this.open(this.medications[0], this.extractContentWithIdFromMedicationService(this.medications[0].newMedication, true, this.medications[0].options.isPrescription), this.medications[0].boxes);
-            this.set('selectedMedication',0);
-        }
-    }
-
-    _changeMedicPriority() {
-        // console.log('_changeMedicPriority')
-        if (this.medicationContent) {
-            const priority = this.medicationContent.medicationValue.priority?
-                this.medicationContent.medicationValue.priority=== 2 ? 'high' :
-                    this.medicationContent.medicationValue.priority=== 1 ? 'middle' : 'low' :
-                'low';
-            this.set("medicationContent.medicationValue.priority", priority);
-        }
-    }
-
-    EOLAndClose(){
-        const today = parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)
-        this.set("medicationDetail.newMedication.endOfLife", today)
-        this.save()
-        this.close()
-    }
-
-    endAndClose(){
-        const yesterday = parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)
-        this.set("medicationContent.medicationValue.endMoment", yesterday)
-        this.save()
-        this.close()
-    }
-
-    saveAndClose() {
-        this.save() // instant save
-        this.close()
-    }
-
-    close() {
-        this.set("medicationContent", null)
-        this.set('medications', [])
-    }
-
-    _changeRenewalTimeUnitItem(item, unitValue, decimalValue){
-        if(item && item.id){
-            const timeUnitItem = this.timeUnit.find(r => r.id === item.id)
-            this.set("medicationContent.medicationValue.renewal", {
-                decimal: decimalValue,
-                duration: {
-                    value: unitValue,
-                    unit: timeUnitItem
-                }
-            })
-        }
-    }
-
-    _createMedication(e){
-        this.set('medicationDetail.options.createMedication', e.target.checked)
-        this.set('medicationContent.createMedication', e.target.checked)
-    }
-
-    _medicationName(svc) {
-        return this.api.contact().medication().medicationNameToString(this.api.contact().preferredContent(svc, this.language).medicationValue) || ''
-    }
-
-    // </Axel Stijns>
 
 
 
