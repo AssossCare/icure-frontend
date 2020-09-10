@@ -557,6 +557,9 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                     <paper-tab class="adm-tab"><iron-icon class="smaller" icon="timeline"></iron-icon>[[localize('mh_timeline','Timeline',language)]]</paper-tab>
                 </paper-tabs>
                 <div class="buttons">
+                    <paper-icon-button class="button--icon-btn" id="backward" icon="vaadin:arrow-backward" on-tap="backward"></paper-icon-button>
+                    <paper-tooltip for="backward" position="left">[[localize('backward','Backward',language)]]</paper-tooltip>
+                    
                     <paper-icon-button class="button--icon-btn" id="print-vignette" icon="av:recent-actors" on-tap="printMutualVignette"></paper-icon-button>
                     <paper-tooltip for="print-vignette" position="left">[[localize('print_mutual_vignette','Print mutual vignette',language)]]</paper-tooltip>
 
@@ -883,6 +886,10 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           onElectron:{
               type: Boolean,
               value: false
+          },
+          ctrlZ :{
+              type : Array,
+              value : ()=>[]
           }
       };
   }
@@ -1264,6 +1271,12 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           let resolvedRoot = root();
 
           if (resolvedRoot && !_.isEqual( _.get(resolvedRoot, key) , value)) {
+
+              this.push("ctrlZ",{
+                  key : (rootPath.length ? (rootPath+".") : "")+key,
+                  value : _.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+key,"")
+              })
+
               if(key.includes("code")){
                   const withoutCode= key.split(".").filter(part => !part.includes("code")).join(".")
                   if(!_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode,false)){
@@ -2202,6 +2215,14 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
       }else{
           if(this.$["noSave"].classList.contains("notification"))this.$["noSave"].classList.remove("notification")
       }
+  }
+
+  backward(e){
+      if(!this.ctrlZ.length)return;
+      const oldValue = this.pop("ctrlZ")
+      this.set("patient."+oldValue.key,oldValue.value)
+      this.set('patientMap',_.cloneDeep(this.patient))
+      this.scheduleSave(this.patient);
   }
 }
 

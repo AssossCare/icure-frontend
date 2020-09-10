@@ -1,5 +1,6 @@
 {
 	"en": {
+		"backward": "Backward",
 		"pathology_current" : "Current",
 		"pathology_list_e": "List E (heavy)",
 		"pathology_list_f" : "List F (chronic)",
@@ -2930,6 +2931,7 @@
 		"mhm-rep-log" : "Log"
 	},
 	"fr": {
+		"backward": "Retour arrière",
 		"pathology_current" : "Courante",
 		"pathology_list_e": "Liste E (lourdes)",
 		"pathology_list_f" : "Liste F (chroniques)",
@@ -6035,6 +6037,7 @@
 		"mhm-rep-log" : "Log"
 	},
 	"nl": {
+		"backward": "achteruit",
 		"pathology_current" : "Current",
 		"pathology_list_e": "List E (heavy)",
 		"pathology_list_f" : "List F (chronic)",
