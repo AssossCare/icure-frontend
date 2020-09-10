@@ -140,7 +140,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         <span class="bold">
                             [[localize('presc-sam-vers', 'Sam version', language)]]:
                         </span> 
-                        [[samVersion.version]] <span class$="[[_getStatusOfSam(samVersion)]]">([[_formatDate(samVersion.date)]])</span>
+                        [[samVersion.version]] ([[_formatDate(samVersion.date)]])
                         <iron-icon icon="vaadin:circle" class$="samStatusIcon [[_getStatusOfSam(samVersion)]]"></iron-icon>
                     </div>
                 </div>          
