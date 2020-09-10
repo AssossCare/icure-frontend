@@ -660,6 +660,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
             }
 
+            _.assign(medicationValue, {knownUsage: _.size(_.get(medicationValue,"regimen")) && !_.trim(_.get(medicationValue,"instructionForPatient"))})
+
             const newMedicationClone = _.assign(_.cloneDeep(newMedication), {
                 beginMoment: null,
                 endMoment: null,
