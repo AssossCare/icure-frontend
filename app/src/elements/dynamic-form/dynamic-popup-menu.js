@@ -277,10 +277,10 @@ class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
       this.addEventListener('iron-resize', () => this.onWidthChange());
 	}
 
-  attached() {
+    attached() {
       super.attached();
       this.async(this.notifyResize, 1);
-	}
+    }
 
   onWidthChange() {
       if (!this.offsetWidth) {

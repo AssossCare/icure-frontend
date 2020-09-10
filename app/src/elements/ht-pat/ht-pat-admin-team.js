@@ -740,7 +740,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       };
   }
   static get observers() {
-      return ['_hcpFilterChanged(hcpType, hcpFilter)', '_loadHcpTypesTranslations(language)', '_selectedHcpChanged(selectedHcp)', '_initialize(usr, patient)', '_selectedHcpSpecialityChanged(selectedHcpSpeciality)'];
+      return ['_hcpFilterChanged(hcpType, hcpFilter)', '_loadHcpTypesTranslations(language)', '_selectedHcpChanged(selectedHcp)', '_initialize(user, patient)', '_selectedHcpSpecialityChanged(selectedHcpSpeciality)'];
   }
   constructor() {
       super();
@@ -752,6 +752,7 @@ class HtPatAdminTeam extends TkLocalizerMixin(PolymerElement) {
       super.ready();
   }
   _initialize(){
+      if(!this.user && !this.patient)return;
       this.api.code().findPaginatedCodesByLabel('be', 'CD-HCPARTY', 'fr', 'pers', null, null, 1000).then(specList => {
           this.set('specialityList', specList.rows)
           this._initCurrentCareTeam();
