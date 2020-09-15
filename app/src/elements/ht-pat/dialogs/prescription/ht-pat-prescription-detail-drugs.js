@@ -12,6 +12,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
+import _ from "lodash/lodash";
 class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
@@ -38,6 +39,10 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                 height: 22px;            
                 border-bottom: 1px solid var(--app-background-color-dark);   
                 padding: 4px;                
+            }
+            
+            .tr.selected{ 
+                background-color: var(--app-background-color-dark);
             }
             
             .td{
@@ -105,7 +110,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                         <div class="td fg05"></div>
                     </div>
                     <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">
-                        <div class="tr">
+                        <div class$="[[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" on-tap="_openPosologyView">
                             <div class="td fg05"></div>
                             <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>
                             <div class="td fg2">[[_getDrugName(item.drug)]]</div>     
@@ -156,6 +161,10 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             drugsToBePrescribe:{
                 type: Array,
                 value: () => []
+            },
+            selectedDrug:{
+                type: Object,
+                value : () => {}
             }
         };
     }
@@ -173,11 +182,30 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
     }
 
     _getDrugName(drug){
-        return _.get(drug, 'label', null)
+        return _.get(drug, 'label', 'Error')
     }
 
     _getDrugType(drug){
         return _.get(drug, 'type', null) === "chronic" ? "icons:alarm-on" : _.get(drug, 'type', null) === "history" ? "vaadin:time-backward" : _.get(drug, 'type', null) === "commercial" ? "vaadin:copyright" : _.get(drug, 'type', null) === "substance" ? "vaadin:pill" : _.get(drug, 'type', null) === "compound" ? "vaadin:flask" : null
+    }
+
+    _isSelected(drug){
+        return _.get(drug,"id",null)===_.get(this,"selectedDrug.id","") ? 'tr selected' :'tr'
+    }
+
+    _openPosologyView(e){
+        e.stopPropagation();
+        const id = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
+
+        return !drug ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                product : id===_.get(this,"selectedDrug.id","") ? {} : drug,
+                bypassPosologyView: id===_.get(this,"selectedDrug.id","") || !!["history", "chronic"].find(type => type === _.get(drug, 'type', ""))
+            }
+        }))
     }
 
 }

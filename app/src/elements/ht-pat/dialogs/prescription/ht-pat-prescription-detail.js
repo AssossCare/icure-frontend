@@ -163,7 +163,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         list-of-chronic="[[listOfChronic]]"
                         allergies="[[allergies]]"
                         drugs-to-be-prescribe="[[drugsToBePrescribe]]"
+                        selected-drug="[[selectedDrugForPosology]]"
                         sam-version="[[samVersion]]"
+                        on-open-posology-view="_selectedDrug"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -695,6 +697,17 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
         })
 
+    }
+
+    _selectedDrug(e){
+        if(!_.get(e,"detail.product",false))return;
+        this.set('selectedDrugForPosology', _.get(e,"detail.product",null))
+
+        this.set('isPosologyView', !_.get(e, 'detail.bypassPosologyView', false))
+        this.set('isSearchView', _.get(e, 'detail.bypassPosologyView', true))
+        this.set('isCheaperDrugView', false)
+
+        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
     }
 
     _validatePosology(){
