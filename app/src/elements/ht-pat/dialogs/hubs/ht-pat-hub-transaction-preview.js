@@ -1271,7 +1271,7 @@ class HtPatHubTransactionPreview extends TkLocalizerMixin(mixinBehaviors([IronRe
   }
 
   hcpMatch(newHcp, hubHcp){
-      return hubHcp.ids.find(id => id.s === "ID_HCPARTY").value === newHcp.healthcareParty.nihii;
+      return _.get(_.get(hubHcp, 'ids', []).find(id => id.s === "ID_HCPARTY"), 'value', null) === _.get(newHcp, 'healthcareParty.nihii', '')
   }
 
   personMatch(newPerson, hubPerson){

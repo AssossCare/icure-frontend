@@ -2301,6 +2301,10 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                 type: Object,
                 value: () => {
                 }
+            },
+            lastInsur: {
+                type: Object,
+                value: () => {}
             }
         }
 
@@ -2422,13 +2426,19 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
                     const invoiceOfDay = invoices.find(i => i.invoiceDate + '' === moment().format("YYYYMMDD") && !i.printedDate)
 
                     if (!invoiceOfDay) {
-                        const lastInsur = parseInt(this.patient.insurabilities.length) ?
+                        this.set("lastInsur",parseInt(this.patient.insurabilities.length) ?
                             _.chain(this.patient.insurabilities)
                                 .filter(ins => _.get(ins, "startDate", 0) && parseInt(_.get(ins, "startDate", 0)) <= moment().format("YYYYMMDD") && !parseInt(_.get(ins, "endDate", 0)) && _.get(ins, "insuranceId", 0))
                                 .orderBy(["startDate"], ["desc"])
                                 .head()
                                 .value()
-                            : null
+                            : null)
+
+                        _.get(this,"lastInsur.insuranceId",false) &&this.api.code().getCode(this.lastInsur.insuranceId).then(insurance =>{
+                            this.set("lastInsur.label",insurance.code)
+                        })
+
+                        const lastInsur= this.lastInsu
 
                         const newInvoice = {
                             invoicingCodes: [],
