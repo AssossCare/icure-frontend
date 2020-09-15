@@ -676,9 +676,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           patientForm: {
               type: Object,
-              value: function () {
-                  return require('./rsrc/PatientAdministrativeForm.json');
-              }
+              value: ()=> {}
           },
           addressForm: {
               type: Object,
@@ -706,9 +704,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           partnershipsForm: {
               type: Object,
-              value: function () {
-                  return require('./rsrc/PatientPartnershipsForm.json');
-              }
+              value: ()=>{}
           },
           partnershipsContainerForm: {
               type: Object,
@@ -1055,10 +1051,11 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
   patientChanged() {
       if (!this.api || !this.user) { return }
-
-      this.set('dataProvider', this.patientDataProvider({}, '', '', null, []));
-      this.set('patientMap', {});
-      this.set("listValidSsin",{})
+      if(!this.patient){
+          this.set('dataProvider', this.patientDataProvider({}, '', '', null, []));
+          this.set('patientMap', {});
+          this.set("listValidSsin",{})
+      }
 
       if(this.$["noSave"].classList.contains("notification"))this.$["noSave"].classList.remove("notification")
 
@@ -1093,11 +1090,10 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   }))
               }
 
-              if (this.patient.partnerships && this.patient.partnerships.length) {
-                  ;(this.patient.partnerships.length ? this.api.patient().getPatientsWithUser(this.user,{ids:this.patient.partnerships.map(ps => ps.partnerId)}) : Promise.resolve([]))
-                      .then(ppss => ppss.map(p => this.api.register(p, 'patient')))
-                      .then(ppss =>
-                      this.set('patient.partnerships',this.patient.partnerships.map(pp => {
+              (this.patient.partnerships && this.patient.partnerships.length ? this.api.patient().getPatientsWithUser(this.user,{ids:this.patient.partnerships.map(ps => ps.partnerId)}) : Promise.resolve([]))
+                  .then(ppss => ppss.map(p => this.api.register(p, 'patient')))
+                  .then(ppss =>
+                      ppss && this.set('patient.partnerships',this.patient.partnerships.map(pp => {
                           return Object.assign({}, pp, { partnerInfo: ppss.find(ps => ps.id === pp.partnerId)} || {})
                       }).filter(p => !_.isEmpty(p.partnerInfo)))
                   ).finally(() => {
@@ -1107,6 +1103,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
                       this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
                       this.set('patientMap',_.cloneDeep(this.patient));
+                      this.set("patientForm",require('./rsrc/PatientAdministrativeForm.json'))
+                      this.set("partnershipsForm",require('./rsrc/PatientPartnershipsForm.json'))
 
                       if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
                           this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
@@ -1114,16 +1112,6 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                           this.$[this.root.activeElement.id].loadDataMap();
                       }
                   })
-              } else {
-                  this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
-                  this.set('patientMap',_.cloneDeep(this.patient))
-
-                  if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                      this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
-                  } else {
-                      this.$[this.root.activeElement.id].loadDataMap();
-                  }
-              }
           })
       }
   }

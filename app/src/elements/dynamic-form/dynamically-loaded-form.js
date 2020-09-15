@@ -964,7 +964,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                   }
               });
           },
-					radioButtonChecked: (group,checkedName) =>{
+          radioButtonChecked: (group,checkedName) =>{
               form = form || this.form
               const layoutItems = _.flatten(_.flatten(form.template.layout.sections.map(s => s.formColumns)).map(c => c.formDataList))
               layoutItems.filter(item =>item.editor && item.editor.key==="CheckBoxEditor" && item.editor.groupRadio && item.editor.groupRadio===group && item.name!==checkedName).map(box =>  self.setBooleanValue(box.name,false,false))

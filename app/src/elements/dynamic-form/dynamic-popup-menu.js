@@ -1,29 +1,10 @@
 import './dynamic-link.js';
 import '../../styles/dropdown-style.js';
 import '../../styles/paper-input-style.js';
-const $_documentContainer = document.createElement('template');
 
-$_documentContainer.innerHTML = `<dom-module id="material-text-field-custom" theme-for="vaadin-text-field">
-	<template>
-		<style>
-			:host {
-				padding-top: 8px;
-				margin-bottom: 0px;
-			}
-
-			[part="value"] {
-				font-size: var(--font-size-normal);
-			}
-		</style>
-	</template>
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
 import {TkLocalizerMixin} from "../tk-localizer";
-import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
-import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
-class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+class DynamicPopupMenu extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
 		<style include="paper-input-style">
@@ -140,7 +121,7 @@ class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
 
 		</style>
 
-		<template is="dom-if" if="[[readOnly]]">
+        <template is="dom-if" if="[[readOnly]]">
 			<paper-input-container always-float-label="true">
 				<label slot="label">[[localize(label,label,language)]]
 					<template is="dom-if" if="[[wasModified]]">
@@ -274,13 +255,7 @@ class DynamicPopupMenu extends TkLocalizerMixin(mixinBehaviors([IronResizableBeh
 
   ready() {
       super.ready();
-      this.addEventListener('iron-resize', () => this.onWidthChange());
 	}
-
-    attached() {
-      super.attached();
-      this.async(this.notifyResize, 1);
-    }
 
   onWidthChange() {
       if (!this.offsetWidth) {
