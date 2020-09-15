@@ -98,6 +98,10 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                 width: 12px;
             }
             
+            .tr:not(.th) .td{
+                cursor: pointer;
+            }
+            
         </style>
         
         <div class="container-drugs">
@@ -111,7 +115,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                     </div>
                     <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">
                         <div class$="[[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" on-tap="_openPosologyView">
-                            <div class="td fg05"></div>
+                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:remove" on-tap="_removeBoxes"></iron-icon>[[item.drug.boxes]]<iron-icon class="icon-type" icon="icons:add" on-tap="_addBoxes"></iron-icon></div>
                             <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>
                             <div class="td fg2">[[_getDrugName(item.drug)]]</div>     
                             <div class="td fg05"><iron-icon class="icon-type" icon="icons:delete" on-tap="_deleteDrug"></iron-icon></div>      
@@ -219,6 +223,28 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                 product : drug
             }
         }))
+    }
+
+    _removeBoxes(e){
+        e.stopPropagation()
+        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
+        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
+        if(!drug)return;
+        if(drug.drug.boxes>1){
+            drug.drug && drug.drug.boxes && drug.drug.boxes--
+            this.notifyPath('drugsToBePrescribe.'+(this.drugsToBePrescribe.findIndex(dg => dg.id===id))+'.drug.boxes')
+        }else{
+            this._deleteDrug(e)
+        }
+    }
+
+    _addBoxes(e){
+        e.stopPropagation()
+        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
+        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
+        if(!drug)return;
+        drug.drug && drug.drug.boxes && drug.drug.boxes++
+        this.notifyPath('drugsToBePrescribe.'+(this.drugsToBePrescribe.findIndex(dg => dg.id===id))+'.drug.boxes')
     }
 
 }
