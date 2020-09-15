@@ -133,7 +133,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 }
                 
                 .medication-container-content{
-                
+                    height: calc(100% - 30px);
+                    overflow: auto;
                 }
                 
                 .prescription-container-content{
@@ -159,8 +160,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 }
                 
                 .header-icon{
-                    height: 16px;
-                    width: 16px;
+                    height: 15px;
+                    width: 15px;
                 }
 
                 .infoIcon {
@@ -328,6 +329,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             
             <div class="posology-container">
             
+                <!--don't touch just need more graphic improve-->
+            
                 <div class="posology-title">
                 
                     <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(medication)]]"></iron-icon> [[medicationDetail.label]]</h3>
@@ -362,6 +365,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
                 </div>
                 
+                
+                <!-- work in progress-->
+                
                 <div class="posology-container-content">
                 
                     <div class="medication-container">
@@ -370,12 +376,16 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         
                         <div class="medication-container-content">
                             <div>
+                                <!-- creation medication chronic-->
                                 <vaadin-checkbox class="checkbox" checked="{{medicationDetail.options.createMedication}}" on-checked-changed=""><template is="dom-if" if="[[!medicationContent.isMedication]]">[[localize('pos-chronical', 'Chronical', language)]]</template><template is="dom-if" if="[[medicationContent.isMedication]]">[[localize('pos-chronical-update', 'Chronical update', language)]]</template></vaadin-checkbox>
+                                <!-- set confidential boolean-->
                                 <vaadin-checkbox class="checkbox" checked="{{medicationDetail.isConfidential}}" on-checked-changed="">[[localize('pos-confidential', 'Confidential', language)]]</vaadin-checkbox>
+                                <!-- usage connu ? instructionForPatient no-utilisé surement un rapport avec les instructions patients on peut peut-etre l'enlever-->
                                 <vaadin-checkbox class="checkbox" checked="{{medicationContent.medicationValue.knownUsage}}" on-checked-changed="">[[localize('pos-known-usage', 'Known usage', language)]]</vaadin-checkbox>
                             </div>
                             <div class="medication-fields">
                                 
+                                <!-- fourni par samv2 modifiable ????-->
                                 <template is="dom-if" if="[[medicationDetail.posologyNote]]">
                                     <div class="regimen-line display-type-regimen comment">
                                         <paper-input-container always-float-label="true" class="w100pc">
@@ -385,6 +395,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     </div>
                                 </template>
                                 
+                                <!-- fourni par samV2 choix de la portion 1 - 1/2 - 1/3 répercussion dans la posology-->
+                                <!-- todo @julien constructPosology-->
                                 <div class="regimen-line display-type-regimen">
                                     <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!medicationDetail.dividable]]">
                                         <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{quantityFactor}}">
@@ -393,6 +405,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     </paper-dropdown-menu>
                                 </div>
                                 
+                                <!-- regimen 1 par fréquence et une fréquence par service-->
                                 <template is="dom-repeat" items="[[regimenKeys]]">
                                     <ht-regimen-day
                                         api="[[api]]" 
@@ -1605,7 +1618,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
 
 
-    // Max
+    // todo @julien saveAction
     _createMedication(){
 
     }
