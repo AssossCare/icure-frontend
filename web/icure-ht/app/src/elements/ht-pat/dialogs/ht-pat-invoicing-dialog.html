@@ -1200,7 +1200,7 @@
                     <div class="patient-info">
                         <div class="patient-name">[[getGender(patient.gender)]] [[patient.firstName]] [[patient.lastName]]</div>
                         <div class="patient-birthdate">°[[_timeFormat(patient.dateOfBirth)]] °[[_ageFormat(patient.dateOfBirth)]] [[patient.ssin]]</div>
-                        <div class="patient-birthdate">[[lastInsur.identificationNumber]] : [[lastInsur.parameters.tc1]]-[[lastInsur.parameters.tc2]]</div>
+                        <div class="patient-birthdate">[[lastInsur.label]] : [[lastInsur.parameters.tc1]]-[[lastInsur.parameters.tc2]]</div>
                     </div>
                 </div>
                 <div class="invoice-panel-list">
@@ -2828,6 +2828,10 @@
                                     .head()
                                     .value()
                                 : null)
+
+                            _.get(this,"lastInsur.insuranceId",false) &&this.api.code().getCode(this.lastInsur.insuranceId).then(insurance =>{
+                                this.set("lastInsur.label",insurance.code)
+                            })
 
                             if(!invoiceOfDay){
 
