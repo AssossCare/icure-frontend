@@ -114,7 +114,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                             <div class="td fg05"></div>
                             <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>
                             <div class="td fg2">[[_getDrugName(item.drug)]]</div>     
-                            <div class="td fg05"></div>      
+                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:delete" on-tap="_deleteDrug"></iron-icon></div>      
                         </div>   
                     </template>
                 </div>
@@ -204,6 +204,19 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             detail: {
                 product : id===_.get(this,"selectedDrug.id","") ? {} : drug,
                 bypassPosologyView: id===_.get(this,"selectedDrug.id","") || !!["history", "chronic"].find(type => type === _.get(drug, 'type', ""))
+            }
+        }))
+    }
+
+    _deleteDrug(e){
+        e.stopPropagation()
+        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
+        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
+        return !drug ? null : this.dispatchEvent(new CustomEvent('delete-drug', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                product : drug
             }
         }))
     }
