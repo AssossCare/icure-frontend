@@ -704,9 +704,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           partnershipsForm: {
               type: Object,
-              value: function () {
-                  return require('./rsrc/PatientPartnershipsForm.json');
-              }
+              value: ()=>{}
           },
           partnershipsContainerForm: {
               type: Object,
@@ -1106,6 +1104,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
                       this.set('patientMap',_.cloneDeep(this.patient));
                       this.set("patientForm",require('./rsrc/PatientAdministrativeForm.json'))
+                      this.set("partnershipsForm",require('./rsrc/PatientPartnershipsForm.json'))
 
                       if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
                           this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
