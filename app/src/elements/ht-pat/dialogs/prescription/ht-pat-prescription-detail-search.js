@@ -378,7 +378,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     static get observers() {
-        return ['_drugsFilterChanged(drugsFilter)', '_initializeDataProvider(api, user, listOfCompound, listOfPrescription, listOfChronic,  listOfCompound.*, listOfPrescription.*, listOfChronic.*)', '_selectedTabChanged(tabs)'];
+        return ['_drugsFilterChanged(drugsFilter)','_compoundChanged(listOfCompound,listOfCompound.*)', '_initializeDataProvider(api, user,  listOfPrescription, listOfChronic, listOfPrescription.*, listOfChronic.*)', '_selectedTabChanged(tabs)'];
     }
 
     ready() {
@@ -387,6 +387,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _initializeDataProvider(){
         this._reset()
+    }
+
+    _compoundChanged(){
+        this.set('searchResult.compound',this.drugsFilter ?  _.orderBy(this._filterValue(this.drugsFilter, _.get(this, 'listOfCompound', [])), ['label'], ['asc']) : _.get(this, 'listOfCompound', []))
     }
 
     _reset(){
@@ -514,7 +518,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     const drugCnk = _.trim(_.get(publicDmpp, 'codeType')) === 'CNK' && _.trim(_.get(publicDmpp, 'code'))
 
                     return _.assign(ampp, {
-                        id: drugCnk,
+                        id: drugCnk || this.api.crypto().randomUuid(),
                         groupId: _.get(row, 'vmp.vmpGroup.id', null),
                         hasChildren: (level === 0) && !!_.get(row, 'vmp.vmpGroup.id', null),
                         uuid: _.get(publicDmpp, 'codeType', null) === 'CNK' && _.get(publicDmpp, 'code', null),
@@ -522,6 +526,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         publicDmpp: publicDmpp,
                         currentReimbursement: _.get(publicDmpp, 'reimbursements', []).find(reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now )),
                         intendedName: (_.get(ampp, 'prescriptionName['+this.language+']', null)) || (_.get(publicDmpp, 'prescriptionName['+this.language+']', null)) || (_.get(ampp, 'abbreviatedName['+this.language+']', null)) || '',
+                        label: (_.get(ampp, 'prescriptionName['+this.language+']', null)) || (_.get(publicDmpp, 'prescriptionName['+this.language+']', null)) || (_.get(ampp, 'abbreviatedName['+this.language+']', null)) || '',
                         posologyNote: _.get(ampp, 'posologyNote['+this.language+']', null) || "",
                         unit: _.get(row, "components[0].pharmaceuticalForms[0].name[" + this.language + "]", ""),
                         atcCodes: atcCodes,

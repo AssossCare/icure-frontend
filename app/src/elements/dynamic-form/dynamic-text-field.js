@@ -73,7 +73,7 @@ class DynamicTextField extends TkLocalizerMixin(PolymerElement) {
 		</style>
 		<template is="dom-if" if="[[readOnly]]">
 			<paper-input-container always-float-label="true">
-				<label slot="label">[[localize(label,label,language)]]
+				<label slot="label">[[localize(label,label,language)]]<slot name="label"></slot>
 					<template is="dom-if" if="[[wasModified]]">
 						<span class="modified-before-out">[[localize('mod','modified',language)]] [[lastModified]] <iron-icon class="modified-icon" icon="schedule"></iron-icon></span>
 					</template>
@@ -88,7 +88,7 @@ class DynamicTextField extends TkLocalizerMixin(PolymerElement) {
 		</template>
 		<template is="dom-if" if="[[!readOnly]]">
 			<paper-input-container always-float-label="true">
-				<label slot="label">[[localize(label,label,language)]]
+				<label slot="label">[[localize(label,label,language)]]<slot name="label"></slot>
 					<template is="dom-if" if="[[wasModified]]">
 						<span class="modified-before-out">[[localize('mod','modified',language)]] [[lastModified]] <iron-icon class="modified-icon" icon="schedule"></iron-icon></span>
 					</template>

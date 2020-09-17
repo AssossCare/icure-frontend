@@ -237,6 +237,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             sam-version="[[samVersion]]"
                             selected-parent-drug-for-cheaper="[[selectedParentDrugForCheaper]]"
                             on-open-posology-view="_openPosologyView"
+                            on-search-cheaper-drugs="_searchCheaperDrugs"
                             on-close-cheaper-drugs-view="_closeCheaperDrugsView"
                         ></ht-pat-prescription-detail-search-cheaper-drugs>
                      </div>
@@ -438,6 +439,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             selectedMoleculeForAmps:{
                 type: Object,
                 value: () => {}
+            },
+            isLoading:{
+                type: Boolean,
+                value: false
             }
         };
     }
@@ -475,6 +480,8 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _open( openParameters ) {
+        // c'est long
+        this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').open() : null
         return (this._reset()||true) && (this.set('openParameters', openParameters||{})||true) && this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
             .then(hcp => (this.set('hcp', hcp)||true) && this.api.code().findCodes('be', "CD-REIMBURSEMENT-RECIPE"))
             .then(reimbursementCode => this.set('reimbursementTypeList', reimbursementCode))
@@ -484,12 +491,11 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .finally(() => {
                 this.set('listOfPrescription', this._refreshHistoryList())
                 this.set('listOfChronic', this._refreshChronicList())
-                this.shadowRoot.querySelector('#prescriptionDetailDialog') ? this.shadowRoot.querySelector('#prescriptionDetailDialog').open() : null
             })
     }
 
     _refreshCompoundList(){
-         return this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
+        this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
             .then(compoundTemplateList => {
                 const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : []
                 this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))

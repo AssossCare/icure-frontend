@@ -50,7 +50,12 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
                 </div>
                 
                 <div id="body-editor">
-                
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
                 </div>
                 
                 <div id="footer-editor">

@@ -164,6 +164,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                color: white;
                padding: 2px;
             }
+
             
              .atcIcon{
                 height: 8px;
@@ -366,8 +367,10 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                                 <div class="tr deletedDrug">
                                     <div class="td fg01"></iron-icon></div>  
                                     <div class="td fg01">
-                                        <iron-icon class="addIcon" id="alt_[[amppFinished.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative">
-                                        <paper-tooltip for="alt_[[amppFinished.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
+                                        <template is="dom-if" if="[[_hasGroupId(amppFinished.id)]]">
+                                            <iron-icon class="addIcon" id="alt_[[amppFinished.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative">
+                                            <paper-tooltip for="alt_[[amppFinished.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
+                                        </template>
                                     </div>   
                                     <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
                                         [[_getAmppFinishedName(amppFinished)]]
@@ -577,7 +580,26 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const drug =  _.flatten(_.get(this, 'searchResult', [])).find(h => _.get(h, 'id', null) === drugId)
 
-        return !drugId ? null : this.dispatchEvent(new CustomEvent('search-cheaper-drugs', {
+        return this.launchCheaperAlternativeEvent(drug)
+    }
+
+    _searchAlternative(e){
+        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const drug =  _.flatten(_.get(this, 'searchResult', [])).find(drug => _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === drugId))
+        const amp = _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === drugId)
+
+        return this.launchCheaperAlternativeEvent(amp)
+    }
+
+    _hasGroupId(id){
+        const drug =  _.flatten(_.get(this, 'searchResult', [])).find(drug => _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === id))
+        const amp = _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === id)
+
+        return !!_.get(amp,"groupId",false)
+    }
+
+    launchCheaperAlternativeEvent(drug){
+        return !_.get(drug,"id",false) ? null : this.dispatchEvent(new CustomEvent('search-cheaper-drugs', {
             bubbles: true,
             composed: true,
             detail: {
@@ -586,24 +608,6 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                 groupId: _.get(drug, 'groupId', null),
                 uuids: _.get(drug, 'uuids', []),
                 drug: drug
-            }
-        }))
-    }
-
-    _searchAlternative(e){
-        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const drug =  _.flatten(_.get(this, 'searchResult', [])).find(drug => _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === drugId))
-        const amp = _.get(drug, 'amp.ampps', []).find(ampp => _.get(ampp, 'id', null) === drugId)
-
-        return !drugId ? null : this.dispatchEvent(new CustomEvent('search-cheaper-drugs', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                id: _.get(amp, 'id', null),
-                uuid: _.get(amp, 'uuid', null),
-                groupId: _.get(amp, 'groupId', null),
-                uuids: _.get(amp, 'uuids', []),
-                drug: amp
             }
         }))
     }
