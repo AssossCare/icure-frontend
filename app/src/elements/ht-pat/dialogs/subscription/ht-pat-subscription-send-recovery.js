@@ -345,7 +345,7 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set('recoveryLog', [])
         //TODO DEFINE fixed dates for start and end of recovery
         this.dateRecoveryStart = Date.parse("2020-07-29")
-        this.dateRecoveryEnd = Date.parse("2020-08-31")
+        this.dateRecoveryEnd = Date.parse("2020-09-30")
         console.log("date limits", this.dateRecoveryStart, this.dateRecoveryEnd)
         const now = moment().format('YYYY-MM-DD')
         this.set("isValidDate", this.api.moment(now).isSameOrAfter(this.api.moment(this.dateRecoveryStart).format('YYYY-MM-DD')) && this.api.moment(now).isSameOrBefore(this.api.moment(this.dateRecoveryEnd).format('YYYY-MM-DD')))
@@ -618,6 +618,63 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
                         recoveryLogItem.status = "Erreur: " + _.map(mhmResponse.errors, err => err.msgFr ).join(", ") + _.map(mhmResponse.genericErrors, err => this._getGenericErrorMessage(err)).join(", ")
 
                         //TODO: extract error
+                        //return Promise.resolve(pat)
+
+                        return Promise.all([
+                            this.api.receipticc.createReceipt({
+                                documentId: _.get(mhmResponse, 'reference', null),
+                                references: Object.values(mhmResponse.commonOutput),
+                                category: "subscription",
+                                subCategory:"xades"
+                            }),
+                            this.api.receipticc.createReceipt({
+                                documentId: _.get(mhmResponse, 'reference', null),
+                                references: Object.values(mhmResponse.commonOutput),
+                                category: "subscription",
+                                subCategory:"soapResponse"
+                            }),
+                            this.api.receipticc.createReceipt({
+                                documentId: _.get(mhmResponse, 'reference', null),
+                                references: Object.values(mhmResponse.commonOutput),
+                                category: "subscription",
+                                subCategory:"transactionRequest"
+                            }),
+                            this.api.receipticc.createReceipt({
+                                documentId: _.get(mhmResponse, 'reference', null),
+                                references: Object.values(mhmResponse.commonOutput),
+                                category: "subscription",
+                                subCategory:"transactionResponse"
+                            }),
+                            this.api.receipticc.createReceipt({
+                                documentId: _.get(mhmResponse, 'reference', null),
+                                references: Object.values(mhmResponse.commonOutput),
+                                category: "subscription",
+                                subCategory:"soapRequest"
+                            })
+                        ]).then(([xades,soap,request,response, soapRequest]) => Promise.all([
+                            _.get(xades,"id",false) && _.get(mhmResponse,"xades",false) && this.api.receipt().setReceiptAttachment(xades.id, "xades", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(mhmResponse.xades))))) || Promise.resolve(xades),
+                            _.get(soap,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapResponse",false) && this.api.receipt().setReceiptAttachment(soap.id, "soapResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapResponse)))) || Promise.resolve(soap),
+                            _.get(request,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionRequest",false) && this.api.receipt().setReceiptAttachment(request.id, "kmehrRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionRequest)))) || Promise.resolve(request),
+                            _.get(response,"id",false) && _.get(mhmResponse,"mycarenetConversation.transactionResponse",false) && this.api.receipt().setReceiptAttachment(response.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.transactionResponse)))) || Promise.resolve(response),
+                            _.get(soapRequest,"id",false) && _.get(mhmResponse,"mycarenetConversation.soapRequest",false) && this.api.receipt().setReceiptAttachment(soapRequest.id, "soapRequest", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(mhmResponse.mycarenetConversation.soapRequest)))) || Promise.resolve(soapRequest)
+                        ]))
+                            .then(([xades,soap,request,response, soapRequest]) => {
+                                const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')[0]
+                                if(!_.get(mhc,'receipts',false))mhc.receipts={}
+                                if(_.get(xades,"id",false))
+                                    mhc.receipts.xadesCreation=xades.id
+                                if(_.get(soap,"id",false))
+                                    mhc.receipts.soapCreation=soap.id
+                                if(_.get(request,"id",false))
+                                    mhc.receipts.requestCreation=request.id
+                                if(_.get(response,"id",false))
+                                    mhc.receipts.responseCreation=response.id
+                                if(_.get(soapRequest,"id",false))
+                                    mhc.receipts.soapRequestCreation=soapRequest.id
+                            }).finally(()=>{
+                                console.log("Patient about to update", pat)
+                                return this._updatePatient(pat)
+                            })
                     }
                     else
                     {
@@ -689,12 +746,16 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
                     console.log("sendSubscriptionLog error for patient", pat, error)
                     recoveryLogItem.sendSubscriptionError = error
                     recoveryLogItem.status = "Erreur : " + error
+                    //TODO: log the error on patient level
+
                     return Promise.resolve(pat)
                 })
         } else {
             console.log("sendSubscriptionLog pre-send errors for patient", pat, requestError)
             recoveryLogItem.requestError = requestError
             recoveryLogItem.status = "Erreur : " +  _.map(requestError, err => this.localize(err, err, this.language)).join(", ")
+            //TODO: log the error on patient level (pre-send check)
+
             return Promise.resolve(pat)
         }
     }
