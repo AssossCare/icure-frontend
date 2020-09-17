@@ -489,10 +489,11 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _refreshCompoundList(){
-         this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
+         return this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
             .then(compoundTemplateList => {
                 const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : []
                 this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))
+                return true;
             })
     }
 
