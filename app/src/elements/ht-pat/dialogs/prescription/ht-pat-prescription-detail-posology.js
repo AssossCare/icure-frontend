@@ -333,7 +333,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             
                 <div class="posology-title">
                 
-                    <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(medication)]]"></iron-icon> [[medicationDetail.label]]</h3>
+                    <h3 class="m0"><iron-icon class="header-icon" icon="[[_getDrugType(medication)]]"></iron-icon> [[medicationDetail.label]] 
+                        <template is="dom-if" if="[[_isDoping(medicationDetail)]]"><iron-icon icon="medication-svg-icons:[[_getDopingIcon(medicationDetail)]]" id="doping_[[medicationDetail.id]]" class="table-icon"</iron-icon><paper-tooltip for="doping_[[medicationDetail.id]]" position="right" animation-delay="0">[[localize('presc-narco', 'Doping', language)]]</paper-tooltip></template>
+                        <template is="dom-if" if="[[_isBlackTriangle(medicationDetail)]]"><iron-icon icon="medication-svg-icons:[[_getBlackTriangleIcon(medicationDetail)]]" id="bt_[[medicationDetail.id]]" class="table-icon"></iron-icon><paper-tooltip for="bt_[[medicationDetail.id]]" position="right" animation-delay="0">[[localize('presc-new-act-ing', 'New active ingredient', language)]]</paper-tooltip></template>                                                
+                        <template is="dom-if" if="[[_isRma(medicationDetail)]]"><iron-icon icon="medication-svg-icons:[[_getRmaIcon(medicationDetail)]]" id="rma_[[medicationDetail.id]]" class="table-icon" on-tap="_openRmaLink"></iron-icon><paper-tooltip for="rma_[[medicationDetail.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>                                                
+                    </h3>
                     <p class="m0 mt5">
                         <template is="dom-if" if="[[medicationDetail.id]]">
                             <paper-icon-button id="CBIPLink[[medicationDetail.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
@@ -348,6 +352,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         <template is="dom-if" if="[[_getLeafletLink(medicationDetail)]]">
                             <paper-icon-button id="leafletLink_[[medicationDetail.id]]" class="infoIcon" icon="icons:description" role="button" on-tap="_openLeafletLink"></paper-icon-button>
                             <paper-tooltip id="tt_leafletLink_[[medicationDetail.id]]" position="right" for="leafletLink_[[medicationDetail.id]]">[[localize('med_leaflet','Notice pour le public (CBiP)',language)]]</paper-tooltip>
+                        </template>
+                        
+                        <template is="dom-if" if="[[_getDhpcLink(medicationDetail)]]">
+                            <paper-icon-button id="DhpcLink_[[medicationDetail.id]]" class="infoIcon" src="[[_getDhpcPicture()]]" role="button" on-tap="_openDhpcLink"></paper-icon-button>
+                            <paper-tooltip id="tt_leafletLink_[[medicationDetail.id]]" position="right" for="DhpcLink_[[medicationDetail.id]]">[[localize('med_Dhpc','DHPC',language)]]</paper-tooltip>
                         </template>                    
                         [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;
                         <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_getDrugCnk(medicationDetail)]]</template>
@@ -891,6 +900,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return require('../../../../../images/cbip-logo.png')
     }
 
+    _getDhpcPicture() {
+        return require('../../../../../images/afmps.png')
+    }
+
+
     _openCbipLink() {
 
         return window.open('http://www.cbip.be/' + this.language + '/contents/jump?cnk=' + _.trim(_.get(this, "medicationDetail.id")));
@@ -909,6 +923,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    _getDhpcLink(medicationDetail){
+        return _.trim(_.get(medicationDetail, "informations.rmaProfessionalLink."+this.language))
+    }
+
     _openRcpLink() {
         const targetUrl = this._getRcpLink(this.medicationDetail);
         return targetUrl && window.open(targetUrl);
@@ -916,6 +934,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _openLeafletLink() {
         const targetUrl = this._getLeafletLink(this.medicationDetail);
+        return targetUrl && window.open(targetUrl);
+    }
+
+    _openDhpcLink(){
+        const targetUrl = this._getDhpcLink(this.medicationDetail);
         return targetUrl && window.open(targetUrl);
     }
 
@@ -1607,11 +1630,33 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
 
+    _isDoping(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null
+    }
 
+    _isBlackTriangle(drug){
+        return _.get(drug, 'informations.blackTriangle', false)
+    }
 
+    _isRma(drug){
+        return _.get(drug, 'informations.rma', false)
+    }
 
+    _getDopingIcon(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null ? 'cat-doping-prod' : ''
+    }
 
+    _getBlackTriangleIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'blackTriangle' : ''
+    }
 
+    _getRmaIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'rma-pharma-vigi' : ''
+    }
+
+    _openRmaLink(e){
+        window.open(_.get(this, 'medicationDetail.informations.rmaLink.'+this.language, ""))
+    }
 
 
 

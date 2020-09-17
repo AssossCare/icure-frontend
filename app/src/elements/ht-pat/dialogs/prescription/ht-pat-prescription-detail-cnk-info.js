@@ -182,15 +182,29 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                              <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Drug name',language)]]</div>    
                                 <div class="td fg1">[[selectedCnkForInformation.label]]</div>
-                                <div class="td fg1 bold">[[localize('','',language)]]</div>
-                                <div class="td fg1"></div>   
                              </div>
-                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Vmp',language)]]</div>    
-                                <div class="td fg1">[[_getVmp(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Vmp group',language)]]</div>
-                                <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div>   
-                             </div>
+                             <template is="dom-if" if="[[!_isDCI(selectedCnkForInformation)]]">
+                                 <div class="tr">
+                                    <div class="td fg1 bold">[[localize('','Vmp',language)]]</div>    
+                                    <div class="td fg1">[[_getVmp(selectedCnkForInformation)]]</div>
+                                    <div class="td fg1 bold">[[localize('','Vmp group',language)]]</div>
+                                    <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div>   
+                                 </div>
+                             </template>
+                             <template is="dom-if" if="[[_isDCI(selectedCnkForInformation)]]">
+                                 <div class="tr">
+                                     <div class="td fg1 bold">[[localize('','Vmp group name',language)]]</div>
+                                    <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div> 
+                                    <div class="td fg1 bold">[[localize('','Vmp group code',language)]]</div>
+                                    <div class="td fg1">[[_getVmpGroupCode(selectedCnkForInformation)]]</div> 
+                                 </div>
+                                 <div class="tr">
+                                    <div class="td fg1 bold">[[localize('','Vmp group status code',language)]]</div>
+                                    <div class="td fg1">[[_getVmpGroupStatusCode(selectedCnkForInformation)]] </div>
+                                    <div class="td fg1 bold">[[localize('','Vmp group status description',language)]]</div>
+                                    <div class="td fg1">[[_getVmpGroupStatusDescription(selectedCnkForInformation)]] </div>
+                                 </div>
+                             </template>
                              <template is="dom-if" if="[[_isWadaSpecification(selectedCnkForInformation)]]">
                                  <div class="tr">
                                     <div class="td fg1 warningColor">
@@ -215,9 +229,9 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                              </div>
                              <div class="tr">
                                 <div class="td fg1 bold">[[localize('','Start of prescribing',language)]]</div>    
-                                <div class="td fg1"></div>
+                                <div class="td fg1">[[_getStartDateOfPrescribing(selectedCnkForInformation)]]</div>
                                 <div class="td fg1 bold">[[localize('','End of prescribing',language)]]</div>
-                                <div class="td fg1"></div>   
+                                <div class="td fg1">[[_getEndDateOfPrescribing(selectedCnkForInformation)]]</div>
                              </div>
                         </div>
                     </div>
@@ -253,7 +267,18 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                     </div>
                     <div class="cnk-info-reimbursement-container-content">
                         <div class="table">
-                        
+                            <div class="tr">
+                                <div class="td fg1 bold">[[localize('','category name',language)]]</div>    
+                                <div class="td fg1">[[_getReimbursementName(selectedCnkForInformation)]]</div>
+                                <div class="td fg1 bold">[[localize('','category description',language)]]</div>    
+                                <div class="td fg1">[[_getReimbursementDescription(selectedCnkForInformation)]]</div>
+                             </div>
+                             <div class="tr">
+                                <div class="td fg1 bold">[[localize('','chapter',language)]]</div>    
+                                <div class="td fg1"></div>
+                                <div class="td fg1 bold">[[localize('','interventions',language)]]</div>    
+                                <div class="td fg1"></div>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -313,7 +338,11 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
     }
 
     _getVmpGroup(drug){
-        return _.get(drug, 'informations.vmpGroupName', null)
+        return this._isDCI(drug) ? _.get(drug,"vmpGroup.name."+this.language,"-") : _.get(drug, 'informations.vmpGroupName', "-")
+    }
+
+    _getVmpGroupCode(drug){
+        return _.get(drug,"vmpGroup.code","-")
     }
 
     _getVmp(drug){
@@ -361,6 +390,36 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
     _getWadaDescr(wada){
         return _.get(wada, 'description.'+this.language, null)
     }
+
+    _getStartDateOfPrescribing(drug){
+        return _.get(drug, 'informations.ampp.from', null) ? this.api.moment(_.get(drug, 'informations.ampp.from', null)).format('DD/MM/YYYY') : "-"
+    }
+
+    _getEndDateOfPrescribing(drug){
+        return _.get(drug, 'informations.ampp.to', null) ? this.api.moment(_.get(drug, 'informations.ampp.to', null)).format('DD/MM/YYYY') : "-"
+    }
+
+    _getReimbursementName(drug){
+        return _.get(drug, 'informations.currentReimbursement.reimbursementCriterion.category', "-")
+    }
+
+    _getReimbursementDescription(drug){
+        return _.get(drug, 'informations.currentReimbursement.reimbursementCriterion.description.'+this.language, "-")
+    }
+
+    _isDCI(drug){
+        return _.get(drug,"type","")==="substance"
+    }
+
+    _getVmpGroupStatusCode(drug){
+        return _.get(drug,"vmpGroup.noSwitchReason.code","-")
+    }
+
+    _getVmpGroupStatusDescription(drug){
+        return _.get(drug,"vmpGroup.noSwitchReason.description."+this.language,"-")
+    }
+
+
 
 }
 customElements.define(HtPatPrescriptionDetailCnkInfo.is, HtPatPrescriptionDetailCnkInfo);

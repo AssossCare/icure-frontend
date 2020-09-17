@@ -299,7 +299,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                             </div>  
                             <div class="td fg01 notRel">
                                 <template is="dom-if" if="[[_isAvailableCheaperDrugsSearch(origin)]]">
-                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs">
+                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs"></iron-icon>
                                     <paper-tooltip for="alt_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
                                 </template>
                             </div>   
@@ -336,8 +336,10 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                             </div>
                             <div class="td fg05 notRel">
                                 <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]] id="tt_[[drug.atcCat]]_[[drug.id]]"></iron-icon></template>
-                                <template is="dom-if" if="[[_hasColor(drug)]]"><label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]" id="tt_[[drug.atcCat]]_[[drug.id]]" ><span></span></label></template>
-                                <paper-tooltip for="tt_[[drug.atcCat]]_[[drug.id]]" position="right" animation-delay="0">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
+                                <template is="dom-if" if="[[_hasColor(drug)]]">
+                                    <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]" id="tt_[[drug.atcCat]]_[[drug.id]]" ><span></span></label>
+                                    <paper-tooltip for="tt_[[drug.atcCat]]_[[drug.id]]" position="right" animation-delay="0">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
+                                </template>
                             </div>
                             <div class="td fg05 notRel">
                                 <div class="icon-type-group">
@@ -365,17 +367,17 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                         <template is="dom-if" if="[[_isFinishedCommercializations(drug)]]">
                             <template is="dom-repeat" items="[[drug.informations.amppFinished]]" as="amppFinished">
                                 <div class="tr deletedDrug">
-                                    <div class="td fg01"></iron-icon></div>  
+                                    <div class="td fg01"></div>  
                                     <div class="td fg01">
                                         <template is="dom-if" if="[[_hasGroupId(amppFinished.id)]]">
-                                            <iron-icon class="addIcon" id="alt_[[amppFinished.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative">
-                                            <paper-tooltip for="alt_[[amppFinished.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
+                                            <iron-icon class="addIcon" id="alt_[[amppFinished.id]]_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative"></iron-icon>
+                                            <paper-tooltip for="alt_[[amppFinished.id]]_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
                                         </template>
                                     </div>   
                                     <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
                                         [[_getAmppFinishedName(amppFinished)]]
-                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]" class="deletedIcon"></iron-icon>
-                                        <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]" position="right" animation-delay="0">
+                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]_[[drug.id]]" class="deletedIcon"></iron-icon>
+                                        <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]_[[drug.id]]" position="right" animation-delay="0">
                                             <div class="fs12">
                                                 <iron-icon icon="medication-svg-icons:deletedDrug" class="deletedIcon"></iron-icon>&nbsp;&nbsp;
                                                 [[localize('presc-rec-del', 'Recent deletion', language)]]
