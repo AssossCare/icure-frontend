@@ -1054,7 +1054,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                             _.trim(_.get(mhc, "contractId")) &&
                                             (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
                                             (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
                                         ) &&
 
                                         // 5. 1+ valid INS (versus exportedDate)
@@ -1065,7 +1065,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                             _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
                                             (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
                                             (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) === "0" || _.trim(_.get(ins,"endDate")) >= exportedDate)
                                         )
 
                                     )
@@ -1095,7 +1095,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                         (
                                             isPatientForcedAsValidInMda || (
                                                 (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) === "0" || _.trim(_.get(ins,"endDate")) >= exportedDate)
                                             )
                                         )
 
@@ -1112,7 +1112,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                         (
                                             isPatientForcedAsValidInMda || (
                                                 (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
                                             )
                                         )
 
