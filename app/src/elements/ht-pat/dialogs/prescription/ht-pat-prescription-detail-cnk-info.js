@@ -175,12 +175,12 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             <div class="cnk-info-container-content">
                 <div class="cnk-info-drug-container">
                     <div class="cnk-info-container-title">
-                        [[localize('', 'Drug', language)]]
+                        [[localize('', 'Médicament', language)]]
                     </div>
                     <div class="cnk-info-drug-container-content">
                         <div class="table">
                              <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Drug name',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Nom',language)]]</div>    
                                 <div class="td fg1">[[selectedCnkForInformation.label]]</div>
                              </div>
                              <template is="dom-if" if="[[!_isDCI(selectedCnkForInformation)]]">
@@ -193,15 +193,15 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                              </template>
                              <template is="dom-if" if="[[_isDCI(selectedCnkForInformation)]]">
                                  <div class="tr">
-                                     <div class="td fg1 bold">[[localize('','Vmp group name',language)]]</div>
+                                     <div class="td fg1 bold">[[localize('','Nom du groupe vmp',language)]]</div>
                                     <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div> 
-                                    <div class="td fg1 bold">[[localize('','Vmp group code',language)]]</div>
+                                    <div class="td fg1 bold">[[localize('','Code du groupe vmp',language)]]</div>
                                     <div class="td fg1">[[_getVmpGroupCode(selectedCnkForInformation)]]</div> 
                                  </div>
                                  <div class="tr">
-                                    <div class="td fg1 bold">[[localize('','Vmp group status code',language)]]</div>
+                                    <div class="td fg1 bold">[[localize('','Status du groupe vmp',language)]]</div>
                                     <div class="td fg1">[[_getVmpGroupStatusCode(selectedCnkForInformation)]] </div>
-                                    <div class="td fg1 bold">[[localize('','Vmp group status description',language)]]</div>
+                                    <div class="td fg1 bold">[[localize('','Description',language)]]</div>
                                     <div class="td fg1">[[_getVmpGroupStatusDescription(selectedCnkForInformation)]] </div>
                                  </div>
                              </template>
@@ -217,20 +217,20 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-commercialisation-container">
                     <div class="cnk-info-container-title">
-                        [[localize('', 'Commercialization', language)]]
+                        [[localize('', 'Commercialisation', language)]]
                     </div>
                     <div class="cnk-info-commercialisation-container-content">
                         <div class="table">
                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Start of commercialisation',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Début de la commercialisation',language)]]</div>    
                                 <div class="td fg1">[[_getStartDateOfCommercialization(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','End of commercialisation',language)]]</div>
+                                <div class="td fg1 bold">[[localize('','Fin de la commercialisation',language)]]</div>
                                 <div class="td fg1">[[_getEndDateOfCommercialization(selectedCnkForInformation)]]</div>
                              </div>
                              <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Start of prescribing',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Début prescriptibilité',language)]]</div>    
                                 <div class="td fg1">[[_getStartDateOfPrescribing(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','End of prescribing',language)]]</div>
+                                <div class="td fg1 bold">[[localize('','Fin de prescriptibilité',language)]]</div>
                                 <div class="td fg1">[[_getEndDateOfPrescribing(selectedCnkForInformation)]]</div>
                              </div>
                         </div>
@@ -238,14 +238,14 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-delivery-container">
                     <div class="cnk-info-container-title">
-                        [[localize('', 'Delivery', language)]]
+                        [[localize('', 'Délivrance', language)]]
                     </div>
                     <div class="cnk-info-delivery-container-content">
                         <div class="table">
                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Delivery modus',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Mode de délivrance',language)]]</div>    
                                 <div class="td fg1">[[_getDeliveryModus(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Condition of prescription',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Condition de prescription',language)]]</div>    
                                 <div class="td fg1">[[_getDeliveryModusSpecification(selectedCnkForInformation)]]</div>
                              </div>
                         </div>
@@ -263,20 +263,20 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-reimbursement-container">
                    <div class="cnk-info-container-title">
-                        [[localize('', 'Reimbursement', language)]]
+                        [[localize('', 'Remboursement', language)]]
                     </div>
                     <div class="cnk-info-reimbursement-container-content">
                         <div class="table">
                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','category name',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Catégorie',language)]]</div>    
                                 <div class="td fg1">[[_getReimbursementName(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','category description',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Description',language)]]</div>    
                                 <div class="td fg1">[[_getReimbursementDescription(selectedCnkForInformation)]]</div>
                              </div>
                              <div class="tr">
-                                <div class="td fg1 bold">[[localize('','chapter',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Chapitre',language)]]</div>    
                                 <div class="td fg1"></div>
-                                <div class="td fg1 bold">[[localize('','interventions',language)]]</div>    
+                                <div class="td fg1 bold">[[localize('','Interventions',language)]]</div>    
                                 <div class="td fg1"></div>
                              </div>
                         </div>
