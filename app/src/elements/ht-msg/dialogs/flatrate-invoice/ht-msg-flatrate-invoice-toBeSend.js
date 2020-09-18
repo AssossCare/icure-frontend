@@ -1985,7 +1985,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const endDate = this.api.moment(ptd.end)
         const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
         const invDateTmp = this.api.moment(invDate)
-        return startDate.isSameOrBefore(invDateTmp, 'day')
+        return !!startDate && startDate.isSameOrBefore(invDateTmp, 'day') && (startDate.isAfter(this.api.moment("19001231")))
             && (endDate.isBefore(this.api.moment("19000101"))|| endDate.isAfter(invDateTmp))
             && (!dmfAniv || dmfAniv.isSameOrBefore(invDateTmp, 'day'))
     }
