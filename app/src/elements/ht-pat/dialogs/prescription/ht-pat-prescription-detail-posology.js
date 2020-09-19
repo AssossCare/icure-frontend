@@ -406,16 +406,16 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 
                                 <!-- fourni par samV2 choix de la portion 1 - 1/2 - 1/3 répercussion dans la posology-->
                                 <!-- todo @julien constructPosology-->
-                                <div class="regimen-line display-type-regimen">
+                                <!--<div class="regimen-line display-type-regimen">
                                     <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!medicationDetail.dividable]]">
                                         <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{quantityFactor}}">
                                             <template is="dom-repeat" items="[[quantityFactors]]"><paper-item id="[[item.id]]" value="[[item]]">[[localize(item.label, item.numLabel, language)]]</paper-item></template>
                                         </paper-listbox>
                                     </paper-dropdown-menu>
-                                </div>
+                                </div>-->
                                 
                                 <!-- regimen 1 par fréquence et une fréquence par service-->
-                                <template is="dom-repeat" items="[[regimenKeys]]">
+                                <!--<template is="dom-repeat" items="[[regimenKeys]]">
                                     <ht-regimen-day
                                         api="[[api]]" 
                                         i18n="[[i18n]]" 
@@ -432,7 +432,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         on-regimen-changed="_regimenChanged" 
                                         on-regimen-delete="_removeRegimen"
                                     ></ht-regimen-day>
-                                </template>
+                                </template>-->
+                                <!-- todo @julien refactor variables of axel--> 
+                                <ht-pat-prescription-detail-posology-frequency-editor units="[[quantityFactor]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
                                 
                                 <div class="regimen-line display-type-regimen">
                                 
@@ -837,6 +839,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 value: " - "
             },
             // </Axel Stijns>
+
+            // julien posology
+
         };
     }
 

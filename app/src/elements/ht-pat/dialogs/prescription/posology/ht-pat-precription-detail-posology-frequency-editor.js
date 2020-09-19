@@ -44,18 +44,23 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
                         </paper-listbox>
                     </paper-dropdown-menu>
                     
-                    <vaadin-date-picker id="beginDate-picker" value="[[_formatDate(frequency.beginDate)]]"></vaadin-date-picker>
+                    <vaadin-date-picker id="beginDate-picker" i18n="[[i18n]]" min="[[formatDateMinMax(minBeginDate)]]" max="[[formatDateMinMax(frequency.endDate)]]" value="[[_formatDate(frequency.beginDate)]]" on-value-changed="beginDateChanged"></vaadin-date-picker>
                     
-                    <vaadin-date-picker id="endDate-picker" value="[[_formatDate(frequency.endDate)]]"></vaadin-date-picker>
+                    <vaadin-date-picker id="endDate-picker" i18n="[[i18n]]" min="[[formatDateMinMax(frequency.beginDate)]]" max="[[formatDateMinMax(maxEndDate)]]" value="[[_formatDate(frequency.endDate)]]" on-value-changed="endDateChanged"></vaadin-date-picker>
+                    
+                    <paper-input id="duration-number" value="[[frequency.numberDuration]]"></paper-input>
+                    <paper-dropdown-menu id="duration-number" value="[[frequency.typeDuration]]"></paper-dropdown-menu>
                 </div>
                 
                 <div id="body-editor">
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'test')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'hours')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'day')]]">
+                        <ht-regime-day-editor></ht-regime-day-editor>
+                    </template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'week')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'month')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'year')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'years')]]"></template>
                 </div>
                 
                 <div id="footer-editor">
@@ -89,7 +94,34 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
             },
             periodicities : {
                 type: Array,
-                value : () => []
+                value : () => {
+                    return [
+                        {
+                            id : 'hour',
+                            label : { fr: 'Heure',nl: 'Uur',en: 'Hour'}
+                        },
+                        {
+                            id : 'day',
+                            label : { fr: 'jour',nl: 'dag',en: 'day'}
+                        },
+                        {
+                            id : 'week',
+                            label : { fr: 'Semaine',nl: 'week',en: 'week'}
+                        },
+                        {
+                            id : 'month',
+                            label : { fr: 'Mois',nl: 'maand',en: 'month'}
+                        },
+                        {
+                            id : 'year',
+                            label : { fr: 'Année',nl: 'Jaar',en: 'Year'}
+                        },
+                        {
+                            id : 'years',
+                            label : { fr: 'Années',nl: 'Jaaren',en: 'Years'}
+                        }
+                    ]
+                }
             },
             frequency:{
                 type: Object,
@@ -98,6 +130,14 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
             units: {
                 type: Array,
                 value: () => []
+            },
+            minBeginDate:{//YYYY-MM-DD
+                type: String,
+                value : ''
+            },
+            maxEndDate:{
+                type: String,
+                value: ''
             }
         }
     }
@@ -128,6 +168,11 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
         this.set("frequency.posology",e.detail.value)
     }
 
+    //observers
+    writePosology(){
+
+    }
+
 
 
 
@@ -142,6 +187,15 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
 
     _formatDate(date){
         return moment(date).format("YYYY-MM-DD")
+    }
+
+    _isDisplayed(text,displayer){
+        return text===displayer;
+    }
+
+    formatDateMinMax(date){
+        if(!date)return ''
+        return typeof date === 'String' ? date : this.api.moment(date).format("YYY-MM-DD")
     }
 }
 customElements.define(HtPatPrescriptionDetailPosologyFrequencyEditor.is, HtPatPrescriptionDetailPosologyFrequencyEditor);
