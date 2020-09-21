@@ -911,7 +911,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return require('../../../../../images/afmps.png')
     }
 
-
     _openCbipLink() {
 
         return window.open('http://www.cbip.be/' + this.language + '/contents/jump?cnk=' + _.trim(_.get(this, "medicationDetail.id")));
@@ -1461,55 +1460,37 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
-    // To do: handle this
-    EOLAndClose() {
-
-        const promResolve = Promise.resolve()
-
-        return promResolve
-            .then(() => this.set("medicationDetail.newMedication.endOfLife", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
-            .then(() => this.save())
-            .then(() => this.close())
-
+    _isDoping(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null
     }
 
-    endAndClose(){
-
-        const promResolve = Promise.resolve()
-
-        return promResolve
-            .then(() => this.set("medicationContent.medicationValue.endMoment", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
-            .then(() => this.save())
-            .then(() => this.close())
-
+    _isBlackTriangle(drug){
+        return _.get(drug, 'informations.blackTriangle', false)
     }
 
-    close() {
-
-        return (this.set("medicationContent", null)||true) && this.set('medications', [])
-
+    _isRma(drug){
+        return _.get(drug, 'informations.rma', false)
     }
 
-    saveAndClose() {
-
-        const promResolve = Promise.resolve()
-
-        return promResolve
-            .then(() => this.save())
-            .then(() => this.close())
-
+    _getDopingIcon(drug){
+        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null ? 'cat-doping-prod' : ''
     }
 
-    _changeRenewalTimeUnitItem(item, unitValue, decimalValue){
+    _getBlackTriangleIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'blackTriangle' : ''
+    }
+
+    _getRmaIcon(drug){
+        return _.get(drug, 'informations.blackTriangle', false) ? 'rma-pharma-vigi' : ''
+    }
+
+    _openRmaLink(e){
+        window.open(_.get(this, 'medicationDetail.informations.rmaLink.'+this.language, ""))
+    }
+
+    _changeRenewalTimeUnitItem(item, unitValue, decimalValue) {
 
         return !_.get(item,"id") ? null : this.set("medicationContent.medicationValue.renewal", { decimal: decimalValue, duration: { value: unitValue, unit: _.find(_.get(this,"timeUnit",[]), it => it && it.id === item.id)} })
-
-    }
-
-    _createMedication(e){
-
-        this.set('medicationDetail.options.createMedication', _.get(e,"target.checked"))
-        this.set('medicationContent.createMedication', _.get(e,"target.checked"))
 
     }
 
@@ -1637,45 +1618,42 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
 
-    _isDoping(drug){
-        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null
-    }
 
-    _isBlackTriangle(drug){
-        return _.get(drug, 'informations.blackTriangle', false)
-    }
+    // Todo: handle this / not used anymore?
+    // Used to be "EOLAndClose" -> for svc deletion
+    deleteAndClose() {
 
-    _isRma(drug){
-        return _.get(drug, 'informations.rma', false)
-    }
+        const promResolve = Promise.resolve()
 
-    _getDopingIcon(drug){
-        return _.get(drug, 'informations.speciallyRegulated', null) !== 0 && _.get(drug, 'informations.speciallyRegulated', null) !== null ? 'cat-doping-prod' : ''
-    }
-
-    _getBlackTriangleIcon(drug){
-        return _.get(drug, 'informations.blackTriangle', false) ? 'blackTriangle' : ''
-    }
-
-    _getRmaIcon(drug){
-        return _.get(drug, 'informations.blackTriangle', false) ? 'rma-pharma-vigi' : ''
-    }
-
-    _openRmaLink(e){
-        window.open(_.get(this, 'medicationDetail.informations.rmaLink.'+this.language, ""))
-    }
-
-
-
-
-
-
-    // todo @julien saveAction
-    _createMedication(){
+        return promResolve
+            .then(() => this.set("medicationDetail.newMedication.endOfLife", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
+            .then(() => this.triggerSave())
+            .then(() => this.triggerClosePosology())
 
     }
 
-    _validatePosology(){
+    // Ie: end / close PAT's medication
+    // Todo: handle this
+    endAndClose() {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.set("medicationContent.medicationValue.endMoment", parseInt(moment().subtract(1, 'days').format("YYYYMMDD"), 10)))
+            .then(() => this.triggerSave())
+            .then(() => this.triggerClosePosology())
+
+    }
+
+    // Todo: handle this
+    _createMedication(e){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => (this.set('medicationDetail.options.createMedication', _.get(e,"target.checked"))||true) && (this.set('medicationContent.createMedication', _.get(e,"target.checked"))||true))
+            .then(() => this.triggerCreateMedication())
+            .then(() => this.triggerClosePrescription())
 
     }
 

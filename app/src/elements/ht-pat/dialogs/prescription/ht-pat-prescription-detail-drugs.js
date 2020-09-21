@@ -207,7 +207,9 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             composed: true,
             detail: {
                 product : id===_.get(this,"selectedDrug.id","") ? {} : drug,
-                bypassPosologyView: id===_.get(this,"selectedDrug.id","") || !!["history", "chronic"].find(type => type === _.get(drug, 'type', ""))
+                // Always go for posoly view when clicking the left menu
+                // bypassPosologyView: id===_.get(this,"selectedDrug.id","") || !!["history", "chronic"].find(type => type === _.get(drug, 'type', "")),
+                bypassPosologyView: false,
             }
         }))
     }
