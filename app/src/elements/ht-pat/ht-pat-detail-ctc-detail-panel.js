@@ -770,7 +770,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             </template>
                                             <paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
                                         </div>                                        
-                                        
                                     </div>
                                 </template>
                 

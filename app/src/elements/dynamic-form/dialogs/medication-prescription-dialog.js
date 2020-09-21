@@ -775,10 +775,48 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                 top: 50%;
                 left:50%;
             }
+            
+            .samStatusIcon{
+                height: 10px;
+                width: 10px;
+            }
+            
+            .bold{
+               font-weight: bold;
+            }
+            
+            .redVersion{
+               color: var(--app-status-color-nok);
+            }
+            
+            .orangeVersion{
+               color: var(--app-status-color-pending);
+            }
+            
+            .greenVersion{
+               color: var(--app-status-color-ok);
+            }
+            
+            .samVersion{
+               float: right;
+               font-size: 12px;
+               margin-right: 10px;
+               font-weight: normal;
+            }
+        
         </style>
 
         <paper-dialog id="medication-prescription" always-on-top="" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
-            <h2 class="modal-title">[[_title(isPrescription)]]</h2>
+            <h2 class="modal-title">
+                [[_title(isPrescription)]]
+                <span class="samVersion">
+                    <span class="bold">
+                        [[localize('sam-version', 'Sam version', language)]] 
+                    </span>
+                    [[currentVersionOfSamV2.version]] ([[_getSamDate(currentVersionOfSamV2.date)]]) 
+                    <iron-icon icon="vaadin:circle" class$="samStatusIcon [[_getStatusOfSam(currentVersionOfSamV2)]]"></iron-icon>
+                </span>
+            </h2>
             <div class="content container">
                 <div id="prescription-pane" class="left-pane">
                     <div class="prescription-list">
@@ -1691,6 +1729,10 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
           saveAction: {
               type: Object,
               value: () =>{console.log("no save Action")}
+          },
+          currentVersionOfSamV2:{
+              type: Object,
+              value: () => {}
           }
       }
   }
@@ -1913,8 +1955,10 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   open(medication, options = {}, saveAction) {
       this.set("saveAction",saveAction)
       // @todo: spinner
-      this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
-          .then(hes => {
+      this.api.besamv2().getSamVersion().then(version => {
+          this.set('currentVersionOfSamV2', version)
+          return  this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
+      }).then(hes => {
               const allergies = hes.filter(he => he.tags.some(tag => tag.type === "CD-ITEM" && (tag.code === "allergy" || tag.code === "adr")))
                   .map(he => {
                       const atcCode = he.codes.find(code => code.type === "CD-ATC");
@@ -3144,6 +3188,23 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       this.busySpinnerCounter = 0;
       this.set("busySpinner", false);
   }
+
+    _getSamDate(date){
+       return date && this.api.moment(date).format("DD/MM/YYYY")
+    }
+
+    _getStatusOfSam(samVersion){
+        const now = moment().valueOf()
+        return _.get(samVersion, 'date', null) ?
+            _.parseInt(this.api.moment(now).format('YYYYMMDD')) === _.get(samVersion, 'date', null) ?
+                'greenVersion' :
+                this.api.moment(_.get(samVersion, 'date', null)).add(5, 'day').valueOf() > now ?
+                    'orangeVersion' :
+                    this.api.moment(_.get(samVersion, 'date', null)).add(14, 'day').valueOf() > now ?
+                        'redVersion' :
+                        'redVersion' :
+            'redVersion'
+    }
 }
 
 customElements.define(MedicationPrescriptionDialog.is, MedicationPrescriptionDialog)
