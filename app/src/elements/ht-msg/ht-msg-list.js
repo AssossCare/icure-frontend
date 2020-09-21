@@ -1096,8 +1096,11 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
     _getBoxCapacity() {
         return !(_.get(this,"api.keystoreId",false) && _.get(this,"api.tokenId",false) && _.get(this,"api.credentials.ehpassword",false)) ?
             Promise.resolve() :
-            this.api.fhc().Ehboxcontroller().getInfosUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword)
-                .then(boxInfo=>{
+            this.api.fhc().Ehbox().getInfosUsingGET1(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null)
+            ).then(boxInfo=>{
                     this.set('nbrMessagesInStandBy',parseInt(_.get(boxInfo,"nbrMessagesInStandBy",0)))
                     this.set('ehBoxCurrentSize',parseInt(_.get(boxInfo,"currentSize",0)))
                     this.set('ehboxMaxStorageCapacity',parseInt(_.get(boxInfo,"maxSize",10485760))) // 1024^2 - 10 Mb
@@ -1252,7 +1255,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const newStatus = action === "delete" ? (_.get(singleSelectedMessage,"status",0)|(1<<20)) : (_.get(singleSelectedMessage,"status",0)^(1<<20))
                 return !eHealthBoxMessageId || !sourceBox || !destinationBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().moveMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(e=>{})
+                    this.api.fhc().EhboxV3().moveMessagesUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId]).catch(e=>{})
                         .then(()=> this.api.message().modifyMessage(_.merge(singleSelectedMessage, {transportGuid:destinationBox+":"+eHealthBoxMessageId, status:newStatus})).then(modifiedMessage=>_.concat(promisesCarrier, {action:action, message:modifiedMessage, success:true})).catch(e=>{console.log("ERROR with modifyMessage: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })
@@ -1713,7 +1716,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                 const action = "deleteForEver"
                 return !eHealthBoxMessageId || !sourceBox || !_.get(this,"api.keystoreId",false) || !_.get(this,"api.tokenId",false) || !_.get(this,"api.credentials.ehpassword",false) ?
                     false :
-                    this.api.fhc().Ehboxcontroller().deleteMessagesUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, [eHealthBoxMessageId], sourceBox).catch(e=>{})
+                    this.api.fhc().EhboxV3().deleteMessagesUsingPOST1(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, sourceBox, [eHealthBoxMessageId]).catch(e=>{})
                         .then(()=> this.api.message().deleteMessages(_.trim(_.get(singleSelectedMessage,"id",""))).then(deletetionResult=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:!!deletetionResult})).catch(e=>{console.log("ERROR with deleteMessages: ", e); return Promise.resolve();}))
                         .catch(()=>_.concat(promisesCarrier, {action:action, message:singleSelectedMessage, success:false}))
             })
@@ -1849,9 +1852,12 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
 
         const importDescription = /* _.trim(documentTypeLabel) + ": " + */ (!!_.trim(_.get(documentToAssign,"docInfo[0].labo","")) ? _.trim(_.get(documentToAssign,"docInfo[0].labo","")) : _.trim(_.get(givenMessage,"subject")) ) + ( !!_.trim(_.get(documentToAssign,"docInfo[0].protocol","")) ? " (Protocole #" + _.trim(_.get(documentToAssign,"docInfo[0].protocol","")) + ")" : " " )
         let annexInfosToUpdate = !annexesInfosAlreadyExist ? false : _.find(_.get(givenMessage,"annexesInfos",[]), {documentId:documentId})
+        let allDocumentTypes = []
 
         return (!documentId || !patientId || !_.size(documentToAssign)) ?
-            promResolve : this.api.patient().getPatientWithUser(this.user,patientId)
+            promResolve : this.api.getDocumentTypes(this.resources, this.language)
+                .then(documentTypes => allDocumentTypes = _.concat([], documentTypes))
+                .then(() => this.api.patient().getPatientWithUser(this.user,patientId))
                 .then(patientObject => {
                     this.api.accesslog().newInstance(this.user,patientObject,{}).then(log =>{
                         log.detail="Save Assignment in Message panel"
@@ -1866,10 +1872,10 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                         responsible: _.trim(_.get(this,"user.healthcarePartyId","")),
                         openingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
                         closingDate: parseInt(moment(documentToAssignDemandDate).format('YYYYMMDDHHmmss')),
-                        encounterType: { type: "CD-TRANSACTION", version: "1", code: documentType },
+                        encounterType: { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), version: "1", code: documentType },
                         descr: _.trim(documentTitle) ? documentTitle : importDescription,
                         tags: [
-                            { type: 'CD-TRANSACTION', code: documentType },
+                            { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                             { type: "originalEhBoxDocumentId", id: documentId },
                             { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                         ],
@@ -1895,7 +1901,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                             // label: /* (_.trim(documentTypeLabel) ? _.trim(documentTypeLabel) : "Annexe") + ": " + */ _.trim(_.get(documentToAssign,"name","")),
                             label: _.trim(documentTitle) ? documentTitle : _.trim(_.get(documentToAssign,"name","")),
                             tags: [
-                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                 { type: "originalEhBoxDocumentId", id: documentId },
                                 { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                             ],
@@ -1905,7 +1911,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                             status: 64,
                             services: [{serviceId: svc.id}],
                             tags: [
-                                { type: 'CD-TRANSACTION', code: documentType },
+                                { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                 { type: "originalEhBoxDocumentId", id: documentId },
                                 { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                             ],
@@ -1925,7 +1931,7 @@ class HtMsgList extends TkLocalizerMixin(PolymerElement) {
                         )
                         .then(updatedContactAfterImport => !_.trim(_.get(updatedContactAfterImport, "id","")) ? createdContact : this.api.contact().modifyContactWithUser(this.user, _.merge({},updatedContactAfterImport,{ subContacts: [{
                                 tags:[
-                                    { type: 'CD-TRANSACTION', code: documentType },
+                                    { type: _.trim(_.get(_.find(allDocumentTypes, {code:documentType}), "type", "CD-TRANSACTION")), code: documentType },
                                     { type: "originalEhBoxDocumentId", id: documentId },
                                     { type: "originalEhBoxMessageId", id: _.trim(_.get(givenMessage,"id","")) }
                                 ],

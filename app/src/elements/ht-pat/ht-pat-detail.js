@@ -1961,10 +1961,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                                 </template>
                                             </paper-tooltip>
                                         </template>                                        
-                                        <paper-fab id="ebmPracticeNet" mini on-tap="_linkToEbPracticeNet" src="[[_ebmPicture()]]"></paper-fab>
-                                        <paper-tooltip position="top" for="ebmPracticeNet">[[localize('adm_ebm','ebmPracticeNet',language)]]</paper-tooltip>
-                                        <paper-fab id="cbipLink" mini on-tap="_linkToCBIP" src="[[_cbipPicture()]]"></paper-fab>
-                                        <paper-tooltip position="top" for="cbipLink">[[localize('cbip','CBIP',language)]]</paper-tooltip>
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
                                             <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
@@ -2881,7 +2877,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-care-path-list-dialog id="htPatCarePathListDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" resources="[[resources]]" active-health-elements="[[activeHealthElements]]" on-open-care-path-detail-dialog="_openCarePathDetail"></ht-pat-care-path-list-dialog>
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
-        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
 `
     }
 
@@ -3085,39 +3081,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             secondPanelItems: {
                 type: Array,
                 value: function () {
-                    return [{
-                        icon: "icure-svg-icons:laboratory",
-                        filter: [{type: 'CD-TRANSACTION', code: ['labresult']}],
-                        title: {en: "Lab Results", fr: "Résultats de laboratoire", nl: "Lab Results"},
-                        id: "LabResults"
-                    },
-                        {
-                            icon: "icure-svg-icons:imaging",
-                            filter: [{type: 'CD-TRANSACTION', code: ['result']}, {
-                                type: 'CD-HCPARTY',
-                                code: ['deptradiology']
-                            }],
-                            title: {en: "Imaging", fr: "Imagerie", nl: "Imaging"},
-                            id: "Imaging"
-                        },
-                        {
-                            icon: "icure-svg-icons:stethoscope",
-                            filter: [{type: 'CD-ENCOUNTER', code: ['consultation']}],
-                            title: {en: "Consultation", fr: "Consultation", nl: "Consultation"},
-                            id: "Consultation"
-                        },
-                        {
-                            icon: "editor:insert-drive-file",
-                            filter: [{type: 'CD-TRANSACTION', code: ['contactreport']}],
-                            title: {en: "Protocol", fr: "Protocole", nl: "Protocol"},
-                            id: "Protocol"
-                        },
-                        {
-                            icon: "icure-svg-icons:prescription",
-                            filter: [{type: 'CD-ITEM', code: ['treatment']}],
-                            title: {en: "Prescription", fr: "Prescription", nl: "Prescription"},
-                            id: "Prescription"
-                        }]
+                    return [{ icon: "icure-svg-icons:laboratory", filter:[{type:'CD-TRANSACTION',code:['labresult','report','result']}] , title: {en: "Lab Results", fr:"Résultats de laboratoire", nl:"Lab Results"}, id: "LabResults" },
+                        { icon: "icure-svg-icons:imaging", filter:[{type:'care.topaz.customTransaction',code:['imaging']},{type:'CD-HCPARTY',code:['deptradiology']}], title: {en: "Imaging", fr:"Imagerie", nl:"Imaging"}, id: "Imaging" },
+                        { icon: "icure-svg-icons:stethoscope", filter:[{type:'TZ-FORM-TITLE',code:['Rencontre MSOAP']}, {type:'CD-ENCOUNTER',code:['consultation']}, {type:'BE-CONTACT-TYPE',code:['1']}, {type:'CD-TRANSACTION',code:['clinicalsummary']}], title: {en: "Consultation", fr:"Consultation", nl:"Consultation"}, id: "Consultation" },
+                        { icon: "editor:insert-drive-file", status: (1 << 5), filter:[{type:'CD-TRANSACTION',code:['contactreport','admission','note','notification','referral']}], title: {en: "Protocol", fr:"Protocole", nl:"Protocol"}, id: "Protocol" },
+                        { icon: "icure-svg-icons:prescription", filter:[{type:'ICURE',code:['PRESC']},{type:'TZ-FORM-TITLE',code:['Ordonnance']},{type:'CD-ITEM',code:['treatment','medication']},{type:'CD-TRANSACTION',code:['pharmaceuticalprescription','prescription','productdelivery']}], title: {en: "Prescription",  fr:"Prescription", nl:"Prescription"}, id: "Prescription" }];
                 }
             },
             dateStartAsString: {
@@ -3635,7 +3603,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _openConsentDialog(e) {
         e.stopPropagation()
         if (this._checkForEhealthSession() === true) {
-            this.$['htPatConsentDetail']._open()
+            this.shadowRoot.querySelector('#htPatConsentDetail') ? this.shadowRoot.querySelector('#htPatConsentDetail')._open() : null
         } else {
             this._ehealthErrorNotification()
         }
@@ -3648,7 +3616,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this._getTherLinks().then(therlink => {
                 Object.keys(this.cardData).length && _.get(this.patient, 'ssin', null) === _.get(this.cardData, 'nationalNumber', '') ? this.set("eidCardNumber", _.get(this.cardData, 'logicalNumber', null)) : null
                 this.set('therLinkList', _.concat(_.get(therlink, 'hubResp.therapeuticLinks', []).map(link => _.assign(link, {tlType: 'hub'})), _.get(therlink, 'nationalResp.therapeuticLinks', []).map(link => _.assign(link, {tlType: 'national'}))))
-                this.$['htPatTherlinkDetail']._open()
+                this.shadowRoot.querySelector('#htPatTherlinkDetail') ? this.shadowRoot.querySelector('#htPatTherlinkDetail')._open() : null
             })
         } else {
             this._ehealthErrorNotification()
@@ -3658,7 +3626,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _openHubDialogDirectToUpload(e) {
         e.stopPropagation()
         if (this._checkForEhealthSession() === true && ((!!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {}))) || !this.hubSupportsConsent)) {
-            this.$['patHubDetail'].open(true)
+            this.shadowRoot.querySelector('#patHubDetail') ? this.shadowRoot.querySelector('#patHubDetail').open(true) : null
         } else {
             this._checkForEhealthSession() === false ? this._ehealthErrorNotification() : null
             !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) ? this._therLinkErrorNotification() : null
@@ -3669,7 +3637,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _openHubDialog(e) {
         e.stopPropagation()
         if (this._checkForEhealthSession() === true && ((!!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {}))) || !this.hubSupportsConsent)) {
-            this.$['patHubDetail'].open()
+            this.shadowRoot.querySelector('#patHubDetail') ? this.shadowRoot.querySelector('#patHubDetail').open() : null
         } else {
             this._checkForEhealthSession() === false ? this._ehealthErrorNotification() : null
             !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) ? this._therLinkErrorNotification() : null
@@ -3746,7 +3714,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                     .then(hcp => {
                             console.log("getGenIns.getGeneralInsurabilityUsingGET on date", dStart)
-                            return this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+                            return this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
                                 this.genInsNiss ? this.genInsNiss.trim() : this.cleanNiss(this.patient.ssin),
                                 asMMH ? this.api.tokenIdMH : this.api.tokenId, asMMH ? this.api.keystoreIdMH : this.api.keystoreId, asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
                                 asMMH ? this.api.nihiiMH : hcp.nihii, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, asMMH ? 'medicalhouse' : 'doctor', dStart, asMMH ? Date.parse(this.genInsDateTo) : null, this.genInsHospitalized)
@@ -3773,11 +3741,20 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 return this.api.insurance().getInsurance(pi.insuranceId).then(insu => {
                     return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                         .then(hcp => {
-                                return this.api.fhc().Geninscontroller().getGeneralInsurabilityByMembershipUsingGET(
+                                return this.api.fhc().Genins().getGeneralInsurabilityByMembershipUsingGET(
                                     (this.genInsOA && this.genInsOA != '') ? this.genInsOA.trim() : insu.code,
                                     (this.genInsAFF && this.genInsAFF != '') ? this.genInsAFF.trim() : pi.identificationNumber,
-                                    asMMH ? this.api.tokenIdMH : this.api.tokenId, asMMH ? this.api.keystoreIdMH : this.api.keystoreId, asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
-                                    asMMH ? this.api.nihiiMH : hcp.nihii, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, asMMH ? 'medicalhouse' : 'doctor', dStart, asMMH ? Date.parse(this.genInsDateTo) : null, this.genInsHospitalized)
+                                    asMMH ? this.api.tokenIdMH : this.api.tokenId,
+                                    asMMH ? this.api.keystoreIdMH : this.api.keystoreId,
+                                    asMMH ? this.api.credentials.ehpasswordMH : this.api.credentials.ehpassword,
+                                    asMMH ? this.api.nihiiMH : hcp.nihii,
+                                    this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin,
+                                    this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName,
+                                    asMMH ? 'medicalhouse' : 'doctor',
+                                    dStart,
+                                    asMMH ? Date.parse(this.genInsDateTo) : null,
+                                    this.genInsHospitalized
+                                )
                             }
                         ).then(genInsResp => {
                             if (genInsResp) {
@@ -3820,8 +3797,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                 // Get fhc keystore UUID in cache
                                 new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))) :
                                 // Upload new keystore
-                                this.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
-                                    .then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
+                                this.api.fhc().Sts().uploadKeystoreUsingPOST(
+                                    this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.hex2ua(_.map(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)), it => this.api.toHexString(it)).join("")))
+                                ).then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
                         )
                 )
         )
@@ -3933,8 +3911,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         if (this.patient.ssin && this.api.tokenId) {
             return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                 .then(hcp => Promise.all([
-                    this.api.fhc().Therlinkcontroller().getAllTherapeuticLinksUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber, null, null, null, null),
-                    this.hubSupportsConsent ? this.api.fhc().Hubcontroller().getTherapeuticLinksUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.cleanNiss(this.patient.ssin)) : null
+                    this.api.fhc().Therlink().getAllTherapeuticLinksUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.cleanNiss(this.patient.ssin), this.patient.firstName, this.patient.lastName, this.eidCardNumber, this.isiCardNumber, null, null, null, null),
+                    this.hubSupportsConsent ? this.api.fhc().Hub().getTherapeuticLinksUsingGET(this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip, this.cleanNiss(this.patient.ssin)) : null
                 ]))
                 .then(([nationalTlResp, hubTlResp]) => {
                     console.log("nationalTlResp", nationalTlResp)
@@ -3948,17 +3926,42 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _getConsents() {
-        return (this.patient.ssin && this.api.tokenId) ? this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-            Promise.all([
-                this.api.fhc().Consentcontroller().getPatientConsentUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), _.get(this.api, 'credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.patient, 'firstName', null), _.get(this.patient, 'lastName', null)),
-                this.hubSupportsConsent ? this.api.fhc().Hubcontroller().getPatientConsentUsingGET1(this.hubEndPoint, _.get(this.api, "keystoreId", null), _.get(this.api, "tokenId", null), _.get(this.api, "credentials.ehpassword", null), _.get(hcp, "lastName", null), _.get(hcp, "firstName", null), _.get(hcp, "nihii", null), _.get(hcp, "ssin", null), _.get(this, 'hcpZip', null), _.get(this.patient, "ssin", null)) : null
-            ])
-                .then(([nationalResp, hubResp]) => {
+        return (this.patient.ssin && this.api.tokenId) ?
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                Promise.all([
+                    this.api.fhc().Consent().getPatientConsentUsingGET(
+                        _.get(this.api, 'keystoreId', null),
+                        _.get(this.api, 'tokenId', null),
+                        _.get(this.api, 'credentials.ehpassword', null),
+                        _.get(hcp, 'nihii', null),
+                        _.get(hcp, 'ssin', null),
+                        _.get(hcp, 'firstName', null),
+                        _.get(hcp, 'lastName', null),
+                        _.get(this.patient, 'ssin', null),
+                        _.get(this.patient, 'firstName', null),
+                        _.get(this.patient, 'lastName', null)
+                    ),
+                    this.hubSupportsConsent ?
+                        this.api.fhc().Hub().getPatientConsentUsingGET1(
+                            _.get(this, 'hubEndPoint', null),
+                            _.get(this.api, "keystoreId", null),
+                            _.get(this.api, "tokenId", null),
+                            _.get(this.api, "credentials.ehpassword", null),
+                            _.get(hcp, "lastName", null),
+                            _.get(hcp, "firstName", null),
+                            _.get(hcp, "nihii", null),
+                            _.get(hcp, "ssin", null),
+                            _.get(this, 'hcpZip', null),
+                            _.get(this.patient, "ssin", null)
+                        ) :
+                    null
+                ]).then(([nationalResp, hubResp]) => {
                     console.log("nationalTlResp", nationalResp)
                     console.log("hubTlResp", hubResp)
                     this.set('currentConsents', {nationalResp: nationalResp, hubResp: hubResp})
                     return {nationalResp: nationalResp, hubResp: hubResp}
-                })) : Promise.resolve({nationalResp: null, hubResp: null})
+                })) :
+            Promise.resolve({nationalResp: null, hubResp: null})
     }
 
     _toggleActionButton(e) {
@@ -4064,17 +4067,17 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _deleteService(e) {
-        this.$['confirmDeleteServiceDialog'].open()
+        this.shadowRoot.querySelector('#confirmDeleteServiceDialog') ? this.shadowRoot.querySelector('#confirmDeleteServiceDialog').open() : null
         this.deleteServiceDetail = e.detail
     }
 
     _confirmDeleteService() {
         this.deleteServiceDetail.caller.delete()
-        this.$['confirmDeleteServiceDialog'].close()
+        this.shadowRoot.querySelector('#confirmDeleteServiceDialog') ? this.shadowRoot.querySelector('#confirmDeleteServiceDialog').close() : null
     }
 
     _cancelDeleteService() {
-        this.$['confirmDeleteServiceDialog'].close()
+        this.shadowRoot.querySelector('#confirmDeleteServiceDialog') ? this.shadowRoot.querySelector('#confirmDeleteServiceDialog').close() : null
     }
 
     _updateServices(e) {
@@ -4623,8 +4626,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
         setTimeout(() => {
             this._refreshFromServices()
-            this.set('selectedContactIds', ["ctc_" + e.detail.contact.id])
-            this.set('selectedContacts', [e.detail.contact])
+            _.trim(_.get(e,"detail.contact.id")) && this.set('selectedContactIds', ["ctc_" + _.trim(_.get(e,"detail.contact.id"))]);
+            _.size(_.get(e,"detail.contact")) && this.set('selectedContacts', [_.get(e,"detail.contact")]);
             this.shadowRoot.querySelector('#contactsList') && this.shadowRoot.querySelector('#contactsList').render()
             // setTimeout(() => {this.shadowRoot.querySelectorAll('#contactsHes') && this.shadowRoot.querySelectorAll('#contactsHes').forEach(x => x.render());},1000)
             this.set("refreshServicesDescription", this.refreshServicesDescription + 1)
@@ -5193,16 +5196,19 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('accessOk')
         this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.remove('noAccess')
 
-        this.set("hubReady", !this.hubSupportsConsent ? true :
-            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? true : false)
+        this.set("hubReady", !this.hubSupportsConsent ? true : !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})))
 
-        !this.hubSupportsConsent ? this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
-            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ? this.$["hubStatus"] && this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
-                this.shadowRoot.querySelector('#hubStatus') && this.shadowRoot.querySelector('#hubStatus').classList.add('noAccess')
+        !this.hubSupportsConsent ?
+            this.shadowRoot.querySelector('#hubStatus') ?
+                this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') :
+        null :
+            !!_.size(_.get(this.currentTherLinks, 'hubResp.therapeuticLinks', [])) && !_.isEmpty(_.get(this.currentConsents, "hubResp", {})) ?
+                    this.shadowRoot.querySelector('#hubStatus') ? this.shadowRoot.querySelector('#hubStatus').classList.add('accessOk') : null :
+                    this.shadowRoot.querySelector('#hubStatus') ? this.shadowRoot.querySelector('#hubStatus').classList.add('noAccess') : null
     }
 
     unselectAdminFile() {
-        this.$.adminFileMenu.select(null)
+        this.shadowRoot.querySelector("#adminFileMenu") ? this.shadowRoot.querySelector("#adminFileMenu").select() : null
     }
 
     newContact(e) {
@@ -5352,7 +5358,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _selectToday() {
-        this.$.adminFileMenu.select(1)
+        this.shadowRoot.querySelector("#adminFileMenu") ? this.shadowRoot.querySelector("#adminFileMenu").select(1) : null
 
         this.set('timeSpanStart', parseInt(moment().startOf('day').format('YYYYMMDD')))
         this.set('timeSpanEnd', null)
@@ -5375,11 +5381,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _selectMoreOptions() {
-        this.$['select-more-options-dialog'].open()
+        this.shadowRoot.querySelector('#select-more-options-dialog') ? this.shadowRoot.querySelector('#select-more-options-dialog').open() : null
     }
 
     _closeMoreOptions() {
-        this.$['select-more-options-dialog'].close()
+        this.shadowRoot.querySelector('#select-more-options-dialog') ? this.shadowRoot.querySelector('#select-more-options-dialog').close() : null
         this._refreshContacts()
     }
 
@@ -5520,49 +5526,62 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     contactFilter() {
         return (ctc) => {
-            const regExp = this.contactSearchString && new RegExp(this.contactSearchString, "i")
+            const regExp = this.contactSearchString && new RegExp(_.trim(this.contactSearchString).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' '), "i");
 
-            const heHeIds = this.selectedHealthcareElements.map(he => he.healthElementId).filter(x => !!x)
-            const heIds = _.uniq(this.selectedHealthcareElements.map(he => he.id).concat((this.healthElements || []).filter(h => h.healthElementId && heHeIds.includes(h.healthElementId)).map(he => he.id)))
-            const poaIds = _.flatMap(this.selectedHealthcareElements, he => he.selectedPlansOfAction ? he.selectedPlansOfAction.map(p => p.id) : [])
-            const svcIds = this.selectedHealthcareElements.filter(he => !he.id).map(he => he.idService)
+            const heHeIds = this.selectedHealthcareElements.map(he => he.healthElementId).filter(x=>!!x);
+            const heIds = _.uniq(this.selectedHealthcareElements.map(he => he.id).concat((this.healthElements || []).filter(h => h.healthElementId && heHeIds.includes(h.healthElementId)).map(he => he.id)));
+            const poaIds = _.flatMap(this.selectedHealthcareElements, he => he.selectedPlansOfAction ? he.selectedPlansOfAction.map(p => p.id) : []);
+            const svcIds = this.selectedHealthcareElements.filter(he => !he.id).map(he => he.idService);
 
             return this.api.after(ctc.openingDate, this.timeSpanStart)
                 && this.api.before(ctc.openingDate, this.timeSpanEnd)
-                && (!regExp || ctc.subContacts.some(sc => sc.descr && sc.descr.match(regExp) && sc.services.length)
-                    || ctc.services.some(s => this.shortServiceDescription(s, this.language).match(regExp))
-                    || this.hcp(ctc).match(regExp))
-                && (!heIds.length && !poaIds.length && !svcIds.length
+                && (
+                    !regExp
+                    || (_.trim(_.get(ctc,"descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || (_.trim(_.get(ctc,"userDescr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || (_.trim(this.hcp(ctc)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    || _.get(ctc,"subContacts",[]).some(sc => sc.descr && (_.trim(sc.descr).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp) && _.size(_.get(sc,"services",[])))
+                    || _.get(ctc,"services",[]).some(s => (
+                        (_.trim(this.shortServiceDescription(s, this.language)).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "label")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "clearComment")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                        || (_.trim(_.get(s, "content." + this.language + ".stringValue")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp)
+                    ))
+                    || _.get(ctc,"healthElements",[]).some(he => (_.trim(_.get(he, "descr")).normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ')).match(regExp))
+                )
+                && (
+                    !heIds.length && !poaIds.length && !svcIds.length
                     || ctc.subContacts.some(sc => (sc.healthElementId && heIds.includes(sc.healthElementId) || sc.planOfActionId && poaIds.includes(sc.planOfActionId)))
-                    || ctc.services.some(s => svcIds.includes(s.id)))
-                && (!this.contactFilters || !this.contactFilters.length
-                    || ctc.services.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code)))))
-                    || ctc.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code))))
-                    || ctc.subContacts.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf =>
-                        cf.every(f => f.code.some(c => f.type === t.type && c === t.code)))))
+                    || ctc.services.some(s => svcIds.includes(s.id))
                 )
                 && (
-                    this.statutFilter === "all" || this.contactStatutChecked.some(id => id === ctc.id)
+                    !this.contactFilters
+                    || !_.size(this.contactFilters)
+                    || ctc.services.some(s => s.tags && s.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code)))))
+                    || ctc.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code))))
+                    || ctc.subContacts.some(s => (
+                        (s.tags && s.tags.some(t => this.contactFilters.some(cf=> cf.some(f=>f.code.some(c=>f.type === t.type && c === t.code)))))
+                        || ((parseInt(_.get(s,"status",0))||0) && this.contactFilters.some(cf=> (parseInt(_.get(cf,"status",0))||0) && (parseInt(_.get(s, "status", 0)) & cf.status)))
+                    ))
                 )
+                && ( this.statutFilter==="all" || this.contactStatutChecked.some(id => id===ctc.id) )
+                && ( !this.moreOptionsUser || this.moreOptionsUser === ctc.author )
                 && (
-                    !this.moreOptionsUser || this.moreOptionsUser === ctc.author
-                )
-                && (
-                    this.contactStatusFilter === "all" || (
+                    this.contactStatusFilter === "all"
+                    || (
                         // 1<<0 = Labresult ; 1<<5 = Protocol ; 1<<6 = imported document
-                        (ctc.subContacts.some(s => !!(parseInt(_.get(s, "status", 0)) & (1 << 0)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 5)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 6)))) && (
-                            this.documentType === "all" || (
-                                ctc.tags && ctc.tags.some(tag => tag.code && tag.code === this.documentType) ||
-                                ctc.services && ctc.services.some(service => service.tags && service.tags.some(tag => tag.code && tag.code === this.documentType)) ||
-                                ctc.subContacts && ctc.subContacts.some(sctc => sctc.tags && sctc.tags.some(tag => tag.code && tag.code === this.documentType))
+                        (ctc.subContacts.some(s => !!(parseInt(_.get(s, "status", 0)) & (1 << 0)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 5)) || !!(parseInt(_.get(s, "status", 0)) & (1 << 6)) ) )
+                        && (
+                            this.documentType === "all"
+                            || (
+                                ctc.tags && ctc.tags.some(tag => tag.code && tag.code === this.documentType)
+                                || ctc.services && ctc.services.some(service => service.tags && service.tags.some(tag => tag.code && tag.code === this.documentType))
+                                || ctc.subContacts && ctc.subContacts.some(sctc => sctc.tags && sctc.tags.some(tag => tag.code && tag.code === this.documentType))
                             )
                         )
                     )
                 )
-                || !ctc.closingDate
-
+                || !ctc.closingDate;
         }
     }
 
@@ -5612,8 +5631,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     .then(codes => {
                         this.set('editedHealthElementModel', _.get(event, 'detail', {}))
                         !_.get(this, 'editedHealthElementModel.he.openingDate', null) ? this.set('editedHealthElementModel.he.openingDate', _.get(this, 'editedHealthElementModel.he.created', null) ? this.api.moment(_.get(this, 'editedHealthElementModel.he.created', null)).format('YYYY-MM-DD') : null) : null
-                        this.$['edit-healthelement-dialog'].set('entity', _.assign(_.assign({plansOfAction: []}, _.get(event, 'detail.he', {})), {codes: codes}))
-                        this.$['edit-healthelement-dialog'].open()
+                        this.shadowRoot.querySelector('#edit-healthelement-dialog') ? this.shadowRoot.querySelector('#edit-healthelement-dialog').set('entity', _.assign(_.assign({plansOfAction: []}, _.get(event, 'detail.he', {})), {codes: codes})) : null
+                        this.shadowRoot.querySelector('#edit-healthelement-dialog') ? this.shadowRoot.querySelector('#edit-healthelement-dialog').open() : null
                     })
             })
     }
@@ -5811,8 +5830,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _addHealthElement(e) {
-        this.$['add-healthelement-dialog'].open()
-        this.$['add-healthelement-dialog'].set('entity', {
+        this.shadowRoot.querySelector('#add-healthelement-dialog') ? this.shadowRoot.querySelector('#add-healthelement-dialog').open() : null
+        this.shadowRoot.querySelector('#add-healthelement-dialog') ? this.shadowRoot.querySelector('#add-healthelement-dialog').set('entity', {
             plansOfAction: [],
             tags: (e.target.dataset.tags ? e.target.dataset.tags.split(',') : []).map(c => ({
                 id: c,
@@ -5820,12 +5839,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 code: c.split('|')[1],
                 version: c.split('|')[2]
             }))
-        })
+        }) : null
     }
 
     _addInactiveHealthElement(e) {
-        this.$['add-healthelement-dialog'].open()
-        this.$['add-healthelement-dialog'].set('entity', {
+        this.shadowRoot.querySelector('#add-healthelement-dialog') ? this.shadowRoot.querySelector('#add-healthelement-dialog').open() : null
+        this.shadowRoot.querySelector('#add-healthelement-dialog') ? this.shadowRoot.querySelector('#add-healthelement-dialog').set('entity', {
             plansOfAction: [],
             closingDate: parseInt(moment().format('YYYYMMDDHHmmss')),
             tags: (e.target.dataset.tags ? e.target.dataset.tags.split(',') : []).map(c => ({
@@ -5834,36 +5853,42 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 code: c.split('|')[1],
                 version: c.split('|')[2]
             }))
-        })
+        }) : null
     }
 
     _addMedication(e) {
-        this.$['medication-prescription'].open(e.detail.service, {isPrescription: false}, (medications) => {this._createNewMedications({detail : {medications}})});
+        this.shadowRoot.querySelector('#medication-prescription') ? this.shadowRoot.querySelector('#medication-prescription').open(e.detail.service, {isPrescription: false}, (medications) => {this._createNewMedications({detail : {medications}})}) : null
     }
 
     _editMedication(e) {
         const id = e.target.id.substr("med-edit-btn-edit_".length)
         const medicationService = this.medications.find(s => s.id === id)
-        this.$['medication-detail'].open(medication => this._medicationDetailValueChanged({detail : {medication}}),medicationService, {
+        this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').open(medication => this._medicationDetailValueChanged({detail : {medication}}),medicationService, {
             id: medicationService.id,
             medicationValue: (this.api.contact().preferredContent(medicationService, this.language) || (medicationService.content[this.language] = {medicationValue: {regimen: []}})).medicationValue,
             isNew: false,
             isPrescription: e.detail.isPrescription
-        })
+        }) : null
     }
 
 
     openMedicationDialog(e){
         if(e.detail.isNew) {
-            this.$['medication-prescription'].open(e.detail.service,{isPrescription : true},e.detail.onSave);
+            //todo @julien enlever ce quick fix quand le module prescription est terminé
+            this.saveCurrentContact().then(() => {
+                this.shadowRoot.querySelector('#medication-prescription') ? this.shadowRoot.querySelector('#medication-prescription').open(e.detail.service, {isPrescription: true}, e.detail.onSave) : null
+            })
         }else{
-            this.$['medication-detail'].open(e.detail.onSave,e.detail.service, e.detail.content);
+            const ctc = this.selectedContacts.find(sctc => sctc.services.find(s => s.id===e.detail.service.id));
+            (ctc ? this.saveContact(ctc) : Promise.resolve({})).then(()=>{
+                this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').open(e.detail.onSave,e.detail.service, e.detail.content) : null
+            })
         }
     }
 
     _medicationsDetail(e) {
         this.currentMedicationDetailEventDetail = e.detail
-        this.$['medication-detail'].openList(e.detail.services)
+        this.shadowRoot.querySelector('#medication-detail') ? this.shadowRoot.querySelector('#medication-detail').openList(e.detail.services) : null
     }
 
     _healthElementsSelectorColumns() {
@@ -6237,8 +6262,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _chapter4(e) {
         e.stopPropagation()
         e.preventDefault()
-
-        //this.$['chapterivdialog'].open()
     }
 
 
@@ -6246,15 +6269,15 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         e.stopPropagation()
         e.preventDefault()
 
-        this.$['medication-plan'].open()
-        this.$['medication-plan'].setContacts(this.contacts)
+        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').open() : null
+        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').setContacts(this.contacts) : null
     }
 
     updateEdmgClassList(cssClassToAssign) {
-        this.$.edmgStatus.classList.remove('edmgPending')
-        this.$.edmgStatus.classList.remove('edmgOk')
-        this.$.edmgStatus.classList.remove('edmgNOk')
-        this.$.edmgStatus.classList.add(cssClassToAssign || '')
+        this.shadowRoot.querySelector('#edmgStatus') ? this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgPending') : null
+        this.shadowRoot.querySelector('#edmgStatus') ? this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgOk') : null
+        this.shadowRoot.querySelector('#edmgStatus') ? this.shadowRoot.querySelector('#edmgStatus').classList.remove('edmgNOk') : null
+        this.shadowRoot.querySelector('#edmgStatus') ? this.shadowRoot.querySelector('#edmgStatus').classList.add(cssClassToAssign || '') : null
     }
 
 
@@ -6308,16 +6331,6 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.set('isLoading', false)
         })
 
-    }
-
-    _linkToEbPracticeNet(e) {
-        e.stopPropagation()
-        window.open("https://www.ebpnet.be/fr/Pages/default.aspx", '_blank')
-    }
-
-    _linkToCBIP(e) {
-        e.stopPropagation()
-        window.open("http://www.cbip.be/fr/start", '_blank')
     }
 
     _ebmPicture() {
@@ -6444,7 +6457,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     cardDataChanged() {
-        if (this.$['htPatTherlinkDetail'].opened || this.$["htPatConsentDetail"].opened) {
+        if (this.shadowRoot.querySelector('#htPatTherlinkDetail') ? this.shadowRoot.querySelector('#htPatTherlinkDetail').opened : null) {
             if (Object.keys(this.cardData).length && _.get(this.patient, 'ssin', "") === _.get(this.cardData, "nationalNumber", null)) {
                 this.set("eidCardNumber", "")
                 this.set("eidCardNumber", _.get(this.cardData, "logicalNumber", null))
@@ -6493,13 +6506,13 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             args[code.type] = !args[code.type] ? code.code : args[code.type] + "," + code.code
         }, {})
 
-        ctc.subContacts.filter(sbctc => sbctc.tags && sbctc.tags.find(t => templateKeys[t.type])).map(sbct => sbct.tags && sbct.tags.filter(t => templateKeys[t.type]).map(tag => {
+        /*ctc.subContacts.filter(sbctc => sbctc.tags && sbctc.tags.find(t => templateKeys[t.type])).map(sbct => sbct.tags && sbct.tags.filter(t => templateKeys[t.type]).map(tag => {
             args[tag.type] = !args[tag.type] ? tag.code : args[tag.type] + "," + tag.code
         }, {}))
 
         ctc.subContacts.filter(sbctc => sbctc.codes && sbctc.codes.find(code => templateKeys[code.type])).map(sbct => sbct.codes && sbct.codes.filter(code => templateKeys[code.type]).map(code => {
             args[code.type] = !args[code.type] ? code.code : args[code.type] + "," + code.code
-        }, {}))
+        }, {}))*/
 
         ctc.userDescr = this.api.template(descrPattern, args)
 
@@ -6516,21 +6529,22 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             .chain(_.get(ctc, "subContacts", []))
             .map(subContact => {
 
-                const contactTransactionCode = _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
-                const subContactTransactionCode = _.trim(_.get(_.find(_.get(subContact, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+                const contactTransactionCode = _.size(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(ctc, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
+                const subContactTransactionCode = _.size(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(subContact, "tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                 const labOrProtocolTransactionCode = !!_.trim(subContactTransactionCode) ? _.trim(subContactTransactionCode) : !!_.trim(contactTransactionCode) ? _.trim(contactTransactionCode) : "unknown"
+                const customTransactionCode = _.trim(_.get(_.find(_.get(subContact,"tags"), {type:"care.topaz.customTransaction"}), "code"))
 
                 // Imported file file
                 return !!(parseInt(_.get(subContact, "status", 0)) & (1 << 6)) ?
                     _.map(subContact.services, subContactService => {
                         const svc = _.find(_.get(ctc, "services", []), service => _.trim(_.get(service, "id", "something")) === _.trim(_.get(subContactService, "serviceId", "else")))
                         const fileName = _.trim(_.get(svc, "content." + this.language + ".stringValue", ""))
-                        const cdTransactionCode = _.trim(_.get(_.find(_.get(svc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+                        const cdTransactionCode = _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"}), "code","")) : _.trim(_.get(_.find(_.get(svc,"tags",[]), {type:"care.topaz.customTransaction"}), "code",""))
                         const docType = !!_.trim(cdTransactionCode) ? _.trim(cdTransactionCode) : "unknown"
 
                         return !fileName || !!parseInt(_.get(svc, "endOfLife", 0)) ? false : {
                             name: fileName,
-                            type: !!_.size(_.find(_.get(svc, "tags", []), {type: "outgoingDocument"})) ? "" : this.localize('cd-transaction-' + docType, docType, this.language),
+                            type: !!_.size(_.find(_.get(svc, "tags",[]), {type:"outgoingDocument"})) ? "" : _.size(_.find(_.get(svc,"tags",[]), {type:"CD-TRANSACTION"})) ? this.localize('cd-transaction-' + docType, docType, this.language) : _.trim(_.get(_.find(this.documentTypes, {code:docType}), "name", docType)),
                             created: this._dateFormat(_.get(ctc, "created", undefined)),
                             modified: this._dateFormat(_.get(ctc, "modified", undefined))
                         }
@@ -6539,7 +6553,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                     // Labresult or protocol
                     !!((parseInt(_.get(subContact, "status", 0)) & (1 << 0)) || (parseInt(_.get(subContact, "status", 0)) & (1 << 5))) ? {
                         created: this._dateFormat(_.get(ctc, "created", undefined)),
-                        type: this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
+                        type: customTransactionCode ? _.trim(_.get(_.find(this.documentTypes, {code:customTransactionCode}), "name", customTransactionCode)) : this.localize('cd-transaction-' + labOrProtocolTransactionCode, labOrProtocolTransactionCode, this.language),
                         name: !(parseInt(_.get(subContact, "status", 0)) & (1 << 0)) ? null : this.localize((!!(parseInt(_.get(subContact, "status", 0)) & (1 << 4)) ? "com_res" : "inc_res"), "Complete result", this.language)
                     } : false
             })
@@ -6595,7 +6609,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     addOther() {
-        this.$['htPatOtherFormDialog']._openDialog()
+        this.shadowRoot.querySelector('#htPatOtherFormDialog') ? this.shadowRoot.querySelector('#htPatOtherFormDialog')._openDialog() : null
     }
 
     formTemplatesSelectorDataProvider() {
@@ -6724,18 +6738,18 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _openEformDialog(){
         if(this._checkForEhealthSession() === true){
-            this.$['htPatEformDialog'].openDialog()
+            this.shadowRoot.querySelector('#htPatEformDialog') ? this.shadowRoot.querySelector('#htPatEformDialog').openDialog() : null
         }else{
             this._ehealthErrorNotification()
         }
     }
 
     _resetPatient() {
-        this.$['prose-editor-dialog-linking-letter'].close()
+        this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter') ? this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter').close() : null
     }
 
     _closeLinkingLetterDialog() {
-        this.$['prose-editor-dialog-linking-letter'].close()
+        this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter') ? this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter').close() : null
         const ctcDetailPanel = this.shadowRoot.querySelector('#ctcDetailPanel')
         ctcDetailPanel.busySpinner = false
         this.busySpinner = false
@@ -6743,7 +6757,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _saveLinkingLetter(e) {
         this.shadowRoot.querySelector('#ctcDetailPanel')._saveLinkingLetter(e)
-        this.$['prose-editor-dialog-linking-letter'].close()
+        this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter') ? this.shadowRoot.querySelector('#prose-editor-dialog-linking-letter').close() : null
     }
 
     _printLinkingLetter(e) {
@@ -6761,7 +6775,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
         if (documentId) {
             this.set('documentIdToUpload', documentId)
-            this.$['patHubUpload'].openHubDocumentUploadDialog()
+            this.shadowRoot.querySelector('#patHubUpload') ? this.shadowRoot.querySelector('#patHubUpload').openHubDocumentUploadDialog() : null
         }
     }
 
@@ -6804,12 +6818,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         const documentId = _.trim(_.get(e, "detail.documentId", false))
         const documentComment = _.trim(_.get(e, "detail.documentComment", ""))
         console.log("hub upload", documentId, documentComment)
-        this.$['htPatHubDiaryNote'].open(documentId, documentComment)
+        this.shadowRoot.querySelector('#htPatHubDiaryNote') ? this.shadowRoot.querySelector('#htPatHubDiaryNote').open(documentId, documentComment) : null
     }
 
 
     _showVaccineDialog() {
-        this.$['HtPatVaccineDialog']._openDialog()
+        this.shadowRoot.querySelector('#HtPatVaccineDialog') ? this.shadowRoot.querySelector('#HtPatVaccineDialog')._openDialog() : null
     }
 
     _forwardDocument(e) {
@@ -6840,12 +6854,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _openCarePathList() {
-        this.$['htPatCarePathListDialog'].open()
+        this.shadowRoot.querySelector('#htPatCarePathListDialog') ? this.shadowRoot.querySelector('#htPatCarePathListDialog').open() : null
     }
 
     _openCarePathDetail(e) {
         this.set('selectedCarePathInfo', _.get(e, 'detail.selectedCarePathInfo', {}))
-        this.$['htPatCarePathDetailDialog'].open()
+        this.shadowRoot.querySelector('#htPatCarePathDetailDialog') ? this.shadowRoot.querySelector('#htPatCarePathDetailDialog').open() : null
     }
 
 
@@ -6989,7 +7003,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _openRnConsultDialog(e) {
         e.stopPropagation()
         if (this._checkForEhealthSession() === true) {
-            this.$['htPatRnConsultDialog'].open()
+            this.shadowRoot.querySelector('#htPatRnConsultDialog') ? this.shadowRoot.querySelector('#htPatRnConsultDialog').open() : null
         } else {
             this._ehealthErrorNotification()
         }
@@ -6998,7 +7012,12 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     _consultRnHistory(patient) {
         this.set('rnHistoryResult', {})
         if (this.api.tokenId) {
-            this.api.fhc().RnConsultController().historyUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(patient, 'ssin', null)).then(resp => {
+            this.api.fhc().RnConsult().historyUsingGET(
+                _.get(this, 'api.keystoreId', null),
+                _.get(this, 'api.tokenId', null),
+                _.get(this, 'api.credentials.ehpassword', null),
+                _.get(patient, 'ssin', null)
+            ).then(resp => {
                 this.set('rnHistoryResult', resp)
                 if (!_.isEmpty(resp)) {
                     if (_.get(resp, 'ssin.value', null) && !_.get(resp, 'ssin.replaces', null) && _.get(resp, 'ssin.canceled', null) !== true) {
@@ -7080,7 +7099,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     _exportSumehrDialog() {
         this.set('showOutGoingDocContainer', false)
-        this.$['htPatHubSumehrPreview'].open(null, this, null, true)
+        this.shadowRoot.querySelector('#htPatHubSumehrPreview') ? this.shadowRoot.querySelector('#htPatHubSumehrPreview').open(null, this, null, true) : null
     }
 
     _triggerRefreshOutGoingDocumentTemplates(e) {
@@ -7198,12 +7217,19 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus').classList && this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending')
             })
             .then(() => mdaDidRespond ?
-                this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
-                    !_.size(mdaResult) ? 'subscriptionNoSubscription' :
-                        !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
-                            _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
-                                'subscriptionPending'
-                ) : null : this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ? "subscriptionSubscriptionOk" : "subscriptionNoSubscription") : null
+                this.shadowRoot.querySelector('#subscriptionStatus') && this.shadowRoot.querySelector('#subscriptionStatus') ?
+                    this.shadowRoot.querySelector('#subscriptionStatus').classList.add(
+                        !_.size(mdaResult) ? 'subscriptionNoSubscription' :
+                            !_.size(_.filter(mdaResult,{nihii:_.get(this,"globalHcp.nihii")})) ? 'subscriptionPending' :
+                                _.size(_.filter(mdaResult,it => (!(parseInt(_.get(it,"startDate"))||0) || moment(parseInt(_.get(it,"startDate"))||0).isBefore(moment())) && (!(parseInt(_.get(it,"endDate"))||0) || moment(parseInt(_.get(it,"endDate"))||0).isAfter(moment())))) ? 'subscriptionSubscriptionOk' :
+                                    'subscriptionPending'
+                    ) :
+                    this.shadowRoot.querySelector('#subscriptionStatus') ?
+                        this.shadowRoot.querySelector('#subscriptionStatus').classList.add(_.size(_.find(patientMhcs, it => (_.get(it,"status",0) & (1<<1)) && !(_.get(it,"status",0) & (1<<2)) && !(_.get(it,"status",0) & (1<<3)))) ?
+                            "subscriptionSubscriptionOk" :
+                            "subscriptionNoSubscription")
+                    : null
+                : null
             )
 
     }

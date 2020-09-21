@@ -18,6 +18,7 @@ import {IccUserXApi} from '@taktik/icc-api/dist/icc-x-api/icc-user-x-api'
 import {IccInvoiceXApi} from '@taktik/icc-api/dist/icc-x-api/icc-invoice-x-api'
 import {IccMessageXApi} from '@taktik/icc-api/dist/icc-x-api/icc-message-x-api'
 import {IccClassificationXApi} from '@taktik/icc-api/dist/icc-x-api/icc-classification-x-api'
+import {IccCalendarItemXApi} from '@taktik/icc-api/dist/icc-x-api/icc-calendar-item-x-api'
 import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
 import heic2any from 'heic2any'
 
@@ -38,7 +39,7 @@ class IccApi extends PolymerElement {
       return {
           fhcHeaders:{
               type: Object,
-              value: {"Content-Type": "application/json",  "Authorization": "Basic ZGU5ODcyYjUtNWNiMC00ODQ2LThjNGMtOThhMjFhYmViNWUzOlQwcEB6RmhjWnRm"},
+              value: {"Content-Type": "application/json"},
               notify: true
           },
           headers: {
@@ -157,7 +158,6 @@ class IccApi extends PolymerElement {
       this.tarificationicc = new api.iccTarificationApi(this.host, this.headers)
       this.entityreficc = new api.iccEntityrefApi(this.host, this.headers30s)
 
-      this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
       this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
       this.besamv2icc = new api.iccBesamv2Api(this.host, this.headers)
 
@@ -165,23 +165,23 @@ class IccApi extends PolymerElement {
 
       this.codeicc = new IccCodeXApi(this.host, this.headers)
 
-      this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
       this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
 
       this.patienticcLight = new api.iccPatientApi(this.host, this.headers)
-      this.cryptoicc = new IccCryptoXApi(this.host, this.headers, this.hcpartyiccLight, this.patienticcLight)
+      this.cryptoicc = new IccCryptoXApi(this.host, this.headers, this.hcpartyicc, this.patienticcLight)
 
+      this.calendaritemicc = new IccCalendarItemXApi(this.host, this.headers, this.cryptoicc)
       this.classificationicc = new IccClassificationXApi(this.host, this.headers, this.cryptoicc)
 
       this.receipticc = new IccReceiptXApi(this.host, this.headers, this.cryptoicc)
       this.contacticc = new IccContactXApi(this.host, this.headers, this.cryptoicc)
-      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc)
+      this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc, this.authicc)
       this.formicc = new IccFormXApi(this.host, this.headers, this.cryptoicc)
       this.helementicc = new IccHelementXApi(this.host, this.headers, this.cryptoicc)
       this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
-      this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc)
+      this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc, this.calendaritemicc)
       this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
-      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
+      this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.authicc, this.contacticc, this.helementicc)
       this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
       this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
@@ -266,10 +266,6 @@ class IccApi extends PolymerElement {
       return this.hcpartyicc
   }
 
-  hcpartyLight() {
-      return this.hcpartyiccLight
-  }
-
   helement() {
       return this.helementicc
   }
@@ -311,9 +307,9 @@ class IccApi extends PolymerElement {
       return this.cryptoicc
   }
 
-  fhc() {
-      return this.$['fhc-api'];
-  }
+    fhc() {
+        return this.$['fhc-api'];
+    }
 
   calendaritem(){
       return this.calendaritemicc
@@ -725,7 +721,7 @@ class IccApi extends PolymerElement {
       if(((edmgNiss && edmgNiss !=='') || (patient.ssin && patient.ssin !== '')) && !(edmgOA && edmgOA !=='')){
           return this.hcparty().getHealthcareParty(user.healthcarePartyId)
               .then(hcp => {
-                  return this.fhc().Dmgcontroller().consultDmgUsingGET(
+                  return this.fhc().Dmg().consultDmgUsingGET(
                       this.keystoreId,
                       this.tokenId,
                       this.credentials.ehpassword,
@@ -749,7 +745,7 @@ class IccApi extends PolymerElement {
           this.insurance().getInsurance(pi.insuranceId).then(insu => {
               return this.hcparty().getHealthcareParty(user.healthcarePartyId)
                   .then(hcp => {
-                          return this.fhc().Dmgcontroller().consultDmgUsingGET(
+                          return this.fhc().Dmg().consultDmgUsingGET(
                               this.keystoreId,
                               this.tokenId,
                               this.credentials.ehpassword,
@@ -909,14 +905,23 @@ class IccApi extends PolymerElement {
           "child-prevention",
           "radiationexposuremonitoring",
           "treatmentsuspension",
-          "telemonitoring"
+          "telemonitoring",
+          "triptyque"
       ]
 
-      return this.code().findCodes("be", "CD-TRANSACTION")
+      return Promise.all([
+          this.code().findCodes("be", "CD-TRANSACTION"),
+          this.code().findCodes("be", "care.topaz.customTransaction")
+      ])
           .then(foundCodes => _
               .chain(foundCodes)
+              .flatten()
               .filter(singleCode => exclusionList.indexOf(_.trim(_.get(singleCode,"code",""))) === -1)
-              .map(singleCode => { const code = _.trim(_.get(singleCode,"code","")); return{code:code,name:_.upperFirst(_.trim(_.get(resources, language + ".cd-transaction-" + code, code)).toLowerCase())}})
+              .map(singleCode => {
+                  const code = _.trim(_.get(singleCode,"code"));
+                  const type = _.trim(_.get(singleCode,"type"));
+                  return { id: _.trim(_.get(singleCode,"id")), type: type, code:code, name: _.upperFirst((type.toLowerCase() === "cd-transaction" ? _.trim(_.get(resources, language + ".cd-transaction-" + code, code)) : _.trim(_.get(singleCode,"label." + language))).toLowerCase()) }
+              })
               .orderBy(['name'],['asc'])
               .value()
           )
@@ -1162,6 +1167,17 @@ class IccApi extends PolymerElement {
         return new Promise((resolve) => setTimeout(resolve, time));
     }
 
+    _arrayBufferToByteArray(arrayBuffer) {
+        let fileByteArray = []
+        new Uint8Array(arrayBuffer).forEach(int8 => fileByteArray.push(int8))
+        return fileByteArray
+    }
+
+    toHexString(byteArray){
+        return Array.prototype.map.call(byteArray, function(byte) {
+            return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+        }).join('')
+    }
 }
 
 customElements.define(IccApi.is, IccApi)

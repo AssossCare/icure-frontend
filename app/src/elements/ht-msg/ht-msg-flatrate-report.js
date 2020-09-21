@@ -1976,7 +1976,28 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
 
   }
 
-  _runFlatRateCheck(){
+    _runFlatRateCheck(){
+        this.set('_isLoading', true);
+        return this._flatrateCheckOnAllPatients(Number(moment().format('YYYYMM'))).then(resList =>{
+            const insIds = resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).map(res => res.mutCheck.insuranceId);
+            return this._getInsurancesDataByIds(_.uniq(insIds)).then(insList => {
+                resList.filter(res => res.mutCheck.valid && res.mutCheck.insuranceId).forEach(res => {
+                    res.flatrateInfo.MUT = insList.filter(ins => ins.id === res.mutCheck.insuranceId) && insList.filter(ins => ins.id === res.mutCheck.insuranceId).length ?
+                        insList.filter(ins => ins.id === res.mutCheck.insuranceId)[0].code : "---";
+                });
+                const errList = resList.filter(res => res.flatrateStatus.status !== 'ok-flatrate-patient' && res.flatrateStatus.status !== 'ok-no-flatrate-patient');
+                this.set("flatRateCheckList", errList);
+                this.set("flatRateResList", resList);
+                this.set('_isLoading', false);
+                if(!this.selectedList) this.set('selectedList', 'main');
+                this._viewSelection();
+                this.set("geninsChecked", false);
+                return errList;
+            });
+        });
+    }
+
+  _runFlatRateChec_old(){
       this.set('_isLoading', true);
       return this._flatrateCheckOnAllPatients(Number(moment().format('YYYYMM'))).then(resList =>{
           console.log("resList", resList);
@@ -2042,6 +2063,10 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
       this.set('selectedList', 'mcn');
   }
 
+    datesPage(){
+        this.set('selectedList', 'info');
+    }
+
   _viewSelection(){
       //TODO: implement data selection based on List
       var resultlist = this.flatRateCheckList;
@@ -2066,6 +2091,9 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
               break;
           case 'mcn':
               this._checkAssurabilityInformation();
+              break;
+          case 'info':
+              resultlist = this.flatRateResList;
               break;
       }
       resultlist = this.addSearchField(resultlist);
@@ -2146,7 +2174,7 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
           return limit(() => {
               const dStart = this.getRequestDateFromRes(res);
               //TODO: only check patients where needed: niss-ok, mh-contract-ok
-              return this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+              return this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
                   _.get(res, 'pat.ssin', null),
                   useMHSession ? _.get(this, 'api.tokenIdMH', null) : _.get(this, 'api.tokenId'),
                   useMHSession ? _.get(this, 'api.keystoreIdMH', null) : _.get(this, 'api.keystoreId'),
@@ -2291,6 +2319,53 @@ class HtMsgFlatrateReport extends TkLocalizerMixin(PolymerElement) {
   _checkHasMMEhSession(){
       return !!_.get(this, 'api.tokenIdMH', null)
   }
+
+    _exportXLSX(){
+        const grd = this.shadowRoot.querySelector('#' + this.selectedList);
+        const data = grd.items.map(itm => itm.flatrateInfo);
+        this.generateXlsFile(data);
+    }
+
+    generateXlsFile(data) {
+
+        // Create xls work book and assign properties
+        const xlsWorkBook = {SheetNames: [], Sheets: {}}
+        xlsWorkBook.Props = {Title: "Patients list", Author: "TOPAZ"}
+
+        // Create sheet based on json data collection
+        var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+        // Link sheet to workbook
+        XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'Patients list')
+
+        // Virtual data output
+        var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+        // Put output to virtual "file"
+        var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+        // Create download link and append to page's body
+        var downloadLink = document.createElement("a")
+        document.body.appendChild(downloadLink)
+        downloadLink.style = "display: none"
+
+        // Create url
+        var urlObject = window.URL.createObjectURL(fileBlob)
+
+        // Link to url
+        downloadLink.href = urlObject
+        downloadLink.download = "patient-list_" + moment().format("YYYYMMDD-HHmmss") + ".xls"
+
+        // Trigger download and drop object
+        downloadLink.click()
+        window.URL.revokeObjectURL(urlObject)
+
+        // Free mem
+        fileBlob = false
+        xlsWorkBookOutput = false
+
+        return
+    }
 }
 
 customElements.define(HtMsgFlatrateReport.is, HtMsgFlatrateReport);

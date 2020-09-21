@@ -1406,7 +1406,7 @@ class MedicationPlanDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   open(medicationPlan, selectedMedicationContentWithId) {
-      this.$['medication-plan'].open()
+      this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').open() : null
   }
 
   _setStatus(service, status) {
@@ -1437,7 +1437,7 @@ class MedicationPlanDialog extends TkLocalizerMixin(PolymerElement) {
 
       this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
           .then(hcp => this.set("hcp", hcp))
-          .then(() => (_.get(this.api, "tokenId", null) && _.get(this.patient, 'ssin', null) ? this.api.fhc().Recipecontroller().listOpenPrescriptionsByPatientUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), "persphysician", _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.api, 'credentials.ehpassword', null)) : Promise.resolve([])))
+          .then(() => (_.get(this.api, "tokenId", null) && _.get(this.patient, 'ssin', null) ? this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(_.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenId', null), "persphysician", _.get(this.hcp, 'nihii', null), _.get(this.hcp, 'ssin', null), _.get(this.hcp, 'lastName', null), _.get(this.patient, 'ssin', null), _.get(this.api, 'credentials.ehpassword', null)) : Promise.resolve([])))
           .then(openPrescriptions => {
               console.log(openPrescriptions);
               prescriptions.forEach(prescription => {
@@ -1470,10 +1470,10 @@ class MedicationPlanDialog extends TkLocalizerMixin(PolymerElement) {
               });
 
               //TODO: get feedback for every recip-e prescription
-              //this.api.fhc().Recipecontroller().listFeedbacksUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
+              //this.api.fhc().Recipe().listFeedbacksUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid)
 
               const getFeedback = _.get(this.api, "tokenId", null) && _.get(this.patient, 'ssin', null) ? prescriptions.filter(p => p.rid).map(p => {
-                  return this.api.fhc().Recipecontroller().listFeedbacksUsingGET(
+                  return this.api.fhc().Recipe().listFeedbacksUsingGET(
                       _.get(this.api, 'keystoreId', null),
                       _.get(this.api, 'tokenId', null),
                       "persphysician",

@@ -130,7 +130,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 const dStart = this.getRequestDateFromRes(res)
                 //TODO: only check patients where needed: niss-ok, mh-contract-ok
                 console.log("utils.getGeneralInsurabilityUsingGET on date", dStart)
-                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
                     this.cleanNiss(res.pat.ssin),
                     this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
                     this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", dStart, null
@@ -492,7 +492,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
         }
         this.set("insList", null)
         let insList = []
-        Promise.all(aMonths.map(m => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
+        Promise.all(aMonths.map(m => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
             this.cleanNiss(this.patient.ssin),
             this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
             this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", m.format('x'), null
@@ -1054,7 +1054,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                             _.trim(_.get(mhc, "contractId")) &&
                                             (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
                                             (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
                                         ) &&
 
                                         // 5. 1+ valid INS (versus exportedDate)
@@ -1065,7 +1065,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                             _.trim(_.get(ins, "parameters.tc2")).length === 3 &&
                                             (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000") &&
                                             (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                            (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) === "0" || _.trim(_.get(ins,"endDate")) >= exportedDate)
                                         )
 
                                     )
@@ -1095,7 +1095,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                         (
                                             isPatientForcedAsValidInMda || (
                                                 (!_.trim(_.get(ins,"startDate")) || _.trim(_.get(ins,"startDate")) <= exportedDate ) &&
-                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) >= exportedDate)
+                                                (!_.trim(_.get(ins,"endDate")) || _.trim(_.get(ins,"endDate")) === "0" || _.trim(_.get(ins,"endDate")) >= exportedDate)
                                             )
                                         )
 
@@ -1112,7 +1112,7 @@ class HtPatFlatRateUtils extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                                         (
                                             isPatientForcedAsValidInMda || (
                                                 (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
-                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
+                                                (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate)
                                             )
                                         )
 

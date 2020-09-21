@@ -310,7 +310,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
       this.set('compound','')
       this.set('compoundPrescriptionText', '')
 
-      this.$['medication-selection'].open()
+      this.shadowRoot.querySelector('#medication-selection') ? this.shadowRoot.querySelector('#medication-selection').open() : null
 
       this.medications.map(m => {
           const letter = ((m && m.codes && m.codes.find(c => c.type === 'CD-ATC') || {code: 'V'}).code || 'V').substr(0,1)
@@ -324,8 +324,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   ready() {
       super.ready()
 
-      let grid = this.$['entities-list'];
-
+      let grid =  this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
       grid.lastParams = null; //Used to prevent double calls
       grid.size = 0;
       grid.pageSize = 50;
@@ -487,7 +486,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
       if(this.selectedChronicalMedicationFromList){
           const selected = this.selectedChronicalMedicationFromList
           console.log('selected ',selected);
-          this.$['medication-selection'].close();
+          this.shadowRoot.querySelector('#medication-selection') ? this.shadowRoot.querySelector('#medication-selection').close() : null
           this.dispatchEvent(new CustomEvent('new-medication', {detail:{medication:_.cloneDeep(_.omit(selected, ['id'])), isPrescription:this.selectedMedicationContentWithId.isPrescription}, bubbles: true, composed: true}))
       }
   }
@@ -504,7 +503,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
 
           //Trigger cheapAlternativeSearch
           if (this.selectedMedicationFromList && !this.selectedMedicationFromList.cheap) {
-              const grid = this.$['entities-list']
+              const grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
               grid.clearCache();
           }
 
@@ -548,7 +547,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
                   this.selectedMedicationFromList = null
                   this.cheapAlternativeSearchSeed = null
 
-                  const grid = this.$['entities-list']
+                  const grid = this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
                   grid.drugsCache = null;
                   grid.drugsCacheUpperSearchIndex = 0;
                   grid.clearCache();
@@ -571,7 +570,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
   skip() {
       this.set('filterValue','')
       this.set('medicationType','medicinalProduct')
-      this.$['entities-list'].clearCache();
+      this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
   }
 
   close() {
@@ -579,7 +578,7 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
           this._setFrequencyList()
       }
       this.set('filterValue','')
-      this.$['entities-list'].clearCache();
+      this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
       this.set('customFrequencyTable', false)
       this.set('selectedMedicationContentWithId', null)
       this.set('flagTableFrequency', false)
@@ -590,13 +589,13 @@ class MedicationSelectionDialog extends TkLocalizerMixin(PolymerElement) {
           this.selectMedicationFromList(item);
           this.set('filterValue','')
           this.set('medicationType','medicinalProduct')
-          this.$['entities-list'].clearCache();
-          this.$['medication-selection'].close();
+          this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list').clearCache() : null
+          this.shadowRoot.querySelector('#medication-selection') ? this.shadowRoot.querySelector('#medication-selection').open() : null
       }
   }
 
   _selectedMedicationFromListChanged(item) {
-      var grid = this.$['entities-list'];
+      var grid =  this.shadowRoot.querySelector('#entities-list') ? this.shadowRoot.querySelector('#entities-list') : null
       grid.selectedItems = item ? [item] : [];
   }
 

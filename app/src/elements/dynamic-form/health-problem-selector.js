@@ -10,6 +10,13 @@ import moment from 'moment/src/moment';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../tk-localizer";
+
+import '@polymer/paper-radio-button/paper-radio-button.js';
+import '@polymer/paper-radio-group/paper-radio-group.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light';
+import '@polymer/paper-listbox/paper-listbox';
+import '@polymer/paper-item/paper-item';
+
 class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -117,7 +124,7 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
 			}
 		</style>
 
-		<paper-dialog id="dialog" opened="{{opened}}">
+		<paper-dialog id="dialog" opened="{{opened}}" no-cancel-on-outside-click no-cancel-on-esc-key>
 			<h2 class="modal-title">[[entityType]]</h2>
 			<div class="content">
 				<div class="grid">
@@ -267,7 +274,8 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
       return {
           opened:{
               type: Boolean,
-              value:false
+              value:false,
+              observer: 'openedChanged'
           },
           columns: {
               type: Array,
@@ -836,7 +844,7 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
           setTimeout(function () {
               if (currentValue === this.filterValue) {
                   console.log("Triggering search for " + this.filterValue);
-                  this.$['entities-list'].clearCache();
+                  this.shadowRoot.querySelector('#entities-list').clearCache();
               } else {
                   console.log("Skipping search for " + this.filterValue + " != " + currentValue);
               }
@@ -854,7 +862,7 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
   select(item) {
       if (item) {
           this.dispatchEvent(new CustomEvent('entity-selected', { detail: item, composed: true }));
-          this.$.dialog.close();
+          this.shadowRoot.querySelector('#dialog').close();
       }
 	}
 
@@ -865,8 +873,8 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
       this.api.code().findPaginatedCodes('be', 'CD-TEMPORALITY', '')
           .then(c => this.set("temporalityList", c.rows.filter(c => c.code === "acute" || c.code === "subacute" || c.code === "chronic")))
           .finally(() => {
-              this.$.dialog.open();
-              this.$.dialog.scrollTop = 0;
+              this.shadowRoot.querySelector('#dialog').open();
+              this.shadowRoot.querySelector('#dialog').scrollTop = 0;
 
               const type = this.entity.tags.find(t => t.type === "CD-ITEM")
               type && type.code === "allergy" ? this.set("searchAllergen", true) : this.set("searchAllergen", false)
@@ -1016,6 +1024,10 @@ class HealthProblemSelector extends TkLocalizerMixin(PolymerElement) {
       }))
 
 	}
+
+    openedChanged(event){
+      console.log('prout')
+    }
 }
 
 customElements.define(HealthProblemSelector.is, HealthProblemSelector);

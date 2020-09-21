@@ -333,6 +333,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
                 --paper-menu-button-dropdown: {
                     transform-origin: top right;
                     height: 500px;
+                    width : 500px;
                 }
             }
 
@@ -395,7 +396,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
             <ckmeans-grouping id="ckmeans-grouping"></ckmeans-grouping>
             <ckmeans-grouping id="ckmeans-flow-grouping" max-distance="8"></ckmeans-grouping>
             
-            <paper-card elevation="0" class$="{{_patCardClass(isSubForm)}}">
+            <paper-card elevation="0" class$="[[_patCardClass(isSubForm)]]">
                 <template is="dom-if" if="[[showTitle]]">
                     <div class="form-title">
                         <span>[[displayedTitle]]</span>
@@ -542,6 +543,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
                                                                    disabled="[[disabled]]"></dynamic-measure-field>
                                         </template>
                                         <template is="dom-if" if="[[_isPopupMenu(layoutItem)]]">
+                                            <!--<span> ca doit être réparé</span>-->
                                             <dynamic-popup-menu id="[[_sanitizeId(layoutItem.name)]]" api="[[api]]"
                                                                 label="[[layoutItem.label]]" key="[[layoutItem.name]]"
                                                                 was-modified="[[_wasModified(layoutItem)]]"
@@ -625,7 +627,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
                                                               key="[[layoutItem.name]]" layout-item="[[layoutItem]]" api="[[api]]"
                                                               user="[[user]]"
                                                               i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"
-                                                              sub-contexts="[[_subForms(layoutItem,dataMap.*)]]"
+                                                              sub-contexts="[[_subForms(layoutItem)]]"
                                                               on-delete-subform="_deleteSubForm" on-add-subform="_addSubForm"
                                                               read-only="[[_isReadOnly(layoutItem,readOnly)]]"
                                                               disabled="[[disabled]]" no-print="[[noPrint]]"
@@ -788,7 +790,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     notify(path) {
-				try{
+        try{
             if (!this.template) {
                 return;
             }
@@ -848,7 +850,8 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _linkForm(e) {
-        const he = this.healthElements.find(he => he.id === e.target.id || he.idService === e.target.id);
+        const id = e.target.id || e.currentTarget.id
+        const he = this.healthElements.find(he => he.id === id || he.idService === id);
         this.dispatchEvent(new CustomEvent('link-form', {detail: {healthElement: he}, composed: true, bubbles: true}));
     }
 
@@ -859,7 +862,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _deleteConfirmation() {
-				this.$['delete-confirmation-dialog'].open();
+        this.shadowRoot.querySelector('#delete-confirmation-dialog') ? this.shadowRoot.querySelector('#delete-confirmation-dialog').open() : null
     }
 
 
@@ -919,10 +922,10 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
     }
 
     _subForms(layoutItem) {
-				if (!this.dataProvider) {
+        if (!this.dataProvider) {
             return null;
-				}
-				return this.dataProvider.getSubForms(layoutItem.name);
+        }
+        return this.dataProvider.getSubForms(layoutItem.name);
     }
 
     _templateChanged(change) {

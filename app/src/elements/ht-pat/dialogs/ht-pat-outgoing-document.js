@@ -628,6 +628,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             getVariableValue: (value) => {
                 return _.trim(
                     value === "todaysDate" ? this.localize('day_' + parseInt(moment().day()), this.language) + ` ` + moment().format('DD') + ` ` + (this.localize('month_' + parseInt(moment().format('M')), this.language)).toLowerCase() + ` ` + moment().format('YYYY') :
+                        value === "todaysDateNumbersOnly" ? moment().format('DD/MM/YYYY') :
                         value === "documentTitle" ? _.trim(_.get(this, "_data.proseEditorSelectedTemplate.descr", this.localize('hub-doc-title', 'Document title', this.language))) :
                             value === "time" ? "" + moment().format('HH:mm') :
                                 ""
@@ -752,12 +753,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
     _refreshDataProseEditorTemplates() {
 
         return this._getProseEditorTemplatesAndAttachment()
-            .then(proseEditorTemplates => _.assign(this._data, {proseEditorTemplates: proseEditorTemplates}))
-            .then(() => this.dispatchEvent(new CustomEvent('refresh-templates-menu', {
-                composed: true,
-                bubbles: true,
-                detail: {}
-            })))
+            .then(proseEditorTemplates => _.assign(this._data, {proseEditorTemplates:proseEditorTemplates}))
+            .then(() => this.dispatchEvent(new CustomEvent('refresh-templates-menu', {composed: true, bubbles: true, detail: {}})))
             .then(() => this._refreshDialogLoadTemplate())
 
     }
@@ -814,9 +811,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
         return (!prose || !_.get(selectedTemplate, "attachmentFileContent")) ? promResolve : promResolve
             .then(() => this._flushProseEditorContent())
             .then(() => this.set("_data.proseEditorSelectedTemplate", selectedTemplate))
-            // For icc-api legacy
-            // .then(() => JSON.parse(this.api.crypto().utils.ua2utf8(_.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent"))))
-            .then(() => JSON.parse(_.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent")))
+            .then(() => _.get(this, "_data.proseEditorSelectedTemplate.attachmentFileContent"))
+            .then(templateContent => JSON.parse( templateContent instanceof ArrayBuffer ? this.api.crypto().utils.ua2utf8(templateContent) : templateContent)) // Icc-api legacy used to return as AB while icc-api now returns as string
             .then(jsonTemplate => {
                 jsonTemplate.content[0].content = _
                     .chain(_.get(jsonTemplate, "content[0].content", {}))
@@ -873,8 +869,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
     }
 
     _openDialogSaveTemplate() {
-
-        this.$['saveTemplateDialog'].open()
+        this.shadowRoot.querySelector('#saveTemplateDialog') ? this.shadowRoot.querySelector('#saveTemplateDialog').open() : null
 
     }
 
@@ -1404,7 +1399,8 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                         contactId: _.trim(_.get(messageObject, "metas.contactId", "")),
                         messageObject: messageObject,
                     }))
-                    .then(() => this._flushProseEditorContent())
+                    // 20200901 - Don't flush anymore, to ease post-changes when required
+                    //.then(()=>this._flushProseEditorContent())
                     .then(() => this.set("_data.proseEditorSelectedTemplate", {}))
                     .then(() => this.shadowRoot.querySelector('#outgoingDocumentDialog').close())
 
@@ -1466,7 +1462,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
                 console.log("[ERROR] _doSaveTemplate", e)
                 this._confirmTemplateNotSaved()
             })
-            .finally(() => (this.set("_isBusy", false) || true) && this.$['saveTemplateDialog'].close())
+            .finally(() => (this.set("_isBusy", false) || true) && this.shadowRoot.querySelector('#saveTemplateDialog') ? this.shadowRoot.querySelector('#saveTemplateDialog').close() : null)
 
     }
 
@@ -2213,6 +2209,7 @@ class HtPatOutgoingDocument extends TkLocalizerMixin(PolymerElement) {
             subVars: [
                         {name: this.localize('hub-doc-title', 'Document title', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("documentTitle")'}},{type:'text', text: ' '}]},
                         {name: this.localize('todaysDate', 'Todays date', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("todaysDate")'}},{type:'text', text: ' '}]},
+                        {name: this.localize('todaysDateNumbersOnly', 'Todays date (numbers only)', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("todaysDateNumbersOnly")'}},{type:'text', text: ' '}]},
                         {name: this.localize('hour', 'Time', this.language), nodes: [{type: 'variable', attrs: {expr: 'dataProvider.getVariableValue("time")'}},{type:'text', text: ' '}]},
             ]
         }

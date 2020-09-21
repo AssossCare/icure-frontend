@@ -178,7 +178,7 @@ class HtPatVaccineSelectionDialog extends TkLocalizerMixin(mixinBehaviors([IronR
 
   openDialog(detail) {
       this._detail = detail;
-      this.$['vaccineSelectionDialog'].open();
+      this.shadowRoot.querySelector('#vaccineSelectionDialog') ? this.shadowRoot.querySelector('#vaccineSelectionDialog').open() : null
       this.set("periods", detail.periods);
       this.set("vaccines", detail.vaccines);
       setTimeout(() => this._onTimer(), 500);
@@ -202,7 +202,7 @@ class HtPatVaccineSelectionDialog extends TkLocalizerMixin(mixinBehaviors([IronR
   }
 
   _close() {
-      this.$['vaccineSelectionDialog'].close()
+      this.shadowRoot.querySelector('#vaccineSelectionDialog') ? this.shadowRoot.querySelector('#vaccineSelectionDialog').close() : null
   }
 
   _formatDate(date) {

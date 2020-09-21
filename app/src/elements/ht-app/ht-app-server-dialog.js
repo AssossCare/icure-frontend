@@ -15,7 +15,7 @@ import {TkLocalizerMixin} from "../tk-localizer";
 class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-        <style>
+        <style  include="buttons-style">
 
             .top-gradient{
 				line-height:0;
@@ -94,47 +94,51 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
 			}
 
-			#add-server-form {
-				margin-top: 7px;
+			#add-pannel {
+			    display : flex;
 			}
-
-            paper-dialog {
-                margin: 0;
-            }
+			
+			#cancelButton {
+			    align-self: flex-end;
+			}
+			
+			paper-listbox {
+			    width : 295px;
+			}
+			
+			
 
 		</style>
         <paper-dropdown-menu close-on-activate="false" label="[[title]]" horizontal-align="left">
             <paper-listbox class="server-list" slot="dropdown-content" selected="{{dbServerSelected}}" selected-item="{{dbServerObject}}">
-                <paper-item data-server\$="[[localUrl]]">[[localize("default","Default",language)]]</paper-item>
                 <template is="dom-repeat" items="[[dbServers]]" as="server" index-as="index">
                     <paper-item class="server-item" data-server\$="[[server.url]]">
                         <div>
                             [[server.name]]
                         </div>
-                        <paper-icon-button noink="" icon="icons:clear" data-index\$="[[index]]" class="server-icon" title="delete" on-click="_handleServerDelete"></paper-icon-button>
+                        <template is="dom-if" if="[[_isRemovable(server.removable)]]">
+                            <paper-icon-button noink="" icon="icons:clear" data-index\$="[[index]]" class="server-icon" title="delete" on-click="_handleServerDelete"></paper-icon-button>
+                        </template>
                     </paper-item>
                 </template>
-                <paper-item class="server-item">
-                    <iron-icon role="button" icon="icons:add" class="server-icon server-icon--add"></iron-icon>
-                    <div>
-                        [[localize("add_server","Add a server", language)]]
-                    </div>
-                </paper-item>
+                <template is="dom-if" if="[[editable]]">
+                    <paper-item class="server-item">
+                        <iron-icon role="button" icon="icons:add" class="server-icon server-icon--add"></iron-icon>
+                        <div>
+                            [[localize("add_server","Add a server ", language)]]
+                        </div>
+                    </paper-item>
+                </template>  
             </paper-listbox>
         </paper-dropdown-menu>
-
-        <paper-dialog id="add-server-dialog" opened="{{addServerOpened}}" horizontal-align="center" on-changed="_handleAddOpen">
-            <div class="top-gradient">&nbsp;</div>
-            <div style="text-align: center;">
-                <h3>[[localize("add_server","Add a server", language)]]</h3>
+        
+        <template is="dom-if" if="[[addServerOpened]]">
+            <div id="add-pannel">
+                <paper-input label="url" value="{{dbServerInput}}" type="url"></paper-input>
+                <paper-button id="cancelButton" class="button button--other" id="server-cancel" on-click="_handleCancel">[[localize('cancel','Cancel',language)]]</paper-button>
+                <paper-button id="submitButton" class="button button--save" type="submit" on-click="_handleServerAddition" autofocus="">[[localize('add','Add',language)]]</paper-button>
             </div>
-            <form is="form" id="add-server-form">
-                <paper-input label="name" value="{{dbServerInput.name}}" type="name" autofocus=""></paper-input>
-                <paper-input label="url" value="{{dbServerInput.url}}" type="url"></paper-input>
-                <paper-button dialog-dismiss="" elevation="0" animated="" aria-disabled="false" role="button" id="server-cancel" on-click="_handleCancel">[[localize('cancel','Cancel',language)]]</paper-button>
-                <paper-button dialog-confirm="" raised="true" id="server-submit" type="submit" on-click="_handleServerAddition" autofocus="">[[localize('add','Add',language)]]</paper-button>
-            </form>
-        </paper-dialog>
+        </template>
 `;
   }
 
@@ -158,11 +162,8 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
               value: false
           },
           dbServerInput: {
-              type: Object,
-              value: () => ({
-                  name: "",
-                  url: ""
-              })
+              type: String,
+              value : ""
           },
           title: {
               type: String
@@ -170,8 +171,9 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
           serverName: {
               type: String
           },
-          localUrl: {
-              type: String
+          editable : {
+              type: Boolean,
+              value : false
           }
       };
   }
@@ -182,20 +184,19 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
   ready() {
       super.ready()
-      this.set("dbServers", JSON.parse(localStorage.getItem("server-list-" + this.serverName)) || [])
-      this.set("dbServerSelected",localStorage.getItem("server-selected" + this.serverName) || 0)
+      this.set("addServerOpened",false)
   }
 
-  getSelectedServerURL() {
-
-      this.saveServers()
-      return this.dbServerObject.dataset.server
-
-  }
+    getServersInfo() {
+       return {
+           servers : this.dbServers,
+           selected : this.dbServerObject.dataset.server
+       }
+    }
 
   _handleServerSelect(value, oldValue) {
 
-      if (value == this.dbServers.length + 1) {
+      if (value === this.dbServers.length) {
           this.dbServerSelected = oldValue
           this.set("addServerOpened", true)
       }
@@ -203,23 +204,28 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
   _handleServerAddition(e) {
 
-      const urlMatches = this.dbServerInput.url.trim().match("(http[s]{0,1}:\/\/)?(.*)")
+      const urlMatches = this.dbServerInput.trim().match("(http[s]{0,1}:\/\/)?(.*)")
 
       urlMatches[2] = urlMatches[2].endsWith('/') ? urlMatches[2].substring(0,urlMatches[2].length - 1) : urlMatches[2]
 
-      if (typeof this.dbServerInput.name == "string" && urlMatches) {
+      if ( urlMatches) {
 
-          this.dbServerInput.url = (urlMatches[1] || 'https://') + urlMatches[2]
-          this.push('dbServers', this.dbServerInput)
-
+          this.dbServerInput = (urlMatches[1] || 'http'+(urlMatches[2].match(/\d{1,4}.\d{1,4}.\d{1,4}.\d{1,4}/) ?"" : "s")+'://') + urlMatches[2]
           const index = this.dbServers.length
+          this.push('dbServers', {
+              name : urlMatches[2],
+              url : this.dbServerInput,
+              removable : true
+          })
+
+
           this.set("dbServerSelected", index)
 
-          this.saveServers()
 
-          this.dbServerInput = { name: "", url: "" }
+          this.set("dbServerInput","")
           this.set("addServerOpened", false)
 
+          this.dispatchEvent(new CustomEvent('save',{detail: {servers : this.dbServers}, bubbles:true, composed:true}))
       }
   }
 
@@ -234,7 +240,8 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
           this.set("dbServerSelected", 0)
 
-          this.saveServers()
+          this.dispatchEvent(new CustomEvent('save',{detail: {servers : this.dbServers}, bubbles:true, composed:true}))
+
 
       }
 
@@ -243,18 +250,14 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
 
   _handleCancel(e) {
 
+      this.set("dbServerInput","")
       this.set("addServerOpened", false)
 
   }
 
-  _handleAddOpen(e){
-      console.log(e)
-  }
-
-  saveServers() {
-      localStorage.setItem("server-list-"+ this.serverName, JSON.stringify(this.dbServers))
-      localStorage.setItem("server-selected" + this.serverName, this.dbServerSelected)
-  }
+    _isRemovable(bool){
+      return this.editable && bool
+    }
 }
 
 customElements.define(HtAppServerDialog.is, HtAppServerDialog);

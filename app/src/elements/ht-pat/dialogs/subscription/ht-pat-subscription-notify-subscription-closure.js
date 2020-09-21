@@ -560,7 +560,7 @@ class HtPatSubscriptionNotifySubscriptionClosure extends TkLocalizerMixin(Polyme
 
         this._checkBeforeSend()
         if(!_.size(_.get(this, 'requestError', []))){
-            this.api.fhc().MhmController().notifySubscriptionClosureUsingPOST(
+            this.api.fhc().Mhm().notifySubscriptionClosureUsingPOST(
                 _.get(this.api, "keystoreId", null),
                 _.get(this.api, "tokenIdMH", null),
                 _.get(this.api, "credentials.ehpassword", null),

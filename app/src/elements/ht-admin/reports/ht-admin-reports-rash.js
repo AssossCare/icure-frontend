@@ -744,8 +744,7 @@ class HtAdminReportsRash extends TkLocalizerMixin(PolymerElement){
     }
 
     _getReportInformation(){
-
-        this.$['processDialog'].open()
+        this.shadowRoot.querySelector('#processDialog') ? this.shadowRoot.querySelector('#processDialog').open() : null
         this.set('isLoading', true)
 
         this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
@@ -785,7 +784,7 @@ class HtAdminReportsRash extends TkLocalizerMixin(PolymerElement){
                         this.set("isLoading", false)
                         this.set('processStep', [])
                         // this._createXlsx()
-                        this.$['processDialog'].close()
+                        this.shadowRoot.querySelector('#processDialog') ? this.shadowRoot.querySelector('#processDialog').close() : null
                     })
                 })
                 .finally(() => {

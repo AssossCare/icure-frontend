@@ -23,6 +23,8 @@ import './dialogs/reporting/ht-pat-primary-prevention-dialog.js';
 import '../../styles/table-style';
 import '../../styles/paper-tabs-style';
 
+import "@vaadin/vaadin-grid/vaadin-grid-sort-column"
+
 import moment from 'moment/src/moment'
 import _ from 'lodash/lodash'
 import { parse } from '../../../scripts/icure-reporting'
@@ -899,6 +901,10 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     margin-right: 4px;
                     box-sizing: border-box;
                 }
+                
+                #datePickerCreation{
+                    margin-top: -12px;
+                };
 
 
             </style>
@@ -974,7 +980,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                     
 
 
-                    <vaadin-grid-column flex-grow="0" width="60px">
+                    <vaadin-grid-column flex-grow="0" width="60px" frozen>
                         <template class="header">
                             <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*, preventionOption.*)]]">
                                 <vaadin-checkbox checked="[[isAllPatientCheck]]" on-checked-changed="_checkAllPatientChanged"></vaadin-checkbox>
@@ -992,75 +998,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             </template>
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="100px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="externalId">[[localize('ext_id_short', 'File N°', language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.externalId]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
-                        <template class="header">
-                            <vaadin-grid-sorter path="lastName">[[localize('las_nam','Last name',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.lastName]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="10%">
-                        <template class="header">
-                            <vaadin-grid-sorter path="firstName">[[localize('fir_nam','First name',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.firstName]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="120px">
-                        <template class="header">
-                            <vaadin-grid-sorter path="dateOfBirth">[[localize('dat_of_bir','Date of birth',language)]]
-                            </vaadin-grid-sorter>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[formatDateOfBirth(item.dateOfBirth)]]</div>
-                        </template>
-                    </vaadin-grid-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="100px" resizable frozen header="[[localize('ext_id_short', 'File N°', language)]]" path="externalId"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="10%" resizable header="[[localize('las_nam','Last name',language)]]" path="lastName"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="10%" resizable header="[[localize('fir_nam','First name',language)]]" path="firstName"></vaadin-grid-sort-column>
+                    <vaadin-grid-sort-column flex-grow="0" width="120px" resizable header="[[localize('dat_of_bir','Date of birth',language)]]" path="dateOfBirthFormated"></vaadin-grid-sort-column>
 
-                    <vaadin-grid-column flex-grow="0" width="120px">
-                        <template class="header">
-                            <div class="cell numeric">[[localize('pho','Phone',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell numeric">[[_getPhone(item)]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <!-- <vaadin-grid-column flex-grow="0" width="150px">
-                        <template class="header">
-                            <div class="cell numeric">[[localize('mob','Mobile',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell numeric">[[item.mobile]]</div>
-                        </template>
-                    </vaadin-grid-column> -->
-                    <vaadin-grid-column flex-grow="1">
-                        <template class="header">
-                            <div class="cell frozen">[[localize('postalAddress','Address',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.postalAddress]]</div>
-                        </template>
-                    </vaadin-grid-column>
-                    <vaadin-grid-column flex-grow="0" width="17%">
-                        <template class="header">
-                            <div class="cell frozen">[[localize('ema','Email',language)]]</div>
-                        </template>
-                        <template>
-                            <div class="cell frozen">[[item.email]]</div>
-                        </template>
-                    </vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="0" width="150px" resizable header="[[localize('pho','Phone',language)]]" path="phone"></vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="1" resizable header="[[localize('postalAddress','Address',language)]]" path="postalAddress"></vaadin-grid-column>
+                    <vaadin-grid-column flex-grow="0" width="10%" resizable header="[[localize('ema','Email',language)]]" path="email"></vaadin-grid-column>
                 </vaadin-grid>
 
                 <div class="add-btn-mobile">
@@ -1097,7 +1042,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                 </div>
 
                 <div class="line bottom-line">
-                    <vaadin-checkbox class="show-all-patients" checked="{{showInactive}}">
+                    <vaadin-checkbox class="show-all-patients" on-change="_showInactiveChanged">
                     </vaadin-checkbox>
                     <span class="show-all-patients-txt">[[localize('show_inactive_patients','Show inactive patients',language)]]</span>
 
@@ -1202,9 +1147,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                         
                         <paper-input always-float-label="" label="[[localize('fir_nam','First name',language)]]" value="{{firstName}}"></paper-input>
                         
-                        <vaadin-date-picker-light id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" can-be-fuzzy>
-                            <paper-input always-float-label="" label="[[localize('dat_of_bir','Date of birth',language)]]" value="{{dateAsString}}"></paper-input>
-                        </vaadin-date-picker-light>
+                        <vaadin-date-picker id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" can-be-fuzzy label="[[localize('dat_of_bir','Date of birth',language)]]"  value="{{dateAsString}}"></vaadin-date-picker>
                         
                         <paper-input always-float-label="" label="[[localize('niss','Ssin',language)]]" value="{{ssin}}" on-keyup="_searchDuplicate"></paper-input>
                         
@@ -1807,7 +1750,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           const endIndex = ((params.page || 0) + 1) * pageSize
 
           const thisParams = this.filterValue + "|" + sort + "|" + (desc ? "<|" : ">|") + pageSize + ":" + JSON.stringify(this.selectedFilters || [])
-          const thisParamsWithIdx = thisParams + ":" + startIndex
+          const thisParamsWithIdx = thisParams + ":" + startIndex + ':'+ this.showInactive
 
           //100ms cooldown period
 
@@ -1928,7 +1871,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                       if (res.length > 0 || startIndex > 0) {
                           this.btnSelectionPatient = true
                       }
-                      callback(res.map(this.pimpPatient.bind(this)), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
+                      callback(_.orderBy(res.map(this.pimpPatient.bind(this)),[sort],[desc ? "desc" : "asc" ]), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
                   }).finally(() => {
                       this.set('hideSpinner', true)
                       this.set('isLoadingPatient', false)
@@ -1942,7 +1885,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                       if (res.length > 0 || startIndex > 0) {
                           this.btnSelectionPatient = true
                       }
-                      callback(res.map(this.pimpPatient.bind(this)), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
+                      callback(_.orderBy(res.map(this.pimpPatient.bind(this)),[sort],[desc ? "desc" : "asc" ]), res.length >= endIndex - startIndex ? res.length + startIndex + pageSize : res.length + startIndex)
                   })
               }
           })
@@ -2063,8 +2006,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   pimpPatient(p) {
       p.email = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'email').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
-      p.phone = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'phone').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
-      p.mobile = p.addresses && p.addresses.map(a => a.telecoms && a.telecoms.filter(t => t.telecomType === 'mobile').map(t => t.telecomNumber).join()).filter(a => a).join() || ''
+      p.phone = this._getPhone(p)
       const address = _.find(_.get(p,"addresses",[]), {addressType:"home"}) || _.find(_.get(p,"addresses",[]), {addressType:"work"}) || _.get(p,"addresses[0]",[])
       p.postalAddress = _.compact([
           _.trim(_.get(address,"street","")),
@@ -2073,6 +2015,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           _.trim(_.get(address,"postalCode","")),
           _.trim(_.get(address,"city",""))
       ]).join(" ");
+      p.dateOfBirthFormated = this.formatDateOfBirth(p.dateOfBirth)
       return p
   }
 
@@ -2080,7 +2023,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       if (this.shareOption || this.exportOption || this.fusionOption || this.preventionOption) return
 
       // Must click on a row
-      if ((e.path || e.composedPath())[0].nodeName === 'TABLE') return
+      if (e.composedPath().find(ele => ele.nodeName && ele.nodeName.includes("THEAD"))) return
       if(this.activeItem) {
           this.set('isLoadingPatient', true)
           const selected = this.activeItem
@@ -2096,7 +2039,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       this.resetNewPatientDialog()
       this.checkForParentMedicalHouse()
 
-      this.$['add-patient-dialog'].open()
+      this.shadowRoot.querySelector('#add-patient-dialog') ? this.shadowRoot.querySelector('#add-patient-dialog').open() : null
   }
 
   _addPatientNoOpen() {
@@ -2117,7 +2060,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               if (res.cards[0]) {
                   this.set('firstName', res.cards[0].firstName)
                   this.set('lastName', res.cards[0].surname)
-                  this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('DD/MM/YYYY'))
+                  this.set('dateAsString', this.api.moment(res.cards[0].dateOfBirth * 1000).format('DD-MM-YYYY'))
                   this.set('ssin', res.cards[0].nationalNumber)
                   this.set('valueGender', res.cards[0].gender === 'M' ? 'male' : 'female')
                   this.set('newPatCardData',res.cards[0])
@@ -2134,8 +2077,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           "dateOfBirth",
           "ssin",
           "email",
-          "phone",
-          "mobile"
+          "phone"
       ]
 
       // Human readable columns
@@ -2146,8 +2088,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.localize('birthdate', 'Birthdate'),
           this.localize('ssin', 'SSIN'),
           this.localize('email_address', 'Email address'),
-          this.localize('phone_number', 'Phone number'),
-          this.localize('mobile_number', 'Mobile number')
+          this.localize('phone_number', 'Phone number')
       ]
 
       // Define csv content, header = column names
@@ -2311,7 +2252,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _openImportPatientFromMfDialog() {
-      this.$['import-mf-dialog'].open()
+      this.shadowRoot.querySelector('#import-mf-dialog') ? this.shadowRoot.querySelector('#import-mf-dialog').open() : null
   }
 
   generateXlsFile(data, filename, title, author) {
@@ -2366,7 +2307,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               lastName: this.lastName,
               firstName: this.firstName,
               active: true,
-              dateOfBirth: this.dateAsString && this.dateAsString.length && parseInt(_.padEnd(this.dateAsString.split("/").reverse().map(str => _.padStart(str,2,"0")).join(""),8,"0")) || null,
+              dateOfBirth: this.dateAsString && this.dateAsString.length && moment(this.dateAsString).format("YYYYMMDD") || null,
               ssin: this.ssin,
               gender: this.valueGender,
               medicalHouseContracts: [this.medicalHouseContractShadowObject]
@@ -2512,7 +2453,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _saveFilter(e) {
-      this.$['saveFilterDialog'].open()
+      this.shadowRoot.querySelector('#saveFilterDialog') ? this.shadowRoot.querySelector('#saveFilterDialog').open() : null
   }
 
   deleteFilter(e) {
@@ -2670,7 +2611,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       ).then(pats => {
           this.set('shareOption', true)
           this.selectedPatientsForSharing = pats
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
       }).finally(() => {
           this.set('isImportingPatients', false)
       })
@@ -2678,7 +2619,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
   _openPatientActionDialog() {
       if (this.shareOption) {
-          this.$['sharePatientDialog'].open()
+          this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').open() : null
           this.set('hcp', _.orderBy(_.values(this.api.hcParties), ['lastName'], ['asc']))
           this.selectedPatientsForSharing = this.patientSelected.filter(pat => pat.check && pat.id)
       }
@@ -2727,7 +2668,9 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.set("patientSelected", this.patientSelected.filter(element => element.check === true))
           if (this.patientSelected.length > 1)
               this.api.patient().getPatientsWithUser(this.user,new models.ListOfIdsDto({ids:_.uniq(this.patientSelected.map(pat => pat.id))}))
-                  .then(pats => this.$['fusion-dialog'].open(pats))
+                  .then(pats =>
+                      this.shadowRoot.querySelector('#fusion-dialog') ? this.shadowRoot.querySelector('#fusion-dialog').open(pats) : null
+                  )
       }
 
       if(this.preventionOption){
@@ -2803,7 +2746,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   confirmSharingNextStep(allHcp) {
-      this.$['sharePatientDialog'].close()
+      this.shadowRoot.querySelector('#sharePatientDialog') ? this.shadowRoot.querySelector('#sharePatientDialog').close() : null
 
       //erase uncheck user
       if (this.shareAll ||(allHcp === true)) {
@@ -2825,14 +2768,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               this.set("hcpSelectedForSharing." + index + ".delegation", delegationTag)
       })
 
-      this.$['sharePatientDelegationDialog'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').open() : null
   }
 
   confirmSharing() {
       this.updateDelegation()
 
-      this.$['sharePatientDelegationDialog'].close()
-      this.$['sharingPatientStatus'].open()
+      this.shadowRoot.querySelector('#sharePatientDelegationDialog') ? this.shadowRoot.querySelector('#sharePatientDelegationDialog').close() : null
+      this.shadowRoot.querySelector('#sharingPatientStatus') ? this.shadowRoot.querySelector('#sharingPatientStatus').open() : null
 
       this._sharePatients(this.selectedPatientsForSharing)
   }
@@ -2919,7 +2862,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       const dateOfBirthFilter = (/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/.test(this.dateAsString)) && ({
           '$type': 'PatientByHcPartyDateOfBirthFilter',
           'healthcarePartyId': this.user.healthcarePartyId,
-          'dateOfBirth': this.dateAsString.replace(/-/g, "")
+          'dateOfBirth': moment(this.dateAsString).format("YYYYMMDD")
       })
       const ssinFilter = /^[0-9]{11}$/.test(this.ssin) && ({
           '$type': 'PatientByHcPartyAndSsinFilter',
@@ -2946,7 +2889,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
               }
               console.log(unionFilter)
               //research
-              this.api.patient().filterByWithUser(this.user, null, null, 50, 0, 1, 'desc', {filter: unionFilter}).then(tb => {
+              this.api.patient().filterByWithUser(this.user, null, null, 50, 0, 1, true, {filter: unionFilter}).then(tb => {
                   console.log("result of the research : " + JSON.stringify(tb))
 
                   //construct of the table
@@ -2957,7 +2900,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                           if (_.toUpper(_.get(row, 'firstName', null)) === _.toUpper(_.get(this, 'firstName', "")) && _.toUpper(_.get(row, 'lastName', null)) === _.toUpper(_.get(this, "lastName", ""))) {
                               row.remarks = this.localize("rem_Ty1_CreatPat", "Même nom et prénom!", this.language)
 
-                              if (_.get(row, "dateOfBirth", null).toString() === this.dateAsString.replace(/-/g, '')) {
+                              if (_.get(row, "dateOfBirth", null).toString() === moment(this.dateAsString).format('YYYYMMDD')) {
                                   flagRem = true
                                   row.remarks = this.localize("rem_Ty4_CreatPat", "Même nom, prénom et date de naissance!", this.language)
                               }
@@ -3261,7 +3204,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addPrimaryPrevention(){
-      this.$['htPatPrimaryPreventionDialog'].openPreventionDialog()
+      this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog') ? this.shadowRoot.querySelector('#htPatPrimaryPreventionDialog').openPreventionDialog() : null
   }
 
   _closePrevention(){
@@ -3323,6 +3266,14 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
           this.set('nbPatientSelected', _.size(_.get(this, 'patientSelected', []).filter(patient => patient.check)))
       }
   }
+
+    focusInput(event){
+      console.log(event)
+    }
+
+    _showInactiveChanged(event){
+      this.set("showInactive",_.get(event,'target.checked',false))
+    }
 }
 
 customElements.define(HtPatList.is, HtPatList)

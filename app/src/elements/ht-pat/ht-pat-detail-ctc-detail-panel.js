@@ -669,6 +669,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                             height: 200px;
                             width: 400px;
                         }
+                        
+                        .delete-ogdt {
+                        
+                            justify-content: flex-end!important;
+                            min-width: 1px;
+                        
+                        }
+                                                
                 </style>
                
                 <template is="dom-if" if="[[_bodyOverlay]]">
@@ -765,7 +773,12 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             
                                             <template is="dom-repeat" id="outGoingDocumentTemplates" items="[[outGoingDocumentTemplates]]" as="outGoingDocumentTemplate">
                                                 <template is="dom-if" if=[[outGoingDocumentTemplate.isLast]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
-                                                <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                
+                                                <div class="displayFlex">
+                                                    <paper-button on-tap="_triggerOutGoingDocumentDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class$="[[_isBold(outGoingDocumentTemplate.isBold)]]"><iron-icon icon="icons:description"></iron-icon>[[outGoingDocumentTemplate.name]]</paper-button>
+                                                    <template is="dom-if" if=[[!outGoingDocumentTemplate.guid]]><paper-button on-tap="_confirmDeleteTemplateDialog" data-ogdt-template-id$="[[outGoingDocumentTemplate.id]]" class="delete-ogdt"><iron-icon icon="icons:delete"></iron-icon></paper-button></template>
+                                                </div>
+                                                
                                                 <template is="dom-if" if=[[outGoingDocumentTemplate.hrAfter]]><hr style="margin: 3px 0 3px 0;padding: 0;border: 0;border-top: 1px dashed #ccc;"/></template>
                                             </template>
                                             <paper-button on-tap="_exportSumehrDialog"><iron-icon icon="icons:description"></iron-icon>[[localize('export_sumehr','Export Sumehr', language)]]</paper-button>
@@ -803,6 +816,38 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                         </div>
                                     </div>
                                 </template>
+                                
+                                <template is="dom-if" if=[[!showExternalApplicationContainer]]>
+                                    <paper-button id="newFormBtn" class="button button--menu button--menu--other"
+                                                  on-tap="_toggleExtAppActions">
+                                        <span class="no-mobile">[[localize('ext-app','External app',language)]]</span>
+                                        <iron-icon icon="[[_actionIcon(showExternalApplicationContainer)]]"></iron-icon>
+                                    </paper-button>
+                                </template>
+                
+                                <template is="dom-if" if=[[showExternalApplicationContainer]]>
+                                    <div class="add-form-container">
+                                        <paper-button class="button button--menu button--menu--other" on-tap="_toggleExtAppActions">
+                                            <span class="no-mobile">[[localize('clo','Close',language)]]</span>
+                                            <iron-icon icon="[[_actionIcon(showExternalApplicationContainer)]]"></iron-icon>
+                                        </paper-button>
+                                        <div class="add-forms-container">
+                                            <paper-button on-tap="_openEvidenceLinker"><img class="belRai-icon" src="data:image/png;base64,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"/>[[localize('ebm','Ebm Practice Net',language)]]
+                                            </paper-button>
+                                        
+                                            <paper-button on-tap="_openCbip"><img class="belRai-icon" src="data:image/png;base64,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"/>[[localize('Cbip','CBIP',language)]]
+                                            </paper-button>
+                                            <!--
+                                            <paper-button on-tap="_openLbs"><img class="belRai-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG0AAABXCAYAAAAOGcudAAAAAXNSR0IArs4c6QAAAKZlWElmTU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgExAAIAAAAiAAAAWodpAAQAAAABAAAAfAAAAAAAAABIAAAAAQAAAEgAAAABQWRvYmUgSWxsdXN0cmF0b3IgQ1M2IChNYWNpbnRvc2gpAAADoAEAAwAAAAEAAQAAoAIABAAAAAEAAABtoAMABAAAAAEAAABXAAAAAHoh9nIAAAAJcEhZcwAACxMAAAsTAQCanBgAAAVQaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgICAgICAgICB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPHhtcE1NOkluc3RhbmNlSUQ+eG1wLmlpZDpDMjQzQTIwMzE4RjMxMUU1OEEzRkVCMjNDOTE4MTNBRjwveG1wTU06SW5zdGFuY2VJRD4KICAgICAgICAgPHhtcE1NOkRvY3VtZW50SUQ+eG1wLmRpZDpDMjQzQTIwNDE4RjMxMUU1OEEzRkVCMjNDOTE4MTNBRjwveG1wTU06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"/>[[localize('Labo-LBS','Labo LBS',language)]]
+                                            </paper-button>
+                                        
+                                            <paper-button on-tap="_openBiB"><img class="belRai-icon" src="data:image/png;base64,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"/>[[localize('BiB','Born In Brussels',language)]]
+                                            </paper-button>
+                                            -->
+                                        </div>
+                                    </div>
+                                </template>
+                                
                                 <template is="dom-if" if=[[!showAddEvaFormsContainer]]>
                                     <paper-button id="newFormBtn" class="button button--menu button--menu--other"
                                                   on-tap="_toggleAddEvaActions">
@@ -857,8 +902,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 
                             </template>
                         </div>
-                        <filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]"
-                                      i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>
+                        <!--<filter-panel id="serviceFilterPanel" selected-filters="{{serviceFilters}}" items="[[detailPanelItems]]"
+                                      i18n="[[i18n]]" language="[[language]]" resources="[[resources]]"></filter-panel>-->
                         <div class="layout-bar">
                             <paper-icon-button id="list_icn" class$="list [[_activeIconClass(list)]]" icon="icons:view-list"
                                                on-tap="_list"></paper-icon-button>
@@ -1285,6 +1330,15 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     </div>
                 </paper-dialog>
                 
+                <paper-dialog class="modalDialog modalDialogSmall" id="deleteTemplateDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+                    <h2 class="modal-title">[[localize('areYouSure','Are you sure?',language)]]</h2>
+                    <div class="content pt40 pr20 pl20 textaligncenter fw700">[[localize('pleaseConfirm','Please confirm',language)]].</div>
+                    <div class="buttons">
+                        <paper-button class="button button--other" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                        <paper-button class="button button--save" on-tap="_doDeleteTemplate"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+                    </div>
+                </paper-dialog>                
+                
                 </template>
     `
     }
@@ -1418,6 +1472,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             },
             showPrintFormsContainer: {
                 type: Boolean,
+                value: false
+            },
+            showExternalApplicationContainer:{
+                type:Boolean,
                 value: false
             },
             _drugsRefresher: {
@@ -1573,6 +1631,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     }
                 }
             },
+            _templateIdToBeDeleted: {
+                type: String,
+                value: ""
+            }
         }
     }
 
@@ -1603,8 +1665,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _resetPatient() {
         this.proseEditorLinkingLetterTemplateAlreadyApplied = false
         this.dispatchEvent(new CustomEvent("reset-patient", {composed: true, bubbles: true, detail: {}}))
-
-        // this.$['prose-editor-dialog-linking-letter'].close()
     }
 
     _servicesFilter() {
@@ -1690,6 +1750,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     _toggleAddEvaActions() {
         this.showAddEvaFormsContainer = !this.showAddEvaFormsContainer
+    }
+
+    _toggleExtAppActions(){
+        this.showExternalApplicationContainer = !this.showExternalApplicationContainer
     }
 
     _toggleOutGoingDocActions() {
@@ -1920,7 +1984,6 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     addOther() {
         this.set('showAddFormsContainer', false)
-        // this.$['add-form-dialog'].open();
         this.dispatchEvent(new CustomEvent("add-other", {composed: true, bubbles: true}))
     }
 
@@ -1966,7 +2029,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _prescribe(e) {
         e.stopPropagation()
         // this.$.prescriptionDialog.open();
-        this.dispatchEvent(new CustomEvent("prescribe", {detail:{currentContact: this.currentContact, servicesMaps: this.servicesMap, globalHcp: this.globalHcp, contactId: _.get(e, 'detail.contactId', null)}, composed: true, bubbles: true}))
+        this.dispatchEvent(new CustomEvent("prescribe", {
+            detail: {
+                currentContact: this.currentContact,
+                servicesMaps: this.servicesMap,
+                globalHcp: this.globalHcp,
+                contactId: _.get(e, 'detail.contactId', null)
+            }, composed: true, bubbles: true
+        }))
     }
 
     _handlePdfReport(e) {
@@ -2305,9 +2375,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     loadTemplate() {
-        this.$['load-template-dialog'].open()
+        this.shadowRoot.querySelector('#load-template-dialog') ? this.shadowRoot.querySelector('#load-template-dialog').open() : null
         this.$['load-template-dialog'].filterValue = "  "
-        this.$['load-template-dialog'].refresh()
+        this.shadowRoot.querySelector('#load-template-dialog') ? this.shadowRoot.querySelector('#load-template-dialog').refresh() : null
         window.setTimeout(() => {
             this.$['load-template-dialog'].filterValue = ""
         }, 1000)
@@ -2368,7 +2438,8 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     refreshIcons() {
-        Polymer.dom(this.root).querySelector("#serviceFilterPanel").refreshIcons()
+        return null;
+        // Polymer.dom(this.root).querySelector("#serviceFilterPanel").refreshIcons()
     }
 
     dropVarsFromProseJsonContent(proseJsonContent, variablesPath) {
@@ -2505,7 +2576,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     _openTemplateDescriptionDialog() {
-        this.$['template-description-dialog'].open()
+        this.shadowRoot.querySelector('#template-description-dialog') ? this.shadowRoot.querySelector('#template-description-dialog').open() : null
     }
 
     printSubForm(e) {
@@ -2875,7 +2946,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             !printed && this.api.triggerFileDownload(pdfFileContent, "application/pdf", this.localize('rep', this.language) + '-' + this.user.healthcarePartyId + "-" + +new Date() + ".pdf")
         ).finally(() => {
             this.busySpinner = false
-            this.$['prose-editor-dialog'].close()
+            this.shadowRoot.querySelector('#prose-editor-dialog') ? this.shadowRoot.querySelector('#prose-editor-dialog').close() : null
             this._closeReportMenu()
         })
     }
@@ -3183,6 +3254,9 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             }
         })
 
+        // Localized value
+        const pathologyType = _.find(subFormFieldsAndValues,{name:"pathologyType"})
+
         this._getPatAndHcpCommonData({
             downloadFileName: _.kebabCase([this.localize("requestForKineCare_header1", this.language), _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
             healthCarTypeData: [
@@ -3191,6 +3265,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 _.get(_.filter(subFormFieldsAndValues, {name: "Demande d'avis consultatif kiné"}), "[0]", {}),
                 _.get(_.filter(subFormFieldsAndValues, {name: "Demande d'avis"}), "[0]", {}),
                 _.get(_.filter(subFormFieldsAndValues, {name: "Diagnostic"}), "[0]", {}),
+                _.merge(pathologyType, { value: !_.trim(_.get(pathologyType, "value")) ? "" : this.localize(_.trim(_.get(pathologyType, "value")), "", this.language)}),
             ],
             treatmentModalityData: [
                 _.get(_.filter(subFormFieldsAndValues, {name: "Massage"}), "[0]", {}),
@@ -4266,7 +4341,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             target: this.api.moment(e.detail.value),
         }
 
-        this.$['confirmDateChangeDialog'].open()
+        this.shadowRoot.querySelector('#confirmDateChangeDialog') ? this.shadowRoot.querySelector('#confirmDateChangeDialog').open() : null
     }
 
     _cancelDateChange() {
@@ -4300,13 +4375,15 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             .then(x => hcpAndPatData = x)
             .catch(e => {
             })
-            .finally(() => this.$['new-msg'].open({
-                dataFromPatDetail: {
-                    patient: _.get(this, "patient", false),
-                    hcpAndPatData: hcpAndPatData || false,
-                    documentId: documentId
-                }
-            }))
+            .finally(() =>
+                this.shadowRoot.querySelector('#new-msg') ? this.shadowRoot.querySelector('#new-msg').open({
+                    dataFromPatDetail: {
+                        patient: _.get(this, "patient", false),
+                        hcpAndPatData: hcpAndPatData || false,
+                        documentId: documentId
+                    }
+                }) : null
+            )
 
     }
 
@@ -4369,10 +4446,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     ` + this._getPatientVignetteHtmlCode(pdfPrintingData.patientData) + `
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box2_clinicalInfo", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "InfoClinPert"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "InfoClinPert"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box3_explanationRequestForImaging", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExplicationDemandeDiag"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExplicationDemandeDiag"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_box4_additionalInfo", this.language) + `</div>
                     <div class="borderedBox">` + this._getFormCheckboxesAndLabelHtmlCode(pdfPrintingData.additionalRelevantInformation, 3) + `</div>
@@ -4381,7 +4458,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                     <div class="borderedBox">` + this._getFormCheckboxesAndLabelHtmlCode(pdfPrintingData.previousRelevantExams, 3) + `</div>
 
                     <div class="boxLabel">` + this.localize("requestForImagingExam_suggestedExams", this.language) + `</div>
-                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExamProp"}), "[0].value", "")) + `</div>
+                    <div class="borderedBox">` + _.trim(_.get(_.filter(subFormFieldsAndValues, {name: "ExamProp"}), "[0].value", "")).replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2') + `</div>
 
                     ` + this._getDoctorDetailsHtmlCode(pdfPrintingData.hcpData) + `
                 </div>` +
@@ -4446,7 +4523,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     newReport(e) {
         this.editedReportDataProvider = e.detail.dataProvider
-        this.$['prose-editor-dialog'].open()
+        this.shadowRoot.querySelector('#prose-editor-dialog') ? this.shadowRoot.querySelector('#prose-editor-dialog').open() : null
         const prose = this.root.querySelector("#prose-editor")
 
         const globalVars = [{
@@ -4639,7 +4716,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     openBelRai() {
         this.set('showAddEvaFormsContainer', false)
         _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Sts().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
                 .then(bearerToken => {
                     this._sendPostRequest({
                         action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
@@ -4657,7 +4734,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     _consultPcrValidationCode(){
         _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Sts().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
                 .then(bearerToken => {
                     this._sendPostRequest({
                         action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
@@ -4775,6 +4852,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc, "content.fr", {})) && _.get(svc, "content.fr.documentId", "") === docId) || (!!_.size(_.get(svc, "content.nl", {})) && _.get(svc, "content.nl.documentId", "") === docId) || (!!_.size(_.get(svc, "content.en", {})) && _.get(svc, "content.en.documentId", "") === docId))
         const serviceLabel = !!_.trim(_.get(documentSvc, "content.fr.stringValue", "")) ? _.trim(_.get(documentSvc, "content.fr.stringValue", "")) : !!_.trim(_.get(documentSvc, "content.nl.stringValue", "")) ? _.trim(_.get(documentSvc, "content.nl.stringValue", "")) : !!_.trim(_.get(documentSvc, "content.en.stringValue", "")) ? _.trim(_.get(documentSvc, "content.en.stringValue", "")) : _.trim(_.get(documentSvc, "label", ""))
         const transactionCode = !!_.trim(_.get(_.find(_.get(documentSvc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : !!_.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : ""
+            !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+            !!_.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(documentSvc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+            !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+            ""
 
         this.set("editLabelAndTransactionData.ctc", ctc)
         this.set("editLabelAndTransactionData.docId", docId)
@@ -4782,54 +4863,57 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set("editLabelAndTransactionData.label", serviceLabel)
         this.set("editLabelAndTransactionData.transactionCode", transactionCode)
 
-        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open()
-
+        return this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').open() : null
     }
 
     _saveLabelAndTransactionDialog() {
 
         if (!!_.get(this, "editLabelAndTransactionData.isServices", false)) return this._saveLabelAndTransactionDialogService()
 
-        const ctc = _.find(this.contacts, {id: _.get(this, "editLabelAndTransactionData.ctc.id", "")})
-        const docId = _.trim(_.get(this, "editLabelAndTransactionData.docId", ""))
-        const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc, "content.fr", {})) && _.get(svc, "content.fr.documentId", "") === docId) || (!!_.size(_.get(svc, "content.nl", {})) && _.get(svc, "content.nl.documentId", "") === docId) || (!!_.size(_.get(svc, "content.en", {})) && _.get(svc, "content.en.documentId", "") === docId))
-        const documentSctc = _.find(ctc.subContacts, sctc => !_.trim(_.get(sctc, "healthElementId", "")) && !!_.some(_.get(sctc, "services"), {serviceId: _.get(documentSvc, "id", "")}))
-        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(documentSctc, "tags", []), {type: "originalEhBoxMessageId"}), "id", ""))
+        const ctc = _.find(this.contacts, {id:_.get(this,"editLabelAndTransactionData.ctc.id","")})
+        const docId = _.trim(_.get(this,"editLabelAndTransactionData.docId",""))
+        const documentSvc = _.find(ctc.services, svc => (!!_.size(_.get(svc,"content.fr",{})) && _.get(svc,"content.fr.documentId","") === docId) || (!!_.size(_.get(svc,"content.nl",{})) && _.get(svc,"content.nl.documentId","") === docId) || (!!_.size(_.get(svc,"content.en",{})) && _.get(svc,"content.en.documentId","") === docId))
+        const documentSctc = _.find(ctc.subContacts, sctc => !_.trim(_.get(sctc,"healthElementId","")) && !!_.some(_.get(sctc,"services"),{serviceId:_.get(documentSvc,"id","")}))
+        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(documentSctc, "tags", []), {type:"originalEhBoxMessageId"}),"id",""))
 
-        const newLabel = _.trim(_.get(this, "editLabelAndTransactionData.label", ""))
-        const newTransactionCode = _.trim(_.get(this, "editLabelAndTransactionData.transactionCode", ""))
+        const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
+        const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+        const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
         return !_.size(ctc) ||
         !_.trim(docId) ||
-        !_.size(documentSvc) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
+        !_.size(documentSvc) ? Promise.resolve(
+            this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+        ) : Promise.resolve()
             .then(() => {
 
-                if (isEhboxMessage) {
+                if(isEhboxMessage) {
 
                     ctc.descr = newLabel
                     documentSvc.label = newLabel
 
-                    ctc.tags = _.filter(_.get(ctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                    ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                    ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+                    ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
-                    if (!!_.size(documentSctc)) {
-                        documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                        documentSctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                    if(!!_.size(documentSctc)) {
+                        documentSctc.tags = _.filter(_.get(documentSctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction")
+                        documentSctc.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
                     }
 
                 }
 
-                if (!!_.size(_.get(documentSvc, "content.fr", {}))) _.merge(documentSvc, {content: {fr: {stringValue: newLabel}}})
-                if (!!_.size(_.get(documentSvc, "content.nl", {}))) _.merge(documentSvc, {content: {nl: {stringValue: newLabel}}})
-                if (!!_.size(_.get(documentSvc, "content.en", {}))) _.merge(documentSvc, {content: {en: {stringValue: newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.fr",{}))) _.merge(documentSvc, {content:{fr:{stringValue:newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.nl",{}))) _.merge(documentSvc, {content:{nl:{stringValue:newLabel}}})
+                if(!!_.size(_.get(documentSvc,"content.en",{}))) _.merge(documentSvc, {content:{en:{stringValue:newLabel}}})
 
-                documentSvc.tags = _.filter(_.get(documentSvc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION")
-                documentSvc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                documentSvc.tags = _.filter(_.get(documentSvc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction")
+                documentSvc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
             })
-            .then(() => this._saveContactAndRefreshContacts(ctc))
-            .finally(() => this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
-
+            .then(()=>this._saveContactAndRefreshContacts(ctc))
+            .finally(() =>
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            )
     }
 
     _linkServicesAndEs(e) {
@@ -4879,10 +4963,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     _editLabelAndTransactionDialogServices(e) {
 
-        const ctc = _.find(this.contacts, {id: _.get(e, "detail.contact.id", "")})
-        const sourceSubContact = _.find(_.get(ctc, "subContacts", []), sctc => ((_.get(sctc, "status", 0) & (1 << 0)) !== 0) || ((_.get(sctc, "status", 0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
-        const serviceLabel = !!_.trim(_.get(ctc, "descr", "")) ? _.trim(_.get(ctc, "descr", "")) : _.trim(_.get(sourceSubContact, "descr", ""))
-        const transactionCode = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "CD-TRANSACTION"}), "code", "")) : _.trim(_.get(_.find(_.get(ctc, "tags", []), {type: "CD-TRANSACTION"}), "code", ""))
+        const ctc = _.find(this.contacts, {id:_.get(e, "detail.contact.id","")})
+        const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
+        const serviceLabel = !!_.trim(_.get(ctc,"descr","")) ? _.trim(_.get(ctc,"descr","")) : _.trim(_.get(sourceSubContact,"descr",""))
+        const transactionCode =
+            !!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"CD-TRANSACTION"}), "code", "")) :
+                !!_.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(sourceSubContact,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+                    !!_.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) ? _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"care.topaz.customTransaction"}), "code", "")) :
+                        _.trim(_.get(_.find(_.get(ctc,"tags",[]), {type:"CD-TRANSACTION"}), "code", ""))
 
         this.set("editLabelAndTransactionData.ctc", ctc)
         this.set("editLabelAndTransactionData.docId", "")
@@ -4890,36 +4978,36 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         this.set("editLabelAndTransactionData.label", serviceLabel)
         this.set("editLabelAndTransactionData.transactionCode", transactionCode)
 
-        return this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].open()
-
+        return this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').open() : null
     }
 
     _saveLabelAndTransactionDialogService() {
 
-        const ctc = _.find(this.contacts, {id: _.get(this, "editLabelAndTransactionData.ctc.id", "")})
-        const sourceSubContact = _.find(_.get(ctc, "subContacts", []), sctc => ((_.get(sctc, "status", 0) & (1 << 0)) !== 0) || ((_.get(sctc, "status", 0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
-        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type: "originalEhBoxMessageId"}), "id", ""))
+        const ctc = _.find(this.contacts, {id:_.get(this,"editLabelAndTransactionData.ctc.id","")})
+        const sourceSubContact = _.find(_.get(ctc,"subContacts",[]), sctc => ((_.get(sctc,"status",0) & (1 << 0)) !== 0) || ((_.get(sctc,"status",0) & (1 << 5)) !== 0)) /* Target lab results (1<<0) or protocol (1<<5) subContact */
+        const isEhboxMessage = !!_.trim(_.get(_.find(_.get(sourceSubContact, "tags", []), {type:"originalEhBoxMessageId"}),"id",""))
 
-        const newLabel = _.trim(_.get(this, "editLabelAndTransactionData.label", ""))
-        const newTransactionCode = _.trim(_.get(this, "editLabelAndTransactionData.transactionCode", ""))
+        const newLabel = _.trim(_.get(this,"editLabelAndTransactionData.label",""))
+        const newTransactionCode = _.trim(_.get(this,"editLabelAndTransactionData.transactionCode",""))
+        const newTransactionCodeType = _.trim(_.get(_.find(this.listType, {code:newTransactionCode}), "type", "CD-TRANSACTION"))
 
-        return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve((this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())) : Promise.resolve()
+        return !_.size(ctc) || !_.size(sourceSubContact) ? Promise.resolve(
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            ) : Promise.resolve()
             .then(() => {
 
                 ctc.descr = newLabel
-                isEhboxMessage && (ctc.tags = _.filter(_.get(ctc, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION"))
-                isEhboxMessage && ctc.tags.push({type: "CD-TRANSACTION", code: newTransactionCode, disabled: false})
+                isEhboxMessage && (ctc.tags = _.filter(_.get(ctc,"tags",[]), tag => _.trim(_.get(tag,"type")) !== "CD-TRANSACTION" && _.trim(_.get(tag,"type")) !== "care.topaz.customTransaction"))
+                isEhboxMessage && ctc.tags.push({type: newTransactionCodeType, code: newTransactionCode, disabled: false})
 
-                isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION"))
-                isEhboxMessage && sourceSubContact.tags.push({
-                    type: "CD-TRANSACTION",
-                    code: newTransactionCode,
-                    disabled: false
-                })
+                isEhboxMessage && (sourceSubContact.tags = _.filter(_.get(sourceSubContact, "tags", []), tag => _.trim(_.get(tag, "type")) !== "CD-TRANSACTION" && _.trim(_.get(tag, "type")) !== "care.topaz.customTransaction"))
+                isEhboxMessage && sourceSubContact.tags.push({type: newTransactionCodeType,code: newTransactionCode,disabled: false})
 
             })
-            .then(() => this._saveContactAndRefreshContacts(ctc))
-            .finally(() => this.$['editLabelAndTransactionDialog'] && this.$['editLabelAndTransactionDialog'].close())
+            .then(()=>this._saveContactAndRefreshContacts(ctc))
+            .finally(() =>
+                this.shadowRoot.querySelector('#editLabelAndTransactionDialog') ? this.shadowRoot.querySelector('#editLabelAndTransactionDialog').close() : null
+            )
 
     }
 
@@ -4933,7 +5021,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             ctc: ctc,
             docId: docId,
             svcIds: svcIds.split(",")
-        }) || true) && this.$['deleteServiceDialog'] && this.$['deleteServiceDialog'].open()
+        }) || true) && this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').open() : null
 
     }
 
@@ -4942,12 +5030,14 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
         const promResolve = Promise.resolve()
         const targetCtc = _.get(this, "_deleteServicesData.ctc", {})
 
-        return !_.size(_.get(this, "_deleteServicesData", {})) || !_.trim(_.get(targetCtc, "id")) || !_.size(this._deleteServicesData.svcIds) ? this.$['deleteServiceDialog'].close() : promResolve
+        return !_.size(_.get(this, "_deleteServicesData", {})) || !_.trim(_.get(targetCtc, "id")) || !_.size(this._deleteServicesData.svcIds) ? this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').close() : null : promResolve
             .then(() => _.assign(targetCtc, {services: _.filter(_.get(targetCtc, "services", []), svc => _.get(this, "_deleteServicesData.svcIds", []).indexOf(svc.id) === -1)}))
             .then(() => _.assign(targetCtc, {subContacts: _.map(_.get(targetCtc, "subContacts", []), subCtc => _.assign(subCtc, {services: _.filter(_.get(subCtc, "services", []), svc => _.get(this, "_deleteServicesData.svcIds", []).indexOf(svc.serviceId) === -1)}))}))
             .then(() => _.assign(targetCtc, {subContacts: _.filter(_.get(targetCtc, "subContacts", []), subCtc => _.size(_.get(subCtc, "services", [])))}))
             .then(() => !_.size(_.get(targetCtc, "services", [])) ? this._deleteContactAndRefreshContacts(targetCtc) : this._saveContactAndRefreshContacts(targetCtc))
-            .finally(() => this.$['deleteServiceDialog'].close())
+            .finally(() =>
+                this.shadowRoot.querySelector('#deleteServiceDialog') ? this.shadowRoot.querySelector('#deleteServiceDialog').close() : null
+            )
 
     }
 
@@ -4967,7 +5057,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     _openOrgadon(){
             this.set('showAddEvaFormsContainer', false)
             _.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
+                this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Sts().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
                     .then(bearerToken => {
                         this._sendPostRequest({
                             action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
@@ -4981,6 +5071,80 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                             ]
                         })
                     }) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://orgadonacc.health.fgov.be/") : window.open("https://orgadon.health.fgov.be/")
+    }
+
+    _confirmDeleteTemplateDialog(e) {
+
+        const targetButton = !!_.size(_.get(e, "target", "")) && _.get(e, "target.nodeName", "") === "PAPER-BUTTON" ? _.get(e, "target", {}) : _.find(_.get(e, "path", []), p => _.get(p, "nodeName", "") === "PAPER-BUTTON")
+        const outGoingDocumentTemplateId = _.trim(_.get(targetButton, "dataset.ogdtTemplateId",""))
+
+        return !outGoingDocumentTemplateId ? null : (this.set("_templateIdToBeDeleted", outGoingDocumentTemplateId)||true) && this.$['deleteTemplateDialog'] && this.$['deleteTemplateDialog'].open();
+
+    }
+
+    _doDeleteTemplate(e) {
+
+        const promResolve = Promise.resolve()
+
+        // Get id of template to delete by making sure it exists within the class
+        const templateIdToDelete = _.trim(_.get(_.find(_.get(this,"outGoingDocumentTemplates"), {id:_.trim(_.get(this,"_templateIdToBeDeleted"))}), "id"))
+
+        return (this.set("_templateIdToBeDeleted", null) && false) || (this.$['deleteTemplateDialog'] && this.$['deleteTemplateDialog'].close() && false) || !templateIdToDelete ? null : promResolve
+            .then(() => this.api.doctemplate().deleteDocumentTemplate(templateIdToDelete).catch(e=>console.log(e)))
+            .then(() => this.set("outGoingDocumentTemplates", _.filter(_.get(this,"outGoingDocumentTemplates"), it => _.trim(_.get(it,"id")) !== templateIdToDelete)))
+            .then(() => this.shadowRoot.querySelector('#outGoingDocumentTemplates') && this.shadowRoot.querySelector('#outGoingDocumentTemplates').render())
+
+    }
+
+    _openBiB(){
+
+    }
+
+    _openCbip(){
+        window.open("http://www.cbip.be/fr/start", '_blank')
+    }
+
+    _openEvidenceLinker(){
+        window.open("https://www.ebpnet.be/fr/Pages/default.aspx", '_blank')
+    }
+
+    _openLbs(){
+        this.api.executeFetchRequest("https://labonline.labolbs.be/labonline/bridge/", {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                Accept: "application/json;charset=UTF-8",
+                "Accept-Language": this.language+"-BE",
+                'Content-Type': "application/json;charset=UTF-8"
+            },
+            body: JSON.stringify({
+                user: null,
+                password: null,
+                time: null,
+                client: null,
+                hash: null,
+                careProvider: null,
+                careProviderNamespace: null,
+                action: null,
+                patient: null,
+                patientAlternateName: null,
+                patientAlternateNamePrefix: null,
+                patientBirthDate: null,
+                patientCity: null,
+                patientCountry: null,
+                patientDwellingNumber: null,
+                patientEmail: null,
+                patientFirstName: null,
+                patientGender: null,
+                patientHealthInsurer: null,
+                patientInsurabilityCode: null,
+                patientLastName: null,
+                patientLastNamePrefix: null,
+                patientPhone: null,
+                patientPostalCode: null,
+                patientStreet: null
+            })
+        })
     }
 
 }

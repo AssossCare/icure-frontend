@@ -399,6 +399,10 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 type: Array,
                 value: () => []
             },
+            healthElements:{
+                type: Object,
+                value : () => {}
+            },
             availableDocumentList:{
                 type: Array,
                 value: () => []
@@ -471,7 +475,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
             }).then(availableDocument => {
                 this.set("availableDocumentList", availableDocument.map(ad => ad.document))
                 //return this._generateSumehrV2()
-                return this._generateSimplifiedSumehr()
+                return this._generateSimplifiedSumehr(false)
             }).then(sumehr => {
                 this.set('patientSumehr', sumehr)
                 return this._requestOAuthToken()
@@ -546,7 +550,15 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
     _createFormInstance(e){
         if(_.get(e, 'currentTarget.id', null)){
             this.set("selectedForm", _.get(this, 'formList', []).find(form => _.get(form, 'id.name', '') === _.get(e, 'currentTarget.id', null)))
-            this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
+            //@julien i added this because max wanted a different sumher between SPF and the other eform.
+            if(this.selectedForm.id.name.includes("HANDICARE")){
+                this._generateSimplifiedSumehr(true).then(sumehr=>{
+                    this.set("patientSumehr",sumehr)
+                    this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
+                })
+            }else{
+                this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
+            }
         }
     }
 
@@ -627,73 +639,208 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
         this.shadowRoot.querySelector("#htPatEformFormView")._removeFormAttachment(_.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', null)))
     }
 
-    _generateSimplifiedSumehr(){
-        const promResolve = Promise.resolve()
-        return promResolve.then(() => {
+    _generateSimplifiedSumehr(isFull){
+        const dmg= _.get(this,"patient.patientHealthCareParties",[]).find(hcp => hcp.referral && hcp.type==="doctor" && hcp.referralPeriods.length  && hcp.referralPeriods.find(p => p && (p.startDate && !p.endDate) || (p.startDate && p.endDate && moment().isBetween(this.api.moment(p.startDate),this.api.moment(p.endDate),'day') ) ))
+        const treatments = this.api.contact().filteredServices(this.contacts, s => s.label==="Actes")
+
+        const codesToGet = _.chunk(_.compact(_.uniq(_.flatten(_.flatMap(this.healthElements).map(he => he.codes.map(code => code.id))).concat(_.flatten(treatments.map(t => t.codes.map(code=> code.id)))))),100)
+
+        let cptId = 1
+
+        const XMLFormat = (text) => [["&",'&amp;'],["<","&lt;"],[">","&gt;"],['"','&quot;'],["'","&apos;"]].reduce((acc , [key,value]) => _.replace(acc,key,value), text)
+
+        const _getDmgData = (hcp)=> {
+            if(hcp){
+                return '<item>' +
+                    '   <id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                    '   <cd S="CD-ITEM" SV="1.11">gmdmanager</cd>' +
+                    '   <content>' +
+                    '       <hcparty>' +
+                    '           <id S="ID-HCPARTY" SV="1.0">'+XMLFormat(_.get(hcp,'nihii',null))+'</id>' +
+                    '           <cd S="CD-HCPARTY" SV="1.10">'+XMLFormat(_.get(hcp,'speciality','persphysician'))+'</cd>' +
+                    '           <firstname>'+XMLFormat(_.get(hcp,'firstName',null))+'</firstname>' +
+                    '           <familyname>'+XMLFormat(_.get(hcp,'lastName',null))+'</familyname>' +
+                    '       </hcparty>' +
+                    '   </content>' +
+                    '</item>'
+            }else{
+                return ''
+            }
+        }
+
+        const _getMedicationContent = ((he) => {
+            if(he){
+                const content =this.api.contact().preferredContent(he, this.language)
+                return '   <content>' +
+                    ( _.get(content,"medicationValue.medicinalProduct",false) ?
+                        '       <medicinalproduct>' +
+                        (_.get(content,"medicationValue.medicinalProduct.intendedcds",[]).reduce((accIcd, icd)=> accIcd+'<intendedcd SV="'+XMLFormat(_.get(content,"medicationValue.beginMoment",""))+'" S="'+XMLFormat(_.get(icd,"type","CD-DRUG-CNK"))+'">'+XMLFormat(_.get(icd,"code",""))+'</intendedcd>' ,''))+
+                        '           <intendedname>'+XMLFormat(_.get(content,"medicationValue.medicinalProduct.intendedname",""))+'</intendedname>' +
+                        '       </medicinalproduct>' :
+                    _.get(content,"medicationValue.substanceProduct ",false)?
+                        '<substanceproduct>' +
+                        (_.get(content,"medicationValue.substanceProduct.intendedcds",[]).reduce((accIcd, icd)=> accIcd+'<intendedcd SV="'+XMLFormat(_.get(content,"medicationValue.beginMoment",""))+'" S="'+XMLFormat(_.get(icd,"type",""))+'">'+XMLFormat(_.get(icd,'code',''))+'</intendedcd>' , ''))+
+                        '           <intendedname>'+XMLFormat(_.get(content,"medicationValue.medicinalProduct.intendedname",""))+'</intendedname>' +
+                        '</substanceproduct>' :'') +
+                '   </content>'
+                //todo compound
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        const _getHE = ((labels) => {
+            if(this.healthElements){
+                return _.flatMap(this.healthElements).filter(he => !_.get(he,"codes",[{code : "*"}]).find(code => code.code.startsWith('*'))).reduce((accHe , he) =>
+                    accHe.toString() +'<item>' +
+                        '   <id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                        '   <cd S="CD-ITEM" SV="1.11">'+(_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code==="healthissue" ? "healthelement" : XMLFormat(_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code))+'</cd>' +
+                        (he.codes.filter(code => _.get(code,"code","BE-ALLERGEN").includes("BE-ALLERGEN")).length ?
+                        '   <content>' +
+                        he.codes.filter(code => _.get(code,"code","BE-ALLERGEN").includes("BE-ALLERGEN")).reduce((accCode, code) => accCode.toString() + '<cd S="' + XMLFormat((code.type.includes("BE-THESAURUS") ? "CD-CLINICAL" : code.type)) + '" SV="'+XMLFormat((code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") ? '10' : '1.0'))+'" DN="' + XMLFormat((labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, ''))) + '" L="' + this.language + '">' + XMLFormat(code.code) + '</cd>','') +
+                        '   </content>' : "")+
+                        ((_.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM") || {code : 'problem'}).code==="medication" ? _getMedicationContent(he) :'')+
+                        '   <content>' +
+                        '       <text L="'+this.language+'">'+XMLFormat(_.get(he,'descr',''))+'</text>' +
+                        '   </content>' +
+                        (_.get(he,'openingDate',false) ?
+                        '   <beginmoment>' +
+                        '       <date>'+this.api.moment(_.get(he,'openingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '   </beginmoment>' : '') +
+                        (_.get(he,'closingDate',false) ?
+                            '<endmoment>' +
+                            '   <date>'+this.api.moment(_.get(he,'closingDate','')).format("YYYY-MM-DD")+'</date>' +
+                            '</endmoment>'  : '')+
+                        (!['risk','medication'].find(code => _.get(he,'tags',[]).find(tag=> tag.type==="CD-ITEM").code.includes(code)) ?
+                            '   <lifecycle>' +
+                            '       <cd S="CD-LIFECYCLE" SV="1.9">'+XMLFormat((_.get(he,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE") ? _.get(he,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE").code : _.get(he,'status',1)!==0 ||  (_.get(he,'closingDate',false) && moment().isAfter(this.api.moment(_.get(he,'closingDate',false)),'day')  ) ? 'inactive' : 'active' ))+'</cd>' +
+                            '   </lifecycle>' : '')+
+                        '</item>'
+                    ,'')
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        const _getTreatments = ((labels)=> {
+            if(treatments){
+                return treatments.reduce((accTreat, treatment) => accTreat+'<item>' +
+                    '<id S="ID-KMEHR" SV="1.0">'+(cptId++)+'</id>' +
+                    '<cd S="CD-ITEM" SV="1.11">treatment</cd>' +
+                    '<content>' +
+                    _.get(treatment,"codes",[]).reduce((accCode, code) => accCode.toString() + '<cd S="' + XMLFormat((code.type.includes("BE-THESAURUS") ? "ICD" : code.type)) + '" SV="'+XMLFormat((code.type.includes("ICPC") ? '2' : code.type.includes("CD-CLINICAL") ? "3.0" : code.type.includes("ICD") || code.type.includes("BE-THESAURUS")  ? '10' : '1.0'))+'" DN="' + XMLFormat((labels.find(l => l.id === code.id) && _.get(labels.find(l => l.id === code.id), 'label.' + this.language, ''))) + '" L="' + this.language + '">' + XMLFormat(code.code) + '</cd>','') +
+                    '</content>' +
+                    '<content>' +
+                    '   <text L="'+this.language+'">'+XMLFormat(_.get(this.api.contact().preferredContent(treatment,this.language),'stringValue',""))+'</text>' +
+                    '</content>' +
+                    (_.get(treatment,'openingDate',false) ?
+                        '   <beginmoment>' +
+                        '       <date>'+this.api.moment(_.get(treatment,'openingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '   </beginmoment>' : '') +
+                    (_.get(treatment,'closingDate',false) ?
+                        '<endmoment>' +
+                        '   <date>'+this.api.moment(_.get(treatment,'closingDate','')).format("YYYY-MM-DD")+'</date>' +
+                        '</endmoment>'  : '')+
+                    '<lifecycle>' +
+                    '   <cd S="CD-LIFECYCLE" SV="1.9">'+XMLFormat(_.get(_.get(treatment,'tags',[]).find(tag=> tag.type==="CD-LIFECYCLE"),'code','inactive'))+'</cd>' +
+                    '</lifecycle>' +
+                    '</item>','')
+            }else{
+                return ''
+            }
+        }).bind(this)
+
+        return Promise.all(codesToGet.map(codes => this.api.code().getCodes(codes.join(',')))).then( (codes) => Promise.all([
+            _.get(dmg,"healthcarePartyId",false) ? this.api.hcparty().getHealthcareParty(_.get(dmg,"healthcarePartyId","")) : Promise.resolve(),
+            Promise.resolve(_.flatten(codes))
+        ])).then(([dmgHcp,codes]) => {
             const xml = '<?xml version="1.0" encoding="utf-8"?>' +
                 '<kmehrmessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.ehealth.fgov.be/standards/kmehr/schema/v1" xsi:schemaLocation="http://www.ehealth.fgov.be/standards/kmehr/schema/v1 kmehr_elements.xsd">' +
                 '   <header>' +
                 '       <standard>' +
                 '         <cd S="CD-STANDARD" SV="1.0">20161201</cd>' +
                 '       </standard>' +
-                '       <id S="ID-KMEHR" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'.'+this.api.crypto().randomUuid()+'</id>' +
-                '       <date>'+this.api.moment(new Date()).format('YYYY-MM-DD')+'</date>' +
-                '       <time>'+this.api.moment(new Date()).format('HH:mm:ss')+'</time>' +
+                '       <id S="ID-KMEHR" SV="1.0">'+XMLFormat(_.get(this, 'hcp.nihii', null))+'.'+this.api.crypto().randomUuid()+'</id>' +
+                '       <date>'+moment().format('YYYY-MM-DD')+'</date>' +
+                '       <time>'+moment().format('HH:mm:ss')+'</time>' +
                 '       <sender>' +
                 '           <hcparty>' +
-                '               <id S="ID-HCPARTY" SV="1.0">'+_.get(this, 'hcp.nihii', null)+'</id>' +
-                '               <cd S="CD-HCPARTY" SV="1.10">persphysician</cd>' +
-                '               <firstname>'+_.get(this, 'hcp.firstName', null)+'</firstname>' +
-                '               <familyname>'+_.get(this, 'hcp.lastName', null)+'</familyname>' +
+                '               <id S="ID-HCPARTY" SV="1.0">'+XMLFormat(_.get(this, 'hcp.nihii', null))+'</id>' +
+                '               <cd S="CD-HCPARTY" SV="1.10">'+XMLFormat(_.get(this,'hcp.speciality',"persphysician"))+'</cd>' +
+                '               <firstname>'+XMLFormat(_.get(this, 'hcp.firstName', null))+'</firstname>' +
+                '               <familyname>'+XMLFormat(_.get(this, 'hcp.lastName', null))+'</familyname>' +
                 '               <telecom>' +
                 '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
                 '                   <cd S="CD-TELECOM" SV="1.0">mobile</cd>' +
-                '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', '')+'</telecomnumber>' +
+                '                   <telecomnumber>'+XMLFormat(_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', ''))+'</telecomnumber>' +
                 '               </telecom>' +
                 '               <telecom>' +
                 '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
                 '                   <cd S="CD-TELECOM" SV="1.0">email</cd>' +
-                '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'email' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'email'), 'telecomNumber', '')+'</telecomnumber>' +
+                '                   <telecomnumber>'+XMLFormat(_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'email' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'email'), 'telecomNumber', ''))+'</telecomnumber>' +
                 '               </telecom>' +
                 '               <telecom>' +
                 '                   <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
                 '                   <cd S="CD-TELECOM" SV="1.0">phone</cd>' +
-                '                   <telecomnumber>'+_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'phone' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'phone'), 'telecomNumber', '')+'</telecomnumber>' +
+                '                   <telecomnumber>'+XMLFormat(_.get(_.get(_.get(this, 'hcp.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'phone' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'phone'), 'telecomNumber', ''))+'</telecomnumber>' +
                 '               </telecom>' +
                 '           </hcparty>' +
                 '       </sender>' +
                 '   </header>' +
                 '   <folder>' +
                 '       <id S="ID-KMEHR" SV="1.0">1</id>' +
+                // patient administrative data
                 '       <patient>' +
-                '           <id S="INSS" SV="1.0">'+_.get(this, 'patient.ssin', null)+'</id>' +
-                '           <firstname>'+_.get(this, 'patient.firstName', null)+'</firstname>' +
-                '           <familyname>'+_.get(this, 'patient.lastName', null)+'</familyname>' +
+                '           <id S="INSS" SV="1.0">'+XMLFormat(_.get(this, 'patient.ssin', null))+'</id>' +
+                '           <firstname>'+XMLFormat(_.get(this, 'patient.firstName', null))+'</firstname>' +
+                '           <familyname>'+XMLFormat(_.get(this, 'patient.lastName', null))+'</familyname>' +
                 '           <birthdate>' +
                 '               <date>'+(_.get(this, 'patient.dateOfBirth', null) ? this.api.moment(_.get(this, 'patient.dateOfBirth', null)).format('YYYY-MM-DD') : null)+'</date>' +
                 '           </birthdate>' +
                 '           <sex>' +
-                '               <cd S="CD-SEX" SV="1.1">'+_.get(this, 'patient.gender', null)+'</cd>' +
+                '               <cd S="CD-SEX" SV="1.1">'+XMLFormat(_.get(this, 'patient.gender', null))+'</cd>' +
                 '           </sex>' +
                 '           <address>' +
                 '               <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
                 '               <country>' +
                 '                   <cd S="CD-FED-COUNTRY" SV="1.2">be</cd>' +
                 '               </country>' +
-                '               <zip>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'postalCode', null))  && _.trim(_.get(adr, 'postalCode', null)) !== ""), 'postalCode', null)+'</zip>' +
-                '               <city>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'city', null))  && _.trim(_.get(adr, 'city', null)) !== ""), 'city', null)+'</city>' +
-                '               <street>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'street', null))  && _.trim(_.get(adr, 'street', null)) !== ""), 'street', null)+'</street>' +
-                '               <housenumber>'+_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'houseNumber', null))  && _.trim(_.get(adr, 'houseNumber', null)) !== ""), 'houseNumber', null)+'</housenumber>' +
+                '               <zip>'+XMLFormat(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'postalCode', null))  && _.trim(_.get(adr, 'postalCode', null)) !== ""), 'postalCode', null))+'</zip>' +
+                '               <city>'+XMLFormat(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'city', null))  && _.trim(_.get(adr, 'city', null)) !== ""), 'city', null))+'</city>' +
+                '               <street>'+XMLFormat(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'street', null))  && _.trim(_.get(adr, 'street', null)) !== ""), 'street', null))+'</street>' +
+                '               <housenumber>'+XMLFormat(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'houseNumber', null))  && _.trim(_.get(adr, 'houseNumber', null)) !== ""), 'houseNumber', null))+'</housenumber>' +
+                '               <postboxnumber>'+XMLFormat(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'addressType', null) === "home" && _.trim(_.get(adr, 'postboxNumber', null))  && _.trim(_.get(adr, 'postboxNumber', null)) !== ""), 'postboxNumber', null))+'</postboxnumber>' +
                 '           </address>' +
                 '           <telecom>' +
                 '               <cd S="CD-ADDRESS" SV="1.1">home</cd>' +
                 '               <cd S="CD-TELECOM" SV="1.0">phone</cd>' +
-                '               <telecomnumber>'+_.get(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', '')+'</telecomnumber>' +
+                '               <telecomnumber>'+XMLFormat(_.get(_.get(_.get(this, 'patient.addresses', []).find(adr => _.get(adr, 'telecoms', []).map(tel => _.get(tel, 'telecomType', null) === 'mobile' && _.get(tel, 'telecomNumber', null) !== '' && _.get(tel, 'telecomNumber', null) !== null)), 'telecoms', []).find(tel => _.get(tel, 'telecomType', null) === 'mobile'), 'telecomNumber', ''))+'</telecomnumber>' +
                 '           </telecom>' +
                 '           <usuallanguage>'+_.get(this, 'language', 'fr')+'</usuallanguage>' +
                 '       </patient>' +
+                '        <transaction>' +
+                '            <id S="ID-KMEHR" SV="1.0">1</id>' +
+                '            <cd S="CD-TRANSACTION" SV="1.9">sumehr</cd>' +
+                '            <date>'+moment().format('YYYY-MM-DD')+'</date>' +
+                '            <time>'+moment().format('HH:mm:ss')+'</time>' +
+                '            <author>' +
+                '                <hcparty>' +
+                '                    <id S="ID-HCPARTY" SV="1.0">'+XMLFormat(_.get(this, 'hcp.nihii', null))+'</id>' +
+                '                    <cd S="CD-HCPARTY" SV="1.10">'+XMLFormat(_.get(this,'hcp.speciality','persphysician'))+'</cd>' +
+                '                    <firstname>'+XMLFormat(_.get(this, 'hcp.firstName', null))+'</firstname>' +
+                '                    <familyname>'+XMLFormat(_.get(this, 'hcp.lastName', null))+'</familyname>' +
+                '                </hcparty>' +
+                '            </author>' +
+                '            <iscomplete>true</iscomplete>' +
+                '            <isvalidated>true</isvalidated>' +
+                // dmg data
+                (isFull ? (_getDmgData(dmgHcp)+
+                _getHE(codes)+
+                _getTreatments(codes)) : '')+
+                '        </transaction>' +
                 '   </folder>' +
                 '</kmehrmessage>'
+
 
             return xml
         })

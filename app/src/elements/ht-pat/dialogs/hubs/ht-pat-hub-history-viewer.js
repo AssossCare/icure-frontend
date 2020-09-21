@@ -596,10 +596,9 @@ class HtPatHubHistoryViewer extends TkLocalizerMixin(mixinBehaviors([IronResizab
       this.set('isLoading',true);
       this.set("messageBefore", {});
       this.set("messageAfter", {});
-      this.$['htPatHubTransactionViewerBefore'].openHist(this.messageBefore);
-      this.$['htPatHubTransactionViewerAfter'].openHist(this.messageAfter);
-
-      this.$['historyViewer'].open();
+      this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore').openHist(this.messageBefore) : null
+      this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter').openHist(this.messageAfter) : null
+      this.shadowRoot.querySelector('#historyViewer') ? this.shadowRoot.querySelector('#historyViewer').open() : null
       this.set('updateList', []);
       this._refresh();
       this.getSumehrUpdateServices();
@@ -834,7 +833,7 @@ class HtPatHubHistoryViewer extends TkLocalizerMixin(mixinBehaviors([IronResizab
   }
 
   _closeDialogs(){
-      this.$['sumehrPreviewDialog'].close();
+      this.shadowRoot.querySelector('#sumehrPreviewDialog') ? this.shadowRoot.querySelector('#sumehrPreviewDialog').close() : null
   }
 
   _localizeHcpType(type){
@@ -847,9 +846,9 @@ class HtPatHubHistoryViewer extends TkLocalizerMixin(mixinBehaviors([IronResizab
           console.log(item);
           this.set("messageBefore", JSON.parse(item.oldatt));
           this.set("messageAfter", JSON.parse(item.newatt));
-          this.$['htPatHubTransactionViewerBefore'].openHist(this.messageBefore);
-          this.$['htPatHubTransactionViewerAfter'].openHist(this.messageAfter);
-          //this.$["historyViewer"].open();
+
+          this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerBefore').openHist(this.messageBefore) : null
+          this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter') ? this.shadowRoot.querySelector('#htPatHubTransactionViewerAfter').openHist(this.messageAfter) : null
       }
   }
 

@@ -709,7 +709,7 @@ class HtPatPrimaryPreventionDialog extends TkLocalizerMixin(mixinBehaviors([Iron
               }
           })
           this.set('filterdProcedure', this.listOfProcedures)
-          this.$['preventionDialog'].open()
+              this.shadowRoot.querySelector('#preventionDialog') ? this.shadowRoot.querySelector('#preventionDialog').open() : null
       })
 
   }
@@ -718,7 +718,7 @@ class HtPatPrimaryPreventionDialog extends TkLocalizerMixin(mixinBehaviors([Iron
       this.set('prevention', {})
       this.set('errorList', [])
       this.set('isReminderActive', false)
-      this.$['preventionDialog'].close()
+      this.shadowRoot.querySelector('#preventionDialog') ? this.shadowRoot.querySelector('#preventionDialog').close() : null
   }
 
   _procedureFilterChanged(){

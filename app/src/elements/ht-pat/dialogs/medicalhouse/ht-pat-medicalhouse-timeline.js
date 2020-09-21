@@ -1,7 +1,6 @@
 import '../../../dynamic-form/dynamic-link.js'
 import '../../../dynamic-form/dynamic-pills.js'
 import '../../../ht-spinner/ht-spinner.js'
-import '../../../../styles/dialog-style.js'
 import '../../../../styles/buttons-style.js'
 import * as models from '@taktik/icc-api/dist/icc-api/model/models'
 import moment from 'moment/src/moment'
@@ -16,22 +15,8 @@ import {PolymerElement, html} from '@polymer/polymer'
 class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-                 <style include="dialog-style atc-styles scrollbar-style buttons-style">
-             paper-dialog {
-                 width: 90%;
-                 height: 80%;
-             }
+                 <style include=" atc-styles scrollbar-style buttons-style">
  
-             paper-tabs {
-                 width: 50%;
-                 max-width: 400px;
-                 --paper-tabs-selection-bar-color: var(--app-secondary-color);
-                 /* margin: 0 auto; */
-             }
- 
-             paper-tab {
-                 --paper-tab-ink: var(--app-secondary-color);
-             }
  
              .present, .patient {
                  height: 100%;
@@ -520,149 +505,12 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                  justify-content: flex-start;
              }
  
-             .medication-category{
-                 display:flex;
-                 flex-flow: row nowrap;
-                 align-items: center;
-                 justify-content: space-between;
-                 color: var(--app-text-color);
-                 font-size: 10px;
-                 border-bottom: 1px solid var(--app-background-color-dark);
-             }
- 
-             .medication-category span:first-child{
-                 width: 10%;
-                 flex-grow: 1;
-                 padding-left: 8px;
-                 display:block;
-                 height: 100%;
-                 box-sizing: border-box;
-             }
- 
-             .medication-category span:nth-child(2){
-                 max-width: calc(24px * 36 + 2px);
-                 width: calc(24px * 36 + 2px);
-                 display:block;
-                 height: 20px;
-                 box-sizing: border-box;
-                 border-left: 1px solid var(--app-background-color-dark);
-                 border-right: 1px solid var(--app-background-color-dark);
-             }
- 
-             .medication-category span:last-child{
-                 width: 10%;
-                 flex-grow: 1;
-                 display:block;
-                 height: 100%;
-                 box-sizing: border-box;
-             }
- 
-             .medication-line{
-                 display: flex;
-                 flex-flow: row nowrap;
-                 justify-content: space-between;
-                 width: 100%;
-                 align-items: center;
-                 height: 24px;
-             }
- 
-             .medication-line:nth-child(even){
-                 background: #FAFAFA;
-             }
- 
-             .medication-line .type{
-                 width: 10%;
-                 height: 100%;
-                 text-align: left;
-                 flex-grow: 1;
-                 padding-left: 8px;
-             }
- 
-             .medication-line .extra-info{
-                 width: 10%;
-                 flex-grow: 1;
-                 padding: 0 8px;
-                 overflow: hidden;
-                 text-overflow: ellipsis;
-                 white-space: nowrap;
-                 height: 100%;
-             }
- 
-             .medication-line .line-container{
-                 max-width: calc(24px * 36 + 2px);
-                 width: calc(24px * 36 + 2px);
-                 overflow: hidden;
-                 height: 24px;
-                 border-left: 1px solid var(--app-background-color-dark);
-                 border-right: 1px solid var(--app-background-color-dark);
-             }
- 
-             .medication-line .line{
-                 display: flex;
-                 box-sizing: unset;
-                 position: absolute;
-                 color: #fff;
-                 border-radius: 2px;
-                 top: 0;
-                 left: 0;
-                 height: 100%;
-                 flex-flow: row wrap;
-                 align-items: center;
-                 justify-content: space-between;
-                 margin: 1px 0;
-             }
- 
-             .medication-line .line::after{
-                 position: absolute;
-                 height: 100%;
-                 width: 100%;
-                 display: block;
-                 content:'';
-                 z-index: 0;
-             }
- 
-             .medication-line .line.over{
-                 opacity: 0.6;
-             }
  
              .line-total-width{
                  position: relative;
                  height: 100%;
              }
  
-             .medication-line .line .name{
-                 text-align: left;
-                 margin-left: 4px;
-                 margin-bottom: 4px;
-                 z-index: 1;
-                 max-width: 100%;
-                 overflow: hidden;
-                 text-overflow: ellipsis;
-                 padding-right: 4px;
-             }
- 
-             .medication-line .line .until{
-                 text-align: right;
-                 margin-right: 4px;
-                 margin-bottom: 4px;
-                 z-index: 1;
-             }
- 
-             .medication-line .reimbursement-line{
-                 display: block;
-                 position: absolute;
-                 width: 100%;
-                 background: var(--app-status-color-ok);
-                 height: 4px;
-                 bottom: 0;
-                 transition: all .12s cubic-bezier(0.075, 0.82, 0.165, 1);
-                 cursor: pointer;
-                 overflow: visible;
-             }
- 
-             .medication-line .reimbursement-line:hover{
-                 height: 6px;
-             }
  
              paper-tooltip{
                  --paper-tooltip: {
@@ -674,11 +522,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                      transform: translate(-50%, -50%);
                      box-sizing: border-box;
                  }
-             }
- 
-             .medIcon{
-                 height: 28px;
-                 width: 28px;
              }
  
              .content{
@@ -767,10 +610,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                  position: absolute;
              }
  
-             #medicationDetailDialog{
-                 height: 500px;
-                 width: 900px;
-             }
  
              .modal-title{
                  background:  var(--app-background-color-dark);
@@ -782,16 +621,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                  position: absolute;
                  right: 0;
                  bottom: 0;
-             }
- 
-             .medicationDetailDialogContent{
-                 height: 400px;
-                 width: auto;
-                 overflow: auto;
-             }
- 
-             .medication-detail-line{
-                 display: flex;
              }
  
  
@@ -810,11 +639,6 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
              .morningIcon{
                  height: 18px;
                  width: 18px;
-             }
- 
-             .moonIcon{
-                 height: 12px;
-                 width: 12px;
              }
  
              .posologyBlock{
@@ -856,11 +680,11 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                  width:0;
              }
  
-             .opened .menu-item-icon--selected{
+             .menu-item-icon--selected{
                  width: 18px;
              }
  
-             collapse-button[opened] .menu-item-icon{
+             collapse-button .menu-item-icon{
                  transform: scaleY(-1);
              }
  
@@ -946,7 +770,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
  
          </style>
  
-         <div id="dialog" opened="{{opened}}">
+         <div id="dialog">
              <div class="admin-top-bar">
                  <div class="modal-title">[[localize('mh_flatrate_history','Flatrate history',language)]]<ht-spinner active="[[isLoading]]"></ht-spinner></div>
                  <div class="buttons">
@@ -955,241 +779,246 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
                  </div>
              </div>
  
-             <div class="present">
-                 <div class="table">
-                     <div class="tr th">
-                         <div class="td">
-                             Forfait<div class="listIcon"></div>
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
-                             MUT<div class="listIcon"></div>
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
- 
-                         </div>
-                         <div class="td span-3" style="flex-grow: 3;">
- 
-                         </div>
-                     </div>
-                     <div class="tr myRow">
-                         <div class="td">
- 
-                         </div>
-                         <div class="td">
-                             Batch
-                         </div>
-                         <div class="td">
-                             Status
-                         </div>
-                         <div class="td">
-                             ref.
-                         </div>
-                         <div class="td">
-                             MUT<div class="listIcon"></div>
-                         </div>
-                         <div class="td">
-                             ABON
-                         </div>
-                         <div class="td">
-                             tM
-                         </div>
-                         <div class="td">
-                             tK
-                         </div>
-                         <div class="td">
-                             tI
-                         </div>
-                         <div class="td span-3" style="flex-grow: 3;">
-                             comment
-                         </div>
-                     </div>
-                     <template is="dom-repeat" items="[[months]]" as="month">
+            <template is="dom-if" if="[[isLoading]]">
+                <div class="present"><ht-spinner active="[[isLoading]]"></ht-spinner></div>
+            </template>
+            <template is="dom-if" if="[[!isLoading]]">
+                 <div class="present">
+                     <div class="table">
                          <div class="tr th">
                              <div class="td">
-                                 [[_dateFormat(month.date, 'MM/YYYY')]]
-                                 <template is="dom-if" if="[[month.warnings.batchForMonth]]">
-                                     <iron-icon icon="vaadin:paperplane" class="listIcon"></iron-icon>
-                                 </template>
-                                 <template is="dom-if" if="[[!month.warnings.batchForMonth]]">
-                                     <div class="listIcon"></div>
-                                 </template>
-                                 <template is="dom-if" if="[[month.warnings.suspended]]">
-                                     <iron-icon icon="editor:money-off" class="listIcon"></iron-icon>
-                                 </template>
-                                 <template is="dom-if" if="[[!month.warnings.suspended]]">
-                                     <div class="listIcon"></div>
-                                 </template>
-                                 <template is="dom-if" if="[[month.warnings.noMhc]]">
-                                     <iron-icon icon="av:skip-previous" class="listIcon"></iron-icon>
-                                 </template>
-                                 <template is="dom-if" if="[[!month.warnings.noMhc]]">
-                                     <div class="listIcon"></div>
-                                 </template>
+                                 Forfait<div class="listIcon"></div>
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td">
-                                 [[month.data.insurability.InsuranceCode]]<div class="listIcon"></div>
+                                 MUT<div class="listIcon"></div>
                              </div>
                              <div class="td">
-                                 <!--                                    [[month.data.insurability.ct12]]-->
+     
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td">
- 
+     
                              </div>
                              <div class="td span-3" style="flex-grow: 3;">
-                                 [[localize(month.warnings.suspensionreason, month.warnings.suspensionreason, language)]]
-                                 <template is="dom-if" if="[[month.warnings.noMhc]]">
-                                     [[localize('end-flatrate','End of contract',language)]]
-                                 </template>
+     
                              </div>
                          </div>
-                         <template is="dom-if" if="[[_hasInvoices(month)]]">
-                             <template is="dom-repeat" items="[[month.data.invoices]]" as="invoice">
-                                 <div class="tr myRow">
-                                     <div class="td">
- 
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.DateEnvoi]]
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.status]]
-                                         <!--                                        ([[invoice.icCount]])-->
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.invoiceReference]]
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.InsuranceCode]]
-                                         <template is="dom-if" if="[[invoice.warnings.mutDif]]">
-                                             <iron-icon icon="warning" class="listIcon warning"></iron-icon>
-                                         </template>
-                                         <template is="dom-if" if="[[!invoice.warnings.mutDif]]">
-                                             <div class="listIcon"></div>
-                                         </template>
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.mki]]
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.tM]]
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.tK]]
-                                     </div>
-                                     <div class="td">
-                                         [[invoice.tI]]
-                                     </div>
-                                     <div class="td span-3" style="flex-grow: 3;">
-                                         [[invoice.comment]]
-                                     </div>
+                         <div class="tr myRow">
+                             <div class="td">
+     
+                             </div>
+                             <div class="td">
+                                 Batch
+                             </div>
+                             <div class="td">
+                                 Status
+                             </div>
+                             <div class="td">
+                                 ref.
+                             </div>
+                             <div class="td">
+                                 MUT<div class="listIcon"></div>
+                             </div>
+                             <div class="td">
+                                 ABON
+                             </div>
+                             <div class="td">
+                                 tM
+                             </div>
+                             <div class="td">
+                                 tK
+                             </div>
+                             <div class="td">
+                                 tI
+                             </div>
+                             <div class="td span-3" style="flex-grow: 3;">
+                                 comment
+                             </div>
+                         </div>
+                         <template is="dom-repeat" items="[[months]]" as="month">
+                             <div class="tr th">
+                                 <div class="td">
+                                     [[_dateFormat(month.date, 'MM/YYYY')]]
+                                     <template is="dom-if" if="[[month.warnings.batchForMonth]]">
+                                         <iron-icon icon="vaadin:paperplane" class="listIcon"></iron-icon>
+                                     </template>
+                                     <template is="dom-if" if="[[!month.warnings.batchForMonth]]">
+                                         <div class="listIcon"></div>
+                                     </template>
+                                     <template is="dom-if" if="[[month.warnings.suspended]]">
+                                         <iron-icon icon="editor:money-off" class="listIcon"></iron-icon>
+                                     </template>
+                                     <template is="dom-if" if="[[!month.warnings.suspended]]">
+                                         <div class="listIcon"></div>
+                                     </template>
+                                     <template is="dom-if" if="[[month.warnings.noMhc]]">
+                                         <iron-icon icon="av:skip-previous" class="listIcon"></iron-icon>
+                                     </template>
+                                     <template is="dom-if" if="[[!month.warnings.noMhc]]">
+                                         <div class="listIcon"></div>
+                                     </template>
                                  </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td">
+                                     [[month.data.insurability.InsuranceCode]]<div class="listIcon"></div>
+                                 </div>
+                                 <div class="td">
+                                     <!--                                    [[month.data.insurability.ct12]]-->
+                                 </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td">
+     
+                                 </div>
+                                 <div class="td span-3" style="flex-grow: 3;">
+                                     [[localize(month.warnings.suspensionreason, month.warnings.suspensionreason, language)]]
+                                     <template is="dom-if" if="[[month.warnings.noMhc]]">
+                                         [[localize('end-flatrate','End of contract',language)]]
+                                     </template>
+                                 </div>
+                             </div>
+                             <template is="dom-if" if="[[_hasInvoices(month)]]">
+                                 <template is="dom-repeat" items="[[month.data.invoices]]" as="invoice">
+                                     <div class="tr myRow">
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.DateEnvoi]]
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.status]]
+                                             <!--                                        ([[invoice.icCount]])-->
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.invoiceReference]]
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.InsuranceCode]]
+                                             <template is="dom-if" if="[[invoice.warnings.mutDif]]">
+                                                 <iron-icon icon="warning" class="listIcon warning"></iron-icon>
+                                             </template>
+                                             <template is="dom-if" if="[[!invoice.warnings.mutDif]]">
+                                                 <div class="listIcon"></div>
+                                             </template>
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.mki]]
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.tM]]
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.tK]]
+                                         </div>
+                                         <div class="td">
+                                             [[invoice.tI]]
+                                         </div>
+                                         <div class="td span-3" style="flex-grow: 3;">
+                                             [[invoice.comment]]
+                                         </div>
+                                     </div>
+                                 </template>
+                                 <template is="dom-if" if="[[month.warnings.invoiceLost]]">
+                                     <div class="tr myRow">
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+                                             <paper-icon-button class="menu-item-icon menu-item-icon--add" icon="icons:add" on-tap="_createInvoice" data-month$="[[month]]"></paper-icon-button>
+                                             <!--                                        <paper-button on-tap="_createInvoice" data-month$="[[month]]">ADD</paper-button>-->
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td">
+     
+                                         </div>
+                                         <div class="td span-3" style="flex-grow: 3;">
+     
+                                         </div>
+                                     </div>
+                                 </template>
                              </template>
-                             <template is="dom-if" if="[[month.warnings.invoiceLost]]">
+                             <template is="dom-if" if="[[_showAdd(month)]]">
                                  <div class="tr myRow">
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
                                          <paper-icon-button class="menu-item-icon menu-item-icon--add" icon="icons:add" on-tap="_createInvoice" data-month$="[[month]]"></paper-icon-button>
-                                         <!--                                        <paper-button on-tap="_createInvoice" data-month$="[[month]]">ADD</paper-button>-->
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td">
- 
+     
                                      </div>
                                      <div class="td span-3" style="flex-grow: 3;">
- 
+     
                                      </div>
                                  </div>
                              </template>
                          </template>
-                         <template is="dom-if" if="[[_showAdd(month)]]">
-                             <div class="tr myRow">
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
-                                     <paper-icon-button class="menu-item-icon menu-item-icon--add" icon="icons:add" on-tap="_createInvoice" data-month$="[[month]]"></paper-icon-button>
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td">
- 
-                                 </div>
-                                 <div class="td span-3" style="flex-grow: 3;">
- 
-                                 </div>
-                             </div>
-                         </template>
-                     </template>
+                     </div>
                  </div>
-             </div>
+             </template>
          </div>
          </div>
          <ht-pat-flatrate-utils id="flatrateUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" no-print></ht-pat-flatrate-utils>
@@ -1218,25 +1047,9 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
             language: {
                 type: String
             },
-            opened: {
-                type: Boolean,
-                value: false
-            },
-            tabs: {
-                type: Number,
-                value: 0
-            },
             isLoading: {
                 type: Boolean,
                 value: false
-            },
-            insList: {
-                type: Object,
-                value: null
-            },
-            invoicedMonth: {
-                type: Number,
-                value: 201901
             },
             invoices: {
                 type: Array,
@@ -1245,161 +1058,25 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
             months: {
                 type: Array,
                 value: null
-            },
-            invoiceType: {
-                type: Array,
-                value: () => [
-                    {
-                        id: "mutualfund",
-                        label: {"fr": "Mutuelle", "nl": "Mutual", "en": "Mutual"}
-                    },
-                    {
-                        id: "patient",
-                        label: {"fr": "Patient", "nl": "Patient", "en": "Patient"}
-                    },
-                    {
-                        id: "payingagency",
-                        label: {"fr": "Autre organisme", "nl": "Anders", "en": "Paying agency"}
-                    }
-                ]
-            },
-            sentMediumType: {
-                type: Array,
-                value: () => [
-                    {
-                        id: "cdrom",
-                        label: {"fr": "cd-rom", "nl": "cd-rom", "en": "cd-rom"}
-                    },
-                    {
-                        id: "efact",
-                        label: {"fr": "eFact", "nl": "eFact", "en": "eFact"}
-                    },
-                    {
-                        id: "eattest",
-                        label: {"fr": "eAttest", "nl": "eAttest", "en": "eAttest"}
-                    },
-                    {
-                        id: "mediprima",
-                        label: {"fr": "Mediprima", "nl": "Mediprima", "en": "Mediprima"}
-                    },
-                    {
-                        id: "paper",
-                        label: {"fr": "Papier", "nl": "Paper", "en": "Paper"}
-                    }
-                ]
-            },
-            invoicePeriod: {
-                type: Array,
-                value: () => [
-                    {
-                        id: 0,
-                        label: {"fr": "Semaine", "nl": "Week", "en": "Week"}
-                    },
-                    {
-                        id: 1,
-                        label: {"fr": "Nuit", "nl": "Nacht", "en": "Night"}
-                    },
-                    {
-                        id: 2,
-                        label: {"fr": "Weekend", "nl": "Weekend", "en": "Weekend"}
-                    },
-                    {
-                        id: 3,
-                        label: {"fr": "Jour férié", "nl": "Vakantie", "en": "Public holiday"}
-                    }
-                ]
-            },
-            careProviderType: {
-                type: Array,
-                value: () => [
-                    {
-                        id: "persphysician",
-                        label: {"fr": "Médecin", "nl": "Arts", "en": "Physician"}
-                    },
-                    {
-                        id: "traineesupervised",
-                        label: {"fr": "Méd.stag. superv.", "nl": "Stagiair arts", "en": "Superv. trainee"}
-                    },
-                    {
-                        id: "trainee",
-                        label: {"fr": "Médecin stagiaire", "nl": "Stagiair arts", "en": "Trainee physician"}
-                    }
-                ]
-            },
+            }
         }
     }
 
     static get observers() {
-        return ['apiReady(api,user,opened)', 'isOpened(patient, user)']
+        return ['patientChanged(patient, user,flatRateUtil)']
     }
 
     ready() {
         super.ready()
-        this.addEventListener('iron-resize', () => this.onWidthChange())
-        document.addEventListener('xmlHubUpdated', () => this.xmlHubListener())
+        this.set('flatRateUtil', this.$.flatrateUtils)
     }
 
-    _dateFormat(date) {
-        return date ? this.api.moment(date).format('DD/MM/YYYY') : ''
-    }
-
-    _timeFormat(date) {
-        return date ? this.api.moment(date).format(date > 99991231 ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY') : ''
-    }
-
-    _ageFormat(date) {
-        return date ? this.api.getCurrentAgeFromBirthDate(date, (e, s) => this.localize(e, s, this.language)) : ''
-    }
-
-    _dateFormat2(date, fFrom, fTo) {
-        return date ? this.api.moment(date, fFrom).format(fTo) : ''
-    }
-
-    _shortDateFormat(date, altDate) {
-        return (date || altDate) && "'" + this.api.moment((date || altDate)).format('YY') || ''
-    }
-
-    _trueOrUnknown(b) {
-        return b ? this.localize('yes', 'yes', this.language) : '?'
-    }
-
-    _yesOrNo(b) {
-        return b ? this.localize('yes', 'yes', this.language) : this.localize('no', 'no', this.language)
-    }
-
-    _hasErrors(errs) {
-        return errs && errs.length > 0
-        //return true;
-    }
-
-    onWidthChange() {
-        const offsetWidth = this.$.dialog.offsetWidth
-        const offsetHeight = this.$.dialog.offsetHeight
-        if (!offsetWidth || !offsetHeight) {
-            return
+    patientChanged() {
+        if (this.patient && this.user && this.flatRateUtil) {
+            this.set("isLoading", true)
+            this.set("months",[])
+            this._generateTimeLine()
         }
-    }
-
-    isOpened() {
-        if (this.patient && this.user) {
-            this.months = []
-            setTimeout(() => {
-                this._generateTimeLine()
-            }, 1000)
-        }
-    }
-
-    apiReady() {
-        if (!this.api || !this.user || !this.user.id || !this.opened) return
-    }
-
-    attached() {
-        super.attached()
-        this.async(this.notifyResize, 1)
-    }
-
-    _runForfaitCheck() {
-        return this.checkFlatrateData(this.patient, Number(this.invoicedMonth))
     }
 
     checkFlatrateData(pat, invoicedMonth) {
@@ -1577,107 +1254,10 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
         }) : {valid: false, error: 'niss-absent'}
     }
 
-    _getGeninsHistory() {
-        this.set("isLoading", true)
-        let aMonths = []
-        let i
-        for (i = 0; i < 24; i++) {
-            aMonths.push(moment().startOf('month').subtract(i, 'month'))
-        }
-        this.set("insList", null)
-        let insList = []
-        Promise.all(aMonths.map(m => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Geninscontroller().getGeneralInsurabilityUsingGET(
-            this.cleanNiss(this.patient.ssin),
-            this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
-            this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", m.format('x'), null
-            ))
-        )).then(aRes => {
-            aRes.map(res => {
-                insList.push(res)
-                //console.log(res);
-            })
-            this.set("insList", insList)
-            // console.log("insList", JSON.stringify(insList))
-            this.set("isLoading", false)
-        }).finally(this.set("isLoading", false))
-    }
-
-    cleanNiss(niss) {
-        return niss.replace(/ /g, "").replace(/-/g, "").replace(/\./g, "").replace(/_/g, "").replace(/\//g, "")
-    }
-
-    _runTest() {
-        let mhcs = this.patient.medicalHouseContracts
-        mhcs.map(
-            mhc => {
-                let tmp = mhc.suspensionSource
-            }
-        )
-        const amounts = this.getForfaitAmounts()
-        const amount = this.getForfaitAmountOnDate(20161101)
-        const amount1 = this.getForfaitAmountOnDate(20171101)
-        const amount2 = this.getForfaitAmountOnDate(20181101)
-    }
-
-
-    getForfaitAmountOnDate(date) {
-        const amounts = this.getForfaitAmounts()
-        let amount = amounts.find(am => am.startDate <= date && (!am.endDate || am.endDate >= date))
-
-        return amount
-    }
-
-    getForfaitAmounts() {
-        const propRegStatus = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.Forfait.Amounts') ||
-            (this.user.properties[this.user.properties.length] = {
-                type: {identifier: 'org.taktik.icure.user.Forfait.Amounts'},
-                typedValue: {type: 'JSON', stringValue: '{\"amounts\":[]}'}
-            })
-        let amounts = {}
-        if (propRegStatus && propRegStatus.typedValue) {
-            amounts = JSON.parse(propRegStatus.typedValue.stringValue)
-        }
-        return amounts.amounts ? amounts.amounts : null
-    }
-
-    open() {
-        this.$.dialog.open()
-    }
-
-    close() {
-        this.$.dialog.close()
-    }
-
     _createInvoice(e) {
+        if(!this.flatRateUtil)return;
         const month = JSON.parse(_.get(e, "target.dataset.month", ""))
-        const flatRateUtil = this.$.flatrateUtils
-        flatRateUtil.createInvoice(this.patient, parseInt(this.api.moment(month.date).format("YYYYMMDD"))).then(invoice => this._generateTimeLine())
-    }
-
-    _runGetInvoiceHistory() {
-        const flatRateUtil = this.$.flatrateUtils
-        flatRateUtil.getPatientInvoices(this.patient).then(inv => {
-            this.set('invoices', inv.filter(inv => inv.sentMediumType === "cdrom"))
-        })
-    }
-
-    getInvoiceType(invoiceType) {
-        if (!invoiceType) return
-        const type = this.invoiceType.find(type => type.id === invoiceType)
-        return type && type.label && type.label[this.language]
-    }
-
-    getSentMediumType(sentMediumType) {
-        const type = this.sentMediumType.find(type => type.id === sentMediumType)
-        return type && type.label && type.label[this.language]
-    }
-
-    _formatInvoiceDate(date) {
-        return date ? this.api.moment(date).format("DD/MM/YYYY") : 'N/A'
-    }
-
-    _ifStatusDateExist(date) {
-        return (date && date !== "") ? true : false
+        this.flatRateUtil.createInvoice(this.patient, parseInt(this.api.moment(month.date).format("YYYYMMDD"))).then(invoice => this._generateTimeLine())
     }
 
     _dateFormat(date, format) {
@@ -1694,20 +1274,20 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
     }
 
     _generateTimeLine() {
-        const flatRateUtil = this.$.flatrateUtils
+        if(!this.flatRateUtil)return;
         let invoices = []
         let insurancesData = []
         let messages = []
-        flatRateUtil.getFlatrateInvoiceMessages().then(msgs => {
+        this.flatRateUtil.getFlatrateInvoiceMessages().then(msgs => {
             messages = msgs
             // console.log("messageCount", messages.length)
             // console.log("messages", messages)
-            return flatRateUtil.getPatientInvoices(this.patient)
+            return this.flatRateUtil.getPatientInvoices(this.patient)
         }).then(invs => {
             invoices = invs.filter(inv => inv.sentMediumType === "efact")
             // console.log("invoices", invoices)
             const patInsurances = this.patient.insurabilities.map(ins => ins.insuranceId)
-            return flatRateUtil._getInsurancesDataByIds(_.compact(_.uniq(_.concat(_.map(invoices, "recipientId", ""), patInsurances))))
+            return this.flatRateUtil._getInsurancesDataByIds(_.compact(_.uniq(_.concat(_.map(invoices, "recipientId", ""), patInsurances))))
         }).then(ins => {
             insurancesData = ins
             if (this.patient && this.patient.medicalHouseContracts && this.patient.medicalHouseContracts.length > 0) {
@@ -1833,7 +1413,7 @@ class HtPatMedicalhouseTimeline extends TkLocalizerMixin(mixinBehaviors([IronRes
             } else {
                 this.set('months', [])
             }
-        })
+        }).finally(()=> this.set("isLoading", false))
 
     }
 }

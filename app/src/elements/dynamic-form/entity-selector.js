@@ -139,7 +139,7 @@ class EntitySelector extends TkLocalizerMixin(PolymerElement) {
 
       if(!_.trim(_.get(this,"entityType"))) this.set('entityType',this.localize('entity','entity',this.language))
 
-      var grid = this.$['entities-list'];
+      var grid = this.shadowRoot.querySelector('#entities-list');
 
       grid.lastParams = null; //Used to prevent double calls
       grid.size = 0;
@@ -203,7 +203,7 @@ class EntitySelector extends TkLocalizerMixin(PolymerElement) {
           let currentValue = this.filterValue;
           if (this.latestSearchValue === currentValue) { return; }
           // Imrpove with lodash _.defer
-          setTimeout(function () { if (currentValue === this.filterValue) { this.$['entities-list'].clearCache(); } }.bind(this), 500); //Wait for the user to stop typing
+          setTimeout(function () { if (currentValue === this.filterValue) { this.shadowRoot.querySelector('#entities-list') && this.shadowRoot.querySelector('#entities-list').clearCache(); } }.bind(this), 500); //Wait for the user to stop typing
       }.bind(this), 100);
 	}
 
@@ -216,12 +216,12 @@ class EntitySelector extends TkLocalizerMixin(PolymerElement) {
   select(item) {
       if (item) {
           this.dispatchEvent(new CustomEvent('entity-selected', { detail: item, composed: true }));
-          this.$.dialog.close();
+          this.shadowRoot.querySelector('#dialog') && this.shadowRoot.querySelector('#dialog').close();
       }
 	}
 
   open() {
-      this.$.dialog.open();
+      this.shadowRoot.querySelector('#dialog') && this.shadowRoot.querySelector('#dialog').open();
 	}
 
   _activeItemChanged(item) {

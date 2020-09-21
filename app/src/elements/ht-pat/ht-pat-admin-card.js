@@ -557,6 +557,9 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                     <paper-tab class="adm-tab"><iron-icon class="smaller" icon="timeline"></iron-icon>[[localize('mh_timeline','Timeline',language)]]</paper-tab>
                 </paper-tabs>
                 <div class="buttons">
+                    <paper-icon-button class="button--icon-btn" id="backward" icon="vaadin:arrow-backward" on-tap="backward"></paper-icon-button>
+                    <paper-tooltip for="backward" position="left">[[localize('backward','Backward',language)]]</paper-tooltip>
+                    
                     <paper-icon-button class="button--icon-btn" id="print-vignette" icon="av:recent-actors" on-tap="printMutualVignette"></paper-icon-button>
                     <paper-tooltip for="print-vignette" position="left">[[localize('print_mutual_vignette','Print mutual vignette',language)]]</paper-tooltip>
 
@@ -673,9 +676,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           patientForm: {
               type: Object,
-              value: function () {
-                  return require('./rsrc/PatientAdministrativeForm.json');
-              }
+              value: ()=> {}
           },
           addressForm: {
               type: Object,
@@ -703,9 +704,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           },
           partnershipsForm: {
               type: Object,
-              value: function () {
-                  return require('./rsrc/PatientPartnershipsForm.json');
-              }
+              value: ()=>{}
           },
           partnershipsContainerForm: {
               type: Object,
@@ -883,6 +882,10 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           onElectron:{
               type: Boolean,
               value: false
+          },
+          ctrlZ :{
+              type : Array,
+              value : ()=>[]
           }
       };
   }
@@ -1048,10 +1051,11 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
   patientChanged() {
       if (!this.api || !this.user) { return }
-
-      this.set('dataProvider', this.patientDataProvider({}, '', '', null, []));
-      this.set('patientMap', {});
-      this.set("listValidSsin",{})
+      if(!this.patient){
+          this.set('dataProvider', this.patientDataProvider({}, '', '', null, []));
+          this.set('patientMap', {});
+          this.set("listValidSsin",{})
+      }
 
       if(this.$["noSave"].classList.contains("notification"))this.$["noSave"].classList.remove("notification")
 
@@ -1086,11 +1090,10 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   }))
               }
 
-              if (this.patient.partnerships && this.patient.partnerships.length) {
-                  ;(this.patient.partnerships.length ? this.api.patient().getPatientsWithUser(this.user,{ids:this.patient.partnerships.map(ps => ps.partnerId)}) : Promise.resolve([]))
-                      .then(ppss => ppss.map(p => this.api.register(p, 'patient')))
-                      .then(ppss =>
-                      this.set('patient.partnerships',this.patient.partnerships.map(pp => {
+              (this.patient.partnerships && this.patient.partnerships.length ? this.api.patient().getPatientsWithUser(this.user,{ids:this.patient.partnerships.map(ps => ps.partnerId)}) : Promise.resolve([]))
+                  .then(ppss => ppss.map(p => this.api.register(p, 'patient')))
+                  .then(ppss =>
+                      ppss && this.set('patient.partnerships',this.patient.partnerships.map(pp => {
                           return Object.assign({}, pp, { partnerInfo: ppss.find(ps => ps.id === pp.partnerId)} || {})
                       }).filter(p => !_.isEmpty(p.partnerInfo)))
                   ).finally(() => {
@@ -1100,23 +1103,15 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
                       this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
                       this.set('patientMap',_.cloneDeep(this.patient));
+                      this.set("patientForm",require('./rsrc/PatientAdministrativeForm.json'))
+                      this.set("partnershipsForm",require('./rsrc/PatientPartnershipsForm.json'))
 
                       if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                          this.$['dynamic-form-administrative'].loadDataMap();
+                          this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
                       } else {
                           this.$[this.root.activeElement.id].loadDataMap();
                       }
                   })
-              } else {
-                  this.set("dataProvider",this.patientDataProvider(this.patient, '', '', this.patient && this.patient.id, codes));
-                  this.set('patientMap',_.cloneDeep(this.patient))
-
-                  if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                      this.$['dynamic-form-administrative'].loadDataMap();
-                  } else {
-                      this.$[this.root.activeElement.id].loadDataMap();
-                  }
-              }
           })
       }
   }
@@ -1264,6 +1259,12 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           let resolvedRoot = root();
 
           if (resolvedRoot && !_.isEqual( _.get(resolvedRoot, key) , value)) {
+
+              this.push("ctrlZ",{
+                  key : (rootPath.length ? (rootPath+".") : "")+key,
+                  value : _.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+key,"")
+              })
+
               if(key.includes("code")){
                   const withoutCode= key.split(".").filter(part => !part.includes("code")).join(".")
                   if(!_.get(this,"patient."+(rootPath.length ? (rootPath+".") : "")+withoutCode,false)){
@@ -1469,13 +1470,13 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
   }
 
   showAddPersonToCareTeam() {
-      this.$['add-person-to-care-team'].open()
+      this.shadowRoot.querySelector('#add-person-to-care-team') ? this.shadowRoot.querySelector('#add-person-to-care-team').open() : null
       this.set('currentHcp', _.values(this.api.hcParties))
   }
 
   showAddNewPersonToCareTeamForm() {
-      this.$['add-person-to-care-team'].close()
-      this.$['add-new-person-to-care-team'].open()
+      this.shadowRoot.querySelector('#add-person-to-care-team') ? this.shadowRoot.querySelector('#add-person-to-care-team').close() : null
+      this.shadowRoot.querySelector('#add-new-person-to-care-team') ? this.shadowRoot.querySelector('#add-new-person-to-care-team').open() : null
   }
 
   addNewExternalPersonToCareTeam() {
@@ -1508,11 +1509,11 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                       .then(p => this.api.register(p, 'patient', defer))
                       .then(() => {
                           this.set('patient.patientHealthCareParties', phcp)
-                          this.$['add-new-person-to-care-team'].close()
+                          this.shadowRoot.querySelector('#add-new-person-to-care-team') ? this.shadowRoot.querySelector('#add-new-person-to-care-team').close() : null
                           this.initCurrentCareTeam()
 
                           if (careProvider.Invite === true) {
-                              this.$['ht-invite-hcp-link'].open()
+                              this.shadowRoot.querySelector('#ht-invite-hcp-link') ? this.shadowRoot.querySelector('#ht-invite-hcp-link').open() : null
                               this.invitedHcpLink = window.location.origin + window.location.pathname + '/?userId=' + usr.id + '&token=' + usr.applicationTokens.tmpFirstLogin
                           }
                       })
@@ -1566,7 +1567,16 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)) {
                       this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                           .then(hcp =>
-                              this.api.fhc().Dmgcontroller().consultDmgUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'nihii', null), _.get(hcp, 'ssin', null), _.get(hcp, 'firstName', null), _.get(hcp, 'lastName', null), _.get(this, 'patient.ssin', null))
+                              this.api.fhc().Dmg().consultDmgUsingGET(
+                                  _.get(this, 'api.keystoreId', null),
+                                  _.get(this, 'api.tokenId', null),
+                                  _.get(this, 'api.credentials.ehpassword', null),
+                                  _.get(hcp, 'nihii', null),
+                                  _.get(hcp, 'ssin', null),
+                                  _.get(hcp, 'firstName', null),
+                                  _.get(hcp, 'lastName', null),
+                                  _.get(this, 'patient.ssin', null)
+                              )
                           )
                           .then(dmgConsultResp => {
                               const dmgNihii = _.get(dmgConsultResp, 'hcParty.ids', []).find(id => id.s === 'ID_HCPARTY') ? _.get(_.get(dmgConsultResp, 'hcParty.ids', []).find(id => _.get(id, 's', null) === 'ID_HCPARTY'), 'value', null) : ''
@@ -1782,7 +1792,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
 
       let tmp = this.selectedCareProvider;
 
-	    this.$['showHcpInfo'].open();
+      this.shadowRoot.querySelector('#showHcpInfo') ? this.shadowRoot.querySelector('#showHcpInfo').open() : null
 
       const pphcTab = this.patient.patientHealthCareParties;
       const pphcTarget = pphcTab.find(pphc => pphc.healthcarePartyId === this.selectedCareProvider.id);
@@ -1895,7 +1905,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                           niss: this.cardData.nationalNumber
                       }
                   });
-                  this.$['warning-message-box'].open();
+                  this.shadowRoot.querySelector('#warning-message-box') ? this.shadowRoot.querySelector('#warning-message-box').open() : null
               } else if (this.patient.ssin !== this.cardData.nationalNumber) {
                   this.dispatchEvent(new CustomEvent('error-electron', {detail: { message:this.localize("error-elect-eid-ssin-diff","EID : the EID SSIN isn't the same as the patient's",this.language)}, bubbles: true, composed: true}));
               } else {
@@ -1961,7 +1971,7 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
                   this.set('patientMap', _.cloneDeep(this.patient));
 
                   if (!this.root.activeElement || !this.$[this.root.activeElement.id]) {
-                      this.$['dynamic-form-administrative'].loadDataMap();
+                      this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
                   } else {
                       this.$[this.root.activeElement.id].loadDataMap();
                   }
@@ -2116,8 +2126,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           }).finally(()=>{
               this.$["noSave"].classList.remove("notification")
               this.set('patientMap', _.cloneDeep(this.patient));
-              this.$['dynamic-form-administrative'].loadDataMap();
-              this.$['dynamic-form-partnerships'].loadDataMap();
+              this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
+              this.shadowRoot.querySelector('#dynamic-form-partnerships') ? this.shadowRoot.querySelector('#dynamic-form-partnerships').loadDataMap() : null
               this.set("activeItem",{})
           })
       }
@@ -2142,8 +2152,8 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
           }).finally(()=>{
               this.$["noSave"].classList.remove("notification")
               this.set('patientMap', _.cloneDeep(this.patient));
-              this.$['dynamic-form-administrative'].loadDataMap();
-              this.$['dynamic-form-partnerships'].loadDataMap();
+              this.shadowRoot.querySelector('#dynamic-form-administrative') ? this.shadowRoot.querySelector('#dynamic-form-administrative').loadDataMap() : null
+              this.shadowRoot.querySelector('#dynamic-form-partnerships') ? this.shadowRoot.querySelector('#dynamic-form-partnerships').loadDataMap() : null
               this.set("activeItem",{})
           })
       }
@@ -2193,6 +2203,14 @@ class HtPatAdminCard extends TkLocalizerMixin(PolymerElement) {
       }else{
           if(this.$["noSave"].classList.contains("notification"))this.$["noSave"].classList.remove("notification")
       }
+  }
+
+  backward(e){
+      if(!this.ctrlZ.length)return;
+      const oldValue = this.pop("ctrlZ")
+      this.set("patient."+oldValue.key,oldValue.value)
+      this.set('patientMap',_.cloneDeep(this.patient))
+      this.scheduleSave(this.patient);
   }
 }
 

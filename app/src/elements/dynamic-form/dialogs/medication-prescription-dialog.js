@@ -1760,7 +1760,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _reloadCompounds() {
-      let grid = this.$['compound-list'];
+      let grid = this.shadowRoot.querySelector('#compound-list') ? this.shadowRoot.querySelector('#compound-list') : null
       if (grid && grid.drugsCache) {
           grid.drugsCache = null;
           grid.drugsCacheUpperSearchIndex = 0;
@@ -1894,7 +1894,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _searchOnIngredientsChanged() {
-      let grid = this.$['ingredient-list'];
+      let grid = this.shadowRoot.querySelector('#ingredient-list') ? this.shadowRoot.querySelector('#ingredient-list') : null
       // Force bypass cache, we just checked / unchecked ingredient box
       if (grid && grid.drugsCache) {
           grid.drugsCache = null;
@@ -1984,7 +1984,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
               this.set('compound', '');
               this.set('compoundPrescriptionText', '');
 
-              this.$['medication-prescription'].open();
+              this.shadowRoot.querySelector('#medication-prescription') ? this.shadowRoot.querySelector('#medication-prescription').open() : null
 
               const insurability = ((this.patient || {}).insurabilities || []).find(a => !a.endDate && a.insuranceId && a.insuranceId !== "") || null;
               if (insurability && insurability.parameters) {
@@ -2608,7 +2608,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
 
   medicationTypeChanged(name) {
       if (this.medicationType === 'substanceProduct' || this.medicationType === 'medicinalProduct') {
-          let grid = this.$['ingredient-list'];
+          let grid = this.shadowRoot.querySelector('#ingredient-list') ? this.shadowRoot.querySelector('#ingredient-list') : null
           grid.clearCache()
       }
   }
@@ -2624,7 +2624,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _addCnkDci(e) {
-      const grid = this.$['ingredient-list'];
+      const grid = this.shadowRoot.querySelector('#ingredient-list') ? this.shadowRoot.querySelector('#ingredient-list') : null
       let med = null
       if (this.medicationType === 'substanceProduct') {
           med = grid.latestResults.find(d => this._id(d) === e.target.id)
@@ -2798,7 +2798,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
 
           //Trigger cheapAlternativeSearch
           if (this.selectedMedicationFromList && !this.selectedMedicationFromList.cheap) {
-              const grid = this.$['ingredient-list']
+              const grid = this.shadowRoot.querySelector('#ingredient-list') ? this.shadowRoot.querySelector('#ingredient-list') : null
               grid.clearCache();
           }
 
@@ -2922,7 +2922,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   }
 
   _selectedMedicationFromListChanged(item) {
-      var grid = this.$['medicine-package-list'];
+      var grid = this.shadowRoot.querySelector('#medicine-package-list') ? this.shadowRoot.querySelector('#medicine-package-list') : null
       grid.selectedItems = item ? [item] : [];
   }
 
@@ -3056,7 +3056,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                           )
                       )
                   }
-                  this.$['checkintol'].open()
+                  this.shadowRoot.querySelector('#checkintol') ? this.shadowRoot.querySelector('#checkintol').open() : null
               } else {
                   return thenfun()
               }

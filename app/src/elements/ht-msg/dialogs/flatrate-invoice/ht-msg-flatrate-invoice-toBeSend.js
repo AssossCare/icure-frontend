@@ -828,9 +828,19 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
                 .groupBy(fact => fact.insuranceParent)
                 .toPairs().value()
                 .forEach(([fedId,invoices]) => {
-                    prom = prom.then(() => this.api.message().sendBatch(this.user, this.hcp, invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})), _.get(this.api, 'keystoreId', null), _.get(this.api, 'tokenIdMH', null), _.get(this.api, 'credentials.ehpassword', null), this.api.fhc().Efactcontroller(),
-                        undefined,
-                        (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`),"medicalhouse")
+                    prom = prom.then(() =>
+                        this.api.message().sendBatch(
+                            this.user,
+                            this.hcp,
+                            invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})),
+                            _.get(this.api, 'keystoreId', null),
+                            _.get(this.api, 'tokenIdMH', null),
+                            _.get(this.api, 'credentials.ehpassword', null),
+                            this.api.fhc().Efact(),
+                            undefined,
+                            (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`),
+                            false
+                        )
                     ).then(message => {
                         console.log(message)
                         this.push('progressItem', this.localize('inv-step-2', 'inv-step-2', this.language)+' '+_.get(message, 'metas.ioFederationCode', ""))
@@ -1975,7 +1985,7 @@ class HtMsgFlatrateInvoiceToBeSend extends TkLocalizerMixin(PolymerElement) {
         const endDate = this.api.moment(ptd.end)
         const dmfAniv = !!ptd.dmf ? this.api.moment(ptd.dmf + "/01").add('years', 1) : null
         const invDateTmp = this.api.moment(invDate)
-        return startDate.isSameOrBefore(invDateTmp, 'day')
+        return !!startDate && startDate.isSameOrBefore(invDateTmp, 'day') && (startDate.isAfter(this.api.moment("19001231")))
             && (endDate.isBefore(this.api.moment("19000101"))|| endDate.isAfter(invDateTmp))
             && (!dmfAniv || dmfAniv.isSameOrBefore(invDateTmp, 'day'))
     }

@@ -1880,8 +1880,8 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       const componentProperties = HtMsgDetail.properties
       Object.keys(componentProperties).forEach(k => { if (!_.get(componentProperties[k],"noReset", false)) { this.set(k, (typeof componentProperties[k].value === 'function' ? componentProperties[k].value() : (componentProperties[k].value || null))) }})
 
-      this.$['positiveFeedback'] && this.$['positiveFeedback'].classList && this.$['positiveFeedback'].classList.remove('showFeedbackMessage')
-      this.$['negativeFeedback'] && this.$['negativeFeedback'].classList && this.$['negativeFeedback'].classList.remove('showFeedbackMessage')
+      this.shadowRoot.querySelector('#positiveFeedback') && this.shadowRoot.querySelector('#positiveFeedback').classList ? this.shadowRoot.querySelector('#positiveFeedback').classList.remove('showFeedbackMessage') : null
+      this.shadowRoot.querySelector('#negativeFeedback') && this.shadowRoot.querySelector('#negativeFeedback').classList  ? this.shadowRoot.querySelector('#negativeFeedback').classList.remove('showFeedbackMessage') : null
 
   }
 
@@ -2042,7 +2042,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
   }
 
   _closeConfirmActionDialog() {
-      this.$['confirmActionDialog'].close()
+      this.shadowRoot.querySelector('#confirmActionDialog') ? this.shadowRoot.querySelector('#confirmActionDialog').close() : null
   }
 
   _deleteAssignment(e) {
@@ -2169,34 +2169,33 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                       .catch(() => { return Promise.resolve() }),
               p => ( !!_.get(p,"active",false) && ( !!_.trim(_.get(p,"dateOfBirth","")) || !!_.trim(_.get(p,"ssin","")) ) ), 0, 50, []
           )
-              .then(searchResults => { if (reqIdx === this._patientSearchReqIdx) {
-                  return this.set("_manualSearchResultsForAssignments", _
-                      .chain(searchResults)
-                      .map(patientData =>{return {
-                          isAssigned: false,
-                          documentType: "labresult",
-                          documentId: documentId,
-                          patientData: {
-                              id: _.trim(_.get(patientData, "id", "")),
-                              firstName: _.map(_.trim(_.get(patientData, "firstName", "")).split(" "), i => _.capitalize(i)).join(" "),
-                              lastName: _.map(_.trim(_.get(patientData, "lastName", "")).split(" "), i => _.capitalize(i)).join(" "),
-                              dateOfBirth: _.trim(_.get(patientData, "dateOfBirth", "")),
-                              dateOfBirthHr: (_.parseInt(_.trim(_.get(patientData, "dateOfBirth", ""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData, "dateOfBirth", "")))) : ""),
-                              ssin: _.trim(_.get(patientData, "ssin", "")),
-                              sex: (_.trim(_.get(patientData, "gender", "male")).toLowerCase() === "male" ? "M" : "F"),
-                              picture: _.trim(_.get(patientData, "picture", "")),
-                              address: _.chain(_.get(patientData, "addresses", {})).filter({addressType: "home"}).head().value() ||
-                                  _.chain(_.get(patientData, "addresses", {})).filter({addressType: "work"}).head().value() ||
-                                  _.chain(_.get(patientData, "addresses", {})).head().value() ||
-                                  {},
-                              lastModifiedHr: parseInt(_.get(patientData, "modified", null)) ? moment(_.get(patientData, "modified", null)).format("DD/MM/YYYY - HH:mm:ss") : "-"
-                          }
-                      }})
-                      .orderBy(['lastName','firstName', 'dateOfBirth','modified'],['asc','asc','desc','desc'])
-                      .uniqBy('patientData.id')
-                      .value()
-                  )
-              }})
+              .then(searchResults => reqIdx !== this._patientSearchReqIdx ? null : this.set("_manualSearchResultsForAssignments", _
+                  .chain(searchResults)
+                  .map(patientData => _.merge({}, {
+                      isAssigned: false,
+                      documentType: "labresult",
+                      documentId: documentId,
+                      patientData: {
+                          id: _.trim(_.get(patientData, "id", "")),
+                          firstName: _.map(_.trim(_.get(patientData, "firstName", "")).split(" "), i => _.capitalize(i)).join(" "),
+                          lastName: _.map(_.trim(_.get(patientData, "lastName", "")).split(" "), i => _.capitalize(i)).join(" "),
+                          dateOfBirth: _.trim(_.get(patientData, "dateOfBirth", "")),
+                          dateOfBirthHr: (_.parseInt(_.trim(_.get(patientData, "dateOfBirth", ""))) ? this.api.formatedMoment(_.parseInt(_.trim(_.get(patientData, "dateOfBirth", "")))) : ""),
+                          ssin: _.trim(_.get(patientData, "ssin", "")),
+                          sex: (_.trim(_.get(patientData, "gender", "male")).toLowerCase() === "male" ? "M" : "F"),
+                          picture: _.trim(_.get(patientData, "picture", "")),
+                          address: _.chain(_.get(patientData, "addresses", {})).filter({addressType: "home"}).head().value() ||
+                              _.chain(_.get(patientData, "addresses", {})).filter({addressType: "work"}).head().value() ||
+                              _.chain(_.get(patientData, "addresses", {})).head().value() ||
+                              {},
+                          lastModifiedHr: parseInt(_.get(patientData, "modified", null)) ? moment(_.get(patientData, "modified", null)).format("DD/MM/YYYY - HH:mm:ss") : "-"
+                      }
+                  }))
+                  .orderBy(['lastName','firstName', 'dateOfBirth','modified'],['asc','asc','desc','desc'])
+                  .uniqBy('patientData.id')
+                  .value()
+              ))
+              .then(() => this._setDefaultDocumentLabel())
               .catch(e=>{console.log("ERROR with _manualSearchForPatients: ", e);})
               .finally(() => this.set("_assignmentDialogIsLoading", false))
       }, 300)
@@ -2328,11 +2327,21 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       this.set("_assignmentCurrentDocumentId", documentId)
 
       if(!isOpened && !_.trim(documentId)) return prom;
-      if(!!isOpened) { this.set("_assignmentDialogIsOpened", false); this.set("_assignmentDialogIsLoading", false); this.$["positiveFeedback"].classList.remove('showFeedbackMessage'); this.$["negativeFeedback"].classList.remove('showFeedbackMessage'); this.$['annexAssignmentDialog'].close(); return prom; }
+      if(!!isOpened) {
+          this.set("_assignmentDialogIsOpened", false);
+          this.set("_assignmentDialogIsLoading", false);
+
+          this.shadowRoot.querySelector('#positiveFeedback') && this.shadowRoot.querySelector('#positiveFeedback').classList ? this.shadowRoot.querySelector('#positiveFeedback').classList.remove('showFeedbackMessage') : null
+          this.shadowRoot.querySelector('#negativeFeedback') && this.shadowRoot.querySelector('#negativeFeedback').classList ? this.shadowRoot.querySelector('#negativeFeedback').classList.remove('showFeedbackMessage') : null
+          this.shadowRoot.querySelector('#annexAssignmentDialog') ? this.shadowRoot.querySelector('#annexAssignmentDialog').close() : null
+
+          return prom;
+
+      }
       if(!isOpened && _.trim(documentId)) {
           this.set("_assignmentDialogIsOpened", true);
           this.set("_assignmentDialogIsLoading", true);
-          this.$['annexAssignmentDialog'].open();
+          this.shadowRoot.querySelector('#annexAssignmentDialog') ? this.shadowRoot.querySelector('#annexAssignmentDialog').open() : null
           setTimeout(() => {
               _.map( this.shadowRoot.querySelectorAll(".documentTypeComboBox"), it => it.value = undefined)
               _.map( this.shadowRoot.querySelectorAll(".documentTitleInput"), it => it.value = "")
@@ -2415,7 +2424,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   .then(foundContacts => _.map(alreadyAssignedDocuments, aad => {
                       const contactOfDocument = _.find(foundContacts, {id:_.trim(_.get(aad,"contactId",""))})
                       const contactCreatedOn = _.get(contactOfDocument, "created", null)
-                      const transactionTag = _.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"})
+                      const transactionTag = _.size(_.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"})) ? _.find(_.get(contactOfDocument, "tags",[]), {type:"CD-TRANSACTION"}) : _.find(_.get(contactOfDocument, "tags",[]), {type:"care.topaz.customTransaction"})
                       const serviceOfDocument = _.find(contactOfDocument.services, it => _.get(it,"content.fr.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.nl.documentId") === documentId) || _.find(contactOfDocument.services, it => _.get(it,"content.en.documentId") === documentId)
                       return _.merge({}, aad, {
                           documentType: _.get(transactionTag, "code","labresult"),
@@ -2453,8 +2462,8 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
                   const totalAnnexes = parseInt(_.size(_.filter(_.get(this,"documentsOfMessage",[]),dom=>_.trim(_.get(dom,"documentLocation","body")) !== "body" )))
                   const totalAssignedAnnexes = parseInt(_.size(_.filter(_.get(selectedMessage,"annexesInfos",[]),ai=>!!_.get(ai,"isAssigned",false))))
 
-                  if( totalAnnexes === totalAssignedAnnexes && callBackAction === "saveAssignment" ) !_.get(this,"_confirmationDialogAcknowledgementsProperties.gotMovedToAssignedMessagesDialog", false) && this.$['gotMovedToAssignedMessagesDialog'].open()
-                  if( totalAnnexes - totalAssignedAnnexes === 1 && callBackAction === "deleteAssignment" ) !_.get(this,"_confirmationDialogAcknowledgementsProperties.gotRestoredToInboxDialog", false) && this.$['gotRestoredToInboxDialog'].open()
+                  if( totalAnnexes === totalAssignedAnnexes && callBackAction === "saveAssignment" ) !_.get(this,"_confirmationDialogAcknowledgementsProperties.gotMovedToAssignedMessagesDialog", false) && this.shadowRoot.querySelector('#gotMovedToAssignedMessagesDialog') ? this.shadowRoot.querySelector('#gotMovedToAssignedMessagesDialog').open() : null
+                  if( totalAnnexes - totalAssignedAnnexes === 1 && callBackAction === "deleteAssignment" ) !_.get(this,"_confirmationDialogAcknowledgementsProperties.gotRestoredToInboxDialog", false) && this.shadowRoot.querySelector('#gotRestoredToInboxDialog') ? this.shadowRoot.querySelector('#gotRestoredToInboxDialog').open() : null
 
                   setTimeout(() => { this.$["positiveFeedback"].classList.add('showFeedbackMessage'); },100);
                   setTimeout(() => { this.$["positiveFeedback"].classList.remove('showFeedbackMessage'); },8000);
@@ -2462,6 +2471,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
               }
               this.set("_assignmentDialogIsLoading", false)
               this.api.setPreventLogging(false)
+              this._setDefaultDocumentLabel()
               return prom
 
           })
@@ -2472,7 +2482,9 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
 
       return this.api._getUserConfirmationDialogAcknowledgements(_.get(this,"user",{}))
           .then(userConfirmationDialogAcknowledgements => this.set("_confirmationDialogAcknowledgementsProperties", userConfirmationDialogAcknowledgements))
-          .then(() => !!_.get(this,"_confirmationDialogAcknowledgementsProperties.gotMovedToAssignedMessagesFromEhboxDialog", false) ? null : setTimeout(()=>{this.$['gotMovedToAssignedMessagesFromEhboxDialog'].open()},2000) )
+          .then(() => !!_.get(this,"_confirmationDialogAcknowledgementsProperties.gotMovedToAssignedMessagesFromEhboxDialog", false) ? null : setTimeout(()=>{
+              this.shadowRoot.querySelector('#gotMovedToAssignedMessagesFromEhboxDialog') ? this.shadowRoot.querySelector('#gotMovedToAssignedMessagesFromEhboxDialog').open() : null
+          },2000) )
 
   }
 
@@ -2491,11 +2503,11 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
 
       if(!_.trim(documentId)) return;
 
-      if(_.size(fieldsToValidate) !== _.size(fieldsValidation) || !_.trim(_.get(this,"newPat.gender","")) || !_.trim(!_.trim(_.get(this,"newPat.documentType","")))) return this.$['fieldsValidationDialog'].open()
+      if(_.size(fieldsToValidate) !== _.size(fieldsValidation) || !_.trim(_.get(this,"newPat.gender","")) || !_.trim(!_.trim(_.get(this,"newPat.documentType","")))) return this.shadowRoot.querySelector('#fieldsValidationDialog') ? this.shadowRoot.querySelector('#fieldsValidationDialog').open() : null
 
       return this._getPatientDataBySsin(_.trim(_.get(this,"newPat.ssin","")))
           .then(foundPatient => !!_.size(foundPatient) ?
-              this.$['alreadyExistingPatientDialog'].open() :
+              this.shadowRoot.querySelector('#alreadyExistingPatientDialog') ? this.shadowRoot.querySelector('#alreadyExistingPatientDialog').open() : null :
               prom.then(()=> this.api.patient().newInstance(this.user, {
                   lastName: _.trim(_.get(this,"newPat.lastName")),
                   firstName: _.trim(_.get(this,"newPat.firstName")),
@@ -2561,7 +2573,7 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
 
       return this.api._getUserConfirmationDialogAcknowledgements(_.get(this,"user",{}))
           .then(userConfirmationDialogAcknowledgements => this.set("_confirmationDialogAcknowledgementsProperties", userConfirmationDialogAcknowledgements))
-          .then(() => !!_.get(this,"_confirmationDialogAcknowledgementsProperties.confirmSaveDeleteAssignmentActionDialog", false) ? this._doConfirmAction() : this.$['confirmActionDialog'].open())
+          .then(() => !!_.get(this,"_confirmationDialogAcknowledgementsProperties.confirmSaveDeleteAssignmentActionDialog", false) ? this._doConfirmAction() : this.shadowRoot.querySelector('#confirmActionDialog') ? this.shadowRoot.querySelector('#confirmActionDialog').open() : null)
 
   }
 
@@ -2569,6 +2581,16 @@ class HtMsgDetail extends TkLocalizerMixin(PolymerElement) {
       const printDocumentComponent = this.shadowRoot.querySelector("#printDocument")
       return printDocumentComponent && typeof _.get(printDocumentComponent,"printDocument", false) === "function"  && printDocumentComponent.printDocument(_.get(e,"detail",{}))
   }
+
+    _setDefaultDocumentLabel() {
+
+        const docInfo = _.get(_.find(this.documentsOfMessage, {id:this._assignmentCurrentDocumentId}), "docInfo[0]")
+        const defaultLabel = !docInfo ? "" : " " + (_.trim(_.get(docInfo,"labo")) ? _.trim(_.get(docInfo,"labo")) : _.trim(_.get(this,"selectedMessage.fromAddress")) ) + ( _.trim(_.get(docInfo,"protocol")) ? " (Protocole #" + _.trim(_.get(docInfo,"protocol")) + ")" : " " )
+
+        if(!_.trim(_.get(this,"newPat.documentTitle"))) this.set("newPat.documentTitle", defaultLabel)
+        return setTimeout(() => { _.map(this.shadowRoot.querySelectorAll(".documentTitleInput"), it => _.trim(_.get(it,"value")) ? null : _.merge(it, {value:defaultLabel}) ) }, 500)
+
+    }
 
 }
 
