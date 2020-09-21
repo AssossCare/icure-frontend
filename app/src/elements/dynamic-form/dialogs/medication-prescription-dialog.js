@@ -2324,15 +2324,16 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
       if (results && results.length) {
           return Promise.all(results.map(vmpGroup => {
               const item = {
-                  "id": vmpGroup.id,
-                  "intendedName": vmpGroup.intendedName,
-                  "atcCodes": vmpGroup.atcCodes,
-                  "atcCat": _.get(vmpGroup, "atcCodes[0][0]", ""),
-                  "allergies": vmpGroup.allergies,
-                  "allergyType": this._getAllergyType(vmpGroup.allergies),
-                  "unit": vmpGroup.unit,
-                  "noSwitchReason": vmpGroup.noSwitchReason,
-                  "type": "substance"
+                  id: vmpGroup.id,
+                  intendedName: vmpGroup.intendedName,
+                  atcCodes: vmpGroup.atcCodes,
+                  atcCat: _.get(vmpGroup, "atcCodes[0][0]", ""),
+                  allergies: vmpGroup.allergies,
+                  allergyType: this._getAllergyType(vmpGroup.allergies),
+                  unit: vmpGroup.unit,
+                  noSwitchReason: vmpGroup.noSwitchReason,
+                  type: "substance",
+                  productId: _.get(vmpGroup, 'productId', null)
               };
               return item;
           }));
