@@ -856,11 +856,15 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
 
 
-      if (this.patient.ssin){ // if ehealth connected
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+      if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)){ // if ehealth connected
+          Promise.all([
+              this.api.hcparty().getHealthcareParty(_.get(this, "user.healthcarePartyId", null)),
+              this.api.besamv2().getSamVersion()
+          ])
+          .then(([hcp, samVersion]) =>
               Promise.all(
                   splitColumns.map(c =>
-                      this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                        this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                           patient: _.omit(this.patient, ['personalStatus']),
                           hcp: hcp,
                           feedback: false,
