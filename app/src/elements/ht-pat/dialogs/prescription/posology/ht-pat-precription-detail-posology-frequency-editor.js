@@ -11,24 +11,35 @@ import '../../../../../styles/spinner-style.js';
 import '../../../../../styles/tk-token-field-style.js';
 import '../../../../../styles/atc-styles.js';
 
+import '@vaadin/vaadin-date-picker/vaadin-date-picker'
+import '@polymer/paper-input/paper-input'
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu'
+import '@polymer/paper-listbox/paper-listbox'
+import '@polymer/paper-item/paper-item'
+
+import './ht-regimen-day-editor.js'
+import '../../../../dynamic-form/dynamic-text-area.js'
+
+
 import {TkLocalizerMixin} from "../../../../tk-localizer";
-import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
-import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 import _ from "lodash";
 import moment from "moment/src/moment";
 
-class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(PolymerElement) {
 
     static get template() {
         return html`
 
             <style include="dialog-style scrollbar-style shared-styles buttons-style dropdown-style icd-styles icpc-styles paper-input-styles spinner-style tk-token-field-style atc-styles">
+                #head-editor {
+                    display : flex;
+                }
             </style>
             
-            <div id="editor-contenair">
+            <div id="host">
                 <div id="head-editor">
-                    <paper-dropdown-menu always-float-label id="periodicity-dropdown" label="[[localize('peri', 'Période', language)]]" >
+                    <paper-dropdown-menu always-float-label id="periodicity-dropdown" label="[[localize('peri', 'Période', language)]]">
                         <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_selectedPeriodicityChanged" selectable="paper-item" selected="[[frequency.periodicity]]">
                             <template is="dom-repeat" items="[[periodicities]]">
                                 <paper-item value="[[item.id]]">[[_getLabel(item,language)]]</paper-item>
@@ -39,32 +50,51 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
                     <paper-dropdown-menu always-float-label id="unit-dropdown" label="[[localize('portion', 'Portion', language)]]" disabled="[[!_isDividable(units)]]">
                         <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_selectedUnitChanged" selectable="paper-item" selected="[[frequency.unit]]">
                             <template is="dom-repeat" items="[[units]]">
-                                <paper-item value="[[item.id]]">[[localize(item.label,language)]]</paper-item>
+                                <paper-item value="[[item.id]]">[[localize(item.label,item.label,language)]]</paper-item>
                             </template>
                         </paper-listbox>
                     </paper-dropdown-menu>
                     
-                    <vaadin-date-picker id="beginDate-picker" i18n="[[i18n]]" min="[[formatDateMinMax(minBeginDate)]]" max="[[formatDateMinMax(frequency.endDate)]]" value="[[_formatDate(frequency.beginDate)]]" on-value-changed="beginDateChanged"></vaadin-date-picker>
+                    <vaadin-date-picker label="[[localize('beg_date', 'begin date', language)]]" id="beginDate-picker" i18n="[[i18n]]" min="[[_formatDateMinMax(minBeginDate)]]" max="[[_formatDateMinMax(frequency.endDate)]]" value="[[_formatDate(frequency.beginDate)]]" on-value-changed="_beginDateChanged"></vaadin-date-picker>
                     
-                    <vaadin-date-picker id="endDate-picker" i18n="[[i18n]]" min="[[formatDateMinMax(frequency.beginDate)]]" max="[[formatDateMinMax(maxEndDate)]]" value="[[_formatDate(frequency.endDate)]]" on-value-changed="endDateChanged"></vaadin-date-picker>
+                    <vaadin-date-picker label="[[localize('end_date', 'end date', language)]]" id="endDate-picker" i18n="[[i18n]]" min="[[_formatDateMinMax(frequency.beginDate)]]" max="[[_formatDateMinMax(maxEndDate)]]" value="[[_formatDate(frequency.endDate)]]" on-value-changed="_endDateChanged"></vaadin-date-picker>
                     
-                    <paper-input id="duration-number" value="[[frequency.numberDuration]]"></paper-input>
-                    <paper-dropdown-menu id="duration-number" value="[[frequency.typeDuration]]"></paper-dropdown-menu>
+                    <paper-input always-float-label label="[[localize('dur_numb', 'duration number', language)]]" type="number" min="0" id="duration-number" value="[[frequency.numberDuration]]"></paper-input>
+                    
+                    <paper-dropdown-menu id="duration-type" label="[[localize('dur_type', 'duration type', language)]]">
+                        <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_typeDurationChanged" selectable="paper-item" selected="[[frequency.typeDuration]]">
+                            <paper-item value="hours">[[localize('hour','hour',language)]]</paper-item>
+                            <paper-item value="day">[[localize('day','day',language)]]</paper-item>
+                            <paper-item value="week">[[localize('week','week',language)]]</paper-item>
+                            <paper-item value="month">[[localize('month','month',language)]]</paper-item>
+                            <paper-item value="year">[[localize('year','year',language)]]</paper-item>
+                            <paper-item value="years">[[localize('years','years',language)]]</paper-item>
+                        </paper-listbox>
+                    </paper-dropdown-menu>
+                    
+                    <!-- todo @julien faire les warning dans le slot header--> 
+                    <slot name="header"></slot>
                 </div>
                 
                 <div id="body-editor">
+                    <ht-regimen-day-editor id="regimen-day-editor" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]"></ht-regimen-day-editor>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'hours')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'day')]]">
-                        <ht-regime-day-editor></ht-regime-day-editor>
+                        <!-- todo @julien ca ne se display pas probleem avec le composant-->
+                        display putain
                     </template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'week')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'month')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'year')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'years')]]"></template>
+                    
+                    <slot name="body"></slot>
                 </div>
                 
                 <div id="footer-editor">
                     <dynamic-text-area value="[[frequency.posology]]" label="[[localize('posology','Posology',language)]]" on-field-changed="_posologyChanged"></dynamic-text-area>
+                    
+                    <slot name="footer"></slot>
                 </div>
             </div>
         `;
@@ -76,70 +106,76 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
 
     static get properties() {
         return {
-            api :{
+            api: {
                 type: Object,
-                value : () => {}
+                value: () => {
+                }
             },
-            language : {
+            language: {
                 type: String,
-                value : () => {}
+                value: () => {
+                }
             },
-            i18n : {
-                type : Object,
-                value : () => {}
-            },
-            user : {
+            i18n: {
                 type: Object,
-                value : () => {}
+                value: () => {
+                }
             },
-            periodicities : {
+            user: {
+                type: Object,
+                value: () => {
+                }
+            },
+            periodicities: {
                 type: Array,
-                value : () => {
+                value: () => {
                     return [
                         {
-                            id : 'hour',
-                            label : { fr: 'Heure',nl: 'Uur',en: 'Hour'}
+                            id: 'hour',
+                            label: {fr: 'Heure', nl: 'Uur', en: 'Hour'}
                         },
                         {
-                            id : 'day',
-                            label : { fr: 'jour',nl: 'dag',en: 'day'}
+                            id: 'day',
+                            label: {fr: 'jour', nl: 'dag', en: 'day'}
                         },
                         {
-                            id : 'week',
-                            label : { fr: 'Semaine',nl: 'week',en: 'week'}
+                            id: 'week',
+                            label: {fr: 'Semaine', nl: 'week', en: 'week'}
                         },
                         {
-                            id : 'month',
-                            label : { fr: 'Mois',nl: 'maand',en: 'month'}
+                            id: 'month',
+                            label: {fr: 'Mois', nl: 'maand', en: 'month'}
                         },
                         {
-                            id : 'year',
-                            label : { fr: 'Année',nl: 'Jaar',en: 'Year'}
+                            id: 'year',
+                            label: {fr: 'Année', nl: 'Jaar', en: 'Year'}
                         },
                         {
-                            id : 'years',
-                            label : { fr: 'Années',nl: 'Jaaren',en: 'Years'}
+                            id: 'years',
+                            label: {fr: 'Années', nl: 'Jaaren', en: 'Years'}
                         }
                     ]
                 }
             },
-            frequency:{
+            frequency: {
                 type: Object,
-                value : () => {}
+                value: () => {
+                }
             },
             units: {
                 type: Array,
                 value: () => []
             },
-            minBeginDate:{//YYYY-MM-DD
+            minBeginDate: {//YYYY-MM-DD
                 type: String,
-                value : ''
+                value: ''
             },
-            maxEndDate:{
+            maxEndDate: {
                 type: String,
                 value: ''
             }
         }
+
     }
 
     static get observers() {
@@ -150,6 +186,9 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
 
     ready() {
         super.ready();
+        this.set("frequency",{
+            isReady : true
+        })
     }
 
     //event
@@ -168,6 +207,21 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
         this.set("frequency.posology",e.detail.value)
     }
 
+    _beginDateChanged(e){
+        if(moment(_.get(e,"detail.value","")).format("YYYYMMDD") === _.get(this,"frequency.beginDate", false))return;
+        this.set("frequency.beginDate",e.detail.value)
+    }
+
+    _endDateChanged(e){
+        if(moment(_.get(e,"detail.value","")).format("YYYYMMDD") === _.get(this,"frequency.endDate", false))return;
+        this.set("frequency.endDate",e.detail.value)
+    }
+
+    _typeDurationChanged(e){
+        if(_.get(e,"detail.value","") === _.get(this,"frequency.typeDuration", false))return;
+        this.set("frequency.typeDuration",e.detail.value)
+    }
+
     //observers
     writePosology(){
 
@@ -182,18 +236,18 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(mi
     }
 
     _isDividable(){
-        return _.get(this,'units',[]).length > 1
+        return (_.get(this,'units',[]) || []).length > 1
     }
 
     _formatDate(date){
-        return moment(date).format("YYYY-MM-DD")
+        return date ? this.api.moment(date).format("YYYY-MM-DD") : ""
     }
 
     _isDisplayed(text,displayer){
         return text===displayer;
     }
 
-    formatDateMinMax(date){
+    _formatDateMinMax(date){
         if(!date)return ''
         return typeof date === 'String' ? date : this.api.moment(date).format("YYY-MM-DD")
     }

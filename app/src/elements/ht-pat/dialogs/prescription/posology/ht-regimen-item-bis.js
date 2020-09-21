@@ -1,9 +1,9 @@
-import '../../styles/shared-styles.js';
-import '../../styles/buttons-style.js';
+import '../../../../../styles/shared-styles.js';
+import '../../../../../styles/buttons-style.js';
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "../tk-localizer";
-class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
+import {TkLocalizerMixin} from "../../../../tk-localizer";
+class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
         <style include="buttons-style">
@@ -119,7 +119,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get is() {
-      return 'ht-regimen-item';
+      return 'ht-regimen-item-bis';
   }
 
   static get properties() {
@@ -231,4 +231,4 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 }
 
-customElements.define(HtRegimenItem.is, HtRegimenItem);
+customElements.define(HtRegimenItemBis.is, HtRegimenItemBis);

@@ -18,6 +18,8 @@ import "@polymer/paper-item/paper-item"
 import "@polymer/paper-listbox/paper-listbox"
 import "@polymer/iron-autogrow-textarea/iron-autogrow-textarea"
 
+import './posology/ht-pat-precription-detail-posology-frequency-editor.js'
+
 import '../../../../styles/dialog-style.js';
 import '../../../../styles/scrollbar-style.js';
 import '../../../../styles/shared-styles.js';
@@ -406,16 +408,16 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 
                                 <!-- fourni par samV2 choix de la portion 1 - 1/2 - 1/3 répercussion dans la posology-->
                                 <!-- todo @julien constructPosology-->
-                                <!--<div class="regimen-line display-type-regimen">
+                                <div class="regimen-line display-type-regimen">
                                     <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!medicationDetail.dividable]]">
                                         <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{quantityFactor}}">
                                             <template is="dom-repeat" items="[[quantityFactors]]"><paper-item id="[[item.id]]" value="[[item]]">[[localize(item.label, item.numLabel, language)]]</paper-item></template>
                                         </paper-listbox>
                                     </paper-dropdown-menu>
-                                </div>-->
+                                </div>
                                 
                                 <!-- regimen 1 par fréquence et une fréquence par service-->
-                                <!--<template is="dom-repeat" items="[[regimenKeys]]">
+                                <template is="dom-repeat" items="[[regimenKeys]]">
                                     <ht-regimen-day
                                         api="[[api]]" 
                                         i18n="[[i18n]]" 
@@ -432,10 +434,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         on-regimen-changed="_regimenChanged" 
                                         on-regimen-delete="_removeRegimen"
                                     ></ht-regimen-day>
-                                </template>-->
+                                </template>
                                 <!-- todo @julien refactor variables of axel--> 
-                                <ht-pat-prescription-detail-posology-frequency-editor units="[[quantityFactor]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
-                                
+                                <!--<ht-pat-prescription-detail-posology-frequency-editor api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" units="[[quantityFactor]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
+                                -->
                                 <div class="regimen-line display-type-regimen">
                                 
                                     <paper-dropdown-menu always-float-label id="peri" label="[[localize('peri', 'Période', language)]]">
@@ -467,7 +469,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         <label slot="label" class="color-status">[[localize('instructions-for-patient','Instructions pour le patient',language)]]/[[localize('pos','Posology',language)]]</label>
                                         <iron-autogrow-textarea slot="input" value="{{medicationDetail.commentForPatient}}"></iron-autogrow-textarea>
                                     </paper-input-container>
-                                </div>                                
+                                </div>                              
 
                             </div>
                         </div>
