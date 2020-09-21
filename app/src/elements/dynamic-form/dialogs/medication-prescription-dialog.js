@@ -2437,35 +2437,43 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
   _medicinePackageAdapterSamV2(results) {
       return Promise.resolve(results
           .map(ampp => {
+              const currentDmpp = this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P'))
               return {
-                  "id": ampp.id,
-                  "groupId": ampp.groupId,
-                  "uuid": ampp.uuid,
-                  "uuids": ampp.uuids,
-                  "hasChildren": ampp.hasChildren,
-                  "parentUuid": ampp.parentUuid,
-                  "ctiExtended": ampp.ctiExtended,
-                  "intendedName": ampp.intendedName,
-                  "reinfPharmaVigiIcon": this._reinfPharmaVigiIcon(_.get(ampp, "amp.blackTriangle", false)),
-                  "atcCodes": ampp.atcCodes,
-                  "atcCat": _.get(ampp, "atcCodes[0][0]", ""),
-                  "allergies": ampp.allergies,
-                  "allergyType": this._getAllergyType(ampp.allergies),
-                  "patientPrice": ampp.id && ampp.patientPrice.toFixed(2) + "€",
-                  "publicPrice": ampp.id && ampp.publicPrice.toFixed(2) + "€",
-                  "priceIndex": ampp.id && ampp.priceIndex || 3,
-                  "catIcon": this._catIconSamV2(ampp),
-                  "unit": ampp.unit,
-                  "amp": ampp.amp,
-                  "posologyNote": ampp.posologyNote,
-                  "dividable": ampp.dividable,
-                  "packDisplayValue": ampp.packDisplayValue,
-                  "samCode": _.get(ampp, "amp.code", ""),
-                  "samDate": ampp.samDate,
-                  "type": "medicine"
+                  id: _.get(ampp, 'id', null),
+                  groupId: _.get(ampp, 'groupId', null),
+                  uuid: _.get(ampp, 'uuid', null),
+                  uuids: _.get(ampp, 'uuids', []),
+                  hasChildren: _.get(ampp, 'hasChildren', null),
+                  parentUuid: _.get(ampp, 'parentUuid', null),
+                  ctiExtended: _.get(ampp, 'ctiExtended', null),
+                  intendedName: _.get(ampp, 'intendedName', null),
+                  reinfPharmaVigiIcon: this._reinfPharmaVigiIcon(_.get(ampp, "amp.blackTriangle", false)),
+                  atcCodes: _.get(ampp, 'atcCodes', []),
+                  atcCat: _.get(ampp, "atcCodes[0][0]", ""),
+                  allergies: _.get(ampp, 'allergies', []),
+                  allergyType: this._getAllergyType(ampp.allergies),
+                  patientPrice: ampp.id && ampp.patientPrice.toFixed(2) + "€",
+                  publicPrice: ampp.id && ampp.publicPrice.toFixed(2) + "€",
+                  priceIndex: ampp.id && ampp.priceIndex || 3,
+                  catIcon: this._catIconSamV2(ampp),
+                  unit: _.get(ampp, 'unit', null),
+                  amp: _.get(ampp, 'amp', null),
+                  posologyNote: _.get(ampp, 'posologyNote', null),
+                  dividable: _.get(ampp, 'dividable', null),
+                  packDisplayValue: _.get(ampp, 'packDisplayValue', null),
+                  samCode: _.get(ampp, "amp.code", ""),
+                  productId : _.get(currentDmpp, 'productId', null),
+                  currentDmpp: currentDmpp,
+                  samDate: _.get(ampp, 'samDate', null),
+                  type: "medicine"
               };
           }));
   }
+
+    _getCurrentDmpp(dmpps){
+        const now = moment().valueOf()
+        return dmpps && dmpps.find(dmpp => _.get(dmpp, 'from', null) < now && _.get(dmpp, 'to',  null) ? _.get(dmpp, 'to',  null) > now : true) || {}
+    }
 
   _compoundPrescriptionsSearch(source, searchValue, language, type, first, count) {
       if (!searchValue || searchValue.length < 2) return Promise.resolve([]);
@@ -2722,7 +2730,7 @@ class MedicationPrescriptionDialog extends TkLocalizerMixin(PolymerElement) {
                       intendedname: _.get(med, 'intendedName', null),
                       intendedcds: [{type: drugType, code: _.get(med, 'id', null)}],
                       priority: "low",
-                      samId: _.get(med, 'samCode', null)
+                      samId: _.get(med, 'productId', null)
                   };
 
                   Object.assign(newMedicationContent.medicationValue, drugType === "CD-VMPGROUP" ? {substanceProduct: product} : {medicinalProduct: product});

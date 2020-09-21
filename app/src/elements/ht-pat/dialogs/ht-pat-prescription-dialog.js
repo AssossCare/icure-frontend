@@ -856,7 +856,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
 
 
-      if (this.patient.ssin && this.api.tokenId){ // if ehealth connected
+      if (this.patient.ssin /*&& this.api.tokenId*/){ // if ehealth connected
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => Promise.all([hcp, this.api.besamv2().getSamVersion()])).then(([hcp, samVersion]) =>
               Promise.all(
                   splitColumns.map(c =>
@@ -866,7 +866,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                           feedback: false,
                           medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
                           deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD"),
-                          samVersion: _.get(samVersion, 'version', null)
+                          samVersion: _.get(samVersion, 'version', null),
+                          vendorPhone: "+3223192241",
+                          vendorEmail: "support@topaz.care",
+                          packageVersion: "1" ,
+                          packageName: "Topaz"
                       }).then(prescri => {
                           c.rid = prescri.rid
                           c.recipeResponse = prescri
