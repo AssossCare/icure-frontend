@@ -3,7 +3,7 @@ import '../../../../../styles/buttons-style.js';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../../tk-localizer";
-class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
+class HtRegimenItemEditor extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
         <style include="buttons-style">
@@ -119,7 +119,7 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get is() {
-      return 'ht-regimen-item-bis';
+      return 'ht-regimen-item-editor';
   }
 
   static get properties() {
@@ -231,4 +231,4 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 }
 
-customElements.define(HtRegimenItemBis.is, HtRegimenItemBis);
+customElements.define(HtRegimenItemEditor.is, HtRegimenItemEditor);

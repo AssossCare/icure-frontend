@@ -1223,7 +1223,7 @@ pdf-element
 ./elements/dynamic-form/validator/ht-inami-validator.js:
 ./elements/dynamic-form/validator/ht-iban-validator.js:
 ./elements/dynamic-form/validator/ht-ssin-validator.js:
-./elements/dynamic-form/ht-regimen-item-bis.js:
+./elements/dynamic-form/ht-regimen-item-editor.js:
 import "@polymer/paper-icon-button/paper-icon-button"
 ./elements/dynamic-form/dynamic-form.js:
 ./elements/dynamic-form/dynamic-number-slider.js:

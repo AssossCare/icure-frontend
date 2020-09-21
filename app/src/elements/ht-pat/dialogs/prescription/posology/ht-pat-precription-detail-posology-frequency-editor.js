@@ -63,11 +63,10 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
                     
                     <paper-dropdown-menu id="duration-type" label="[[localize('dur_type', 'duration type', language)]]">
                         <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_typeDurationChanged" selectable="paper-item" selected="[[frequency.typeDuration]]">
-                            <paper-item value="hours">[[localize('hour','hour',language)]]</paper-item>
-                            <paper-item value="day">[[localize('day','day',language)]]</paper-item>
-                            <paper-item value="week">[[localize('week','week',language)]]</paper-item>
-                            <paper-item value="month">[[localize('month','month',language)]]</paper-item>
-                            <paper-item value="year">[[localize('year','year',language)]]</paper-item>
+                            <paper-item value="hours">[[localize('hours','hours',language)]]</paper-item>
+                            <paper-item value="day">[[localize('days','days',language)]]</paper-item>
+                            <paper-item value="week">[[localize('weeks','weeks',language)]]</paper-item>
+                            <paper-item value="month">[[localize('months','months',language)]]</paper-item>
                             <paper-item value="years">[[localize('years','years',language)]]</paper-item>
                         </paper-listbox>
                     </paper-dropdown-menu>
@@ -77,11 +76,10 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
                 </div>
                 
                 <div id="body-editor">
-                    <ht-regimen-day-editor id="regimen-day-editor" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]"></ht-regimen-day-editor>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'hours')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'day')]]">
                         <!-- todo @julien ca ne se display pas probleem avec le composant-->
-                        display putain
+                        <ht-regimen-day-editor id="regimen-day-editor" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" regimen="[[_getRegimen(frequency.regimen)]]" quantity-factor="[[frequency.unit]]" on-regimen-changed="_regimenDayChanged"></ht-regimen-day-editor>
                     </template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'week')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'month')]]"></template>
@@ -180,7 +178,8 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
 
     static get observers() {
         return [
-            "writePosology(frequency.unit,frequency.beginDate,frequency.endDate,frequency.period)"
+            "resetRegimenEditor(frequency.periodicity)",
+            "writePosology(frequency.regimen)"
         ];
     }
 
@@ -222,9 +221,19 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
         this.set("frequency.typeDuration",e.detail.value)
     }
 
+    _regimenDayChanged(e){
+        if(!_.get(e,"detail.regimen",false))return;
+        this.set("frequency.regimen",_.get(e,"detail.regimen",[]));
+    }
+
     //observers
     writePosology(){
+        //todo @julien format to correspond and modify periodicity to AbstractPeriodicity and create the good periodicity (look ehealth code periodicity)
+        this.set("frequency.posology",this.api.contact().medication().posologyToString(this.frequency))
+    }
 
+    resetRegimenEditor(){
+        this.shadowRoot.querySelector("#regimen-day-editor") && this.shadowRoot.querySelector("#regimen-day-editor").reset()
     }
 
 
@@ -250,6 +259,28 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
     _formatDateMinMax(date){
         if(!date)return ''
         return typeof date === 'String' ? date : this.api.moment(date).format("YYY-MM-DD")
+    }
+
+    _getRegimen(){
+        if(!_.get(this,"frequency.regimen",false))return {morning: 0,
+            beforebreakfast: 0,
+            duringbreakfast: 0,
+            afterbreakfast: 0,
+            betweenbreakfastandlunch: 0,
+            beforelunch: 0,
+            duringlunch: 0,
+            afterlunch: 0,
+            afternoon: 0,
+            betweenlunchanddinner: 0,
+            beforedinner: 0,
+            duringdinner: 0,
+            afterdinner: 0,
+            evening: 0,
+            thehourofsleep: 0,
+            night: 0,
+            aftermeal: 0,
+            betweenmeals: 0};
+        return _.zipObject(_.get(this,"frequency.regimen",[]).map(reg => reg.period),_.get(this,"frequency.regimen",[]).map(reg => reg.quantity))
     }
 }
 customElements.define(HtPatPrescriptionDetailPosologyFrequencyEditor.is, HtPatPrescriptionDetailPosologyFrequencyEditor);
