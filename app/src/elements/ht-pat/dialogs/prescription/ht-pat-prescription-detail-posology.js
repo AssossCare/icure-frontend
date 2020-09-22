@@ -436,8 +436,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     ></ht-regimen-day>
                                 </template>-->
                                 <!-- todo @julien refactor variables of axel--> 
-                                <ht-pat-prescription-detail-posology-frequency-editor api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" units="[[quantityFactor]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
-                                
+                                <template is="dom-repeat" items="[[regimenKeys]]">
+                                    <ht-pat-prescription-detail-posology-frequency-editor key="[[item]]" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" units="[[medicationDetail.unit]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
+                                </template>
                                 <!--<div class="regimen-line display-type-regimen">
                                 
                                     <paper-dropdown-menu always-float-label id="peri" label="[[localize('peri', 'Période', language)]]">
@@ -1655,6 +1656,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             .then(() => this.triggerCreateMedication())
             .then(() => this.triggerClosePrescription())
 
+    }
+
+    frequencyChanged(e){
+        this.set("medicationContent.medicationValue.regimen", {
+            
+        })
     }
 
 }

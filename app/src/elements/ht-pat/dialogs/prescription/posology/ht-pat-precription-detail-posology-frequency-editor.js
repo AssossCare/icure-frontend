@@ -39,13 +39,13 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
             
             <div id="host">
                 <div id="head-editor">
-                    <paper-dropdown-menu always-float-label id="periodicity-dropdown" label="[[localize('peri', 'Période', language)]]">
+                    <!--<paper-dropdown-menu always-float-label id="periodicity-dropdown" label="[[localize('peri', 'Période', language)]]">
                         <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_selectedPeriodicityChanged" selectable="paper-item" selected="[[frequency.periodicity]]">
                             <template is="dom-repeat" items="[[periodicities]]">
                                 <paper-item value="[[item.id]]">[[_getLabel(item,language)]]</paper-item>
                             </template>
                         </paper-listbox>
-                    </paper-dropdown-menu>
+                    </paper-dropdown-menu>-->
                     
                     <paper-dropdown-menu always-float-label id="unit-dropdown" label="[[localize('portion', 'Portion', language)]]" disabled="[[!_isDividable(units)]]">
                         <paper-listbox slot="dropdown-content" attr-for-selected="value" on-selected-changed="_selectedUnitChanged" selectable="paper-item" selected="[[frequency.unit]]">
@@ -76,24 +76,25 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
                 </div>
                 
                 <div id="body-editor">
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'hours')]]"></template>
+                    <ht-regimen-day-editor id="regimen-day-editor" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" regimen="[[_getRegimen(frequency.regimen)]]" quantity-factor="[[frequency.unit]]" on-regimen-changed="_regimenDayChanged"></ht-regimen-day-editor>
+
+                    <!--<template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'hours')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'day')]]">
-                        <!-- todo @julien ca ne se display pas probleem avec le composant-->
                         <ht-regimen-day-editor id="regimen-day-editor" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" regimen="[[_getRegimen(frequency.regimen)]]" quantity-factor="[[frequency.unit]]" on-regimen-changed="_regimenDayChanged"></ht-regimen-day-editor>
                     </template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'week')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'month')]]"></template>
                     <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'year')]]"></template>
-                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'years')]]"></template>
+                    <template is="dom-if" if="[[_isDisplayed(frequency.periodicity,'years')]]"></template>-->
                     
                     <slot name="body"></slot>
                 </div>
                 
-                <div id="footer-editor">
+               <!-- <div id="footer-editor">
                     <dynamic-text-area value="[[frequency.posology]]" label="[[localize('posology','Posology',language)]]" on-field-changed="_posologyChanged"></dynamic-text-area>
                     
                     <slot name="footer"></slot>
-                </div>
+                </div>-->
             </div>
         `;
     }
@@ -179,7 +180,7 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
     static get observers() {
         return [
             "resetRegimenEditor(frequency.periodicity)",
-            "writePosology(frequency.regimen)"
+            "frequencyChanged(frequency,frequency.*)"
         ];
     }
 
@@ -227,13 +228,13 @@ class HtPatPrescriptionDetailPosologyFrequencyEditor extends TkLocalizerMixin(Po
     }
 
     //observers
-    writePosology(){
-        //todo @julien format to correspond and modify periodicity to AbstractPeriodicity and create the good periodicity (look ehealth code periodicity)
-        this.set("frequency.posology",this.api.contact().medication().posologyToString(this.frequency))
-    }
 
     resetRegimenEditor(){
         this.shadowRoot.querySelector("#regimen-day-editor") && this.shadowRoot.querySelector("#regimen-day-editor").reset()
+    }
+
+    frequencyChanged(){
+        this.dispatchEvent(new CustomEvent("frequency-changed",{bubbles: true,composed: true, detail : { frequency : _.get(this,"frequency",{})}}))
     }
 
 
