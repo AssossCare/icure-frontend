@@ -11,6 +11,8 @@ import '../../../../../styles/tk-token-field-style.js';
 import '../../../../../styles/atc-styles.js';
 
 import './ht-regimen-item-editor'
+import '@polymer/paper-input/paper-input'
+import '@polymer/paper-icon-button/paper-icon-button'
 
 import {TkLocalizerMixin} from "../../../../tk-localizer";
 import {PolymerElement, html} from '@polymer/polymer';
@@ -21,7 +23,7 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
 
     static get template() {
         return html`
-            <style>
+            <style include="buttons-style dropdown-style dialog-style">
 
 
             .grid-container {
@@ -53,9 +55,9 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
 
             .grid-container {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
                 grid-template-rows: auto 24px 24px;
-                grid-template-areas: "a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_3_4 a1_3_4 a1_3_4 a1_3_4 a1_4_1" "a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_3_4 a2_3_4 a2_3_4 a2_3_4 a2_4_1" "a3_1_6 a3_1_6 a3_1_6 a3_1_6 a3_1_6 a3_1_6 a3_2_2 a3_2_2 a3_3_6 a3_3_6 a3_3_6 a3_3_6 a3_3_6 a3_3_6 a3_4_2 a3_4_2 a3_5_6 a3_5_6 a3_5_6 a3_5_6 a3_5_6 a3_5_6 a3_6_2 a3_6_2 " "a3bis_1_2 a3bis_1_2 a3bis_2_2 a3bis_2_2 a3bis_3_2 a3bis_3_2 . . a3bis_4_2 a3bis_4_2 a3bis_5_2 a3bis_5_2 a3bis_6_2 a3bis_6_2 . . a3bis_7_2 a3bis_7_2 a3bis_8_2 a3bis_8_2 a3bis_9_2 a3bis_9_2 . ." "a4_1_2 a4_1_2 a4_2_2 a4_2_2 a4_3_2 a4_3_2 a4_4_2 a4_4_2 a4_5_2 a4_5_2 a4_6_2 a4_6_2 a4_7_2 a4_7_2 a4_8_2 a4_8_2 a4_9_2 a4_9_2 a4_10_2 a4_10_2 a4_11_2 a4_11_2 a4_12_2 a4_12_2 " ;
+                grid-template-areas: "a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_1_11 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_2_8 a1_3_4 a1_3_4 a1_3_4 a1_3_4 a1_4_1" "a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_1_11 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_2_8 a2_3_4 a2_3_4 a2_3_4 a2_3_4 a2_4_1" ". . a3_1_6 a3_1_6 a3_1_6 a3_1_6 a3_1_6 a3_1_6 . . a3_3_6 a3_3_6 a3_3_6 a3_3_6 a3_3_6 a3_3_6 . . a3_5_6 a3_5_6 a3_5_6 a3_5_6 a3_5_6 a3_5_6 . ." "a3_1bis_2 a3_1bis_2 a3bis_1_2 a3bis_1_2 a3bis_2_2 a3bis_2_2 a3bis_3_2 a3bis_3_2 a3_2_2 a3_2_2 a3bis_4_2 a3bis_4_2 a3bis_5_2 a3bis_5_2 a3bis_6_2 a3bis_6_2 a3_4_2 a3_4_2 a3bis_7_2 a3bis_7_2 a3bis_8_2 a3bis_8_2 a3bis_9_2 a3bis_9_2 a3_6_2 a3_6_2" "a4_1bis_2 a4_1bis_2 a4_1_2 a4_1_2 a4_2_2 a4_2_2 a4_3_2 a4_3_2 a4_4_2 a4_4_2 a4_5_2 a4_5_2 a4_6_2 a4_6_2 a4_7_2 a4_7_2 a4_8_2 a4_8_2 a4_9_2 a4_9_2 a4_10_2 a4_10_2 a4_11_2 a4_11_2 a4_12_2 a4_12_2 " ;
             }
 
             .gc-header {
@@ -66,11 +68,11 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
                 font-size: var(--font-size-small);
             }
             
-            .area1_1_11 { grid-area : a1_1_11;}
+            .area1_1_13 { grid-area : a1_1_11;}
             .area1_2_8  { grid-area : a1_2_8 ;}
             .area1_3_4  { grid-area : a1_3_4 ;}
             .area1_4_1  { grid-area : a1_4_1 ;}
-            .area2_1_11 { grid-area : a2_1_11;}
+            .area2_1_13 { grid-area : a2_1_11;}
             .area2_2_8  { grid-area : a2_2_8 ;}
             .area2_3_4  { grid-area : a2_3_4 ;}
             .area2_4_1  { grid-area : a2_4_1 ;}
@@ -92,6 +94,9 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
             .area4_10_2 { grid-area : a4_10_2;}
             .area4_11_2 { grid-area : a4_11_2;}
             .area4_12_2 { grid-area : a4_12_2;}
+            
+            .area3_1bis_2 { grid-area : a3_1bis_2;}
+            .area4_1bis_2 { grid-area : a4_1bis_2;}
             
             .area3bis_1_2 { grid-area: a3bis_1_2 ;}
             .area3bis_2_2 { grid-area: a3bis_2_2 ;}
@@ -209,27 +214,68 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
                 padding: 10px;
             }
             
+            .footer-div-little{
+                width: calc( 50% - 20px);
+                max-width: 100px;
+                padding: 10px;
+            }
+            
+            .extra-control {
+                flex-grow: 0;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                height: 75px;
+            }
+            .extra-control paper-icon-button {
+                margin-right: 8px;
+            }
+            .small-input {
+                width: 128px;
+            }
+            
+            .extra-line {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .time {
+                width: 50px;
+                height: 23px;
+                padding-top: 5px;
+                background: var(--app-background-color-light);
+                color: var(--app-text-color-dark);
+                font-weight: 500;
+                text-align: center;
+                font-size: var(--font-size-small);
+            }
+            
         </style>
         <div class="regimen-line">
             <div class="grid-container">
-                 <!--24 de large-->
+                 <!--26 de large-->
                  <!-- class ligne_colum_largeur-->
-                <div class="area1_1_11 gc-header">[[localize('mom_morning','Matin',language)]]</div>
+                <div class="area1_1_13 gc-header">[[localize('mom_morning','Matin',language)]]</div>
                 <div class="area1_2_8 gc-header">[[localize('mom_afternoon','Après-midi',language)]]</div>
                 <div class="area1_3_4 gc-header">[[localize('mom_evening','Soir',language)]]</div>
                 <div class="area1_4_1 gc-header">[[localize('mom_night','Nuit',language)]]</div>
                 
-                <div class="area2_1_11"><ht-regimen-item-editor class="left" id="morning" quantity="[[regimen.morning]]" path="morning" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
+                <div class="area2_1_13"><ht-regimen-item-editor class="left" id="morning" quantity="[[regimen.morning]]" path="morning" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
                 <div class="area2_2_8"><ht-regimen-item-editor class="left" id="afternoon" quantity="[[regimen.afternoon]]" path="afternoon" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
                 <div class="area2_3_4"><ht-regimen-item-editor class="left" id="evening" quantity="[[regimen.evening]]" path="evening" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
                 <div class="area2_4_1"><ht-regimen-item-editor class="left" id="night" quantity="[[regimen.night]]" path="night" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>    
                             
+                <div class="area3_1bis_2 gc-header">[[localize('mom_wakingup','Au lever',language)]]</div><!-- descendu -->
                 <div class="area3_1_6 gc-header">[[localize('mom_breakfast','Déjeuner',language)]]</div>
-                <div class="area3_2_2 gc-header">[[localize('mom_between_morning','Entre-repas matin',language)]]</div>
+                <div class="area3_2_2 gc-header">[[localize('mom_between_morning','Entre-repas',language)]]</div><!-- descendu -->
                 <div class="area3_3_6 gc-header">[[localize('mom_lunch','Dinner',language)]]</div>
-                <div class="area3_4_2 gc-header">[[localize('mom_between_evening','Entre-repas après-midi',language)]]</div>
+                <div class="area3_4_2 gc-header">[[localize('mom_between_evening','Entre-repas',language)]]</div><!-- descendu -->
                 <div class="area3_5_6 gc-header">[[localize('mom_dinner','Souper',language)]]</div>
-                <div class="area3_6_2 gc-header">[[localize('mom_sleep','Couché',language)]]</div>
+                <div class="area3_6_2 gc-header">[[localize('mom_sleep','Couché',language)]]</div><!-- descendu -->
                 
                 <div class="area3bis_1_2 gc-header">[[localize('before','Avant',language)]]</div>
                 <div class="area3bis_2_2 gc-header">[[localize('during','Pendant',language)]]</div>
@@ -241,7 +287,7 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
                 <div class="area3bis_8_2 gc-header">[[localize('during','Pendant',language)]]</div>
                 <div class="area3bis_9_2 gc-header">[[localize('after','Après',language)]]</div>
                
-                
+                <div class="area4_1bis_2"><ht-regimen-item-editor class="left" id="afterwakingup" quantity="[[regimen.afterwakingup]]" path="afterwakingup" quantity-factor=[[quantityFactor]] on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
                 <div class="area4_1_2"><ht-regimen-item-editor class="left" id="beforebreakfast" quantity="[[regimen.beforebreakfast]]" path="beforebreakfast" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></div>
                 <div class="area4_2_2"><ht-regimen-item-editor class="left" id="duringbreakfast" quantity="[[regimen.duringbreakfast]]" path="duringbreakfast" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></div>
                 <div class="area4_3_2"><ht-regimen-item-editor class="left" id="afterbreakfast" quantity="[[regimen.afterbreakfast]]" path="afterbreakfast" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></div>
@@ -258,6 +304,17 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
             <div class="footer">
                 <div class="footer-div"><span class="gc-header">[[localize('aftermeal','Après chaque repas',language)]]</span><ht-regimen-item-editor class="left" id="aftermeal" quantity="[[regimen.aftermeal]]" path="aftermeal" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
                 <div class="footer-div"><span class="gc-header">[[localize('betweenmeals','Entre chaque repas',language)]]</span><ht-regimen-item-editor class="left" id="betweenmeals" quantity="[[regimen.betweenmeals]]" path="betweenmeals" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item-editor></div>
+                <div class="extra-control">
+                    <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addExtra"></paper-icon-button>
+                    <paper-input always-float-label class="small-input" id="input" value="{{time}}"></paper-input>
+                </div>
+                <div class="extra-line">
+                    <template is="dom-repeat" items="[[extras]]" as="extra">
+                        <div class="footer-div-little">
+                            <span class="gc-header">[[extra.time]]</span><ht-regimen-item-editor class="left" id="extra[[extra.code]]" quantity="[[extra.quantity]]" path="[[index]]" quantity-factor="[[quantityFactor]]" on-quantity-changed="_extraQuantityChanged"></ht-regimen-item-editor>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div> 
         `;
@@ -297,6 +354,7 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
                 type : Object,
                 value : () => {
                     return {
+                        afterwakingup : 0,
                         morning: 0,
 
                         beforebreakfast: 0,
@@ -326,6 +384,18 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
                         betweenmeals: 0
                     }
                 }
+            },
+            time: {
+                type : String,
+                value : "10:00"
+            },
+            extras : {
+                type: Array,
+                value : ()=>[]
+            },
+            unit: {
+                type: String,
+                value: ""
             }
         }
 
@@ -365,6 +435,7 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
 
     reset(){
         this.set("regimen", {
+            afterwakingup: 0,
             morning: 0,
             beforebreakfast: 0,
             duringbreakfast: 0,
@@ -384,15 +455,54 @@ class HtRegimenDayEditor extends TkLocalizerMixin(PolymerElement) {
             aftermeal: 0,
             betweenmeals: 0
         })
+
+        this.set("extras",[])
     }
 
     getFormatedRegimen(){
-        return _.keys(_.get(this,"regimen",{})).map(key => {
+        return _.compact(_.keys(_.get(this,"regimen",{})).map(key => {
             return {
-                period : key,
-                quantity : _.get(this,"regimen."+key,0)
+                dayPeriod : {
+                    code : key,
+                    type : key!=="afterwakingup" ? "CD-DAYPERIOD" : "care.topaz.customDayPeriod",
+                    id: 1
+                },
+                administratedQuantity : {
+                    quantity : _.get(this,"regimen."+key,0),
+                    unit : _.get(this,"unit","")
+                }
             }
-        }).filter(reg => reg.quantity)
+        }).concat(_.get(this,"extras",[]).map(extra =>{
+            return {
+                dayPeriod : {
+                    code : _.get(extra,"code",""),
+                    type : "care.topaz.customTime",
+                    id: 1
+                },
+                administratedQuantity : {
+                    quantity : _.get(extra,"quantity",0),
+                    unit : _.get(this,"unit","")
+                }
+            }
+        })).filter(reg => _.get(reg,"administratedQuantity.quantity",false)))
+    }
+
+    _addExtra(e){
+        const time = moment(this.time,['HH:mm','HHmm']);
+        const timeOfDay = parseInt(time.format("HHmmss"), 10);
+        !_.get(this,'extras',[]).find(extra => extra.code===timeOfDay) && this.push("extras",{
+            code : timeOfDay,
+            time : time.format("HH:mm"),
+            quantity : 0
+        })
+    }
+
+    _extraQuantityChanged(e){
+        e.stopPropagation()
+        if(!e.detail || !e.currentTarget)return;
+        this.set('extras.'+_.get(e.currentTarget.getAttributeNode("path"),'value','badPath'),_.get(e,"detail.value",0))
+
+        this.dispatchEvent(new CustomEvent("regimen-changed",{bubbles: true, composed: true,detail : { regimen : this.getFormatedRegimen()}}))
     }
 
 }
