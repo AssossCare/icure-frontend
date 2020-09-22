@@ -3,7 +3,7 @@ import '../../../../../styles/buttons-style.js';
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {TkLocalizerMixin} from "../../../../tk-localizer";
-class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
+class HtRegimenItemEditor extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
         <style include="buttons-style">
@@ -119,7 +119,7 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get is() {
-      return 'ht-regimen-item-bis';
+      return 'ht-regimen-item-editor';
   }
 
   static get properties() {
@@ -201,7 +201,6 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseDown(e) {
-      console.log("mouseDown");
       if (this.resetTimer) {
           clearTimeout(this.resetTimer);
           this.resetTimer = null;
@@ -213,7 +212,6 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseUp(e) {
-      console.log("mouseUp");
       if (this.mouseIsDown) {
           if (this.quantityFactor && this.quantityFactor.denominator > 1) {
               this.set("quantity", this.quantityFactor.numLabel);
@@ -226,9 +224,8 @@ class HtRegimenItemBis extends TkLocalizerMixin(PolymerElement) {
   }
 
   _quantityChanged() {
-      console.log("_quantityChanged: " + this.quantity);
       this.set("custom", this.quantity && "positive" || "");
   }
 }
 
-customElements.define(HtRegimenItemBis.is, HtRegimenItemBis);
+customElements.define(HtRegimenItemEditor.is, HtRegimenItemEditor);
