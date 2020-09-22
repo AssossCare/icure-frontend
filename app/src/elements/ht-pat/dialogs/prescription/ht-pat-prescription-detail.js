@@ -168,7 +168,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         drugs-to-be-prescribe="[[drugsToBePrescribe]]"
                         selected-drug="[[selectedDrugForPosology]]"
                         sam-version="[[samVersion]]"
-                        on-open-posology-view="_selectedDrug"
+                        on-selected-drug="_selectedDrug"
                         on-delete-drug="_deleteDrug"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
@@ -696,8 +696,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
             })
 
-            this.set('selectedDrugForPosology', {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo})
-            this.push('drugsToBePrescribe', _.merge({}, this.selectedDrugForPosology, {posology: {}}))
+            const drug = {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo}
+
+            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', drug )
+            this.push('drugsToBePrescribe', _.merge({}, drug, {posology: {}}))
 
         }).finally(() => {
 
