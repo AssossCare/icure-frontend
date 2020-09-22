@@ -378,7 +378,15 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
 			.mt8 { margin-top:8px !important; }
 			.mt9 { margin-top:9px !important; }
 			.mt10 { margin-top:10px !important; }
+			.mt11 { margin-top:11px !important; }
+			.mt12 { margin-top:12px !important; }
+			.mt13 { margin-top:13px !important; }
+			.mt14 { margin-top:14px !important; }
 			.mt15 { margin-top:15px !important; }
+			.mt16 { margin-top:16px !important; }
+			.mt17 { margin-top:17px !important; }
+			.mt18 { margin-top:18px !important; }
+			.mt19 { margin-top:19px !important; }
 			.mt20 { margin-top:20px !important; }
 			.mt25 { margin-top:25px !important; }
 			.mt30 { margin-top:30px !important; }

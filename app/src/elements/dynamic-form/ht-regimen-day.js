@@ -10,7 +10,7 @@ import {TkLocalizerMixin} from "../tk-localizer";
 class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
-        <style include="buttons-style dropdown-style dialog-style">
+        <style include="buttons-style dropdown-style dialog-style shared-styles">
             .regimen-line {
                 display: flex;
                 flex-flow: row nowrap;
@@ -52,17 +52,6 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
                     padding: 0;
                 }
             }
-            /*.regimen-line.block paper-dropdown-menu {*/
-            /*    margin-right: 8px;*/
-            /*    --paper-dropdown-menu-input: {*/
-            /*        height: 42px;*/
-            /*        padding: 0;*/
-            /*    };*/
-            /*    --paper-input-container: {*/
-            /*        padding: 0;*/
-            /*    };*/
-            /*    --paper-input-container-focus-color: var(--app-primary-color);*/
-            /*}*/
 
             .regimen-line.block span{
                 margin-right: 4px;
@@ -85,7 +74,6 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
                 flex-direction: row;
                 flex-wrap: nowrap;
                 align-items: center;
-                height: 20px;
             }
             .extra-control paper-icon-button {
                 margin-right: 8px;
@@ -264,17 +252,17 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
         </style>
 
         <paper-card class="pat-details-card">
+        
             <div class="form-title">
                 <span>[[_getTitle(key)]]</span>
-                <template is="dom-if" if="[[_canReset(regimen.length)]]">
-                    <paper-icon-button id="undo" role="button" icon="icons:undo" on-tap="_reset"></paper-icon-button>
-                </template>
-                <template is="dom-if" if="[[_canDelete(occurrences)]]">
-                    <paper-icon-button id="remove" role="button" icon="icons:delete" on-tap="_removeRegimen"></paper-icon-button>
-                </template>
+                <template is="dom-if" if="[[_canReset(regimen.length)]]"><paper-icon-button id="undo" role="button" icon="icons:undo" on-tap="_reset"></paper-icon-button></template>
+                <template is="dom-if" if="[[_canDelete(occurrences)]]"><paper-icon-button id="remove" role="button" icon="icons:delete" on-tap="_removeRegimen"></paper-icon-button></template>
             </div>
+            
             <div class="regimen-line">
+                
                 <div class="grid-container">
+                
                     <div class="a_a gc-header">[[localize('afterwakingup','Au lever',language)]]</div>
                     <div class="a_bcd gc-header">[[localize('mom_morning','Matin',language)]]</div>
                     <div class="a_e gc-header">[[localize('ms_betweenmeals','Entre les repas',language)]]</div>
@@ -283,71 +271,41 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
                     <div class="a_jkl gc-header">[[localize('mom_evening','Soir',language)]]</div>
                     <div class="a_m gc-header">[[localize('','Couché',language)]]</div>
 
-                    <div class="b_a">
-                        <ht-regimen-item class="left" id="afterwakingup" quantity="{{afterwakingup}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_bcd">
-                        <ht-regimen-item class="big" id="morning" quantity="{{morning}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_e">
-                        <ht-regimen-item class="small" id="betweenbreakfastandlunch" quantity="{{betweenbreakfastandlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_fgh">
-                        <ht-regimen-item class="big" id="midday" quantity="{{midday}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_i">
-                        <ht-regimen-item class="small" id="betweenlunchanddinner" quantity="{{betweenlunchanddinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_jkl">
-                        <ht-regimen-item class="big" id="evening" quantity="{{evening}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="b_m">
-                        <ht-regimen-item class="right" id="thehourofsleep" quantity="{{thehourofsleep}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
+                    <div class="b_a"><ht-regimen-item class="left" id="afterwakingup" quantity="{{afterwakingup}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_bcd"><ht-regimen-item class="big" id="morning" quantity="{{morning}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_e"><ht-regimen-item class="small" id="betweenbreakfastandlunch" quantity="{{betweenbreakfastandlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_fgh"><ht-regimen-item class="big" id="midday" quantity="{{midday}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_i"><ht-regimen-item class="small" id="betweenlunchanddinner" quantity="{{betweenlunchanddinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_jkl"><ht-regimen-item class="big" id="evening" quantity="{{evening}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="b_m"><ht-regimen-item class="right" id="thehourofsleep" quantity="{{thehourofsleep}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    
+                    <div class="c_b"><ht-regimen-item class="bottom-left" id="beforebreakfast" quantity="{{beforebreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_c"><ht-regimen-item class="bottom-center" id="duringbreakfast" quantity="{{duringbreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_d"><ht-regimen-item class="bottom-right" id="afterbreakfast" quantity="{{afterbreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_f"><ht-regimen-item class="bottom-left" id="beforelunch" quantity="{{beforelunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_g"><ht-regimen-item class="bottom-center" id="duringlunch" quantity="{{duringlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_h"><ht-regimen-item class="bottom-right" id="afterlunch" quantity="{{afterlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_j"><ht-regimen-item class="bottom-left" id="beforedinner" quantity="{{beforedinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_k"><ht-regimen-item class="bottom-center" id="duringdinner" quantity="{{duringdinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
+                    <div class="c_l"><ht-regimen-item class="bottom-right" id="afterdinner" quantity="{{afterdinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item></div>
 
-                    <div class="c_b">
-                        <ht-regimen-item class="bottom-left" id="beforebreakfast" quantity="{{beforebreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_c">
-                        <ht-regimen-item class="bottom-center" id="duringbreakfast" quantity="{{duringbreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_d">
-                        <ht-regimen-item class="bottom-right" id="afterbreakfast" quantity="{{afterbreakfast}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_f">
-                        <ht-regimen-item class="bottom-left" id="beforelunch" quantity="{{beforelunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_g">
-                        <ht-regimen-item class="bottom-center" id="duringlunch" quantity="{{duringlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_h">
-                        <ht-regimen-item class="bottom-right" id="afterlunch" quantity="{{afterlunch}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_j">
-                        <ht-regimen-item class="bottom-left" id="beforedinner" quantity="{{beforedinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_k">
-                        <ht-regimen-item class="bottom-center" id="duringdinner" quantity="{{duringdinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
-                    <div class="c_l">
-                        <ht-regimen-item class="bottom-right" id="afterdinner" quantity="{{afterdinner}}" quantity-factor="[[quantityFactor]]" on-quantity-changed="_quantityChanged"></ht-regimen-item>
-                    </div>
                 </div>
-                <template is="dom-if" if="[[devShow]]">
-                    <vaadin-checkbox checked="[[]]" id="ifNeeded" on-checked-changed="_ifNeededChanged">[[localize('', 'Si nécessaire', language)]]</vaadin-checkbox>
-                </template>
+                
+                <template is="dom-if" if="[[devShow]]"><vaadin-checkbox checked="[[]]" id="ifNeeded" on-checked-changed="_ifNeededChanged">[[localize('', 'Si nécessaire', language)]]</vaadin-checkbox></template>
+                
             </div>
+            
             <div class="regimen-line extra-regimen">
+            
                 <div class="extra-control">
-                    <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addExtra"></paper-icon-button>
-                    <paper-input always-float-label="" class="small-input" id="input" value="{{time}}"></paper-input>
+                    <div class="mt12">(Optionnel) Ajouter une/des prise(s) à: </div> <paper-input always-float-label="" class="small-input ml10 mr10 mw50" id="input" value="{{time}}"></paper-input>
+                    <paper-button class="button button--other mt16" on-tap="_addExtra"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('add','Add',language)]]</paper-button>
                 </div>
-                <div class="extra-line">
-                    <template is="dom-repeat" items="[[extras]]" as="extra">
-                        <ht-regimen id="extra[[extra.code]]" extra="{{extra}}" unit="[[medicationDetail.bufferUnit]]" quantity-factor="[[quantityFactor]]" on-extra-changed="_extraChanged"></ht-regimen>
-                    </template>
-                </div>
+                
+                <div class="extra-line mt16"><template is="dom-repeat" items="[[extras]]" as="extra"><ht-regimen id="extra[[extra.code]]" extra="{{extra}}" unit="[[medicationDetail.bufferUnit]]" quantity-factor="[[quantityFactor]]" on-extra-changed="_extraChanged"></ht-regimen></template></div>
+                
             </div>
+            
         </paper-card>
 `;
   }
