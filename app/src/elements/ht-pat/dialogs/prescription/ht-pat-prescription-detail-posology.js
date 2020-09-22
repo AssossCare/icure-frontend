@@ -408,13 +408,29 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 
                                 <!-- fourni par samV2 choix de la portion 1 - 1/2 - 1/3 répercussion dans la posology-->
                                 <!-- todo @julien constructPosology-->
-                                <!--<div class="regimen-line display-type-regimen">
+                                <div class="regimen-line display-type-regimen">
                                     <paper-dropdown-menu always-float-label id="unit" label="[[localize('portion', 'Portion', language)]]" disabled="[[!medicationDetail.dividable]]">
                                         <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{quantityFactor}}">
                                             <template is="dom-repeat" items="[[quantityFactors]]"><paper-item id="[[item.id]]" value="[[item]]">[[localize(item.label, item.numLabel, language)]]</paper-item></template>
                                         </paper-listbox>
                                     </paper-dropdown-menu>
-                                </div>-->
+                                    
+                                    <paper-dropdown-menu always-float-label id="peri" label="[[localize('peri', 'Période', language)]]">
+                                        <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{periodConfig}}">
+                                            <paper-item value="dailyPsosology">[[localize('dailyPosology', 'Quotidienne', language)]]</paper-item>
+                                            <paper-item value="weeklyPosology">[[localize('weeklyPosology', 'Hebdomadaire', language)]]</paper-item>
+                                        </paper-listbox>
+                                    </paper-dropdown-menu>
+                                
+                                    <template is="dom-if" if="[[_canAddRegimen(periodConfig)]]">
+                                        <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addRegimen"></paper-icon-button>
+                                        <paper-dropdown-menu always-float-label id="periodConfigDropDown" label="[[localize('choose_day','Choix du jour',language)]]">
+                                            <paper-listbox id="periodConfig" slot="dropdown-content" attr-for-selected="value" selected="{{selectedDay}}">
+                                                <template is="dom-repeat" items="[[_getFreeDays(frequencies,frequencies.*)]]"><paper-item value="[[item]]">[[localize(item, item, language)]]</paper-item></template>
+                                            </paper-listbox>
+                                        </paper-dropdown-menu>
+                                    </template>
+                                </div>
                                 
                                 <!-- regimen 1 par fréquence et une fréquence par service-->
                                 <!--<template is="dom-repeat" items="[[regimenKeys]]">
@@ -436,8 +452,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                     ></ht-regimen-day>
                                 </template>-->
                                 <!-- todo @julien refactor variables of axel--> 
-                                <template is="dom-repeat" items="[[regimenKeys]]">
-                                    <ht-pat-prescription-detail-posology-frequency-editor key="[[item]]" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" units="[[medicationDetail.unit]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
+                                <template is="dom-repeat" items="[[frequencies]]">
+                                    <ht-pat-prescription-detail-posology-frequency-editor id="frequency-editor" frequency="[[getFrequency(item,medicationDetail,quantityFactorValue)]]" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" unit="[[medicationDetail.unit]]" units="[[quantityFactors]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor>
                                 </template>
                                 <!--<div class="regimen-line display-type-regimen">
                                 
@@ -456,7 +472,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         </paper-dropdown-menu>
                                     </template>
                                     
-                                </div>
+                                </div>-->
                                 
                                 <div class="regimen-line display-type-regimen comment">
                                     <paper-input-container always-float-label="true" class="w100pc">
@@ -470,7 +486,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         <label slot="label" class="color-status">[[localize('instructions-for-patient','Instructions pour le patient',language)]]/[[localize('pos','Posology',language)]]</label>
                                         <iron-autogrow-textarea slot="input" value="{{medicationDetail.commentForPatient}}"></iron-autogrow-textarea>
                                     </paper-input-container>
-                                </div>    -->                          
+                                </div>                          
 
                             </div>
                         </div>
@@ -738,39 +754,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 value: () => [],
                 notify: true
             },
-            regimenKey: {
-                type: String,
-                value: ""
-            },
             medicationId: {
                 type: String,
                 value: ""
-            },
-            quantityFactors: {
-                type: Array,
-                value: () => [
-                    {id: "one", label: "quantity_factor_one", numLabel: "1", denominator: 1},
-                    {id: "half", label: "quantity_factor_half", numLabel: "1/2", denominator: 2},
-                    {id: "third", label: "quantity_factor_third", numLabel: "1/3", denominator: 3},
-                    {id: "quarter", label: "quantity_factor_quarter", numLabel: "1/4", denominator: 4}
-                ]
-            },
-            weekdayKeys: {
-                type: Array,
-                value: () => ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-            },
-            periodConfigs: {
-                type: Array,
-                value: () => [
-                    {id: "dailyPosology", title: "dai", keys: [], label: "", disabled: true, keyId: ""},
-                    {id: "weeklyPosology", title: "wee", keys: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], label: "dayOfWeek", disabled: false, keyId: "weekday"}
-                    // todo: dayNumber not supported in posologyString
-                    // {id: "monthly", keys: _.range(1, 32), label: "dayOfMonth", disabled: false, keyId: "dayNumber"}
-                ]
-            },
-            periodConfig: {
-                type: Object,
-                value: {id: ""}
             },
             availableRegimenKeys: {
                 type: Array,
@@ -844,6 +830,27 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             // </Axel Stijns>
 
             // julien posology
+            frequencies: {
+                type: Array,
+                value : ()=>[]
+            },
+            weekdayKeys: {
+                type: Array,
+                value: () => ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+            },
+            quantityFactors: {
+                type: Array,
+                value: () => [
+                    {id: "one", label: "quantity_factor_one", numLabel: "1", denominator: 1},
+                    {id: "half", label: "quantity_factor_half", numLabel: "1/2", denominator: 2},
+                    {id: "third", label: "quantity_factor_third", numLabel: "1/3", denominator: 3},
+                    {id: "quarter", label: "quantity_factor_quarter", numLabel: "1/4", denominator: 4}
+                ]
+            },
+            selectedDay: {
+                type : String,
+                value: ''
+            }
 
         };
     }
@@ -858,7 +865,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             '_changeDuration(duration)',
             '_regimenChanged(medicationContent.medicationValue, medicationDetail.commentForPatient, medicationContent.medicationValue.regimen.*)',
             '_quantityFactorChanged(quantityFactor)',
-            '_periodChanged(periodConfig)',
             '_renewalChanged(medicationDetail.renewal)',
             '_reimbursementReasonChanged(reimbursementReason)',
             '_renewalTimeUnitChanged(renewalTimeUnit)',
@@ -1044,68 +1050,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
-    _periodChanged() {
-
-        // Todo: refactor / rather ugly @ axel...
-
-        const periodConfigId = _.trim(_.get(this,"periodConfig.id"))
-        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
-
-        if(!periodConfigId) return
-
-        this.set("medicationContent.medicationValue.regimen", _.filter(regimen, r => periodConfigId === "weeklyPosology" ? r.weekday : !r.weekday));
-
-        this.splice("regimenKeys", 0, _.get(this,"regimenKeys.length"))
-
-        if (periodConfigId === "weeklyPosology") {
-
-            if (!_.size(regimen)) {
-
-                this.push("regimenKeys", _.get(this,"periodConfig.keys[0]"))
-
-            } else {
-
-                const keyId = _.get(this,"periodConfig.keyId")
-
-                if (keyId === "weekday") {
-
-                    this.push("regimenKeys", ...regimen
-                        .filter((e, i, a) => a.findIndex(x => x[keyId].code === e[keyId].code) === i)
-                        .map(reg => reg[keyId].code)
-                        .filter(code => this.weekdayCodes.some(weekdayCode => weekdayCode.code === code))
-                    )
-
-                } else {
-
-                    // @todo: dayNumber and date cases
-
-                }
-
-            }
-
-        } else { this.push("regimenKeys", "none") }
-
-        this._updatePeriodConfigs();
-
-    }
-
-    _updatePeriodConfigs() {
-
-        if (!_.get(this,"periodConfig") || _.trim(_.get(this,"periodConfig.id")) === "dailyPosology" ) return;
-
-        this.splice("availableRegimenKeys", 0, _.size(_.get(this,"availableRegimenKeys.length")))
-
-        const availableRegimenKeys = _.filter(_.get(this,"periodConfig.keys"), k => !_.some(_.get(this,"regimenKeys"), regKey => regKey === k))
-
-        if (_.size(availableRegimenKeys)) {
-
-            this.push("availableRegimenKeys", ...availableRegimenKeys);
-            this.set("regimenKey", _.get(availableRegimenKeys,"[0]"));
-
-        }
-
-    }
-
     _beginMoment() {
 
         return this.api.moment(_.get(this,"medicationDetail.beginMomentAsString"), "YYYY-MM-DD");
@@ -1118,6 +1062,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    //todo @julien check if this works with the new week day selector
     _updateStats() {
 
         const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
@@ -1125,14 +1070,14 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         if (!_.size(regimen) || !_.get(this,"quantityFactor")) return
 
         const endMoment = this._endMoment(), beginMoment = this._beginMoment()
-        const keys = _.trim(_.get(this,"periodConfig.id")) === "weeklyPosology" ? _.get(this,"weekdayKeys") : [""]
+        const keys = _.trim(_.get(this,"periodConfig")) === "weeklyPosology" ? _.get(this,"weekdayKeys") : [""]
         const takes = keys.map(key => regimen.reduce((total, period) => { if (!key || _.get(period, "weekday.code", 0) === key) total += (_.get(this,"quantityFactor.denominator") > 1) && 1 || parseInt(_.get(period,"administratedQuantity.quantity"), 10) || 0; return total; }, 0));
         const totalTakesPerPeriod = takes.reduce((total, quantity) => { total += quantity; return total; }, 0);
 
         let provisionDays = 0, totalTakes = 0;
         let medicationDays = endMoment ? endMoment.diff(beginMoment, "days") : 0;
         let availableDoses = parseInt(_.get(this, "medicationDetail.packDisplayValue", 0), 10) * parseInt(_.get(this, "medicationDetail.boxes", 0), 10) * _.get(this,"quantityFactor.denominator")
-        let currentDayNumber = _.trim(_.get(this,"periodConfig.id")) === "weeklyPosology" ? beginMoment.weekday() : 0;
+        let currentDayNumber = _.trim(_.get(this,"periodConfig")) === "weeklyPosology" ? beginMoment.weekday() : 0;
 
         this.set("canShowProvisionInfo", _.get(this,"medicationContent.isPrescription") && availableDoses > 0 && totalTakesPerPeriod > 0)
         this.set("canShowQuantityInfo", medicationDays && totalTakesPerPeriod);
@@ -1167,6 +1112,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    //je pense pas que ce soit utile
     _init() {
 
         const promResolve = Promise.resolve()
@@ -1246,14 +1192,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
-    _canAddRegimen() {
 
-        // Todo: @ axel
-        // return (this.periodConfig.id === "weeklyPosology") || (this.periodConfig.id === "monthlyPosology");
-
-        return _.trim(_.get(this,"periodConfig.id")) === "weeklyPosology" && _.size(_.get(this,"availableRegimenKeys"))
-
-    }
 
     _regimenLines() {
 
@@ -1266,11 +1205,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return (this._resetAll()||true) &&  this.set("medicationDetail.commentForPatient", _.get(this, "medicationDetail.posologyNote"))
     }
 
-    _addRegimen() {
 
-        return !_.size(_.get(this, "medicationContent.medicationValue.regimen", [])) || !_.get(this,"regimenKey") || _.get(this,"regimenKeys",[]).includes(_.get(this,"regimenKey")) ? null : (this.push("regimenKeys", _.get(this,"regimenKey"))||true) && this._updatePeriodConfigs();
-
-    }
+    //todo julien ca n'arrive à foutre
 
     _removeRegimen(e) {
 
@@ -1413,7 +1349,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 .then(() => {
 
                     let endMoment = this._endMoment()
-                    let duration = endMoment.diff(this._beginMoment(), "days")
+                    let duration = endMoment && endMoment.diff(this._beginMoment(), "days")
                     if (duration < 0) { duration = 0; endMoment = this._beginMoment(); this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD")); }
 
                     this.set("duration", _.trim(duration))
@@ -1606,9 +1542,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 const quantitySample = _.trim(_.get(this, "medicationContent.medicationValue.regimen[0].administratedQuantity.quantity"))
                 this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && _.find(_.get(this,"quantityFactors"), q => _.get(q,"numLabel") === quantitySample) || _.get(this,"quantityFactors[0]"))
 
-                // Todo: (axel) month (dayNumber) and date
-                const period = _.has(_.get(this,"medicationContent"), "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology"
-                _.get(this,"periodConfig.id") !== period ? this.set("periodConfig", _.find(_.get(this,"periodConfigs"), c => _.get(c,"id") === period)) : this._periodChanged()
+                //todo @julien edition need modification and i know 'none' as value is really bad idea but i use what axel created
+                this.set("frequencies",["none"])
 
                 this._updateStats();
 
@@ -1659,9 +1594,37 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     frequencyChanged(e){
-        this.set("medicationContent.medicationValue.regimen", {
-            
-        })
+        if(!_.get(e,"detail.frequency",false))return;
+        //const id = _.get()
+        this.set("medicationContent.medicationValue.regimen",_.get(e,"detail.frequency.regimen",false).map(regimen => _.get(e,"detail.frequency.weekDay","")==="none" ? regimen :_.assign(regimen, { weekDay : {
+                code : _.get(e,"detail.frequency.weekDay",""),
+                type: "CD-WEEKDAY",
+                id : 1
+            }})) )
+    }
+
+    getFrequency(item){
+        return {
+            unit : _.get(this,"quantityFactorValue",1),
+            regimen : _.get(this,"medicationContent.medicationValue.regimen",{}),
+            weekDay : item
+        }
+    }
+
+    _getFreeDays(){
+        return _.difference(_.get(this,"weekdayKeys",[]),_.get(this,"frequencies",[]))
+    }
+
+    _canAddRegimen() {
+        return _.trim(_.get(this,"periodConfig")) === "weeklyPosology" && _.size(this._getFreeDays())
+    }
+
+    _addRegimen() {
+        if(_.get(this,"frequencies.0","none")==="none"){
+            this.set("frequencies.0",_.get(this,"selectedDay","none"))
+        }else{
+            this.push("frequencies",_.get(this,"selectedDay",""))
+        }
     }
 
 }
