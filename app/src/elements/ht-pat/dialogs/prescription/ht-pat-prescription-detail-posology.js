@@ -450,7 +450,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 
                                 
                                 
-                                    <!-- Todo 1: compare FZ/JW -->
+                                    <!-- Todo 1: Swap old vs. new -->
+                                    
+                                    <!-- Axel OLD component -->
                                     <template is="dom-if" if="[[_canAddRegimen(periodConfig)]]">
                                         <div class="itemLabel">[[localize("dayUppercase", "Day", language)]]: </div>
                                         <paper-dropdown-menu always-float-label id="periodConfigDropDown" disabled="[[periodConfig.disabled]]"  class="shortDropDown">
@@ -460,18 +462,19 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                         </paper-dropdown-menu>
                                         <paper-button class="button button--other mt11" on-tap="_addRegimen"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('addThisDay','Add this day',language)]]</paper-button>
                                     </template>
-                                    <!-- /Todo 1: compare FZ/JW -->                  
+                                    <!-- /Axel OLD component -->
                                     
-                                    <!-- Todo 1: compare JW/FZ -->
-                                    <template is="dom-if" if="[[_canAddRegimen2(periodConfig)]]">
-                                        <paper-icon-button class="button--icon-btn" icon="icons:add" on-tap="_addRegimen2"></paper-icon-button>
-                                        <paper-dropdown-menu always-float-label id="periodConfigDropDown" label="[[localize('choose_day','Choix du jour',language)]]">
-                                            <paper-listbox id="periodConfig" slot="dropdown-content" attr-for-selected="value" selected="{{selectedDay}}">
-                                                <template is="dom-repeat" items="[[_getFreeDays(frequencies,frequencies.*)]]"><paper-item value="[[item]]">[[localize(item, item, language)]]</paper-item></template>
-                                            </paper-listbox>
-                                        </paper-dropdown-menu>
-                                    </template>
-                                    <!-- /Todo 1: compare JW/FZ -->
+                                    <!-- Julien NEW component -->
+<!--                                    <template is="dom-if" if="[[_canAddRegimen2(periodConfig)]]">-->
+<!--                                        <paper-icon-button class="button&#45;&#45;icon-btn" icon="icons:add" on-tap="_addRegimen2"></paper-icon-button>-->
+<!--                                        <paper-dropdown-menu always-float-label id="periodConfigDropDown" label="[[localize('choose_day','Choix du jour',language)]]">-->
+<!--                                            <paper-listbox id="periodConfig" slot="dropdown-content" attr-for-selected="value" selected="{{selectedDay}}">-->
+<!--                                                <template is="dom-repeat" items="[[_getFreeDays(frequencies,frequencies.*)]]"><paper-item value="[[item]]">[[localize(item, item, language)]]</paper-item></template>-->
+<!--                                            </paper-listbox>-->
+<!--                                        </paper-dropdown-menu>-->
+<!--                                    </template>-->
+                                    <!-- /Julien NEW component -->
+                                    <!-- /Todo 1: Swap old vs. new -->
                                     
                                     
                                     
@@ -483,7 +486,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 
                                 
                                 
-                                <!-- Todo 2: Swap old vs. new compnent -->
+                                <!-- Todo 2: Swap old vs. new component -->
                                 
                                 <!-- Axel OLD component -->
                                 <template is="dom-repeat" items="[[regimenKeys]]">
@@ -508,7 +511,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                                 <!-- Julien NEW component -->
                                 <!--<template is="dom-repeat" items="[[frequencies]]"><ht-pat-prescription-detail-posology-frequency-editor id="frequency-editor" frequency="[[getFrequency(item,medicationDetail,quantityFactorValue)]]" api="[[api]]" resources="[[resources]]" user="[[user]]" language="[[language]]" unit="[[medicationDetail.unit]]" units="[[quantityFactors]]" on-frequency-changed="frequencyChanged"></ht-pat-prescription-detail-posology-frequency-editor></template> -->
                                 
-                                <!-- /Todo 2: Swap old vs. new compnent -->
+                                <!-- Todo 2: Swap old vs. new component -->
                                 
                                 
                                 
