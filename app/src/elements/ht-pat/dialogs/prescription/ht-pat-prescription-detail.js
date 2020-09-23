@@ -738,33 +738,6 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set("drugsToBePrescribe",this.drugsToBePrescribe.filter(drug => drug.id!==_.get(e,"detail.product.id",null)))
     }
 
-    _prescribe(){
-
-        const promResolve = Promise.resolve()
-
-        return promResolve
-            .then(() => this.set("isLoading", true))
-            .then(() => this._closePosologyView())
-            .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
-            .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
-            .then(x => console.log("----x----", x))
-            .then(() => console.log("prescribe if should"))
-            .finally(() => this.set("isLoading", false))
-
-    }
-
-    _createMedication(){
-
-        // Todo: refactor this / axel code
-        // this.saveAction(this.medicationAccumulator.map(m => {
-        //     if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
-        //         m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
-        //     }
-        //     return m;
-        // }))
-
-    }
-
     _closePosologyView(){
         this.set("selectedDrugForPosology",null)
 
@@ -915,6 +888,32 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         if(_.get(e, 'detail.lock', null)){
             _.get(e, 'detail.lock', false) ? this.set('isCompoundSearchView', false) : this.set('isCompoundSearchView', true)
         }
+    }
+
+    _prescribe(){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.set("isLoading", true))
+            .then(() => this._closePosologyView())
+            .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
+            .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
+            .then(() => console.log("prescribe if should"))
+            .finally(() => this.set("isLoading", false))
+
+    }
+
+    _createMedication(){
+
+        // Todo: refactor this / axel code
+        // this.saveAction(this.medicationAccumulator.map(m => {
+        //     if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
+        //         m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
+        //     }
+        //     return m;
+        // }))
+
     }
 
 }
