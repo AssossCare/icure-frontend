@@ -352,8 +352,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     </template>
                 </div>
                 <div class="buttons">
-                    <!-- <vaadin-date-picker id="deliveryDate" label="Date de délivrance" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker> -->
                     <vaadin-date-picker id="deliveryDate" class="deliveryDate" label="[[localize('deliver_date','Date de délivrance',language)]]" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker>
+                    <vaadin-date-picker id="expirationDate" class="deliveryDate" label="[[localize('expiration_date','Date d'expiration',language)]]" value="{{endDateForExecutionString}}" i18n="[[i18n]]"></vaadin-date-picker>
                     <div class="printButton">
                         <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_printAndSendByEmail" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
@@ -828,7 +828,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               }
           }
           if (medicationValue.substanceProduct) {
-              if (medicationValue.substanceProduct.intendedcds && medicationValue.substanceProduct.intendedcds.some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
+              if (!_.get(medicationValue, 'substanceProduct.intendedcds', []).some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
                   medicationValue.substanceProduct.intendedcds = [];
               }
           }
@@ -857,10 +857,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
 
       if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)){ // if ehealth connected
-          Promise.all([
-              this.api.hcparty().getHealthcareParty(_.get(this, "user.healthcarePartyId", null)),
-              this.api.besamv2().getSamVersion()
-          ])
+         this.api.hcparty().getHealthcareParty(_.get(this, "user.healthcarePartyId", null)).then(hcp => Promise.all([hcp, this.api.besamv2().getSamVersion()]))
           .then(([hcp, samVersion]) =>
               Promise.all(
                   splitColumns.map(c =>
@@ -874,35 +871,38 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                           vendorPhone: "+3223192241",
                           vendorEmail: "support@topaz.care",
                           packageVersion: "1" ,
-                          packageName: "Topaz"
+                          packageName: "Topaz",
+                          expirationDate: this.api.moment(this.endDateForExecutionString).format("YYYYMMDD")
                       }).then(prescri => {
                           c.rid = prescri.rid
                           c.recipeResponse = prescri
                           drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
+                            console.log(_.get(prescri, 'xmlRequest', null))
+                          this._download(_.get(prescri, 'xmlRequest', null))
                       } )
                   )
               )
           )
-              .catch(error=>{
-                  this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
-                  this.set('_printErrorDetails', error)
-                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-                  this.shadowRoot.querySelector('#confirmNoRecipe') ?  setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
-                  throw "ERROR_WHILE_RECIPE"
-              })
-              .then(()=>{
-                  this._markDrugsAsSent(drugsToBePrescribed)
-              })
-              .then(()=>{
-                  toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-                  this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
-                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-              })
-              .catch(error=>{
-                  if(error !== "ERROR_WHILE_RECIPE") {
-                      console.log("Recipe sent but error when trying to print or mark drugs as sent: ", error)
-                  }
-              })
+          .catch(error=>{
+              this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
+              this.set('_printErrorDetails', error)
+              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+              this.shadowRoot.querySelector('#confirmNoRecipe') ?  setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
+              throw "ERROR_WHILE_RECIPE"
+          })
+          .then(()=>{
+              this._markDrugsAsSent(drugsToBePrescribed)
+          })
+          .then(()=>{
+              toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
+              this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
+              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+          })
+          .catch(error=>{
+              if(error !== "ERROR_WHILE_RECIPE") {
+                  console.log("Recipe sent but error when trying to print or mark drugs as sent: ", error)
+              }
+          })
       } else {
           console.log("no niss or no recip-e", this.patient.ssin, this.api.tokenId)
           if(!this.patient.ssin) {
@@ -915,6 +915,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
       }
   } // print end
+
+    _download(doc) {
+        var a = document.createElement('a')
+        a.href = window.URL.createObjectURL(new Blob([doc], {type : "text/plain;charset=utf-8"}))
+        a.download = `prescription_${+new Date()}.xml`
+        a.click()
+    }
 
   addEmptyPosologyIfNeeded(mv){
       if(mv.instructionForPatient || mv.regimen && mv.regimen.length > 0){
