@@ -1,9 +1,9 @@
-import '../../styles/shared-styles.js';
-import '../../styles/buttons-style.js';
+import '../../../../../styles/shared-styles.js';
+import '../../../../../styles/buttons-style.js';
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {TkLocalizerMixin} from "../tk-localizer";
-class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
+import {TkLocalizerMixin} from "../../../../tk-localizer";
+class HtRegimenItemEditor extends TkLocalizerMixin(PolymerElement) {
   static get template() {
     return html`
         <style include="buttons-style">
@@ -119,7 +119,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   static get is() {
-      return 'ht-regimen-item';
+      return 'ht-regimen-item-editor';
   }
 
   static get properties() {
@@ -201,7 +201,6 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseDown(e) {
-      console.log("mouseDown");
       if (this.resetTimer) {
           clearTimeout(this.resetTimer);
           this.resetTimer = null;
@@ -213,7 +212,6 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseUp(e) {
-      console.log("mouseUp");
       if (this.mouseIsDown) {
           if (this.quantityFactor && this.quantityFactor.denominator > 1) {
               this.set("quantity", this.quantityFactor.numLabel);
@@ -226,9 +224,8 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   _quantityChanged() {
-      console.log("_quantityChanged: " + this.quantity);
       this.set("custom", this.quantity && "positive" || "");
   }
 }
 
-customElements.define(HtRegimenItem.is, HtRegimenItem);
+customElements.define(HtRegimenItemEditor.is, HtRegimenItemEditor);

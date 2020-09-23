@@ -15,6 +15,8 @@ import './ht-pat-prescription-detail-drugs'
 import './ht-pat-prescription-detail-posology'
 import './ht-pat-prescription-detail-search'
 import './ht-pat-prescription-detail-cnk-info'
+import '../../../../styles/spinner-style.js';
+import '../../../../styles/shared-styles.js';
 
 
 import {TkLocalizerMixin} from "../../../tk-localizer";
@@ -25,7 +27,7 @@ import _ from "lodash"
 class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style">
+        <style include="dialog-style scrollbar-style shared-styles spinner-style">
         
         #prescriptionDetailDialog{
             height: calc(98% - 12vh);
@@ -133,6 +135,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         </style>
         
         <paper-dialog id="prescriptionDetailDialog" class="prescriptionDetailDialog">
+        
             <div class="content-header">
                 <div class="content-header-txt">
                     [[localize('presc', 'Prescription', language)]]
@@ -165,7 +168,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         drugs-to-be-prescribe="[[drugsToBePrescribe]]"
                         selected-drug="[[selectedDrugForPosology]]"
                         sam-version="[[samVersion]]"
-                        on-open-posology-view="_selectedDrug"
+                        on-selected-drug="_selectedDrug"
                         on-delete-drug="_deleteDrug"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
@@ -297,18 +300,21 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 </template>                           
             </div>
             <div class="buttons">
-                <template is="dom-if" if="[[isYellowCardIsAvailable]]">
-                    <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
-                </template>      
-                <template is="dom-if" if="[[isPosologyView]]">
-                    <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_validatePosology"><iron-icon icon="icons:check"></iron-icon> [[localize('pos-presc','Validate posology',language)]]</paper-button>
+                <template is="dom-if" if="[[isLoading]]" restamp="true"><div class="mw20"><ht-spinner active="[[isLoading]]"></ht-spinner></div></template>
+                <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <template is="dom-if" if="[[isYellowCardIsAvailable]]">
+                        <paper-button class="button button--other" on-tap="_notifyYellowCard"><iron-icon icon="vaadin:bell-o"></iron-icon> [[localize('btn-not-yell-card','Notify yellow card',language)]]</paper-button>
+                    </template>      
+                    <template is="dom-if" if="[[isPosologyView]]">
+                        <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_prescribe"><iron-icon icon="icons:check"></iron-icon> [[localize('pre','Prescribe',language)]]</paper-button>
+                    </template>
+                    <template is="dom-if" if="[[isCompoundSearchView]]">
+                        <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Create compound',language)]]</paper-button>
+                    </template>
+                    <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 </template>
-                <template is="dom-if" if="[[isCompoundSearchView]]">
-                    <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Create compound',language)]]</paper-button>
-                </template>
-                <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -690,8 +696,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
             })
 
-            this.set('selectedDrugForPosology', {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo})
-            this.push('drugsToBePrescribe', _.merge({}, this.selectedDrugForPosology, {posology: {}}))
+            const drug = {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo}
+
+            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', drug )
+            this.push('drugsToBePrescribe', _.merge({}, drug, {posology: {}}))
 
         }).finally(() => {
 
@@ -728,14 +736,6 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         }
 
         this.set("drugsToBePrescribe",this.drugsToBePrescribe.filter(drug => drug.id!==_.get(e,"detail.product.id",null)))
-    }
-
-    _validatePosology(){
-        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._validatePosology() : null
-    }
-
-    _createMedication(){
-        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._createMedication() : null
     }
 
     _closePosologyView(){
@@ -888,6 +888,32 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         if(_.get(e, 'detail.lock', null)){
             _.get(e, 'detail.lock', false) ? this.set('isCompoundSearchView', false) : this.set('isCompoundSearchView', true)
         }
+    }
+
+    _prescribe(){
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.set("isLoading", true))
+            .then(() => this._closePosologyView())
+            .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
+            .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
+            .then(() => console.log("prescribe if should"))
+            .finally(() => this.set("isLoading", false))
+
+    }
+
+    _createMedication(){
+
+        // Todo: refactor this / axel code
+        // this.saveAction(this.medicationAccumulator.map(m => {
+        //     if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
+        //         m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
+        //     }
+        //     return m;
+        // }))
+
     }
 
 }
