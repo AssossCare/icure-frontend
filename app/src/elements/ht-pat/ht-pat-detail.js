@@ -64,6 +64,7 @@ import './dialogs/ht-pat-other-form-dialog'
 import './dialogs/subscription/ht-pat-subscription-detail'
 import './dialogs/eforms/ht-pat-eform-dialog'
 import './dialogs/prescription/ht-pat-prescription-detail'
+import './dialogs/medication-plan/ht-pat-medication-plan-detail'
 
 import '@vaadin/vaadin-split-layout/vaadin-split-layout'
 import '@polymer/paper-button/paper-button'
@@ -2173,7 +2174,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="one-line-menu list-title">[[localize('med','Medication',language)]]</div>
                                     <paper-tooltip position="left" offset="-1" for="med-edit-btn-plan">[[localize('med_plan','Medication Plan',language)]]</paper-tooltip>
                                     <div style="display: flex; align-items: center;">
-                                        <paper-icon-button id="med-edit-btn-plan" class="extra-button" icon="icons:assignment" on-tap="_medicationPlan"></paper-icon-button>
+                                        <paper-icon-button id="med-edit-btn-plan" class="extra-button" icon="icons:assignment" on-tap="_openMedicationPlanDialog"></paper-icon-button>
                                         <template is="dom-if" if="[[_nbMedications(medications.*)]]">
                                             <div class="items-number"><span>[[_nbMedications(medications.*)]]</span></div>
                                         </template>
@@ -2879,6 +2880,17 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
         <ht-pat-prescription-detail id="htPatPrescriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]" allergies="[[allergies]]"></ht-pat-prescription-detail>
+        <ht-pat-medication-plan-detail 
+            id="htPatMedicationPlanDetail"
+            api="[[api]]" 
+            i18n="[[i18n]]" 
+            user="[[user]]" 
+            patient="[[patient]]" 
+            language="[[language]]" 
+            resources="[[resources]]" 
+            current-contact="[[currentContact]]" 
+            contacts="[[contacts]]"
+        ></ht-pat-medication-plan-detail>
 `
     }
 
@@ -6273,12 +6285,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
 
-    _medicationPlan(e) {
+    _openMedicationPlanDialog(e) {
         e.stopPropagation()
         e.preventDefault()
-
-        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').open() : null
-        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#medication-plan').setContacts(this.contacts) : null
+        this.shadowRoot.querySelector('#medication-plan') ? this.shadowRoot.querySelector('#htPatMedicationPlanDetail')._open() : null
     }
 
     updateEdmgClassList(cssClassToAssign) {
