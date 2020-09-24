@@ -1218,15 +1218,15 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         }).then(recipe => {
                             p.rid = recipe.rid
                             p.recipeResponse = recipe
-                            this.api.triggerFileDownload(_.get(recipe,"requestXml",""), "application/txt", "xmlRequest", this.$['#prescriptions-list-dialog'])
+                            this._download(_.get(recipe,"requestXml",""))
                             this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
 
-                            return Promise.all[this.api.receipt().createReceipt({
+                            return Promise.all([this.api.receipt().createReceipt({
                                 documentId: service.id,
                                 references: [recipe.rid],
                                 category: "recip-e",
                                 subCategory: "transactionRequest"
-                            }), Promise.resolve(recipe)]
+                            }), Promise.resolve(recipe)])
                         }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(_.get(recipe, "requestXml", null)))))))
                             .then((receipt) => {
                                 medicationValue.status = 2 ;
@@ -1671,6 +1671,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             }).finally(()=>{
                 this.set("isLoading",false)
             })
+    }
+
+    _download(doc) {
+        var a = document.createElement('a')
+        a.href = window.URL.createObjectURL(new Blob([doc], {type : "text/plain;charset=utf-8"}))
+        a.download = `prescription_${+new Date()}.xml`
+        a.click()
     }
 
 }
