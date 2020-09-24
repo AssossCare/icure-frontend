@@ -179,9 +179,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         <paper-dialog id="prescriptions-list-dialog" class="presc-dialog">
             <h2 class="modal-title">[[localize('list_prescription','Liste des prescriptions',language)]]</h2>
             <div class="content">
-                <div class="error-message"></div>
+                <div class="error-message">[[errorMessage]]</div>
                 <template is="dom-if" if="[[isLoading]]">
-                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                    <div style="height: 50px; width: 50px;"><ht-spinner active="[[isLoading]]"></ht-spinner></div>
                 </template>
                 <vaadin-grid id="prescriptions-grid" items="[[prescriptionsList]]">
                     <vaadin-grid-selection-column auto-select frozen></vaadin-grid-selection-column>
@@ -531,6 +531,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           samVersion: {
               type: Object,
               value: ()=> {}
+          },
+          errorMessage:{
+              type: String,
+              value: ""
           }
       }
   }
@@ -1126,6 +1130,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
     open() {
         //this.set("isLoading",true)
         this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
+        this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
@@ -1218,7 +1223,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         }).then(recipe => {
                             p.rid = recipe.rid
                             p.recipeResponse = recipe
-                            this._download(_.get(recipe,"requestXml",""))
+                            this._download(_.get(recipe,"xmlRequest",""))
                             this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
 
                             return Promise.all([this.api.receipt().createReceipt({
@@ -1227,13 +1232,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                 category: "recip-e",
                                 subCategory: "transactionRequest"
                             }), Promise.resolve(recipe)])
-                        }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(_.get(recipe, "requestXml", null)))))))
+                        }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(recipe, "xmlRequest", null))))))
                             .then((receipt) => {
                                 medicationValue.status = 2 ;
                                 service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
                                 return Promise.resolve(service)
                             }).catch(error => {
                                 this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                                return service;
                             }) : Promise.resolve({})
 
                     })).then((services) => {
@@ -1257,13 +1263,22 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             }
                         })
                         const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, barcode)
-                        this._pdfReport(services, toPrint, this.selectedFormat)
-                        return true;
+                        return this._pdfReport(services, toPrint, this.selectedFormat)
                     }).catch(error => {
                         this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
                     }).finally(() => {
                         this.set("isLoading",false)
                         this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
+                        this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
+                        this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
+                            return {
+                                name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                                posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                                startValidDate :this._today(),
+                                id : s.id,
+                                endValidDate :this._endDate()
+                            }
+                        }))
                     })
                 })
 
@@ -1294,6 +1309,17 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         })
         .then(() => {
             services.map(s => {
+                const tag = s.tags.find(t => t.type === 'CD-LIFECYCLE')
+                if (tag) {
+                    tag.id = id;
+                    tag.code = "ordered"
+                } else {
+                    s.tags.push({
+                        id: id,
+                        code : "ordered",
+                        type : 'CD-LIFECYCLE'
+                    })
+                }
                 const medicationValue = this.api.contact().medicationValue(s, this.language)
                 if (medicationValue) {
                     medicationValue.status = 1;
@@ -1303,6 +1329,16 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         .finally(()=>{
             this.set("isLoading",false)
             this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
+            this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
+            this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
+                return {
+                    name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                    posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                    startValidDate :this._today(),
+                    id : s.id,
+                    endValidDate :this._endDate()
+                }
+            }))
         })
     }
 
