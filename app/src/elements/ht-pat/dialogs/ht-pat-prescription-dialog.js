@@ -1334,7 +1334,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             } // will be set on next page
 
             let prescArray = [], posology = {}
-            _.flatMap(drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)), s => {
+            _.flatMap(drugsToBePrescribed.filter(s => c.id.includes(s.id)), s => {
                 const medicationApi = this.api.contact().medication();
                 const med = this.api.contact().medicationValue(s, this.language);
                 const medPoso = this.api.contact().medication().posologyToString(med, this.language) || "N/A";
