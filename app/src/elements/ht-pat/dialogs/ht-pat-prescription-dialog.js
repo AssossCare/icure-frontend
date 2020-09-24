@@ -1202,18 +1202,19 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         if (medicationValue) {
                             medicationValue.status = 0 ;
                         }
+
                         return service ? this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                             patient: _.omit(this.patient, ['personalStatus']),
                             hcp: hcp,
                             feedback: false,
-                            medications: [this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language)))],
+                            medications: [_.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})],
                             deliveryDate: moment(p.startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             samVersion: _.get(this, 'samVersion.version', null),
+                            expirationDate: moment(p.endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             vendorPhone: "+3223192241",
                             vendorEmail: "support@topaz.care",
                             packageVersion: "1",
-                            packageName: "Topaz",
-                            expirationDate: moment(p.endValidDate, "YYYY-MM-DD").format("YYYYMMDD")
+                            packageName: "Topaz"
                         }).then(recipe => {
                             p.rid = recipe.rid
                             p.recipeResponse = recipe
