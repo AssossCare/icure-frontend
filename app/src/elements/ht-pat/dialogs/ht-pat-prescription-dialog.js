@@ -1226,13 +1226,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                 references: [recipe.rid],
                                 category: "recip-e",
                                 subCategory: "transactionRequest"
-
                             }), Promise.resolve(recipe)]
                         }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(_.get(recipe, "requestXml", null)))))))
                             .then((receipt) => {
                                 medicationValue.status = 2 ;
                                 service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
                                 return Promise.resolve(service)
+                            }).catch(error => {
+                                this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
                             }) : Promise.resolve({})
 
                     })).then((services) => {
