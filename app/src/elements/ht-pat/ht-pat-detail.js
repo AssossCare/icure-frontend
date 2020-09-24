@@ -3344,6 +3344,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 type: String,
                 value: "conv_status_ko"
             },
+            //todo @julien verify this shity axel code
             selectedContactIdForPrescription: {
                 type: String,
                 value: null
@@ -6734,6 +6735,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         console.log(vaadinUpload.files)
     }
 
+    //todo @julien verify this shity axel code
     _prescribe(e) {
         e.stopPropagation()
         this.set('selectedContactIdForPrescription', _.get(e, 'detail.contactId', null))
@@ -7262,6 +7264,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         return documentsDirectoryComponent && typeof _.get(documentsDirectoryComponent, "_donePrintingDocument", false) === "function" && documentsDirectoryComponent._donePrintingDocument()
     }
 
+    //todo @julien verify this shity axel code
     onPrintPrescription(e) {
         this.$["prescriptionDialog"]._print(e)
     }
