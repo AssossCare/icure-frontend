@@ -1166,7 +1166,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         if (_.size(availableRegimenKeys)) {
 
             this.push("availableRegimenKeys", ...availableRegimenKeys);
-            this.set("regimenKey", _.get(availableRegimenKeys,"[0]"));
+            this.set("regimenKey", _.head(availableRegimenKeys));
 
         }
 
@@ -1303,7 +1303,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _resetAll() {
 
-        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
+        const regimen = _.get(this, "medicationContent.medicationValue.regimen", false)
 
         return !regimen ? null : this.splice("medicationContent.medicationValue.regimen", 0, _.size(regimen))
 
@@ -1337,7 +1337,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _addRegimen() {
 
-        return !_.size(_.get(this, "medicationContent.medicationValue.regimen", [])) || !_.get(this,"regimenKey") || _.get(this,"regimenKeys",[]).includes(_.get(this,"regimenKey")) ? null : (this.push("regimenKeys", _.get(this,"regimenKey"))||true) && this._updatePeriodConfigs();
+        return !_.get(this, "medicationContent.medicationValue.regimen", false) || !_.get(this,"regimenKey") || _.get(this,"regimenKeys",[]).includes(_.get(this,"regimenKey")) ? null : (this.push("regimenKeys", _.get(this,"regimenKey"))||true) && this._updatePeriodConfigs();
 
     }
 
