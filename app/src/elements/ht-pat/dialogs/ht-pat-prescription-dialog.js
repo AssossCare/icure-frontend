@@ -1200,7 +1200,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         const service = this.currentContact.services.find(s => p.id === s.id)
                         const medicationValue = this.api.contact().medicationValue(service, this.language)
                         if (medicationValue) {
-                            medicationValue.status = 2 ;
+                            medicationValue.status = 0 ;
                         }
                         return service ? this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                             patient: _.omit(this.patient, ['personalStatus']),
@@ -1217,6 +1217,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         }).then(recipe => {
                             p.rid = recipe.rid
                             p.recipeResponse = recipe
+                            this.api.triggerFileDownload(_.get(recipe,"requestXml",""), "application/txt", "xmlRequest", this.$['#prescriptions-list-dialog'])
                             this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
 
                             return Promise.all[this.api.receipt().createReceipt({
@@ -1228,6 +1229,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             }), Promise.resolve(recipe)]
                         }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(atob(_.get(recipe, "requestXml", null)))))))
                             .then((receipt) => {
+                                medicationValue.status = 2 ;
                                 service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
                                 return Promise.resolve(service)
                             }) : Promise.resolve({})
@@ -1254,16 +1256,52 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         })
                         const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, barcode)
                         this._pdfReport(services, toPrint, this.selectedFormat)
+                        return true;
                     }).catch(error => {
                         this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
                     }).finally(() => {
                         this.set("isLoading",false)
+                        this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
                     })
                 })
 
         }else{
             this.set("errorMessage",this.localize("err_ehealth_token","Erreur: vous n'êtes pas connecté à e-health"))
         }
+    }
+
+    print(e) {
+        const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+
+        if(!prescriptions)return;
+
+        if(prescriptions.find(p => !p.startValidDate || !p.endValidDate)){
+            this.set("errorMessage",this.localize("err_date_no_complete","Erreur: une des dates n'a pas été complété"))
+            return;
+        }
+        this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
+        const element = this.root.querySelector("#barCode");
+        const services = this.currentContact.services.filter(s => prescriptions.find(p=> p.id === s.id))
+
+        this.set("isLoading",true)
+
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+        .then(hcp => {
+            const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, element)
+            return this._pdfReport(services, toPrint, this.selectedFormat)
+        })
+        .then(() => {
+            services.map(s => {
+                const medicationValue = this.api.contact().medicationValue(s, this.language)
+                if (medicationValue) {
+                    medicationValue.status = 1;
+                }
+            })
+        })
+        .finally(()=>{
+            this.set("isLoading",false)
+            this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
+        })
     }
 
     addEmptyPosologyIfNeeded(mv){
