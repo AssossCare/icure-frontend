@@ -180,6 +180,11 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                 position: initial;
             }
             
+            .emptyBtn{
+                height: 12px;
+                width: 12px;
+            }
+            
         </style>
         
         <div>
@@ -192,13 +197,8 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                 <div class="td fg05">[[localize('med-plan-presc-rid','Rid',language)]]</div>
                 <div class="td fg2">[[localize('med-plan-presc-drug','Drug',language)]]</div>
                 <div class="td fg1">[[localize('med-plan-presc-freq','Frequency',language)]]</div>
-                <div class="td fg05">[[localize('med-plan-prescr-stat','Status',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
+                <div class="td fg1">[[localize('med-plan-prescr-stat','Status',language)]]</div>
+                <div class="td fg1">[[localize('','',language)]]</div>
             </div>
             <template is="dom-repeat" items="[[listOfDrugs]]" as="drug">
                 <div class="tr tr-item">
@@ -242,33 +242,56 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                     <div class="td fg05">[[drug.rid]]</div>
                     <div class="td fg2">[[drug.label]]</div>
                     <div class="td fg1">[[drug.posology]]</div>
-                    <div class="td fg05 notRel">
+                    <div class="td fg1 notRel">
                         <iron-icon icon="vaadin:circle" class$="statusIcon [[_getStatusColor(drug.status)]]"></iron-icon>
-                        <span class$="recipe-status [[_getStatusColor(drug.status)]]]">[[_getStatusHr(drug.status)]]</span>
+                        <span class$="recipe-status [[_getStatusColor(drug.status)]]]">[[_getStatusHr(drug.status)]]</span> 
                     </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:print" class="iconBtn" id="print_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_printPrescription"></iron-icon>
-                        <paper-tooltip for="print_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-print', 'Print', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:ban" class="iconBtn" id="revoke_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_revokePrescription"></iron-icon>
-                        <paper-tooltip for="revoke_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-revoke', 'Revoke', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:trash" class="iconBtn" id="delete_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_deleteDrug"></iron-icon>
-                        <paper-tooltip for="delete_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-delete', 'Delete', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:bell-o" class="iconBtn" id="notif_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_sendNotification"></iron-icon>
-                        <paper-tooltip for="notif_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-notification', 'Notify', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:flag-o" class="iconBtn" id="flag_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_changedVisuFlag"></iron-icon>
-                        <paper-tooltip for="flag_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-visu', 'Change vision flag', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:code" class="iconBtn" id="kmehr_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_downloadKmehr"></iron-icon>
-                        <paper-tooltip for="kmehr_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-kmehr', 'Download xml', language)]]</paper-tooltip>
+                    <div class="td fg1 notRel">
+                        <template is="dom-if" if="[[]]">
+                            <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:print" class="iconBtn" id="print_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_printPrescription"></iron-icon>
+                            <paper-tooltip for="print_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-print', 'Print', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:ban" class="iconBtn" id="revoke_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_revokePrescription"></iron-icon>
+                            <paper-tooltip for="revoke_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-revoke', 'Revoke', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:trash" class="iconBtn" id="delete_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_deleteDrug"></iron-icon>
+                            <paper-tooltip for="delete_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-delete', 'Delete', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:bell-o" class="iconBtn" id="notif_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_sendNotification"></iron-icon>
+                            <paper-tooltip for="notif_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-notification', 'Notify', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <temlpate is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:flag-o" class="iconBtn" id="flag_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_changedVisuFlag"></iron-icon>
+                            <paper-tooltip for="flag_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-visu', 'Change vision flag', language)]]</paper-tooltip>
+                        </temlpate>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:code" class="iconBtn" id="kmehr_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_downloadKmehr"></iron-icon>
+                            <paper-tooltip for="kmehr_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-kmehr', 'Download xml', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
                     </div>
                 </div>
             </template>
