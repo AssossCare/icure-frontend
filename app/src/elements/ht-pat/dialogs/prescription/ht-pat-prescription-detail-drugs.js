@@ -5,6 +5,7 @@ import '../../../dynamic-form/dynamic-doc.js';
 import '../../../collapse-button/collapse-button.js';
 import '../../../../styles/dialog-style.js';
 import '../../../../styles/scrollbar-style.js';
+import '../../../../styles/shared-styles.js';
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
 import moment from 'moment/src/moment';
 
@@ -16,11 +17,11 @@ import _ from "lodash/lodash";
 class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
         return html`
-        <style include="dialog-style scrollbar-style">
+        <style include="dialog-style scrollbar-style shared-styles">
             .table{         
                 width: auto;
                 height: 100%;
-                overflow: auto;
+                overflow: hidden;
                 font-size: var(--font-size-normal);
             }
             
@@ -83,7 +84,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             }
             
             .container-drugs{
-               margin: 1%;
+               margin: 5px;
                height: calc(100% - 20px);
                border: 1px solid var(--app-background-color-dark);
             }
@@ -98,8 +99,46 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
                 width: 12px;
             }
             
+            .icon-type-larger {
+                height: 14px;
+                width: 14px;
+            }
+            
+            .icon-quantities {
+                height: 18px;
+                width: 18px;
+                color:var(--button--other_-_color);
+            }
+            
             .tr:not(.th) .td{
                 cursor: pointer;
+            }
+            
+            .singleDrugContainer{
+                cursor: pointer;
+                border-bottom: 1px solid var(--app-background-color-dark);   
+                padding:9px 7px 12px 7px;
+            }
+            
+            .singleDrugContainer.selected{
+                background-color: var(--app-background-color-dark);                
+            }
+            
+            .drugLabel{
+                white-space:nowrap;                
+            }
+            
+            .drugQuantities {
+                text-align: center;
+                margin:7px 0 0 0;
+            }
+            
+            .boxesQuantities {
+                padding:3px 15px;
+                border:1px solid var(--app-background-color-darker);
+                display: inline-block;
+                margin-left:15px
+                margin-right:15px
             }
             
         </style>
@@ -107,20 +146,34 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
         <div class="container-drugs">
             <div class="drugs-list">
                 <div class="table">
-                    <div class="tr th">                     
-                        <div class="td fg05">[[localize('presc-qt','Quantity',language)]]</div>
-                        <div class="td fg05">[[localize('presc-type','Type',language)]]</div>
-                        <div class="td fg2">[[localize('presc-descr','Description',language)]]</div>
-                        <div class="td fg05"></div>
-                    </div>
+                
+<!--                    <div class="tr th">-->
+<!--                        <div class="td fg05">[[localize('presc-qt','Quantity',language)]]</div>-->
+<!--                        <div class="td fg05">[[localize('presc-type','Type',language)]]</div>-->
+<!--                        <div class="td fg2">[[localize('presc-descr','Description',language)]]</div>-->
+<!--                        <div class="td fg05"></div>-->
+<!--                    </div>-->
+
+<!--                    <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">-->
+<!--                        <div class$="tr [[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" on-tap="_selectedDrug">-->
+<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:remove" on-tap="_removeBoxes"></iron-icon>[[item.drug.boxes]]<iron-icon class="icon-type" icon="icons:add" on-tap="_addBoxes"></iron-icon></div>-->
+<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>-->
+<!--                            <div class="td fg2">[[_getDrugName(item.drug)]]</div>     -->
+<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:delete" on-tap="_deleteDrug"></iron-icon></div>      -->
+<!--                        </div>   -->
+<!--                    </template>-->
+                    
                     <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">
-                        <div class$="[[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" on-tap="_selectedDrug">
-                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:remove" on-tap="_removeBoxes"></iron-icon>[[item.drug.boxes]]<iron-icon class="icon-type" icon="icons:add" on-tap="_addBoxes"></iron-icon></div>
-                            <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>
-                            <div class="td fg2">[[_getDrugName(item.drug)]]</div>     
-                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:delete" on-tap="_deleteDrug"></iron-icon></div>      
-                        </div>   
+                        <div class$="singleDrugContainer [[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" data-internal-id$="[[item.drug.internalUuid]]" on-tap="_selectedDrug">
+                            <div class="drugLabel"><iron-icon class="icon-type-larger mr10" icon="[[_getDrugType(item)]]"></iron-icon>[[_getDrugName(item.drug)]]</div>     
+                            <div class="drugQuantities">
+                                <iron-icon class="icon-quantities" icon="icons:remove-circle-outline" on-tap="_removeBoxes"></iron-icon>
+                                <span class="boxesQuantities">[[item.drug.boxes]] [[localize('boxeOrBoxes','Boxe(s)',language)]]</span>
+                                <iron-icon class="icon-quantities" icon="icons:add-circle-outline" on-tap="_addBoxes"></iron-icon>
+                            </div>
+                        </div>
                     </template>
+                                        
                 </div>
             </div>
         </div>
@@ -194,58 +247,69 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
     }
 
     _isSelected(drug){
-        return _.get(drug,"id",null)===_.get(this,"selectedDrug.id","") ? 'tr selected' :'tr'
+        return _.get(drug,"id",null)===_.get(this,"selectedDrug.id","") ? 'selected' :''
     }
 
-    //i renamed this function : if we select a drug not selected => openViewPosology else if it was selected we close the view and we display the search view
     _selectedDrug(e){
-        e.stopPropagation();
-        const id = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
 
-        return !drug ? null : this.dispatchEvent(new CustomEvent('selected-drug', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                product : id===_.get(this,"selectedDrug.id","") ? {} : drug,
-                bypassPosologyView: id===_.get(this,"selectedDrug.id","")
-            }
-        }))
+        e.stopPropagation();
+
+        const drugInternalId = this._getEventDatasetValue(e, "internalId")
+        const drug = _.find(_.get(this,"drugsToBePrescribe"), it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
+
+        return !drug ? null : this.dispatchEvent(new CustomEvent('selected-drug', { bubbles: true, composed: true, detail: {
+            product : drugInternalId === _.trim(_.get(this,"selectedDrug.drug.internalUuid","")) ? {} : drug,
+            bypassPosologyView: drugInternalId === _.trim(_.get(this,"selectedDrug.drug.internalUuid",""))
+        }}))
+
+    }
+
+    _getEventDatasetValue(e, datasetKey="id") {
+
+        return _.trim(_.get(_.find(_.get(e,"path"), it => _.some(_.get(it,"className").split(" "), cssClass => ["tr", "singleDrugContainer"].indexOf(cssClass) > -1)), "dataset." + datasetKey, null))
+
     }
 
     _deleteDrug(e){
-        e.stopPropagation()
-        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
-        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
-        return !drug ? null : this.dispatchEvent(new CustomEvent('delete-drug', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                product : drug
-            }
-        }))
+
+        e.stopPropagation();
+
+        const drugInternalId = this._getEventDatasetValue(e, "internalId")
+        const drug = _.find(_.get(this,"drugsToBePrescribe", it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId))
+
+        return !drug ? null : this.dispatchEvent(new CustomEvent('delete-drug', { bubbles: true, composed: true, detail: { product : drug }}))
+
     }
 
     _removeBoxes(e){
-        e.stopPropagation()
-        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
-        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
-        if(!drug)return;
-        if(drug.drug.boxes>1){
-            drug.drug && drug.drug.boxes && drug.drug.boxes--
-            this.notifyPath('drugsToBePrescribe.'+(this.drugsToBePrescribe.findIndex(dg => dg.id===id))+'.drug.boxes')
-        }else{
+
+        e.stopPropagation();
+
+        const drugInternalId = this._getEventDatasetValue(e, "internalId")
+        const drug = _.find(_.get(this,"drugsToBePrescribe"), it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
+        const drugIndexInDrugsToBePrescribed = _.get(this,"drugsToBePrescribe",[]).findIndex(it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
+
+        return !drug ? null :
+            _.get(drug,"drug.boxes") > 1 ? ((drug.drug && drug.drug.boxes && drug.drug.boxes--)||true)
+                && (this.notifyPath('drugsToBePrescribe.' + drugIndexInDrugsToBePrescribed + '.drug.boxes')||true)
+                && this.dispatchEvent(new CustomEvent('box-quantity-updated', { bubbles: true, composed: true, detail: { internalUuid : drugInternalId, newQuantity: _.get(drug,"drug.boxes",1) }})) :
             this._deleteDrug(e)
-        }
+
     }
 
     _addBoxes(e){
-        e.stopPropagation()
-        const id = _.get(e.path.find(ele => ele.className && ele.className.includes("tr")),"dataset.id",null)
-        const drug = this.drugsToBePrescribe.find(drug => drug.id===id)
-        if(!drug)return;
-        drug.drug && drug.drug.boxes && drug.drug.boxes++
-        this.notifyPath('drugsToBePrescribe.'+(this.drugsToBePrescribe.findIndex(dg => dg.id===id))+'.drug.boxes')
+
+        e.stopPropagation();
+
+        const drugInternalId = this._getEventDatasetValue(e, "internalId")
+        const drug = _.find(_.get(this,"drugsToBePrescribe"), it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
+        const drugIndexInDrugsToBePrescribed = _.get(this,"drugsToBePrescribe",[]).findIndex(it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
+
+        return !drug ? null :
+            ((drug.drug && drug.drug.boxes && drug.drug.boxes++)||true)
+            && (this.notifyPath('drugsToBePrescribe.' + drugIndexInDrugsToBePrescribed + '.drug.boxes')||true)
+            && this.dispatchEvent(new CustomEvent('box-quantity-updated', { bubbles: true, composed: true, detail: { internalUuid : drugInternalId, newQuantity: _.get(drug,"drug.boxes",1) }}))
+
     }
 
 }

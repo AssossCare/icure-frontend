@@ -170,6 +170,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         sam-version="[[samVersion]]"
                         on-selected-drug="_selectedDrug"
                         on-delete-drug="_deleteDrug"
+                        on-box-quantity-updated="_boxQuantityUpdated"
                     ></ht-pat-prescription-detail-drugs>
                 </div>
                 <template is="dom-if" if="[[isSearchView]]">
@@ -650,6 +651,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 allergyType: _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"type")) === "allergy") ? "allergy" : _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"adr"))) ? "adr" : "",
                 boxes: 1, // 1! box = 1! svc
                 drugType: drugType,
+                internalUuid: _.get(drugInfo, "internalUuid", this.api.crypto().randomUuid())
             })
 
             if(!medicationValue) {
@@ -890,6 +892,18 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         }
     }
 
+    _boxQuantityUpdated(e) {
+
+        const updatedQuantityDrugInternalUuid = _.trim(_.get(e,"detail.internalUuid"))
+        const selectedDrugForPosologyInternalUuid = _.trim(_.get(this,"selectedDrugForPosology.drug.internalUuid"))
+        const htPatPrescriptionDetailPosology = this.shadowRoot.querySelector('#htPatPrescriptionDetailPosology')
+
+        return updatedQuantityDrugInternalUuid !== selectedDrugForPosologyInternalUuid ? null : (_.merge(this.selectedDrugForPosology, {drug:{boxes:(parseInt(_.get(e,"detail.newQuantity"))||1)}})||true)
+            && typeof _.get(htPatPrescriptionDetailPosology, "_updateStats") === "function"
+            && this.shadowRoot.querySelector('#htPatPrescriptionDetailPosology')._updateStats()
+
+    }
+
     _prescribe(){
 
         const promResolve = Promise.resolve()
@@ -899,7 +913,13 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .then(() => this._closePosologyView())
             .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
             .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
-            .then(() => console.log("prescribe if should"))
+            .then(() => {
+                console.log("AFTER SAVE && AFTER UPDATE CTC")
+                console.log("close this window")
+                console.log("flush posology cache / call reset:any method")
+                console.log("prescribe if should / open julien window: ht-pat-prescription-dialog")
+                console.log("prescribe if should")
+            })
             .finally(() => this.set("isLoading", false))
 
     }

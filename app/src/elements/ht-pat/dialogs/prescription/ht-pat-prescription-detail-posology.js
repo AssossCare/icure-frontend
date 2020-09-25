@@ -670,6 +670,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 type: Array,
                 value: () => []
             },
+            drugsDataCache:{
+                type: Object,
+                value: {}
+            },
 
             // <Axel Stijns>
             medicationDetail: {
@@ -1136,9 +1140,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 if (keyId === "weekday") {
 
                     this.push("regimenKeys", ...regimen
-                        .filter((e, i, a) => a.findIndex(x => x[keyId].code === e[keyId].code) === i)
-                        .map(reg => reg[keyId].code)
-                        .filter(code => this.weekdayCodes.some(weekdayCode => weekdayCode.code === code))
+                        .filter((e, i, a) => a.findIndex(x => _.get(x[keyId],"code") === _.get(e[keyId],"code")) === i)
+                        .map(reg => _.get(reg[keyId],"code"))
+                        .filter(code => _.some(_.get(this,"weekdayCodes"), it => _.get(it,"code") === code))
                     )
 
                 } else {
@@ -1173,6 +1177,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     }
 
     _beginMoment() {
+
+        // const beginMomentAsString = _.trim(_.get(this,"medicationDetail.beginMomentAsString")) ? _.trim(_.get(this,"medicationDetail.beginMomentAsString")) : _.trim(moment().format("YYYY-MM-DD"))
+        // return this.api.moment(beginMomentAsString,"YYYY-MM-DD")
 
         return this.api.moment(_.get(this,"medicationDetail.beginMomentAsString"), "YYYY-MM-DD");
 
@@ -1217,7 +1224,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
         const totalQuantity = Math.round(totalTakes / _.get(this,"quantityFactor.denominator"))
 
-        const endProvisionMoment = _.cloneDeep(beginMoment).add(provisionDays, "days");
+        const endProvisionMoment = _.cloneDeep(beginMoment||moment()).add(provisionDays, "days");
 
         this.set("provisionDays", provisionDays);
         this.set("totalTakes", totalTakes);
@@ -1571,18 +1578,66 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    _addDrugDataToCache() {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => _.assign(this.drugsDataCache, _.fromPairs([[_.trim(_.get(this,"medicationDetail.internalUuid")),{
+                cachedBoxes: _.get(this,"cachedBoxes"),
+                medicationContent: _.get(this,"medicationContent"),
+                medicationDetail: _.get(this,"medicationDetail"),
+                reimbursementReason: _.get(this,"reimbursementReason"),
+                quantityFactor: _.get(this,"quantityFactor"),
+                periodConfig: _.get(this,"periodConfig"),
+                frequencies: _.get(this,"frequencies"),
+            }]])))
+
+    }
+
+    _drugFoundInCache(cacheKey) {
+
+        return _.trim(cacheKey) && _.size(_.get(this,"drugsDataCache." + cacheKey))
+
+    }
+
+    _loadDrugDataFromCache(cacheKey) {
+
+        const promResolve = Promise.resolve()
+        const cachedData = _.get(this,"drugsDataCache." + cacheKey)
+
+        // Set vars directly to avoid observers
+        return promResolve
+            .then(() => this.set('isLoading', true))
+            .then(() => this.cachedBoxes = _.get(cachedData, "cachedBoxes"))
+            .then(() => this.medicationContent = _.get(cachedData, "medicationContent"))
+            .then(() => this.api.sleep(300))
+            .then(() => this.set("initializingDate", true))
+            .then(() => this.medicationDetail = _.get(cachedData, "medicationDetail"))
+            .then(() => this.set("initializingDate", false))
+            .then(() => this.reimbursementReason = _.get(cachedData, "reimbursementReason"))
+            .then(() => this.quantityFactor = _.get(cachedData, "quantityFactor"))
+            .then(() => {
+                const period = _.has(_.get(this,"medicationContent"), "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology"
+                _.get(this,"periodConfig.id") !== period ? this.set("periodConfig", _.find(_.get(this,"periodConfigs"), c => _.get(c,"id") === period)) : this._periodChanged()
+            })
+            // .then(() => this.periodConfig = _.get(cachedData, "periodConfig"))
+            .then(() => this.frequencies = _.get(cachedData, "frequencies"))
+            .then(() => this.api.sleep(300))
+            .then(() => this._updateStats())
+            .finally(() => this.set('isLoading', false))
+
+    }
+
     _medicationChanged(user, medication) {
 
         const now = +new Date()
         const promResolve = Promise.resolve()
+        const drugInternalUuid = _.trim(_.get(medication,"drug.internalUuid"))
 
-        return !medication ? this._init() : this._init()
+        return !medication ? this._init() : drugInternalUuid && this._drugFoundInCache(drugInternalUuid) ? this._loadDrugDataFromCache(drugInternalUuid) : this._init()
             .then(() => this.set('isLoading', true))
-            .then(() => !_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")) ? null : this.api.besamv2().findPaginatedVmpsByGroupId(_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")),null,null,100).then(vmps => _.merge(medication, {
-                drug:{
-                    vmps:_.size(_.get(vmps,"rows")) ? _.get(vmps,"rows") : null
-                }
-            })).catch(e => console.log("[ERROR]", e)))
+            .then(() => !_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")) ? null : this.api.besamv2().findPaginatedVmpsByGroupId(_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")),null,null,100).then(vmps => _.merge(medication, {drug:{vmps:_.size(_.get(vmps,"rows")) ? _.get(vmps,"rows") : null}})).catch(e => console.log("[ERROR]", e)))
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
                 Promise.resolve(_.get(medication,"drug")) :
                 promResolve
@@ -1634,9 +1689,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             })
             .then(([medicationWithAmpps,content]) => {
 
-                // const content = this.content || this.extractContentWithIdFromMedicationService(_.get(medicationWithAmpps,"newMedication"), _.get(medicationWithAmpps,"options.isNew"), _.get(medicationWithAmpps,"options.isPrescription"))
-                // this.set("medicationContent", content);
-
                 // Used to be this._initmedicationContent()
                 _.get(this,"medicationContent.medicationValue") && !_.size(_.get(this,"medicationContent.medicationValue.regimen")) ? this.set('medicationContent.medicationValue.regimen', []) : null
 
@@ -1684,7 +1736,6 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 const period = _.has(_.get(this,"medicationContent"), "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology"
                 _.get(this,"periodConfig.id") !== period ? this.set("periodConfig", _.find(_.get(this,"periodConfigs"), c => _.get(c,"id") === period)) : this._periodChanged()
 
-                //todo @julien edition need modification and i know 'none' as value is really bad idea but i use what axel created
                 this.set("frequencies",["none"])
 
                 // Since P3, allow a little delay to initialize before giving it a value
@@ -1692,8 +1743,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
             })
             .then(() => this._updateStats())
+            .then(() => this._addDrugDataToCache())
             .catch(e => console.log("[ERROR]", e))
-            .finally(() => (console.log("Medication", this.medication)||true) && (console.log("MedicationDetail", this.medicationDetail)||true) && this.set('isLoading', false))
+            .finally(() => (this.set('isLoading', false)||true) && (console.log("Medication", this.medication)||true) && (console.log("MedicationDetail", this.medicationDetail)||true))
 
     }
 
