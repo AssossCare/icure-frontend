@@ -241,6 +241,5 @@ class HtPatMedicationPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
         }
     }
 
-
 }
 customElements.define(HtPatMedicationPlanDetail.is, HtPatMedicationPlanDetail);
