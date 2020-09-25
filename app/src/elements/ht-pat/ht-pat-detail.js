@@ -2795,7 +2795,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-contact-id-for-prescription="[[selectedContactIdForPrescription]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" on-save-document-as-service="[[_handleSaveDocumentAsService]]" global-hcp="[[globalHcp]]" on-save-contact="_saveContact"></ht-pat-prescription-dialog>
+        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" on-save-current-contact="saveCurrentContact"></ht-pat-prescription-dialog>
 
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
@@ -3356,6 +3356,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 type: String,
                 value: "conv_status_ko"
             },
+            //todo @julien verify this shity axel code
             selectedContactIdForPrescription: {
                 type: String,
                 value: null
@@ -6744,6 +6745,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         console.log(vaadinUpload.files)
     }
 
+    //todo @julien verify this shity axel code
     _prescribe(e) {
         e.stopPropagation()
         this.set('selectedContactIdForPrescription', _.get(e, 'detail.contactId', null))
@@ -7272,6 +7274,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         return documentsDirectoryComponent && typeof _.get(documentsDirectoryComponent, "_donePrintingDocument", false) === "function" && documentsDirectoryComponent._donePrintingDocument()
     }
 
+    //todo @julien verify this shity axel code
     onPrintPrescription(e) {
         this.$["prescriptionDialog"]._print(e)
     }

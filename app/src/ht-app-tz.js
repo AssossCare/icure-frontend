@@ -1194,6 +1194,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                       thisYear: moment().format("YYYY"),
                       cancel: 'Annuler',
                       formatDate: (d, acc) => {
+                          acc = acc || "day";
                           const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y);
                           const tab = [yearStr];
                           acc !== 'year' && tab.unshift((d.month + 1));

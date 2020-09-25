@@ -8,6 +8,12 @@ import moment from 'moment/src/moment';
 const STATUS_NOT_SENT = 1;
 const STATUS_SENT = 2;
 
+import '@vaadin/vaadin-grid/vaadin-grid-selection-column'
+import '@vaadin/vaadin-grid/vaadin-grid-column'
+import '@vaadin/vaadin-grid/vaadin-grid'
+import '@vaadin/vaadin-grid/vaadin-grid-sort-column'
+import '@vaadin/vaadin-date-picker/vaadin-date-picker'
+
 import {TkLocalizerMixin} from "../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
@@ -167,6 +173,41 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 display: flex;
             }
         </style>
+        
+        <!-- new Dialog -->
+        
+        <paper-dialog id="prescriptions-list-dialog" class="presc-dialog">
+            <h2 class="modal-title">[[localize('list_prescription','Liste des prescriptions',language)]]</h2>
+            <div class="content">
+                <div class="error-message">[[errorMessage]]</div>
+                <template is="dom-if" if="[[isLoading]]">
+                    <div style="height: 50px; width: 50px;"><ht-spinner active="[[isLoading]]"></ht-spinner></div>
+                </template>
+                <vaadin-grid id="prescriptions-grid" items="[[prescriptionsList]]">
+                    <vaadin-grid-selection-column auto-select frozen></vaadin-grid-selection-column>
+                    <vaadin-grid-sort-column path="name" header="[[localize('name','Nom',language)]]"></vaadin-grid-sort-column>
+                    <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
+                    <vaadin-grid-column header="[[localize('start_valid_date','date début validité',language)]]" frozen>
+                        <template>
+                            <vaadin-date-picker i18n="[[i18n]]" value="[[_today()]]" setter$="[[item.id]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                        </template>
+                    </vaadin-grid-column>
+                    <vaadin-grid-column header="[[localize('end_valid_date','date de fin de validité',language)]]" frozen>
+                        <template>
+                            <vaadin-date-picker i18n="[[i18n]]" value="[[_endDate()]]" setter$="[[item.id]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                        </template>
+                    </vaadin-grid-column>
+                </vaadin-grid>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" dialog-dismiss>[[localize('can', "Annuler", language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="sendByMail"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="print" ><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
+                <paper-button class="button button--save" autofocus on-tap="_sendToRecipe"><iron-icon icon="print"></iron-icon>[[localize('send_to_recipe','Envoyer à Recip-e',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <!-- old code axel -->
 
         <paper-dialog id="loading" modal="">
             <h2>[[localize('sending_prescription','Sending prescription...',language)]]</h2>
@@ -387,13 +428,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           patient: {
               type: Object
           },
-          selectedFormat: {
-              type: String,
-              value: 'presc'
+          i18n : {
+              type: Object,
+              value: ()=>{}
           },
-          currentContact: {
-              type: Object
-          },
+          //old variable
           deliveryDateString: {
               type: String,
               value: moment().format("YYYY-MM-DD")
@@ -475,6 +514,27 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           selectedContactForPrescription:{
               type: Object,
               value: () => {}
+          },
+
+          //new variables
+          currentContact: {
+              type: Object
+          },
+          isLoading:{
+              type: Boolean,
+              value : false
+          },
+          selectedFormat: {
+              type: String,
+              value : 'presc'
+          },
+          samVersion: {
+              type: Object,
+              value: ()=> {}
+          },
+          errorMessage:{
+              type: String,
+              value: ""
           }
       }
   }
@@ -488,523 +548,860 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
       ];
   }
 
-  constructor() {
-      super();
-  }
+    ready() {
+        super.ready();
+        this.set('selectedFormat', localStorage.getItem('prefillFormat') ? localStorage.getItem('prefillFormat') : 'presc')
+    }
 
-  _setPrintSize() {
-      localStorage.setItem('prefillFormat', this.selectedFormat)
-  }
+    //old methods
 
-  ready() {
-      super.ready();
-      this.set('selectedFormat', localStorage.getItem('prefillFormat') ? localStorage.getItem('prefillFormat') : 'presc')
-      //console.log("READY presc")
-  }
-
-  open() {
-      this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').open() : null
-      this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
-          this.set('selectedContactForPrescription', ctc)
-          this._refreshDrugsToBePrescribed()
-          this.api.electron().getPrinterSetting(this.user.id)
-              .then( data => {
-                  this.set('selectedFormat',data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ? JSON.parse(data.data).find(x => x.type==="recipe").format : "A4")
-              })
-      })
-  }
-
-  _entitiesNotifyResize() {
-      const entities = this.root.querySelector('#sent-entities-list')
-      entities.notifyResize()
-  }
-
-  _isSentView() {
-      //console.log("is sent view")
-      return this.prescriptionTab == 'sent'
-  }
-
-  _isToSendView() {
-      //console.log("is to send view")
-      if(this.prescriptionTab == 'toSend') {
-          return true
-      } else {
-          this._fetchRidSentListEnabled = true
-          this._fetchRidSentList()
-          return false
-      }
-  }
-
-  _columnName(idx) {
-      return `#${idx + 1}`;
-  }
-
-  _getRidLabel(item) {
-      if(item.rid) {
-          return item.rid
-      } else {
-          if(item.drugs) {
-              return this.localize('paper', 'Papier', this.language)
-          } else {
-              return ""
-          }
-      }
-  }
-
-  _getRidDate(item) {
-      if(item.creationDate) {
-          return moment(item.creationDate).format("DD-MM-YYYY")
-      } else {
-          if(item.drugs) {
-              return moment().format("DD-MM-YYYY")
-          } else {
-              return ""
-          }
-      }
-  }
-
-  _revokeRIDHandler(e) {
-      const rid = e.target.dataset.rid
-      this.set('_printError', this.localize("confirm_revoke_recipe", "Etes-vous sur de vouloir revoquer le prescription recipe suivante ?", this.language))
-      this.set('_printErrorDetails', rid)
-      this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
-
-      this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-      this.shadowRoot.querySelector('#confirmRevoke') ? setTimeout(() => this.shadowRoot.querySelector('#confirmRevoke').open(), 10) : null
-  }
-
-  _revokeRID(rid) {
-      if(rid) {
-          if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
-              const group = this.ridSentList.find(group=> group.rid === rid)
-              if(group.itemType === 'local') { // not found on remote, just mark them as revoked locally
-                  this._markDrugsAsNotSent(group.drugs)
-              } else {
-                  this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                      this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
-                          .then(isDeleted => {
-                              console.log("delete rid: ", isDeleted)
-                              if(isDeleted) {
-                                  if(group) {
-                                      this._markDrugsAsNotSent(group.drugs)
-                                  } else {
-                                      console.log("not found or no drugs in contact to mark as revoked")
-                                  }
-                              } else {
-                                  throw "Server say not deleted"
-                              }
-                          })
-                          .catch(error => {
-                              console.log("error:", error)
-                              this.set('_printError', this.localize("error_revoke_recipe", "Error while revoking Recipe:", this.language))
-                              this.set('_printErrorDetails', error)
-                              this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
-
-                              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-                              this.shadowRoot.querySelector('#tryAgainRevoke') ?  setTimeout(() => this.shadowRoot.querySelector('#tryAgainRevoke').open(), 10) : null
-                          })
-                  )
-              }
-          } else {
-              console.log("no niss or no recip-e", this.patient.ssin, this.api.tokenId)
-              if(!this.patient.ssin) {
-                  this.set('_printError', this.localize("the_ni_of_the_pat_is_not_val_or_mis", "no niss", this.language))
-              } else {
-                  this.set('_printError', this.localize('no_ehe_con', "You have no ehealth session.", this.language))
-              }
-              this.set('_printErrorDetails', "")
-              this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
-              this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-              this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').close(), 10) : null
-          }
-      } else {
-          // not a recipe
-          console.log("not a recipe")
-          const papergroup = this.ridSentList.find(group=> !group.rid)
-          if(papergroup) {
-              this._markDrugsAsNotSent(papergroup.drugs)
-          } else {
-              console.log("no paper prescription to revoke")
-          }
-      }
-  }
-
-  _printRID(e) {
-      const rid = e.target.dataset.rid // if rid is null, norecipe is printed
-      const ridDrugs = this.ridSentList.find(group=> group.rid === rid).drugs
-      const splitCols = [{rid: rid, drugIds: ridDrugs.map(d => d.id)}]
-      const element = this.root.querySelector("#barCode");
-      const toPrint = this._formatPrescriptionsBody(splitCols,ridDrugs,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-      this._pdfReport(ridDrugs,toPrint,this.selectedFormat)
-  }
-
-  _drugIsType(item, itemType) {
-      return item.itemType === itemType
-  }
-
-  _canPrint(item) {
-      return item.drugs && item.drugs.length > 0
-  }
-
-  _fetchRidSentList() {
-      //console.log("_fetchRidSentList()")
-      if(!this._fetchRidSentListEnabled) { // prevent fetch when opening patient
-          console.log("skip fetch recipe")
-          return
-      }
-
-      this._isFetchingRecipeList = true
-
-      // local RIDs
-      const groupObj = _.groupBy(this._drugsAlreadyPrescribed(), svc => this.api.contact().medicationValue(svc, this.language).prescriptionRID)
-      const local_presclist = Object.keys(groupObj).map(key => {
-          return {
-              "drugs": groupObj[key],
-              "itemType": "local",
-              "rid": this.api.contact().medicationValue(groupObj[key][0], this.language).prescriptionRID
-          }
-      })
-
-      const extend_list = list => {
-          var ridlist = []
-          console.log("before", list)
-          ridlist = list.length > 0 ? list : local_presclist
-          console.log("after", ridlist)
-
-          this.set('ridSentList', ridlist)
-          this.set('ridSentListExtended', _.flattenDeep(ridlist.map(g => {
-              return [
-                  g,
-                  g.drugs ? g.drugs.map(d=> {
-                      return {
-                          itemType: "drug",
-                          drugPosology: this._drugPosology(d),
-                          drugDescription: this._drugDescription(d),
-                      }
-                  }) : []
-              ]
-          })))
-
-      }
-
-      let endlist = []
-      if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
-                  .then(presclist => {
-                      presclist = presclist.reverse()
-                      console.log("presclist", presclist)
-                      if(presclist.length > 0) {
-                          presclist.forEach(remote_item => {
-                                  const found = local_presclist.find(local_item => local_item.rid === remote_item.rid)
-                                  if(found) {
-                                      found.itemType = "remote" // if itemType === 'local' then the RID was not found on remote
-                                      endlist.push(found)
-                                  } else {
-                                      remote_item.drugs = [] // no drug list received from recipe
-                                      remote_item.itemType = "remote"
-                                      endlist.push(remote_item)
-                                  }
-                          })
-                          endlist = _.concat(local_presclist.filter(item => item.itemType === 'local'), endlist)
-                      }
-                  })
-                  .then(() => {
-                      this._isFetchingRecipeList = false
-                      extend_list(endlist)
-                  })
-          ).catch(error => {
-              console.log(error)
-              extend_list([])
-              this._isFetchingRecipeList = false
-          })
-      } else {
-          this._isFetchingRecipeList = false
-          extend_list([])
-      }
-
-      //console.log("_fetchRidSentList(): ridSentListExtended",this.ridSentListExtended )
-  }
-
-  _isDrugAlreadyPrescribed(s) {
-      return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
-  }
-
-  _isDrugNotPrescribed(s) {
-      return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && !s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
-  }
-
-  _drugsAlreadyPrescribed() {
-      return this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
-  }
-
-  _refreshDrugsToBePrescribed() {
-      //console.log("_refreshDrugsToBePrescribed()")
-      let tbp = this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugNotPrescribed.bind(this)) || [];
-      this.set('_drugsToBePrescribed', tbp)
-      return tbp
-  }
-
-  _drugsSelectedAndToBePrescribed() {
-      return this._drugsToBePrescribed.filter(d=>this._drugsOnPrescriptions.find(dop=>dop.id === d.id && dop.column >= 0))
-  }
-
-  _drugDescription(svc) {
-      return svc && this.api.contact().medication().medicationNameToString(this.api.contact().medicationValue(svc, this.language), this.language) || "N/A";
-  }
-
-  _drugOnPrescription(svc, index) {
-      const col = this._splitColumns[index];
-      console.log("_drugOnPrescription: ", index, svc, col, svc && col && col.drugIds && col.drugIds.includes(svc.id) || false)
-      return svc && col && col.drugIds && col.drugIds.includes(svc.id) || false;
-  }
-
-  _drugPosology(svc) {
-      return svc && this.api.contact().medication().posologyToString(this.api.contact().medicationValue(svc, this.language), this.language) || this.localize("known_usage", "Usage connu");
-  }
+    _setPrintSize() {
+        localStorage.setItem('prefillFormat', this.selectedFormat)
+    }
 
 
-  _enabled(column, line) {
-      if (line === undefined) {
-					return true;
-      }
 
-      const dop = this._drugsOnPrescriptions;
-      if (dop.length < 5) {
-					return true;
-      }
+    /*open() {
+        this.shadowRoot.querySelector('#dialog') ? this.shadowRoot.querySelector('#dialog').open() : null
+        this.api.contact().getContactWithUser(this.user, _.get(this, 'selectedContactIdForPrescription', null) !== _.get(this, 'currentContact.id', null) ? _.get(this, 'selectedContactIdForPrescription', null) : _.get(this, 'currentContact.id', null)).then( ctc => {
+            this.set('selectedContactForPrescription', ctc)
+            this._refreshDrugsToBePrescribed()
+            this.api.electron().getPrinterSetting(this.user.id)
+                .then( data => {
+                    this.set('selectedFormat',data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ? JSON.parse(data.data).find(x => x.type==="recipe").format : "A4")
+                })
+        })
+    }*/
 
-      const sums = dop.reduce((sums, i) => {
-          if(i.column >= 0) {
-              sums[i.column] = (sums[i.column] || 0) + 1;
-          }
-					return sums;
-      }, []);
+    _entitiesNotifyResize() {
+        const entities = this.root.querySelector('#sent-entities-list')
+        entities.notifyResize()
+    }
 
-      if ((sums[column] || 0) < 5) {
-					return true;
-      }
+    _isSentView() {
+        //console.log("is sent view")
+        return this.prescriptionTab == 'sent'
+    }
 
-      const ids = this._drugsToBePrescribed.map(d => d.id);
-      const id = ids[line];
-      return dop.find(x => x.id === id && x.column === column) || false;
-  }
+    _isToSendView() {
+        //console.log("is to send view")
+        if(this.prescriptionTab == 'toSend') {
+            return true
+        } else {
+            this._fetchRidSentListEnabled = true
+            this._fetchRidSentList()
+            return false
+        }
+    }
 
-  _importKeychain() { // open keychain importation window
-      this.shadowRoot.querySelector('#prescriptionDialog') ? this.shadowRoot.querySelector('#prescriptionDialog').close() : null
-      this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'import-keychain'}}))
-  }
+    _columnName(idx) {
+        return `#${idx + 1}`;
+    }
 
-  _myProfile() { // open profile
-      this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'my-profile', tab:1}}))
-  }
+    _getRidLabel(item) {
+        if(item.rid) {
+            return item.rid
+        } else {
+            if(item.drugs) {
+                return this.localize('paper', 'Papier', this.language)
+            } else {
+                return ""
+            }
+        }
+    }
+
+    _getRidDate(item) {
+        if(item.creationDate) {
+            return moment(item.creationDate).format("DD-MM-YYYY")
+        } else {
+            if(item.drugs) {
+                return moment().format("DD-MM-YYYY")
+            } else {
+                return ""
+            }
+        }
+    }
+
+    _revokeRIDHandler(e) {
+        const rid = e.target.dataset.rid
+        this.set('_printError', this.localize("confirm_revoke_recipe", "Etes-vous sur de vouloir revoquer le prescription recipe suivante ?", this.language))
+        this.set('_printErrorDetails', rid)
+        this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
+
+        this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+        this.shadowRoot.querySelector('#confirmRevoke') ? setTimeout(() => this.shadowRoot.querySelector('#confirmRevoke').open(), 10) : null
+    }
+
+    _revokeRID(rid) {
+        if(rid) {
+            if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
+                const group = this.ridSentList.find(group=> group.rid === rid)
+                if(group.itemType === 'local') { // not found on remote, just mark them as revoked locally
+                    this._markDrugsAsNotSent(group.drugs)
+                } else {
+                    this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                        this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
+                            .then(isDeleted => {
+                                console.log("delete rid: ", isDeleted)
+                                if(isDeleted) {
+                                    if(group) {
+                                        this._markDrugsAsNotSent(group.drugs)
+                                    } else {
+                                        console.log("not found or no drugs in contact to mark as revoked")
+                                    }
+                                } else {
+                                    throw "Server say not deleted"
+                                }
+                            })
+                            .catch(error => {
+                                console.log("error:", error)
+                                this.set('_printError', this.localize("error_revoke_recipe", "Error while revoking Recipe:", this.language))
+                                this.set('_printErrorDetails', error)
+                                this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
+
+                                this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                                this.shadowRoot.querySelector('#tryAgainRevoke') ?  setTimeout(() => this.shadowRoot.querySelector('#tryAgainRevoke').open(), 10) : null
+                            })
+                    )
+                }
+            } else {
+                console.log("no niss or no recip-e", this.patient.ssin, this.api.tokenId)
+                if(!this.patient.ssin) {
+                    this.set('_printError', this.localize("the_ni_of_the_pat_is_not_val_or_mis", "no niss", this.language))
+                } else {
+                    this.set('_printError', this.localize('no_ehe_con', "You have no ehealth session.", this.language))
+                }
+                this.set('_printErrorDetails', "")
+                this.set('_revokeTryAgainCallback', () => this._revokeRID(rid))
+                this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').close(), 10) : null
+            }
+        } else {
+            // not a recipe
+            console.log("not a recipe")
+            const papergroup = this.ridSentList.find(group=> !group.rid)
+            if(papergroup) {
+                this._markDrugsAsNotSent(papergroup.drugs)
+            } else {
+                console.log("no paper prescription to revoke")
+            }
+        }
+    }
+
+    _printRID(e) {
+        const rid = e.target.dataset.rid // if rid is null, norecipe is printed
+        const ridDrugs = this.ridSentList.find(group=> group.rid === rid).drugs
+        const splitCols = [{rid: rid, drugIds: ridDrugs.map(d => d.id)}]
+        const element = this.root.querySelector("#barCode");
+        const toPrint = this._formatPrescriptionsBody(splitCols,ridDrugs,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
+        this._pdfReport(ridDrugs,toPrint,this.selectedFormat)
+    }
+
+    _drugIsType(item, itemType) {
+        return item.itemType === itemType
+    }
+
+    _canPrint(item) {
+        return item.drugs && item.drugs.length > 0
+    }
+
+    _fetchRidSentList() {
+        //console.log("_fetchRidSentList()")
+        if(!this._fetchRidSentListEnabled) { // prevent fetch when opening patient
+            console.log("skip fetch recipe")
+            return
+        }
+
+        this._isFetchingRecipeList = true
+
+        // local RIDs
+        const groupObj = _.groupBy(this._drugsAlreadyPrescribed(), svc => this.api.contact().medicationValue(svc, this.language).prescriptionRID)
+        const local_presclist = Object.keys(groupObj).map(key => {
+            return {
+                "drugs": groupObj[key],
+                "itemType": "local",
+                "rid": this.api.contact().medicationValue(groupObj[key][0], this.language).prescriptionRID
+            }
+        })
+
+        const extend_list = list => {
+            var ridlist = []
+            console.log("before", list)
+            ridlist = list.length > 0 ? list : local_presclist
+            console.log("after", ridlist)
+
+            this.set('ridSentList', ridlist)
+            this.set('ridSentListExtended', _.flattenDeep(ridlist.map(g => {
+                return [
+                    g,
+                    g.drugs ? g.drugs.map(d=> {
+                        return {
+                            itemType: "drug",
+                            drugPosology: this._drugPosology(d),
+                            drugDescription: this._drugDescription(d),
+                        }
+                    }) : []
+                ]
+            })))
+
+        }
+
+        let endlist = []
+        if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
+                    .then(presclist => {
+                        presclist = presclist.reverse()
+                        console.log("presclist", presclist)
+                        if(presclist.length > 0) {
+                            presclist.forEach(remote_item => {
+                                const found = local_presclist.find(local_item => local_item.rid === remote_item.rid)
+                                if(found) {
+                                    found.itemType = "remote" // if itemType === 'local' then the RID was not found on remote
+                                    endlist.push(found)
+                                } else {
+                                    remote_item.drugs = [] // no drug list received from recipe
+                                    remote_item.itemType = "remote"
+                                    endlist.push(remote_item)
+                                }
+                            })
+                            endlist = _.concat(local_presclist.filter(item => item.itemType === 'local'), endlist)
+                        }
+                    })
+                    .then(() => {
+                        this._isFetchingRecipeList = false
+                        extend_list(endlist)
+                    })
+            ).catch(error => {
+                console.log(error)
+                extend_list([])
+                this._isFetchingRecipeList = false
+            })
+        } else {
+            this._isFetchingRecipeList = false
+            extend_list([])
+        }
+
+        //console.log("_fetchRidSentList(): ridSentListExtended",this.ridSentListExtended )
+    }
+
+    _isDrugAlreadyPrescribed(s) {
+        return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
+    }
 
 
-  _convertForRecipe(medications) {
-      // @todo: use code api
-      const medsDup = _.cloneDeep(medications);
-      medsDup.forEach(med => {
-          const medicationValue = this.api.contact().medicationValue(med, this.language);
-          if (!medicationValue) return;
-          if (medicationValue.regimen && medicationValue.regimen.length) {
-              medicationValue.knownUsage = false;
-              const customReg = medicationValue.regimen.filter(r => r.dayPeriod && (r.dayPeriod.type === "care.topaz.customDayPeriod"));
-              if (customReg && customReg.length) {
-                  medicationValue.regimen = medicationValue.regimen.filter(r => !r.dayPeriod || !(r.dayPeriod.type === "care.topaz.customDayPeriod"));
-                  customReg.forEach(r => {
-                      if (r.dayPeriod.code === "midday") {
-                          medicationValue.regimen.push({timeOfDay: "120000", administratedQuantity: r.administratedQuantity});
-                      } else if (r.dayPeriod.code === "afterwakingup") {
-                          medicationValue.regimen.push({timeOfDay: "63000", administratedQuantity: r.administratedQuantity});
-                      }
-                  });
-              }
-              medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/2").forEach(i => i.administratedQuantity.quantity = 0.5);
-              medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/3").forEach(i => i.administratedQuantity.quantity = 0.33);
-              medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/4").forEach(i => i.administratedQuantity.quantity = 0.25);
-          } else {
-              if (!medicationValue.instructionForPatient) {
-                  medicationValue.knownUsage = true;
-              }
-          }
-          if (medicationValue.substanceProduct) {
-              if (medicationValue.substanceProduct.intendedcds && medicationValue.substanceProduct.intendedcds.some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
-                  medicationValue.substanceProduct.intendedcds = [];
-              }
-          }
-          if (medicationValue.reimbursementReason) {
-              const key = Object.keys(this._reimbursementReasonToInstructions).find(key => key === medicationValue.reimbursementReason.code);
-              medicationValue.instructionsForReimbursement = key && this._reimbursementReasonToInstructions[key] || this._reimbursementReasonToInstructions.notreimbursable;
-          }
-          medicationValue.temporality = null
-          _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
-      });
-      return this.api.deleteRecursivelyNullValues(medsDup);
-  }
 
-  _printPrescriptions(e) {
-      if(!this._printEnabled()) {
-          console.log("nothing to print")
-          return
-      }
-      this.shadowRoot.querySelector('#confirmNoRecipe') ? this.shadowRoot.querySelector('#confirmNoRecipe').close() : null
-      this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').open() : null
-      const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
-      const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
-      const element = this.root.querySelector("#barCode");
-      let toPrint = undefined
-      this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
+    _drugsAlreadyPrescribed() {
+        return this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugAlreadyPrescribed.bind(this)) || [];
+    }
+
+    _refreshDrugsToBePrescribed() {
+        //console.log("_refreshDrugsToBePrescribed()")
+        let tbp = this.api && _.get(this, 'selectedContactForPrescription.services', []).filter(this._isDrugNotPrescribed.bind(this)) || [];
+        this.set('_drugsToBePrescribed', tbp)
+        return tbp
+    }
+
+    _drugsSelectedAndToBePrescribed() {
+        return this._drugsToBePrescribed.filter(d=>this._drugsOnPrescriptions.find(dop=>dop.id === d.id && dop.column >= 0))
+    }
+
+    _drugDescription(svc) {
+        return svc && this.api.contact().medication().medicationNameToString(this.api.contact().medicationValue(svc, this.language), this.language) || "N/A";
+    }
+
+    _drugOnPrescription(svc, index) {
+        const col = this._splitColumns[index];
+        console.log("_drugOnPrescription: ", index, svc, col, svc && col && col.drugIds && col.drugIds.includes(svc.id) || false)
+        return svc && col && col.drugIds && col.drugIds.includes(svc.id) || false;
+    }
+
+    _drugPosology(svc) {
+        return svc && this.api.contact().medication().posologyToString(this.api.contact().medicationValue(svc, this.language), this.language) || this.localize("known_usage", "Usage connu");
+    }
 
 
-      if (this.patient.ssin && this.api.tokenId){ // if ehealth connected
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-              Promise.all(
-                  splitColumns.map(c =>
-                      this.api.fhc().Recipe().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
-                          patient: _.omit(this.patient, ['personalStatus']),
-                          hcp: hcp,
-                          feedback: false,
-                          medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
-                          deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
-                      }).then(prescri => {
-                          c.rid = prescri.rid
-                          c.recipeResponse = prescri
-                          drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
-                      } )
-                  )
-              )
-          )
-              .catch(error=>{
-                  this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
-                  this.set('_printErrorDetails', error)
-                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-                  this.shadowRoot.querySelector('#confirmNoRecipe') ?  setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
-                  throw "ERROR_WHILE_RECIPE"
-              })
-              .then(()=>{
-                  this._markDrugsAsSent(drugsToBePrescribed)
-              })
-              .then(()=>{
-                  toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-                  this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
-                  this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-              })
-              .catch(error=>{
-                  if(error !== "ERROR_WHILE_RECIPE") {
-                      console.log("Recipe sent but error when trying to print or mark drugs as sent: ", error)
-                  }
-              })
-      } else {
-          console.log("no niss or no recip-e", this.patient.ssin, this.api.tokenId)
-          if(!this.patient.ssin) {
-              this.set('_printError', this.localize("the_ni_of_the_pat_is_not_val_or_mis", "no niss", this.language))
-          } else {
-              this.set('_printError', this.localize('no_ehe_con', "You have no ehealth session.", this.language))
-          }
-          this.set('_printErrorDetails', "")
-          this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
-          this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
-      }
-  } // print end
+    _enabled(column, line) {
+        if (line === undefined) {
+            return true;
+        }
 
-  addEmptyPosologyIfNeeded(mv){
-      if(mv.instructionForPatient || mv.regimen && mv.regimen.length > 0){
-          return mv
-      } else {
-          mv.instructionForPatient = this.localize('known_use','Known use',this.language);//"pas d'application";
-          return mv;
-      }
-  }
+        const dop = this._drugsOnPrescriptions;
+        if (dop.length < 5) {
+            return true;
+        }
 
-  _formatBody(ids, drugs) {
-      const element = this.root.querySelector("#barCode");
-      return this._formatPrescriptionsBody(ids, drugs, this.patient, this.globalHcp, moment(this.deliveryDateString + "").format("DD/MM/YYYY"), moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"), element)
-  }
+        const sums = dop.reduce((sums, i) => {
+            if(i.column >= 0) {
+                sums[i.column] = (sums[i.column] || 0) + 1;
+            }
+            return sums;
+        }, []);
 
-  _print(e) {
-      const services = e.detail.services;
-      if(services.length){
-          const splitColumns =[{
-              drugIds : services.map(service => service.id ),
-              rid : e.detail.rid
-          }]
-          const drugs = services;
-          const toPrint = this._formatBody(splitColumns, drugs);
-          this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
-              .then(() => {
-                  console.log("printed")
-                  //this._markDrugsAsSent(drugsToBePrescribed)
-              })
-      }
-  }
+        if ((sums[column] || 0) < 5) {
+            return true;
+        }
 
-  _printPrescriptionNoRecipe(e) {
-      if(!this._printEnabled()) {
-          console.log("nothing to print")
-          return
-      }
-      const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
-      const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
-      this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
-      const element = this.root.querySelector("#barCode");
+        const ids = this._drugsToBePrescribed.map(d => d.id);
+        const id = ids[line];
+        return dop.find(x => x.id === id && x.column === column) || false;
+    }
 
-      const toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
-      this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
-          .then(()=>{
-              this._markDrugsAsSent(drugsToBePrescribed)
-          })
-  }
+    _importKeychain() { // open keychain importation window
+        this.shadowRoot.querySelector('#prescriptionDialog') ? this.shadowRoot.querySelector('#prescriptionDialog').close() : null
+        this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'import-keychain'}}))
+    }
 
-  _formatPrescriptionsBody(splitColumns,drugsToBePrescribed,patient,hcp,deliveryDate, endDateForExecution, element) {
-      // console.log('_formatPrescriptionsBody, hello hcp is : ',hcp)
-      let prescriToPrint = [], allPages = []
-      let prescNum = 0, pageNum = 1
+    _myProfile() { // open profile
+        this.dispatchEvent(new CustomEvent("open-utility", {composed: true, bubbles: true, detail: {panel:'my-profile', tab:1}}))
+    }
 
-      const inRecipeMode = this.patient.ssin && splitColumns.find(c=>c.rid) // else print good old prescription format && this.api.tokenId
-      splitColumns.forEach((c, idx) => {
-          const ridOrNihii = c.rid ? c.rid : hcp.nihii;
-          JsBarcode(element, ridOrNihii, {format: "CODE128A", displayValue: false, height: 75});
-          const jpegUrl = element.toDataURL("image/jpeg");
-          const ridLabel = ridOrNihii.split('').join('&nbsp;')
-          prescNum += 1
-          const prescriByPage = this.selectedFormat == 'A4' ? 2 : 1
-          if (prescNum > prescriByPage * pageNum) { // if doesn't fit in page
-              pageNum += 1 // add a page
-          } // will be set on next page
 
-          let prescArray = [], posology = {}
-          _.flatMap(drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)), s => {
-              const medicationApi = this.api.contact().medication();
-              const med = this.api.contact().medicationValue(s, this.language);
-              const medPoso = this.api.contact().medication().posologyToString(med, this.language) || "N/A";
-              const medR = medicationApi.medicationNameToString(med, this.language)
-              const medS = med.regimen && med.regimen.length && medicationApi.posologyToString(med, this.language) || med.instructionForPatient || this.localize("known_usage", "Usage connu");
-              const thisMed = {'S': medS, 'R': medR, 'poso':medPoso};
-              const medC = medicationApi.reimbursementReasonToString(med, this.language);
-              if (medC) {
-                  Object.assign(thisMed, {'C': medC});
-              }
-              prescArray.push(thisMed) // add to the medications list
-          }) // flatmap end
-          // console.log("prescArray",prescArray)
+    _convertForRecipe(medications) {
+        // @todo: use code api
+        const medsDup = _.cloneDeep(medications);
+        medsDup.forEach(med => {
+            const medicationValue = this.api.contact().medicationValue(med, this.language);
+            if (!medicationValue) return;
+            if (medicationValue.regimen && medicationValue.regimen.length) {
+                medicationValue.knownUsage = false;
+                const customReg = medicationValue.regimen.filter(r => r.dayPeriod && (r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                if (customReg && customReg.length) {
+                    medicationValue.regimen = medicationValue.regimen.filter(r => !r.dayPeriod || !(r.dayPeriod.type === "care.topaz.customDayPeriod"));
+                    customReg.forEach(r => {
+                        if (r.dayPeriod.code === "midday") {
+                            medicationValue.regimen.push({timeOfDay: "120000", administratedQuantity: r.administratedQuantity});
+                        } else if (r.dayPeriod.code === "afterwakingup") {
+                            medicationValue.regimen.push({timeOfDay: "63000", administratedQuantity: r.administratedQuantity});
+                        }
+                    });
+                }
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/2").forEach(i => i.administratedQuantity.quantity = 0.5);
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/3").forEach(i => i.administratedQuantity.quantity = 0.33);
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/4").forEach(i => i.administratedQuantity.quantity = 0.25);
+            } else {
+                if (!medicationValue.instructionForPatient) {
+                    medicationValue.knownUsage = true;
+                }
+            }
+            if (medicationValue.substanceProduct) {
+                if (medicationValue.substanceProduct.intendedcds && medicationValue.substanceProduct.intendedcds.some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
+                    medicationValue.substanceProduct.intendedcds = [];
+                }
+            }
+            if (medicationValue.reimbursementReason) {
+                const key = Object.keys(this._reimbursementReasonToInstructions).find(key => key === medicationValue.reimbursementReason.code);
+                medicationValue.instructionsForReimbursement = key && this._reimbursementReasonToInstructions[key] || this._reimbursementReasonToInstructions.notreimbursable;
+            }
+            medicationValue.temporality = null
+            _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
+        });
+        return this.api.deleteRecursivelyNullValues(medsDup);
+    }
 
-          let prescriContent = ""
-          let articlePoso = []
-          let articleMedWithPoso = []
-          let medicName = ""
+    _printPrescriptions(e) {
+        if(!this._printEnabled()) {
+            console.log("nothing to print")
+            return
+        }
+        this.shadowRoot.querySelector('#confirmNoRecipe') ? this.shadowRoot.querySelector('#confirmNoRecipe').close() : null
+        this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').open() : null
+        const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
+        const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
+        const element = this.root.querySelector("#barCode");
+        let toPrint = undefined
+        this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
 
-          prescArray.map(onePrescri => { // create prescription content
-              prescriContent += (`<article>
+
+        if (this.patient.ssin && this.api.tokenId){ // if ehealth connected
+            this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                Promise.all(
+                    splitColumns.map(c =>
+                        this.api.fhc().Recipe().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                            patient: _.omit(this.patient, ['personalStatus']),
+                            hcp: hcp,
+                            feedback: false,
+                            medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
+                            deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
+                        }).then(prescri => {
+                            c.rid = prescri.rid
+                            c.recipeResponse = prescri
+                            drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
+
+                            //todo julien
+                            //this._saveTransactionRequest(prescri)
+
+                        } )
+                    )
+                )
+            )
+                .catch(error=>{
+                    this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
+                    this.set('_printErrorDetails', error)
+                    this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                    this.shadowRoot.querySelector('#confirmNoRecipe') ?  setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
+                    throw "ERROR_WHILE_RECIPE"
+                })
+                .then(()=>{
+                    this._markDrugsAsSent(drugsToBePrescribed)
+                })
+                .then(()=>{
+                    toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
+                    this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
+                    this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+                })
+                .catch(error=>{
+                    if(error !== "ERROR_WHILE_RECIPE") {
+                        console.log("Recipe sent but error when trying to print or mark drugs as sent: ", error)
+                    }
+                })
+        } else {
+            console.log("no niss or no recip-e", this.patient.ssin, this.api.tokenId)
+            if(!this.patient.ssin) {
+                this.set('_printError', this.localize("the_ni_of_the_pat_is_not_val_or_mis", "no niss", this.language))
+            } else {
+                this.set('_printError', this.localize('no_ehe_con', "You have no ehealth session.", this.language))
+            }
+            this.set('_printErrorDetails', "")
+            this.shadowRoot.querySelector('#loading') ? this.shadowRoot.querySelector('#loading').close() : null
+            this.shadowRoot.querySelector('#confirmNoRecipe') ? setTimeout(() =>this.shadowRoot.querySelector('#confirmNoRecipe').open(), 10) : null
+        }
+    } // print end
+
+    _formatBody(ids, drugs) {
+        const element = this.root.querySelector("#barCode");
+        return this._formatPrescriptionsBody(ids, drugs, this.patient, this.globalHcp, moment(this.deliveryDateString + "").format("DD/MM/YYYY"), moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"), element)
+    }
+
+    _print(e) {
+        const services = e.detail.services;
+        if(services.length){
+            const splitColumns =[{
+                drugIds : services.map(service => service.id ),
+                rid : e.detail.rid
+            }]
+            const drugs = services;
+            const toPrint = this._formatBody(splitColumns, drugs);
+            this._pdfReport(drugs, toPrint, 'presc', _.get(e,"detail.sendDocumentByEmail",false))
+                .then(() => {
+                    console.log("printed")
+                    //this._markDrugsAsSent(drugsToBePrescribed)
+                })
+        }
+    }
+
+    _printPrescriptionNoRecipe(e) {
+        if(!this._printEnabled()) {
+            console.log("nothing to print")
+            return
+        }
+        const splitColumns = this._splitColumns.filter(c => c && c.drugIds && c.drugIds.length > 0)
+        const drugsToBePrescribed = this._drugsSelectedAndToBePrescribed();
+        this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
+        const element = this.root.querySelector("#barCode");
+
+        const toPrint = this._formatPrescriptionsBody(splitColumns,drugsToBePrescribed,this.patient,this.globalHcp,moment(this.deliveryDateString+"").format("DD/MM/YYYY"),moment(this.endDateForExecutionString+"").format("DD/MM/YYYY"),element)
+        this._pdfReport(drugsToBePrescribed,toPrint,this.selectedFormat)
+            .then(()=>{
+                this._markDrugsAsSent(drugsToBePrescribed)
+            })
+    }
+
+    _markDrugsAs(drugs, code, status) {
+        drugs.forEach(service => {
+            const id = "CD-LIFECYCLE|" + code + "|1";
+            const tag = service.tags.find(t => t.type === 'CD-LIFECYCLE')
+            if (tag) {
+                tag.id = id;
+                tag.code = code
+            } else
+                service.tags.push(this.api.code().normalize({id: id}))
+            const content = this.api.contact().preferredContent(service, this.language)
+            if (content && content.medicationValue) {
+                if ("status" in content.medicationValue) {
+                    content.medicationValue.status &= STATUS_SENT | STATUS_NOT_SENT;
+                    content.medicationValue.status |= status;
+                } else
+                    content.medicationValue.status = status;
+            }
+        });
+        this._refreshDrugsToBePrescribed();
+        this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
+        this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.selectedContactForPrescription}, bubbles: true, composed: true}));
+    }
+
+
+    _markDrugsAsSent(drugsToBePrescribed) {
+        this._markDrugsAs(drugsToBePrescribed, "ordered", STATUS_SENT);
+    }
+
+    _markDrugsAsNotSent(drugsToBePrescribed) {
+        this._markDrugsAs(drugsToBePrescribed, "active", STATUS_NOT_SENT);
+    }
+
+    _populateDrugsOnPrescriptions() {
+        //console.log('_populateDrugsOnPrescriptions()')
+        this.set('_drugsOnPrescriptions', []) // ugly hack to force refresh due to polymer bug
+        this.set('_drugsOnPrescriptions',
+            this._drugsToBePrescribed.reduce((accu, s) => {
+                const availableSpace = accu.reduce((acc,drug) => {
+                    if(drug.column >= 0) {
+                        acc[drug.column] >= 0 ? acc[drug.column]-- : acc[drug.column] = 4;
+                    }
+                    return acc
+                }, []);
+                availableSpace.push(5);
+                let codes = s.codes && s.codes.map(c => c.code + '|' + c.type + '|' + c.version);
+                let sameDrugColumnIndex = 0
+                let compound = null
+                if(!codes || !codes.length) {
+                    codes = null
+                    const content = this.api.contact().preferredContent(s,this.language)
+                    compound = content && content.medicationValue && content.medicationValue.compoundPrescription
+                    sameDrugColumnIndex = (accu.slice(0).reverse().find( drug => drug.compound == compound ) || {}).column
+                }else {
+                    sameDrugColumnIndex = (accu.slice(0).reverse().find(drug => drug.codes && drug.codes.length && codes.filter( c => drug.codes.join(',').includes(c)).length === codes.length) || {}).column;
+                }
+                const column = _.findIndex(availableSpace, (s, idx) => sameDrugColumnIndex >= 0 ? (idx === sameDrugColumnIndex + 1) && s : s );
+                accu.push({
+                    id: s.id,
+                    svc: s,
+                    codes,
+                    column,
+                    compound
+                })
+                return accu
+            }, [] )
+        )
+        //console.log('_populateDrugsOnPrescriptions(): this._drugsOnPrescriptions', this._drugsOnPrescriptions)
+        return this._drugsOnPrescriptions
+    }
+
+    _setDrugOnPrescription(e) {
+        const id = e.target.id.split(':')[0];
+        let column = parseInt(e.target.id.split(':')[1]);
+        const checked = e.detail.value
+        console.log("_setDrugOnPrescription: _drugsOnPrescriptions:", this._drugsOnPrescriptions)
+        if(checked === false) {
+            column = -1 // null mean do not print this drug
+        }
+
+        if (!id || id.length === 0 || !column && column !== 0) {
+            return;
+        }
+
+        const current = this._drugsOnPrescriptions;
+
+        const markIndex = current.findIndex(m => m.id === id);
+
+        if (markIndex >= 0) {
+            this.set('_drugsOnPrescriptions.' + markIndex + '.column', column);
+        } else {
+            console.log("_setDrugOnPrescription: not found: should not happen!")
+            //current.push({ id: id, column: column }); // should not be needed ?
+        }
+
+    }
+
+    _printEnabled() {
+        const cols = this._splitColumns
+        return cols.length !== 0 && cols.find(c=>c && c.drugIds && c.drugIds.length !== 0)
+    }
+
+    _refreshSplitColumns() {
+        const drugs = this._drugsToBePrescribed;
+        const columns = this._drugsOnPrescriptions.reduce((columns, mark) => {
+            const id = mark.id;
+            const column = mark.column;
+            if(column >= 0) { // ignore unchecked drugs
+                ;(columns[column] || (columns[column] = {drugIds:[], column:column})).drugIds.push(id)
+            }
+            return columns;
+        }, [{drugIds:[]}]);
+        if (!columns.find(c => !c || !c.drugIds || !c.drugIds.length) && columns.length < drugs.length) {
+            columns.push({drugIds:[]});
+        }
+        //console.log("_refreshSplitColumns", columns)
+        this.set('_splitColumns', columns)
+    }
+
+    //new methods
+
+    open() {
+        //this.set("isLoading",true)
+        this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
+        this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
+        this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
+            return {
+                name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                startValidDate :this._today(),
+                id : s.id,
+                endValidDate :this._endDate()
+            }
+        }))
+        this.api.electron().getPrinterSetting(this.user.id).then( data => {
+            this.set('selectedFormat',data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ? JSON.parse(data.data).find(x => x.type==="recipe").format : "A4")
+        })
+    }
+
+    _isDrugNotPrescribed(s) {
+        return _.get(s, 'tags', []).find(t => (t.type === 'CD-ITEM' && t.code === 'treatment') || (t.type === 'ICURE' && t.code === 'PRESC')) && !s.endOfLife && !s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)
+    }
+
+    _today(){
+        return moment().format("YYYY-MM-DD")
+    }
+
+    _endDate(){
+        return moment().add(3,"month").subtract(1,"day").format("YYYY-MM-DD")
+    }
+
+    _oneYear(){
+        return moment().add(1,"year").format("YYYY-MM-DD")
+    }
+
+    _getMin(date){
+        return date ? moment(date,"YYYY-MM-DD").add(1,"day").format("YYYY-MM-DD") : this._today()
+    }
+
+    _setStartDate(e){
+        _.get(this,"prescriptionsList",[]).find(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')) && this.set("prescriptionsList."+(_.get(this,"prescriptionsList",[]).findIndex(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')))+".startValidDate",_.get(e,"detail.value",""))
+    }
+
+    _setEndDate(e){
+        _.get(this,"prescriptionsList",[]).find(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')) && this.set("prescriptionsList."+(_.get(this,"prescriptionsList",[]).findIndex(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')))+".endValidDate",_.get(e,"detail.value",""))
+    }
+
+    _sendToRecipe(){
+
+
+        //todo @julien gestion des prescriptions de 5 medocs
+
+        const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+
+        if(!prescriptions)return;
+
+        if(prescriptions.find(p => !p.startValidDate || !p.endValidDate)){
+            this.set("errorMessage",this.localize("err_date_no_complete","Erreur: une des dates n'a pas été complété"))
+            return;
+        }
+
+        const barcode = this.root.querySelector("#barCode");
+        let toPrint = undefined
+        this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
+
+
+        if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
+            this.set("isLoading",true)
+            this.api.besamv2().getSamVersion()
+                .then(v => {
+                    this.set('samVersion', v)
+                    return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+                })
+                .then(hcp => {
+                    return Promise.all(prescriptions.map(p => {
+                        this.api.sleep(100)//moche mais c'est à cause de RECIP-E ils savent pas tout recevoir d'un coup
+                        const service = this.currentContact.services.find(s => p.id === s.id)
+                        const medicationValue = this.api.contact().medicationValue(service, this.language)
+                        if (medicationValue) {
+                            medicationValue.status = 0 ;
+                        }
+
+                        return service ? this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                            patient: _.omit(this.patient, ['personalStatus']),
+                            hcp: hcp,
+                            feedback: false,
+                            medications: [_.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})],
+                            deliveryDate: moment(p.startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
+                            samVersion: _.get(this, 'samVersion.version', null),
+                            expirationDate: moment(p.endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
+                            vendorPhone: "+3223192241",
+                            vendorEmail: "support@topaz.care",
+                            packageVersion: "1",
+                            packageName: "Topaz"
+                        }).then(recipe => {
+                            p.rid = recipe.rid
+                            p.recipeResponse = recipe
+                            this._download(_.get(recipe,"xmlRequest",""))
+                            this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
+
+                            return Promise.all([this.api.receipt().createReceipt({
+                                documentId: service.id,
+                                references: [recipe.rid],
+                                category: "recip-e",
+                                subCategory: "transactionRequest"
+                            }), Promise.resolve(recipe)])
+                        }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(recipe, "xmlRequest", null))))))
+                            .then((receipt) => {
+                                medicationValue.status = 2 ;
+                                service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
+                                return Promise.resolve(service)
+                            }).catch(error => {
+                                this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                                return service;
+                            }) : Promise.resolve({})
+
+                    })).then((services) => {
+                        _.compact(services).map(service => {
+                            const id = "CD-LIFECYCLE|ordered|1";
+                            const tag = service.tags.find(t => t.type === 'CD-LIFECYCLE')
+                            if (tag) {
+                                tag.id = id;
+                                tag.code = "ordered"
+                            } else {
+                                service.tags.push({
+                                    id: id,
+                                    code : "ordered",
+                                    type : 'CD-LIFECYCLE'
+                                })
+                            }
+
+                            const medicationValue = this.api.contact().medicationValue(service, this.language)
+                            if (medicationValue) {
+                                medicationValue.status |= 4;
+                            }
+                        })
+                        const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, barcode)
+                        return this._pdfReport(services, toPrint, this.selectedFormat)
+                    }).catch(error => {
+                        this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                    }).finally(() => {
+                        this.set("isLoading",false)
+                        this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
+                        this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
+                        this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
+                            return {
+                                name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                                posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                                startValidDate :this._today(),
+                                id : s.id,
+                                endValidDate :this._endDate()
+                            }
+                        }))
+                    })
+                })
+
+        }else{
+            this.set("errorMessage",this.localize("err_ehealth_token","Erreur: vous n'êtes pas connecté à e-health"))
+        }
+    }
+
+    print(e) {
+        const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+
+        if(!prescriptions)return;
+
+        if(prescriptions.find(p => !p.startValidDate || !p.endValidDate)){
+            this.set("errorMessage",this.localize("err_date_no_complete","Erreur: une des dates n'a pas été complété"))
+            return;
+        }
+        this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
+        const element = this.root.querySelector("#barCode");
+        const services = this.currentContact.services.filter(s => prescriptions.find(p=> p.id === s.id))
+
+        this.set("isLoading",true)
+
+        this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+        .then(hcp => {
+            const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, element)
+            return this._pdfReport(services, toPrint, this.selectedFormat)
+        })
+        .then(() => {
+            services.map(s => {
+                const tag = s.tags.find(t => t.type === 'CD-LIFECYCLE')
+                if (tag) {
+                    tag.id = id;
+                    tag.code = "ordered"
+                } else {
+                    s.tags.push({
+                        id: id,
+                        code : "ordered",
+                        type : 'CD-LIFECYCLE'
+                    })
+                }
+                const medicationValue = this.api.contact().medicationValue(s, this.language)
+                if (medicationValue) {
+                    medicationValue.status = 1;
+                }
+            })
+        })
+        .finally(()=>{
+            this.set("isLoading",false)
+            this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
+            this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
+            this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
+                return {
+                    name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                    posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                    startValidDate :this._today(),
+                    id : s.id,
+                    endValidDate :this._endDate()
+                }
+            }))
+        })
+    }
+
+    addEmptyPosologyIfNeeded(mv){
+        if(mv.instructionForPatient || mv.regimen && mv.regimen.length > 0){
+            return mv
+        } else {
+            mv.instructionForPatient = this.localize('known_use','Known use',this.language);//"pas d'application";
+            return mv;
+        }
+    }
+
+    //todo @julien ré-écrire cette impression trop gros à faire!!!!
+    _formatPrescriptionsBody(splitColumns,drugsToBePrescribed,patient,hcp, element) {
+        // console.log('_formatPrescriptionsBody, hello hcp is : ',hcp)
+        let prescriToPrint = [], allPages = []
+        let prescNum = 0, pageNum = 1
+
+        const inRecipeMode = this.patient.ssin && splitColumns.find(c=>c.rid) // else print good old prescription format && this.api.tokenId
+        splitColumns.forEach((c, idx) => {
+            const ridOrNihii = c.rid ? c.rid : hcp.nihii;
+            JsBarcode(element, ridOrNihii, {format: "CODE128A", displayValue: false, height: 75});
+            const jpegUrl = element.toDataURL("image/jpeg");
+            const ridLabel = ridOrNihii.split('').join('&nbsp;')
+            prescNum += 1
+            const prescriByPage = this.selectedFormat == 'A4' ? 2 : 1
+            if (prescNum > prescriByPage * pageNum) { // if doesn't fit in page
+                pageNum += 1 // add a page
+            } // will be set on next page
+
+            let prescArray = [], posology = {}
+            _.flatMap(drugsToBePrescribed.filter(s => c.id.includes(s.id)), s => {
+                const medicationApi = this.api.contact().medication();
+                const med = this.api.contact().medicationValue(s, this.language);
+                const medPoso = this.api.contact().medication().posologyToString(med, this.language) || "N/A";
+                const medR = medicationApi.medicationNameToString(med, this.language)
+                const medS = med.regimen && med.regimen.length && medicationApi.posologyToString(med, this.language) || med.instructionForPatient || this.localize("known_usage", "Usage connu");
+                const thisMed = {'S': medS, 'R': medR, 'poso':medPoso};
+                const medC = medicationApi.reimbursementReasonToString(med, this.language);
+                if (medC) {
+                    Object.assign(thisMed, {'C': medC});
+                }
+                prescArray.push(thisMed) // add to the medications list
+            }) // flatmap end
+            // console.log("prescArray",prescArray)
+
+            let prescriContent = ""
+            let articlePoso = []
+            let articleMedWithPoso = []
+            let medicName = ""
+
+            prescArray.map(onePrescri => { // create prescription content
+                prescriContent += (`<article>
                   <p class="bigtxt" style="white-space: pre-line;"><span class="bold bigtxt">R/</span> ${onePrescri.R}</p>
                   <p class="bigtxt"><span class="bold bigtxt">S/</span> ${onePrescri.S}</p>` +
-                  (onePrescri.C && `<p class="bigtxt"><span class="bold bigtxt">C/</span> ${onePrescri.C}</p>` || "") +
-                  `</article>`);
-              articlePoso.push(onePrescri.poso) // add posology to the list
-              articleMedWithPoso.push({medR: onePrescri.R, poso: onePrescri.poso})//add medication with posology to the list
-              medicName = onePrescri.R
-          }) // map end
+                    (onePrescri.C && `<p class="bigtxt"><span class="bold bigtxt">C/</span> ${onePrescri.C}</p>` || "") +
+                    `</article>`);
+                articlePoso.push(onePrescri.poso) // add posology to the list
+                articleMedWithPoso.push({medR: onePrescri.R, poso: onePrescri.poso})//add medication with posology to the list
+                medicName = onePrescri.R
+            }) // map end
 
-          const prescri = inRecipeMode ? `<article class="prescription">
+            const prescri = inRecipeMode ? `<article class="prescription">
               <header>
                   <img src="${jpegUrl}" alt="code-bar">
                   <div class="barcode-num">${ridLabel}</div>
@@ -1040,66 +1437,68 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
-                  <p class="center">${deliveryDate}</p>
+                  <p class="center">${c.startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;:</small>
-                  <p class="center">${deliveryDate}</p>
+                  <p class="center">${c.startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</small>
-                  <p class="center">${endDateForExecution}</p>
+                  <p class="center">${c.endValidDate}</p>
               </footer>
           </article>` : prescriContent; // create single prescription body
 
-          prescriToPrint.push({name:medicName,'prescriBody':prescri,'page':pageNum,'posology':articlePoso, 'medWithPosology': articleMedWithPoso,'myRid':ridLabel, 'myJpegUrl':jpegUrl}) // add a prescription with its datas
-      }) // splitCol forEach end
-      // console.log("prescriToPrint",prescriToPrint)
+            prescriToPrint.push({name:medicName,'prescriBody':prescri,'page':pageNum,'posology':articlePoso, 'medWithPosology': articleMedWithPoso,'myRid':ridLabel, 'myJpegUrl':jpegUrl,"startValidDate": c.startValidDate,"endValidDate":c.endValidDate}) // add a prescription with its datas
+        }) // splitCol forEach end
+        // console.log("prescriToPrint",prescriToPrint)
 
-      // console.log("allPages before map",allPages)
-      prescriToPrint.map((prescri)=>{ // for every prescription found in list
-          let singlePage = {body:'',poso:[],rid:'',jpegUrl: ''}
-          singlePage.body += (prescri.prescriBody) // get the body
-          singlePage.name = prescri.name
-          singlePage.rid = prescri.myRid
-          singlePage.jpegUrl = prescri.myJpegUrl
-          prescri.medWithPosology.map((poso)=>{ // check if there's posology
-              singlePage.poso.push(poso)
-          })
-          if (!allPages[prescri.page-1]) {
-              allPages.push([singlePage]) // assign posology to prescription
-          } else {
-              allPages[prescri.page-1].push(singlePage)
-          }
-      })
-      // console.log("allPages after map",allPages)
+        // console.log("allPages before map",allPages)
+        prescriToPrint.map((prescri)=>{ // for every prescription found in list
+            let singlePage = {body:'',poso:[],rid:'',jpegUrl: ''}
+            singlePage.body += (prescri.prescriBody) // get the body
+            singlePage.name = prescri.name
+            singlePage.rid = prescri.myRid
+            singlePage.jpegUrl = prescri.myJpegUrl
+            singlePage.startValidDate = prescri.startValidDate
+            singlePage.endValidDate = prescri.endValidDate
+            prescri.medWithPosology.map((poso)=>{ // check if there's posology
+                singlePage.poso.push(poso)
+            })
+            if (!allPages[prescri.page-1]) {
+                allPages.push([singlePage]) // assign posology to prescription
+            } else {
+                allPages[prescri.page-1].push(singlePage)
+            }
+        })
+        // console.log("allPages after map",allPages)
 
-      const hcpAddress = _.chain(_.get(hcp, "addresses", {})).filter({addressType:"work"}).head().value() ||
-          _.chain(_.get(hcp, "addresses", {})).filter({addressType:"home"}).head().value() ||
-          _.chain(_.get(hcp, "addresses", {})).head().value() ||
-          {}
-      ;
+        const hcpAddress = _.chain(_.get(hcp, "addresses", {})).filter({addressType:"work"}).head().value() ||
+            _.chain(_.get(hcp, "addresses", {})).filter({addressType:"home"}).head().value() ||
+            _.chain(_.get(hcp, "addresses", {})).head().value() ||
+            {}
+        ;
 
-      const hcpTel = _.trim( _.get( _.filter(_.get(hcpAddress, "telecoms", {}), {telecomType:"phone"}), "[0].telecomNumber", "" ) ) ||
-          _.trim( _.get( _.filter(_.get(hcpAddress, "telecoms", {}), {telecomType:"mobile"}), "[0].telecomNumber", "" ) )
+        const hcpTel = _.trim( _.get( _.filter(_.get(hcpAddress, "telecoms", {}), {telecomType:"phone"}), "[0].telecomNumber", "" ) ) ||
+            _.trim( _.get( _.filter(_.get(hcpAddress, "telecoms", {}), {telecomType:"mobile"}), "[0].telecomNumber", "" ) )
 
 
-      let allPagesBody = ""
-      allPages.map((onePage)=>{
-          let posoByDay = { // make the arrays that will receive sorted posologies
-                  'byMoment':[],
-                  'byHour':[]
-              },
-              posoByWeek = [],
-              posoByMonth = []
-          if (typeof onePage == 'object') {
-              let posoTable = ''
-              let thatBody = ''
-              onePage.map((onePrescription)=>{
-                  let singleName = onePrescription.name
-                  if (inRecipeMode) {
-                      thatBody += onePrescription.body
-                      onePrescription.poso.map((singlePoso)=>{posoTable += "<tr><td><b>"+singlePoso.medR+"</b></td><td>"+singlePoso.poso.toString()+"</td></tr>"}) // construct the posology body
-                  }else{
-                      thatBody += `
+        let allPagesBody = ""
+        allPages.map((onePage)=>{
+            let posoByDay = { // make the arrays that will receive sorted posologies
+                    'byMoment':[],
+                    'byHour':[]
+                },
+                posoByWeek = [],
+                posoByMonth = []
+            if (typeof onePage == 'object') {
+                let posoTable = ''
+                let thatBody = ''
+                onePage.map((onePrescription)=>{
+                    let singleName = onePrescription.name
+                    if (inRecipeMode) {
+                        thatBody += onePrescription.body
+                        onePrescription.poso.map((singlePoso)=>{posoTable += "<tr><td><b>"+singlePoso.medR+"</b></td><td>"+singlePoso.poso.toString()+"</td></tr>"}) // construct the posology body
+                    }else{
+                        thatBody += `
                       <div id="prescription">
                           <header id="header" class="flexbox vert bt center">
                               <div class="horiz">
@@ -1133,9 +1532,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                   <ul>
                                       <li>Dr. ${hcp.lastName} ${hcp.firstName}</li>` +
 
-                          "<li>" + _.get(hcpAddress, "street", "") + ", " + _.get(hcpAddress, "houseNumber", "") + ( _.trim(_.get(hcpAddress, "postboxNumber", "")) ? " / " + _.trim(_.get(hcpAddress, "postboxNumber", "")) : "" ) + "</li>" +
-                          "<li class='uppercase'>" + _.get(hcpAddress, "postalCode", "") + " - " + _.get(hcpAddress, "city", "") + "</li>" +
-                          ( _.trim(hcpTel) ? "<li>Tel: " + _.trim(hcpTel) + "</li>" : "" ) + `
+                            "<li>" + _.get(hcpAddress, "street", "") + ", " + _.get(hcpAddress, "houseNumber", "") + ( _.trim(_.get(hcpAddress, "postboxNumber", "")) ? " / " + _.trim(_.get(hcpAddress, "postboxNumber", "")) : "" ) + "</li>" +
+                            "<li class='uppercase'>" + _.get(hcpAddress, "postalCode", "") + " - " + _.get(hcpAddress, "city", "") + "</li>" +
+                            ( _.trim(hcpTel) ? "<li>Tel: " + _.trim(hcpTel) + "</li>" : "" ) + `
 
                                       <li><span class="uppercase">`+ this.localize('inami','inami',this.language) +`</span>&nbsp;: ${hcp.nihii}</li>
                                   </ul>
@@ -1144,15 +1543,15 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                   <div class="vert w100">
                                       <div class="cell bb center">
                                           <p class="mt0">${this.localize('date_and_sign_of_presc',"Date and prescriber's signature",this.language)}</p>
-                                          <p>${deliveryDate}</p>
+                                          <p>${onePage.startValidDate}</p>
                                       </div>
                                       <div class="cell">
                                           <p class="center">${this.localize('deliv_date','Deliverable from the specified date or from',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${deliveryDate}</p>
+                                          <p class="signdate center bold w100">${onePage.startValidDate}</p>
                                       </div>
                                       <div class="cell">
                                           <p class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${endDateForExecution}</p>
+                                          <p class="signdate center bold w100">${onePage.endValidDate}</p>
                                       </div>
                                   </div>
                               </div>
@@ -1166,23 +1565,23 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                               </div>
                           </aside>
                       </div>`
-                  }
-              })
-              if (inRecipeMode) {
-                  const onePageBodyTop = `<div class="page"><main>${thatBody}</main><footer><table><thead><tr><td>${this.localize('name','Name',this.language)}</td><td>${this.localize('freq','Frequency',this.language)}</td></tr></thead><tbody>`; // prepare the PDF's pages
-                  const onepageBodyBottom = `</tbody></table></footer></div>`;
-                  allPagesBody += onePageBodyTop+posoTable+onepageBodyBottom;
-              } else {
-                  allPagesBody += `<div class="page">
+                    }
+                })
+                if (inRecipeMode) {
+                    const onePageBodyTop = `<div class="page"><main>${thatBody}</main><footer><table><thead><tr><td>${this.localize('name','Name',this.language)}</td><td>${this.localize('freq','Frequency',this.language)}</td></tr></thead><tbody>`; // prepare the PDF's pages
+                    const onepageBodyBottom = `</tbody></table></footer></div>`;
+                    allPagesBody += onePageBodyTop+posoTable+onepageBodyBottom;
+                } else {
+                    allPagesBody += `<div class="page">
                       ${thatBody}
                   </div>`;
-              } // elif end
+                } // elif end
 
-          }
-      }) // allPage map end
+            }
+        }) // allPage map end
 
-      const toPrint = inRecipeMode ?
-          `<html>
+        const toPrint = inRecipeMode ?
+            `<html>
               <head><style>
               body {margin: 0;width: ${this.selectedFormat == 'A4' ? '210mm' : '105mm'};height: ${this.selectedFormat == 'A4' ? '297mm' : '210mm'};}
               body > div.page {display:block;size: A4;margin: 0;width: ${this.selectedFormat == 'A4' ? '210mm' : '105mm'};height: ${this.selectedFormat == 'A4' ? '297mm' : '210mm'};page-break-after: always;display:flex;flex-direction:column;}
@@ -1214,8 +1613,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               body > div.page > footer table thead {font-weight: bold;border-bottom: 2px solid black;}
               body > div.page > footer table thead tr td {text-align: center;background-color: lightgrey;}
           </style></head><body>${allPagesBody}</body></html>`
-          : // no eHe connection =
-          `<html><head><style>
+            : // no eHe connection =
+            `<html><head><style>
               /* body */
               body {margin: 0;padding: 0;}
               div.page {display:flex;flex-direction: row;margin: 0;padding:0;padding-top:20mm;width: ${this.selectedFormat == 'A4' ? '210mm' : '105mm'};height:200mm;overflow:hidden;page-break-after:always;}
@@ -1236,194 +1635,87 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
               *.right {text-align: right;} *.fs1 {font-size: 1em;} ul {list-style: none; padding-left: 0}
           </style></head><body>${allPagesBody}</body></html>`; // finalize PDF body
 
-      //console.log("toPrint",toPrint)
-      return toPrint
-  }
+        //console.log("toPrint",toPrint)
+        return toPrint
+    }
 
-  _pdfReport(drugsToBePrescribed,toPrint,size) {
+    _pdfReport(drugsToBePrescribed,toPrint,size) {
 
-      this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: true}}))
 
-      const pdfPrintingData = {
-          downloadFileName: _.kebabCase([ "prescription", _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
-          documentMetas : {
-              title : "Prescription",
-              contactId : _.get(this.selectedContactForPrescription, "id", ""),
-              created: ""+ +new Date(),
-              patientId : _.trim(_.get(this.patient, "id", "")),
-              patientName : _.compact([ _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", "") ]).join(" ")
-          }
-      }
+        this.set("isLoading",true)
 
-      return this.api.pdfReport(mustache.render(toPrint, null), {
-          type: "recipe",
-          paperWidth: this.patient.ssin && this.api.tokenId && size == 'A4' ? 210 : 105,
-          paperHeight: this.patient.ssin && this.api.tokenId && size == 'A4' ? 297 : 210,
-          marginLeft: 5,
-          marginRight: 5,
-          marginTop: 5,
-          marginBottom: 5
-      })
-      .then(({pdf:pdfFileContent, printed:wasPrinted}) => _.assign({pdfFileContent:pdfFileContent, printed:wasPrinted}, pdfPrintingData))
-      .then(pdfPrintingData => this.api.message().newInstanceWithPatient(this.user, this.patient)
-          .then(newMessageInstance=>_.assign({newMessageInstance: newMessageInstance}, pdfPrintingData))
-          .then(pdfPrintingData=>this.api.message().createMessage(
-                  _.merge(
-                      pdfPrintingData.newMessageInstance,
-                      {
-                          transportGuid: "PRESCRIPTION:PHARMACEUTICALS:ARCHIVE",
-                          recipients: [_.get(this.user, 'healthcarePartyId', _.trim(this.user.id))],
+        const pdfPrintingData = {
+            downloadFileName: _.kebabCase([ "prescription", _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", ""), +new Date()].join(" ")) + ".pdf",
+            documentMetas : {
+                title : "Prescription",
+                contactId : _.get(this.selectedContactForPrescription, "id", ""),
+                created: ""+ +new Date(),
+                patientId : _.trim(_.get(this.patient, "id", "")),
+                patientName : _.compact([ _.get(this.patient, "lastName", ""), _.get(this.patient, "firstName", "") ]).join(" ")
+            }
+        }
+
+        return this.api.pdfReport(mustache.render(toPrint, null), {
+            type: "recipe",
+            paperWidth: this.patient.ssin && this.api.tokenId && size == 'A4' ? 210 : 105,
+            paperHeight: this.patient.ssin && this.api.tokenId && size == 'A4' ? 297 : 210,
+            marginLeft: 5,
+            marginRight: 5,
+            marginTop: 5,
+            marginBottom: 5
+        })
+            .then(({pdf:pdfFileContent, printed:wasPrinted}) => _.assign({pdfFileContent:pdfFileContent, printed:wasPrinted}, pdfPrintingData))
+            .then(pdfPrintingData => this.api.message().newInstanceWithPatient(this.user, this.patient)
+                    .then(newMessageInstance=>_.assign({newMessageInstance: newMessageInstance}, pdfPrintingData))
+                    .then(pdfPrintingData=>this.api.message().createMessage(
+                        _.merge(
+                            pdfPrintingData.newMessageInstance,
+                            {
+                                transportGuid: "PRESCRIPTION:PHARMACEUTICALS:ARCHIVE",
+                                recipients: [_.get(this.user, 'healthcarePartyId', _.trim(this.user.id))],
 //TODO                              metas: pdfPrintingData.documentMetas,
-                          toAddresses: [_.get(this.user, 'email', _.get(this.user, 'healthcarePartyId', _.trim(this.user.id)))],
-                          subject: pdfPrintingData.documentMetas.title
-                      }
-                  )
-              ).then(createMessageResponse=>_.assign({createMessageResponse: createMessageResponse}, pdfPrintingData)))
-      )
-      .then(pdfPrintingData=>this.api.document().newInstance(
-              this.user,pdfPrintingData.createMessageResponse,
-              {
-                  documentType: 'report',
-                  mainUti: this.api.document().uti("application/pdf"),
-                  name: pdfPrintingData.documentMetas.title + " - " + pdfPrintingData.documentMetas.patientName
-              }
-          ).then(newDocumentInstance=>_.assign({newDocumentInstance:newDocumentInstance},pdfPrintingData))
-      )
-      .then(pdfPrintingData=>this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse=>_.assign({createDocumentResponse:createDocumentResponse},pdfPrintingData)))
-      .then(pdfPrintingData=>this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user.healthcarePartyId, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent=>_.assign({encryptedFileContent:encryptedFileContent},pdfPrintingData)))
-      .then(pdfPrintingData=>this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},pdfPrintingData)))
-      .then(pdfPrintingData=>{
-          this.dispatchEvent(new CustomEvent('save-document-as-service', {detail: {
-              documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
-              stringValue: pdfPrintingData.documentMetas.title,
-              contactId: pdfPrintingData.documentMetas.contactId,
-          }}))
-          return pdfPrintingData
-      })
-      .then(pdfPrintingData => !pdfPrintingData.printed && this.api.triggerFileDownload( pdfPrintingData.pdfFileContent, "application/pdf", pdfPrintingData.downloadFileName ))
-      .catch(e=>{
-          console.log(e)
-          this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false}}))
-      })
-  }
+                                toAddresses: [_.get(this.user, 'email', _.get(this.user, 'healthcarePartyId', _.trim(this.user.id)))],
+                                subject: pdfPrintingData.documentMetas.title
+                            }
+                        )
+                    ).then(createMessageResponse=>_.assign({createMessageResponse: createMessageResponse}, pdfPrintingData)))
+            )
+            .then(pdfPrintingData=>this.api.document().newInstance(
+                this.user,pdfPrintingData.createMessageResponse,
+                {
+                    documentType: 'report',
+                    mainUti: this.api.document().uti("application/pdf"),
+                    name: pdfPrintingData.documentMetas.title + " - " + pdfPrintingData.documentMetas.patientName
+                }
+                ).then(newDocumentInstance=>_.assign({newDocumentInstance:newDocumentInstance},pdfPrintingData))
+            )
+            .then(pdfPrintingData=>this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse=>_.assign({createDocumentResponse:createDocumentResponse},pdfPrintingData)))
+            .then(pdfPrintingData=>this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user.healthcarePartyId, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent=>_.assign({encryptedFileContent:encryptedFileContent},pdfPrintingData)))
+            .then(pdfPrintingData=>this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},pdfPrintingData)))
+            .then(pdfPrintingData=>{
+                //todo @julien sauver le document dans un service
+                this.dispatchEvent(new CustomEvent('save-document-as-service', {detail: {
+                        documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
+                        stringValue: pdfPrintingData.documentMetas.title,
+                        contactId: pdfPrintingData.documentMetas.contactId,
+                    }}))
+                return pdfPrintingData
+            })
+            .then(pdfPrintingData => !pdfPrintingData.printed && this.api.triggerFileDownload( pdfPrintingData.pdfFileContent, "application/pdf", pdfPrintingData.downloadFileName ))
+            .catch(e=>{
+                console.log(e)
+            }).finally(()=>{
+                this.set("isLoading",false)
+            })
+    }
 
-  _markDrugsAs(drugs, code, status) {
-      drugs.forEach(service => {
-          const id = "CD-LIFECYCLE|" + code + "|1";
-          const tag = service.tags.find(t => t.type === 'CD-LIFECYCLE')
-          if (tag) {
-              tag.id = id;
-              tag.code = code
-          } else
-              service.tags.push(this.api.code().normalize({id: id}))
-          const content = this.api.contact().preferredContent(service, this.language)
-          if (content && content.medicationValue) {
-              if ("status" in content.medicationValue) {
-                  content.medicationValue.status &= STATUS_SENT | STATUS_NOT_SENT;
-                  content.medicationValue.status |= status;
-              } else
-                  content.medicationValue.status = status;
-          }
-      });
-      this._refreshDrugsToBePrescribed();
-      this.dispatchEvent(new CustomEvent('pdf-report',{detail: {loading: false, success: true}}))
-      this.dispatchEvent(new CustomEvent('save-contact', {detail: {contact: this.selectedContactForPrescription}, bubbles: true, composed: true}));
-  }
+    _download(doc) {
+        var a = document.createElement('a')
+        a.href = window.URL.createObjectURL(new Blob([doc], {type : "text/plain;charset=utf-8"}))
+        a.download = `prescription_${+new Date()}.xml`
+        a.click()
+    }
 
-
-  _markDrugsAsSent(drugsToBePrescribed) {
-      this._markDrugsAs(drugsToBePrescribed, "ordered", STATUS_SENT);
-  }
-
-  _markDrugsAsNotSent(drugsToBePrescribed) {
-      this._markDrugsAs(drugsToBePrescribed, "active", STATUS_NOT_SENT);
-  }
-
-  _populateDrugsOnPrescriptions() {
-      //console.log('_populateDrugsOnPrescriptions()')
-      this.set('_drugsOnPrescriptions', []) // ugly hack to force refresh due to polymer bug
-      this.set('_drugsOnPrescriptions',
-          this._drugsToBePrescribed.reduce((accu, s) => {
-              const availableSpace = accu.reduce((acc,drug) => {
-                  if(drug.column >= 0) {
-                      acc[drug.column] >= 0 ? acc[drug.column]-- : acc[drug.column] = 4;
-                  }
-                  return acc
-              }, []);
-              availableSpace.push(5);
-              let codes = s.codes && s.codes.map(c => c.code + '|' + c.type + '|' + c.version);
-              let sameDrugColumnIndex = 0
-              let compound = null
-              if(!codes || !codes.length) {
-                  codes = null
-                  const content = this.api.contact().preferredContent(s,this.language)
-                  compound = content && content.medicationValue && content.medicationValue.compoundPrescription
-                  sameDrugColumnIndex = (accu.slice(0).reverse().find( drug => drug.compound == compound ) || {}).column
-              }else {
-                  sameDrugColumnIndex = (accu.slice(0).reverse().find(drug => drug.codes && drug.codes.length && codes.filter( c => drug.codes.join(',').includes(c)).length === codes.length) || {}).column;
-              }
-              const column = _.findIndex(availableSpace, (s, idx) => sameDrugColumnIndex >= 0 ? (idx === sameDrugColumnIndex + 1) && s : s );
-              accu.push({
-                  id: s.id,
-                  svc: s,
-                  codes,
-                  column,
-                  compound
-              })
-              return accu
-          }, [] )
-      )
-      //console.log('_populateDrugsOnPrescriptions(): this._drugsOnPrescriptions', this._drugsOnPrescriptions)
-      return this._drugsOnPrescriptions
-  }
-
-  _setDrugOnPrescription(e) {
-      const id = e.target.id.split(':')[0];
-      let column = parseInt(e.target.id.split(':')[1]);
-      const checked = e.detail.value
-      console.log("_setDrugOnPrescription: _drugsOnPrescriptions:", this._drugsOnPrescriptions)
-      if(checked === false) {
-          column = -1 // null mean do not print this drug
-      }
-
-      if (!id || id.length === 0 || !column && column !== 0) {
-					return;
-      }
-
-      const current = this._drugsOnPrescriptions;
-
-      const markIndex = current.findIndex(m => m.id === id);
-
-      if (markIndex >= 0) {
-          this.set('_drugsOnPrescriptions.' + markIndex + '.column', column);
-      } else {
-          console.log("_setDrugOnPrescription: not found: should not happen!")
-					//current.push({ id: id, column: column }); // should not be needed ?
-      }
-
-  }
-
-  _printEnabled() {
-      const cols = this._splitColumns
-      return cols.length !== 0 && cols.find(c=>c && c.drugIds && c.drugIds.length !== 0)
-  }
-
-  _refreshSplitColumns() {
-      const drugs = this._drugsToBePrescribed;
-      const columns = this._drugsOnPrescriptions.reduce((columns, mark) => {
-          const id = mark.id;
-          const column = mark.column;
-          if(column >= 0) { // ignore unchecked drugs
-              ;(columns[column] || (columns[column] = {drugIds:[], column:column})).drugIds.push(id)
-          }
-          return columns;
-      }, [{drugIds:[]}]);
-      if (!columns.find(c => !c || !c.drugIds || !c.drugIds.length) && columns.length < drugs.length) {
-          columns.push({drugIds:[]});
-      }
-      //console.log("_refreshSplitColumns", columns)
-      this.set('_splitColumns', columns)
-  }
 }
 
 customElements.define(HtPatPrescriptionDialog.is, HtPatPrescriptionDialog);

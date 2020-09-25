@@ -84,8 +84,6 @@ class HtPatMedicationPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
           margin: 0;
         }
         
-       
-
         </style>
         
         <paper-dialog id="medicationPlanDetailDialog" class="medicationPlanDetailDialog">
@@ -202,7 +200,7 @@ class HtPatMedicationPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
 
     _open(){
         this.shadowRoot.querySelector("#medicationPlanDetailDialog").open()
-        this.set('listOfDrugs', _.orderBy(this._refreshHistoryList(_.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "ICURE" && _.get(tag, 'code', null) === "PRESC"))), ["startOfValidity"], ["desc"]))
+        this.set('listOfDrugs', _.orderBy(this._refreshHistoryList(_.flatten(_.get(this, 'contacts', []).map(ctc => ctc.services)).filter(ser => _.get(ser, 'tags', []).find(tag => _.get(tag, 'type', null) === "ICURE" && _.get(tag, 'code', null) === "PRESC"))), ["deliveryMoment"], ["desc"]))
     }
 
 
@@ -232,8 +230,8 @@ class HtPatMedicationPlanDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
         return {
             service: service,
             rid: _.get(service, 'content.'+this.language+'.medicationValue.prescriptionRID', null),
-            startOfValidity: _.get(service, 'content.'+this.language+'.medicationValue.beginMoment', null) || "19700101",
-            endOfValidity: _.get(service, 'content.'+this.language+'.medicationValue.endMoment', null),
+            deliveryMoment:  _.get(service, 'content.'+this.language+'.medicationValue.deliveryMoment', null) ? _.get(service, 'content.'+this.language+'.medicationValue.deliveryMoment', null) : _.get(service, 'content.'+this.language+'.medicationValue.beginMoment', null) || "19700101",
+            endExecutionMoment: _.get(service, 'content.'+this.language+'.medicationValue.endExecutionMoment', null),
             label: _.get(drug, "intendedname", null),
             posology: _.get(service, 'content.'+this.language+'.medicationValue.instructionForPatient', null),
             author: _.get(service, 'author', null),

@@ -635,7 +635,7 @@ class IccApi extends PolymerElement {
           const optionsString = _.toPairs(options).map(([k, v]) => `${k}=${v}`).join('&')
           if(!optionsString.length) option.type="doc-big-format"
 
-          return (!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id)
+          return ((!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id))
               .then( data => {
                   const printersPrefs = electron && data && data.ok ? JSON.parse(data.data) : JSON.parse(localStorage.getItem('selectedPrinter') || '{}')
                   const stickersPrefs = electron && data && data.ok ? _.find(printersPrefs, pref => pref.type === "sticker-mut") || {} : _.get(printersPrefs,"stickers")

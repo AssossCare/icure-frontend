@@ -180,6 +180,11 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                 position: initial;
             }
             
+            .emptyBtn{
+                height: 12px;
+                width: 12px;
+            }
+            
         </style>
         
         <div>
@@ -192,13 +197,8 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                 <div class="td fg05">[[localize('med-plan-presc-rid','Rid',language)]]</div>
                 <div class="td fg2">[[localize('med-plan-presc-drug','Drug',language)]]</div>
                 <div class="td fg1">[[localize('med-plan-presc-freq','Frequency',language)]]</div>
-                <div class="td fg05">[[localize('med-plan-prescr-stat','Status',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
-                <div class="td fg0">[[localize('','',language)]]</div>
+                <div class="td fg1">[[localize('med-plan-prescr-stat','Status',language)]]</div>
+                <div class="td fg05">[[localize('','',language)]]</div>
             </div>
             <template is="dom-repeat" items="[[listOfDrugs]]" as="drug">
                 <div class="tr tr-item">
@@ -237,38 +237,57 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
                             <paper-tooltip for="sub_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-substance', 'Substance', language)]]</paper-tooltip>
                         </template>
                     </div>
-                    <div class="td fg05">[[_formatDate(drug.startOfValidity)]]</div>
-                    <div class="td fg05">[[_formatDate(drug.endOfValidity)]]</div>
+                    <div class="td fg05">[[_formatDate(drug.deliveryMoment)]]</div>
+                    <div class="td fg05">[[_formatDate(drug.endExecutionMoment)]]</div>
                     <div class="td fg05">[[drug.rid]]</div>
                     <div class="td fg2">[[drug.label]]</div>
                     <div class="td fg1">[[drug.posology]]</div>
-                    <div class="td fg05 notRel">
-                        <iron-icon icon="vaadin:circle" class$="statusIcon [[_getStatusColor(drug.status)]]"></iron-icon>
-                        <span class$="recipe-status [[_getStatusColor(drug.status)]]]">[[_getStatusHr(drug.status)]]</span>
+                    <div class="td fg1 notRel">
+                        <span class$="recipe-status [[_getStatusColor(drug.status)]]"> 
+                            <iron-icon icon="vaadin:circle" class$="statusIcon [[_getStatusColor(drug.status)]]"></iron-icon>
+                            [[_getStatusHr(drug.status)]]
+                        </span> 
                     </div>
-                    <div class="td fg0 notRel">
+                    <div class="td fg05 notRel">
                         <iron-icon icon="vaadin:print" class="iconBtn" id="print_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_printPrescription"></iron-icon>
                         <paper-tooltip for="print_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-print', 'Print', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:ban" class="iconBtn" id="revoke_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_revokePrescription"></iron-icon>
-                        <paper-tooltip for="revoke_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-revoke', 'Revoke', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:trash" class="iconBtn" id="delete_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_deleteDrug"></iron-icon>
-                        <paper-tooltip for="delete_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-delete', 'Delete', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:bell-o" class="iconBtn" id="notif_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_sendNotification"></iron-icon>
-                        <paper-tooltip for="notif_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-notification', 'Notify', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:flag-o" class="iconBtn" id="flag_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_changedVisuFlag"></iron-icon>
-                        <paper-tooltip for="flag_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-visu', 'Change vision flag', language)]]</paper-tooltip>
-                    </div>
-                    <div class="td fg0 notRel">
-                        <iron-icon icon="vaadin:code" class="iconBtn" id="kmehr_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_downloadKmehr"></iron-icon>
-                        <paper-tooltip for="kmehr_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-kmehr', 'Download xml', language)]]</paper-tooltip>
+                        <template is="dom-if" if="[[_canRevoke(drug.status)]]">
+                            <iron-icon icon="vaadin:ban" class="iconBtn" id="revoke_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_revokePrescription"></iron-icon>
+                            <paper-tooltip for="revoke_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-revoke', 'Revoke', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[!_canRevoke(drug.status)]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <template is="dom-if" if="[[_canDelete(drug.status)]]">
+                            <iron-icon icon="vaadin:trash" class="iconBtn" id="delete_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_deleteDrug"></iron-icon>
+                            <paper-tooltip for="delete_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-delete', 'Delete', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[!_canDelete(drug.status)]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <!--
+                        <template is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:bell-o" class="iconBtn" id="notif_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_sendNotification"></iron-icon>
+                            <paper-tooltip for="notif_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-notification', 'Notify', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        <temlpate is="dom-if" if="[[]]">
+                            <iron-icon icon="vaadin:flag-o" class="iconBtn" id="flag_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_changedVisuFlag"></iron-icon>
+                            <paper-tooltip for="flag_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-visu', 'Change vision flag', language)]]</paper-tooltip>
+                        </temlpate>
+                        <template is="dom-if" if="[[]]">
+                             <div class="emptyBtn"></div>
+                        </template>
+                        -->
+                        <template is="dom-if" if="[[_canDownloadKmehr(drug.status)]]">
+                            <iron-icon icon="vaadin:code" class="iconBtn" id="kmehr_[[drug.id]]" data-item$="[[drug.id]]" on-tap="_downloadKmehr"></iron-icon>
+                            <paper-tooltip for="kmehr_[[drug.id]]" position="left" animation-delay="0">[[localize('med-plan-presc-btn-kmehr', 'Download xml', language)]]</paper-tooltip>
+                        </template>
+                        <template is="dom-if" if="[[!_canDownloadKmehr(drug.status)]]">
+                             <div class="emptyBtn"></div>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -348,17 +367,17 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
     }
 
     _getStatusHr(status){
-        return !!(status & (1 << 5)) ? this.localize("pr_status_expired", "Expiré", this.language) :
-            !!(status & (1 << 5)) ? this.localize("pr_status_revoked", "Révoqué", this.language) :
-                !!(status & (1 << 4)) ? this.localize("pr_status_delivered", "Déliveré", this.language) :
-                    !!(status & (1 << 3)) ? this.localize("pr_status_pending", "Non délivré", this.language) :
-                        !!(status & (1 << 2)) ? this.localize("pr_status_sent", "Envoyé", this.language) :
-                            !!(status & (1 << 1)) ? this.localize("pr_status_not_sent", "Non envoyé", this.language) :
-                                this.localize("pr_status_not_sent", "Non envoyé", this.language)
+        return !!(status & (1 << 5)) ? this.localize("pr_status_expired", "Expired", this.language) :
+            !!(status & (1 << 5)) ? this.localize("pr_status_revoked", "Revoked", this.language) :
+                !!(status & (1 << 4)) ? this.localize("pr_status_delivered", "Delivered", this.language) :
+                    !!(status & (1 << 3)) ? this.localize("pr_status_pending", "Pending", this.language) :
+                        !!(status & (1 << 2)) ? this.localize("pr_status_sent", "Sent", this.language) :
+                            !!(status & (1 << 1)) ? this.localize("pr_status_not_sent", "Not sent", this.language) :
+                                this.localize("pr_status_not_sent", "Not sent", this.language)
     }
 
     _formatDate(date){
-        return date ? date !== '19700101' ? this.api.moment(date).format('DD/MM/YYYY') : null : null
+        return date ? this.api.moment(date).format('DD/MM/YYYY') : null
     }
 
     _isSubstance(type){
@@ -407,6 +426,18 @@ class HtPatMedicationPlanDetailPrescription extends TkLocalizerMixin(mixinBehavi
         if(_.get(e, 'currentTarget.dataset.item', null)){
 
         }
+    }
+
+    _canDownloadKmehr(status){
+        return status && !!(status & (1 << 1)) && (status & (1 << 2 | 1 << 3 | 1 << 4 | 1 << 5) === 0)
+    }
+
+    _canDelete(status){
+
+    }
+
+    _canRevoke(status){
+
     }
 
 }
