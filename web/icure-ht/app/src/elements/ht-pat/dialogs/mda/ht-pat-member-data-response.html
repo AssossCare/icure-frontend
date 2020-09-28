@@ -42,7 +42,6 @@
                 min-width: 800px;
                 top: 64px;
             }
-
             .mdaDetailDialog{
                 display: flex;
                 height: calc(100% - 45px);;
@@ -50,7 +49,6 @@
                 margin: 0;
                 padding: 0;
             }
-
             .mda-content{
                 display: flex;
                 width: 100%;
@@ -58,15 +56,12 @@
                 height: 100%;
                 background-color: white;
             }
-
             .mda-menu-list{
                 width: 30%;
             }
-
             .mda-view{
                 width: 70%;
             }
-
             .mda-menu-list-header{
                 height: 48px;
                 width: 100%;
@@ -79,43 +74,33 @@
                 align-items: center;
                 box-sizing: border-box;
             }
-
             .mda-menu-list-header-info{
                 margin-left: 12px;
                 display: flex;
                 align-items: center;
             }
-
             .mda-name{
                 font-size: var(--font-size-large);
                 font-weight: 700;
             }
-
             .mda-menu-search-line{
                 display: flex;
             }
-
             .w100{
                 width: 100%;
             }
-
-
             .w33{
                 width: 33%;
             }
-
             .p4{
                 padding: 4px;
             }
-
             .mtm2{
                 margin-top: -2px;
             }
-
             .w40{
                 width: 40%;
             }
-
             .headerInfoLine{
                 width: 100%;
                 padding: 4px;
@@ -124,7 +109,6 @@
                 justify-content: flex-start;
                 align-items: flex-start;
             }
-
             .headerInfoField{
                 display: flex;
                 flex-direction: row;
@@ -135,52 +119,43 @@
                 padding: 0 8px;
                 box-sizing: border-box;
             }
-
             .headerLabel{
                 font-weight: bold;
             }
-
             .mda-result-container{
                 margin-bottom: 12px;
                 border: 1px solid var(--app-background-color-dark);
             }
-
             .headerMasterTitle{
                 font-size: var(--font-size-large);
                 background: var(--app-background-color-dark);
                 padding: 0 12px;
                 box-sizing: border-box;
             }
-
             .mda-sub-container{
                 height: auto;
                 width: auto;
                 margin: 10px;
                 border: 1px solid var(--app-background-color-dark);
             }
-
             .mda-person-container{
                 height: auto;
                 width: auto;
             }
-
             .mda-address-container{
                 height: auto;
                 width: auto;
             }
-
             .mda-partnerInfo-container{
                 height: auto;
                 width: auto;
             }
-
             .mda-error-container{
                 height: auto;
                 width: auto;
                 color: var(--app-status-color-nok);
                 font-weight: bold;
             }
-
             .m5{
                 margin: 5px;
             }
@@ -188,37 +163,35 @@
                 width: calc(100% / 2);
             }
 
+            .fw4{
+                width: 100%;
+            }
             .succesContainer{
                 height: auto;
                 width: auto;
                 margin: 10px;
             }
-
             .warningIcon{
                 color: var(--app-status-color-pending);
                 height: 16px;
                 width: 16px;
             }
-
             .mda-sub-container-error{
                 height: auto;
                 width: auto;
                 margin: 10px;
                 border: 1px solid var(--app-status-color-nok);
             }
-
             .mda-container-error{
                 height: auto;
                 width: auto;
             }
-
             .headerMasterTitleError{
                 font-size: var(--font-size-large);
                 background: var(--app-status-color-nok);
                 padding: 0 12px;
                 box-sizing: border-box;
             }
-
             ht-spinner {
                 height: 42px;
                 width: 42px;
@@ -234,7 +207,6 @@
         <div>
             <ht-spinner active="[[isLoading]]"></ht-spinner>
             <template is="dom-if" if="[[_ifData(mdaResult, mdaResult.*)]]">
-
                 <!--
                 <template is="dom-if" if="[[!_isSucces(mdaResult.status, mdaResult.*)]]">
                     <div class="succesContainer">
@@ -257,7 +229,6 @@
                                     <div>[[_getMcnErrorMessage(mcnError)]]</div>
                                 </template>
                             </template>
-
                             <template is="dom-if" if="[[!_isMcnError(mdaResult.myCarenetErrors)]]">
                                 <template is="dom-repeat" items="[[mdaResult.errors]]" as="error">
                                     <template is="dom-repeat" items="[[error.details.details]]" as="detail">
@@ -268,7 +239,6 @@
                         </div>
                     </div>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:insurability:patientData', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.patientData]]" as="pd">
                         <div class="mda-sub-container">
@@ -300,7 +270,6 @@
                         </div>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[!_isDataAvailable('urn:be:cin:nippin:insurability:patientData', mdaResult, mdaResult.*)]]">
                     <template is="dom-if" if="[[_isFacetExeption('insurability', mdaResult, mdaResult.*)]]">
                         <div class="mda-sub-container">
@@ -313,7 +282,6 @@
                         </div>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:insurability:period', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.period]]" as="p">
                         <div class="mda-sub-container">
@@ -335,6 +303,16 @@
                                         <span class="headerLabel">[[localize('mda-com-date', 'Communication date', language)]]: &nbsp;</span> [[_formatDate(p.communicationDate)]]
                                     </div>
                                 </div>
+                                <template is="dom-if" if="[[_isContractDateAvailable(p, p.*)]]">
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-startDate', 'Start date', language)]]: &nbsp;</span> [[_formatDate(p.startDate)]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-endDate', 'End date', language)]]: &nbsp;</span> [[_formatEndDate(p.endDate)]]
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </template>
@@ -351,7 +329,6 @@
                         </div>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:insurability:payment', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.payment]]" as="p">
                         <div class="mda-sub-container">
@@ -378,7 +355,6 @@
                         </div>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:medicalHouse', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.medicalHouse]]" as="mmh">
                         <div class="mda-sub-container">
@@ -402,6 +378,20 @@
                                         </div>
                                         <div class="headerInfoField">
                                             <span class="headerLabel">[[localize('mda-endDate', 'End date', language)]]: &nbsp;</span> [[_formatDate(mmh.medicalHouse.endDate)]]
+                                        </div>
+                                    </div>
+                                    <div class="headerInfoLine">
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-street', 'Street', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.street]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-zip', 'Zip', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.zip]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-city', 'City', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.city]]
+                                        </div>
+                                        <div class="headerInfoField">
+                                            <span class="headerLabel">[[localize('mda-phone', 'Phone', language)]]: &nbsp;</span> [[mmh.medicalHouse.address.telecom.phone]]
                                         </div>
                                     </div>
                                 </div>
@@ -433,7 +423,6 @@
                         </template>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:hospitalisation', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.hospitalisation]]" as="hosp">
                         <div class="mda-sub-container">
@@ -461,7 +450,6 @@
                         </div>
                     </template>
                 </template>
-
                 <template is="dom-if" if="_isDataAvailable('urn:be:cin:nippin:insurability:generalSituation', mdaResult, mdaResult.*)">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.generalSituation]]" as="gs">
                         <div class="mda-sub-container">
@@ -511,7 +499,6 @@
                         </template>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:carePath', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.carePath]]" as="cp">
                         <div class="mda-sub-container">
@@ -586,8 +573,10 @@
                                                         <div class="headerInfoField">
                                                             <span class="headerLabel">[[localize('mda-lastName', 'Last name', language)]]: &nbsp;</span> [[cp.carePath.specialist.lastName]]
                                                         </div>
-                                                        <div class="headerInfoField">
-                                                            <span class="headerLabel">[[localize('mda-speciality', 'Speciality', language)]]: &nbsp;</span> [[cp.carePath.specialist.speciality]]
+                                                    </div>
+                                                    <div class="headerInfoLine">
+                                                        <div class="headerInfoField fw4">
+                                                            <span class="headerLabel">[[localize('mda-speciality', 'Speciality', language)]]: &nbsp;</span> [[_getSpeciality(cp.carePath.specialist.speciality)]]
                                                         </div>
                                                     </div>
                                                 </div>
@@ -623,8 +612,6 @@
                         </template>
                     </template>
                 </template>
-
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:chronicCondition', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.chronicCondition]]" as="cc">
                         <div class="mda-sub-container">
@@ -663,7 +650,6 @@
                         </template>
                     </template>
                 </template>
-
                 <template is="dom-if" if="[[_isDataAvailable('urn:be:cin:nippin:referencePharmacy', mdaResult, mdaResult.*)]]">
                     <template is="dom-repeat" items="[[mdaResult.formatedResponse.referencePharmacy]]" as="rp">
                         <div class="mda-sub-container">
@@ -775,6 +761,7 @@
                 };
             }
 
+
             static get observers() {
                 return [];
             }
@@ -805,6 +792,10 @@
 
             _formatDate(date){
                 return date ? moment(parseInt(date)).format("DD/MM/YYYY"): null
+            }
+
+            _formatEndDate(date){
+                return date ? moment(parseInt(date)).subtract(1, 'days').format("DD/MM/YYYY"): null
             }
 
             _formatNissNumber(niss) {
@@ -879,6 +870,14 @@
 
             _isAssertion(mdaResult){
                 return _.size(_.get(mdaResult, 'assertions', []))
+            }
+
+            _isContractDateAvailable(period){
+                return !!(_.get(period, 'startDate', null) || _.get(period, 'endDate', null))
+            }
+
+            _getSpeciality(spec){
+                return _.get(spec, 'speciality.'+this.language, null)
             }
 
         }

@@ -1,4 +1,4 @@
-import * as fhcApi from 'fhc-api/dist/fhcApi'
+import * as api from '@taktik/fhc-api-legacy/dist/fhcApi'
 import * as iccApi from '@taktik/icc-api-legacy/dist/icc-api/iccApi'
 import * as iccXApi from '@taktik/icc-api-legacy/dist/icc-x-api/index'
 import {UtilsClass} from "@taktik/icc-api-legacy/dist/icc-x-api/crypto/utils"
