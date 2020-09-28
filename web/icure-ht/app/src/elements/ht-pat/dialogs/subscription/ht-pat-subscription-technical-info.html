@@ -25,15 +25,15 @@
 <link rel="import" href="../../../../styles/dialog-style.html">
 <link rel="import" href="../../../../styles/scrollbar-style.html">
 <link rel="import" href="../../../../styles/buttons-style.html">
-<link rel="import" href="../../../../styles/paper-tabs-style.html">
-<link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
 <link rel="import" href="../../../../styles/notification-style.html">
+<link rel="import" href="../../../../styles/spinner-style.html">
+<link rel="import" href="../../../../styles/shared-styles.html">
+<link rel="import" href="../../../../styles/paper-tabs-style.html">
 
 
-
-<dom-module id="ht-pat-member-data-technical-info">
+<dom-module id="ht-pat-subscription-technical-info">
     <template>
-        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
+        <style include="dialog-style scrollbar-style buttons-style notification-style spinner-style shared-styles paper-tabs-style">
             .p4{
                 padding: 4px;
             }
@@ -49,72 +49,88 @@
             .w100{
                 width: 98%;
             }
-
-
         </style>
         <div>
-            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'inputReference', language)]]" value="[[mdaResult.commonOutput.inputReference]]"></dynamic-text-field>
-            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'nipreference', language)]]" value="[[mdaResult.commonOutput.nipreference]]"></dynamic-text-field>
-            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'outputReference', language)]]" value="[[mdaResult.commonOutput.outputReference]]"></dynamic-text-field>
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'inputReference', language)]]" value="[[subscriptionResultDetail.commonOutput.inputReference]]"></dynamic-text-field>
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'nipreference', language)]]" value="[[subscriptionResultDetail.commonOutput.nipreference]]"></dynamic-text-field>
+            <dynamic-text-field class="w100 p4 mtm2 mw0" label="[[localize('', 'outputReference', language)]]" value="[[subscriptionResultDetail.commonOutput.outputReference]]"></dynamic-text-field>
             <div>
-                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapRequest',language)]]" value="[[mdaResult.mycarenetConversation.soapRequest]]"></vaadin-text-area>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapRequest',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.soapRequest]]"></vaadin-text-area>
             </div>
             <div>
-                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionRequest',language)]]" value="[[mdaResult.mycarenetConversation.transactionRequest]]"></vaadin-text-area>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionRequest',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.transactionRequest]]"></vaadin-text-area>
             </div>
             <div>
-                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapResponse',language)]]" value="[[mdaResult.mycarenetConversation.soapResponse]]"></vaadin-text-area>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','soapResponse',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.soapResponse]]"></vaadin-text-area>
             </div>
             <div>
-                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionResponse',language)]]" value="[[mdaResult.mycarenetConversation.transactionResponse]]"></vaadin-text-area>
+                <vaadin-text-area class="textarea-style w100" id="CommentTextArea" label="[[localize('','transactionResponse',language)]]" value="[[subscriptionResultDetail.mycarenetConversation.transactionResponse]]"></vaadin-text-area>
             </div>
         </div>
+
     </template>
     <script>
+        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
+        import mustache from "mustache/mustache.js";
+        import Chart from 'chart.js';
 
-        class HtPatMemberDataTechnicalInfo extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class HtPatSubscriptionTechnicalInfo extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+
             static get is() {
-                return 'ht-pat-member-data-technical-info';
+                return 'ht-pat-subscription-technical-info';
             }
 
             static get properties() {
                 return {
                     api: {
                         type: Object,
-                        value: null
+                        value: null,
+                        noReset: true
                     },
                     user: {
                         type: Object,
-                        value: null
+                        value: null,
+                        noReset: true
+                    },
+                    i18n:{
+                        type: Object,
+                        value: {},
+                        noReset: true
+                    },
+                    resources:{
+                        type: Object,
+                        value: {},
+                        noReset: true
                     },
                     language: {
-                        type: String
+                        type: String,
+                        noReset: true
                     },
                     patient:{
                         type: Object,
-                        value: () => {}
+                        value: () => {},
+                        noReset: true
                     },
                     hcp:{
                         type: Object,
-                        value: () => {}
+                        value: () => {},
+                        noReset: true
                     },
-                    mdaSearch:{
-                        type: Object,
-                        value: () => {}
+                    tabs:{
+                        type: Number,
+                        value: 0
                     },
-                    selectedMdaContactType:{
-                        type: Object,
-                        value: () => {}
+                    isLoading:{
+                        type: Boolean,
+                        value: false,
+                        noReset: true
                     },
-                    selectedMdaRequestType:{
-                        type: Object,
-                        value: () => {}
-                    },
-                    mdaResult:{
+                    subscriptionResultDetail:{
                         type: Object,
                         value: () => {}
                     }
+
                 };
             }
 
@@ -127,6 +143,6 @@
             }
 
         }
-        customElements.define(HtPatMemberDataTechnicalInfo.is, HtPatMemberDataTechnicalInfo);
+        customElements.define(HtPatSubscriptionTechnicalInfo.is, HtPatSubscriptionTechnicalInfo);
     </script>
 </dom-module>
