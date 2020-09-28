@@ -1575,7 +1575,6 @@
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
-        import * as fhcmodels from 'fhc-api/dist/model/models'
         import mustache from "mustache/mustache.js";
         import jsZip from "jszip/dist/jszip.js";
         import promiseLimit from 'promise-limit';
@@ -3271,7 +3270,7 @@
 
             _generateJ20FlatFiles(){
                 return Promise.all(this.flatRateInvoicingDataObject.iosData.map(OA => {
-                    let ib  = new fhcmodels.InvoicesBatch('');
+                    let ib  = {};
                     ib.invoicingYear = this.flatRateInvoicingDataObject.exportedDate.substr(0,4);
                     ib.invoicingMonth = this.flatRateInvoicingDataObject.exportedDate.substr(4,2);
                     ib.fileRef = 'xxx';//not used
@@ -3448,13 +3447,13 @@
             }
 
             getPatientInvoice(patientData, OA){
-                let inv = new fhcmodels.Invoice('');
+                let inv = {};
                 inv.patient = {};
                 inv.patient.dateOfBirth = parseInt(moment(_.trim(patientData.dateOfBirth), "DD/MM/YYYY").format("YYYYMMDD"))||0;
                 inv.patient.ssin = patientData.ssin;
                 inv.patient.insurabilities = [];
                 inv.patient.gender = patientData.gender;
-                let ins = new fhcmodels.Insurability('');
+                let ins = {};
                 const patIns = patientData.finalInsurability;
                 ins.insuranceCode = this.flatRateInvoicingDataObject.insurancesData.filter(idt => idt.id === patIns.insuranceId)[0].code;
                 ins.parameters = {tc1 : patIns.parameters.tc1 , tc2 : patIns.parameters.tc2};
@@ -3470,7 +3469,7 @@
                 inv.items = [];
                 _.forEach(patientData.invoices, invItm => {
                     _.forEach(invItm.invoicingCodes, invCd => {
-                        let itm = new fhcmodels.InvoiceItem('');
+                        let itm = {};
                         itm.codeNomenclature = invCd.code;
                         itm.dateCode = invCd.dateCode;
                         itm.endDateCode = Number(this.api.moment(invCd.dateCode).endOf('month').format("YYYYMMDD"));
