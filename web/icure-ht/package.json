@@ -107,6 +107,7 @@
     "date-fns": "^2.4.1",
     "define-properties": "^1.1.3",
     "electron-tabs": "^0.9.5",
+    "electron-topaz-api": "git+https://github.com/AssossCare/topaz-electron-api#e0df3abb0c0632af95ad2e0efdedd225a315491c",
     "evaljs": "git+https://github.com/taktik/evaljs.git#c9a9ef2fca5a24688840ebc12ec73267c730b95d",
     "global": "^4.3.2",
     "heic2any": "0.0.3",
