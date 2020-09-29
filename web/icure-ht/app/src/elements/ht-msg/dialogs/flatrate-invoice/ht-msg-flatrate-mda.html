@@ -1551,7 +1551,7 @@
 
 
         <!-- MDA rootline -->
-        <template is="dom-if" if="[[_isIn(eInvoicingStep, 'placeMdaRequests\\\\,mdaCheckForResponses\\\\,mdaLastCallResults\\\\,mdaLastCallResultsDetails\\\\,mdaDoInvoicing')]]">
+        <template is="dom-if" if="[[_isIn(eInvoicingStep, 'placeMdaRequests\\,mdaCheckForResponses\\,mdaLastCallResults\\,mdaLastCallResultsDetails\\,mdaDoInvoicing')]]">
             <div id="mdaProgressRootLineHeader">[[localize("mda","Données du Membre",language)]] - [[_e_getCurrentMonthHr()]] [[_e_getCurrentYear()]]</div>
             <div id="mdaProgressRootLine">
                 <div class$="rootLineItem [[_e_isDone(eInvoicingStep, 'placeMdaRequests')]] [[_e_returnValueIfEquals(eInvoicingStep, 'placeMdaRequests', 'active')]]" id="mdaRootLineStep1"><span>1</span><p>[[localize("memberDataRequest","Request sending",language)]]</p></div>
@@ -2148,7 +2148,7 @@
             }
 
             _isIn(needle,haystack) {
-                return !!( _.trim(haystack).split(",").indexOf(needle) > -1 );
+                return  _.trim(haystack).split(",").indexOf(needle) > -1;
             }
 
             _canFlagAsValid(item){
