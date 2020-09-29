@@ -98,8 +98,8 @@ class DynamicCheckbox extends TkLocalizerMixin(PolymerElement) {
 				font-size: var(--font-size-normal);
 			}
 		</style>
-		<template is="dom-if" if="[[readOnly]]" checked="[[booleanValue]]">
-			<paper-checkbox class="styled" disabled="">
+		<template is="dom-if" if="[[readOnly]]">
+			<paper-checkbox class="styled" disabled checked="[[booleanValue]]">
 				<div class="label-container">
 						<label>
 							<template is="dom-if" if="[[wasModified]]">

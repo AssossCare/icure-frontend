@@ -4,6 +4,7 @@ import {html, PolymerElement} from "@polymer/polymer";
 import _ from 'lodash/lodash';
 import moment from 'moment/src/moment';
 import * as models from '@taktik/icc-api/dist/icc-api/model/models';
+import XLSX from "xlsx";
 
 class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
     static get template() {
@@ -106,8 +107,8 @@ class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
                             <template>
                                 [[item.title]]
                             </template>
-                        </vaadin-grid-column width="50%">
-                        <vaadin-grid-column>
+                        </vaadin-grid-column>
+                        <vaadin-grid-column  width="50%">
                             <template class="header">
                                 <div class="list-right">[[localize('infos','informations',language)]]</div>
                             </template>
@@ -331,8 +332,51 @@ class HtAdminReportsActivity extends TkLocalizerMixin(PolymerElement) {
                     ].concat(errorMessages))
                     this.set('isLoading', false)
                     this.shadowRoot.querySelector('#processDialog') ? this.shadowRoot.querySelector('#processDialog').close() : null
+
+                    this._export()
                 })
             })
+    }
+
+    _export(){
+        // Create xls work book and assign properties
+        const filename =  ("activity_report_" + moment().format("YYYYMMDD-HHmmss") + ".xls")
+        const title = "Activity report"
+        const author = "Topaz"
+        const xlsWorkBook = {SheetNames: [], Sheets: {}}
+        xlsWorkBook.Props = {Title: title, Author: author}
+
+        // Create sheet based on json data collection
+        var xlsWorkSheet = XLSX.utils.json_to_sheet(this.report)
+
+        // Link sheet to workbook
+        XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, title)
+
+        // Virtual data output
+        var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+        // Put output to virtual "file"
+        var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+        // Create download link and append to page's body
+        var downloadLink = document.createElement("a")
+        document.body.appendChild(downloadLink)
+        downloadLink.style = "display: none"
+
+        // Create url
+        var urlObject = window.URL.createObjectURL(fileBlob)
+
+        // Link to url
+        downloadLink.href = urlObject
+        downloadLink.download = filename
+
+        // Trigger download and drop object
+        downloadLink.click()
+        window.URL.revokeObjectURL(urlObject)
+
+        // Free mem
+        fileBlob = false
+        xlsWorkBookOutput = false
     }
 }
 customElements.define(HtAdminReportsActivity.is, HtAdminReportsActivity)

@@ -137,7 +137,7 @@ class DynamicPopupMenu extends TkLocalizerMixin(PolymerElement) {
                     </iron-input>
                 </template>
                 <template is="dom-if" if="[[dataSource]]">
-                    <iron-input slot="input" bind-value="[[_getItem(comboxBoxValue,items,items.*)]]">
+                    <iron-input slot="input" bind-value="[[_getItem(value,items,items.*)]]">
                         <input type="text" readonly>
                     </iron-input>
                 </template>
@@ -385,7 +385,7 @@ class DynamicPopupMenu extends TkLocalizerMixin(PolymerElement) {
 	}
 
     _getItem(){
-        return this.items.length && this.comboBoxValue && (this.items.find(item => item.id===this.comboBoxValue)|| {name : ""}).name
+        return this.items.length && this.value && (this.items.find(item => item.id===this.value)|| {name : ""}).name
     }
 }
 customElements.define(DynamicPopupMenu.is, DynamicPopupMenu);
