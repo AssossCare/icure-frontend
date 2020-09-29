@@ -294,7 +294,7 @@
                                                     <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-history', 'Subscription history', language)]]</div>
                                                     <div class="mhm-person-container-content">
                                                         <template is="dom-repeat" items="[[medicalHouseContracts]]" as="mhc">
-                                                            <div class\$="mhm-person-container mt10 [[_isCancelledSubscription(mhc)]]">
+                                                            <div class$="mhm-person-container mt10 [[_isCancelledSubscription(mhc)]]">
                                                                 <div class="headerMasterTitle headerLabel">
                                                                     [[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]]
                                                                     <paper-tooltip position="bottom" for="dl-master"></paper-tooltip>
@@ -339,7 +339,7 @@
                                                                 </div>
                                                                 <div class="headerInfoLine">
                                                                     <div class="headerInfoField">
-                                                                        <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class\$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[mhc.hrStatus]]</span>
+                                                                        <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[mhc.hrStatus]]</span>
                                                                     </div>
                                                                     <template is="dom-if" if="[[_isClosure(mhc)]]">
                                                                         <div class="headerInfoField">
@@ -408,7 +408,7 @@
     <script>
         import moment from 'moment/src/moment';
 
-        class HtPatSubscriptionDetail extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class HtPatSubscriptionDetail extends  Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
                 return 'ht-pat-subscription-detail';
             }
