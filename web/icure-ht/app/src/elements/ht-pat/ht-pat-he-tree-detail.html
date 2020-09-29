@@ -576,9 +576,15 @@ class HtPatHeTreeDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                         ]
                     })
                 }) :
-                _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) ?
-                    window.open("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicd:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null)) :
-                    window.open("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicpc:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null))
+                this.api.isElectronAvailable().then( isElect => {
+                    isElect ?
+                        _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) ?
+                            this.api.electron().openWebPage("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicd:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null)) :
+                            this.api.electron().openWebPage("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicpc:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null))
+                        : _.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null) ?
+                        window.open("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicd:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICD"), 'code', null)) :
+                        window.open("https://www.evidencelinker.be/"+_.toLower(this.language)+"/Pages/evdresult.aspx?k=elicpc:"+_.get(_.get(this, 'he.codes', []).find(c => c.type === "ICPC"), 'code', null))
+                })
         }
     }
 
