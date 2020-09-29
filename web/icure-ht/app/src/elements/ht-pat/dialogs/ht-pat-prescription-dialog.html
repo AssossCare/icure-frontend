@@ -843,7 +843,7 @@
                         }
                     }
                     if (medicationValue.substanceProduct) {
-                        if (medicationValue.substanceProduct.intendedcds && medicationValue.substanceProduct.intendedcds.some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
+                        if (!_.get(medicationValue, 'substanceProduct.intendedcds', []).some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
                             medicationValue.substanceProduct.intendedcds = [];
                         }
                     }
@@ -876,23 +876,40 @@
 
 
                 if (this.patient.ssin && this.api.tokenId){ // if ehealth connected
-                    this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                        Promise.all(
-                            splitColumns.map(c =>
-                                this.api.fhc().Recipecontroller().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
-                                    patient: _.omit(this.patient, ['personalStatus']),
-                                    hcp: hcp,
-                                    feedback: false,
-                                    medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
-                                    deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
-                                }).then(prescri => {
-                                    c.rid = prescri.rid
-                                    c.recipeResponse = prescri
-                                    drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
-                                } )
-                            )
+                    this.api.hcparty().getHealthcareParty(_.get(this, "user.healthcarePartyId", null)).then(hcp => Promise.all([hcp, this.api.besamv2v3().getSamVersion()]))
+                        .then(([hcp, samVersion]) =>
+                            Promise.all(
+                                splitColumns.map(c =>
+                                    this.api.fhc().Recipecontroller().createPrescriptionV4UsingPOST(
+                                        _.get(this, 'api.keystoreId', null),
+                                        _.get(this, 'api.tokenId', null),
+                                        "persphysician",
+                                        _.get(hcp, 'nihii', null),
+                                        _.get(hcp, 'ssin', null),
+                                        _.get(hcp, 'lastName', null),
+                                        _.get(this, 'api.credentials.ehpassword', null),
+                                        {
+                                            patient: _.omit(this.patient, ['personalStatus']),
+                                            hcp: hcp,
+                                            feedback: false,
+                                            medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
+                                            deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD"),
+                                            samVersion: _.get(samVersion, 'version', null),
+                                            vendorPhone: "+3223192241",
+                                            vendorEmail: "support@topaz.care",
+                                            packageVersion: "1.0" ,
+                                            packageName: "phyMedispringTopaz/1.0-freehealth-connector",
+                                            expirationDate: this.api.moment(this.endDateForExecutionString).format("YYYYMMDD")
+                                        }
+                                    ).then(prescri => {
+                                        c.rid = prescri.rid
+                                        c.recipeResponse = prescri
+                                        drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
+                                        this._download(_.get(prescri, 'xmlRequest', null))
+                                    } )
+                                )
+                             )
                         )
-                    )
                         .catch(error=>{
                             this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
                             this.set('_printErrorDetails', error)
@@ -926,6 +943,13 @@
                     setTimeout(() => this.$.confirmNoRecipe.open(),10) // dialog doesn't open a second time without setTimeout
                 }
 			} // print end
+
+            _download(doc) {
+                var a = document.createElement('a')
+                a.href = window.URL.createObjectURL(new Blob([doc], {type : "text/plain;charset=utf-8"}))
+                a.download = `prescription_${+new Date()}.xml`
+                a.click()
+            }
 
             addEmptyPosologyIfNeeded(mv){
                 if(mv.instructionForPatient || mv.regimen && mv.regimen.length > 0){

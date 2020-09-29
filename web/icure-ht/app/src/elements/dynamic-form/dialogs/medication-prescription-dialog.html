@@ -793,10 +793,47 @@
                 top: 50%;
                 left:50%;
             }
+
+            .samStatusIcon{
+                height: 10px;
+                width: 10px;
+            }
+
+            .bold{
+                font-weight: bold;
+            }
+
+            .redVersion{
+                color: var(--app-status-color-nok);
+            }
+
+            .orangeVersion{
+                color: var(--app-status-color-pending);
+            }
+
+            .greenVersion{
+                color: var(--app-status-color-ok);
+            }
+
+            .samVersion{
+                float: right;
+                font-size: 12px;
+                margin-right: 10px;
+                font-weight: normal;
+            }
         </style>
 
         <paper-dialog id="medication-prescription" always-on-top no-cancel-on-outside-click no-cancel-on-esc-key>
-            <h2 class="modal-title">[[_title(isPrescription)]]</h2>
+            <h2 class="modal-title">
+                [[_title(isPrescription)]]
+                <span class="samVersion">
+                    <span class="bold">
+                        [[localize('sam-version', 'Sam version', language)]]
+                    </span>
+                    [[currentVersionOfSamV2.version]] ([[_getSamDate(currentVersionOfSamV2.date)]])
+                    <iron-icon icon="vaadin:circle" class$="samStatusIcon [[_getStatusOfSam(currentVersionOfSamV2)]]"></iron-icon>
+                </span>
+            </h2>
             <div class="content container">
                 <div id="prescription-pane" class="left-pane">
                     <div class="prescription-list">
@@ -1849,6 +1886,10 @@
                     saveAction: {
                         type: Object,
                         value: () =>{console.log("no save Action")}
+                    },
+                    currentVersionOfSamV2:{
+                        type: Object,
+                        value: () => {}
                     }
                 }
             }
@@ -2071,8 +2112,10 @@
             open(medication, options = {}, saveAction) {
                 this.set("saveAction",saveAction)
                 // @todo: spinner
-                this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
-                    .then(hes => {
+                this.api.besamv2v3().getSamVersion().then(version => {
+                    this.set('currentVersionOfSamV2', version)
+                    return  this.api.helement().findBy(this.user.healthcarePartyId, this.patient)
+                }).then(hes => {
                         const allergies = hes.filter(he => he.tags.some(tag => tag.type === "CD-ITEM" && (tag.code === "allergy" || tag.code === "adr")))
                             .map(he => {
                                 const atcCode = he.codes.find(code => code.type === "CD-ATC");
@@ -2514,15 +2557,16 @@
                 if (results && results.length) {
                     return Promise.all(results.map(vmpGroup => {
                         const item = {
-                            "id": vmpGroup.id,
-                            "intendedName": vmpGroup.intendedName,
-                            "atcCodes": vmpGroup.atcCodes,
-                            "atcCat": _.get(vmpGroup, "atcCodes[0][0]", ""),
-                            "allergies": vmpGroup.allergies,
-                            "allergyType": this._getAllergyType(vmpGroup.allergies),
-                            "unit": vmpGroup.unit,
-                            "noSwitchReason": vmpGroup.noSwitchReason,
-                            "type": "substance"
+                            id: vmpGroup.id,
+                            intendedName: vmpGroup.intendedName,
+                            atcCodes: vmpGroup.atcCodes,
+                            atcCat: _.get(vmpGroup, "atcCodes[0][0]", ""),
+                            allergies: vmpGroup.allergies,
+                            allergyType: this._getAllergyType(vmpGroup.allergies),
+                            unit: vmpGroup.unit,
+                            noSwitchReason: vmpGroup.noSwitchReason,
+                            type: "substance",
+                            productId: _.get(vmpGroup, 'productId', null)
                         };
                         // console.log("ingredient item: ", item);
                         return item;
@@ -2629,31 +2673,33 @@
                 return Promise.resolve(results
                     .map(ampp => {
                         return {
-                            "id": ampp.id,
-                            "groupId": ampp.groupId,
-                            "uuid": ampp.uuid,
-                            "uuids": ampp.uuids,
-                            "hasChildren": ampp.hasChildren,
-                            "parentUuid": ampp.parentUuid,
-                            "ctiExtended": ampp.ctiExtended,
-                            "intendedName": ampp.intendedName,
-                            "reinfPharmaVigiIcon": this._reinfPharmaVigiIcon(_.get(ampp, "amp.blackTriangle", false)),
-                            "atcCodes": ampp.atcCodes,
-                            "atcCat": _.get(ampp, "atcCodes[0][0]", ""),
-                            "allergies": ampp.allergies,
-                            "allergyType": this._getAllergyType(ampp.allergies),
-                            "patientPrice": ampp.id && ampp.patientPrice.toFixed(2) + "€",
-                            "publicPrice": ampp.id && ampp.publicPrice.toFixed(2) + "€",
-                            "priceIndex": ampp.id && ampp.priceIndex || 3,
-                            "catIcon": this._catIconSamV2(ampp),
-                            "unit": ampp.unit,
-                            "amp": ampp.amp,
-                            "posologyNote": ampp.posologyNote,
-                            "dividable": ampp.dividable,
-                            "packDisplayValue": ampp.packDisplayValue,
-                            "samCode": _.get(ampp, "amp.code", ""),
-                            "samDate": ampp.samDate,
-                            "type": "medicine"
+                            id: _.get(ampp, 'id', null),
+                            groupId: _.get(ampp, 'groupId', null),
+                            uuid: _.get(ampp, 'uuid', null),
+                            uuids: _.get(ampp, 'uuids', []),
+                            hasChildren: _.get(ampp, 'hasChildren', null),
+                            parentUuid: _.get(ampp, 'parentUuid', null),
+                            ctiExtended: _.get(ampp, 'ctiExtended', null),
+                            intendedName: _.get(ampp, 'intendedName', null),
+                            reinfPharmaVigiIcon: this._reinfPharmaVigiIcon(_.get(ampp, "amp.blackTriangle", false)),
+                            atcCodes: _.get(ampp, 'atcCodes', []),
+                            atcCat: _.get(ampp, "atcCodes[0][0]", ""),
+                            allergies: _.get(ampp, 'allergies', []),
+                            allergyType: this._getAllergyType(ampp.allergies),
+                            patientPrice: ampp.id && ampp.patientPrice.toFixed(2) + "€",
+                            publicPrice: ampp.id && ampp.publicPrice.toFixed(2) + "€",
+                            priceIndex: ampp.id && ampp.priceIndex || 3,
+                            catIcon: this._catIconSamV2(ampp),
+                            unit: _.get(ampp, 'unit', null),
+                            amp: _.get(ampp, 'amp', null),
+                            posologyNote: _.get(ampp, 'posologyNote', null),
+                            dividable: _.get(ampp, 'dividable', null),
+                            packDisplayValue: _.get(ampp, 'packDisplayValue', null),
+                            samCode: _.get(ampp, "amp.code", ""),
+                            productId : _.get(currentDmpp, 'productId', null),
+                            currentDmpp: currentDmpp,
+                            samDate: _.get(ampp, 'samDate', null),
+                            type: "medicine"
                         };
                     }));
             }
@@ -2924,7 +2970,8 @@
                             const product = {
                                 intendedname: med.intendedName,
                                 intendedcds: [{type: drugType, code: med.id}],
-                                priority: "low"
+                                priority: "low",
+                                samId: _.get(med, 'productId', null)
                             };
 
                             Object.assign(newMedicationContent.medicationValue, drugType === "CD-VMPGROUP" ? {substanceProduct: product} : {medicinalProduct: product});

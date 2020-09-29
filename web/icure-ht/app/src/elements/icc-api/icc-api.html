@@ -9,6 +9,7 @@
 
 <script>
     import * as api from '@taktik/icc-api-legacy/dist/icc-api/iccApi'
+    import * as apiV3 from '@taktik/icc-api/dist/icc-api/iccApi'
     import moment from 'moment/src/moment'
     import _ from 'lodash/lodash';
 
@@ -163,6 +164,7 @@
             this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
             this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
             this.besamv2icc = new api.iccBeSamv2Api(this.host, this.headers)
+            this.besamv2v3icc = new apiV3.iccBesamv2Api(this.host, this.headers)
 
             this.usericc = new IccUserXApi(this.host, this.headers)
 
@@ -286,6 +288,10 @@
 
         besamv2() {
             return this.besamv2icc
+        }
+
+        besamv2v3(){
+            return this.besamv2v3icc
         }
 
         bests() {
