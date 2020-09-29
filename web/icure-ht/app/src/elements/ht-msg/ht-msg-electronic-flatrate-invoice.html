@@ -6,6 +6,7 @@
 
 <link rel="import" href="../../styles/vaadin-icure-theme.html">
 <link rel="import" href="../../styles/spinner-style.html">
+<link rel="import" href="../../styles/shared-styles.html">
 
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-invoice-accepted.html">-->
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-invoice-archived.html">-->
@@ -15,7 +16,7 @@
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-invoice-toBeSend.html">-->
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-invoice-batch-detail.html">-->
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-invoice-invoice-detail.html">-->
-<!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-mda.html">-->
+<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-mda.html">
 <!--<link rel="import" href="./dialogs/flatrate-invoice/ht-msg-flatrate-mda-history.html">-->
 
 <link rel="import" href="../../../bower_components/iron-collapse-button/iron-collapse-button.html">
@@ -33,7 +34,7 @@
 
 
 
-<dom-module id="hht-msg-electronic-flatrate-invoice">
+<dom-module id="ht-msg-electronic-flatrate-invoice">
 
 
 
@@ -43,7 +44,7 @@
 
         <custom-style>
 
-            <style include="shared-styles spinner-style">
+            <style include="vaadin-icure-theme shared-styles spinner-style dialog-style">
 
                 :host {
                     display: block;
@@ -223,7 +224,7 @@
         import _ from 'lodash/lodash';
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
 
-        class htMsgElectronicFlatrateInvoice extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class htMsgElectronicFlatrateInvoice extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
             static get is() {
 
@@ -526,7 +527,7 @@
                                         const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
                                         return jsonDoc && jsonDoc.attachmentId ?
                                             (_.size(jsonDoc.encryptionKeys) || _.size(jsonDoc.delegations) ?
-                                                this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(jsonDoc.id, jsonDoc.attachmentId))
+                                                this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId))
 
                                                 .then(a => {
                                                     if (typeof a === "string"){

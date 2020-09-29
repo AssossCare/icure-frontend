@@ -25,20 +25,18 @@
 <link rel="import" href="../../../../styles/dialog-style.html">
 <link rel="import" href="../../../../styles/scrollbar-style.html">
 <link rel="import" href="../../../../styles/buttons-style.html">
-<link rel="import" href="../../../../styles/notification-style.html">
-<link rel="import" href="../../../../styles/spinner-style.html">
-<link rel="import" href="../../../../styles/shared-styles.html">
 <link rel="import" href="../../../../styles/paper-tabs-style.html">
+<link rel="import" href="../../../dynamic-form/dynamic-text-field.html">
+<link rel="import" href="../../../../styles/notification-style.html">
 
 <link rel="import" href="ht-pat-subscription-send-subscription.html">
 <link rel="import" href="ht-pat-subscription-cancel-subscription.html">
 <link rel="import" href="ht-pat-subscription-notify-subscription-closure.html">
 <link rel="import" href="ht-pat-subscription-technical-info.html">
 
-
 <dom-module id="ht-pat-subscription-detail">
     <template>
-        <style include="dialog-style scrollbar-style buttons-style notification-style spinner-style shared-styles paper-tabs-style">
+        <style include="dialog-style scrollbar-style buttons-style paper-tabs-style notification-style">
             #subscriptionDetailDialog{
                 height: calc(98% - 12vh);
                 width: 98%;
@@ -252,7 +250,6 @@
                 z-index: 20;
             }
         </style>
-
         <paper-dialog id="subscriptionDetailDialog">
             <div class="subscriptionDetailDialog">
                 <div class="subscription-content">
@@ -297,7 +294,7 @@
                                                     <div class="headerMasterTitle headerLabel">[[localize('mhm-sub-history', 'Subscription history', language)]]</div>
                                                     <div class="mhm-person-container-content">
                                                         <template is="dom-repeat" items="[[medicalHouseContracts]]" as="mhc">
-                                                            <div class\$="mhm-person-container mt10 [[_isCancelledSubscription(mhc)]]">
+                                                            <div class$="mhm-person-container mt10 [[_isCancelledSubscription(mhc)]]">
                                                                 <div class="headerMasterTitle headerLabel">
                                                                     [[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]]
                                                                     <paper-tooltip position="bottom" for="dl-master"></paper-tooltip>
@@ -342,7 +339,7 @@
                                                                 </div>
                                                                 <div class="headerInfoLine">
                                                                     <div class="headerInfoField">
-                                                                        <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class\$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[mhc.hrStatus]]</span>
+                                                                        <span class="headerLabel">[[localize('mhm-sub-status', 'Status', language)]]: &nbsp;</span> </span> <span class$="subscription-status [[_getIconStatusClass(mhc)]]"><iron-icon icon="vaadin:circle" class$="statusIcon [[_getIconStatusClass(mhc)]]"></iron-icon> [[mhc.hrStatus]]</span>
                                                                     </div>
                                                                     <template is="dom-if" if="[[_isClosure(mhc)]]">
                                                                         <div class="headerInfoField">
@@ -407,16 +404,11 @@
                 </div>
             </div>
         </paper-dialog>
-
     </template>
     <script>
-        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
-        import mustache from "mustache/mustache.js";
-        import Chart from 'chart.js';
 
-        class HtPatSubscriptionDetail extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
-
+        class HtPatSubscriptionDetail extends  Polymer.TkLocalizerMixin(Polymer.Element) {
             static get is() {
                 return 'ht-pat-subscription-detail';
             }
@@ -532,8 +524,12 @@
                 return []
             }
 
+            constructor() {
+                super()
+            }
+
             ready() {
-                super.ready()
+                super.ready();
             }
 
             _reset() {
@@ -560,7 +556,8 @@
                         })
                         this.set('tabs', 0)
                         this._initializeMedicalHouseContract()
-                        this.shadowRoot.querySelector('#subscriptionDetailDialog') ? this.shadowRoot.querySelector('#subscriptionDetailDialog').open() : null
+                        //this.shadowRoot.querySelector('#subscriptionDetailDialog') ? this.shadowRoot.querySelector('#subscriptionDetailDialog').open() : null
+                        this.$['subscriptionDetailDialog'].open()
                     })
             }
 

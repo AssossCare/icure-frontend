@@ -33,29 +33,29 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
         return html`
 
         <style include="shared-styles spinner-style scrollbar-style buttons-style dialog-style">
-        
+
             .panel{
                 background-color: white;
                 height: calc(100% - 16px);
                 width: auto;
             }
-            
+
             .panel-title{
                 height: 40px;
-                width: auto;               
+                width: auto;
             }
-            
+
             .panel-search{
                 height: 40px;
                 width: auto;
             }
-            
+
             .panel-detail{
                 height: 60px;
                 width: auto;
                 font-size: var(--font-size-normal);
             }
-            
+
             .panel-error{
                 height: 40px;
                 max-height: 40px;
@@ -63,20 +63,20 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 font-size: var(--font-size-normal);
                 overflow: auto;
             }
-            
+
             .panel-content{
                 height: calc(100% - 215px);
                 width: auto;
             }
-            
+
             .panel-button{
                 height: 32px;
-                width: auto; 
-                padding: 4px; 
+                width: auto;
+                padding: 4px;
                 display: flex;
-                justify-content: flex-end!important; 
+                justify-content: flex-end!important;
             }
-            
+
             .invoice-status {
                     border-radius: 20px;
                     padding: 1px 12px 1px 8px;
@@ -88,12 +88,12 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                     text-overflow: ellipsis;
                     overflow: hidden;
                 }
-                                            
+
                 .statusIcon{
                     height: 8px;
                     width: 8px;
                 }
-                
+
                 .invoice-status--orangeStatus{
                     background: #fcdf354d;
                 }
@@ -109,7 +109,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 .invoice-status--purpleStatus {
                     background: #e1b6e6;
                 }
-                
+
                  .statusIcon.invoice-status--orangeStatus {
                     color: var(--app-status-color-pending);
                 }
@@ -147,101 +147,101 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 *.txtcolor--purpleStatus {
                     color: var(--paper-purple-300)
                 }
-            
-               .table{         
+
+               .table{
                 width: auto;
                 height: 100%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
             }
-            
-            .table{         
+
+            .table{
                 width: auto;
                 height: 100%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
             }
-            
+
             .tr{
                 display: flex;
                 height: auto;
                 padding: 2px;
             }
-        
+
             .bb{
                 border-bottom: 1px solid lightgray;
             }
-        
+
             .th{
                 height: auto!important;
                 font-weight: bold;
                 vertical-align: middle;
             }
-            
+
             .tr-item{
                 cursor: pointer;
             }
-            
+
             .td{
                 position: relative;
                 display: flex;
                 flex-flow: row nowrap;
-                align-items: center;                           
+                align-items: center;
                 flex-basis: 0;
                 padding: 6px;
                 overflow: hidden;
                 min-width: 0px;
                 z-index: 2;
                 word-break: break-word;
-                white-space: nowrap;               
+                white-space: nowrap;
                 font-size: 13px;
                 text-overflow: ellipsis;
             }
-            
+
             .fg0{
                 flex-grow: 0.2;
             }
-            
+
             .fg05{
                 flex-grow: 0.5;
             }
-            
+
             .fg1{
                 flex-grow: 1;
             }
-            
+
             .fg2{
                 flex-grow: 2;
             }
-            
+
             .fg3{
                 flex-grow: 3;
-            }   
-                    
+            }
+
             .status{
               display: block;
               margin-left: auto;
               margin-right: auto;
             }
-            
+
             .info-icon{
                 height: 14px;
                 width: 14px;
             }
-            
+
             .searchField{
                 display: block;
             }
-            
+
             .rejectionInfo{
                 white-space: normal!important;
             }
-            
+
             .button{
                display: inline-flex!important;
                align-items: center!important;
             }
-            
+
             .modalDialog{
                 height: 350px;
                 width: 600px;
@@ -255,23 +255,23 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                   position: relative;
                   padding: 10px;
              }
-            
+
             .bold{
                 font-weight: bold;
             }
-            
+
             .error-line{
                 padding: 2px;
                 width: auto;
                 margin-left: 5px;
                 color: var(--app-status-color-nok);
             }
-            
+
             .tr-info{
                 display: flex;
-                height: auto;              
+                height: auto;
             }
-            
+
             .td-info{
                  position: relative;
                  display: flex;
@@ -287,12 +287,12 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                  font-size: 13px;
                  text-overflow: ellipsis;
             }
-            
+
             .btn-dropdown-container {
                 text-align: right;
                 position: absolute;
                 bottom: 53px;
-                margin-top: 8px;             
+                margin-top: 8px;
                 right: 0px;
                 background-color: var(--app-background-color);
                 opacity: 1;
@@ -339,19 +339,19 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 margin-right: 4px;
                 box-sizing: border-box;
             }
-            
+
         </style>
-        
+
         <div class="panel">
            <div class="panel-title">
-                [[localize('inv-num-detail', 'Detail of batch number', language)]] [[_getInvoiceReference(selectedInvoiceForDetail)]] [[localize('inv-oa-title', 'for oa', language)]] [[selectedInvoiceForDetail.messageInfo.oa]]         
+                [[localize('inv-num-detail', 'Detail of batch number', language)]] [[_getInvoiceReference(selectedInvoiceForDetail)]] [[localize('inv-oa-title', 'for oa', language)]] [[selectedInvoiceForDetail.messageInfo.oa]]
             </div>
             <div class="panel-detail">
                 <div class="table">
                     <div class="tr-info">
-                        <div class="td-info fg1"><span class="bold">[[localize('inv_prest','Physician',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.hcp]]</div>                        
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_prest','Physician',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.hcp]]</div>
                         <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_invoiced','Invoiced',language)]]:</span>&nbsp; [[_formatAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount)]]€</div>
-                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_bank_account','Bank account',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentAccount]]</div>   
+                        <div class="td-info fg1"><span class="bold">[[localize('inv_batch_bank_account','Bank account',language)]]:</span>&nbsp; [[selectedInvoiceForDetail.messageInfo.paymentAccount]]</div>
                     </div>
                     <div class="tr-info">
                         <div class="td-info fg1"><span class="bold">[[localize('inv_batch_month','Billed month',language)]]:</span>&nbsp; [[formatDate(selectedInvoiceForDetail.messageInfo.invoiceMonth,'month')]]</div>
@@ -363,8 +363,8 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                         <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount','Amount',language)]] [[localize('inv_batch_amount_rej','Rejected',language)]]:</span>&nbsp; <span class="txtcolor--redStatus">[[_getRefusedAmount(selectedInvoiceForDetail.messageInfo.invoicedAmount, selectedInvoiceForDetail.messageInfo.acceptedAmount)]]€</span></div>
                         <div class="td-info fg1"><span class="bold">[[localize('inv_batch_amount_paid','Paid',language)]]:</span>&nbsp; [[_formatAmount(selectedInvoiceForDetail.messageInfo.amountPaid)]]€</div>
                     </div>
-                </div>            
-            </div>         
+                </div>
+            </div>
             <div class="panel-error">
                 <template is="dom-repeat" items="[[invoicesErrorMsg]]" as="err">
                     <div class="error-line">
@@ -377,7 +377,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
             </div>
             <div class="panel-content">
                 <div class="table">
-                    <div class="tr bb th">                     
+                    <div class="tr bb th">
                         <div class="td fg1">[[localize('inv_num_fac','Invoice number',language)]]</div>
                         <div class="td fg2">[[localize('inv_pat','Patient',language)]]</div>
                         <div class="td fg1">[[localize('inv_niss','Niss',language)]]</div>
@@ -387,9 +387,9 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_acc','Accepted',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_rej','Rejected',language)]]</div>
-                        <div class="td fg3">Motif rejet</div>  
-                        <div class="td fg05">Payé</div>  
-                        <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>                                          
+                        <div class="td fg3">Motif rejet</div>
+                        <div class="td fg05">Payé</div>
+                        <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
                     <template is="dom-if" if="[[!isLoading]]">
@@ -405,8 +405,8 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(inv.acceptedAmount)]]€</span></div>
                                 <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-red',inv.refusedAmount)]]">[[_formatAmount(inv.refusedAmount)]]€</span></div>
                                 <div class="td fg3 rejectionInfo">[[inv.rejectionReason]]</div>
-                                <div class="td fg05">[[_formatAmount(inv.paid)]]€</div>                             
-                                <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.status))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.status)]]"></iron-icon> [[inv.status]]</span></div>           
+                                <div class="td fg05">[[_formatAmount(inv.paid)]]€</div>
+                                <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(inv.status))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(inv.status)]]"></iron-icon> [[inv.status]]</span></div>
                             </div>
                             <template is="dom-repeat" items="[[inv.invoicingCodes]]" as="invco">
                                 <div class="tr bb">
@@ -420,12 +420,12 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-green',inv.acceptedAmount)]]">[[_formatAmount(invco.acceptedAmount)]]€</span></div>
                                     <div class="td fg1"><span class\$="[[_getTxtStatusColor('force-red',inv.refusedAmount)]]">[[_formatAmount(invco.refusedAmount)]]€</span></div>
                                     <div class="td fg3 rejectionInfo">[[invco.rejectionReason]]</div>
-                                    <div class="td fg05"></div>                             
-                                    <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(invco.status))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(invco.status)]]"></iron-icon> [[_getStatusOfInvoiceCode(invco.status, inv.status)]]</span></div>                                      
+                                    <div class="td fg05"></div>
+                                    <div class="td fg1"><span class\$="invoice-status [[_getIconStatusClass(invco.status))]]"><iron-icon icon="vaadin:circle" class\$="statusIcon [[_getIconStatusClass(invco.status)]]"></iron-icon> [[_getStatusOfInvoiceCode(invco.status, inv.status)]]</span></div>
                                 </div>
                             </template>
                         </template>
-                    </template>                   
+                    </template>
                 </div>
             </div>
             <div class="panel-button">
@@ -438,18 +438,18 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 <template is="dom-if" if="[[batchCanBeResent]]" restamp="true">
                    <paper-button class="button button--other" on-tap="_openResendDialog">[[localize('btn-trans-for-res', 'Transfer for resending', language)]]</paper-button>
                 </template>
-                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>             
+                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>
                 <paper-icon-button class="button--icon-btn" icon="more-vert" on-tap="_toggleAddActions"></paper-icon-button>
                 <template is="dom-if" if="[[showMoreOptionContainer]]">
                      <div class="btn-dropdown-container">
                         <template is="dom-repeat" items="[[listOfProof]]" as="doc">
                             <paper-button id="[[doc.commonOutput.outputReference]]" on-tap="_getDoc"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[_getDocName(doc)]]</paper-button>
-                        </template>                       
+                        </template>
                      </div>
-                 </template> 
+                 </template>
             </div>
         </div>
-        
+
         <paper-dialog class="modalDialog" id="archiveBatchDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -461,7 +461,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
             </div>
         </paper-dialog>
-        
+
         <paper-dialog class="modalDialog" id="recreationDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -473,7 +473,7 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button button--save" on-tap="_createInvoiceToBeCorrectedFromBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
             </div>
         </paper-dialog>
-        
+
         <paper-dialog class="modalDialog" id="resendingBatchDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -627,11 +627,11 @@ class HtMsgFlatrateInvoiceBatchDetail extends TkLocalizerMixin(PolymerElement) {
                 .then(() => this.api.message().getChildrenMessages(_.get(this.selectedInvoiceForDetail, 'message.id', null)))
                 .then((msgs) => Promise.all(_.map(msgs.filter(m => m.subject && ['920999','920099', '920098', '920900', '931000'].includes(m.subject.substr(0,6))), (msg => this.api.document().findByMessage(this.user.healthcarePartyId, msg)))))
                 .then((docs) => Promise.all(_.flatMap(docs).filter(d => !_.endsWith(d.name, '_parsed_records') && _.endsWith(d.name, '_records') && d.mainUti === "public.json").map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
-                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(d.id, d.attachmentId)))))
+                    this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId)))))
                 .then((attachs) => {
                     return this.api.document().findByMessage(this.user.healthcarePartyId, this.selectedInvoiceForDetail.message).then(docs => {
                         return Promise.all(docs.map(d => (_.size(d.encryptionKeys) || _.size(d.delegations) ?
-                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getDocumentAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getDocumentAttachment(d.id, d.attachmentId))))
+                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, d.id, _.size(d.encryptionKeys) ? d.encryptionKeys : d.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(d.id, d.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(d.id, d.attachmentId))))
                     }).then(flatfileAttachs => {
                         const atDetail = flatfileAttachs.find(at => at.startsWith && at.startsWith("920000"))
                         const atMsg = flatfileAttachs.find(at => !at.startsWith)
