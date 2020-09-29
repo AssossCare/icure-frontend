@@ -2737,7 +2737,7 @@
 
                     })
 					.then(resourcesObject => this.api.isElectronAvailable().then(isElectron => _.assign({isElectron:isElectron}, resourcesObject)))
-					.then(resourcesObject => resourcesObject.isElectron ? fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getPrinterSetting`, {method: "POST",headers: {"Content-Type": "application/json; charset=utf-8"},body: JSON.stringify({userId: this.user.id})}).then(response => response && response.status===200 ? response.json() : Promise.resolve({})).then( data => _.assign({printFormat : data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ?JSON.parse(data.data).find(x => x.type==="recipe").format : "A4"}, resourcesObject) ) : resourcesObject)
+					.then(resourcesObject => resourcesObject.isElectron ? this.api.electron().getPrinterSetting(this.user.id).then( data => _.assign({printFormat : data && data.data && JSON.parse(data.data) && JSON.parse(data.data).find(x => x.type==="recipe") ?JSON.parse(data.data).find(x => x.type==="recipe").format : "A4"}, resourcesObject) ) : resourcesObject)
                     .then(resourcesObject => this.api.pdfReport((resourcesObject.isElectron && resourcesObject.printFormat!=="A4" ? this._getDLPdfHeader() : this._getA5PdfHeader())+ _.trim(resourcesObject.pdfContent) + this._getPdfFooter(), {type:"recipe",completionEvent:"pdfDoneRenderingEvent", option:'a5',paperWidth:148,paperHeight:210,marginLeft: 0,marginRight: 0,marginTop: 0,marginBottom: 0}).then(({pdf:pdfFileContent, printed:printed}) => _.assign({pdfFileContent:pdfFileContent, printed: printed}, resourcesObject)))
                     .then(resourcesObject => this.api.message().newInstanceWithPatient(this.user, this.patient)
                         .then(newMessageInstance=>_.assign({newMessageInstance: newMessageInstance}, resourcesObject))
@@ -4263,32 +4263,47 @@
 			}
 
 			openBelRai(){
-				this.set('showAddEvaFormsContainer', false);
-				_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-				this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
-						.then(bearerToken => {
-							this._sendPostRequest({
-								action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
-								params: [
-									{type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/" : "https://www.vas.ehealth.fgov.be/registers/belrai/web/" },
-									{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
-								]
-							})
-						}) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/") : window.open("https://www.vas.ehealth.fgov.be/registers/belrai/web/")
-				}
+				this.api.isElectronAvailable().then(isElectron =>{
+					this.set('showAddEvaFormsContainer', false);
+					_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+						this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
+							.then(bearerToken => {
+								this._sendPostRequest({
+									action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+									params: [
+										{type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/" : "https://www.vas.ehealth.fgov.be/registers/belrai/web/" },
+										{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
+									]
+								})
+							}) : isElectron ? this.api.electron().openWebPage(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/": "https://www.vas.ehealth.fgov.be/registers/belrai/web/")
+							: window.open(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.vas.ehealth.fgov.be/registers/belrai/web/": "https://www.vas.ehealth.fgov.be/registers/belrai/web/")
+
+				})
+			}
 
 			_consultPcrValidationCode(){
-				_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
-						this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null),_.get(this, 'api.keystoreId', null)))
-								.then(bearerToken => {
-									this._sendPostRequest({
-										action : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
-										params: [
-											{type: "hidden", name: "RelayState", value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be" },
-											{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
-										]
-									})
-								}) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://pcr-test-prescription-web.acc.pub.vascloud.be") : window.open("https://pcr-test-prescription-web.prd.pub.vascloud.be")
+				this.api.isElectronAvailable().then(isElectron => {
+					_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+						this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
+							.then(bearerToken => {
+								this._sendPostRequest({
+									action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+									params: [
+										{
+											type: "hidden",
+											name: "RelayState",
+											value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be"
+										},
+										{
+											type: "hidden",
+											name: "SAMLResponse",
+											value: _.get(bearerToken, 'token', null)
+										}
+									]
+								})
+							}) : isElectron ? this.api.electron().openWebPage(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be")
+							: window.open(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://pcr-test-prescription-web.acc.pub.vascloud.be" : "https://pcr-test-prescription-web.prd.pub.vascloud.be")
+				})
 			}
 
 			_sendPostRequest(params){
@@ -4584,22 +4599,25 @@
 			}
 
 			_openOrgadon(){
-				this.set('showAddEvaFormsContainer', false)
-				_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
+				this.api.isElectronAvailable().then(isElectron =>{
+					this.set('showAddEvaFormsContainer', false)
+					_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null) ?
 						this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Stscontroller().getBearerTokenUsingGET(_.get(this.api, 'tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(hcp, 'ssin', null), _.get(this, 'api.keystoreId', null)))
-								.then(bearerToken => {
-									this._sendPostRequest({
-										action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
-										params: [
-											{
-												type: "hidden",
-												name: "RelayState",
-												value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/"
-											},
-											{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
-										]
-									})
-								}) : _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? window.open("https://orgadonacc.health.fgov.be/") : window.open("https://orgadon.health.fgov.be/")
+							.then(bearerToken => {
+								this._sendPostRequest({
+									action: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://wwwacc.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST" : "https://www.ehealth.fgov.be/idp/profile/SAML2/Bearer/POST",
+									params: [
+										{
+											type: "hidden",
+											name: "RelayState",
+											value: _.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/"
+										},
+										{type: "hidden", name: "SAMLResponse", value: _.get(bearerToken, 'token', null)}
+									]
+								})
+							}) : isElectron ? this.api.electron().openWebPage(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/")
+							: window.open(_.get(this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv'), "typedValue.stringValue", null) === "acc" ? "https://orgadonacc.health.fgov.be/" : "https://orgadon.health.fgov.be/")
+				})
 			}
 
 			_confirmDeleteTemplateDialog(e) {

@@ -6708,12 +6708,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _linkToEbPracticeNet(e){
                 e.stopPropagation()
-                window.open("https://www.ebpnet.be/fr/Pages/default.aspx",'_blank');
+                this.api.isElectronAvailable().then(isElect => isElect ? this.api.electron().openWebPage("https://www.ebpnet.be/fr/Pages/default.aspx") : window.open("https://www.ebpnet.be/fr/Pages/default.aspx",'_blank'))
+
             }
 
             _linkToCBIP(e){
                 e.stopPropagation()
-                window.open("http://www.cbip.be/fr/start",'_blank');
+                this.api.isElectronAvailable().then(isElect => isElect ? this.api.electron().openWebPage("http://www.cbip.be/fr/start") :window.open("http://www.cbip.be/fr/start",'_blank'))
             }
 
             _ebmPicture(){
