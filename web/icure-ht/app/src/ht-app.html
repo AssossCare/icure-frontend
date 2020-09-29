@@ -1405,11 +1405,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.api.isElectronAvailable().then(electron => {
                     this.set("isElectron",electron)
                     if(this.isElectron){
-                        fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/getVersion`)
-                            .then((response) => {
-                                return response.json()
-                            })
-                            .then(res => {
+                        this.api.electron().getVersion().then(res => {
                                 if (res.version) {
                                     this.set("electronVersion", res.version)
                                     this.set("electronVersionOk",this.versions.electron.includes(res.version))
@@ -1727,16 +1723,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.api.isElectronAvailable().then(electron => {
                             if (electron === true) {
                                 //request electron tc.
-                                fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/tc`, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json; charset=utf-8"
-                                    },
-                                    body: JSON.stringify({
-                                        "userId": this.user.id,
-                                        "token": this.user.applicationTokens.MIKRONO || this.user.applicationTokens.tmp || this.user.applicationTokens.tmpFirstLogin
-                                    })
-                                })
+                                this.api.electron().topazCredential(this.user,this.api.credentials)
                             }
                         })
 
@@ -2072,11 +2059,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 if(electron === false){
                                     window.open("https://"+mikronoUser+":"+mikronoPassword+"@"+mikronoUrl.replace("https://", "")+"/iCureShortcut.jsp?id="+this.user.id, '_blank')
                                 }else{
-                                    fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/mc`, {
-                                        method: "POST",
-                                        headers: {"Content-Type": "application/json"},
-                                        body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                                    }).then(response => response.json()).then(rep => {
+                                    this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
                                         if(rep.ok){
                                             this.set('routeData.page', "diary")
                                             setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
@@ -2107,11 +2090,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                     if(electron === false){
                                                                 window.open("https://" + mikronoUser + ":" + mikronoPassword + "@" + mikronoUrl.replace("https://", "") + "/iCureShortcut.jsp?id=" + this.user.id, '_blank')
                                                     }else{
-                                                        fetch(`${_.get(this,"api.electronHost","http://127.0.0.1:16042")}/mc`, {
-                                                            method: "POST",
-                                                            headers: {"Content-Type": "application/json"},
-                                                            body: JSON.stringify({username:mikronoUser, password:mikronoPassword})
-                                                        }).then(response => response.json()).then(rep => {
+                                                        this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
                                                             if(rep.ok){
                                                                 this.set('routeData.page', "diary")
                                                                 setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)

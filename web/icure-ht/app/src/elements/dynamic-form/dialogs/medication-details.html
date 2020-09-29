@@ -1122,17 +1122,23 @@
             _linkToCBIP(e){
                 e.stopPropagation();
                 if (!this.medicationDetail) return;
-                window.open(`http://www.cbip.be/${this.language}/contents/jump?cnk=${this.medicationDetail.id}`,'_blank');
+                this.api.isElectronAvailable().then(elect => elect ?
+                    this.api.electron().openWebPage(`http://www.cbip.be/${this.language}/contents/jump?cnk=${this.medicationDetail.id}`):
+                    window.open(`http://www.cbip.be/${this.language}/contents/jump?cnk=${this.medicationDetail.id}`,'_blank'))
             }
             _linkToRcp(e){
                 e.stopPropagation();
                 if (!this.medicationDetail) return;
-                window.open(this.medicationDetail.spcLink,'_blank');
+                this.api.isElectronAvailable().then(elect => elect ?
+                    this.api.electron().openWebPage(this.medicationDetail.spcLink):
+                    window.open(this.medicationDetail.spcLink,'_blank'))
             }
             _linkToLeaflet(e){
                 e.stopPropagation();
                 if (!this.medicationDetail) return;
-                window.open(this.medicationDetail.leafletLink,'_blank');
+                this.api.isElectronAvailable().then(elect => elect ?
+                    this.api.electron().openWebPage(this.medicationDetail.leafletLink):
+                    window.open(this.medicationDetail.leafletLink,'_blank'))
             }
             _CBIPPicture() {
                 return require('../../../../images/cbip-logo.png')

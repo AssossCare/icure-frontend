@@ -1,9 +1,11 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../fhc-api/fhc-api.html">
+<link rel="import" href="../fhc-api-3/fhc-api.html">
 
 <dom-module id="icc-api">
     <template>
         <fhc-api id="fhc-api" host="[[fhcHost]]" headers="[[fhcHeaders]]"></fhc-api>
+        <fhc-api-3 id="fhc-api-3" host="[[fhcHost]]" headers="[[fhcHeaders]]"></fhc-api-3>
     </template>
 </dom-module>
 
@@ -388,6 +390,10 @@
 
         fhc() {
             return this.$['fhc-api'];
+        }
+
+        fhc3() {
+            return this.$['fhc-api-3'];
         }
 
         calendaritem(){
