@@ -284,7 +284,7 @@
                                     <div class="headerInfoLine">
                                         <template is="dom-if" if="[[!isMedicalHouseClosure]]">
                                             <div class="headerInfoField">
-                                                <vaadin-date-picker class="mtm2 mw0 mr1" label="[[localize('mhm-sub-end-contract', 'End of contract', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
+                                                <vaadin-date-picker class="mtm2 mr1" label="[[localize('mhm-sub-end-contract', 'End of contract', language)]]" value="{{notifySubscriptionClosureRequest.subscriptionEndDate}}" i18n="[[i18n]]" min="[[dateRange.minDate]]" max="[[dateRange.maxDate]]"></vaadin-date-picker>
                                             </div>
                                         </template>
                                         <template is="dom-if" if="[[isMedicalHouseClosure]]">
@@ -298,12 +298,12 @@
                                     </div>
                                     <div class="headerInfoLine">
                                         <div class="headerInfoField">
-                                            <vaadin-combo-box class="w33 p4 mw0" label="[[localize('mhm-clo-type', 'Closure type', language)]]" selected-item="{{selectedSubscriptionClosureType}}"  filtered-items="[[subscriptionClosureTypeList]]" item-label-path="label.fr" >
+                                            <vaadin-combo-box class="w33 p4" label="[[localize('mhm-clo-type', 'Closure type', language)]]" selected-item="{{selectedSubscriptionClosureType}}"  filtered-items="[[subscriptionClosureTypeList]]" item-label-path="label.fr" >
                                                 <template>[[_getLabel(item.label)]]</template>
                                             </vaadin-combo-box>
                                         </div>
                                         <div class="headerInfoField fw2">
-                                            <vaadin-combo-box class="w33 p4 mw0 w100" label="[[localize('mhm-clo-just', 'Closure justification', language)]]" selected-item="{{selectedSubscriptionClosureJustification}}"  filtered-items="[[filteredSubscriptionClosureJustificationList]]" item-label-path="label.fr" >
+                                            <vaadin-combo-box class="w33 p4 w100" label="[[localize('mhm-clo-just', 'Closure justification', language)]]" selected-item="{{selectedSubscriptionClosureJustification}}"  filtered-items="[[filteredSubscriptionClosureJustificationList]]" item-label-path="label.fr" >
                                                 <template>[[_getLabel(item.label)]]</template>
                                             </vaadin-combo-box>
                                         </div>
