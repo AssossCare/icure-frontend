@@ -631,12 +631,12 @@
                     .then(mdaResponse => {
                         this.set('mdaResult', mdaResponse)
                         console.log(this.mdaResult)
-                        !_.isEmpty(_.get(mdaResponse, 'commonOutput', {})) ? Promise.all([mdaResponse, this.api.receipticc.createReceipt({
+                        !_.isEmpty(_.get(mdaResponse, 'commonOutput', {})) ? Promise.all([mdaResponse, this.api.receipt().createReceipt({
                             documentId: null,
                             references: Object.values(_.get(mdaResponse, 'commonOutput', {})),
                             category: "memberData",
                             subCategory:"soapRequest"
-                        }), this.api.receipticc.createReceipt({
+                        }), this.api.receipt().createReceipt({
                             documentId: null,
                             references: Object.values(_.get(mdaResponse, 'commonOutput', {})),
                             category: "memberData",
@@ -729,8 +729,8 @@
                     _.get(this.api, "keystoreId", null),
                     _.get(this.api, "credentials.ehpassword", null),
                     this.cleanData(_.get(this.hcp, "nihii", null)),
-                    this.cleanData(_.get(this.hcp, "ssin", null)),
                     this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null),
+                    this.cleanData(_.get(this.hcp, "ssin", null)),
                     this._isMedicalHouse() ? "medicalhouse" : "doctor",
                     _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null ,
                     this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null,
@@ -747,8 +747,8 @@
                     _.get(this.api, "keystoreId", null),
                     _.get(this.api, "credentials.ehpassword", null),
                     this.cleanData(_.get(this.hcp, "nihii", null)),
-                    this.cleanData(_.get(this.hcp, "ssin", null)),
                     this._isMedicalHouse() ? _.get(this.hcp, "name", null) : _.get(this.hcp, "firstName", null),
+                    this.cleanData(_.get(this.hcp, "ssin", null)),
                     this._isMedicalHouse() ? "medicalhouse" : "doctor",
                     _.get(this.mdaSearch, 'startDate', null) ? moment(_.get(this.mdaSearch, 'startDate', null), 'YYYYMMDD').valueOf() : null,
                     this._isMedicalHouse() ? _.get(this.mdaSearch, 'endDate', null) ? moment(_.get(this.mdaSearch, 'endDate', null), 'YYYYMMDD').add(1, 'days').valueOf() : null : null,

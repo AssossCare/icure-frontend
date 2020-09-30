@@ -3289,7 +3289,6 @@
                                     hcp.lastName,
                                     hcp.nihii,
                                     hcp.ssin,
-                                    this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code),
                                     this.selectedInvoice.invoiceDate,
                                     this.selectedInvoice.gnotionNihii === ""  ? null : this.selectedInvoice.gnotionNihii,
                                     this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification,
@@ -4648,13 +4647,13 @@
                             this.set("errorMessage", null)
 
                             Promise.all([
-                                this.api.receipticc.createReceipt({
+                                this.api.receipt().createReceipt({
                                     documentId: this.selectedInvoice.id,
                                     references: Object.values(fhcEattest.commonOutput),
                                     category: "eattest",
                                     subCategory:"kmehr"
                                 }),
-                                this.api.receipticc.createReceipt({
+                                this.api.receipt().createReceipt({
                                     documentId: this.selectedInvoice.id,
                                     references: Object.values(fhcEattest.commonOutput),
                                     category: "eattest",

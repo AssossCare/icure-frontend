@@ -2181,7 +2181,7 @@
                 this.$['success'] && this.$['success'].classList && this.$['success'].classList.remove('displayNotification')
                 this.$['failed'] && this.$['failed'].classList && this.$['failed'].classList.remove('displayNotification')
 
-                this.api.fhc().Ehboxv3().getInfosUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
+                this.api.fhc().Ehboxv3().getInfosUsingGET1(_.get(this,"api.keystoreId"), _.get(this,"api.tokenId"), _.get(this,"api.credentials.ehpassword"))
                     .then(boxInfo => this.api.hcparty().getCurrentHealthcareParty().then(currentHcp=>[boxInfo,currentHcp]))
                     .then(([boxInfo,currentHcp]) => this.api.fhc().Sts().getKeystoreInfoUsingGET(_.get(this,"api.keystoreId"), _.get(this,"api.credentials.ehpassword")).then(keystoreInfo => [boxInfo,currentHcp,keystoreInfo]))
                     .then(([boxInfo,currentHcp,keystoreInfo]) => {
@@ -2296,7 +2296,7 @@
                             "CM-SenderName": _.get(messageToBeSentWithEhbox.customMetas, "CM-AuthorName",""),
                         },messageToBeSentWithEhbox.customMetas)
 
-                        this.api.fhc().Ehboxv3().sendMessageUsingPOST(
+                        this.api.fhc().Ehboxv3().sendMessageUsingPOST1(
                             this.api.keystoreId,
                             this.api.tokenId,
                             this.api.credentials.ehpassword,

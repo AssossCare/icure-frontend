@@ -966,7 +966,7 @@
             }
 
             _isRegisterAvailable(){
-                return this.hubSupportsConsent ? ( !!_.get(this, 'therlinkList', []).find(tl => tl.tlType === 'hub' && (_.get(_.get(tl, 'hcParty.ids', []).find(id => id.s === "ID-HCPARTY"), 'value', null) === _.get(this.hcp, 'nihii', ''))) && !!_.get(this, 'therlinkList', []).find(tl => tl.tlType === 'national' && (_.get(_.get(tl, 'hcParty.ids', []).find(id => id.s === "ID-HCPARTY"), 'value', null) === _.get(this.hcp, 'nihii', ''))))
+                return this.hubSupportsConsent ? ( !!_.get(this, 'therlinkList', []).find(tl => tl.tlType === 'hub' && (_.get(_.get(tl, 'hcParty.ids', []).find(id => id.s === "ID-HCPARTY"), 'value', null) === _.get(this.hcp, 'nihii', '')) && (this.api.moment(tl.endDate).isBefore(this.api.moment(new Date).subtract(1, "d")))) && !!_.get(this, 'therlinkList', []).find(tl => tl.tlType === 'national' && (_.get(_.get(tl, 'hcParty.ids', []).find(id => id.s === "ID-HCPARTY"), 'value', null) === _.get(this.hcp, 'nihii', ''))))
                     : (!!_.get(this, 'therlinkList', []).find(tl => tl.tlType === 'national' && (_.get(_.get(tl, 'hcParty.ids', []).find(id => id.s === "ID-HCPARTY"), 'value', null) === _.get(this.hcp, 'nihii', ''))))
             }
 

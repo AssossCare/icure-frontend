@@ -32,37 +32,37 @@ import {TkLocalizerMixin} from "../../../tk-localizer";
 class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
     static get template() {
         return html`
-        
+
         <style include="shared-styles spinner-style scrollbar-style buttons-style dialog-style invoicing-style">
             .panel{
                 margin: 0.5%;
                 height: calc(100% - 20px);
                 width: auto;
             }
-            
+
             .panel-title{
                 height: 40px;
                 width: auto;
             }
-            
+
             .panel-search{
                 height: 45px;
                 width: auto;
             }
-            
+
             .panel-content{
                 height: calc(100% - 125px);
                 width: auto;
             }
-            
+
             .panel-button{
                 height: 32px;
-                width: auto; 
-                padding: 4px; 
+                width: auto;
+                padding: 4px;
                 display: flex;
-                justify-content: flex-end!important;      
+                justify-content: flex-end!important;
             }
-                       
+
             .invoice-status {
                     border-radius: 20px;
                     padding: 1px 12px 1px 8px;
@@ -74,12 +74,12 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     text-overflow: ellipsis;
                     overflow: hidden;
                 }
-                                            
+
                 .statusIcon{
                     height: 8px;
                     width: 8px;
                 }
-                
+
                 .invoice-status--orangeStatus{
                     background: #fcdf354d;
                 }
@@ -95,7 +95,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 .invoice-status--purpleStatus {
                     background: #e1b6e6;
                 }
-                
+
                  .statusIcon.invoice-status--orangeStatus {
                     color: var(--app-status-color-pending);
                 }
@@ -133,7 +133,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 *.txtcolor--purpleStatus {
                     color: var(--paper-purple-300)
                 }
-                
+
                 .batchNumber{
                     color: var(--app-text-color-light);
                     border-radius: 25px;
@@ -153,94 +153,94 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 .batchRejected{background-color: var(--paper-red-400);}
                 .batchAccepted{background-color: var(--paper-green-400);}
                 .batchArchived{background-color: var(--paper-purple-300);}
-                       
-            .table{         
+
+            .table{
                 width: auto;
                 height: 100%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
             }
-            
+
             .tr{
                 display: flex;
-                height: 22px;               
-                border-bottom: 1px solid var(--app-background-color-dark);   
-                padding: 4px;                
+                height: 22px;
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
             }
-            
+
             .th{
                 height: auto!important;
                 font-weight: bold;
                 vertical-align: middle;
             }
-            
+
             .tr-item{
                 cursor: pointer;
             }
-            
+
             .td{
                 position: relative;
                 display: flex;
                 flex-flow: row nowrap;
-                align-items: center;                           
+                align-items: center;
                 flex-basis: 0;
                 padding: 6px;
                 overflow: hidden;
                 min-width: 0px;
                 z-index: 2;
                 word-break: break-word;
-                white-space: nowrap;               
+                white-space: nowrap;
                 font-size: 13px;
                 text-overflow: ellipsis;
             }
-            
+
             .fg0{
                 flex-grow: 0.2;
             }
-            
+
             .fg1{
                 flex-grow: 1;
             }
-            
+
             .fg2{
                 flex-grow: 2;
-            }   
-            
+            }
+
             .fg3{
                 flex-grow: 3;
             }
 
-                    
+
             .status{
               display: block;
               margin-left: auto;
               margin-right: auto;
             }
-            
+
             .info-icon{
                 height: 14px;
                 width: 14px;
             }
-            
+
             .searchField{
                 display: block;
             }
-            
+
             .button{
                display: inline-flex!important;
                align-items: center!important;
             }
-            
+
             .title{
                 display:flex;
                 padding: 5px;
             }
-            
+
             #processMessage{
                 height: 200px;
                 width: 400px;
             }
-            
+
             .modalDialog{
                 height: 350px;
                 width: 600px;
@@ -254,7 +254,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                  position: relative;
                  padding: 10px;
             }
-            
+
             .sendingSpinner{
                height: 100px!important;
                width: 100px!important;
@@ -266,38 +266,38 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                width: auto;
                padding: 4px;
            }
-           
+
            .tr-group{
                 background-color: #f4f4f6;
                 font-weight: bold;
             }
 
-            
+
         </style>
-        
+
         <div class="panel">
             <div class="panel-title">
                 <div class="title">
                     [[localize('inv-pending', 'Process invoice', language)]]
                     <span class="batchNumber batchProcessed">{{_forceZeroNum(listOfInvoice.length)}}</span>
-                 </div> 
+                 </div>
             </div>
             <div class="panel-search">
                  <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
             </div>
             <div class="panel-content">
                 <div class="table">
-                    <div class="tr th">                     
+                    <div class="tr th">
                         <div class="td fg2">[[localize('inv_prest','Physician',language)]]</div>
-                        <div class="td fg1">[[localize('inv_oa','Oa',language)]]</div>                      
+                        <div class="td fg1">[[localize('inv_oa','Oa',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_num','Batch number',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_month','Invoiced month',language)]]</div>
                         <div class="td fg1">[[localize('inv_date_fact','Invoice date',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/>[[localize('inv_batch_amount_invoiced','Invoiced',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/> [[localize('inv_batch_amount_acc','Accepted',language)]]</div>
                         <div class="td fg1">[[localize('inv_batch_amount','Amount',language)]]<br/> [[localize('inv_batch_amount_rej','Rejected',language)]]</div>
-                        <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>        
-                        <div class="td fg0"></div>                                           
+                        <div class="td fg1">[[localize('inv_stat','Status',language)]]</div>
+                        <div class="td fg0"></div>
                     </div>
                      <ht-spinner active="[[isLoading]]"></ht-spinner>
                      <template is="dom-if" if="[[!isLoading]]">
@@ -330,7 +330,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                                 </div>
                             </template>
                         </template>
-                    </template>                  
+                    </template>
                 </div>
             </div>
             <div class="panel-button">
@@ -341,8 +341,8 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_get','Get',language)]]</paper-button>
                 </template>
             </div>
-        </div>   
-        
+        </div>
+
          <paper-dialog class="modalDialog" id="receivingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
             <div class="modalDialogContent m-t-50">
@@ -353,10 +353,10 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                    <template is="dom-repeat" items="[[progressItem]]" as="pi">
                       <div>[[pi]]</div>
                    </template>
-                </div>     
-            </div>        
+                </div>
+            </div>
         </paper-dialog>
-     
+
 `;
     }
 

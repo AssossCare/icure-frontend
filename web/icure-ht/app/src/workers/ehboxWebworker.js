@@ -1,4 +1,4 @@
-import * as api from '@taktik/fhc-api/dist/fhcApi'
+import * as fhcApi from '@taktik/fhc-api/dist/fhcApi'
 import * as iccApi from '@taktik/icc-api-legacy/dist/icc-api/iccApi'
 import * as iccXApi from '@taktik/icc-api-legacy/dist/icc-x-api/index'
 import {UtilsClass} from "@taktik/icc-api-legacy/dist/icc-x-api/crypto/utils"
@@ -72,7 +72,7 @@ onmessage = e => {
         const createDbMessageWithAppendicesAndTryToAssign =  (message,boxId) => {
 
             const promResolve = Promise.resolve()
-            return ehboxApi.getFullMessageUsingPOST(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
+            return ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
                 .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
                 .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, fullMessageFromEHealthBox, _.head(_.get(foundExistingMessage,"rows",[{}]))))
                 .catch(() => promResolve )
@@ -89,8 +89,8 @@ onmessage = e => {
             return !_.size(icureMessageToDeleted) || !sourceBox || !eHealthBoxMessageId ?
                 promResolve :
                 !!sourceBox.startsWith("BIN") ?
-                    ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                    ehboxApi.moveMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(() => promResolve )
+                    ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
+                    ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(() => promResolve )
 
         }
 
@@ -510,9 +510,9 @@ onmessage = e => {
                     return !_.size(singleMessage) || !sourceBox || !eHealthBoxMessageId ?
                         promResolve :
                         (!!sourceBox.startsWith("BIN") ?
-                            ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                            ehboxApi.moveMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox)
-                                .then(() => ehboxApi.deleteMessagesUsingPOST(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], destinationBox).catch(() => promResolve ))
+                            ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
+                            ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox)
+                                .then(() => ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], destinationBox).catch(() => promResolve ))
                                 .catch(() => promResolve )
                         )
                         .then(() => !!(_.get(singleMessage,"status",0)&(1<<26)) ?
@@ -599,7 +599,7 @@ onmessage = e => {
 
             let promisesCarrier = []
             let prom = Promise.resolve()
-            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
+            _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST1(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
                 _.map(_.filter(messagesFromEHealthBox, m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
                     .then(promisesCarrier => createDbMessageWithAppendicesAndTryToAssign(singleMessage, singleBoxId))
                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))
