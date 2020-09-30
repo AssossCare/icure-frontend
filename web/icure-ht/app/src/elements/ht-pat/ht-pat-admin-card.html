@@ -1556,7 +1556,7 @@ class HtPatAdminCard extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     if (this.patient.ssin && this.api.tokenId) {
                         this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                             .then(hcp =>
-                                this.api.fhc().Dmgcontroller().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin)
+                                this.api.fhc().Dmg().consultDmgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName, this.patient.ssin)
                             )
                             .then(dmgConsultResp => {
                                 const dmgNihii = dmgConsultResp.hcParty && dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY') ? dmgConsultResp.hcParty.ids.find(id => id.s === 'ID_HCPARTY').value : ''

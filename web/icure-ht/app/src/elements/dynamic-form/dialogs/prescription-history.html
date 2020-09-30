@@ -430,13 +430,13 @@
 
             _updateFeedback(e) {
 
-                return !this.hcp ? null : this.api.fhc().Recipecontroller().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
+                return !this.hcp ? null : this.api.fhc().Recipe().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
 
             }
 
             _notify(e) {
 
-                return !this.hcp ? null : this.api.fhc().Recipecontroller().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
+                return !this.hcp ? null : this.api.fhc().Recipe().sendNotificationUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
 
             }
 
@@ -449,7 +449,7 @@
 
                 return !this.hcp || !contact ? null : promResolve
                     .then(() => this.prescriptions.filter(p => p.rid === rid).forEach(prescription => { const content = this._getContent(prescription.service); content && (content.medicationValue.status = STATUS_SENT | STATUS_REVOKED);}))
-                    .then(() => this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified"))
+                    .then(() => this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified"))
                     .then(isDeleted => !isDeleted ? promResolve : this.api.contact().modifyContactWithUser(this.user, contact).then(() => this.set("refresher", this.refresher + 1)))
 
             }
@@ -541,7 +541,7 @@
 
             _getPrescriptionFromRecipe(e){
                 if(_.get(e, 'currentTarget.dataset.rid', null)){
-                    this.api.fhc().Recipecontroller().getPrescriptionMessageUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e, 'currentTarget.dataset.rid', null)).then( pr => {
+                    this.api.fhc().Recipe().getPrescriptionMessageUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e, 'currentTarget.dataset.rid', null)).then( pr => {
                         console.log(pr)
                     })
                 }

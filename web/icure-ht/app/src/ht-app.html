@@ -1472,7 +1472,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _timeCheck(period = 30000) {
                 setTimeout(() => {
                     if (this.api.isMH ? this.api.tokenIdMH : this.api.tokenId) {
-                        this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
+                        this.api.fhc().Sts().checkTokenValidUsingGET(this.api.isMH ? this.api.tokenIdMH : this.api.tokenId).then(isTokenValid => {
                             if (!isTokenValid) {
                                 this.uploadKeystoreAndCheckToken().then(() => {
                                     this._timeCheck()
@@ -1492,7 +1492,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _timeCheckMH(period = 30000){
                 setTimeout(() => {
                     if (this.api.tokenIdMH) {
-                        this.api.fhc().Stscontroller().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
+                        this.api.fhc().Sts().checkTokenValidUsingGET(this.api.tokenIdMH).then(isTokenValid => {
                             if (!isTokenValid) {
                                 this.uploadMHKeystoreAndCheckToken().then(() => {
                                     this._timeCheckMH()
@@ -1619,7 +1619,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
                 {
                     const isMH = hcp.type && hcp.type.toLowerCase() === 'medicalhouse';
-                    return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
+                    return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpassword, isMH ? hcp.nihii.substr(0,8): hcp.ssin, this.api.keystoreId, isMH).then(res => {
                         this.$.eHealthStatus.classList.remove('pending')
                         this.$.eHealthStatus.classList.remove('disconnected')
                         this.$.eHealthStatus.classList.add('connected')
@@ -1659,14 +1659,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
             _getMHToken() {
                 //TODO: change the request for MH
-                //this.api.fhc().Stscontroller().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
+                //this.api.fhc().Sts().requestTokenUsingGET(k.passPhrase, this.getNihii8(MHNihii), k.uuid, true )
                 //get the password from local storage
                 //let mhPassword= "";
                 return this.$.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                     .then(hcp => hcp.parentId ? this.$.api.hcparty().getHealthcareParty(hcp.parentId) : hcp)
                     .then(hcpMH => {
                         this.set('hasMHCertificate', hcpMH && this.api.keystoreIdMH)
-                        return this.$.api.fhc().Stscontroller().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH.nihii.substr(0, 8), this.api.keystoreIdMH, true).then(res => {
+                        return this.$.api.fhc().Sts().requestTokenUsingGET(this.credentials.ehpasswordMH, hcpMH.nihii.substr(0, 8), this.api.keystoreIdMH, true).then(res => {
                             if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('pending')
                             if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.remove('disconnected')
                             if(this.root.getElementById('eHealthMHStatus')) this.root.getElementById('eHealthMHStatus').classList.add('connected')
@@ -1815,7 +1815,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this.credentials.ehpassword) {
                     const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage(this.user.healthcarePartyId)
                     if (ehKeychain) {
-                        return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                        return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
                             this.$.api.keystoreId = res.uuid
                             return this._getToken()
                         }).catch((e) => {
@@ -1853,7 +1853,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     this.credentials.ehpasswordMH = password
                                         const ehKeychain = this.$.api.crypto().loadKeychainFromBrowserLocalStorage("MMH."+ this.user.healthcarePartyId)
                                         if (ehKeychain) {
-                                            return this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(ehKeychain).then(res => {
+                                            return this.$.api.fhc().Sts().uploadKeystoreUsingPOST(ehKeychain).then(res => {
                                                 this.$.api.keystoreIdMH = res.uuid
                                                 return this._getMHToken()
                                             }).catch((e) => {
@@ -1963,7 +1963,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 // Get fhc keystore UUID in cache
 								new Promise(x => x(({uuid: this.keyPairKeystore[fk], passPhrase: password}))):
                                 // Upload new keystore
-								this.$.api.fhc().Stscontroller().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
+								this.$.api.fhc().Sts().uploadKeystoreUsingPOST(this.api.crypto().utils.base64toByteArray(localStorage.getItem(fk)))
 									.then(res => this.addUUIDKeystoresInCache(fk, res.uuid, password))
 
 						)

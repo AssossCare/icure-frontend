@@ -123,6 +123,7 @@
                 padding-bottom: 16px;
             }
             .presc-dialog .error-message{
+                height: 200px;
                 padding-bottom: 16px;
             }
             .spinnerbox {
@@ -159,7 +160,7 @@
         </style>
 
         <paper-dialog id="loading" modal>
-            <h2>[[localize('sending_prescription','Sending prescription...',language)]]</h2>
+            <h2>[[localize('sending_prescription','Envoi de la prescription...',language)]]</h2>
             <paper-progress class="prescription-progress-bar" indeterminate></paper-progress>
         </paper-dialog>
 
@@ -343,6 +344,7 @@
                 </div>
                 <div class="buttons">
                     <vaadin-date-picker id="deliveryDate" class="deliveryDate" label="[[localize('deliver_date','Date de délivrance',language)]]" value="{{deliveryDateString}}" i18n="[[i18n]]"></vaadin-date-picker>
+                    <vaadin-date-picker id="expirationDate" class="deliveryDate" label="[[localize('expiration_date','Date d expiration',language)]]" value="{{endDateForExecutionString}}" i18n="[[i18n]]"></vaadin-date-picker>
                     <div class="printButton">
                         <paper-button class="button" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_printAndSendByEmail" disabled="[[!_printEnabled(_drugsOnPrescriptions,_drugsOnPrescriptions.*,_splitColumns)]]"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
@@ -584,7 +586,7 @@
                             this._markDrugsAsNotSent(group.drugs)
                         } else {
                             this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                                this.api.fhc().Recipecontroller().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
+                                this.api.fhc().Recipe().revokePrescriptionUsingDELETE(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, rid, "no reason specified")
                                     .then(isDeleted => {
                                         console.log("delete rid: ", isDeleted)
                                         if(isDeleted) {
@@ -693,7 +695,7 @@
                 let endlist = []
                 if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
                     this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                        this.api.fhc().Recipecontroller().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
+                        this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
                             .then(presclist => {
                                 presclist = presclist.reverse()
                                 console.log("presclist", presclist)
@@ -870,7 +872,7 @@
                         .then(([hcp, samVersion]) =>
                             Promise.all(
                                 splitColumns.map(c =>
-                                    this.api.fhc().Recipecontroller().createPrescriptionV4UsingPOST(
+                                    this.api.fhc().Recipe().createPrescriptionV4UsingPOST(
                                         _.get(this, 'api.keystoreId', null),
                                         _.get(this, 'api.tokenId', null),
                                         "persphysician",
@@ -901,7 +903,7 @@
                              )
                         )
                         .catch(error=>{
-                            this.set('_printError', this.localize("error_send_recipe", "Error while sending to Recipe:", this.language))
+                            this.set('_printError', this.localize("error_send_recipe", "Erreur lors de l'envoi recip-e:", this.language))
                             this.set('_printErrorDetails', error)
 
                             this.$.loading.close();

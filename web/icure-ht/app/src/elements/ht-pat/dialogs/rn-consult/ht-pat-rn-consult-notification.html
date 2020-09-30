@@ -429,7 +429,7 @@
                 _.get(this, 'selectedRegisterType.type', null) === "birth" ? _.assign(mid, midBirth) : _.get(this, 'selectedRegisterType.type', null) === "residentialAddressInBelgium" ? _.assign(mid, midInBelgium) : _.get(this, 'selectedRegisterType.type', null) === "residentialAddressOutBelgium" ? _.assign(mid, midOutBelgium) : {}
 
                 if(_.size(this.errorList) === 0){
-                    this.api.fhc().RnConsultController().registerPersonUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, mid).then(resp => {
+                    this.api.fhc().RnConsult().registerPersonUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, mid).then(resp => {
                         this.set('notificationResponse', resp)
                         if(this._notificationSuccess()){
                             this.dispatchEvent(new CustomEvent('notification-success', { detail: {ssin: _.get(resp, 'result.newlyRegisteredPerson.ssin', null), newlyRegisteredPerson: _.get(resp, 'result.newlyRegisteredPerson', null), status: _.get(resp, 'status', null)},  bubbles:true, composed:true }));

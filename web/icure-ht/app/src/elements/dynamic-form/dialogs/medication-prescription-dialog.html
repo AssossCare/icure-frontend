@@ -2672,6 +2672,7 @@
             _medicinePackageAdapterSamV2(results) {
                 return Promise.resolve(results
                     .map(ampp => {
+                        const currentDmpp = this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P'))
                         return {
                             id: _.get(ampp, 'id', null),
                             groupId: _.get(ampp, 'groupId', null),
@@ -2702,6 +2703,11 @@
                             type: "medicine"
                         };
                     }));
+            }
+
+            _getCurrentDmpp(dmpps){
+                const now = moment().valueOf()
+                return dmpps && dmpps.find(dmpp => _.get(dmpp, 'from', null) < now && _.get(dmpp, 'to',  null) ? _.get(dmpp, 'to',  null) > now : true) || {}
             }
 
             _compoundPrescriptionsSearch(source, searchValue, language, type, first, count) {
@@ -3492,6 +3498,23 @@
                 this.busySpinnerCounter = 0;
                 this.set("busySpinner", false);
                 // console.log("resetting spinner counter: ", this.busySpinnerCounter);
+            }
+
+            _getSamDate(date){
+                return date && this.api.moment(date).format("DD/MM/YYYY")
+            }
+
+            _getStatusOfSam(samVersion){
+                const now = moment().valueOf()
+                return _.get(samVersion, 'date', null) ?
+                    _.parseInt(this.api.moment(now).format('YYYYMMDD')) === _.get(samVersion, 'date', null) ?
+                        'greenVersion' :
+                        this.api.moment(_.get(samVersion, 'date', null)).add(5, 'day').valueOf() > now ?
+                            'orangeVersion' :
+                            this.api.moment(_.get(samVersion, 'date', null)).add(14, 'day').valueOf() > now ?
+                                'redVersion' :
+                                'redVersion' :
+                    'redVersion'
             }
         }
 
