@@ -1096,7 +1096,7 @@
 
                 let sc = this.currentContact.subContacts.find(sc => sc.formId === formId);
                 if (!sc) {
-                    this.currentContact.subContacts.push(sc = {formId: formId, planOfActionId: poaId, healthElementId: heId, services: []});
+                    this.currentContact.subContacts.push(sc = {formId: formId, planOfActionId: poaId, healthElementId: Array.isArray(heId) ? _.trim(_.head(heId)) : _.trim(heId), services: []});
                 }
 
                 const csc = this.currentContact.subContacts.find(csc => csc.services.indexOf(svc.id) >= 0);
