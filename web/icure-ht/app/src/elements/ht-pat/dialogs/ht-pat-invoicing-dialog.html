@@ -3258,19 +3258,48 @@
                         .then(hcp =>
                             (this.selectedInvoice.careProviderType === 'traineesupervised' || this.selectedInvoice.careProviderType === 'trainee') && hcp.supervisorId ?
                                 this.api.hcparty().getHealthcareParty(hcp.supervisorId).then(sup =>
-                                    this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
-                                        this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
-                                        hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
-                                        this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === ""  ? null : this.selectedInvoice.gnotionNihii,
-                                        this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification, sup.ssin, sup.nihii, sup.firstName, sup.lastName
+                                    this.api.fhc().Tarification().consultTarificationUsingPOST(
+                                        this.patient.ssin,
+                                        this.api.tokenId,
+                                        this.api.keystoreId,
+                                        this.api.credentials.ehpassword,
+                                        hcp.firstName,
+                                        hcp.lastName,
+                                        hcp.nihii,
+                                        hcp.ssin,
+                                        this.selectedInvoice.invoiceDate,
+                                        this.selectedInvoice.gnotionNihii === ""  ? null : this.selectedInvoice.gnotionNihii,
+                                        this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification,
+                                        sup.ssin,
+                                        sup.nihii,
+                                        sup.firstName,
+                                        sup.lastName,
+                                        null,
+                                        null,
+                                        this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code)
                                     ).then(r => this.api.logMcn(r, this.user, this.selectedInvoice.id, "eTar", "consult")
                                     ))
                                 :
-                                this.api.fhc().Tarificationcontroller().consultTarificationUsingPOST(
-                                    this.patient.ssin, this.api.tokenId, this.api.keystoreId, this.api.credentials.ehpassword,
-                                    hcp.firstName, hcp.lastName, hcp.nihii, hcp.ssin,
-                                    this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code), this.selectedInvoice.invoiceDate, this.selectedInvoice.gnotionNihii === ""  ? null : this.selectedInvoice.gnotionNihii,
-                                    this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification
+                                this.api.fhc().Tarification().consultTarificationUsingPOST(
+                                    this.patient.ssin,
+                                    this.api.tokenId,
+                                    this.api.keystoreId,
+                                    this.api.credentials.ehpassword,
+                                    hcp.firstName,
+                                    hcp.lastName,
+                                    hcp.nihii,
+                                    hcp.ssin,
+                                    this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code),
+                                    this.selectedInvoice.invoiceDate,
+                                    this.selectedInvoice.gnotionNihii === ""  ? null : this.selectedInvoice.gnotionNihii,
+                                    this.selectedInvoice.thirdPartyPaymentJustification === "0" ? null : this.selectedInvoice.thirdPartyPaymentJustification,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    this.selectedInvoice.invoicingCodes.filter(ic => ic.code!=="109955").map(ic=>ic.code)
                                 ).then(r => this.api.logMcn(r, this.user, this.selectedInvoice.id, "eTar", "consult"))
                         )
                         .then(r => {
@@ -4584,10 +4613,30 @@
 
                 const sentDate=moment().format("YYYYMMDD")
 
-                this.api.fhc().Eattestv2controller().sendAttestWithResponseUsingPOST1(this.patient.ssin, this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,
-                        this.hcp.lastName,this.supervisor.cbe || this.hcp.cbe, this.patient.firstName, this.patient.lastName, this.patient.gender,
-                        eattest,_.get(this,"selectedInvoice.reason","")==="" || _.get(this,"selectedInvoice.reason","0000")==="0000"  ? null : _.padStart(_.get(this,"selectedInvoice.reason",""),4,'0') ,sentDate,this.supervisor.nihii || "",this.supervisor.ssin || "",this.supervisor.firstName || "", this.supervisor.lastName || "")
-                    .then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
+                this.api.fhc().Eattestv2().sendAttestWithResponseUsingPOST1(
+                    this.patient.ssin,
+                    this.api.keystoreId,
+                    this.api.tokenId,
+                    this.api.credentials.ehpassword,
+                    this.hcp.nihii,
+                    this.hcp.ssin,
+                    this.hcp.firstName,
+                    this.hcp.lastName,
+                    this.supervisor.cbe || this.hcp.cbe,
+                    this.patient.firstName,
+                    this.patient.lastName,
+                    this.patient.gender,
+                    _.get(this,"selectedInvoice.reason","")==="" || _.get(this,"selectedInvoice.reason","0000")==="0000"  ? null : _.padStart(_.get(this,"selectedInvoice.reason",""),4,'0') ,
+                    sentDate,
+                    this.supervisor.ssin || "",
+                    this.supervisor.nihii || "",
+                    this.supervisor.firstName || "",
+                    this.supervisor.lastName || "",
+                    null,
+                    null,
+                    null,
+                    eattest
+                ).then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
                     .then(fhcEattest => {
                         if(fhcEattest.acknowledge.errors.length===0 && fhcEattest.attest!==null) {
                             this.set('selectedInvoice.thirdPartyReference', fhcEattest.invoicingNumber)
@@ -5111,10 +5160,27 @@
                 this.$["cancelDialog"].close()
                 this.set("isLoadingJustif",true)
                 const cancelDate=moment().format("YYYYMMDD")
-                this.api.fhc().Eattestv2controller().cancelAttestUsingDELETE(this.patient.ssin, this.api.keystoreId,this.api.tokenId,this.api.credentials.ehpassword,this.hcp.nihii,this.hcp.ssin,this.hcp.firstName,
-                    this.hcp.lastName,this.supervisor.cbe || this.hcp.cbe, this.patient.firstName, this.patient.lastName, this.patient.gender,
-                    this.selectedInvoice.thirdPartyReference,this.reason,cancelDate,this.supervisor.nihii || "",this.supervisor.ssin || "",this.supervisor.firstName || "", this.supervisor.lastName || "")
-                    .then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
+                this.api.fhc().Eattestv2().cancelAttestUsingDELETE(
+                    this.patient.ssin,
+                    this.api.keystoreId,
+                    this.api.tokenId,
+                    this.api.credentials.ehpassword,
+                    this.hcp.nihii,
+                    this.hcp.ssin,
+                    this.hcp.firstName,
+                    this.hcp.lastName,
+                    this.supervisor.cbe || this.hcp.cbe,
+                    this.patient.firstName,
+                    this.patient.lastName,
+                    this.patient.gender,
+                    this.selectedInvoice.thirdPartyReference,
+                    this.reason,
+                    cancelDate,
+                    this.supervisor.ssin || "",
+                    this.supervisor.nihii || "",
+                    this.supervisor.firstName || "",
+                    this.supervisor.lastName || ""
+                ).then(fhcEattest => this.api.logMcn(fhcEattest, this.user, this.selectedInvoice.id, 'eattest', 'notify'))
                     .then(fhcEattest => {
                         if(_.get(fhcEattest,'acknowledge.errors',[]).length){
                             let errorMsg="";
@@ -5172,7 +5238,7 @@
 
             _getAdressesBookInfo(){
                 this.set('isLoadingLocations',true)
-                this.api.fhc().Addressbookcontroller().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*'+this.searchOrgName+'*',this.locationType[this.selectedInvoice.encounterLocationNorm].location)
+                this.api.fhc().Addressbook().searchOrgUsingGET(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword, '*'+this.searchOrgName+'*',this.locationType[this.selectedInvoice.encounterLocationNorm].location)
                     .then(orgList => {
                         this.set('organisationList', orgList)
                         this.set('isLoadingLocations',false)
@@ -5327,7 +5393,7 @@
                     null,
                     this.patient.insurabilities.find(ins => moment(ins.startDate).isSameOrBefore(moment())),//OA
                     this.genInsAFF,//AFF
-                    true    // Bypass cache, force hit on fhc().Dmgcontroller().consultDmgUsingGET()
+                    true    // Bypass cache, force hit on fhc().Dmg().consultDmgUsingGET()
                 ).then(edmgResp => {
                     this.set('isLoading',false)
                     this.set('consultDmgResp', edmgResp);

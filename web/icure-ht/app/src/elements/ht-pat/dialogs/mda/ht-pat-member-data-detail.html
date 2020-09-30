@@ -723,7 +723,7 @@
             }
 
             consultMdaBySsin(){
-                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberDataController().getMemberDataUsingGET(
+                return _.get(this.mdaSearch, "ssin", null) ? this.api.fhc().MemberData().getMemberDataUsingGET(
                     this.cleanData(_.get(this.patient, "ssin", null)),
                     this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null),
                     _.get(this.api, "keystoreId", null),
@@ -740,7 +740,7 @@
             }
 
             consultMdaByMemberShip(){
-                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberDataController().getMemberDataByMembershipUsingGET(
+                return _.get(this.mdaSearch, "identificationNumber", null) && _.get(this.mdaSearch, "mutuality", null)? this.api.fhc().MemberData().getMemberDataByMembershipUsingGET(
                     _.get(this.mdaSearch, "mutuality", null),
                     _.get(this.mdaSearch, "identificationNumber", null),
                     this._isMedicalHouse() ? _.get(this.api, "tokenIdMH", null) : _.get(this.api, "tokenId", null),

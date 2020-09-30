@@ -584,7 +584,7 @@
                 //const orMhc = _.cloneDeep(pat.)
 
                 if(!_.size(requestError)){
-                    return this.api.fhc().MmhController().sendSubscriptionUsingPOST(
+                    return this.api.fhc().Mmh().sendSubscriptionUsingPOST(
                         _.get(this.api, "keystoreId", null),
                         _.get(this.api, "tokenIdMH", null),
                         _.get(this.api, "credentials.ehpassword", null),

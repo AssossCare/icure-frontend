@@ -215,6 +215,10 @@
                 text-overflow: ellipsis;
                 overflow: hidden;
             }
+
+            .hidden{
+                visibility: hidden;
+            }
         </style>
 
         <paper-dialog id="subscriptionRecoveryDialog">
@@ -249,7 +253,7 @@
                 </div>
                 <div class="buttons">
                     <template is="dom-if" if="[[canRecovery]]">
-                        <paper-button class="button button--save" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
+                        <paper-button class="button button--save hidden" on-tap="_sendRecovery"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-recovery','Lancer reprise',language)]]</paper-button>
                     </template>
                     <template is="dom-if" if="[[canDownload]]">
                         <paper-button class="button button--save" on-tap="_getLogReport"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-recovery-log','Télécharger log',language)]]</paper-button>
