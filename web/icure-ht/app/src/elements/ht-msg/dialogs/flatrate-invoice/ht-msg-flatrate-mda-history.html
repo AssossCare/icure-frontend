@@ -1,71 +1,75 @@
-import '../../../dynamic-form/ckmeans-grouping.js'
-import '../../../../styles/vaadin-icure-theme.js'
-import '../../../../styles/spinner-style.js'
-import '../../../../styles/scrollbar-style'
-import '../../../../styles/shared-styles'
-import '../../../../styles/buttons-style'
-import '../../../../styles/dialog-style'
-import '../../../../styles/invoicing-style';
-import '../../../ht-spinner/ht-spinner.js'
+<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
 
-import "@polymer/iron-icon/iron-icon"
-import "@polymer/paper-button/paper-button"
-import "@polymer/paper-dialog/paper-dialog"
-import "@polymer/paper-input/paper-input"
-import "@polymer/paper-input/paper-textarea"
-import "@polymer/paper-tooltip/paper-tooltip"
-import "@vaadin/vaadin-grid/vaadin-grid"
-import "@vaadin/vaadin-grid/vaadin-grid-column"
-import "@vaadin/vaadin-grid/vaadin-grid-column-group"
-import "@vaadin/vaadin-grid/vaadin-grid-sorter"
-import "@vaadin/vaadin-grid/vaadin-grid-tree-toggle"
-import '@vaadin/vaadin-accordion/vaadin-accordion'
-import '@vaadin/vaadin-details/vaadin-details'
+<link rel="import" href="../../../dynamic-form/ckmeans-grouping.html">
 
-import moment from 'moment/src/moment'
-import _ from 'lodash/lodash'
-import * as models from '@taktik/icc-api/dist/icc-api/model/models';
+<link rel="import" href="../../../ht-spinner/ht-spinner.html">
 
-import {PolymerElement, html} from '@polymer/polymer'
-import {TkLocalizerMixin} from "../../../tk-localizer"
-import promiseLimit from "promise-limit"
-import * as retry from "@taktik/icc-api/dist/icc-x-api/utils/net-utils"
-import mustache from "mustache"
+<link rel="import" href="../../../../styles/vaadin-icure-theme.html">
+<link rel="import" href="../../../../styles/spinner-style.html">
+<link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/shared-styles.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
+<link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/invoicing-style.html">
 
-class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
-    static get template() {
-        return html`
-        
+<link rel="import" href="../../../ht-pat/dialogs/medicalhouse/ht-pat-flatrate-utils.html">
+
+<link rel="import" href="../../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-column-group.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-tree-toggle.html">
+
+<link rel="import" href="../../../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-themes/material/vaadin-date-picker.html">
+
+
+
+<dom-module id="ht-msg-flatrate-mda-history">
+
+
+
+    <template>
+
         <style include="shared-styles spinner-style scrollbar-style buttons-style dialog-style invoicing-style">
             .panel{
                 margin: 5px;
                 height: calc(100% - 20px);
                 width: auto;
             }
-            
+
             .panel-title{
                 height: 40px;
                 width: auto;
             }
-            
+
             .panel-search{
                 height: 45px;
                 width: auto;
             }
-            
+
             .panel-content{
                 height: calc(100% - 125px);
                 width: auto;
             }
-            
+
             .panel-button{
                 height: 32px;
-                width: auto; 
-                padding: 4px; 
+                width: auto;
+                padding: 4px;
                 display: flex;
-                justify-content: flex-end!important;           
+                justify-content: flex-end!important;
             }
-            
+
             .assurability--redStatus{
                 color: var(--app-status-color-nok);
                 height: 8px;
@@ -77,7 +81,7 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
                 height: 8px;
                 width: 8px;
             }
-            
+
             .invoice-status {
                 border-radius: 20px;
                 padding: 1px 12px 1px 8px;
@@ -93,7 +97,7 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
             .invoice-status--orangeStatus{
                 background: #fcdf354d;
             }
-            
+
             .statusIcon{
                 height: 8px;
                 width: 8px;
@@ -102,18 +106,18 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
             .statusIcon.invoice-status--orangeStatus {
                 color: var(--app-status-color-pending);
             }
-            
+
             .statusIcon.invoice-status--orangeStatus,
             .statusIcon.invoice-status--greenStatus,
             .statusIcon.invoice-status--redStatus,
             .statusIcon.invoice-status--purpleStatus {
                 background: transparent !important;
             }
-            
+
             *.txtcolor--orangeStatus {
                 color: var(--app-status-color-pending);
             }
-            
+
             .batchNumber{
                 color: var(--app-text-color-light);
                 border-radius: 25px;
@@ -127,34 +131,34 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
                 padding: 5px;
                 margin-top: 2px;
             }
-            
+
             .batchPending{background-color: var(--paper-orange-400);}
             .batchToBeCorrected{background-color: var(--paper-red-400);}
             .batchProcessed{background-color: var(--paper-blue-400);}
             .batchRejected{background-color: var(--paper-red-400);}
             .batchAccepted{background-color: var(--paper-green-400);}
             .batchArchived{background-color: var(--paper-purple-300);}
-                      
-            .table{         
+
+            .table{
                 width: auto;
                 height: 100%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
             }
-            
+
             .th{
                 height: auto!important;
                 font-weight: bold;
                 vertical-align: middle;
             }
-            
+
             .tr{
                 display: flex;
                 height: 22px;
-                border-bottom: 1px solid var(--app-background-color-dark);   
-                padding: 4px;                
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
             }
-            
+
             .td{
                 position: relative;
                 display: flex;
@@ -167,7 +171,7 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
                 min-width: 0px;
                 z-index: 2;
                 word-break: break-word;
-                white-space: nowrap;               
+                white-space: nowrap;
                 font-size: 13px;
                 text-overflow: ellipsis;
             }
@@ -175,133 +179,133 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
             .fg0{
                 flex-grow: 0;
             }
-            
+
             .fg02{
                 flex-grow: 0.2;
             }
-            
+
             .fg05{
                 flex-grow: 0.5;
             }
-            
+
             .fg1{
                 flex-grow: 1;
             }
-            
+
             .fg2{
                 flex-grow: 2;
-            }  
-            
+            }
+
             .fg4{
                 flex-grow: 4.2;
             }
-                       
+
             .status{
                 display: block;
                 margin-left: auto;
                 margin-right: auto;
             }
-            
+
             .info-icon{
                 height: 14px;
                 width: 14px;
             }
-            
+
             .searchField{
                 display: block;
             }
-            
+
             .button{
                 display: inline-flex!important;
                 align-items: center!important;
             }
-            
+
             .title{
                 display:flex;
                 padding: 5px;
             }
-            
+
             .tr-item{
                 cursor: pointer;
             }
-            
+
             .modalDialog{
                 height: 350px;
                 width: 600px;
             }
 
-             .modalDialogContent{
-                  height: calc(100% - 69px);
-                  width: auto;
-                  margin: 0;
-                  background-color: white;
-                  position: relative;
-                  padding: 10px;
-             }
-             
-             #checkBeforeSendingDialog{
-                    height: 500px;
-                    width: 800px;
-             }
+            .modalDialogContent{
+                height: calc(100% - 69px);
+                width: auto;
+                margin: 0;
+                background-color: white;
+                position: relative;
+                padding: 10px;
+            }
 
-             .unsentInvoice{
-                 height: 250px;
-                 width: auto;
-             }
+            #checkBeforeSendingDialog{
+                height: 500px;
+                width: 800px;
+            }
 
-             previousCheck{
-                 height: 100px;
-                 width: auto;
-             }
+            .unsentInvoice{
+                height: 250px;
+                width: auto;
+            }
 
-             .errorBeforeSendInvoice{
-                 color: var(--app-status-color-nok);
-                 font-weight: bold;
-             }
+            previousCheck{
+                height: 100px;
+                width: auto;
+            }
 
-             #patientsWithoutAssurabilityGrid{
-                 max-height: 200px;
-                 overflow: auto;
-             }
-             
-             .sendingSpinner{
+            .errorBeforeSendInvoice{
+                color: var(--app-status-color-nok);
+                font-weight: bold;
+            }
+
+            #patientsWithoutAssurabilityGrid{
+                max-height: 200px;
+                overflow: auto;
+            }
+
+            .sendingSpinner{
                 height: 100px!important;
                 width: 100px!important;
                 margin: auto;
-             }
-             
-             .prossessList{
+            }
+
+            .prossessList{
                 height: calc(100% - 100px);
                 width: auto;
                 padding: 4px;
-             }
-             
-             .content-container{
+            }
+
+            .content-container{
                 padding: 4px;
                 width: auto;
-             }
-             
-             .previousCheckContainer{
-             
-             }
-             
-             .listOfUnsentInvoiceContainer{
-             
-             }
-             
-             .tr-group{
+            }
+
+            .previousCheckContainer{
+
+            }
+
+            .listOfUnsentInvoiceContainer{
+
+            }
+
+            .tr-group{
                 background-color: #f4f4f6;
                 font-weight: bold;
-                }
-   
+            }
+
         </style>
-        
+
         <div class="panel">
             <div class="panel-title">
                 <div class="title">
                     [[localize('inv-to-be-send', 'Invoice to be send', language)]]
                     <span class="batchNumber batchPending">{{_forceZeroNum(listOfInvoice.length)}}</span>
-                 </div>                 
+                </div>
             </div>
             <div class="panel-search">
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
@@ -316,69 +320,90 @@ class HtMsgFlatrateMdaHistory extends TkLocalizerMixin(PolymerElement) {
                     <template is="dom-if" if="[[api.tokenId]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
-                    <template is="dom-if" if="[[!api.tokenId]]" restamp="true">                   
+                    <template is="dom-if" if="[[!api.tokenId]]" restamp="true">
                         <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
-                    </template> 
+                    </template>
                 </template>
             </div>
-        </div>  
-        
-         <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+        </div>
+
+        <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
             <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
             <div class="modalDialogContent m-t-50">
                 <div class="sendingSpinner">
                     <ht-spinner active="[[isSending]]"></ht-spinner>
                 </div>
                 <div class="prossessList">
-                   <template is="dom-repeat" items="[[progressItem]]" as="pi">
-                      <div>[[pi]]</div>
-                   </template>
-                </div>     
-            </div>        
+                    <template is="dom-repeat" items="[[progressItem]]" as="pi">
+                        <div>[[pi]]</div>
+                    </template>
+                </div>
+            </div>
         </paper-dialog>
-`
-    }
 
-    static get is() {
-        return 'ht-msg-flatrate-mda-history'
-    }
+    </template>
 
-    static get properties() {
-        return {
-            api: {
-                type: Object,
-                value: () => {
-                }
-            },
-            user: {
-                type: Object,
-                value: () => {
-                }
-            },
-            hcp: {
-                type: Object,
-                value: () => {
-                }
-            },
-            isLoading:{
-                type: Boolean,
-                value: false
+
+
+    <script>
+
+        import moment from 'moment/src/moment'
+        import _ from 'lodash/lodash'
+        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
+        import jsZip from "jszip/dist/jszip.js"
+        const md5 = require('md5')
+
+        class HtMsgFlatrateMdaHistory extends Polymer.TkLocalizerMixin(Polymer.Element) {
+
+            static get is() {
+                return 'ht-msg-flatrate-mda-history'
             }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    user: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    hcp: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    }
+                }
+            }
+
+            constructor() {
+                super();
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            static get observers() {
+                return []
+            }
+
         }
-    }
 
-    constructor() {
-        super();
-    }
+        customElements.define(HtMsgFlatrateMdaHistory.is, HtMsgFlatrateMdaHistory)
 
-    ready() {
-        super.ready();
-    }
+    </script>
 
-    static get observers() {
-        return []
-    }
 
-}
 
-customElements.define(HtMsgFlatrateMdaHistory.is, HtMsgFlatrateMdaHistory)
+</dom-module>
+
+
