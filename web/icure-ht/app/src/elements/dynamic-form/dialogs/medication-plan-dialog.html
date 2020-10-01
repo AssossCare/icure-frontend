@@ -1443,8 +1443,6 @@
                     });
                 })
 
-                this.set("isLoading", true)
-
                 if (this.shadowRoot.querySelector("#prescription-history"))
                     this.shadowRoot.querySelector("#prescription-history").setPrescriptions([]);
 
@@ -1511,9 +1509,7 @@
                             Promise.all(getFeedback).then((fbs) => {
                                 console.log("get feedbacks");
                             });
-                        }).finally(() => {
-                            this.set("isLoading", false)
-                        });
+                        })
                     })
             }
 

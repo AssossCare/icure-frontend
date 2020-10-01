@@ -384,6 +384,7 @@
 
             .detail-panel .btns-container{
                 padding: 4px 0;
+                display: flex;
             }
 
             vaadin-date-picker {
@@ -1530,14 +1531,30 @@
                                 })
                             ))
                         ).then(appendices =>
-                            this.api.fhc().Chapter().requestAgreementUsingPOST(this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                                hcp.nihii, hcp.ssin, hcp.firstName, hcp.lastName,
-                                this.patient.ssin, this.patient.dateOfBirth, this.patient.firstName, this.patient.lastName, this.patient.gender,
-                                requestType, pi.paragraphVersion, pi.paragraphName,
-                                appendices, this.checkedVerses.join(','), !!this.incomplete,
-                                requestType === "complimentaryannex" ? null : requestType === "extension" ? this.api.moment(this.displayedParagraph.end).add(1, "days").valueOf() : this.api.moment(this.fromAsString).valueOf() , null,
+                            this.api.fhc().Chapter().requestAgreementUsingPOST(
+                                this.api.keystoreId,
+                                this.api.tokenId,
+                                this.api.credentials.ehpassword,
+                                hcp.nihii,
+                                hcp.ssin,
+                                hcp.firstName,
+                                hcp.lastName,
+                                this.patient.ssin,
+                                this.patient.dateOfBirth,
+                                this.patient.firstName,
+                                this.patient.lastName,
+                                this.patient.gender,
+                                requestType,
+                                pi.paragraphVersion,
+                                pi.paragraphName,
+                                this.checkedVerses.join(','),
+                                !!this.incomplete,
+                                requestType === "complimentaryannex" ? null : requestType === "extension" ? this.api.moment(this.displayedParagraph.end).add(1, "days").valueOf() : this.api.moment(this.fromAsString).valueOf() ,
+                                null,
                                 (requestType === "extension" || requestType === "noncontinuousextension" || requestType === "complimentaryannex") ? this.displayedParagraph.decisionReference : null, //Might want to set ioRequestReference here for complimentary appendices
-                                ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !this.displayedParagraph.decisionReference) ? this.displayedParagraph.ioRequestReference : null).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", requestType) )
+                                ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !this.displayedParagraph.decisionReference) ? this.displayedParagraph.ioRequestReference : null,
+                                appendices
+                            ).then( x => this.api.logMcn(x, this.user, this.patient.id, "CHAPIV", requestType) )
                         )
                     ).then(res => {
                         console.log(res)

@@ -1452,7 +1452,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             setUrls() {
                 const params = this.route.__queryParams //_.fromPairs((this.route.path.split('?')[1] || "").split('&').map(p => p.split('=')))
                 this.set('icureUrl', params.icureUrl || `https://backendb.svc.icure.cloud/rest/v1`)//`https://backend${window.location.href.replace(/https?:\/\/.+?(b?)\.icure\.cloud.*/,'$1')}.svc.icure.cloud/rest/v1`)
-                this.set('fhcUrl', params.fhcUrl || (window.location.href.includes('https://tzb') ? 'https://fhcpr.icure.cloud' : 'https://fhcpr.icure.cloud'))
+                this.set('fhcUrl', params.fhcUrl || 'https://fhctz.icure.cloud')/*(window.location.href.includes('https://tzb') ? 'https://fhcpr.icure.cloud' : 'https://fhcpr.icure.cloud'))*/
                 this.set('electronUrl', params.electronUrl || (params.icureUrl && !params.icureUrl.includes(":16043") && !params.icureUrl.includes("https") && _.replace(params.icureUrl,"/rest/v1","")) || "http://127.0.0.1:16042")
                 this.set('mikronoProxy', params.mikronoProxy || 'http://127.0.0.1:16041');
 
