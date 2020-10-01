@@ -574,7 +574,6 @@
             }
 
             _getDocuments(){
-                //old code
                 return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), this.patient )
                     .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.concat(
                         // Target documentId in svc
