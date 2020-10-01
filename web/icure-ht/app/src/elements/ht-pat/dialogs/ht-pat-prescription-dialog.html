@@ -534,7 +534,6 @@
                 if(this.prescriptionTab == 'toSend') {
                     return true
                 } else {
-                    this._fetchRidSentListEnabled = true
                     this._fetchRidSentList()
                     return false
                 }
@@ -652,13 +651,10 @@
             }
 
             _fetchRidSentList() {
-                //console.log("_fetchRidSentList()")
                 if(!this._fetchRidSentListEnabled) { // prevent fetch when opening patient
                     console.log("skip fetch recipe")
                     return
                 }
-
-                this._isFetchingRecipeList = true
 
                 // local RIDs
                 const groupObj = _.groupBy(this._drugsAlreadyPrescribed(), svc => this.api.contact().medicationValue(svc, this.language).prescriptionRID)
@@ -693,10 +689,19 @@
                 }
 
                 let endlist = []
+
                 if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
                     this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                        this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.patient.ssin, this.api.credentials.ehpassword)
-                            .then(presclist => {
+                        this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(
+                            this.api.keystoreId,
+                            this.api.tokenId,
+                            "persphysician",
+                            hcp.nihii,
+                            hcp.ssin,
+                            hcp.lastName,
+                            this.patient.ssin,
+                            this.api.credentials.ehpassword
+                        ).then(presclist => {
                                 presclist = presclist.reverse()
                                 console.log("presclist", presclist)
                                 if(presclist.length > 0) {
@@ -715,16 +720,16 @@
                                 }
                             })
                             .then(() => {
-                                this._isFetchingRecipeList = false
+                                this.set("_isFetchingRecipeList", false)
                                 extend_list(endlist)
                             })
                     ).catch(error => {
                         console.log(error)
                         extend_list([])
-                        this._isFetchingRecipeList = false
+                        this.set("_isFetchingRecipeList", false)
                     })
                 } else {
-                    this._isFetchingRecipeList = false
+                    this.set("_isFetchingRecipeList", false)
                     extend_list([])
                 }
 
