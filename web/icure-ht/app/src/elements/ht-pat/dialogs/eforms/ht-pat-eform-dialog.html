@@ -270,16 +270,13 @@
                     <div class="eforms-submenu-container">
                         <ht-spinner active="[[isLoading]]"></ht-spinner>
                         <template is="dom-if" if="[[!isLoading]]">
-                            <div class="search-line">
-
-                            </div>
 
                             <paper-listbox id="" class="menu-content sublist" selectable="paper-item"  toggle-shift>
                                 <div class="table-line-menu table-line-menu-top">
                                     <div class="formIconTit"></div>
                                     <div class="formTitleTit">[[localize('eforms-type','E-forms type',language)]]</div>
                                 </div>
-                                <template is="dom-repeat" items="[[formList]]" as="form" >
+                                <template is="dom-repeat" items="[[formList]]" as="form">
                                     <collapse-button>
                                         <paper-item slot="sublist-collapse-item" id$="[[form.id.name]]" aria-selected="[[selected]]" class$="menu-trigger menu-item [[isIronSelected(selected)]]" on-tap="_createFormInstance">
                                             <div id="subMenu" class="table-line-menu">
@@ -577,22 +574,46 @@
             }
 
             _getDocuments(){
+                //old code
                 return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), this.patient )
-                    .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.map(singleContact.services, singleService => !_.trim(_.get(singleService,"content." + this.language + ".documentId")) ? false : {
-                        contact: singleContact,
-                        service: singleService,
-                        serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
-                        formId: _.trim(_.get(singleService,"formId")),
-                        date: parseInt(_.get(singleService,"valueDate")),
-                        dateAndTimeHr: moment(parseInt(_.trim(_.get(singleService,"valueDate")).substring(0,8)),"YYYYMMDD").format('DD/MM/YYYY') + " - " + _.trim(_.get(singleService,"valueDate")).substring(8,10) + ":" + _.trim(_.get(singleService,"valueDate")).substring(10,12),
-                        documentId: _.trim(_.get(singleService,"content." + this.language + ".documentId"))
-                    })))))
-                    .then(foundServices => !_.size(foundServices) ? Promise.resolve([foundServices, []]) : this.api.document().getDocuments({ids:_.map(foundServices,s=>s.documentId)}).then(foundDocuments=>[foundServices,foundDocuments]))
+                    .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.concat(
+                        // Target documentId in svc
+                        _.map(singleContact.services, singleService => !_.trim(_.get(singleService,"content." + this.language + ".documentId")) ? false : {
+                            contact: singleContact,
+                            service: singleService,
+                            serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
+                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                            documentId: _.trim(_.get(singleService,"content." + this.language + ".documentId")),
+                        }),
+                        // Target ehealthbox message
+                        ((!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) && !_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}))) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+                            contact: singleContact,
+                            services: singleContact.services,
+                            serviceTitle: _.trim(_.get(singleContact,"descr")),
+                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                            documentId: _.get(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}), "id",""),
+                            isLabResultOrProtocol: true,
+                        }),
+                        // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
+                        (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
+                            contact: singleContact,
+                            services: singleContact.services,
+                            serviceTitle: _.trim(_.get(singleContact,"descr")),
+                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
+                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
+                            documentId:null,
+                            isFromMigration: true,
+                        })
+                    )))))
+                    .then(foundServicesWithDocumentId => !_.size(foundServicesWithDocumentId) ? Promise.resolve([foundServicesWithDocumentId, []]) : this.api.document().getDocuments({ids:_.uniq(_.compact(_.map(foundServicesWithDocumentId,s=>_.trim(_.get(s,"documentId","")))))}).then(foundDocuments=>[foundServicesWithDocumentId,foundDocuments]))
                     .then(([foundServices,foundDocuments]) => _.compact(_.map(foundServices, fs => {
                         const serviceDocument = _.find(foundDocuments, {id: _.trim(_.get(fs, "documentId"))})
                         const documentExtension = _.trim(_.last(_.trim(_.get(serviceDocument,"name","")).split("."))).toLowerCase()
                         return (
                             ['jpg','jpeg','pdf','png','tif','tiff'].indexOf(documentExtension) === -1 ||
+                            //!['jpg', 'jpeg', 'pdf', 'png', 'tif', 'tiff'].find(ext => _.get(serviceDocument,"mainUti","").includes(ext))) ||
                             !_.trim(_.get(serviceDocument,"id","")) ||
                             !_.trim(_.get(serviceDocument,"attachmentId","")) ||
                             !_.trim(_.get(serviceDocument,"secretForeignKeys",""))
@@ -608,6 +629,14 @@
                         .orderBy(['date'], ['desc'])
                         .value()
                     )
+            }
+
+            _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
+                return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
+            }
+
+            _YYYYMMDDHHmmssToDDMMYYYY(inputValue) {
+                return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY') : ""
             }
 
             _selectedFormChanged(){
