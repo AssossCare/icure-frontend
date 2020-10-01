@@ -902,7 +902,7 @@
                                         c.rid = prescri.rid
                                         c.recipeResponse = prescri
                                         drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
-                                        this._download(_.get(prescri, 'xmlRequest', null))
+                                        //this._download(_.get(prescri, 'xmlRequest', null))
                                     } )
                                 )
                              )
