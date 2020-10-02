@@ -443,7 +443,7 @@
                             return this._sendSubscription(pat, recoveryLogItem).then(res => {
                                 recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
                                 this.push("recoveryLog", recoveryLogItem)
-                                return this._sleep(5000)
+                                return this._sleep(1000)
                             })
                         }).then(x => _.concat(promiseCarrier,x))
                         .catch(() => _.concat(promiseCarrier,null)))

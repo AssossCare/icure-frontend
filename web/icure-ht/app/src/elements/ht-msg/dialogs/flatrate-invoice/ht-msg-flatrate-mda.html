@@ -2912,7 +2912,7 @@
 
                 const promResolve = Promise.resolve();
 
-                return !_.size(requestedData) ? promResolve : this.api.fhc3().MemberData().sendMemberDataRequestAsyncUsingPOST(
+                return !_.size(requestedData) ? promResolve : this.api.fhc().MemberData().sendMemberDataRequestAsyncUsingPOST(
                     _.trim(_.get(this,"api.tokenIdMH")),
                     _.trim(_.get(this,"api.keystoreId")),
                     _.trim(_.get(this,"api.credentials.ehpassword")),
@@ -3050,7 +3050,7 @@
                 //     .then(([document,edKeys]) => this.api.document().getAttachment(_.get(document,"id"), _.get(document,"attachmentId"), (edKeys||[]).join(',')))
                 //     .then(attachment => JSON.parse(attachment))
 
-                return this.api.fhc3().MemberData().getMemberDataMessageAsyncUsingPOST(
+                return this.api.fhc().MemberData().getMemberDataMessageAsyncUsingPOST(
                     _.trim(_.get(this,"api.tokenIdMH")),
                     _.trim(_.get(this,"api.keystoreId")),
                     _.trim(_.get(this,"api.credentials.ehpassword")),
@@ -3069,7 +3069,7 @@
 
                 // return promResolve.then(() => console.log("[ACTIVATE FOR PROD] _e_confirmMdaMessagesByReferences", messageReferences))
 
-                return this.api.fhc3().MemberData().confirmMemberDataMessagesAsyncUsingPOST(
+                return this.api.fhc().MemberData().confirmMemberDataMessagesAsyncUsingPOST(
                     _.trim(_.get(this,"api.tokenIdMH")),
                     _.trim(_.get(this,"api.keystoreId")),
                     _.trim(_.get(this,"api.credentials.ehpassword")),
