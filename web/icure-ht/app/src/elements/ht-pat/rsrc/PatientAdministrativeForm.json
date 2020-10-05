@@ -499,7 +499,7 @@
 						},
 						{
 							"editor" : {
-								"readOnly" : true,
+								"readOnly" : false,
 								"height" : 48,
 								"compulsoryFormGuids" : [
 

@@ -264,7 +264,6 @@
                     value="{{dateMax}}" i18n="[[i18n]]"></vaadin-date-picker>
                 <paper-input id="filterRID" label="RID" value="{{filterRID}}" on-value-changed="_onValueChanged" class="my-input filter" always-float-label></paper-input>
                 <vaadin-combo-box id="filterStatus" class="filter" filtered-items="[[allStatus]]" item-label-path="label" item-value-path="value" label="[[localize('sta','Status',language)]]" value="{{filterStatus}}" on-value-changed="_onValueChanged"></vaadin-combo-box>
-                <ht-spinner class="center" active="[[isLoading]]"></ht-spinner>
             </div>
 
             <div class="table">

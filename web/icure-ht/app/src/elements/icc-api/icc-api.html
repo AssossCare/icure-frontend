@@ -29,7 +29,7 @@
     import {IccInvoiceXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-invoice-x-api'
     import {IccMessageXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-message-x-api'
     import {IccClassificationXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-classification-x-api'
-    import {ElectronApi} from 'electron-topaz-api/src/api/ElectronApi'
+    import {ElectronApi} from 'topaz-electron-api/src/api/ElectronApi'
 
     import heic2any from 'heic2any'
 
@@ -714,7 +714,7 @@
                 const optionsString = _.toPairs(options).map(([k, v]) => `${k}=${v}`).join('&')
                 if(!optionsString.length) option.type="doc-big-format"
 
-                return (!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id)
+                return ((!electron || !type ? Promise.resolve(electron) : this.electron().getPrinterSetting(user.id))
                     .then( data => {
                         const printersPrefs = electron && data && data.ok ? JSON.parse(data.data) : JSON.parse(localStorage.getItem('selectedPrinter') || '{}')
                         const stickersPrefs = electron && data && data.ok ? _.find(printersPrefs, pref => pref.type === "sticker-mut") || {} : _.get(printersPrefs,"stickers")

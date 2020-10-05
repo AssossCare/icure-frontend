@@ -46,6 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="reports/ht-admin-reports-rash.html">
 <link rel="import" href="reports/ht-admin-reports-activity.html">
 <link rel="import" href="reports/ht-admin-reports-technical-act.html">
+<link rel="import" href="reports/ht-admin-reports-flatrate.html">
 
 
 <dom-module id="ht-admin-reports">
@@ -101,7 +102,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <template is="dom-if" if="[[technicalActReport]]">
             <ht-admin-reports-technical-act id="admin-reports-technical-act" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-technical-act>
         </template>
-
+        <template is="dom-if" if="[[flatrateReport]]">
+            <ht-admin-reports-flatrate id="htAdminReportsFlatrate" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-flatrate>
+        </template>
 
     </template>
 
@@ -152,6 +155,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     technicalActReport:{
                         type: Boolean,
                         value: false,
+                    },
+                    flatrateReport:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -182,6 +189,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('rashReport', this.selectedSubMenu === "rashReport");
                 this.set('activityReport', this.selectedSubMenu === "activityReport");
                 this.set('technicalActReport', this.selectedSubMenu === "technicalActReport");
+                this.set('flatrateReport', this.selectedSubMenu === "flatrateReport");
             }
         }
 

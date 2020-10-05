@@ -1514,6 +1514,9 @@
                         }).finally(() => {
                             this.set("isLoading", false)
                         });
+                    }).catch(err => {
+                        console.log(err)
+                        this.set("isLoading", false)
                     })
             }
 
