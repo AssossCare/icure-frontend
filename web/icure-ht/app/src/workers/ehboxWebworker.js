@@ -73,8 +73,8 @@ onmessage = e => {
 
             const promResolve = Promise.resolve()
             return ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
-                .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
-                .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, fullMessageFromEHealthBox, _.head(_.get(foundExistingMessage,"rows",[{}]))))
+                .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
+                .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, _.get(fullMessageFromEHealthBox, 'message', {}), _.head(_.get(foundExistingMessage,"rows",[{}]))))
                 .catch(() => promResolve )
 
         }
