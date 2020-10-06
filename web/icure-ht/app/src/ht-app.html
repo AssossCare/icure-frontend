@@ -2062,7 +2062,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
                                         if(rep.ok){
                                             this.set('routeData.page', "diary")
-                                            setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
+                                            setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy,this.icureUrl,this.electronUrl), 100)
                                         }
                                     })
 
@@ -2093,7 +2093,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                         this.api.electron().setMikronoCredentials(mikronoUser,mikronoPassword).then(rep => {
                                                             if(rep.ok){
                                                                 this.set('routeData.page', "diary")
-                                                                setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy), 100)
+                                                                setTimeout(() => this.shadowRoot.querySelector("#htDiary").loadMikronoIframe(this.mikronoProxy,this.icureUrl,this.electronUrl), 100)
                                                             }
                                                         })
 
