@@ -543,8 +543,12 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
         }
     }
 
-    receiveInvoices() {
+    getContactPersonHcp(){
+        return this.api.hcparty().getHealthcareParty(this.hcp.contactPersonHcpId)
+    }
 
+    receiveInvoices() {
+        this.getContactPersonHcp().then(contactPersonHcp => {
         const LastGet = parseInt(localStorage.getItem('lastInvoicesGet')) ? parseInt(localStorage.getItem('lastInvoicesGet')) : -1
         const mayGet = (LastGet < Date.now() + 60*60000 || LastGet===-1)
         if (mayGet) {
@@ -559,9 +563,9 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                 _.get(this.api, 'keystoreId', null),
                 _.get(this.api, 'tokenIdMH', null),
                 _.get(this.api, 'credentials.ehpassword', null),
-                _.get(this.hcp, 'ssin', null),
+                _.get(contactPersonHcp, 'ssin', null),
                 _.get(this.hcp, 'name', null),
-                "",
+                _.get(this.hcp, 'name', null),
                 50
             ).then( x =>
                 this.api.logMcn(x, this.user, this.hcp.id, "eFact", "loadMessages")
@@ -615,7 +619,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                                 _.get(this.api, 'keystoreId', null),
                                 _.get(this.api, 'tokenIdMH', null),
                                 _.get(this.api, 'credentials.ehpassword', null),
-                                _.get(this.hcp, 'ssin', null),
+                                _.get(contactPersonHcp, 'ssin', null),
                                 _.get(this.hcp, 'name', null),
                                 _.get(this.hcp, 'lastName', ""),
                                 tacks.map(t => t.hashValue))
@@ -624,7 +628,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                                 _.get(this.api, 'keystoreId', null),
                                 _.get(this.api, 'tokenIdMH', null),
                                 _.get(this.api, 'credentials.ehpassword', null),
-                                _.get(this.hcp, 'ssin', null),
+                                _.get(contactPersonHcp, 'ssin', null),
                                 _.get(this.hcp, 'name', null),
                                 _.get(this.hcp, 'lastName', ""),
                                 responses.map(t => t.hashValue))
@@ -642,7 +646,7 @@ class HtMsgFlatrateInvoicePending extends TkLocalizerMixin(PolymerElement) {
                     this.getMessage()
                 })
             })
-        }
+        }})
     }
 
     getMessage(){

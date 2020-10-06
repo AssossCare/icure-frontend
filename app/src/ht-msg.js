@@ -809,7 +809,6 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             }})
             .catch(()=>promResolve)
         )
-        .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
 
     }
 
