@@ -1,6 +1,33 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.560",
+		  "updateDate": "2020-10-01",
+		  "startDate" : "2020-10-01",
+		  "endDate" : "2020-12-31",
+		  "mainType" : "News",
+		  "mainTitle" : "Facturation au forfait et recipe V4",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Facturation au forfait et recipe V4",
+					  "nl" : "Facturation au forfait et recipe V4"
+				  },
+				  "description": {
+					  "fr" : "<b>Module de facturation au forfait pour les MM</b><br/>Comme vous le savez, depuis ce 01/10/2020 nous sommes rentrés dans la période dite de reprise, durant cette période, vous allez devoir convertir vos abonnements papier en abonnements électroniques pour tous vos patients qui sont actuellement inscrits au forfait dans votre maison médicale.<br/><br/>Un planning a été établi afin que cette reprise soit le plus efficace possible, vous serez directement contacté par Christophe afin de lancer celle-ci. Pour cela, nous devrons nous connecter avec votre compte maison médicale sur l’ordinateur destiné à la facturation au forfait.<br/><br/>Assurez-vous bien que votre maison médicale dispose d’un trousseau e-health et que celui-ci est configuré dans votre compte maison médicale.<br/><br/>À partir du 01/11/2020, votre facturation devra être envoyée électroniquement, le mois d’octobre sera donc la dernière fois où vous devrez effectuer votre facturation sur cd-rom.<br/><br/>Avec l’arrivée de ce nouveau module, plusieurs services sont disponibles depuis le compte maison médicale : <ul><li>Service abonnement (gestion électronique de vos forfaits)</li><li>Service MDA (consultation des données du membre)</li><li>Service de facturation électronique (opérationnel à partir du 01/11/2020)</li><li>Service MDA asynchrone (consultation des données du membre pour un ensemble de patients)</li></ul><b>Version 4 de Recipe (prescription électronique)</b><br/><br/>Depuis ce 01/10/2020, la version 4 de recipe est obligatoire pour tous les logiciels médicaux. Topaz a passé avec succès les différents minilabs relatifs aux nouveaux services Sam V2 et recipe v4.<br/><br/>Nous travaillons actuellement sur la refonte totale du module de prescription afin qu’il soit en conformité avec les nouvelles normes Sam V2.</br>Un minilab est organisé fin octobre afin de valider ces changements au niveau de l'inami<br/><br/><b>Améliorations diverses</b><ul><li>Possibilité de comptabiliser vos actes techniques dans la fenêtre de facturation</li><li>Résolution d’un problème qui empêchait la création d’eform pour certains patients</li><li>Lien vers le service Orgadon</li><li>Ajout de la possibilité d’exporter le résultat du rapport d’activité</li><li>Amélioration de l’import de documents depuis les hubs</li><li>Mise à jour du formulaire de prescription de soins kiné afin d’y inclure le type de pathologie (Courante / Liste E / Liste F)</li><li>Refonte totale des filtres du volet 2</li><li>Possibilité de supprimer des templates de document sortant (celles en double), via le menu déroulant</li><li>Éditeur de documents sortants: le contenu du document n’est désormais plus supprimé après ajout au dossier patient, facilitant ainsi la modification a posteriori (en cas d’oubli / erreur)</li></ul><br/><br/>L'equipe Topaz / Medispring<br/><br/>PS : Une question, un conseil, adressez-vous à notre support par mail : support@topaz.care ou par téléphone au 02/319.22.41 du lundi au vendredi de 8h à 20h et le samedi de 9h à 13h.",
+					  "nl" : "<b>Module de facturation au forfait pour les MM</b><br/>Comme vous le savez, depuis ce 01/10/2020 nous sommes rentrés dans la période dite de reprise, durant cette période, vous allez devoir convertir vos abonnements papier en abonnements électroniques pour tous vos patients qui sont actuellement inscrits au forfait dans votre maison médicale.<br/><br/>Un planning a été établi afin que cette reprise soit le plus efficace possible, vous serez directement contacté par Christophe afin de lancer celle-ci. Pour cela, nous devrons nous connecter avec votre compte maison médicale sur l’ordinateur destiné à la facturation au forfait.<br/><br/>Assurez-vous bien que votre maison médicale dispose d’un trousseau e-health et que celui-ci est configuré dans votre compte maison médicale.<br/><br/>À partir du 01/11/2020, votre facturation devra être envoyée électroniquement, le mois d’octobre sera donc la dernière fois où vous devrez effectuer votre facturation sur cd-rom.<br/><br/>Avec l’arrivée de ce nouveau module, plusieurs services sont disponibles depuis le compte maison médicale : <ul><li>Service abonnement (gestion électronique de vos forfaits)</li><li>Service MDA (consultation des données du membre)</li><li>Service de facturation électronique (opérationnel à partir du 01/11/2020)</li><li>Service MDA asynchrone (consultation des données du membre pour un ensemble de patients)</li></ul><b>Version 4 de Recipe (prescription électronique)</b><br/><br/>Depuis ce 01/10/2020, la version 4 de recipe est obligatoire pour tous les logiciels médicaux. Topaz a passé avec succès les différents minilabs relatifs aux nouveaux services Sam V2 et recipe v4.<br/><br/>Nous travaillons actuellement sur la refonte totale du module de prescription afin qu’il soit en conformité avec les nouvelles normes Sam V2.</br>Un minilab est organisé fin octobre afin de valider ces changements au niveau de l'inami<br/><br/><b>Améliorations diverses</b><ul><li>Possibilité de comptabiliser vos actes techniques dans la fenêtre de facturation</li><li>Résolution d’un problème qui empêchait la création d’eform pour certains patients</li><li>Lien vers le service Orgadon</li><li>Ajout de la possibilité d’exporter le résultat du rapport d’activité</li><li>Amélioration de l’import de documents depuis les hubs</li><li>Mise à jour du formulaire de prescription de soins kiné afin d’y inclure le type de pathologie (Courante / Liste E / Liste F)</li><li>Refonte totale des filtres du volet 2</li><li>Possibilité de supprimer des templates de document sortant (celles en double), via le menu déroulant</li><li>Éditeur de documents sortants: le contenu du document n’est désormais plus supprimé après ajout au dossier patient, facilitant ainsi la modification a posteriori (en cas d’oubli / erreur)</li></ul><br/><br/>L'equipe Topaz / Medispring<br/><br/>PS : Une question, un conseil, adressez-vous à notre support par mail : support@topaz.care ou par téléphone au 02/319.22.41 du lundi au vendredi de 8h à 20h et le samedi de 9h à 13h."
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.516",
 		  "updateDate": "2020-07-01",
 		  "startDate" : "2020-07-01",
