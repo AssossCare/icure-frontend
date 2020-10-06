@@ -2290,10 +2290,10 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                 _.get(this, 'api.keystoreId', null),
                 _.get(this, 'api.tokenId', null),
                 _.get(this, 'api.credentials.ehpassword', null),
-                messageToBeSentWithEhbox,
                 _.get(messageToBeSentWithEhbox, 'usePublicationReceipt', null),
                 _.get(messageToBeSentWithEhbox, 'useReceivedReceipt', null),
-                _.get(messageToBeSentWithEhbox, 'useReadReceipt', null)
+                _.get(messageToBeSentWithEhbox, 'useReadReceipt', null),
+                messageToBeSentWithEhbox
             ).then(x=>sendMessageResponse=x)
             .catch(x=>sendMessageResponse=x)
             .finally(()=>{
@@ -2304,7 +2304,11 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                 // [Either] went well
                 // [OR] couldn't find ETK (missing recipient public key) - when crypting message
                 // [OR] (hardcoded) -> "successfull" (labellisation)
-                return sendMessageResponse===true ? this._confirmMessageSuccessfullySent() : _.trim(_.get(sendMessageResponse,"message","")) === "api-error403" ? this._etkNotRetrieved() : this._confirmMessageSuccessfullySent()
+                return typeof sendMessageResponse === "boolean" && sendMessageResponse===true || _.get(sendMessageResponse,"success") === true ?
+                    this._confirmMessageSuccessfullySent() :
+                    (sendMessageResponse.message && _.trim(_.get(sendMessageResponse,"message","")) || _.trim(_.get(sendMessageResponse,"error",""))) === "api-error403" ?
+                        this._etkNotRetrieved() :
+                        this._confirmMessageSuccessfullySent()
 
             })
 

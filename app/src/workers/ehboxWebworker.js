@@ -80,8 +80,8 @@ onmessage = e => {
 
             const promResolve = Promise.resolve()
             return ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
-                .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
-                .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, fullMessageFromEHealthBox, _.head(_.get(foundExistingMessage,"rows",[{}]))))
+                .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
+                .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, _.get(fullMessageFromEHealthBox,"message",{}), _.head(_.get(foundExistingMessage,"rows",[{}]))))
                 .catch(() => promResolve )
 
         }
@@ -607,7 +607,7 @@ onmessage = e => {
             let promisesCarrier = []
             let prom = Promise.resolve()
             _.map((boxIds||[]), singleBoxId => ehboxApi.loadMessagesUsingPOST1(keystoreId, tokenId, ehpassword, singleBoxId, 50, alternateKeystores).then(messagesFromEHealthBox => {
-                _.map(_.filter(messagesFromEHealthBox, m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
+                _.map(_.filter(_.get(messagesFromEHealthBox, 'messages', []), m => !!_.trim(_.get(m, "id",""))), singleMessage => prom = prom
                     .then(promisesCarrier => createDbMessageWithAppendicesAndTryToAssign(singleMessage, singleBoxId))
                     .catch(e => console.log("ERROR with createDbMessageWithAppendicesAndTryToAssign: ", e))
                     .finally(()=> _.concat(promisesCarrier, []))

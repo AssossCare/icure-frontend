@@ -581,6 +581,12 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
 
     }
 
+    _eformSuccessfullySent(sendMessageResponse) {
+
+        return typeof sendMessageResponse === "boolean" && sendMessageResponse===true || _.get(sendMessageResponse,"success") === true
+
+    }
+
     _sendForm() {
 
         const promResolve = Promise.resolve()
@@ -594,8 +600,8 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
             )
             .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._checkRecipientIsValid(_.trim(_.get(_.get(parsedXml,"ADR.Addressee[0]",{}), "Identifier[0]")), _.trim(_.get(_.get(parsedXml,"ADR.Addressee[0]",{}), "Quality[0]"))).then(recipientIsValid => recipientIsValid ? parsedXml : (this.set('isLoading', false)||true) && this.shadowRoot.querySelector("#recipientWithoutEHealthBoxDialog").open()))
             .then(parsedXml => !_.size(parsedXml) ? this.set('isLoading', false) : this._sendFormUsingEhBox(parsedXml)
-                .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:sendMessageResponse===true ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
-                .then(sendMessageResponse => (sendMessageResponse===true) ? (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})) : (this.set('isLoading', false)||true) && (["api-errorundefined","api-error403"].indexOf(_.trim(_.get(sendMessageResponse,"message",""))) > -1 ? this.shadowRoot.querySelector('#etkNotRetrievedDialog').open() : null))
+                .then(sendMessageResponse => (this.dispatchEvent(new CustomEvent("feedback-message", {composed: true, bubbles: true, detail: {message:this._eformSuccessfullySent(sendMessageResponse) ? this.localize("sen_succ", "Message successfully sent", this.language) : this.localize("sen_error", "Message could not be sent", this.language)}}))||true) && sendMessageResponse)
+                .then(sendMessageResponse => this._eformSuccessfullySent(sendMessageResponse) ? (this._reset()||true) && this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail: {}})) : (this.set('isLoading', false)||true) && (["api-errorundefined","api-error403"].indexOf(_.trim(sendMessageResponse.message && _.get(sendMessageResponse,"message","") || _.get(sendMessageResponse,"error",""))) > -1 ? this.$["etkNotRetrievedDialog"].open() : null))
             )
 
     }
