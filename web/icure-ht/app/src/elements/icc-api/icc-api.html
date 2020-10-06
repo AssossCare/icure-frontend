@@ -163,8 +163,8 @@
 
             this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
             this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
-            this.besamv2icc = new api.iccBeSamv2Api(this.host, this.headers)
-            this.besamv2v3icc = new apiV3.iccBesamv2Api(this.host, this.headers)
+            this.besamv2icc = new api.iccBeSamv2Api(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
+            this.besamv2v3icc = new apiV3.iccBesamv2Api(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
 
             this.usericc = new IccUserXApi(this.host, this.headers)
 
@@ -190,8 +190,8 @@
             this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
             this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
-            this.desktopApi = new ElectronApi(this.electronHost)
 
+            this.desktopApi = new ElectronApi(this.electronHost)
 
             const toObserve = [
                 [this.accesslogicc,["newInstance"]],
