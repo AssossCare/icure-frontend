@@ -1140,7 +1140,7 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                                   secretForeignKeys: secretForeignKeys.extractedKeys,
                                   recipient: hcp,
                                   comment: "mycomment"
-                              }).then(output => {
+                              }, this.api.sessionId).then(output => {
                                   //creation of the xml file
                                   let file = typeof output === "string" ? new Blob([output] ,{type: "application/xml"}) : output
 
@@ -1190,7 +1190,8 @@ class HtPatHubDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehav
                                       secretForeignKeys: _.get(secretForeignKeys, 'extractedKeys', null),
                                       recipient: hcp,
                                       comment: "mycomment"
-                                  }
+                                  },
+                                  this.api.sessionId
                               ).then(output =>
                                   this.api.fhc().Hub().putTransactionSetUsingPOST(
                                       _.get(this, 'hubEndPoint', null),

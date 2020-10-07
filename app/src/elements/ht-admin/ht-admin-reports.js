@@ -12,6 +12,7 @@ import './reports/ht-admin-reports-age-structure.js'
 import './reports/ht-admin-reports-rash.js'
 import './reports/ht-admin-reports-activity.js'
 import './reports/ht-admin-reports-technical-act.js'
+import './reports/ht-admin-reports-flatrate'
 
 import moment from 'moment/src/moment';
 import _ from 'lodash/lodash';
@@ -70,6 +71,10 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
         <template is="dom-if" if="[[technicalActReport]]">            
             <ht-admin-reports-technical-act id="admin-reports-technical-act" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-technical-act>        
         </template>
+        <template is="dom-if" if="[[flatrateReport]]">
+            <ht-admin-reports-flatrate id="htAdminReportsFlatrate" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]"></ht-admin-reports-flatrate>
+        </template>
+
 `;
   }
 
@@ -114,6 +119,10 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
           selection: {
               type: Object,
               observer: '_select'
+          },
+          flatrateReport:{
+              type: Boolean,
+              value: false
           }
       }
   }
@@ -144,6 +153,7 @@ class HtAdminReports extends TkLocalizerMixin(PolymerElement) {
       this.set('rashReport', this.selectedSubMenu === "rashReport");
       this.set('activityReport', this.selectedSubMenu === "activityReport");
       this.set('technicalActReport', this.selectedSubMenu === "technicalActReport");
+      this.set('flatrateReport', this.selectedSubMenu === "flatrateReport");
   }
 }
 

@@ -190,7 +190,7 @@ class HtAppServerDialog extends TkLocalizerMixin(PolymerElement) {
     getServersInfo() {
        return {
            servers : this.dbServers,
-           selected : this.dbServerObject.dataset.server
+           selected : _.get(this, 'dbServerObject.dataset.server', null)
        }
     }
 

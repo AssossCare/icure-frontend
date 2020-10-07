@@ -1131,10 +1131,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                         <iron-icon icon="icons:assignment-ind"></iron-icon>
                         [[localize('subscription_form_physical_person','Physical person',language)]]
                     </paper-tab>
-                    <paper-tab class="adm-tab doNotDisplay" id="medicalHouseTabView">
-                        <iron-icon icon="vaadin:family"></iron-icon>
-                        [[localize('subscription_form_medical_house','Medical houses',language)]]
-                    </paper-tab>
                 </paper-tabs>
                 <iron-pages selected="[[tabs]]">
                     <page>
@@ -1161,7 +1157,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                             </paper-listbox>
                         </paper-dropdown-menu>
   
-                        <paper-checkbox class="doNotDisplay" checked="{{createMhContract}}" id="createMedicalHouseContractCheckBox" label="[[localize('subscription_form_medical_house','Medicalhouse flatrate subscription',language)]]" style="width:100%;">[[localize('subscription_form_medical_house','Medicalhouse flatrate subscription',language)]]?</paper-checkbox>
                         <template is="dom-if" if="[[displayResult]]">
                             <vaadin-grid id="duplicate-list" class="material" items="[[listResultPatients]]" style="width: 100%;" height-by-rows>
                                 <vaadin-grid-column>
@@ -1208,25 +1203,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
                         </template>
                         
-                    </page>
-                    <page>
-                        <!--Medical houses-->
-                        <vaadin-combo-box id="mh-search" filtered-items="[[mhListItem]]" item-label-path="hrLabel" style="width:100%" item-value-path="id" on-filter-changed="_mhSearch" on-keydown="" label="[[localize('mh','Medical house',language)]]" value="{{medicalHouseContractShadowObject.hcpId}}"></vaadin-combo-box>
-
-                        <vaadin-date-picker-light id="startOfContract" i18n="[[i18n]]" attr-for-value="value" style="width: 30%">
-                            <paper-input always-float-label label="[[localize('sub_dat','Subscription date',language)]]" value="" on-value-changed="updateStartOfCoverage"></paper-input>
-                        </vaadin-date-picker-light>
-
-                        <paper-input label="[[localize('sub_eva_mon','Subscription evaluation months',language)]]" i18n="[[i18n]]" value="0" id="evalutationMonths" on-value-changed="updateStartOfCoverage" type="number" always-float-label min="0" step="3" max="3" style="width: 30%"></paper-input>
-
-                        <vaadin-date-picker-light id="startOfCoverage" i18n="[[i18n]]" attr-for-value="value" style="width: 30%">
-                            <paper-input always-float-label="" label="[[localize('cov_sta','Coverage start',language)]]" value="" readonly=""></paper-input>
-                        </vaadin-date-picker-light>
-                        
-                        <label>[[localize('patient_subscriptions','Patient subscriptions',language)]]:</label>
-                        <paper-checkbox checked="{{medicalHouseContractShadowObject.gp}}" id="medicalHouseContractGpCheckBox" label="[[localize('has_m','Has doctor subscription',language)]]">[[localize('has_m','Has doctor subscription',language)]]?</paper-checkbox>
-                        <paper-checkbox checked="{{medicalHouseContractShadowObject.kine}}" id="medicalHouseContractKineCheckBox" label="[[localize('has_k','Has physiotherapist subscription',language)]]">[[localize('has_k','Has physiotherapist subscription',language)]]?</paper-checkbox>
-                        <paper-checkbox checked="{{medicalHouseContractShadowObject.nurse}}" id="medicalHouseContractNurseCheckBox" label="[[localize('has_i','Has nurse subscription',language)]]">[[localize('has_i','Has nurse subscription',language)]]?</paper-checkbox>
                     </page>
                 </iron-pages> 
                 
@@ -1711,7 +1687,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   static get observers() {
       return [
           '_hcpChanged(hcp)','_selectedFilterIndexesChanged(selectedFilterIndexes.splices)', '_filterValueChanged(filterValue)', '_showInactivePatientsChanged(showInactive)', '_hcpFilterChanged(hcpFilterValue, _allHcpsChecked)',
-          '_canAddPat(lastName,firstName,dateAsString,ssin,listResultPatients)', '_resetSearchField(selectedPatient)', '_createMhContractChanged(createMhContract)'
+          '_canAddPat(lastName,firstName,dateAsString,ssin,listResultPatients)', '_resetSearchField(selectedPatient)'
       ]
   }
 
@@ -1895,31 +1871,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
 
       // reset to tab one
       this.tabs = 0
-
-      this.api && this.api.hcparty() && this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(myHcp => {
-          if ( !!(myHcp && myHcp.parentId && this.api && this.api.hcparty()) || _.trim(_.get(myHcp,"type","")).toLowerCase() === "medicalhouse" ) {
-              this.api.hcparty().getHealthcareParty(_.get(myHcp,"parentId", _.trim(myHcp.id) )).then(parentHcp => {
-                  const parent = _.trim(_.get(myHcp,"type","")).toLowerCase() === "medicalhouse" ? myHcp : parentHcp;
-                  this.mhListItem = parent ? [{
-                      id: parent.id,
-                      name: _.upperFirst(_.lowerCase(parent.name)),
-                      hrLabel:
-                          _.upperFirst(_.lowerCase(parent.name)) + ' ' +
-                          (typeof parent.nihii === 'undefined' || !parent.nihii ? '' : ' - ' + this.localize('nihii', 'INAMI', language) + ': ' + parent.nihii) + ' ' +
-                          ''
-                  }] : []
-                  this.set('medicalHouseContract.hcpId', parent.id)
-
-                  // Pre-check vs NIHII number, last 3 digits (MKI) === 1 (Respectively for "médecin", "kiné", "infirmière"
-                  this.set('medicalHouseContract.gp', !!(parent && _.trim(_.get(parent,"nihii","")).slice(-3, -2) === '1') );
-                  this.set('medicalHouseContract.kine', !!(parent && _.trim(_.get(parent,"nihii","")).slice(-2, -1) === '1') );
-                  this.set('medicalHouseContract.nurse', !!(parent && _.trim(_.get(parent,"nihii","")).slice(-1) === '1') );
-
-              })
-          } else {
-              this.mhListItem = []
-          }
-      })
   }
 
   displayAllHcps(checked) {
@@ -2339,12 +2290,7 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
                   ]
               })
           }
-          if(this.createMhContract) {
-              this.updateStartOfCoverage()
-              newPatient.medicalHouseContracts[0] = this.medicalHouseContractShadowObject;
-          }else{
-              newPatient.medicalHouseContracts.pop();
-          }
+
           return this.api.patient().newInstance(this.user, newPatient).then(
               p => this.api.patient().createPatientWithUser(this.user, p)
           ).then(
@@ -2394,24 +2340,12 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
       this.ssin = null
       this.valueGender = null
       this.cardData=[];
-      if(this.medicalHouseContract) {
-          this.medicalHouseContractShadowObject = {
-              hcpId: this.medicalHouseContract.hcpId,
-              mmNihii: this.medicalHouseContract.mmNihii,
-              startOfContract: this.medicalHouseContract.startOfContract,
-              startOfCoverage: this.medicalHouseContract.startOfCoverage,
-              kine: this.medicalHouseContract.kine,
-              gp: this.medicalHouseContract.gp,
-              nurse: this.medicalHouseContract.nurse,
-          }
-      }
       this.selected=null
       this.selectedItem=null
       this.$["datePickerCreation"].accuracy="day"
       this.$["datePickerCreation"].value=""
       this.$['evalutationMonths'].value = 0
       this.$['startOfCoverage'].value = ""
-      this.updateStartOfCoverage()
   }
 
   confirmFilter() {
@@ -3044,135 +2978,6 @@ class HtPatList extends TkLocalizerMixin(PolymerElement) {
   _isPatientsSelected() {
       return this.patientSelected.filter(x => x.check == true).length
   }
-
-
-  updateStartOfCoverage(event, object) {
-
-      // Busy status
-      this.updateStartOfCoverageBusy = this.updateStartOfCoverageBusy || false
-
-      // Already busy ?
-      if (this.updateStartOfCoverageBusy) return
-
-      // Set to busy
-      this.updateStartOfCoverageBusy = true
-
-      // Grab final object
-      let startOfContractObject = this.$['startOfContract']
-      let startOfCoverageObject = this.$['startOfCoverage']
-      let evalutationMonthsObject = this.$['evalutationMonths']
-
-      // No value defined yet (first call), set to today
-      if (!startOfCoverageObject.value || startOfCoverageObject.value === "") {
-          startOfContractObject.value = moment().format('YYYY-MM-DD')
-      }
-
-      // By default, start of coverage date = 1st day of next month
-      startOfCoverageObject.value = moment(startOfContractObject.value).add((1 + parseInt(evalutationMonthsObject.value || 0)), 'months').startOf('month').format('YYYY-MM-DD')
-
-      // Cast values
-      this.set('medicalHouseContractShadowObject.startOfContract', startOfContractObject.value.replace(/-/g, ''))
-      this.set('medicalHouseContractShadowObject.startOfCoverage', startOfCoverageObject.value.replace(/-/g, ''))
-
-      // We're finished
-      this.updateStartOfCoverageBusy = false
-
-  }
-
-  //TODO: check for flatrate invoice type of MH HCP: "billingType": "flatRate"
-  checkForParentMedicalHouse() {
-      if (this.user && this.user.healthcarePartyId && this.api && this.api.hcparty() ) {
-          this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => {
-              if ( !!(hcp && hcp.parentId) || _.trim(_.get(hcp,"type","")).toLowerCase() === "medicalhouse" ) {
-                  this.api.hcparty().getHealthcareParty(_.get(hcp,"parentId", _.trim(hcp.id) )).then(parentHcp => {
-                      if ( (_.trim(_.get(parentHcp,"type","")).toLowerCase() === "medicalhouse"
-                          || _.trim(_.get(hcp,"type","")).toLowerCase() === "medicalhouse")
-                      && (_.trim(_.get(parentHcp,"billingType","")).toLowerCase() === "flatrate"
-                              || _.trim(_.get(hcp,"billingType","")).toLowerCase() === "flatrate")) {
-                          this.shadowRoot.getElementById("medicalHouseTabView").classList.remove("doNotDisplay")
-                          this.shadowRoot.getElementById("createMedicalHouseContractCheckBox").classList.remove("doNotDisplay")
-                          this.hcpParentMedicalHouseData = parentHcp
-                          this.set("createMhContract", true);
-                      } else {
-                          this.shadowRoot.getElementById("medicalHouseTabView").classList.add("doNotDisplay")
-                          this.shadowRoot.getElementById("createMedicalHouseContractCheckBox").classList.add("doNotDisplay")
-                          this.set("createMhContract", false);
-                      }
-                  })
-              } else {
-                  this.shadowRoot.getElementById("medicalHouseTabView").classList.add("doNotDisplay")
-                  this.shadowRoot.getElementById("createMedicalHouseContractCheckBox").classList.add("doNotDisplay")
-                  this.set("createMhContract", false);
-              }
-          })
-      } else {
-          this.shadowRoot.getElementById("medicalHouseTabView").classList.add("doNotDisplay")
-          this.shadowRoot.getElementById("createMedicalHouseContractCheckBox").classList.add("doNotDisplay")
-          this.set("createMhContract", false);
-      }
-  }
-
-  _createMhContractChanged(mhc){
-      if(mhc){
-          this.shadowRoot.getElementById("medicalHouseTabView").classList.remove("doNotDisplay")
-      }else{
-          this.shadowRoot.getElementById("medicalHouseTabView").classList.add("doNotDisplay")
-      }
-
-  }
-
-  _mhSearch(e) {
-      let mhLatestSearchValue = e && e.detail.value
-      this.mhLatestSearchValue = mhLatestSearchValue
-
-      if (!mhLatestSearchValue || mhLatestSearchValue.length < 2) {
-          this.set('mhListItem', [])
-          return
-      }
-      this._mhDataProvider() && this._mhDataProvider().filter(mhLatestSearchValue).then(res => {
-          if (mhLatestSearchValue !== this.mhLatestSearchValue) return
-          this.set('mhListItem', res.rows)
-      })
-  }
-
-
-  _mhDataProvider() {
-      return {
-          filter: function (mhFilterValue) {
-              return Promise.all(
-                  [
-                      this.api.hcparty().findBySsinOrNihii(mhFilterValue),
-                      this.api.hcparty().findByName(mhFilterValue)
-                  ]
-              ).then(
-                  results => {
-                      const dataProviderResults =
-                          _.flatten(
-                              _
-                                  .chain(_.concat(results[0].rows, results[1].rows))
-                                  .uniqBy('id')
-                                  .filter({type: 'medicalhouse'})
-                                  .value()
-                                  .map(
-                                      i => ({
-                                          id: i.id,
-                                          name: _.upperFirst(_.lowerCase(i.name)),
-                                          hrLabel:
-                                              _.upperFirst(_.lowerCase(i.name)) + ' ' +
-                                              (typeof i.nihii === 'undefined' || !i.nihii ? '' : ' - ' + this.localize('nihii', 'INAMI', language) + ': ' + i.nihii) + ' ' +
-                                              ''
-                                      })
-                                  )
-                          )
-
-                      return {totalSize: dataProviderResults.length, rows: _.sortBy(dataProviderResults, 'name')}
-                  }
-              )
-
-          }.bind(this)
-      }
-  }
-
 
   /**
    * Electron's part

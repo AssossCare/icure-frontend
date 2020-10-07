@@ -1522,13 +1522,13 @@ class HtPatMcnChapterIVAgreement extends TkLocalizerMixin(mixinBehaviors([IronRe
                       requestType,
                       _.get(pi, 'paragraphVersion', null),
                       _.get(pi, 'paragraphName', null),
-                      appendices,
                       _.get(this, 'checkedVerses', []).join(','),
                       !!_.get(this, 'incomplete', null),
                       requestType === "complimentaryannex" ? null : requestType === "extension" ? _.get(this, 'displayedParagraph.end', null) ? this.api.moment(_.get(this, 'displayedParagraph.end', null)).add(1, "days").valueOf() : null : _.get(this, 'fromAsString', null) ? this.api.moment(_.get(this, 'fromAsString', null)).valueOf() : null,
                       null,
                       (requestType === "extension" || requestType === "noncontinuousextension" || requestType === "complimentaryannex") ? _.get(this, 'displayedParagraph.decisionReference', null) : null, //Might want to set ioRequestReference here for complimentary appendices
-                      ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !_.get(this, 'displayedParagraph.decisionReference', null)) ? _.get(this, 'displayedParagraph.ioRequestReference', null) : null
+                      ((requestType === "noncontinuousextension" || requestType === "complimentaryannex") && !_.get(this, 'displayedParagraph.decisionReference', null)) ? _.get(this, 'displayedParagraph.ioRequestReference', null) : null,
+                      appendices
                   ).then( x => this.api.logMcn(x, _.get(this, 'user', null), _.get(this, 'patient.id', null), "CHAPIV", requestType) )
               )
           ).then(res => {

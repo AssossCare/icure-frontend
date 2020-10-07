@@ -505,7 +505,7 @@ class HtPatEformDialog extends TkLocalizerMixin(PolymerElement) {
                 excludedIds: null,
                 softwareName: "TOPAZ",
                 softwareVersion: v
-            })).then(output => output.text())
+            }, this.api.sessionId)).then(output => output.text())
         )
     }
 

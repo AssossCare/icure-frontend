@@ -388,6 +388,10 @@ class HtAdminMenu extends TkLocalizerMixin(PolymerElement) {
                         <iron-icon class="sub-menu-icon" icon="icons:description"></iron-icon> [[localize('technical-act','Technical act',language)]]
                     </paper-item>
 
+                    <paper-item class="one-line-menu menu-item flex-start" id="reports" data-submenu="flatrateReport">
+                        <iron-icon class="sub-menu-icon" icon="vaadin:euro"></iron-icon> [[localize('flatrate','Flatrate',language)]]
+                    </paper-item>
+
                 </paper-listbox>
             </collapse-button>
 

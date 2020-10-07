@@ -589,6 +589,10 @@ class HtMsg extends TkLocalizerMixin(PolymerElement) {
             this.set('invoicesLayout', true)
             this.set('invoicesStatus', selectedStatus)
             setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice") && this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
+        } else if (selectedItem === 'e_flatrateinvOut') {
+            this.set('flatrateinvoicesLayout', true)
+            this.set('flatrateMenuSection', selectedStatus)
+            setTimeout(() =>{ /*this.shadowRoot.querySelector("#msg-invoice").reset(); */ this.shadowRoot.querySelector("#msg-invoice") && this.shadowRoot.querySelector("#msg-invoice").getMessage(); },0)
         } else if (selectedItem === 'e_flatrateinvOut' || selectedItem === 'eflatrateInvocingMenuItem' || selectedItem === 'flatRateeInvoicingMenuItem' ) {
             this.set('electronicFlatRateInvoicesLayout', true)
             this.set('eFlatrateStatus', selectedStatus)

@@ -726,10 +726,10 @@ class HtPatEformFormView extends TkLocalizerMixin(PolymerElement) {
                     _.get(this, "api.keystoreId", null),
                     _.get(this, "api.tokenId", null),
                     _.get(this, "api.credentials.ehpassword", null),
-                    message,
                     _.get(message,"usePublicationReceipt",false),
                     _.get(message,"useReceivedReceipt",true),
-                    _.get(message,"useReadReceipt",false)
+                    _.get(message,"useReadReceipt",false),
+                    message
                 ).catch(e => e)
             })
             .catch(e => null)

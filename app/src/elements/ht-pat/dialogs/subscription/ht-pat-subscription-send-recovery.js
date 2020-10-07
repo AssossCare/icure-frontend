@@ -438,17 +438,21 @@ class HtPatSubscriptionSendRecovery extends TkLocalizerMixin(mixinBehaviors([Iro
         let tmpLog = []
         let prom = Promise.resolve([])
         _.map(this.patientsToRecover, pat => {
-            prom = prom.then(promiseCarrier =>this.api.patient().getPatientWithUser(this.user, pat.id)
-                .then(pat =>{
-                    this.curPat = pat.lastName + " " + pat.firstName
-                    let recoveryLogItem = {patient: _.get(pat, 'ssin', '') + " " + pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
-                    return this._sendSubscription(pat, recoveryLogItem).then(res => {
-                        recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
-                        this.push("recoveryLog", recoveryLogItem)
-                        return this._sleep(5000)
-                    })
-                }).then(x => _.concat(promiseCarrier,x))
-                .catch(() => _.concat(promiseCarrier,null)))
+            prom = prom.then(() =>
+                this._sleep(1000).then(() =>
+                    this.api.patient().getPatientWithUser(this.user, pat.id)
+                        .then(pat =>{
+                            this.curPat = pat.lastName + " " + pat.firstName
+                            let recoveryLogItem = {patient: _.get(pat, 'ssin', '') + " " + pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
+                            recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
+                            this.push("recoveryLog", recoveryLogItem)
+
+                            this._sendSubscription(pat, recoveryLogItem)
+                                .then(res => _.concat(promiseCarrier,res))
+                                .catch(e => console.log(e))
+                        })
+                )
+            )
         })
 
         prom.then(res => {

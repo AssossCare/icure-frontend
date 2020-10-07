@@ -953,7 +953,8 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                       excludedIds : excludedIds,
                                       softwareName : "TOPAZ",
                                       softwareVersion : _.get(this, 'backendVersion', null)
-                                  }
+                                  },
+                                  this.api.sessionId
                               ).then(output =>
                                   this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
                                       .then(hcp =>{
@@ -1162,7 +1163,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                                   excludedIds : excludedIds,
                                   softwareName : "TOPAZ",
                                   softwareVersion : this.backendVersion
-                              }).then(output => {
+                              }, this.api.sessionId).then(output => {
                                   let reader = new FileReader();
                                   const myself = this;
                                   reader.onload = function() {

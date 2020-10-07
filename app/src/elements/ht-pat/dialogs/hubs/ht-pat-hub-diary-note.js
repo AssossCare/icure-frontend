@@ -999,7 +999,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
                                   isPsy: isPsy,
                                   documentId: this.documentId,
                                   attachmentId: this.attachmentId
-                              }).then(output =>
+                              }, this.api.sessionId).then(output =>
                                   this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                                       .then(hcp => {
                                               let reader = new FileReader();
@@ -1084,7 +1084,7 @@ class HtPatHubDiaryNote extends TkLocalizerMixin(mixinBehaviors([IronResizableBe
                                   isPsy: isPsy,
                                   documentId: this.documentId,
                                   attachmentId: this.attachmentId
-                              }).then(output => {
+                              }, this.api.sessionId).then(output => {
                                   let reader = new FileReader();
                                   const myself = this;
                                   reader.onload = function() {

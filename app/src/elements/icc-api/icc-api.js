@@ -121,7 +121,7 @@ class IccApi extends PolymerElement {
           },
           flatRateEInvoicingDate: {
               type: Number,
-              value: 202009
+              value: 202011
           }
       }
   }

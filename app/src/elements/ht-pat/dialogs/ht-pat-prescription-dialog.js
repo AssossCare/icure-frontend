@@ -860,13 +860,22 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
               Promise.all(
                   splitColumns.map(c =>
-                      this.api.fhc().Recipe().createPrescriptionUsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
-                          patient: _.omit(this.patient, ['personalStatus']),
-                          hcp: hcp,
-                          feedback: false,
-                          medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
-                          deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
-                      }).then(prescri => {
+                      this.api.fhc().Recipe().createPrescriptionUsingPOST(
+                          this.api.keystoreId,
+                          this.api.tokenId,
+                          "persphysician",
+                          hcp.nihii,
+                          hcp.ssin,
+                          hcp.lastName,
+                          this.api.credentials.ehpassword,
+                          {
+                              patient: _.omit(this.patient, ['personalStatus']),
+                              hcp: hcp,
+                              feedback: false,
+                              medications: this._convertForRecipe(drugsToBePrescribed).filter(s => c.drugIds.includes(s.id)).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
+                              deliveryDate: this.api.moment(this.deliveryDateString).format("YYYYMMDD")
+                          }
+                      ).then(prescri => {
                           c.rid = prescri.rid
                           c.recipeResponse = prescri
                           drugsToBePrescribed.filter(s => c.drugIds.includes(s.id)).map(s => this.api.contact().medicationValue(s, this.language)).map(mv => mv.prescriptionRID = prescri.rid)
