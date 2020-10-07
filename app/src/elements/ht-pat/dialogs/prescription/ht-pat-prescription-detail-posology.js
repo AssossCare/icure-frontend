@@ -1609,20 +1609,19 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         // Set vars directly to avoid observers
         return promResolve
             .then(() => this.set('isLoading', true))
-            .then(() => this.cachedBoxes = _.get(cachedData, "cachedBoxes"))
-            .then(() => this.medicationContent = _.get(cachedData, "medicationContent"))
+            .then(() => this.set("cachedBoxes", _.get(cachedData, "cachedBoxes")))
+            .then(() => this.set("medicationContent", _.get(cachedData, "medicationContent")))
             .then(() => this.api.sleep(300))
             .then(() => this.set("initializingDate", true))
-            .then(() => this.medicationDetail = _.get(cachedData, "medicationDetail"))
+            .then(() => this.set("medicationDetail", _.get(cachedData, "medicationDetail")))
             .then(() => this.set("initializingDate", false))
-            .then(() => this.reimbursementReason = _.get(cachedData, "reimbursementReason"))
-            .then(() => this.quantityFactor = _.get(cachedData, "quantityFactor"))
+            .then(() => this.set("reimbursementReason", _.get(cachedData, "reimbursementReason")))
+            .then(() => this.set("quantityFactor", _.get(cachedData, "quantityFactor")))
             .then(() => {
                 const period = _.has(_.get(this,"medicationContent"), "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology"
                 _.get(this,"periodConfig.id") !== period ? this.set("periodConfig", _.find(_.get(this,"periodConfigs"), c => _.get(c,"id") === period)) : this._periodChanged()
             })
-            // .then(() => this.periodConfig = _.get(cachedData, "periodConfig"))
-            .then(() => this.frequencies = _.get(cachedData, "frequencies"))
+            .then(() => this.set("frequencies", _.get(cachedData, "frequencies")))
             .then(() => this.api.sleep(300))
             .then(() => this._updateStats())
             .finally(() => this.set('isLoading', false))
