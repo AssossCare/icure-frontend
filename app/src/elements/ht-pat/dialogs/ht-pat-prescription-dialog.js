@@ -107,9 +107,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         </template>
                     </vaadin-grid-column>
                     <dom-repeat items="[[prescriptionsGroups]]" as="group"><template>
-                        <vaadin-grid-column header="[[index]]">
+                        <vaadin-grid-column header="[[_getGroupIndex(group)]]">
                             <template>
-                                <paper-checkbox prescription$="[[item.id]]" group$="[[index]]" on-change="_check"></paper-checkbox>
+                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" on-change="_check"></paper-checkbox>
                             </template>
                         </vaadin-grid-column>
                     </template></dom-repeat>
@@ -191,7 +191,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _check(e){
         const prescr =_.get(e.currentTarget.getAttributeNode("prescription"),'value','')
-        const group = _.get(e.currentTarget.getAttributeNode("group"),'value','')
+        const group = _.get(e.currentTarget.getAttributeNode("group"),'value','')-1
         if(!prescr || !group)return;
         const index = _.get(this,"prescriptionsGroups",[]).findIndex(group => (group || []).find(id => id===prescr))
         this.slice("prescriptionsGroups."+index,_.get(this,"prescriptionsGroup."+index,[]).findIndex(id => id===prescr),1)
@@ -792,6 +792,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         a.href = window.URL.createObjectURL(new Blob([doc], {type : "text/plain;charset=utf-8"}))
         a.download = `prescription_${+new Date()}.xml`
         a.click()
+    }
+
+    _getGroupIndex(group){
+        return _.get(this,"prescriptionsGroups",[]).findIndex( g => g===group)+1
     }
 
 }
