@@ -965,7 +965,8 @@
                                             excludedIds : excludedIds,
                                             softwareName : "TOPAZ",
                                             softwareVersion : this.backendVersion
-                                        }).then(output =>
+                                        }, this.api.sessionId
+                                        ).then(output =>
                                             this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                                                 .then(hcp =>{
                                                     let reader = new FileReader();
@@ -1163,7 +1164,7 @@
                                             excludedIds : excludedIds,
                                             softwareName : "TOPAZ",
                                             softwareVersion : this.backendVersion
-                                        }).then(output => {
+                                        }, this.api.sessionId).then(output => {
                                             let reader = new FileReader();
                                             const myself = this;
                                             reader.onload = function() {
