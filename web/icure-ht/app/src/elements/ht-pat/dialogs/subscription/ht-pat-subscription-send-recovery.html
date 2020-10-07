@@ -434,13 +434,13 @@
                 let promiseCarrier = []
                 let prom = Promise.resolve([])
 
-                this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(_.compact(_.get(this, 'patientsToRecover', []).map(pat => pat.id)))}))
+                this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(_.compact(_.get(this, 'patientsToRecover', []).map(pat => _.get(pat, 'id', null))))}))
                     .then(listOfPatientToRecover => {
                         listOfPatientToRecover.map(pat =>
                             prom = prom.then(() =>
                                 this._sleep(1000).then(() => {
-                                    this.curPat = pat.lastName + " " + pat.firstName
-                                    let recoveryLogItem = {patient: _.get(pat, 'ssin', '') + " " + pat.lastName + " " + pat.firstName, status: "En cours...", patientId : pat.id}
+                                    this.curPat = _.get(pat, 'lastName', null) + " " + _.get(pat, 'firstName', null)
+                                    let recoveryLogItem = {patient: _.get(pat, 'ssin', '') + " " + _.get(pat, 'lastName', null) + " " + _.get(pat, 'firstName', null), status: "En cours...", patientId : _.get(pat, 'id', null)}
                                     recoveryLogItem.timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
                                     this.push("recoveryLog", recoveryLogItem)
 
