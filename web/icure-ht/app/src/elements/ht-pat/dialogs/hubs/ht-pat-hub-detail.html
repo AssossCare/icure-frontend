@@ -1133,7 +1133,7 @@
                                             secretForeignKeys: secretForeignKeys.extractedKeys,
                                             recipient: hcp,
                                             comment: "mycomment"
-                                        }).then(output => {
+                                        }, this.api.sessionId).then(output => {
                                             //creation of the xml file
                                             let file = typeof output === "string" ? new Blob([output] ,{type: "application/xml"}) : output
 
@@ -1178,7 +1178,7 @@
                                             secretForeignKeys: secretForeignKeys.extractedKeys,
                                             recipient: hcp,
                                             comment: "mycomment"
-                                        }).then(output =>{
+                                        }, this.api.sessionId).then(output =>{
                                             return this.api.fhc().Hub().putTransactionSetUsingPOST(this.hubEndPoint,
                                                 this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                                 hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
