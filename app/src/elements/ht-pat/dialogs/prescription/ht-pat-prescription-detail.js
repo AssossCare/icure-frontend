@@ -621,7 +621,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _openPosologyView(e) {
 
-        if(!_.get(e, 'detail.id', null) || !_.get(e, 'detail.type', null)) return
+        const promResolve = Promise.resolve()
+
+        return !_.trim(_.get(e, 'detail.id', null)) || !_.trim(_.get(e, 'detail.internalUuid', null)) || !_.trim(_.get(e, 'detail.type', null)) ? promResolve :
 
         //chronic, history => get drug by id to check if it still exist
         //commercial, substance, compound => no need to check if it still exist
@@ -634,7 +636,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
             const isPrescription = _.get(this,"openParameters.isPrescription",false)
             const drugType = _.trim(_.get(drugInfo,"type")) === "medicine" ? "CD-DRUG-CNK" : _.trim(_.get(drugInfo,"type")) === "substance" ? "CD-VMPGROUP" : "compoundPrescription"
-            const newMedication =  _.size(_.get(drugInfo,"service", false)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
+            const newMedication =  _.size(_.get(drugInfo,"service", null)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
             const medicationValue = newMedication && this.api.contact().medicationValue(newMedication, this.language)
             const hasMedicationTag = _.find(_.get(drugInfo,"service.tags",[]), t => _.trim(_.get(t,"type"))==="CD-ITEM" && _.trim(_.get(t,"code")) === "medication")
             const prescribedProduct = {
@@ -650,8 +652,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 intendedName: prescribedProduct.label,
                 allergyType: _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"type")) === "allergy") ? "allergy" : _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"adr"))) ? "adr" : "",
                 boxes: 1, // 1! box = 1! svc
-                drugType: drugType,
-                internalUuid: _.get(drugInfo, "internalUuid", this.api.crypto().randomUuid())
+                drugType: drugType
             })
 
             if(!medicationValue) {
@@ -698,10 +699,15 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
             })
 
-            const drug = {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo}
+            this.push('drugsToBePrescribe', {
+                id: _.trim(_.get(e ,'detail.id', null)),
+                internalUuid: _.trim(_.get(e ,'detail.internalUuid', null)),
+                type: _.get(e, 'detail.type', null),
+                drug: drugInfo,
+                posology:{}
+            })
 
-            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', drug )
-            this.push('drugsToBePrescribe', _.merge({}, drug, {posology: {}}))
+            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', _.last(this.drugsToBePrescribe))
 
         }).finally(() => {
 

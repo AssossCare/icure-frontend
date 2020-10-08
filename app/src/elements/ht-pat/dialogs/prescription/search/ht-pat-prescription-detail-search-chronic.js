@@ -169,8 +169,8 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
                 </div>
                 <template is="dom-repeat" items="[[searchResult.chronic]]" as="drug">
                     <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg2" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="chronic" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg2" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
                         <div class="td fg05"><iron-icon icon="vaadin:circle" class$="[[_getAtcColor(drug.atcCat)]] atcIcon"></iron-icon></div>
                         <div class="td fg05"></div>
                         <div class="td fg05">[[drug.chapt4]]</div>
@@ -234,15 +234,17 @@ class HtPatPrescriptionDetailSearchChronic extends TkLocalizerMixin(mixinBehavio
 
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
 
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+        return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
             bubbles: true,
             composed: true,
             detail: {
                 id: drugId,
+                internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: true,
-                product: _.get(this, 'searchResult.chronic', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.find(_.get(this, 'searchResult.chronic', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
             }
         }))
 

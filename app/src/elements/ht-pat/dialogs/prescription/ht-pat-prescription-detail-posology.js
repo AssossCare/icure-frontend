@@ -1643,6 +1643,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(medication,"id"))))
                     .then(amps => {
 
+                        // Todo: Fz tenir du compte du fait qu'il puisse avoir expiré il y a moins d'un an -> toujours prescriptible
                         const validAmpps = _
                             .chain(amps)
                             .filter(amp => _.trim(_.get(amp,"status")) === "AUTHORIZED" && _.size(_.get(amp,"ampps")))

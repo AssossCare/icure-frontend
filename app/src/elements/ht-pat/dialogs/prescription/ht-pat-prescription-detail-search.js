@@ -565,61 +565,67 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _formatCommercial(amppList) {
-        return amppList.map(ampp => {
-            const currentDmpp = this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P'))
-            const currentReimbursement = _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null)
-            return {
-                id: _.get(ampp, 'id', null),
-                groupId: _.get(ampp, 'groupId', null),
-                uuid: _.get(ampp, 'uuid', null),
-                uuids: _.get(ampp, 'uuids', null),
-                hasChildren: _.get(ampp, 'hasChildren', null),
-                parentUuid: _.get(ampp, 'parentUuid', null),
-                ctiExtended: _.get(ampp, 'ctiExtended', null),
-                label: _.get(ampp, 'intendedName', null),
-                atcCodes: _.get(ampp, 'atcCodes', null),
-                atcCat: _.get(ampp, "atcCodes[0][0]", ""),
-                allergies: _.get(ampp, 'allergies', []),
-                allergyType: this._getAllergyType(_.get(ampp, 'allergies', [])),
-                unit: _.get(ampp, 'unit', null),
-                amp: _.get(ampp, 'amp', null),
-                officialName: _.get(ampp, 'amp.officialName', null),
-                posologyNote: _.get(ampp, 'posologyNote', null),
-                dividable: _.get(ampp, 'dividable', null),
-                packDisplayValue: _.get(ampp, 'packDisplayValue', null),
-                samCode: _.get(ampp, "amp.code", ""),
-                samDate: _.get(ampp, 'samDate', null),
-                type: "medicine",
-                reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
-                informations:{
-                    ampp: _.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')),
-                    dmpp: currentDmpp,
-                    crmLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'crmLink', null),
-                    currentReimbursement: currentReimbursement,
-                    deliveryModus: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModus', null),
-                    deliveryModusSpecification: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModusSpecification', null),
-                    leafletLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'leafletLink', null),
-                    noGenericPrescriptionReasons:_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'noGenericPrescriptionReasons', null),
-                    posologyNote: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'posologyNote', null),
-                    speciallyRegulated: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'speciallyRegulated', null),
-                    supplyProblems: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null),
-                    currentSupplyProblem: this._getCurrentSupplyProblem(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null)),
-                    blackTriangle: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'amp.blackTriangle', null),
-                    company: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'compagny', null),
-                    commercializations: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null),
-                    currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
-                    amppFinished: this._getFinishedCommercializations(_.get(ampp, 'amp.ampps', [])),
-                    vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
-                    vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
-                    rmaLink: _.get(ampp, 'rmaPatientLink', {}),
-                    rmaProfessionalLink: _.get(ampp, 'rmaProfessionalLink', {}),
-                    rma: !_.isEmpty(_.get(ampp, 'rmaPatientLink', {})),
-                    patientPrice: this._getPatientPrice(currentReimbursement, currentDmpp),
-                    publicPrice: this._getPublicPrice(currentReimbursement, currentDmpp),
-                    priceIndex: this._getPriceIndex(currentDmpp)
+
+        return _
+            .chain(amppList)
+            .map(ampp => {
+                const currentDmpp = this._getCurrentDmpp(_.get(ampp, 'dmpps', []).filter(dmpp => _.get(dmpp, 'code', null) === _.get(ampp, 'id', null) && _.get(dmpp, 'deliveryEnvironment', null) === 'P'))
+                const currentReimbursement = _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'currentReimbursement', null)
+                return {
+                    id: _.get(ampp, 'id', null),
+                    groupId: _.get(ampp, 'groupId', null),
+                    uuid: _.get(ampp, 'uuid', null),
+                    uuids: _.get(ampp, 'uuids', null),
+                    hasChildren: _.get(ampp, 'hasChildren', null),
+                    parentUuid: _.get(ampp, 'parentUuid', null),
+                    ctiExtended: _.get(ampp, 'ctiExtended', null),
+                    label: _.get(ampp, 'intendedName', null),
+                    atcCodes: _.get(ampp, 'atcCodes', null),
+                    atcCat: _.get(ampp, "atcCodes[0][0]", ""),
+                    allergies: _.get(ampp, 'allergies', []),
+                    allergyType: this._getAllergyType(_.get(ampp, 'allergies', [])),
+                    unit: _.get(ampp, 'unit', null),
+                    amp: _.get(ampp, 'amp', null),
+                    officialName: _.get(ampp, 'amp.officialName', null),
+                    posologyNote: _.get(ampp, 'posologyNote', null),
+                    dividable: _.get(ampp, 'dividable', null),
+                    packDisplayValue: _.get(ampp, 'packDisplayValue', null),
+                    samCode: _.get(ampp, "amp.code", ""),
+                    samDate: _.get(ampp, 'samDate', null),
+                    type: "medicine",
+                    reinfPharmaVigiIcon: this._reinfPharmaVigiIconSamV2(_.get(ampp, "amp", false)),
+                    informations:{
+                        ampp: _.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')),
+                        dmpp: currentDmpp,
+                        crmLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'crmLink', null),
+                        currentReimbursement: currentReimbursement,
+                        deliveryModus: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModus', null),
+                        deliveryModusSpecification: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'deliveryModusSpecification', null),
+                        leafletLink: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'leafletLink', null),
+                        noGenericPrescriptionReasons:_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'noGenericPrescriptionReasons', null),
+                        posologyNote: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'posologyNote', null),
+                        speciallyRegulated: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'speciallyRegulated', null),
+                        supplyProblems: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null),
+                        currentSupplyProblem: this._getCurrentSupplyProblem(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'supplyProblems', null)),
+                        blackTriangle: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'amp.blackTriangle', null),
+                        company: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'compagny', null),
+                        commercializations: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null),
+                        currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
+                        amppFinished: this._getFinishedCommercializations(_.get(ampp, 'amp.ampps', [])),
+                        allAmppExpiredMorThanAYearAgo: this._allAmppExpiredMorThanAYearAgo(_.get(ampp, 'amp.ampps', [])),
+                        vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
+                        vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
+                        rmaLink: _.get(ampp, 'rmaPatientLink', {}),
+                        rmaProfessionalLink: _.get(ampp, 'rmaProfessionalLink', {}),
+                        rma: !_.isEmpty(_.get(ampp, 'rmaPatientLink', {})),
+                        patientPrice: this._getPatientPrice(currentReimbursement, currentDmpp),
+                        publicPrice: this._getPublicPrice(currentReimbursement, currentDmpp),
+                        priceIndex: this._getPriceIndex(currentDmpp)
+                    }
                 }
-            }
         })
+        .filter(it => !_.get(it,"informations.allAmppExpiredMorThanAYearAgo"))
+        .value()
     }
 
     _getCurrentSupplyProblem(supplyProblems){
@@ -635,6 +641,13 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     _getFinishedCommercializations(ampps){
        const now = moment().valueOf()
        return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))) || []
+    }
+
+    _allAmppExpiredMorThanAYearAgo(ampps){
+
+        const now = +new Date()
+        return !_.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(c.to).add(12, "month") >= now || !c.to && c.from && c.from <= now))
+
     }
 
     _getCurrentDmpp(dmpps){
