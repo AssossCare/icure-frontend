@@ -109,7 +109,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     <dom-repeat items="[[prescriptionsGroups]]" as="group"><template>
                         <vaadin-grid-column header="[[_getGroupIndex(group)]]">
                             <template>
-                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" on-change="_check"></paper-checkbox>
+                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" on-change="_check" checked="[[_isCheck(item.id,group)]]"></paper-checkbox>
                             </template>
                         </vaadin-grid-column>
                     </template></dom-repeat>
@@ -192,15 +192,19 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _check(e){
         const prescr =_.get(e.currentTarget.getAttributeNode("prescription"),'value','')
         const group = _.get(e.currentTarget.getAttributeNode("group"),'value','')-1
-        if(!prescr || !group)return;
+        if(!prescr || group<0)return;
         const index = _.get(this,"prescriptionsGroups",[]).findIndex(group => (group || []).find(id => id===prescr))
-        this.slice("prescriptionsGroups."+index,_.get(this,"prescriptionsGroup."+index,[]).findIndex(id => id===prescr),1)
+        index>=0 && this.set("prescriptionsGroups."+index,_.get(this,"prescriptionsGroup."+index,[]).filter(id => id!==prescr))
         if(group!==index){
             this.push("prescriptionsGroups."+group,prescr)
         }
 
-        this.set("prescriptionsGroups",_.compact(_.get(this,"prescriptionsGroups",[])).concat([]))
+        this.set("prescriptionsGroups",_.get(this,"prescriptionsGroups",[]).filter(group => group && group.length))
+        this.push("prescriptionsGroups",[])
+    }
 
+    _isCheck(id,group){
+        return !!(group || []).find(g => g===id)
     }
 
     open() {
