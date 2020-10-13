@@ -612,7 +612,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         commercializations: _.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null),
                         currentCommercialization: this._getCurrentCommercialization(_.get(_.get(ampp, 'amp.ampps', []).find(a => _.get(ampp, 'id', null) === _.get(a, 'id', '')), 'commercializations', null)),
                         amppFinished: this._getFinishedCommercializations(_.get(ampp, 'amp.ampps', [])),
-                        allAmppExpiredMorThanAYearAgo: this._allAmppExpiredMorThanAYearAgo(_.get(ampp, 'amp.ampps', [])),
+                        hasAtLeastOneValidAmpp: this._hasAtLeastOneValidAmpp(_.get(ampp, 'amp.ampps', [])),
                         vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
                         vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
                         rmaLink: _.get(ampp, 'rmaPatientLink', {}),
@@ -624,7 +624,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     }
                 }
         })
-        .filter(it => !_.get(it,"informations.allAmppExpiredMorThanAYearAgo"))
+        .filter(it => _.get(it,"informations.hasAtLeastOneValidAmpp"))
         .value()
     }
 
@@ -643,10 +643,11 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
        return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))) || []
     }
 
-    _allAmppExpiredMorThanAYearAgo(ampps){
+    _hasAtLeastOneValidAmpp(ampps){
 
+        // Commercialization is still valid when expired less than a year ago
         const now = +new Date()
-        return !_.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(c.to).add(12, "month") >= now || !c.to && c.from && c.from <= now))
+        return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(c.to).add(12, "month") >= now || !c.to && c.from && c.from <= now))
 
     }
 
