@@ -1496,8 +1496,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   return Promise.resolve(this._checkShowWelcomePage())
               })
           }else{
-              if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
-              if(fhcurl) this.set('fhcUrl',fhcurl.selected)
+
+              // That's gonna be a problem when "selected" not defined @carolais, no ?
+              //if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+              icureurl && icureurl.selected && this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+
+              // That's gonna be a problem when "selected" not defined @carolais, no ?
+              fhcurl && this.set('fhcUrl',fhcurl.selected||null)
+
               this.$["loginDialog"].disable()
               return Promise.resolve(this._checkShowWelcomePage())
           }
