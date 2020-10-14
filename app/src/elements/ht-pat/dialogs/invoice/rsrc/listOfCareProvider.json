@@ -1,0 +1,14 @@
+[
+  {
+    "id": "persphysician",
+    "label": {"fr": "Médecin", "nl": "Arts", "en": "Physician"}
+  },
+  {
+    "id": "traineesupervised",
+    "label": {"fr": "Méd.stag. superv.", "nl": "Stagiair arts", "en": "Superv. trainee"}
+  },
+  {
+    "id": "trainee",
+    "label": {"fr": "Médecin stagiaire", "nl": "Stagiair arts", "en": "Trainee physician"}
+  }
+]

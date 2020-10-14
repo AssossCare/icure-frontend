@@ -1,0 +1,18 @@
+[
+    {
+      "id": 1,
+      "label": {
+        "fr": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise",
+        "nl": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise",
+        "en": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise"
+      }
+    },
+    {
+      "id": 2,
+      "label": {
+        "fr": "Le bénéficiaire ne dispose pas de document d’identité",
+        "nl": "Le bénéficiaire ne dispose pas de document d’identité",
+        "en": "Le bénéficiaire ne dispose pas de document d’identité"
+      }
+    }
+  ]

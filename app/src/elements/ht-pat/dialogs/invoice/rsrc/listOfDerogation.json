@@ -1,0 +1,26 @@
+[
+    {
+      "id": 0,
+      "label": {
+        "fr": "Pas de dérogation",
+        "nl": "No derogation",
+        "en": "No derogation"
+      }
+    },
+    {
+      "id": 3,
+      "label": {
+        "fr": "2e prestation identique de la journée",
+        "nl": "2nd identical service of the day",
+        "en": "2nd identical service of the day"
+      }
+    },
+    {
+      "id": 4,
+      "label": {
+        "fr": "3e ou suivante prestation identique de la journée",
+        "nl": "3nd or following identical service of the day",
+        "en": "3nd or following identical service of the day"
+      }
+    }
+]

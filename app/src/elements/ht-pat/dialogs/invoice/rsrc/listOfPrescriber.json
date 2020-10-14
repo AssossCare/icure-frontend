@@ -1,0 +1,56 @@
+[
+    {
+      "id": 0,
+      "label": {
+        "fr": "Pas de prescripteur",
+        "nl": "No prescriber",
+        "en": "No prescriber"
+      },
+      "prescriber": false
+    },
+    {
+      "id": 1,
+      "label":{
+        "fr": "La prestation peut être attribuée à un prescripteur",
+        "nl": "The benefit can be attributed to a prescriber",
+        "en": "The benefit can be attributed to a prescriber physician"
+      },
+      "prescriber" : true
+    },
+    {
+      "id": 3,
+      "label": {
+        "fr": "Les prestations sont effectuées pour ses propres patients",
+        "nl": "The services are performed for his own patients",
+        "en": "The services are performed for his own patients"
+      },
+      "prescriber": false
+    },
+    {
+      "id": 4,
+      "label": {
+        "fr": "Il s'agit de prestations ajoutées",
+        "nl": "These are added benefits",
+        "en": "These are added benefits"
+      },
+      "prescriber": true
+    },
+    {
+      "id": 5,
+      "label": {
+        "fr": "La prestation peut être attribuée à un prescripteur et elle a été substituée",
+        "nl": "The benefit can be attributed to a prescriber and has been substituted",
+        "en": "The benefit can be attributed to a prescriber and has been substituted"
+      },
+      "prescriber": true
+    },
+    {
+      "id": 6,
+      "label": {
+        "fr": "La prestation est prescrite par différents prescripteurs et elle a été substituée",
+        "nl": "The benefit is prescribed by different prescribers and has been substituted",
+        "en": "The benefit is prescribed by different prescribers and has been substituted"
+      },
+      "prescriber": true
+    }
+  ]

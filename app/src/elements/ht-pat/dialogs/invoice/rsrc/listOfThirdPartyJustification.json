@@ -1,0 +1,86 @@
+[
+    {
+      "id": "0",
+      "label": {
+        "fr": "0. Pas de justification",
+        "nl": "0. No justification",
+        "en": "0. No justification"
+      }
+    },
+    {
+      "id": "1",
+      "label": {
+        "fr": "1. Décès, coma",
+        "nl": "1. Death, coma",
+        "en": "1. Death, coma"
+      }
+    },
+    {
+      "id": "2",
+      "label": {
+        "fr": "2. Etat d'urgence financière",
+        "nl": "2. State of financial emergency",
+        "en": "2. State of financial emergency"
+      }
+    },
+    {
+      "id": "3",
+      "label": {"fr": "3. BIM", "nl": "3. BIM", "en": "3. BIM"}
+    },
+    {
+      "id": "4",
+      "label": {
+        "fr": "4. Prestations dispensées dans le cadre d'un accord prévoyant le paiement forfaitaire de cetaines prestations",
+        "nl": "4. Benefits provided under an agreement providing for the payment of certain benefits",
+        "en": "4. Benefits provided under an agreement providing for the payment of certain benefits"
+      }
+    },
+    {
+      "id": "5",
+      "label": {
+        "fr": "5. Prestations dispensées dans les centres de santé mentale, centres de planning familial et centres d'accueil pour toxicomanes",
+        "nl": "5. Services Provided in Mental Health Centers, Family Planning Centers and Addiction Centers",
+        "en": "5. Services Provided in Mental Health Centers, Family Planning Centers and Addiction Centers"
+      }
+    },
+    {
+      "id": "6",
+      "label": {
+        "fr": "6. Prestations dispensées dans des établissements spécialisés dans les soins aux enfants, aux personnes agées ou aux handicapés",
+        "nl": "6. Services provided in institutions specializing in the care of children, the elderly people or the disabled",
+        "en": "6. Services provided in institutions specializing in the care of children, the elderly people or the disabled"
+      }
+    },
+    {
+      "id": "7",
+      "label": {
+        "fr": "7. Prestations effectuées dans le cadre d'un service de garde de médecine générale",
+        "nl": "7. Services provided as part of a general medical care service",
+        "en": "7. Services provided as part of a general medical care service"
+      }
+    },
+    {
+      "id": "8",
+      "label": {
+        "fr": "8. Statut affection chronique (sur base d'une attestation fournie par le patient)",
+        "nl": "8. Chronic condition",
+        "en": "8. Chronic condition"
+      }
+    },
+    {
+      "id": "9",
+      "label": {
+        "fr": "9. Interdiction de facturer en tiers-payant via efact",
+        "nl": "9. Prohibition of third-party billing via efact",
+        "en": "9. Prohibition of third-party billing via efact"
+      }
+    },
+    {
+      "id": "p",
+      "label": {
+        "fr": "P. Patients palliatifs à domicile",
+        "nl": "P. Home palliative patients",
+        "en": "P. Home palliative patients"
+      }
+    }
+  ]

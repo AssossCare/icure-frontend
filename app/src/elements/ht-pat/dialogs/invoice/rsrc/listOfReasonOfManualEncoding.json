@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "label": {
+        "fr": "Utilisation d’un document d’identité sans puce",
+        "nl": "Using an identity document without a chip",
+        "en": "Using an identity document without a chip"
+      }
+    },
+    {
+      "id": 2,
+      "label": {
+        "fr": "Indisponibilité du lecteur de carte",
+        "nl": "Unavailability of the card reader",
+        "en": "Unavailability of the card reader"
+      }
+    },
+    {
+      "id": 3,
+      "label": {
+        "fr": "Panne du système informatique",
+        "nl": "Computer system failure",
+        "en": "Computer system failure"
+      }
+    }
+  ]
+

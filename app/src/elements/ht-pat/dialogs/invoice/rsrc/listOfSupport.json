@@ -1,0 +1,58 @@
+[
+    {
+      "id": 1,
+      "label": {
+        "fr": "Carte d’identité électronique belge (ou Kids-id)",
+        "nl": "Belgium electronic identity card (or Kids-id)",
+        "en": "Belgium electronic identity card (or Kids-id)"
+      }
+    },
+    {
+      "id": 2,
+      "label": {
+        "fr": "Carte d’identité électronique étranger",
+        "nl": "Other country electronic identity card",
+        "en": "Other country electronic identity card"
+      }
+    },
+    {
+      "id": 4,
+      "label": {
+        "fr": "Carte ISI+",
+        "nl": "ISI+ card",
+        "en": "ISI+ card"
+      }
+    },
+    {
+      "id": 5,
+      "label": {
+        "fr": "Document de séjour électronique",
+        "nl": "Electronic residence document",
+        "en": "Electronic residence document"
+      }
+    },
+    {
+      "id": 7,
+      "label": {
+        "fr": "Vignette avec code-à-barres",
+        "nl": "Thumbnail with barcode",
+        "en": "Thumbnail with barcode"
+      }
+    },
+    {
+      "id": 8,
+      "label": {
+        "fr": "Attestation d’assuré social",
+        "nl": "Social insurance certificate",
+        "en": "Social insurance certificate"
+      }
+    },
+    {
+      "id": 9,
+      "label": {
+        "fr": "Attestation de perte ou de vol",
+        "nl": "Certificate of loss or theft",
+        "en": "Certificate of loss or theft"
+      }
+    }
+  ]

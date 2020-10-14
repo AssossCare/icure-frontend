@@ -1155,11 +1155,11 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                                             drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]]
                                             on-save-document-as-service="[[_handleSaveDocumentAsService]]"
                                             on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>
-                
+                <!--   
                 <ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]"
                                          current-contact="[[currentContact]]" i18n="[[i18n]]"
                                          resources="[[resources]]"></ht-pat-invoicing-dialog>
-                
+                -->
                 <template is="dom-if" if="[[busySpinner]]">
                     <div id="busySpinner">
                         <div id="busySpinnerContainer">
@@ -1899,7 +1899,10 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     }
 
     _invoicing() {
-        this.$.invoicingForm.open()
+        this.dispatchEvent(new CustomEvent("open-invoice-dialog", {
+            composed: true,
+            bubbles: true
+        }))
     }
 
     _ch4() {

@@ -1,0 +1,26 @@
+[
+    {
+      "id": "efact",
+      "label": {"fr": "eFact", "nl": "eFact", "en": "eFact"}
+    },
+    {
+      "id": "eattest",
+      "label": {"fr": "eAttest", "nl": "eAttest", "en": "eAttest"}
+    },
+    {
+      "id": "mediprima",
+      "label": {"fr": "Mediprima", "nl": "Mediprima", "en": "Mediprima"}
+    },
+    {
+      "id": "paper",
+      "label": {"fr": "Papier", "nl": "Paper", "en": "Paper"}
+    },
+    {
+      "id":"technicalAct",
+      "label":{
+        "fr": "Papier - Acte technique",
+        "nl": "Paper - Technische handeling",
+        "en": "Paper - Technical act"
+      }
+    }
+  ]

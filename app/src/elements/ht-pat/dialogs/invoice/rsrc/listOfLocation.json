@@ -1,0 +1,29 @@
+[
+    {
+      "id": 0,
+      "label": {"fr": "Pas de lieu de prestation", "nl": "Geen location", "en": "No location"},
+      "location": "",
+      "cdHcParty": ""
+    },
+    {
+      "id": 1,
+      "label": {
+        "fr": "La prestation est dispensée effectuée dans un hôpital",
+        "nl": "The benefit is provided at a hospital",
+        "en": "The benefit is provided at a hospital"
+      },
+      "location": "HOSPITAL",
+      "cdHcParty": "orghospital"
+    },
+    {
+      "id": 2,
+      "label": {
+        "fr": "La prestation est dispensée dans un labo",
+        "nl": "The benefit is provided at a labo",
+        "en": "The benefit is provided at a labo"
+      },
+      "location": "LABO",
+      "cdHcParty": "orglaboratory"
+
+    }
+  ]

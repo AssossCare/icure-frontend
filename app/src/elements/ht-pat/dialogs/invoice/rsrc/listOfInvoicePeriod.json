@@ -1,0 +1,19 @@
+[
+    {
+      "id": 0,
+      "label": {"fr": "Semaine", "nl": "Week", "en": "Week"}
+    },
+    {
+      "id": 1,
+      "label": {"fr": "Nuit", "nl": "Nacht", "en": "Night"}
+    },
+    {
+      "id": 2,
+      "label": {"fr": "Weekend", "nl": "Weekend", "en": "Weekend"}
+    },
+    {
+      "id": 3,
+      "label": {"fr": "Jour férié", "nl": "Vakantie", "en": "Public holiday"}
+    }
+  ]
+

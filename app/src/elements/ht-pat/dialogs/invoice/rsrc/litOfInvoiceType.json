@@ -1,0 +1,14 @@
+[
+    {
+      "id": "mutualfund",
+      "label": {"fr": "Mutuelle", "nl": "Mutual", "en": "Mutual"}
+    },
+    {
+      "id": "patient",
+      "label": {"fr": "Patient", "nl": "Patient", "en": "Patient"}
+    },
+    {
+      "id": "payingagency",
+      "label": {"fr": "Autre organisme", "nl": "Anders", "en": "Paying agency"}
+    }
+  ]

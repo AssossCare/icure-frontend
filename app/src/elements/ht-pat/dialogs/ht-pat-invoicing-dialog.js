@@ -1646,423 +1646,53 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             },
             paymentTypes: {
                 type: Array,
-                value: () => [
-                    {
-                        id: "wired",
-                        label: {"fr": "Virement", "nl": "Overschrijving", "en": "Wired"}
-                    },
-                    {
-                        id: "cash",
-                        label: {"fr": "En espèces", "nl": "Cash", "en": "Cash"}
-                    },
-                    {
-                        id: "debitcard",
-                        label: {"fr": "Carte de débit", "nl": "Debit kaart", "en": "Debit card"}
-                    },
-                    {
-                        id: "creditcard",
-                        label: {"fr": "Carte de crédit", "nl": "Credit kaart", "en": "Credit card"}
-                    }
-                ]
+                value: () => []
             },
             invoiceType: {
                 type: Array,
-                value: () => [
-                    {
-                        id: "mutualfund",
-                        label: {"fr": "Mutuelle", "nl": "Mutual", "en": "Mutual"}
-                    },
-                    {
-                        id: "patient",
-                        label: {"fr": "Patient", "nl": "Patient", "en": "Patient"}
-                    },
-                    {
-                        id: "payingagency",
-                        label: {"fr": "Autre organisme", "nl": "Anders", "en": "Paying agency"}
-                    }
-                ]
+                value: () => []
             },
             sentMediumType: {
                 type: Array,
-                value: () => [
-                    {
-                        id: "efact",
-                        label: {"fr": "eFact", "nl": "eFact", "en": "eFact"}
-                    },
-                    {
-                        id: "eattest",
-                        label: {"fr": "eAttest", "nl": "eAttest", "en": "eAttest"}
-                    },
-                    {
-                        id: "mediprima",
-                        label: {"fr": "Mediprima", "nl": "Mediprima", "en": "Mediprima"}
-                    },
-                    {
-                        id: "paper",
-                        label: {"fr": "Papier", "nl": "Paper", "en": "Paper"}
-                    },
-                    {
-                        id:"technicalAct",
-                        label:{
-                            fr: 'Papier - Acte technique',
-                            nl: 'Paper - Technische handeling',
-                            en: 'Paper - Technical act'
-                        }
-                    }
-                ]
+                value: () => []
             },
             invoicePeriod: {
                 type: Array,
-                value: () => [
-                    {
-                        id: 0,
-                        label: {"fr": "Semaine", "nl": "Week", "en": "Week"}
-                    },
-                    {
-                        id: 1,
-                        label: {"fr": "Nuit", "nl": "Nacht", "en": "Night"}
-                    },
-                    {
-                        id: 2,
-                        label: {"fr": "Weekend", "nl": "Weekend", "en": "Weekend"}
-                    },
-                    {
-                        id: 3,
-                        label: {"fr": "Jour férié", "nl": "Vakantie", "en": "Public holiday"}
-                    }
-                ]
+                value: () => []
             },
             careProviderType: {
                 type: Array,
-                value: () => [
-                    {
-                        id: "persphysician",
-                        label: {"fr": "Médecin", "nl": "Arts", "en": "Physician"}
-                    },
-                    {
-                        id: "traineesupervised",
-                        label: {"fr": "Méd.stag. superv.", "nl": "Stagiair arts", "en": "Superv. trainee"}
-                    },
-                    {
-                        id: "trainee",
-                        label: {"fr": "Médecin stagiaire", "nl": "Stagiair arts", "en": "Trainee physician"}
-                    }
-                ]
+                value: () => []
             },
             prescriberType: {
                 type: Array,
-                value: () => [
-                    {
-                        id: 0,
-                        label: {"fr": "Pas de prescripteur", "nl": "No prescriber", "en": "No prescriber"},
-                        prescriber: false
-                    },
-                    {
-                        id: 1,
-                        label: {
-                            "fr": "La prestation peut être attribuée à un prescripteur",
-                            "nl": "The benefit can be attributed to a prescriber",
-                            "en": "The benefit can be attributed to a prescriber physician"
-                        },
-                        prescriber: true
-                    },
-                    {
-                        id: 3,
-                        label: {
-                            "fr": "Les prestations sont effectuées pour ses propres patients",
-                            "nl": "The services are performed for his own patients",
-                            "en": "The services are performed for his own patients"
-                        },
-                        prescriber: false
-                    },
-                    {
-                        id: 4,
-                        label: {
-                            "fr": "Il s'agit de prestations ajoutées",
-                            "nl": "These are added benefits",
-                            "en": "These are added benefits"
-                        },
-                        prescriber: true
-                    },
-                    {
-                        id: 5,
-                        label: {
-                            "fr": "La prestation peut être attribuée à un prescripteur et elle a été substituée",
-                            "nl": "The benefit can be attributed to a prescriber and has been substituted",
-                            "en": "The benefit can be attributed to a prescriber and has been substituted"
-                        },
-                        prescriber: true
-                    },
-                    {
-                        id: 6,
-                        label: {
-                            "fr": "La prestation est prescrite par différents prescripteurs et elle a été substituée",
-                            "nl": "The benefit is prescribed by different prescribers and has been substituted",
-                            "en": "The benefit is prescribed by different prescribers and has been substituted"
-                        },
-                        prescriber: true
-                    }
-                ]
+                value: () => []
             },
             locationType: {
                 type: Array,
-                value: () => [
-                    {
-                        id: 0,
-                        label: {"fr": "Pas de lieu de prestation", "nl": "Geen location", "en": "No location"},
-                        location: "",
-                        cdHcParty: ""
-                    },
-                    {
-                        id: 1,
-                        label: {
-                            "fr": "La prestation est dispensée effectuée dans un hôpital",
-                            "nl": "The benefit is provided at a hospital",
-                            "en": "The benefit is provided at a hospital"
-                        },
-                        location: "HOSPITAL",
-                        cdHcParty: "orghospital"
-                    },
-                    {
-                        id: 2,
-                        label: {
-                            "fr": "La prestation est dispensée dans un labo",
-                            "nl": "The benefit is provided at a labo",
-                            "en": "The benefit is provided at a labo"
-                        },
-                        location: "LABO",
-                        cdHcParty: "orglaboratory"
-
-                    }
-                ]
+                value: () => [ ]
             },
             thirdPartyJustification: {
                 type: Array,
-                value: () => [
-
-                    {
-                        id: "0",
-                        label: {
-                            "fr": "0. Pas de justification",
-                            "nl": "0. No justification",
-                            "en": "0. No justification"
-                        }
-                    },
-                    {
-                        id: "1",
-                        label: {"fr": "1. Décès, coma", "nl": "1. Death, coma", "en": "1. Death, coma"}
-                    },
-                    {
-                        id: "2",
-                        label: {
-                            "fr": "2. Etat d'urgence financière",
-                            "nl": "2. State of financial emergency",
-                            "en": "2. State of financial emergency"
-                        }
-                    },
-                    {
-                        id: "3",
-                        label: {"fr": "3. BIM", "nl": "3. BIM", "en": "3. BIM"}
-                    },
-                    {
-                        id: "4",
-                        label: {
-                            "fr": "4. Prestations dispensées dans le cadre d'un accord prévoyant le paiement forfaitaire de cetaines prestations",
-                            "nl": "4. Benefits provided under an agreement providing for the payment of certain benefits",
-                            "en": "4. Benefits provided under an agreement providing for the payment of certain benefits"
-                        }
-                    },
-                    {
-                        id: "5",
-                        label: {
-                            "fr": "5. Prestations dispensées dans les centres de santé mentale, centres de planning familial et centres d'accueil pour toxicomanes",
-                            "nl": "5. Services Provided in Mental Health Centers, Family Planning Centers and Addiction Centers",
-                            "en": "5. Services Provided in Mental Health Centers, Family Planning Centers and Addiction Centers"
-                        }
-                    },
-                    {
-                        id: "6",
-                        label: {
-                            "fr": "6. Prestations dispensées dans des établissements spécialisés dans les soins aux enfants, aux personnes agées ou aux handicapés",
-                            "nl": "6. Services provided in institutions specializing in the care of children, the elderly people or the disabled",
-                            "en": "6. Services provided in institutions specializing in the care of children, the elderly people or the disabled"
-                        }
-                    },
-                    {
-                        id: "7",
-                        label: {
-                            "fr": "7. Prestations effectuées dans le cadre d'un service de garde de médecine générale",
-                            "nl": "7. Services provided as part of a general medical care service",
-                            "en": "7. Services provided as part of a general medical care service"
-                        }
-                    },
-                    {
-                        id: "8",
-                        label: {
-                            "fr": "8. Statut affection chronique (sur base d'une attestation fournie par le patient)",
-                            "nl": "8. Chronic condition",
-                            "en": "8. Chronic condition"
-                        }
-                    },
-                    {
-                        id: "9",
-                        label: {
-                            "fr": "9. Interdiction de facturer en tiers-payant via efact",
-                            "nl": "9. Prohibition of third-party billing via efact",
-                            "en": "9. Prohibition of third-party billing via efact"
-                        }
-                    },
-                    {
-                        id: "p",
-                        label: {
-                            "fr": "P. Patients palliatifs à domicile",
-                            "nl": "P. Home palliative patients",
-                            "en": "P. Home palliative patients"
-                        }
-                    }
-                ]
+                value: () => []
             },
             reasonOfManualEncoding: {
                 type: Object,
-                value: () => [
-                    {
-                        id: 1,
-                        label: {
-                            "fr": "Utilisation d’un document d’identité sans puce",
-                            "nl": "Using an identity document without a chip",
-                            "en": "Using an identity document without a chip"
-                        }
-                    },
-                    {
-                        id: 2,
-                        label: {
-                            "fr": "Indisponibilité du lecteur de carte",
-                            "nl": "Unavailability of the card reader",
-                            "en": "Unavailability of the card reader"
-                        }
-                    },
-                    {
-                        id: 3,
-                        label: {
-                            "fr": "Panne du système informatique",
-                            "nl": "Computer system failure",
-                            "en": "Computer system failure"
-                        }
-                    }
-                ]
+                value: () => []
 
             },
             invoicingCodeDerogationType: {
                 type: Object,
-                value: () => [
-                    {
-                        id: 0,
-                        label: {
-                            "fr": "Pas de dérogation",
-                            "nl": "No derogation",
-                            "en": "No derogation"
-                        }
-                    },
-                    {
-                        id: 3,
-                        label: {
-                            "fr": "2e prestation identique de la journée",
-                            "nl": "2nd identical service of the day",
-                            "en": "2nd identical service of the day"
-                        }
-                    },
-                    {
-                        id: 4,
-                        label: {
-                            "fr": "3e ou suivante prestation identique de la journée",
-                            "nl": "3nd or following identical service of the day",
-                            "en": "3nd or following identical service of the day"
-                        }
-                    }
-                ]
+                value: () => []
             },
             typeOfSupport: {
                 type: Object,
-                value: () => [
-                    {
-                        id: 1,
-                        label: {
-                            "fr": "Carte d’identité électronique belge (ou Kids-id)",
-                            "nl": "Belgium electronic identity card (or Kids-id)",
-                            "en": "Belgium electronic identity card (or Kids-id)"
-                        }
-                    },
-                    {
-                        id: 2,
-                        label: {
-                            "fr": "Carte d’identité électronique étranger",
-                            "nl": "Other country electronic identity card",
-                            "en": "Other country electronic identity card"
-                        }
-                    },
-                    {
-                        id: 4,
-                        label: {
-                            "fr": "Carte ISI+",
-                            "nl": "ISI+ card",
-                            "en": "ISI+ card"
-                        }
-                    },
-                    {
-                        id: 5,
-                        label: {
-                            "fr": "Document de séjour électronique",
-                            "nl": "Electronic residence document",
-                            "en": "Electronic residence document"
-                        }
-                    },
-                    {
-                        id: 7,
-                        label: {
-                            "fr": "Vignette avec code-à-barres",
-                            "nl": "Thumbnail with barcode",
-                            "en": "Thumbnail with barcode"
-                        }
-                    },
-                    {
-                        id: 8,
-                        label: {
-                            "fr": "Attestation d’assuré social",
-                            "nl": "Social insurance certificate",
-                            "en": "Social insurance certificate"
-                        }
-                    },
-                    {
-                        id: 9,
-                        label: {
-                            "fr": "Attestation de perte ou de vol",
-                            "nl": "Certificate of loss or theft",
-                            "en": "Certificate of loss or theft"
-                        }
-                    }
-                ]
+                value: () => []
 
             },
             typeOfReasonVignette: {
                 type: Object,
-                value: () => [
-                    {
-                        id: 1,
-                        label: {
-                            "fr": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise",
-                            "nl": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise",
-                            "en": "Le bénéficiaire n’est pas présent au moment de la prestation et sa présence simultanée et celle du dispensateur n’est pas réglementairement requise"
-                        }
-                    },
-                    {
-                        id: 2,
-                        label: {
-                            "fr": "Le bénéficiaire ne dispose pas de document d’identité",
-                            "nl": "Le bénéficiaire ne dispose pas de document d’identité",
-                            "en": "Le bénéficiaire ne dispose pas de document d’identité"
-                        }
-                    }
-                ]
+                value: () => []
 
             },
             manualEncoding: {
@@ -2210,64 +1840,7 @@ class HtPatInvoicingDialog extends TkLocalizerMixin(mixinBehaviors([IronResizabl
             },
             reasonOfCancel: {
                 type: Object,
-                value: () => [
-                    {
-                        id: "A",
-                        label: {
-                            "fr": "Erreur de patient",
-                            "nl": "Erreur de patient",
-                            "en": "Patient error"
-                        }
-                    },
-                    {
-                        id: "B",
-                        label: {
-                            "fr": "Erreur de prestataire (médecin B en lieu et place du médecin A)",
-                            "nl": "Erreur de prestataire (médecin B en lieu et place du médecin A)",
-                            "en": "Provider error (doctor B instead of doctor A)"
-                        }
-                    },
-                    {
-                        id: "C",
-                        label: {
-                            "fr": "Erreur dans un des éléments de l’ASD (ex. : code nomenclature, n° de dent, montant de l’honoraire/montant à payer par le patient, …)",
-                            "nl": "Erreur dans un des éléments de l’ASD (ex. : code nomenclature, n° de dent, montant de l’honoraire/montant à payer par le patient, …)",
-                            "en": "Error in one of the elements of the ASD (ex. : nomenclature code, tooth number, amount of fee / amount to be paid by the patient, …)"
-                        }
-                    },
-                    {
-                        id: "D",
-                        label: {
-                            "fr": "Double envoi de la même e-Attest",
-                            "nl": "Double envoi de la même e-Attest",
-                            "en": "Double sending of the same e-Attest"
-                        }
-                    },
-                    {
-                        id: "E",
-                        label: {
-                            "fr": "e-Attest remplacée par e-Fact",
-                            "nl": "e-Attest remplacée par e-Fact",
-                            "en": "e-Attest replaced by e-Fact"
-                        }
-                    },
-                    {
-                        id: "F",
-                        label: {
-                            "fr": "e-Attest remplacée par ASD papier. Envoi d’une eASD pour un patient devant ou souhaitant recevoir une ASD papier (ex. : versement sur un autre compte, accident de travail, police, problème technique, …)",
-                            "nl": "e-Attest remplacée par ASD papier. Envoi d’une eASD pour un patient devant ou souhaitant recevoir une ASD papier (ex. : versement sur un autre compte, accident de travail, police, problème technique, …)",
-                            "en": "e-Attest replaced by ASD paper. Sending an eASD for a patient in front of or wishing to receive a paper-based ASD (ex .: payment to another account, accident at work, police, technical problem, …)"
-                        }
-                    },
-                    {
-                        id: "G",
-                        label: {
-                            "fr": "Situation ne permettant pas l'établissement d'une e-Attest (eASD établie par erreur ex : pas de consultation mais délivrance d’une prescription, simple contact téléphonique, …). Il s’agit donc d’une annulation pure et simple de l’eASD",
-                            "nl": "Situation ne permettant pas l'établissement d'une e-Attest (eASD établie par erreur ex : pas de consultation mais délivrance d’une prescription, simple contact téléphonique, …). Il s’agit donc d’une annulation pure et simple de l’eASD",
-                            "en": "Situation not allowing the establishment of an e-Attest (eASD established by mistake ex: no consultation but issue of a prescription, simple telephone contact, …). It is therefore a pure and simple cancellation of the eASD"
-                        }
-                    }
-                ]
+                value: () => []
             },
             reason: {
                 type: String,

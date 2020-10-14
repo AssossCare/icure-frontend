@@ -1,0 +1,18 @@
+[
+    {
+      "id": "wired",
+      "label": {"fr": "Virement", "nl": "Overschrijving", "en": "Wired"}
+    },
+    {
+      "id": "cash",
+      "label": {"fr": "En espèces", "nl": "Cash", "en": "Cash"}
+    },
+    {
+      "id": "debitcard",
+      "label": {"fr": "Carte de débit", "nl": "Debit kaart", "en": "Debit card"}
+    },
+    {
+      "id": "creditcard",
+      "label": {"fr": "Carte de crédit", "nl": "Credit kaart", "en": "Credit card"}
+    }
+  ]

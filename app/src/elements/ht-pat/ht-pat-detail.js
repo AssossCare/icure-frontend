@@ -69,6 +69,7 @@ import './dialogs/mda/ht-pat-member-data-detail.js'
 import './dialogs/ht-pat-other-form-dialog'
 import './dialogs/subscription/ht-pat-subscription-detail'
 import './dialogs/eforms/ht-pat-eform-dialog'
+import './dialogs/invoice/ht-pat-invoice-detail'
 
 import '@vaadin/vaadin-split-layout/vaadin-split-layout'
 import '@polymer/paper-button/paper-button'
@@ -2464,7 +2465,51 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                     <div class="new-ctc-btn-container"><paper-button class="add-btn" on-tap="newContact">[[localize('new_con','New Contact',language)]]</paper-button></div>
                                 </template>
                             </div>
-                            <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]" services-refresher="[[servicesRefresher]]" on-refresh-contacts="_refreshContacts" on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact"  on-call-medication-dialog="openMedicationDialog" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged" on-open-charts-dialog="_openChartsDialog" on-add-other="addOther" on-add-document="_openUploadDialog" on-prescribe="_prescribe" credentials="[[credentials]]" on-reset-patient="_resetPatient" linking-letter-dialog="[[linkingLetterDialog]]" on-forward-document="_forwardDocument" on-print-document="_printDocument" global-hcp="[[globalHcp]]" all-health-elements="[[allHealthElements]]" on-trigger-out-going-doc="_newReport_v2" on-trigger-export-sumehr="_exportSumehrDialog" on-open-care-path-list="_openCarePathList" on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" on-upload-document="_hubUpload" on-show-error="_showError" on-open-eforms-dialog="_openEformDialog">
+                            <ht-pat-detail-ctc-detail-panel 
+                            id="ctcDetailPanel" 
+                            contacts="[[selectedContacts]]" 
+                            all-contacts="[[contacts]]" 
+                            health-elements="[[healthElements]]" 
+                            main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]" 
+                            api="[[api]]" 
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]" 
+                            current-contact="[[currentContact]]" 
+                            medications="[[medications]]" 
+                            hidden-sub-contacts-id="[[hiddenSubContactsId]]" 
+                            services-refresher="[[servicesRefresher]]" 
+                            on-refresh-contacts="_refreshContacts" 
+                            on-select-current-contact="_selectCurrentContact" 
+                            on-plan-action="_planAction" 
+                            on-close-contact="_closeContact" 
+                            on-change="formsChanged" 
+                            on-must-save-contact="_saveContact"  
+                            on-call-medication-dialog="openMedicationDialog" 
+                            contact-type-list="[[contactTypeList]]" 
+                            on-contact-saved="contactChanged" 
+                            on-open-charts-dialog="_openChartsDialog" 
+                            on-add-other="addOther" 
+                            on-add-document="_openUploadDialog" 
+                            on-prescribe="_prescribe" 
+                            credentials="[[credentials]]" 
+                            on-reset-patient="_resetPatient" 
+                            linking-letter-dialog="[[linkingLetterDialog]]" 
+                            on-forward-document="_forwardDocument" 
+                            on-print-document="_printDocument" 
+                            global-hcp="[[globalHcp]]" 
+                            all-health-elements="[[allHealthElements]]" 
+                            on-trigger-out-going-doc="_newReport_v2" 
+                            on-trigger-export-sumehr="_exportSumehrDialog" 
+                            on-open-care-path-list="_openCarePathList" 
+                            on-send-sub-form-via-emediattest="_sendSubformViaEmediattest" 
+                            on-upload-document="_hubUpload" 
+                            on-show-error="_showError" 
+                            on-open-eforms-dialog="_openEformDialog"
+                            on-open-invoice-dialog="_openInvoiceDialog"
+                            >
                             </ht-pat-detail-ctc-detail-panel>
                             </template>
                             <template is="dom-if" if="[[isAdminSelected(selectedAdminOrCompleteFileIndex)]]">
@@ -2879,6 +2924,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-invoice-detail id="htPatInvoiceDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]"></ht-pat-invoice-detail>
 `
     }
 
@@ -7351,6 +7397,10 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         }else{
             this._ehealthErrorNotification()
         }
+    }
+
+    _openInvoiceDialog(){
+        this.$["htPatInvoiceDetail"]._openDialog()
     }
 }
 
