@@ -254,7 +254,6 @@
 
             .sublist{
                 background:var(--app-light-color);
-                margin:0 0 0 -30px;
                 padding:0;
             }
 
@@ -490,7 +489,32 @@
                                 </vaadin-combo-box>
                                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="w50 ml1" value="{{filter}}" ></dynamic-text-field>
                             </div>
-
+                            <!--
+                            <paper-listbox id="" class="menu-content sublist" selectable="paper-item"  toggle-shift>
+                                <div class="table-line-menu table-line-menu-top">
+                                    <div class="dateTit">[[localize('dat','Date',language)]]</div>
+                                    <div class="typeTit">[[localize('categ','Dep',language)]]</div>
+                                    <div class="typeTit">[[localize('type','Type',language)]]</div>
+                                    <div class="authTit">[[localize('aut','Author',language)]]</div>
+                                    <div class="patTit"></div>
+                                </div>
+                                <template is="dom-repeat" items="[[hubTransactionListFiltered]]">
+                                    <collapse-button>
+                                        <paper-item slot="sublist-collapse-item" id$="[[item]]" data-item$="[[item]]" aria-selected="[[selected]]" class$="menu-trigger menu-item [[isIronSelected(selected)]]" on-tap="transactionItemClick">
+                                            <div id="subMenu" class="table-line-menu">
+                                                <div class="date">[[_transactionDate(item)]]</div>
+                                                <div class="type">[[_getHcpType(item)]]</div>
+                                                <div class="type">[[_transactionType(item)]]</div>
+                                                <div class="auth">[[_transactionAuthor(item)]]</div>
+                                                <div class="pat">
+                                                    <iron-icon title="Accessible par le patient le: [[_patientAccessDate(item)]]" icon="vaadin:male" class$="pat-access [[_patientAccessIcon(item)]]"></iron-icon>
+                                                </div>
+                                            </div>
+                                        </paper-item>
+                                    </collapse-button>
+                                </template>
+                            </paper-listbox>
+                            -->
                             <template is="dom-repeat" items="[[_getHcPartyTypes(hubTransactionListFiltered, 'hub')]]" as="hcptype" >
                                 <collapse-button opened="true" id="[[hcptype]]">
                                     <paper-item id="account" slot="sublist-collapse-item" class="menu-trigger menu-item bold" on-tap="toggleMenu" elevation="">
@@ -827,6 +851,11 @@
             _refresh(){
                 this.set('revokableTransaction', false);
                 this._setHub();
+            }
+
+            _getHcpType(transaction){
+                const authors = _.uniq(_.compact(_.flatten(_.get(transaction, 'author.hcparties', []).map(a => _.get(a, 'cds', []).map(cd => _.get(cd, 'value', null))))))
+                return _.size(authors)  <= 1 ? this.localize(_.head(authors), _.head(authors), this.language) : this.localize(authors[_.size(authors) - 1], authors[_.size(authors) - 1], this.language)
             }
 
             _enableBreakTheGlass(btg){
@@ -1598,7 +1627,7 @@
                 // from?: number, to?: number,
                 // authorNihii?: string, authorSsin?:  string,
                 // isGlobal?: boolean, breakTheGlassReason?: string): Promise<Array<models.TransactionSummary> | any>;
-                if (this.patient.ssin && this.api.tokenId) {
+                if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null)  && _.get(this, 'hubEndPoint', null)){
                     return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                         .then(hcp =>
                             this.api.fhc().Hub().getTransactionsListUsingGET(
