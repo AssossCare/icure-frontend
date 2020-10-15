@@ -1475,16 +1475,13 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                     this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
                         .then(({extractedKeys: enckeys}) => {
                             if(_.trim(_.get(doc,"mainUti","")) === "public.html") this.api.document().getDocumentAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
-                            const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
-                            this.set('dataUrl', url)
+                            doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys).then(url => this.set('dataUrl', url))
                         })
                         .catch(() => {
-                            const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                            this.set('dataUrl', url)
+                            doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined).then(url => this.set('dataUrl', url))
                         })
                 } else {
-                    const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                    this.set('dataUrl', url)
+                    doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined).then(url => this.set('dataUrl', url))
                 }
             })
             .then(() => this._getComment())
@@ -1518,7 +1515,6 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
                     const utiExt = doc.mainUti && doc.mainUti.split(".").length ? doc.mainUti.split(".")[1] : undefined
                     const docExt = doc.name  && doc.name.split(".").length ? doc.name.split(".")[1] : undefined
                     const docName = !docExt && utiExt ? doc.name + "." + utiExt : doc.name
-                    const url = doc && this.api.document().getAttachmentUrl(doc.id,doc.attachmentId,enckeys,this.api.sessionId,docName)
                     this.api.triggerUrlDownload(_.get(this,"dataUrl"), downloadFilename)
                 })
         } else {
