@@ -30,13 +30,24 @@ class HtPatInvoiceInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
             height: 60px;
             width: 100%;
             background: var(--app-background-color-dark);
+            display: flex;
           }
 
         </style>
         
         <div class="invoice-detail-content">
             <div class="invoice-detail-header">
-            
+                <div>
+                    <vaadin-combo-box class="w33 p4 mw0 w400" label="[[localize('', '', language)]]" selected-item="{{}}"  filtered-items="[[]]" item-label-path="label.fr" >
+                        <template>[[_getLabel(item.label)]]</template>
+                    </vaadin-combo-box>
+                </div>
+                <div>
+                    <vaadin-date-picker id="datePickerCreation" i18n="[[i18n]]" attr-for-value="value" can-be-fuzzy label="[[localize('dat_of_bir','Date of birth',language)]]"  value="{{dateAsString}}"></vaadin-date-picker>
+                </div>
+                <div>
+                    N°
+                </div>
             </div>
         </div>
 
@@ -82,6 +93,10 @@ class HtPatInvoiceInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronRes
             currentContact:{
                 type: Object,
                 value: () => {}
+            },
+            listOfSendMedium:{
+                type: Array,
+                value: () => []
             }
         };
     }

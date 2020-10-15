@@ -85,12 +85,13 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
             
             .invoice-list-content{
                height: 100%;
-               background: var(--app-background-color-dark);
+               background: var(--app-background-color-light);
             }
             
             .patient-info-container{
                 height: 60px;
                 display: flex;
+                background: var(--app-background-color-dark);
             }
             
             .invoice-list{
@@ -102,11 +103,26 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 margin: 1%;
                 height: 80px;
                 width: 98%;
-                border: 1px solid gray;
+                border: 1px solid var(--app-background-color-dark);
+                cursor: pointer;
             }
             
             .invoice-title{
-                font-size: 8px;
+                font-size: 12px;
+                display: flex;
+                padding-left: 5px;
+                padding-right: 5px;;
+                flex-direction: row;
+                justify-content: space-between;
+                background: var(--app-background-color-dark);
+            }
+            
+            .left-title{
+            
+            }
+            
+            .right-title:{
+            
             }
             
             .invoice-nmcl{
@@ -165,6 +181,14 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 width: auto;
             }
             
+            .b{
+                font-weight: bold;
+            }
+            
+            .selected{
+                background:  var(--app-background-color-darker);
+            }
+            
         </style>
         
         <div class="invoice-list-content">
@@ -185,10 +209,15 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
             </div>
             <div class="invoice-list">
-                <template is="dom-repeat" items="[[listOfInvoice]]" as="invoice">
-                    <div class="invoice-container">
+                <template id="listOfInvoice" is="dom-repeat" items="[[listOfInvoice]]" as="invoice">
+                    <div class$="invoice-container [[_getSelectedInvoiceStyle(invoice)]]" id="[[invoice.id]]" on-tap="_selectedInvoiceChanged">
                         <div class="invoice-title">
-                            N° [[invoice.invoiceReference]] Date: [[invoice.invoiceDate]]
+                            <div class="left-title">
+                               <span class="b">[[_localizeSMT(invoice.sentMediumType)]]</span> n° [[invoice.invoiceReference]] 
+                             </div>
+                             <div class="right-title">
+                                <span class="b">Date:</span> [[_getDate(invoice.invoiceDate)]]
+                             </div>
                         </div>
                         <div class="invoice-nmcl">
                             
@@ -265,6 +294,10 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
             selectedInvoice: {
                 type: Object,
                 value: () => {}
+            },
+            listOfSendMedium:{
+                type: Array,
+                value: () => {}
             }
         };
     }
@@ -296,7 +329,23 @@ class HtPatInvoiceInvoiceList extends TkLocalizerMixin(mixinBehaviors([IronResiz
        return gender === "male" ? "M." : gender === "female" ? "Mme" : ""
     }
 
+    _localizeSMT(smt){
+        return _.get(_.get(this, 'listOfSendMedium', []).find(sm => _.get(sm, 'id', null) === smt), 'label.'+this.language, null)
+    }
 
+    _getDate(date){
+        return date ? this.api.moment(date).format("DD/MM/YYYY") : null
+    }
+
+    _getSelectedInvoiceStyle(invoice){
+        return _.get(this, 'selectedInvoice.id', null) === _.get(invoice, 'id', null) ? "selected" : null
+    }
+
+    _selectedInvoiceChanged(e){
+        if(_.get(e, 'currentTarget.id',  null)){
+            this.set("selectedInvoice", _.get(this, 'listOfInvoice', []).find(inv => _.get(inv, 'id', null) === _.get(e, 'currentTarget.id',  null)))
+        }
+    }
 
 }
 customElements.define(HtPatInvoiceInvoiceList.is, HtPatInvoiceInvoiceList);

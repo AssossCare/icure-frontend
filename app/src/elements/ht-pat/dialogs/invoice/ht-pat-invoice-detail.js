@@ -18,6 +18,7 @@ import {TkLocalizerMixin} from "../../../tk-localizer";
 import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
+import _ from "lodash"
 
 
 class HtPatInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
@@ -83,14 +84,25 @@ class HtPatInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                             list-of-invoice="[[listOfInvoice]]"
                             supervisor="[[supervisor]]"
                             hcp="[[hcp]]"   
+                            list-of-send-medium="[[listOfSendMedium]]"
                          ></ht-pat-invoice-invoice-list>
                     </div>
                     <div class="invoice-detail-container">
-                        <ht-pat-invoice-invoice-detail id="htPatInvoiceInvoiceDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]"></ht-pat-invoice-invoice-detail>
+                        <ht-pat-invoice-invoice-detail 
+                            id="htPatInvoiceInvoiceDetail" 
+                            api="[[api]]" 
+                            i18n="[[i18n]]" 
+                            user="[[user]]" 
+                            patient="[[patient]]" 
+                            language="[[language]]" 
+                            resources="[[resources]]" 
+                            current-contact="[[currentContact]]
+                            list-of-send-medium="[[listOfSendMedium]]"
+                        "></ht-pat-invoice-invoice-detail>
                     </div>
                 </div>
                 <div class="buttons">
-                
+                     <paper-button class="button button--other" on-tap="_closeDialog">[[localize('clo','close',language)]]</paper-button>
                 </div>
            </div>
         </paper-dialog>
@@ -141,11 +153,19 @@ class HtPatInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 value: () => {
                 }
             },
-            supervisor:{
+            supervisorHcp:{
+                type: Object,
+                value: () => {}
+            },
+            supervisorUser:{
                 type: Object,
                 value: () => {}
             },
             listOfInvoice: {
+                type: Array,
+                value: () => []
+            },
+            filteredListOfInvoice:{
                 type: Array,
                 value: () => []
             },
@@ -158,6 +178,16 @@ class HtPatInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
                 value: function () {
                     return require('./rsrc/listOfCareProvider.json');
                 }
+            },
+            listOfSendMedium:{
+                type: Array,
+                value: function () {
+                    return require('./rsrc/listOfSentMedium.json');
+                }
+            },
+            currentInsurability:{
+                type: Object,
+                value: () => {}
             }
         };
     }
@@ -172,34 +202,101 @@ class HtPatInvoiceDetail extends TkLocalizerMixin(mixinBehaviors([IronResizableB
 
     _reset(){
         this.set('hcp', {})
-        this.set('supervisor', {})
+        this.set('supervisorHcp', {})
+        this.set('supervisorUser', {})
         this.set('listOfInvoice', [])
+        this.set('filteredListOfInvoice', [])
         this.set('selectedInvoice', {})
+        this.set('currentInsurability', {})
     }
 
     _openDialog(){
         this._reset()
         this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId')).then(hcp => {
             this.set('hcp', hcp)
-            return _.get(hcp, 'supervisorId') ? this.api.hcparty().getHealthcareParty(hcp.supervisorId) : Promise.resolve({})
-        }).then(supervisor => {
-            this.set('supervisor', supervisor)
-            return this._refreshInvoiceList()
-        }).then(listOfInvoice =>
-            this.set("listOfInvoice", listOfInvoice)
-        ).finally(() => {
-
-            this.shadowRoot.querySelector("#invoiceDetailDialog").open()
+            return _.get(hcp, 'supervisorId') ? Promise.all([this.api.hcparty().getHealthcareParty(hcp.supervisorId), this._getUserFromHcpId(_.get(hcp, 'supervisorId', null))]) : Promise.resolve([{},{}])
+        }).then(([supervisorHcp, supervisorUser]) => {
+            this.set('supervisorHcp', supervisorHcp)
+            this.set('supervisorUser', supervisorUser)
+            return this._getPatientLastInsurance()
+        }).then(() =>
+            this._refreshInvoiceList()
+        ).then(listOfInvoice => {
+            listOfInvoice.push(this._createNewInvoice())
+            this.set("listOfInvoice", _.orderBy(listOfInvoice, ['invoiceDate'], ['desc']))
+            this.set("filteredlistOfInvoice", _.orderBy(listOfInvoice, ['invoiceDate'], ['desc']))
+            this.set('selectedInvoice', _.get(this, 'listOfInvoice', []).find(inv => !_.get(inv, 'id', null)))
+        }).finally(() => {
+            this.shadowRoot.querySelector("#invoiceDetailDialog") ? this.shadowRoot.querySelector("#invoiceDetailDialog").open() : null
         })
+    }
+
+    _getUserFromHcpId(hcpId){
+        return this.api.user().findByHcpartyId(hcpId)
+            .then(listOfHcp =>
+                _.size(listOfHcp) ? this.api.user().getUser(_.head(listOfHcp)) : Promise.resolve({}))
+    }
+
+    _getPatientLastInsurance(){
+        const currentInsurance = _.chain(_.get(this, 'patient.insurabilities', []))
+            .filter(ins => _.get(ins, "startDate", 0) && parseInt(_.get(ins, "startDate", 0)) <= moment().format("YYYYMMDD") && !parseInt(_.get(ins, "endDate", 0)) && _.get(ins, "insuranceId", 0))
+            .orderBy(["startDate"], ["desc"])
+            .head()
+            .value() || null
+
+        ;(_.get(currentInsurance, 'insuranceId', null) ? this.api.insurance().getInsurance(_.get(currentInsurance, 'insuranceId', null)) : Promise.resolve({}))
+            .then(ins => {
+                this.set('currentInsurability', _.merge(currentInsurance, {
+                    insuranceInfo: ins,
+                    isBim: _.parseInt(_.get(currentInsurance, 'parameters.tc1', null)) % 2 !== 0 && _.parseInt(_.get(currentInsurance, 'parameters.tc2', null)) % 2 !== 0,
+                    isAssured: !!ins
+                }))
+            })
+
+    }
+
+    _createNewInvoice(){
+        const newInvoice = {
+            invoiceDate: this.api.moment(new Date).format("YYYYMMDD"),
+            thirdPartyPaymentJustification: _.get(this, 'currentInsurability.isBim', false) ? "3" : "0",
+            invoiceType: _.get(this, 'currentInsurability.isBim', false) ? "mutualfund" : "patient",
+            sentMediumType: _.get(this, 'currentInsurability.isBim', false) ? "efact" : "eattest",
+            invoicePeriod: 0,
+            longDelayJustification: false,
+            invoiceReference: null,
+            gnotionNihii: null,
+            internshipNihii: this._isDoctorAssistant(_.get(this, 'hcp.nihii', null)) === false ? null : _.get(this, 'hcp.nihii', null),
+            encounterLocationNorm: 0,
+            encounterLocationName: null,
+            encounterLocationNihii: null,
+            creditNote: false,
+            careProviderType: this._isDoctorAssistant(_.get(this, 'hcp.nihii', null)) === false ? "persphysician" : "trainee",
+            invoicingCodes: []
+        }
+
+        return newInvoice
     }
 
     _refreshInvoiceList(){
         this.set('listOfInvoice', [])
-        return this.api.invoice().findBy(_.get(this, 'user.healthcarePartyId', null), _.get(this, 'patient', null))
+        this.set('filteredListOfInvoice', [])
+        return this.api.invoice().findBy(_.get(this, 'user.healthcarePartyId', null), _.get(this, 'patient', null)).then(listOfInvoice =>
+            Promise.resolve(listOfInvoice.map(inv => _.merge(inv, {
+                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(inv, _.trim('invoiceDate'), null) ? this.api.moment(_.get(inv, _.trim('invoiceDate'), "")).format('DD/MM/YYYY') : _.get(inv, _.trim('invoiceDate'), ""), _.get(inv, _.trim('invoiceReference'), ""), _.trim(_.get(inv, 'sentMediumType', "")).toString()])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+            })))
+        )
     }
 
     _isDoctorAssistant(nihii) {
         return (!!nihii && nihii.length === 11 && nihii.startsWith("1") && (nihii.endsWith("005") || nihii.endsWith("006")))
+    }
+
+    _isSpecialist(nihii) {
+        return !!(nihii && _.startsWith(nihii, "1", 0) && _.size(nihii) === 11 && (nihii.substr(_.size(nihii) - 3) >= 10))
+    }
+
+    _closeDialog(){
+        this.shadowRoot.querySelector("#invoiceDetailDialog") ? this.shadowRoot.querySelector("#invoiceDetailDialog").close() : null
     }
 
 }
