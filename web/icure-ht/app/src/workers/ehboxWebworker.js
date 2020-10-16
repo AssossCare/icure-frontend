@@ -95,8 +95,8 @@ onmessage = e => {
             return !_.size(icureMessageToDeleted) || !sourceBox || !eHealthBoxMessageId ?
                 promResolve :
                 !!sourceBox.startsWith("BIN") ?
-                    ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                    ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox).catch(() => promResolve )
+                    ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, [eHealthBoxMessageId]).catch(() => promResolve ) :
+                    ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId]).catch(() => promResolve )
 
         }
 
@@ -516,9 +516,9 @@ onmessage = e => {
                     return !_.size(singleMessage) || !sourceBox || !eHealthBoxMessageId ?
                         promResolve :
                         (!!sourceBox.startsWith("BIN") ?
-                            ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox).catch(() => promResolve ) :
-                            ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], sourceBox, destinationBox)
-                                .then(() => ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, [eHealthBoxMessageId], destinationBox).catch(() => promResolve ))
+                            ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, [eHealthBoxMessageId]).catch(() => promResolve ) :
+                            ehboxApi.moveMessagesUsingPOST1(keystoreId, tokenId, ehpassword, sourceBox, destinationBox, [eHealthBoxMessageId])
+                                .then(() => ehboxApi.deleteMessagesUsingPOST1(keystoreId, tokenId, ehpassword, destinationBox, [eHealthBoxMessageId]).catch(() => promResolve ))
                                 .catch(() => promResolve )
                         )
                         .then(() => !!(_.get(singleMessage,"status",0)&(1<<26)) ?
