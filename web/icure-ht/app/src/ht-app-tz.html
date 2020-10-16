@@ -1990,7 +1990,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             this.set("isElectron",electron)
                             if (electron === true) {
                                 //request electron tc.
-                                this.api.electron().topazCredential(this.user,this.api.credentials)
+                                try {
+                                    this.api.electron().topazCredential(this.user,this.api.credentials)
+                                } catch (e){
+                                    console.log("error", e)
+                                }
                                 return this.api.electron().getVersion().then(res =>{
                                     if (res.version) {
                                         this.set("electronVersion", res.version)
