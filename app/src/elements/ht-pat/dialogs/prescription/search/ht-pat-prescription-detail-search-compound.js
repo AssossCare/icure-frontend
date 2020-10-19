@@ -167,8 +167,8 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
                 </div>
                 <template is="dom-repeat" items="[[searchResult.compound]]" as="drug">
                     <div class="tr tr-item">
-                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
-                        <div class="td fg01"><iron-icon class="modifyIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>  
+                        <div class="td fg01"><iron-icon class="addIcon" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="compound" on-tap="_openPosologyView"></iron-icon></div>    
+                        <div class="td fg01"><iron-icon class="modifyIcon" icon="vaadin:pencil" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="compound" on-tap="_openCompoundManagementView"></iron-icon></div>  
                         <div class="td fg05">[[_getAtcClass(drug.atcClass)]]</div>
                         <div class="td fg1">[[drug.label]]</div>
                         <div class="td fg2">[[drug.formula]]</div>
@@ -229,15 +229,17 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
 
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
 
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+        return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
             bubbles: true,
             composed: true,
             detail: {
                 id: drugId,
+                internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.find(_.get(this, 'searchResult.compound', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
             }
         }))
 
@@ -252,17 +254,20 @@ class HtPatPrescriptionDetailSearchCompound extends TkLocalizerMixin(mixinBehavi
     }
 
     _openCompoundManagementView(e){
+
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
 
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-compound-management-view', {
+        return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-compound-management-view', {
             bubbles: true,
             composed: true,
             detail: {
                 id: drugId,
+                internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.get(this, 'searchResult.compound', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.find(_.get(this, 'searchResult.compound', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
             }
         }))
     }

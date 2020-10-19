@@ -510,7 +510,7 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
   }
 
   _canReset() {
-      return (this.regimen.filter(reg => this._filterRegimenItemByKey(reg)).length);
+      return _.size(_.filter(this.regimen, reg => this._filterRegimenItemByKey(reg)))
   }
 
   _reset() {
