@@ -177,14 +177,14 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
                 <template is="dom-repeat" items="[[searchResult.molecule]]" as="drug">
                     <div class="tr tr-item">
                         <div class="td fg01 notRel">
-                            <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-type="substance" on-tap="_openPosologyView"></iron-icon>
+                            <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="substance" on-tap="_openPosologyView"></iron-icon>
                             <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
                         </div>    
                         <div class="td fg01 notRel">
-                            <iron-icon class="addIcon" id="amps_[[drug.id]]" icon="vaadin:copyright" data-id$="[[drug.id]]" data-type="substance" on-tap="_openCommercialBySubstanceView"></iron-icon>
+                            <iron-icon class="addIcon" id="amps_[[drug.id]]" icon="vaadin:copyright" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="substance" on-tap="_openCommercialBySubstanceView"></iron-icon>
                             <paper-tooltip for="amps_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-amps', 'Search amps', language)]]</paper-tooltip>
                         </div>    
-                        <div class="td fg2" data-id$="[[drug.id]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
+                        <div class="td fg2" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="history" on-tap="_openPosologyView">[[drug.label]]</div>
                     </div>
                 </template>        
             </div>
@@ -237,15 +237,17 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
 
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
 
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+        return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
             bubbles: true,
             composed: true,
             detail: {
                 id: drugId,
+                internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.get(this, 'searchResult.molecule', []).find(h => _.get(h, 'id', null) === drugId)
+                product: _.find(_.get(this, 'searchResult.molecule', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
             }
         }))
 
@@ -275,8 +277,10 @@ class HtPatPrescriptionDetailSearchSubstance extends TkLocalizerMixin(mixinBehav
     }
 
     _openCommercialBySubstanceView(e){
+
         const id = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const molecule =  _.flatten(_.get(this, 'searchResult.molecule', [])).find(h => _.get(h, 'id', null) === id)
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
+        const molecule =  _.find(_.get(this, 'searchResult.molecule', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
 
         return !id ? null : this.dispatchEvent(new CustomEvent('search-commercial-by-substance-view', {
             bubbles: true,

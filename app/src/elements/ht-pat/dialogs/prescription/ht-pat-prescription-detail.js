@@ -621,7 +621,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _openPosologyView(e) {
 
-        if(!_.get(e, 'detail.id', null) || !_.get(e, 'detail.type', null)) return
+        const promResolve = Promise.resolve()
+        const drugInternalUuid = _.trim(_.get(e,'detail.internalUuid', null))
+
+        return !_.trim(_.get(e, 'detail.id', null)) || !drugInternalUuid || !_.trim(_.get(e, 'detail.type', null)) ? promResolve :
 
         //chronic, history => get drug by id to check if it still exist
         //commercial, substance, compound => no need to check if it still exist
@@ -634,7 +637,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
             const isPrescription = _.get(this,"openParameters.isPrescription",false)
             const drugType = _.trim(_.get(drugInfo,"type")) === "medicine" ? "CD-DRUG-CNK" : _.trim(_.get(drugInfo,"type")) === "substance" ? "CD-VMPGROUP" : "compoundPrescription"
-            const newMedication =  _.size(_.get(drugInfo,"service", false)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
+            const newMedication =  _.size(_.get(drugInfo,"service", null)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
             const medicationValue = newMedication && this.api.contact().medicationValue(newMedication, this.language)
             const hasMedicationTag = _.find(_.get(drugInfo,"service.tags",[]), t => _.trim(_.get(t,"type"))==="CD-ITEM" && _.trim(_.get(t,"code")) === "medication")
             const prescribedProduct = {
@@ -650,8 +653,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 intendedName: prescribedProduct.label,
                 allergyType: _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"type")) === "allergy") ? "allergy" : _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"adr"))) ? "adr" : "",
                 boxes: 1, // 1! box = 1! svc
-                drugType: drugType,
-                internalUuid: _.get(drugInfo, "internalUuid", this.api.crypto().randomUuid())
+                drugType: drugType
             })
 
             if(!medicationValue) {
@@ -698,10 +700,15 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
             })
 
-            const drug = {id: _.get(e ,'detail.id', null), type: _.get(e, 'detail.type', null), drug: drugInfo}
+            // Only push when not in yet
+            if(!_.size(_.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))) this.push('drugsToBePrescribe', {
+                id: _.trim(_.get(e ,'detail.id', null)),
+                internalUuid: drugInternalUuid,
+                type: _.get(e, 'detail.type', null),
+                drug: drugInfo
+            })
 
-            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', drug )
-            this.push('drugsToBePrescribe', _.merge({}, drug, {posology: {}}))
+            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', _.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))
 
         }).finally(() => {
 
@@ -718,26 +725,30 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _selectedDrug(e){
-        if(!_.get(e,"detail.product",false))return;
-        this.set('selectedDrugForPosology', _.get(e,"detail.product",null))
 
-        this.set('isPosologyView', !_.get(e, 'detail.bypassPosologyView', false))
-        this.set('isSearchView', _.get(e, 'detail.bypassPosologyView', true))
-        this.set('isCheaperDrugView', false)
+        const drugInternalUuid = _.trim(_.get(e,"detail.product.internalUuid"))
 
-        this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
+        return !drugInternalUuid ? null :
+            (this.set('selectedDrugForPosology', _.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))||true) &&
+            (this.set('isPosologyView', !_.get(e, 'detail.bypassPosologyView', false))||true) &&
+            (this.set('isSearchView', _.get(e, 'detail.bypassPosologyView', true))||true) &&
+            (this.set('isCheaperDrugView', false)||true) &&
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") &&
+            this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList()
+
     }
 
     _deleteDrug(e){
-        if(!_.get(e,"detail.product",false))return;
-        if(_.get(e,"detail.product.id",null)===_.get(this,"selectedDrugForPosology.id","")){
-            this.set('selectedDrugForPosology',null)
-            this.set('isPosologyView',  false)
-            this.set('isSearchView', true)
-            this.set('isCheaperDrugView', false)
-        }
 
-        this.set("drugsToBePrescribe",this.drugsToBePrescribe.filter(drug => drug.id!==_.get(e,"detail.product.id",null)))
+        const drugInternalUuid = _.trim(_.get(e,"detail.product.internalUuid"))
+
+        return !drugInternalUuid ? null :
+            drugInternalUuid === _.trim(_.get(this,"selectedDrugForPosology.internalUuid", null)) &&
+                (this.set('selectedDrugForPosology',null)||true) &&
+                (this.set('isPosologyView',  false)||true) &&
+                (this.set('isSearchView', true)||true) &&
+                (this.set('isCheaperDrugView', false)||true) ||
+            this.set("drugsToBePrescribe", _.filter(_.get(this,"drugsToBePrescribe",[]), it => _.trim(_.get(it,"internalUuid",null)) !== drugInternalUuid))
     }
 
     _closePosologyView(){

@@ -294,16 +294,16 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                     <template is="dom-repeat" items="[[group]]" as="drug">
                         <div class$="tr tr-item [[_isCheapestDrugLine(drug)]]">
                             <div class="td fg01 notRel">
-                                <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon>
+                                <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon>
                                 <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
                             </div>  
                             <div class="td fg01 notRel">
                                 <template is="dom-if" if="[[_isAvailableCheaperDrugsSearch(origin)]]">
-                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" on-tap="_searchCheaperDrugs"></iron-icon>
+                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" on-tap="_searchCheaperDrugs"></iron-icon>
                                     <paper-tooltip for="alt_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
                                 </template>
                             </div>   
-                            <div class="td fg2 notRel" data-id$="[[drug.id]]" data-type="commercial" on-tap="_openPosologyView">
+                            <div class="td fg2 notRel" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView">
                                 [[drug.label]]
                                 <template is="dom-if" if="[[_isNewDrug(drug)]]">
                                     <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
@@ -476,15 +476,22 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
 
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
 
-        return !drugId || !dataType ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
+        return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
             bubbles: true,
             composed: true,
             detail: {
                 id: drugId,
+                internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.flatten(_.get(this, 'searchResult', [])).find(h => _.get(h, 'id', null) === drugId)
+                product: _
+                    .chain(this)
+                    .get("searchResult")
+                    .flatten()
+                    .find(it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
+                    .value()
             }
         }))
     }
@@ -579,10 +586,19 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
     }
 
     _searchCheaperDrugs(e){
-        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
-        const drug =  _.flatten(_.get(this, 'searchResult', [])).find(h => _.get(h, 'id', null) === drugId)
 
-        return this.launchCheaperAlternativeEvent(drug)
+        const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
+        const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
+
+        const drug =  _
+            .chain(this)
+            .get("searchResult")
+            .flatten()
+            .find(it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
+            .value()
+
+        return internalUuid && drug && this.launchCheaperAlternativeEvent(drug)
+
     }
 
     _searchAlternative(e){
@@ -606,6 +622,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
             composed: true,
             detail: {
                 id: _.get(drug, 'id', null),
+                internalUuid: _.trim(_.get(it,"internalUuid","")),
                 uuid: _.get(drug, 'uuid', null),
                 groupId: _.get(drug, 'groupId', null),
                 uuids: _.get(drug, 'uuids', []),
