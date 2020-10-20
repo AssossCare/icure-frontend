@@ -113,7 +113,7 @@
                 super.attached();
                 this.async(this.notifyResize, 1);
             }
-            
+
             getHubConfig(hub, environment){
                 const hubConfig = {};
                 switch (hub) {
@@ -210,7 +210,7 @@
             putTransactionSet(tsXML, hubConfig){
                 const myblob = new Blob([tsXML]);
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                    .then(hcp => this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(hubConfig.hubEndPoint,
+                    .then(hcp => this.api.fhc().Hub().putTransactionSetUsingPOST(hubConfig.hubEndPoint,
                         this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                         hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, "1000",
                         hubConfig.hubId,
@@ -284,7 +284,7 @@
 
             getTransactionSet(tsSv, tsSl, tsId, hubConfig){
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                    .then(hcp => this.api.fhc().Hubcontroller().getTransactionSetUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
+                    .then(hcp => this.api.fhc().Hub().getTransactionSetUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
                         this.api.tokenId, this.api.credentials.ehpassword,
                         hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                         this.patient.ssin,
