@@ -113,25 +113,12 @@
                 super.attached();
                 this.async(this.notifyResize, 1);
             }
-
-            // getHubConfig(){
-            //     const propHub = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.preferredhub') ||
-            //         (this.user.properties[this.user.properties.length] = {
-            //             type: {identifier: 'org.taktik.icure.user.preferredhub'},
-            //             typedValue: {type: 'STRING', stringValue: 'rsw'}
-            //         })
-            //
-            //     const propEnv = this.user.properties.find(p => p.type && p.type.identifier === 'org.taktik.icure.user.eHealthEnv') ||
-            //         (this.user.properties[this.user.properties.length] = {
-            //             type: {identifier: 'org.taktik.icure.user.eHealthEnv'},
-            //             typedValue: {type: 'STRING', stringValue: 'prd'}
-            //         })
-            // }
-
+            
             getHubConfig(hub, environment){
                 const hubConfig = {};
                 switch (hub) {
                     case 'rsb':
+                        hubConfig.name = "RSB";
                         hubConfig.hubId = 1990000728;
                         hubConfig.hubEndPoint = environment ===  'acc' ? 'https://acchub.abrumet.be/hubservices/intrahub/v3/intrahub.asmx' : 'https://hub.abrumet.be/hubservices/intrahub/v3/intrahub.asmx';
                         hubConfig.hubSupportsConsent = true;
@@ -140,6 +127,7 @@
                         hubConfig.supportBreakTheGlass = false;
                         break;
                     case 'rsw':
+                        hubConfig.name = "RSW";
                         hubConfig.hubId = 1990000035;
                         hubConfig.hubEndPoint = environment === 'acc' ? 'https://acchub.reseausantewallon.be/HubServices/IntraHub/V3/IntraHub.asmx' : 'https://hub.reseausantewallon.be/HubServices/IntraHub/V3/IntraHub.asmx';
                         hubConfig.hubSupportsConsent = true;
@@ -148,6 +136,7 @@
                         hubConfig.supportBreakTheGlass =  false;
                         break;
                     case 'cozo':
+                        hubConfig.name = "COZO";
                         hubConfig.hubId = 1990000134;
                         hubConfig.hubEndPoint = environment === 'acc' ? 'https://servicestest.cozo.be/IntrahubServiceTest/servicev3.asmx' : 'https://services.cozo.be/IntrahubService/servicev3.asmx';
                         hubConfig.hubSupportsConsent = false;
@@ -156,6 +145,7 @@
                         hubConfig.supportBreakTheGlass = false;
                         break;
                     case 'vitalink':
+                        hubConfig.name = "VITALINK";
                         hubConfig.hubId = 1990001916;
                         hubConfig.hubEndPoint = environment === 'acc' ? 'https://vitalink-acpt.ehealth.fgov.be/vpmg/vitalink-gateway/IntraHubService' : 'https://vitalink.ehealth.fgov.be/vpmg/vitalink-gateway/IntraHubService';
                         hubConfig.hubSupportsConsent = false;
@@ -167,6 +157,153 @@
                 return hubConfig;
             }
 
+            getLocalMedicationschemeStatus(pat){
+                //last reading time
+                //last read version
+                //last downloaded json
+
+                //integration time
+                //integrated version
+                //upload time
+                //uploaded json
+                //upload result json
+                return {}
+            }
+
+            putLocalMedicationschemeStatus(pat){
+                return {}
+            }
+
+            putMedicationScheme(hubConfig, services, version){
+                //0. Check Data (optional) (frontend)
+                //1. Generate Medicationscheme Kmehr Message (backend)
+                //2. Send Medicationscheme Kmehr Message To Hub: putTransactionSet (FHC)
+                //3. Get putTransactionSet Response (FHC)
+                //3.1. Get the transactionset (for detailled info) (optional)
+                //4. handle error messages
+                //5. update services using the putTransactionSet Response
+                return this.checkMedicationServices(services)
+                    .then(svcs => this.generateMedicationScheme(svcs, version, hubConfig))
+                    .then(msMessage => this.putTransactionSet(msMessage, hubConfig))
+                    .then(putResponse => this.handleResponse(putResponse, services, hubConfig))
+            }
+
+            checkMedicationServices(services){
+                //TODO: implement
+                return Promise.resolve(services);
+            }
+
+            generateMedicationScheme(services, version, hubConfig){
+                let enc = new TextDecoder("utf-8");
+                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
+                    this.api.patient().getPatientWithUser(this.user,this.patient.id)
+                        .then(patientDto => this.api.bekmehr().generateMedicationSchemeExport(patientDto.id, this.language, hubConfig.name, version, {
+                                recipient: hcp,
+                                services : services,
+                                comment: "medicationscheme",
+                                recipientSafe: hubConfig.name,
+                                version: version
+                            }).then(output => Promise.resolve(enc.decode(output))).catch( error=> Promise.resolve({message:"error on generate", error: error}))
+                        ))
+            }
+
+            putTransactionSet(tsXML, hubConfig){
+                const myblob = new Blob([tsXML]);
+                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+                    .then(hcp => this.api.fhc().Hubcontroller().putTransactionSetUsingPOST(hubConfig.hubEndPoint,
+                        this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
+                        hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, "1000",
+                        hubConfig.hubId,
+                        this.patient.ssin,
+                        myblob,
+                        hubConfig.hubPackageId, hubConfig.hubApplication
+                        )
+                    )
+                )
+            }
+
+            handleResponse(putResponse, services, hubConfig){
+                return this.hasError(putResponse) ? Promise.resolve({error:"has an error", response:putResponse}): Promise.resolve(this.mergeResponse(putResponse, services, hubConfig));
+            }
+
+            hasError(putResponse){
+                //TODO: implement
+                const ack = putResponse.acknowledge;
+                if(!ack.isComplete) console.log("response with error", putResponse);
+                return !ack.isComplete;
+            }
+
+            // private String medicationSchemeIdOnSafe;
+            // private Integer medicationSchemeSafeVersion;
+            // private Long medicationSchemeTimeStampOnSafe;
+            // private String medicationSchemeDocumentId;
+            // private String safeIdName; //can be: vitalinkuri, RSWID, RSBID
+            // private String idOnSafes; //medicationschemeelement : value of vitalinkuri, RSBID, RSWID
+            // private Long timestampOnSafe; //transaction date+time
+            // private Boolean changeValidated; //accept change on safe
+            // private Boolean newSafeMedication; //new medication on safe
+            // private String medicationUse; //free text
+            // private Boolean medicationChanged;
+            // private Boolean posologyChanged;
+
+            mergeResponse(putResponse, services, hubConfig){
+                //1. get transactionset id
+                //2. get transactionset from hub
+                //3. updated the services
+                const tsInfo = putResponse.transactions && putResponse.transactions.length > 0 ? putResponse.transactions[0].ids.find(id => id.s==="LOCAL") : null;
+                const tsSv = tsInfo.sv;
+                const tsSl = tsInfo.sl;
+                const tsId = tsInfo.value;
+                this.getTransactionSet(tsSv, tsSl, tsId, hubConfig).then(tsResp => {
+                    putResponse.transactions.forEach(trInfo  => {
+                        const idKmehr = trInfo.ids.find(id => id.s === "ID-KMEHR").value;
+                        const trOnHub = tsResp.folders[0].transactions.find(tr => tr.ids.find(id => id.s === "ID-KMEHR" && id.value === idKmehr)); //TODO: verify other id's (LOCAL)
+                        const idLocalSv = trInfo.ids.find(id => id.s === "LOCAL").sv;
+                        const idLocalSl = trInfo.ids.find(id => id.s === "LOCAL").sl;
+                        const idLocalValue = trInfo.ids.find(id => id.s === "LOCAL").value;
+                        const trTimeStamp = this.transactionDateTime(trOnHub);
+                        if(idKmehr === 1){ //set the medicationscheme ids to all services
+                            services.forEach(svc => {
+                                const med = this.api.contact().preferredContent(svc, this.language);
+                                med.medicationSchemeIdOnSafe = idLocalValue;
+                                med.safeIdName = idLocalSl;
+                                med.medicationSchemeTimeStampOnSafe = this.transactionDateTime(trOnHub);
+                            })
+                        } else {//set te medicationschemeElement ids to the corresponding service
+                            const svcId = this.iCureServiceId(trOnHub);
+                            const svc = svcId ? services.find(svc => svc.id === svcId) : services[idKmehr - 1];
+                            const med = this.api.contact().preferredContent(svc, this.language);
+                            med.idOnSafes = idLocalValue;
+                            med.timestampOnSafe = this.transactionDateTime(trOnHub);
+                        }
+                    });
+                    console.log("updated services", services);
+                    return services;
+                })
+            }
+
+            getTransactionSet(tsSv, tsSl, tsId, hubConfig){
+                return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
+                    .then(hcp => this.api.fhc().Hubcontroller().getTransactionSetUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
+                        this.api.tokenId, this.api.credentials.ehpassword,
+                        hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
+                        this.patient.ssin,
+                        tsSv, tsSl, tsId,
+                        hubConfig.hubPackageId, ""
+                        )
+                    )
+            }
+
+            transactionDateTime(tr){
+                const millis = tr.date.millis + tr.time.millis;
+                return millis;
+            }
+
+            iCureServiceId(tr){
+                const itm = tr.item.find(it => it.ids.find(id => id.sl === "iCure-Service"));
+                const svcId = itm.ids.find(id => id.sl === "iCure-Service") ? itm.ids.find(id => id.sl === "iCure-Service").value : null
+                return svcId;
+            }
         }
         customElements.define(HtPatHubUtils.is, HtPatHubUtils);
     </script>
