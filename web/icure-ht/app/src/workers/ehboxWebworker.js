@@ -9,6 +9,9 @@ import moment from 'moment/src/moment'
 import levenshtein from 'js-levenshtein'
 import { Base64 } from 'js-base64';
 
+// Define as global - avoid being overwritten every time we're called ("onmessage" event)
+const cachedLocalMessages = {}
+
 onmessage = e => {
     if(e.data.action === "loadEhboxMessage"){
 
@@ -78,10 +81,25 @@ onmessage = e => {
         const createDbMessageWithAppendicesAndTryToAssign =  (message,boxId) => {
 
             const promResolve = Promise.resolve()
-            return ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores)
-                .then(fullMessageFromEHealthBox => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : msgApi.findMessagesByTransportGuid(boxId+":"+_.trim(_.get(message,"id","")), null, null, null, 1).then(foundExistingMessage => [fullMessageFromEHealthBox, foundExistingMessage]).catch(() => promResolve ))
-                .then(([fullMessageFromEHealthBox, foundExistingMessage]) => !_.trim(_.get(fullMessageFromEHealthBox,"message.id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId, _.get(fullMessageFromEHealthBox, 'message', {}), _.head(_.get(foundExistingMessage,"rows",[{}]))))
-                .catch(() => promResolve )
+
+			return !_.trim(_.get(message,"id","")) ? promResolve : getMessageByTransportGuidWithCache(boxId+":"+_.trim(_.get(message,"id","")))
+				.then(foundExistingMessage => _.trim(_.get(foundExistingMessage,"id")) ? [foundExistingMessage,null] : ehboxApi.getFullMessageUsingPOST1(keystoreId, tokenId, ehpassword, boxId, _.trim(_.get(message,"id","")), alternateKeystores).then(fullMessageFromEHealthBox => [foundExistingMessage,_.get(fullMessageFromEHealthBox, "message",null)]).catch(() => [foundExistingMessage,null]))
+				.then(([foundExistingMessage,fullMessageFromEHealthBox]) => !_.trim(_.get(fullMessageFromEHealthBox,"id","")) ? promResolve : convertFromOldToNewSystemAndCarryOn(boxId,fullMessageFromEHealthBox,foundExistingMessage))
+				.catch(() => promResolve )
+
+        }
+
+        const getMessageByTransportGuidWithCache = (transportGuid) => {
+
+            const promResolve = Promise.resolve()
+
+			// Get from internal's (ie: worker's) cache by "transportGuid" as we won't have message id before hitting BE / cache
+			const existingCachedMessage = _.find(cachedLocalMessages, {transportGuid:_.trim(transportGuid)})
+
+			return !transportGuid ? promResolve : existingCachedMessage ? Promise.resolve(existingCachedMessage) : msgApi.findMessagesByTransportGuid(transportGuid, null, null, null, 1)
+				.then(foundExistingMessages => _.get(foundExistingMessages, "rows.[0]", null))
+				.then(foundExistingMessage => !_.trim(_.get(foundExistingMessage, "id")) ? promResolve : _.merge(cachedLocalMessages, _.fromPairs([[_.trim(transportGuid),foundExistingMessage]])) && foundExistingMessage)
+				.catch(() => promResolve)
 
         }
 
@@ -373,7 +391,7 @@ onmessage = e => {
 
             return !_.trim(_.get(foundExistingMessage,"id","")) ?
 
-                // Message doesn't exist yet
+                // Message doesn't exist locally yet, create in our db, save attachments and assign results/protocols when possible (1! candidate based on niss)
                 registerNewMessage(fullMessageFromEHealthBox, boxId)
                     .then( ([createdMessage, createdDocuments]) => tryToAssignAppendices(createdMessage||{}, fullMessageFromEHealthBox, createdDocuments||[], boxId) )
                     .then(() => totalNewMessages[boxId]++ ) :
