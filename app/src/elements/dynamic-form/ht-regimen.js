@@ -91,7 +91,7 @@ class HtRegimen extends TkLocalizerMixin(PolymerElement) {
                 display: grid;
                 grid-template-columns: auto auto auto auto;
                 grid-template-rows: 24px;
-                grid-template-areas: "time_tag button_increase quantity_label button_decrease";
+                grid-template-areas: "time_tag button_decrease quantity_label button_increase";
             }
 
             .time_tag { grid-area: time_tag; }
@@ -111,13 +111,9 @@ class HtRegimen extends TkLocalizerMixin(PolymerElement) {
 
         <div class="grid-container dose-tag">
             <div class="time_tag time-label">[[time]]</div>
-            <div class="button_increase">
-                <paper-icon-button class="control-button" icon="icons:add" on-tap="increase"></paper-icon-button>
-            </div>
+            <div class="button_decrease"><paper-icon-button class="control-button" icon="icons:remove" on-tap="decrease"></paper-icon-button></div>
             <div class="quantity_label quantity-label" on-tap="increase">[[extra.quantity]]</div>
-            <div class="button_decrease">
-                <paper-icon-button class="control-button" icon="icons:remove" on-tap="decrease"></paper-icon-button>
-            </div>
+            <div class="button_increase"><paper-icon-button class="control-button" icon="icons:add" on-tap="increase"></paper-icon-button></div>
         </div>
 
 <!--        <div class="dose-tag">-->

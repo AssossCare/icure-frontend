@@ -107,13 +107,9 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
 
         </style>
         <div id="counter" class\$="base [[custom]]">
-            <div>
-                <paper-icon-button class\$="control-button right [[custom]]" icon="icons:remove" on-tap="decrease"></paper-icon-button>
-            </div>
+            <div><paper-icon-button class\$="control-button right [[custom]]" icon="icons:remove" on-tap="decrease"></paper-icon-button></div>
             <div id="counter-label" class\$="quantity-label [[custom]]">[[quantity]]</div>
-            <div>
-                <paper-icon-button class\$="control-button left [[custom]]" icon="icons:add" on-tap="increase"></paper-icon-button>
-            </div>
+            <div><paper-icon-button class\$="control-button left [[custom]]" icon="icons:add" on-tap="increase"></paper-icon-button></div>
         </div>
 `;
   }

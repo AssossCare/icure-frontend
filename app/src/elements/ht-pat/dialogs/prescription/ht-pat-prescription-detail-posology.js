@@ -812,10 +812,10 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             quantityFactors: {
                 type: Array,
                 value: () => [
-                    {id: "one", label: "quantity_factor_one", numLabel: "1", denominator: 1},
-                    {id: "half", label: "quantity_factor_half", numLabel: "1/2", denominator: 2},
-                    {id: "third", label: "quantity_factor_third", numLabel: "1/3", denominator: 3},
-                    {id: "quarter", label: "quantity_factor_quarter", numLabel: "1/4", denominator: 4}
+                    {id: "one", label: "quantity_factor_one", numLabel: "1", denominator: 1, quantityForModel: 1},
+                    {id: "half", label: "quantity_factor_half", numLabel: "1/2", denominator: 2, quantityForModel: 0.5},
+                    {id: "third", label: "quantity_factor_third", numLabel: "1/3", denominator: 3, quantityForModel: 0.33},
+                    {id: "quarter", label: "quantity_factor_quarter", numLabel: "1/4", denominator: 4, quantityForModel: 0.25}
                 ]
             },
             weekdayKeys: {
@@ -1441,21 +1441,21 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
     _quantityFactorChanged() {
 
         const promResolve = Promise.resolve()
-        const regimen = _.get(this, "medicationContent.medicationValue.regimen", [])
+        const regimen = _.get(this, "medicationContent.medicationValue.regimen", false)
 
         return !regimen ? promResolve : promResolve
             .then(() => _
                 .chain(regimen)
                 .filter(it => _.trim(_.get(it,"administratedQuantity.quantity")))
                 .map(it => _.merge(it, {administratedQuantity: {
-                        unit: this.medicationDetail.unit || this.localize("uni", "Unités"),
-                        quantity: _.get(this,"quantityFactor.denominator",0) > 1 && this.quantityFactor.numLabel || parseInt(_.get(it,"administratedQuantity.quantity")) || ""
+                        unit: _.trim(_.get(this,"medicationDetail.unit")) ? _.trim(_.get(this,"medicationDetail.unit")) : this.localize("uni", "Unités"),
+                        quantity: _.get(this,"quantityFactor.denominator",1) > 1 && _.get(this,"quantityFactor.numLabel") || parseInt(_.get(it,"administratedQuantity.quantity")) || ""
                     }}))
                 .value()
             )
-            .then(() => this.set("quantityFactorValue", _. get(this,"quantityFactor")))
+            .then(() => this.set("quantityFactorValue", _.get(this,"quantityFactor")))
             .then(() => this.notifyPath("medicationContent.medicationValue", "changed"))
-            .then(() => this._addDrugDataToCache())
+            // .then(() => this._addDrugDataToCache())
 
     }
 
@@ -1638,7 +1638,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         const promResolve = Promise.resolve()
         const drugInternalUuid = _.trim(_.get(medication,"drug.internalUuid"))
 
-        return !medication ? this._init() : (drugInternalUuid && this._drugFoundInCache(drugInternalUuid) ? this._loadDrugDataFromCache(drugInternalUuid) : this._init())
+        // return !medication ? this._init() : (drugInternalUuid && this._drugFoundInCache(drugInternalUuid) ? this._loadDrugDataFromCache(drugInternalUuid) : this._init())
+        return !medication ? this._init() : this._init()
             .then(() => this.set('isLoading', true))
             .then(() => !_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")) ? null : this.api.besamv2().findPaginatedVmpsByGroupId(_.trim(_.get(medication,"drug.amp.vmp.vmpGroup.id")),null,null,100).then(vmps => _.merge(medication, {drug:{vmps:_.size(_.get(vmps,"rows")) ? _.get(vmps,"rows") : null}})).catch(e => console.log("[ERROR]", e)))
             .then(() => !_.trim(_.get(medication,"id")) || _.trim(_.get(medication,"drug.type")) !== "medicine" ?
@@ -1740,7 +1741,8 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                 this.set("reimbursementReason", !_.size(_.get(this,"medicationContent.medicationValue.reimbursementReason")) ? {} : _.find(_.get(this,"reimbursementCodeRecipe"), it => _.trim(_.get(it,"code")) === _.get(this,"medicationContent.medicationValue.reimbursementReason.code"))||{})
 
                 const quantitySample = _.trim(_.get(this, "medicationContent.medicationValue.regimen[0].administratedQuantity.quantity"))
-                !this._drugFoundInCache(drugInternalUuid) && this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && _.find(_.get(this,"quantityFactors"), q => _.get(q,"numLabel") === quantitySample) || _.get(this,"quantityFactors[0]"))
+                // this.set("quantityFactor", quantitySample && !parseInt(quantitySample, 10) && _.find(_.get(this,"quantityFactors"), q => _.get(q,"numLabel") === quantitySample) || _.get(this,"quantityFactors[0]"))
+                this.set("quantityFactor", quantitySample && _.find(_.get(this,"quantityFactors"), q => _.get(q,"numLabel") === quantitySample) || _.get(this,"quantityFactors[0]"))
 
                 // Todo: (axel) month (dayNumber) and date
                 const period = _.has(_.get(this,"medicationContent"), "medicationValue.regimen[0].weekday") ? "weeklyPosology" : "dailyPosology"
@@ -1753,7 +1755,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
             })
             .then(() => this._updateStats())
-            .then(() => this._addDrugDataToCache())
+            // .then(() => this._addDrugDataToCache())
             .catch(e => console.log("[ERROR]", e))
             .finally(() => (this.set('isLoading', false)||true) && (console.log("Medication", this.medication)||true) && (console.log("MedicationDetail", this.medicationDetail)||true))
 
