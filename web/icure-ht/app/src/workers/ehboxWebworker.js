@@ -94,7 +94,8 @@ onmessage = e => {
             const promResolve = Promise.resolve()
 
 			// Get from internal's (ie: worker's) cache by "transportGuid" as we won't have message id before hitting BE / cache
-			const existingCachedMessage = _.find(cachedLocalMessages, {transportGuid:_.trim(transportGuid)})
+			// const existingCachedMessage = _.find(cachedLocalMessages, {transportGuid:_.trim(transportGuid)})
+			const existingCachedMessage = cachedLocalMessages[_.trim(transportGuid)]
 
 			return !transportGuid ? promResolve : existingCachedMessage ? Promise.resolve(existingCachedMessage) : msgApi.findMessagesByTransportGuid(transportGuid, null, null, null, 1)
 				.then(foundExistingMessages => _.get(foundExistingMessages, "rows.[0]", null))
