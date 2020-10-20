@@ -146,7 +146,7 @@
     "sockjs": "^0.3.19",
     "sockjs-client": "^1.3.0",
     "taktik-polymer-typescript": "^3.4.6",
-    "topaz-electron-api": "git+https://github.com/AssossCare/topaz-electron-api.git#f3f2b8f221cecda6032c85f548589f84d7145284",
+    "topaz-electron-api": "git+https://github.com/AssossCare/topaz-electron-api.git#0b234923ae8f1ee7eb2daa65584fd8fc4ab09b82",
     "uti": "^3.1.2",
     "vaadin-split-layout": "^3.0.0-alpha2",
     "web-animations-js": "^2.3.1",
