@@ -236,7 +236,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                         </div>
                     </div>
                 </div>
-                <div class="cnk-info-delivery-container">
+                <div class="cnk-info-delivery-container heightUnset">
                     <div class="cnk-info-container-title">
                         [[localize('', 'Délivrance', language)]]
                     </div>
@@ -251,11 +251,11 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                         </div>
                         <template is="dom-repeat" items="[[_getWadaSpecification(selectedCnkForInformation)]]" as="wada">
                             <div class="table">
-                                 <div class="tr">
-                                    <div class="td fg1">[[_getWadaName(wada)]]</div>
+                                 <div class="tr heightUnset">
+                                    <div class="td fg1 overflowUnset whiteSpaceUnset">[[_getWadaName(wada)]]</div>
                                  </div>
-                                 <div class="tr">
-                                    <div class="td fg1">[[_getWadaDescr(wada)]]</div>
+                                 <div class="tr heightUnset">
+                                    <div class="td fg1 overflowUnset whiteSpaceUnset">[[_getWadaDescr(wada)]]</div>
                                  </div>
                             </div>
                         </template>
