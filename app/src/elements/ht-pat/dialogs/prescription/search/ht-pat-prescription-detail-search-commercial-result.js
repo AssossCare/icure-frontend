@@ -622,7 +622,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
             composed: true,
             detail: {
                 id: _.get(drug, 'id', null),
-                internalUuid: _.trim(_.get(it,"internalUuid","")),
+                internalUuid: _.trim(_.get(drug,"internalUuid","")),
                 uuid: _.get(drug, 'uuid', null),
                 groupId: _.get(drug, 'groupId', null),
                 uuids: _.get(drug, 'uuids', []),

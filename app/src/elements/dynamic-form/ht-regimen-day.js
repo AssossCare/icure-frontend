@@ -441,12 +441,12 @@ class HtRegimenDay extends TkLocalizerMixin(PolymerElement) {
   }
 
   _setQuantity(id, quantity = 0) {
-      console.log("_setQuantity:" + id);
+      // console.log("_setQuantity:" + id);
       this.set(id, quantity);
   }
 
   _getQuantity(id) {
-      console.log("_getQuantity:" + id);
+      // console.log("_getQuantity:" + id);
       return this.get(id);
   }
 

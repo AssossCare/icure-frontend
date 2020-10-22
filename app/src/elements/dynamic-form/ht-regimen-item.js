@@ -197,7 +197,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseDown(e) {
-      console.log("mouseDown");
+      // console.log("mouseDown");
       if (this.resetTimer) {
           clearTimeout(this.resetTimer);
           this.resetTimer = null;
@@ -209,7 +209,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseUp(e) {
-      console.log("mouseUp");
+      // console.log("mouseUp");
       if (this.mouseIsDown) {
           if (this.quantityFactor && this.quantityFactor.denominator > 1) {
               this.set("quantity", this.quantityFactor.numLabel);
@@ -222,7 +222,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   _quantityChanged() {
-      console.log("_quantityChanged: " + this.quantity);
+      // console.log("_quantityChanged: " + this.quantity);
       this.set("custom", this.quantity && "positive" || "");
   }
 }

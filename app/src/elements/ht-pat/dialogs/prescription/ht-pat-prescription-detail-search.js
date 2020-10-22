@@ -27,7 +27,9 @@ import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 import _ from "lodash"
+
 class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+
     static get template() {
         return html`
         <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style atc-styles">
@@ -410,7 +412,6 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         this.set('isLoading', false)
     }
 
-
     _drugsFilterChanged(drugsFilter, parentUuid, groupId){
         this.set('isLoadingCommercial', true)
         this.set('isLoadingOtc', true)
@@ -510,7 +511,9 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _prepareCommercialForDisplay(ampps, parentUuid, parentUuids){
+
         const level = parentUuid ? 1 : 0
+
         const hierarchicalAmpps = _.get(ampps, 'rows', []).reduce((ampps, row) => {
             if (_.size(_.get(row, 'ampps', []))){
                 return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
@@ -541,7 +544,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             }
             return ampps;
         }, [])
-        .filter(e => e.amp.status === "AUTHORIZED" && _.get(e, 'publicDmpp', null) && _.get(e, 'id', null) && _.get(e, 'intendedName', null) && (level === 0 || level === 1 && _.get(e, 'uuid', null) !== parentUuid))
+        .filter(e => _.trim(_.get(e,"amp.status")) === "AUTHORIZED" && _.get(e, 'publicDmpp', null) && _.get(e, 'id', null) && _.get(e, 'intendedName', null) && (level === 0 || level === 1 && _.get(e, 'uuid', null) !== parentUuid))
         .filter((e, i, a) => a.findIndex(x => _.get(x, 'id', null) === _.get(e, 'id', '')) === i)
 
         let filteredAmpps = [];
@@ -640,20 +643,39 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
     _getFinishedCommercializations(ampps){
        const now = moment().valueOf()
-       return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.get(c, 'to', null)).add(12, 'month') > now : false))) || []
+       return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.clone(_.get(c, 'to', null))).add(12, 'month') > now : false))) || []
     }
 
     _hasAtLeastOneValidAmpp(ampps){
 
-        // Commercialization is still valid when expired less than a year ago
         const now = +new Date()
-        return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(c.to).add(12, "month") >= now || !c.to && c.from && c.from <= now))
+
+        // Commercialization is still valid when expired less than two years ago (http://www.samportal.be/fr/sam_portal_news_messages/82)
+
+        // Allow for no "to" value && "from" in the past
+        // return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to && c.from && c.from <= now))
+
+        // Allow for no "to" value && don't check on "from" in the past but must still be present
+        return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to && c.from))
+
+        // Should not appear when no "commercialized_until" defined
+        // return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && c.from <= now && moment(_.clone(c.to)).add(24, "month") >= now))
+
+        // Should not appear when no "to" defined - "from" could be in the future
+        // return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && moment(_.clone(c.to)).add(24, "month") >= now))
 
     }
 
     _getCurrentDmpp(dmpps){
+
         const now = moment().valueOf()
-        return dmpps && dmpps.find(dmpp => _.get(dmpp, 'from', null) < now && _.get(dmpp, 'to',  null) ? _.get(dmpp, 'to',  null) > now : true) || {}
+
+        // "from" defined and < now && either no "to" or "to" in the future
+        return dmpps && dmpps.find(dmpp => _.get(dmpp, 'from', null) <= now && _.get(dmpp, 'to',  null) ? _.get(dmpp, 'to',  null) >= now : true) || {}
+
+        // From && to must be defined
+        // return dmpps && dmpps.find(dmpp => dmpp && dmpp.from && dmpp.to && dmpp.from <= now && dmpp.to >= now) || {}
+
     }
 
     _prepareMoleculeForDisplay(vmpGroups){
