@@ -273,10 +273,12 @@
                 const tsSv = tsInfo.sv;
                 const tsSl = tsInfo.sl;
                 const tsId = tsInfo.value;
+                console.log("mergeResponse data: ", tsSv, tsSl, tsInfo)
                 this.getTransactionSet(tsSv, tsSl, tsId, hubConfig).then(tsResp => {
+                    console.log("mergeResponse tsResp", tsResp)
                     putResponse.transactions.forEach(trInfo  => {
-                        const idKmehr = trInfo.ids.find(id => id.s === "ID-KMEHR").value;
-                        const trOnHub = tsResp.folders[0].transactions.find(tr => tr.ids.find(id => id.s === "ID-KMEHR" && id.value === idKmehr)); //TODO: verify other id's (LOCAL)
+                        const idKmehr = trInfo.ids.find(id => (id.s === "ID_KMEHR" || id.s === "ID-KMEHR")).value;
+                        const trOnHub = tsResp.folders[0].transactions.find(tr => tr.ids.find(id => (id.s === "ID_KMEHR" || id.s === "ID-KMEHR") && id.value === idKmehr)); //TODO: verify other id's (LOCAL)
                         const idLocalSv = trInfo.ids.find(id => id.s === "LOCAL").sv;
                         const idLocalSl = trInfo.ids.find(id => id.s === "LOCAL").sl;
                         const idLocalValue = trInfo.ids.find(id => id.s === "LOCAL").value;
@@ -303,7 +305,7 @@
 
             getTransactionSet(tsSv, tsSl, tsId, hubConfig){
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
-                    .then(hcp => this.api.fhc().Hub().getTransactionSetUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
+                    .then(hcp => this.api.fhc().Hub().getTransactionSetMessageUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
                         this.api.tokenId, this.api.credentials.ehpassword,
                         hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip ? this.hcpZip : "1000",
                         this.patient.ssin,
