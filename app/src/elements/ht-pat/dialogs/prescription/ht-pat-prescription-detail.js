@@ -277,6 +277,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             sam-version="[[samVersion]]" 
                             amps-by-vmp-group-list="[[ampsByVmpGroupList]]"      
                             selected-molecule-for-amps="[[selectedMoleculeForAmps]]" 
+                            on-open-posology-view="_openPosologyView"
                             on-close-commercial-by-substance-view="_closeAmpsByVmpGroupView"
                         ></ht-pat-prescription-detail-search-amps-by-vmp-group>                    
                     </div>                
@@ -715,7 +716,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             if(!_.get(e, 'detail.bypassPosologyView', null)) {
                 this.set('isPosologyView', true)
                 this.set('isSearchView', false)
+                this.set('isCnkInfoView', false)
                 this.set('isCheaperDrugView', false)
+                this.set('isAmpsByVmpGroupView', false)
+                this.set('isCompoundManagementView', false)
             }
 
             this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
