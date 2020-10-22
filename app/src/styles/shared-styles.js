@@ -1027,7 +1027,19 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
             
             .strikeOut {
                 text-decoration-line: line-through;
-            }            
+            }
+            
+            .overflowUnset {
+                overflow:unset!important;
+            }
+            
+            .whiteSpaceUnset {
+                white-space: unset!important;
+            }
+                        
+            .heightUnset {
+                height: unset!important;
+            }
 
 
 		</style>
