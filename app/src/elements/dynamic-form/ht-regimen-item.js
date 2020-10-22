@@ -107,13 +107,9 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
 
         </style>
         <div id="counter" class\$="base [[custom]]">
-            <div>
-                <paper-icon-button class\$="control-button right [[custom]]" icon="icons:remove" on-tap="decrease"></paper-icon-button>
-            </div>
+            <div><paper-icon-button class\$="control-button right [[custom]]" icon="icons:remove" on-tap="decrease"></paper-icon-button></div>
             <div id="counter-label" class\$="quantity-label [[custom]]">[[quantity]]</div>
-            <div>
-                <paper-icon-button class\$="control-button left [[custom]]" icon="icons:add" on-tap="increase"></paper-icon-button>
-            </div>
+            <div><paper-icon-button class\$="control-button left [[custom]]" icon="icons:add" on-tap="increase"></paper-icon-button></div>
         </div>
 `;
   }
@@ -201,7 +197,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseDown(e) {
-      console.log("mouseDown");
+      // console.log("mouseDown");
       if (this.resetTimer) {
           clearTimeout(this.resetTimer);
           this.resetTimer = null;
@@ -213,7 +209,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   mouseUp(e) {
-      console.log("mouseUp");
+      // console.log("mouseUp");
       if (this.mouseIsDown) {
           if (this.quantityFactor && this.quantityFactor.denominator > 1) {
               this.set("quantity", this.quantityFactor.numLabel);
@@ -226,7 +222,7 @@ class HtRegimenItem extends TkLocalizerMixin(PolymerElement) {
   }
 
   _quantityChanged() {
-      console.log("_quantityChanged: " + this.quantity);
+      // console.log("_quantityChanged: " + this.quantity);
       this.set("custom", this.quantity && "positive" || "");
   }
 }
