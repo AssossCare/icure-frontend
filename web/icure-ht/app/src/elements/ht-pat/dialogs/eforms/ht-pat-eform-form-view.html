@@ -218,6 +218,10 @@
                     selectedDocumentIdToBeImported:{
                         type: String,
                         value: null
+                    },
+                    deactivateAttachement:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -264,7 +268,7 @@
                     .then(mergeDataSetResponse => _.parseInt(_.get(mergeDataSetResponse, 'response.status', 0)) === 204 ? this._unlockForm() : this._showErrorNotification(_.get(mergeDataSetResponse, 'response', 0), _.get(mergeDataSetResponse, 'content', {})))
                     .finally(() => {
                         this.set('isLoading', false)
-                        this.set('attachmentAvailable', true)
+                        _.get(this, 'deactivateAttachement', false) ? this.set('attachmentAvailable', false) : this.set('attachmentAvailable', true)
                     })
 
             }
