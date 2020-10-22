@@ -331,28 +331,32 @@
                     <div class="eforms-submenu-container">
                         <div class="table">
                             <div class="tr">
+                                <div class="td fg2">[[localize('', 'Patients au cours des deux dernières années', language)]]</div>
+                                <div class="td fg0">[[_getResult('TOT', queriesResult, queriesResult.*)]]</div>
+                            </div>
+                            <div class="tr">
                                 <div class="td fg2">[[localize('', 'Nb de patient avec une infection respiratoire aiguë (ARI)', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">[[_getResult('ARI', queriesResult, queriesResult.*)]]</div>
                             </div>
                             <div class="tr">
                                 <div class="td fg2">[[localize('', 'Nb de patient avec une infection gripalle (ILI)', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">[[_getResult('ILI', queriesResult, queriesResult.*)]]</div>
                             </div>
                             <div class="tr">
                                 <div class="td fg2">[[localize('', 'Nb de patient suspect de COVID-19', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">[[_getResult('SUS', queriesResult, queriesResult.*)]]</div>
                             </div>
                             <div class="tr">
                                 <div class="td fg2">[[localize('', 'Nb de patient avec code A77 (syndrome viral)', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">[[_getResult('A77', queriesResult, queriesResult.*)]]</div>
                             </div>
                             <div class="tr">
                                 <div class="td fg2">[[localize('', 'Nb de patient avec infection avérée au COVID-19', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">[[_getResult('COV', queriesResult, queriesResult.*)]]</div>
                             </div>
                             <div class="tr">
                                 <div class="td fg2">[[localize('', 'Pourcentage de diagnostics codés', language)]]</div>
-                                <div class="td fg0"></div>
+                                <div class="td fg0">100%</div>
                             </div>
                         </div>
                     </div>
@@ -385,6 +389,8 @@
     <script>
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
+        import { parse } from '../../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../../scripts/filters'
 
         class HtPatEformCovidReportDialog extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
             static get is() {
@@ -441,15 +447,13 @@
                         type: Boolean,
                         value: true
                     },
-                    queries:{
+                    queryList:{
                         type: Array,
-                        value: () => [
-                            {type: 'ARI',  resultType: 'number', filter: 'active == true'},
-                            {type: 'ILI',  resultType: 'number', filter: '(age > 0 & active == true) & SVC[ICPC == R80{20201021 -> 20201022}]'},
-                            {type: 'SUS',  resultType: 'number', filter: 'active == true & SVC[BE-THESAURUS == 10118856{20201021 -> 20201022}]'},
-                            {type: 'A77',  resultType: 'number', filter: '(age > 0 & active == true) & SVC[ICPC == A77{20201021 -> 20201022}]'},
-                            {type: 'COV',  resultType: 'number', filter: 'active == true & SVC[BE-THESAURUS == 10118837{20201021 -> 20201022}]'}
-                        ]
+                        value: () => []
+                    },
+                    queriesResult:{
+                        type:Array,
+                        value: () => []
                     }
                 };
             }
@@ -469,6 +473,8 @@
                 this.set('oAuthToken', {})
                 this.set('patientSumehr', null)
                 this.set('isSelectedForm', false)
+                this.set('queryList', [])
+                this.set('queriesResult', [])
                 this.$['htPatEformFormView']._reset()
             }
 
@@ -488,6 +494,19 @@
 
             openDialog(){
                 this._reset()
+
+                const startDate = this.api.moment(new Date).format('YYYYMMDD')
+                const endDate = this.api.moment(new Date).add(1, 'days').format('YYYYMMDD')
+
+                this.set('queryList', [
+                    {type: 'ARI',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == H71{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R74{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R76{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R77{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R78{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R81{'+startDate+' -> '+endDate+'}] | HE[ICPC == H71{'+startDate+' -> '+endDate+'}] | HE[ICPC == R74{'+startDate+' -> '+endDate+'}] | HE[ICPC == R76{'+startDate+' -> '+endDate+'}] | HE[ICPC == R77{'+startDate+' -> '+endDate+'}] | HE[ICPC == R78{'+startDate+' -> '+endDate+'}] | HE[ICPC == R81{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'ILI',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == R80{'+startDate+' -> '+endDate+'}] - SVC[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}] - SVC[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}])) | ((HE[ICPC == R80{'+startDate+' -> '+endDate+'}] - HE[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}] - HE[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'SUS',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}]) | (HE[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'A77',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == A77{'+startDate+' -> '+endDate+'}]) | (HE[ICPC == A77{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'COV',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]) | (HE[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'TOT',  resultType: 'number', filter: 'age > 0 & active == true'}
+                ])
+
                 if(_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null)) {
                     this.set('isLoading', true)
                     this.$['eformDetailDialog'].open()
@@ -508,11 +527,33 @@
                             response: _.get(formDefinitionResponse, 'response', 0),
                             content: _.get(formDefinitionResponse, 'content', {})
                         })
+                    }).then(() => {
+                        let prom = Promise.resolve([])
+                        this.queryList.map(query => {
+                            prom = prom.then(result => this._executeQueryFilter(query.filter).then(res => {
+                                return _.concat(result, {
+                                    type: _.get(query, 'type', null),
+                                    request: _.get(query, 'filter', null),
+                                    result: res,
+                                    numberOfPatient: _.size(res)
+                                })
+                            }))
+                        })
+
+                        prom.then(allResult => {
+                            console.log(allResult)
+                            this.set("queriesResult", allResult)
+                        })
+
                     }).finally(() => {
                         this.set('isLoading', false)
                         this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
                     })
                 }
+            }
+
+            _getResult(type){
+                return _.get(_.get(this, 'queriesResult', []).find(query => _.get(query, 'type', null) === type), 'numberOfPatient', 0)
             }
 
             _requestOAuthToken(){
@@ -785,6 +826,22 @@
                     return xml
                 })
             }
+
+            _executeQueryFilter(searchFilter){
+                let svcFilter = null
+                let lastParamsWithIdxProm = Promise.resolve()
+
+                svcFilter = parse(`PAT[${searchFilter}]`, {hcpId: _.get(this.hcp, 'parentId', null) || _.get(this.user, 'healthcarePartyId', null)})
+
+                lastParamsWithIdxProm = icrFilter(svcFilter, {
+                    cryptoicc: this.api.crypto(), usericc: this.api.user(), patienticc: this.api.patient(), contacticc: this.api.contact(), helementicc: this.api.helement(), invoiceicc: this.api.invoice(), hcpartyicc: this.api.hcparty()
+                }, _.get(this.hcp, 'parentId', null) || _.get(this.user, 'healthcarePartyId', null), false).then(pl => pl.rows)
+
+                return lastParamsWithIdxProm.then(res => {
+                    return res
+                })
+            }
+
 
         }
         customElements.define(HtPatEformCovidReportDialog.is, HtPatEformCovidReportDialog);
