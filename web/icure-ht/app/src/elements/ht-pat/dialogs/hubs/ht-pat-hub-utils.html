@@ -235,8 +235,7 @@
                         hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, "1000",
                         hubConfig.hubId,
                         this.patient.ssin,
-                        myblob,
-                        hubConfig.hubPackageId, hubConfig.hubApplication
+                        hubConfig.hubPackageId, hubConfig.hubApplication, myblob
                         )
                     )
                 )
@@ -306,7 +305,7 @@
                 return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                     .then(hcp => this.api.fhc().Hub().getTransactionSetUsingGET(hubConfig.hubEndPoint, this.api.keystoreId,
                         this.api.tokenId, this.api.credentials.ehpassword,
-                        hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
+                        hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip ? this.hcpZip : "1000",
                         this.patient.ssin,
                         tsSv, tsSl, tsId,
                         hubConfig.hubPackageId, ""

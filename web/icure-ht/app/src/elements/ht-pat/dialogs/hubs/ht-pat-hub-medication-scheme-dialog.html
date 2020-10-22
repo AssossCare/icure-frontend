@@ -182,6 +182,7 @@
 
             _open(){
                 this.$['hubMedicationSchemaDetailDialog'].open()
+                this.$['htPatHubMedicationSchemeExtendedView']._init()
                 this.set('isLoading', true)
                 this._getMedicationSchema().then(transaction => {
                     this.set('medicationScheme', transaction)
@@ -214,8 +215,8 @@
                         })
                         .then(transactions => {
                             const medicationSchemeTransaction = transactions.find(transaction => _.get(transaction, 'cds', []).find(cd => _.get(cd, 's', null) === "CD-TRANSACTION" && _.get(cd, 'value', null) === "medicationscheme"))
-                            return !_.isEmpty(medicationSchemeTransaction) ? this.api.fhc().Hub().getTransactionSetMessageUsingGET(this.hubEndPoint, this.api.keystoreId,
-                                this.api.tokenId, this.api.credentials.ehpassword,
+                            return !_.isEmpty(medicationSchemeTransaction) ? this.api.fhc().Hub().getTransactionSetMessageUsingGET(
+                                this.hubEndPoint, this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
                                 _.get(this.hcp, 'lastName', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp,'nihii', null), _.get(this.hcp, 'ssin', null), this.hcpZip,
                                 this.patient.ssin,
                                 medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').sv, medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').sl, medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').value,

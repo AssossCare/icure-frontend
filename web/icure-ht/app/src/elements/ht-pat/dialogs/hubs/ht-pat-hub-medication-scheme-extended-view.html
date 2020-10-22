@@ -1066,8 +1066,9 @@
 
 
                             <template is="dom-if" if="[[medicationsWithPosology.synchronizationInfo.availableOnHub]]">
-                                <div class="td td-input di-aft" on-tap="_stopPropagation">
-                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>
+                                <div class="td td-input di-aft" >
+<!--                                    <vaadin-checkbox checked="true" disabled="true"></vaadin-checkbox>-->
+                                    <vaadin-checkbox checked="[[medicationsWithPosology.synchronizationInfo.localToHub]]" data-item="[[medicationsWithPosology]]" on-tap="_synchronizeItemToHub"></vaadin-checkbox>
                                 </div>
                             </template>
                             <template is="dom-if" if="[[!medicationsWithPosology.synchronizationInfo.availableOnHub]]">
@@ -1438,6 +1439,11 @@
                 super.ready();
             }
 
+            _init(){
+                this.set('selectedMedication', {})
+                this.set('currentMedicationScheme', {})
+            }
+
             dataProvider(){
                 console.log(this.medicationScheme)
                 const medicScheme = this._getMedicationSchemeFromTransactionSet(this.medicationScheme)
@@ -1686,7 +1692,7 @@
                         synchronizationInfo: {
                             availableOnHub: true,
                             availableOnLocal: false,
-                            localToHub: false,
+                            localToHub: true,
                             hubToLocal: false
                         }
                     }
@@ -1997,7 +2003,9 @@
                 const servicesToUpload = [];
                 const serviceAuthors = [];
                 _.get(this.currentMedicationScheme, "msElems", []).map(item => {
-                    if(_.get(item, 'synchronizationInfo.localToHub', false) || _.get(item, 'synchronizationInfo.availableOnHub', false)){
+                    //if(_.get(item, 'synchronizationInfo.localToHub', false) || _.get(item, 'synchronizationInfo.availableOnHub', false)){
+                    //allow items to be removed from the hub
+                    if(_.get(item, 'synchronizationInfo.localToHub', false) ){
                         const hcp = this._createAuthor(item);
                         const med = this._createMedication(item);
                         //TODO: set the author id of the medication service to hcp.id
