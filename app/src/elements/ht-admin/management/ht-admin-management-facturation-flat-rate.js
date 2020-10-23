@@ -200,13 +200,6 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
             <h2 class="modal-title">[[localize('add_flat_rat_tar', 'Add flat rate tarification', language)]]</h2>
             <div class="content">
                 <div class="line p8">
-<!--                    <paper-dropdown-menu label="[[localize('stat','Code',language)]]">-->
-<!--                        <paper-listbox slot="dropdown-content" selected="{{flatRateNmclSelectedItemIdx}}" selected-item="{{flatRateNmclSelectedItem}}" attr-for-selected="id" on-selected-changed="_fatRateNmclChanged">-->
-<!--                            <template is="dom-repeat" items="[[flatRateNmcl]]" as="nmcl">-->
-<!--                                <paper-item id="[[nmcl.code]]">[[nmcl.code]] - [[_getCodeLabel(nmcl.label)]]</paper-item>-->
-<!--                            </template>-->
-<!--                        </paper-listbox>-->
-<!--                    </paper-dropdown-menu>-->
                     <paper-radio-group selected-item="{{flatRateNmclSelectedItem}}" attr-for-selected="id" on-selected-changed="_fatRateNmclChanged">
                         <template is="dom-repeat" items="[[flatRateNmcl]]" as="nmcl">
                             <paper-radio-button id="[[nmcl.code]]">[[nmcl.code]] - [[_getCodeLabel(nmcl.label)]]</paper-radio-button>
@@ -254,10 +247,6 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
                   yearValidity: null,
                   startOfValidity: null
               }
-          },
-          flatRateNmclSelectedItemIdx:{
-              type: Number,
-              value: 0
           },
           flatRateNmclSelectedItem:{
               type: Object,
@@ -360,7 +349,11 @@ class HtAdminManagementFacturationFlatRate extends TkLocalizerMixin(PolymerEleme
       this.set('selectedTarificationMonth', { id: parseInt(moment().format('MM')), label: this.localize('month_'+parseInt(moment().format('MM')),this.language)})
       this.set('selectedTarificationYear', {id: parseInt(moment().format('YYYY')), label: parseInt(moment().format('YYYY'))})
       this.set('flatRateTarification', {})
-      this.set('flatRateNmclSelectedItemIdx', 0)
+      if(this.flatRateNmclSelectedItem && this.flatRateNmclSelectedItem.id){
+          this.set('flatRateTarification.code', this.flatRateNmcl.find(cd => cd.code === this.flatRateNmclSelectedItem.id).code)
+          this.set('flatRateTarification.label', this.flatRateNmcl.find(cd => cd.code === this.flatRateNmclSelectedItem.id).label)
+          this.set('flatRateTarification.flatRateType', this.flatRateNmcl.find(cd => cd.code === this.flatRateNmclSelectedItem.id).flatRateType)
+      }
       this.set('flatRateTarification.monthValidity', parseInt(moment().format('MM')))
       this.set('flatRateTarification.yearValidity', parseInt(moment().format('YYYY')))
       this.shadowRoot.querySelector('#addedFlatRateTarificationDialog') ? this.shadowRoot.querySelector('#addedFlatRateTarificationDialog').open() : null
