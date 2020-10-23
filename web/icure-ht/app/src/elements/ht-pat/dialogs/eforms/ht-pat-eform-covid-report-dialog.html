@@ -456,6 +456,17 @@
             </paper-button>
         </paper-item>
 
+        <paper-item id="ehealth-notification" class="notification-container error">
+            <iron-icon class="notification-icn" icon="vaadin:exclamation"></iron-icon>
+            <div class="notification-msg">
+                <h4>E-health</h4>
+                <p>[[localize('notConnectedToeHealth', 'You are not connected ehealth', language)]]</p>
+            </div>
+            <paper-button name="closePostit" class="notification-btn single-btn" on-tap="_closeEhealthErrorNotification">
+                [[localize('clo','Close',language)]]
+            </paper-button>
+        </paper-item>
+
     </template>
     <script>
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
@@ -619,7 +630,20 @@
                     }).finally(() => {
                         this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
                     })
+                }else{
+                    this._ehealthErrorNotification()
                 }
+            }
+
+            _ehealthErrorNotification(){
+                this.$["ehealth-notification"].classList.add('notification')
+                setTimeout(() => {
+                    this._closeEhealthErrorNotification()
+                }, 10000);
+            }
+
+            _closeEhealthErrorNotification(){
+                this.$["ehealth-notification"].classList.remove('notification')
             }
 
             _getResult(type){
