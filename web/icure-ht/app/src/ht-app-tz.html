@@ -730,6 +730,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .covidReport{
+                cursor: pointer;
                 display:flex;
                 flex-direction:row;
                 flex-wrap: nowrap;
@@ -742,6 +743,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 opacity: 1;
                 transition: all .24s;
                 font-size: var(--font-size-small);
+                height: 20px;
+                padding: 10px;
+            }
+
+            .covidIcon{
+                margin-top: -5px;
+                margin-right: 5px;
             }
 
         </style>
@@ -859,7 +867,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </template>
 
                             <div class="covidReport" on-tap="openCovidReportDialog">
-                                Baromètre covid <iron-icon icon="vaadin:pie-bar-chart"></iron-icon>
+                                <iron-icon class="covidIcon" icon="vaadin:pie-bar-chart"></iron-icon> Baromètre covid
                             </div>
 
                             <paper-tooltip class="big" position="left" for="tools-and-parameters">[[localize('tools_and_parameters','Tools and parameters',language)]]</paper-tooltip>

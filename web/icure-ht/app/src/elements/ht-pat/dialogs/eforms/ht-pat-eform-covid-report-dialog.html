@@ -60,8 +60,8 @@
             }
 
             ht-spinner {
-                height: 42px;
-                width: 42px;
+                height: 20px;
+                width: 20px;
                 display: block;
                 position: absolute;
                 top: 50%;
@@ -257,9 +257,17 @@
 
             .table{
                 width: auto;
-                height: 100%;
+                height: 50%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
+            }
+
+            .table-info{
+                width: auto;
+                height: 40%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+                padding: 5px;
             }
 
             .tr-item{
@@ -331,33 +339,96 @@
                     <div class="eforms-submenu-container">
                         <div class="table">
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Patients au cours des deux dernières années', language)]]</div>
-                                <div class="td fg0">[[_getResult('TOT', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2"><b><u>[[localize('cov-inst', 'Recopiez simplement les 7 valeurs de statistiques dans les cases du eform', language)]]</u></b></div>
+                                <div class="td fg0"></div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Nb de patient avec une infection respiratoire aiguë (ARI)', language)]]</div>
-                                <div class="td fg0">[[_getResult('ARI', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2">[[localize('cov-tot', 'Patients au cours des deux dernières années', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('TOT', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Nb de patient avec une infection gripalle (ILI)', language)]]</div>
-                                <div class="td fg0">[[_getResult('ILI', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2">[[localize('cov-ari', 'Nb de patient avec une infection respiratoire aiguë (ARI)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('ARI', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Nb de patient suspect de COVID-19', language)]]</div>
-                                <div class="td fg0">[[_getResult('SUS', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2">[[localize('cov-ili', 'Nb de patient avec une infection gripalle (ILI)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('ILI', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Nb de patient avec code A77 (syndrome viral)', language)]]</div>
-                                <div class="td fg0">[[_getResult('A77', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2">[[localize('cov-sus', 'Nb de patient suspect de COVID-19', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('SUS', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Nb de patient avec infection avérée au COVID-19', language)]]</div>
-                                <div class="td fg0">[[_getResult('COV', queriesResult, queriesResult.*)]]</div>
+                                <div class="td fg2">[[localize('cov-a77', 'Nb de patient avec code A77 (syndrome viral)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('A77', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
                             <div class="tr">
-                                <div class="td fg2">[[localize('', 'Pourcentage de diagnostics codés', language)]]</div>
-                                <div class="td fg0">100%</div>
+                                <div class="td fg2">[[localize('cov-cov', 'Nb de patient avec infection avérée au COVID-19', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('COV', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
                             </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-per', 'Pourcentage de diagnostics codés', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        100%
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-info">
+                            <b><u>Rémunération des MG</u></b><br/>
+                            Chaque MG de la pratique est rémunéré (même si seulement 1 des MG fait l'export, car une bonne partie du travail est un encodage correct des données
+                            <ul>
+                                <li>400 € pour 2 exports par semaine pendant les 6 mois du baromètre</li>
+                                <li>800 € pour un minimum de 4 exports par semaine pendant les 6 mois du baromètre</li>
+                            </ul>
+                            <b><u>Plus d'info :</u></b><br/>
+                            <a href="https://www.sciensano.be/fr/barometre-covid-19-dans-les-cabinets-de-medecine-generale" target="_blank">https://www.sciensano.be/fr/barometre-covid-19-dans-les-cabinets-de-medecine-generale</a>
                         </div>
                     </div>
                 </div>
@@ -494,7 +565,6 @@
 
             openDialog(){
                 this._reset()
-
                 const startDate = this.api.moment(new Date).format('YYYYMMDD')
                 const endDate = this.api.moment(new Date).add(1, 'days').format('YYYYMMDD')
 
@@ -542,11 +612,11 @@
 
                         prom.then(allResult => {
                             console.log(allResult)
+                            this.set('isLoading', false)
                             this.set("queriesResult", allResult)
                         })
 
                     }).finally(() => {
-                        this.set('isLoading', false)
                         this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
                     })
                 }
