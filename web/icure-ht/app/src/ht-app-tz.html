@@ -69,6 +69,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="elements/ht-app/ht-app-setup-prompt.html">
 <link rel="import" href="elements/mta/ht-mailer-dialog.html">
 <link rel="import" href="elements/ht-pat/dialogs/subscription/ht-pat-subscription-recovery.html">
+<link rel="import" href="elements/ht-pat/dialogs/eforms/ht-pat-eform-covid-report-dialog.html">
 
 <link rel="import" href="elements/icc-api/icc-api.html">
 
@@ -79,6 +80,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="./ht-update-dialog.html">
 <link rel="immport" href="./styles/buttons-style.html">
 <link rel="import" href="./styles/notification-style.html">
+
 
 
 
@@ -293,7 +295,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 width: auto;
                 position: absolute;
                 top: 50%;
-                right: 137px;
+                right: 275px;
                 transform: scaleX(1) translateY(-50%);
                 color: var(--app-text-color-light);
                 opacity: 1;
@@ -727,6 +729,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 font-size: var(--font-size-small);
             }
 
+            .covidReport{
+                cursor: pointer;
+                display:flex;
+                flex-direction:row;
+                flex-wrap: nowrap;
+                width: auto;
+                position: absolute;
+                top: 50%;
+                right: 137px;
+                transform: scaleX(1) translateY(-50%);
+                color: var(--app-text-color-light);
+                opacity: 1;
+                transition: all .24s;
+                font-size: var(--font-size-small);
+                height: 20px;
+                padding: 10px;
+            }
+
+            .covidIcon{
+                margin-top: -5px;
+                margin-right: 5px;
+            }
+
         </style>
 
         <!-- todo @julien on-refresh launchWS-->
@@ -840,6 +865,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                     </div>
                                 </div>
                             </template>
+
+                            <div class="covidReport" on-tap="openCovidReportDialog">
+                                <iron-icon class="covidIcon" icon="vaadin:pie-bar-chart"></iron-icon> Baromètre covid
+                            </div>
 
                             <paper-tooltip class="big" position="left" for="tools-and-parameters">[[localize('tools_and_parameters','Tools and parameters',language)]]</paper-tooltip>
                             <paper-menu-button id="tools-and-parameters" horizontal-align="right" close-on-activate no-overlap no-animations focused="false">
@@ -1074,7 +1103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
         <ht-pat-subscription-recovery id="htPatSubscriptionRecovery" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-subscription-recovery>
-
+        <ht-pat-eform-covid-report-dialog id="htPatEformCovidReportDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-eform-covid-report-dialog>
     </template>
 
     <script>
@@ -2771,6 +2800,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 //}else{
                 //    this._ehealthErrorNotification()
                 //}
+            }
+
+            openCovidReportDialog(){
+                this.$['htPatEformCovidReportDialog'].openDialog()
             }
 
         }

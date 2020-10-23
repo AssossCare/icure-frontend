@@ -33,7 +33,7 @@
 <link rel="import" href="./ht-pat-eform-form-view.html">
 
 
-<dom-module id="ht-pat-eform-dialog">
+<dom-module id="ht-pat-eform-covid-report-dialog">
     <template>
         <style include="dialog-style scrollbar-style buttons-style shared-styles paper-tabs-style notification-style">
 
@@ -60,8 +60,8 @@
             }
 
             ht-spinner {
-                height: 42px;
-                width: 42px;
+                height: 20px;
+                width: 20px;
                 display: block;
                 position: absolute;
                 top: 50%;
@@ -255,6 +255,75 @@
                 width: 100%;
             }
 
+            .table{
+                width: auto;
+                height: 50%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .table-info{
+                width: auto;
+                height: 40%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+                padding: 5px;
+            }
+
+            .tr-item{
+                cursor: pointer;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .tr{
+                display: flex;
+                height: 22px;
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg5{
+                flex-grow: 4.6;
+            }
+
         </style>
 
         <paper-dialog id="eformDetailDialog">
@@ -263,49 +332,112 @@
                     <div class="eforms-menu-list-header">
                         <div class="eforms-menu-list-header-info">
                             <div class="eforms-name">
-                                <span class="eforms">[[localize('eforms', 'E-forms', language)]]</span>
+                                <span class="eforms">[[localize('', 'E-forms baromètre COVID V2', language)]]</span>
                             </div>
                         </div>
                     </div>
                     <div class="eforms-submenu-container">
-                        <ht-spinner active="[[isLoading]]"></ht-spinner>
-                        <template is="dom-if" if="[[!isLoading]]">
-
-                            <paper-listbox id="" class="menu-content sublist" selectable="paper-item"  toggle-shift>
-                                <div class="table-line-menu table-line-menu-top">
-                                    <div class="formIconTit"></div>
-                                    <div class="formTitleTit">[[localize('eforms-type','E-forms type',language)]]</div>
+                        <div class="table">
+                            <div class="tr">
+                                <div class="td fg2"><b><u>[[localize('cov-inst', 'Recopiez simplement les 7 valeurs de statistiques dans les cases du eform', language)]]</u></b></div>
+                                <div class="td fg0"></div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-tot', 'Patients au cours des deux dernières années', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('TOT', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
                                 </div>
-                                <template is="dom-repeat" items="[[formList]]" as="form">
-                                    <collapse-button>
-                                        <paper-item slot="sublist-collapse-item" id$="[[form.id.name]]" aria-selected="[[selected]]" class$="menu-trigger menu-item [[isIronSelected(selected)]]" on-tap="_createFormInstance">
-                                            <div id="subMenu" class="table-line-menu">
-                                                <div class="formIcon">
-                                                    <iron-icon icon="icons:assignment" class="icons"></iron-icon>
-                                                </div>
-                                                <div class="formTitle">[[form.label]]</div>
-                                            </div>
-                                        </paper-item>
-                                    </collapse-button>
-                                </template>
-                            </paper-listbox>
-                        </template>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-ari', 'Nb de patient avec une infection respiratoire aiguë (ARI)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('ARI', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-ili', 'Nb de patient avec une infection gripalle (ILI)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('ILI', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-sus', 'Nb de patient suspect de COVID-19', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('SUS', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-a77', 'Nb de patient avec code A77 (syndrome viral)', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('A77', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-cov', 'Nb de patient avec infection avérée au COVID-19', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        [[_getResult('COV', queriesResult, queriesResult.*)]]
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="tr">
+                                <div class="td fg2">[[localize('cov-per', 'Pourcentage de diagnostics codés', language)]]</div>
+                                <div class="td fg0">
+                                    <template is="dom-if" if="[[!isLoading]]">
+                                        100%
+                                    </template>
+                                    <template is="dom-if" if="[[isLoading]]">
+                                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-info">
+                            <b><u>Rémunération des MG</u></b><br/>
+                            Chaque MG de la pratique est rémunéré (même si seulement 1 des MG fait l'export, car une bonne partie du travail est un encodage correct des données
+                            <ul>
+                                <li>400 € pour 2 exports par semaine pendant les 6 mois du baromètre</li>
+                                <li>800 € pour un minimum de 4 exports par semaine pendant les 6 mois du baromètre</li>
+                            </ul>
+                            <b><u>Plus d'info :</u></b><br/>
+                            <a href="https://www.sciensano.be/fr/barometre-covid-19-dans-les-cabinets-de-medecine-generale" target="_blank">https://www.sciensano.be/fr/barometre-covid-19-dans-les-cabinets-de-medecine-generale</a>
+                        </div>
                     </div>
                 </div>
                 <div class="eforms-menu-view">
-                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" deactivate-attachement="[[deactivateAttachement]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
+                    <ht-pat-eform-form-view id="htPatEformFormView" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" selected-form="[[selectedForm]]" eforms-host="[[eformsHost]]" o-auth-token="[[oAuthToken]]" patient-sumehr="[[patientSumehr]]" available-document-list="[[availableDocumentList]]" selected-document-id-to-be-imported="[[selectedDocumentIdToBeImported]]" deactivate-attachement="[[deactivateAttachement]]" on-show-error-notification="_showErrorNotification" on-close-dialog="_closeDialog" on-selected-document="_selectedDocument"></ht-pat-eform-form-view>
                 </div>
             </div>
             <div class="buttons">
                 <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
-                <template is="dom-if" if="[[linkBtnAvailable]]">
-                    <paper-button class="button button--other" on-tap="_addFormAttachment"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-join-doc','Join document',language)]]</paper-button>
-                </template>
-                <!--
-                <template is="dom-if" if="[[unlinkBtnAvailable]]">
-                    <paper-button class="button button--other" on-tap="_removeFormAttachment"><iron-icon icon="icons:add"></iron-icon> [[localize('eforms-remove-doc','Remove document',language)]]</paper-button>
-                </template>
-                -->
                 <template is="dom-if" if="[[isSelectedForm]]">
                     <paper-button class="button button--save" on-tap="_sendForm"><iron-icon icon="icons:check"></iron-icon> [[localize('send','Send',language)]]</paper-button>
                 </template>
@@ -328,10 +460,12 @@
     <script>
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
         import moment from 'moment/src/moment';
+        import { parse } from '../../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../../scripts/filters'
 
-        class HtPatEformDialog extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
+        class HtPatEformCovidReportDialog extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
             static get is() {
-                return 'ht-pat-eform-dialog';
+                return 'ht-pat-eform-covid-report-dialog';
             }
 
             static get properties() {
@@ -343,14 +477,6 @@
                     user: {
                         type: Object,
                         value: null
-                    },
-                    patient:{
-                        type: Object,
-                        value: () => {}
-                    },
-                    currentContact:{
-                        type: Object,
-                        value: () => {}
                     },
                     tabs: {
                         type:  Number,
@@ -372,10 +498,6 @@
                             credentials: null
                         }
                     },
-                    formList:{
-                        type: Array,
-                        value: () => []
-                    },
                     selectedForm:{
                         type: Object,
                         value: () => {}
@@ -392,33 +514,17 @@
                         type: Object,
                         value: () => {}
                     },
-                    contacts:{
-                        type: Array,
-                        value: () => []
-                    },
-                    availableDocumentList:{
-                        type: Array,
-                        value: () => []
-                    },
-                    selectedDocumentIdToBeImported:{
-                        type: String,
-                        value: null
-                    },
-                    linkBtnAvailable:{
-                        type: Boolean,
-                        value: false
-                    },
-                    unlinkBtnAvailable:{
-                        type: Boolean,
-                        value: false
-                    },
-                    healthElements:{
-                        type: Object,
-                        value : ()=> {}
-                    },
                     deactivateAttachement:{
                         type: Boolean,
-                        value: false
+                        value: true
+                    },
+                    queryList:{
+                        type: Array,
+                        value: () => []
+                    },
+                    queriesResult:{
+                        type:Array,
+                        value: () => []
                     }
                 };
             }
@@ -432,19 +538,15 @@
             }
 
             _reset(){
-                this.set('formList', [])
                 this.set('hcp', {})
                 this.set('isLoading', false)
-                this.set('formList', [])
                 this.set('selectedForm', {})
                 this.set('oAuthToken', {})
                 this.set('patientSumehr', null)
-                this.set('availableDocumentList', [])
                 this.set('isSelectedForm', false)
-                this.set('selectedDocumentIdToBeImported', null)
+                this.set('queryList', [])
+                this.set('queriesResult', [])
                 this.$['htPatEformFormView']._reset()
-                this.set('unlinkBtnAvailable', false)
-                this.set('linkBtnAvailable', false)
             }
 
             _initialize(){
@@ -463,16 +565,23 @@
 
             openDialog(){
                 this._reset()
+                const startDate = this.api.moment(new Date).format('YYYYMMDD')
+                const endDate = this.api.moment(new Date).add(1, 'days').format('YYYYMMDD')
+
+                this.set('queryList', [
+                    {type: 'ARI',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == H71{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R74{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R76{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R77{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R78{'+startDate+' -> '+endDate+'}] | SVC[ICPC == R81{'+startDate+' -> '+endDate+'}] | HE[ICPC == H71{'+startDate+' -> '+endDate+'}] | HE[ICPC == R74{'+startDate+' -> '+endDate+'}] | HE[ICPC == R76{'+startDate+' -> '+endDate+'}] | HE[ICPC == R77{'+startDate+' -> '+endDate+'}] | HE[ICPC == R78{'+startDate+' -> '+endDate+'}] | HE[ICPC == R81{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'ILI',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == R80{'+startDate+' -> '+endDate+'}] - SVC[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}] - SVC[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}])) | ((HE[ICPC == R80{'+startDate+' -> '+endDate+'}] - HE[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}] - HE[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'SUS',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}]) | (HE[BE-THESAURUS == 10118856{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'A77',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[ICPC == A77{'+startDate+' -> '+endDate+'}]) | (HE[ICPC == A77{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'COV',  resultType: 'number', filter: 'age > 0 & active == true & ((SVC[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]) | (HE[BE-THESAURUS == 10118837{'+startDate+' -> '+endDate+'}]))'},
+                    {type: 'TOT',  resultType: 'number', filter: 'age > 0 & active == true'}
+                ])
+
                 if(_.get(this.api, 'tokenId', null) && _.get(this, 'api.keystoreId', null)) {
                     this.set('isLoading', true)
                     this.$['eformDetailDialog'].open()
                     this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
                         this.set('hcp', hcp)
-                        return this._getDocuments()
-                    }).then(availableDocument => {
-                        this.set("availableDocumentList", availableDocument.map(ad => ad.document))
-                        //return this._generateSumehrV2()
-                        return this._generateSimplifiedSumehr(false)
                     }).then(sumehr => {
                         this.set('patientSumehr', sumehr)
                         return this._requestOAuthToken()
@@ -483,27 +592,38 @@
                         })
                         return _.parseInt(_.get(oAuthResponse, 'response.status', 0)) === 200 ? this._getFormDefinition() : Promise.resolve([])
                     }).then(formDefinitionResponse => {
-                        _.parseInt(_.get(formDefinitionResponse, 'response.status', 0)) === 200 ? this.set('formList', _.get(formDefinitionResponse, 'content', {})) : this._showErrorNotification({
+                        const eformCovidV2 = _.get(formDefinitionResponse, 'content', []).find(form => _.get(form, 'id.name', null) === "COVID-19-V2")
+                        _.parseInt(_.get(formDefinitionResponse, 'response.status', 0)) === 200 ? this.set('selectedForm', eformCovidV2) : this._showErrorNotification({
                             response: _.get(formDefinitionResponse, 'response', 0),
                             content: _.get(formDefinitionResponse, 'content', {})
                         })
+                    }).then(() => {
+                        let prom = Promise.resolve([])
+                        this.queryList.map(query => {
+                            prom = prom.then(result => this._executeQueryFilter(query.filter).then(res => {
+                                return _.concat(result, {
+                                    type: _.get(query, 'type', null),
+                                    request: _.get(query, 'filter', null),
+                                    result: res,
+                                    numberOfPatient: _.size(res)
+                                })
+                            }))
+                        })
+
+                        prom.then(allResult => {
+                            console.log(allResult)
+                            this.set('isLoading', false)
+                            this.set("queriesResult", allResult)
+                        })
+
                     }).finally(() => {
-                        this.set('isLoading', false)
+                        this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
                     })
                 }
             }
 
-            _generateSumehrV2() {
-                return this.api.icure().getVersion().then(v =>  this.api.crypto().extractDelegationsSFKs(this.patient, this.user.healthcarePartyId)
-                    .then(secretForeignKeys => this.api.bekmehr().generateSumehrV2ExportWithEncryptionSupport(this.patient.id, this.user.healthcarePartyId, "fr", {
-                        secretForeignKeys: secretForeignKeys.extractedKeys,
-                        recipient: this.hcp,
-                        comment: "",
-                        excludedIds: null,
-                        softwareName: "TOPAZ",
-                        softwareVersion: v
-                    }, this.api.sessionId)).then(output => output.text())
-                )
+            _getResult(type){
+                return _.get(_.get(this, 'queriesResult', []).find(query => _.get(query, 'type', null) === type), 'numberOfPatient', 0)
             }
 
             _requestOAuthToken(){
@@ -535,28 +655,9 @@
                 })
             }
 
-
-
             _closeDialog(){
                 this._reset()
                 this.$['eformDetailDialog'].close()
-            }
-
-
-
-            _createFormInstance(e){
-                if(_.get(e, 'currentTarget.id', null)){
-                    this.set("selectedForm", _.get(this, 'formList', []).find(form => _.get(form, 'id.name', '') === _.get(e, 'currentTarget.id', null)))
-                    //@julien i added this because max wanted a different sumher between SPF and the other eform.
-                    if(this.selectedForm.id.name.includes("HANDICARE")){
-                        this._generateSimplifiedSumehr(true).then(sumehr=>{
-                            this.set("patientSumehr",sumehr)
-                            this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
-                        })
-                    }else{
-                        this.shadowRoot.querySelector('#htPatEformFormView')._showForm()
-                    }
-                }
             }
 
             _sendForm(){
@@ -577,63 +678,6 @@
                 this.$["eforms-notification"].classList.remove('notification')
             }
 
-            _getDocuments(){
-                return this.api.contact().findBy( _.trim(_.get(this,"user.healthcarePartyId","")), this.patient )
-                    .then(patientContacts => _.compact(_.flatten(_.map(patientContacts, singleContact => _.concat(
-                        // Target documentId in svc
-                        _.map(singleContact.services, singleService => !_.trim(_.get(singleService,"content." + this.language + ".documentId")) ? false : {
-                            contact: singleContact,
-                            service: singleService,
-                            serviceTitle: _.trim(_.get(singleService,"content." + this.language + ".stringValue")),
-                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
-                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
-                            documentId: _.trim(_.get(singleService,"content." + this.language + ".documentId")),
-                        }),
-                        // Target ehealthbox message
-                        ((!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) && !_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}))) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
-                            contact: singleContact,
-                            services: singleContact.services,
-                            serviceTitle: _.trim(_.get(singleContact,"descr")),
-                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
-                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
-                            documentId: _.get(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"}), "id",""),
-                            isLabResultOrProtocol: true,
-                        }),
-                        // Target migrations - imported documents from epicure / medispring (docs don't exist as such, rather a services list)
-                        (!_.size(_.find(_.get(singleContact,"tags",[]), {type:"CD-TRANSACTION"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxMessageId"})) || !!_.size(_.find(_.get(singleContact,"tags",[]), {type:"originalEhBoxDocumentId"})) || !!_.trim(_.get(this.api.contact().preferredContent(_.get(singleContact,"services[0]",{}), this.language),"documentId")) ? false : {
-                            contact: singleContact,
-                            services: singleContact.services,
-                            serviceTitle: _.trim(_.get(singleContact,"descr")),
-                            date: parseInt(_.get(singleContact,"openingDate"))||+new Date(),
-                            dateHr: this._YYYYMMDDHHmmssToDDMMYYYY(parseInt(_.get(singleContact,"openingDate",""))||+new Date()),
-                            documentId:null,
-                            isFromMigration: true,
-                        })
-                    )))))
-                    .then(foundServicesWithDocumentId => !_.size(foundServicesWithDocumentId) ? Promise.resolve([foundServicesWithDocumentId, []]) : this.api.document().getDocuments({ids:_.uniq(_.compact(_.map(foundServicesWithDocumentId,s=>_.trim(_.get(s,"documentId","")))))}).then(foundDocuments=>[foundServicesWithDocumentId,foundDocuments]))
-                    .then(([foundServices,foundDocuments]) => _.compact(_.map(foundServices, fs => {
-                        const serviceDocument = _.find(foundDocuments, {id: _.trim(_.get(fs, "documentId"))})
-                        const documentExtension = _.trim(_.last(_.trim(_.get(serviceDocument,"name","")).split("."))).toLowerCase()
-                        return (
-                            ['jpg','jpeg','pdf','png','tif','tiff'].indexOf(documentExtension) === -1 ||
-                            //!['jpg', 'jpeg', 'pdf', 'png', 'tif', 'tiff'].find(ext => _.get(serviceDocument,"mainUti","").includes(ext))) ||
-                            !_.trim(_.get(serviceDocument,"id","")) ||
-                            !_.trim(_.get(serviceDocument,"attachmentId","")) ||
-                            !_.trim(_.get(serviceDocument,"secretForeignKeys",""))
-                        ) ? false : _.merge({}, _.omit(fs, ['documentId']), {document: serviceDocument})
-                    })))
-                    .then(servicesAndDocuments => Promise.all(servicesAndDocuments.map(sad => this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(_.get(this, "user.healthcarePartyId", null), _.trim(_.get(sad.document, "id", "")), _.size(_.get(sad.document, "encryptionKeys", [])) ? _.get(sad.document, "encryptionKeys", []) : _.get(sad.document, "delegations", []))
-                            .then(({extractedKeys: enckeys}) => !!_.trim(_.get(sad.document,"id","")) && _.trim(_.get(sad.document,"attachmentId","")) ? this.api.document().getAttachment(_.trim(_.get(sad.document,"id","")), _.trim(_.get(sad.document,"attachmentId","")), enckeys.join(',')).then(decryptedContent=>(_.merge(sad, {document:{decryptedContent:decryptedContent}}))).catch(e=>{console.log("ERROR with getAttachment: ",e); }) : sad)
-                        )).then(servicesAndDocuments => servicesAndDocuments)
-                    )
-                    .then(servicesAndDocuments => _
-                        .chain(servicesAndDocuments)
-                        .filter(i => !!_.trim(_.get(i,"document.id")) && !!parseInt(_.get(i,"document.decryptedContent.byteLength")) )
-                        .orderBy(['date'], ['desc'])
-                        .value()
-                    )
-            }
-
             _YYYYMMDDHHmmssToDDMMYYYYHHmmss(inputValue) {
                 return parseInt(inputValue) ? this.api.moment(_.trim(parseInt(inputValue)),"YYYYMMDDHHmmss").format('DD/MM/YYYY HH:mm:ss') : ""
             }
@@ -644,27 +688,6 @@
 
             _selectedFormChanged(){
                 _.get(this, 'selectedForm.id.name', null) ? this.set('isSelectedForm', true) : this.set('isSelectedForm', false)
-                this.set('availableDocumentList', _.get(this, 'availableDocumentList', []).map(doc => _.omit(doc, ['uploadedDocumentId'])))
-                this.set("unlinkBtnAvailable", false)
-                this.set("linkBtnAvailable", false)
-            }
-
-            _selectedDocument(e){
-                if(_.get(e, 'detail', null)){
-                    this.set("unlinkBtnAvailable", false)
-                    this.set("linkBtnAvailable", false)
-                    const selectedDoc = _.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(e, 'detail.documentId', null))
-                    _.get(selectedDoc, 'uploadedDocumentId', null) ? this.set('unlinkBtnAvailable', true) : this.set("linkBtnAvailable", true)
-                    this.set('selectedDocumentIdToBeImported',  _.get(e, 'detail.documentId', null))
-                }
-            }
-
-            _addFormAttachment(){
-                this.$['htPatEformFormView']._addFormAttachment()
-            }
-
-            _removeFormAttachment(){
-                this.$['htPatEformFormView']._removeFormAttachment(_.get(this, 'availableDocumentList', []).find(doc => _.get(doc, 'id', null) === _.get(this, 'selectedDocumentIdToBeImported', null)))
             }
 
             _generateSimplifiedSumehr(isFull){
@@ -874,7 +897,23 @@
                 })
             }
 
+            _executeQueryFilter(searchFilter){
+                let svcFilter = null
+                let lastParamsWithIdxProm = Promise.resolve()
+
+                svcFilter = parse(`PAT[${searchFilter}]`, {hcpId: _.get(this.hcp, 'parentId', null) || _.get(this.user, 'healthcarePartyId', null)})
+
+                lastParamsWithIdxProm = icrFilter(svcFilter, {
+                    cryptoicc: this.api.crypto(), usericc: this.api.user(), patienticc: this.api.patient(), contacticc: this.api.contact(), helementicc: this.api.helement(), invoiceicc: this.api.invoice(), hcpartyicc: this.api.hcparty()
+                }, _.get(this.hcp, 'parentId', null) || _.get(this.user, 'healthcarePartyId', null), false).then(pl => pl.rows)
+
+                return lastParamsWithIdxProm.then(res => {
+                    return res
+                })
+            }
+
+
         }
-        customElements.define(HtPatEformDialog.is, HtPatEformDialog);
+        customElements.define(HtPatEformCovidReportDialog.is, HtPatEformCovidReportDialog);
     </script>
 </dom-module>
