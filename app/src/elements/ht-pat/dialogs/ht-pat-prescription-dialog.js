@@ -98,18 +98,18 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
                     <vaadin-grid-column header="[[localize('start_valid_date','date début validité',language)]]" frozen>
                         <template>
-                            <vaadin-date-picker i18n="[[i18n]]" value="[[_today()]]" setter$="[[item.id]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            <vaadin-date-picker i18n="[[i18n]]" value="[[item.startValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
                         </template>
                     </vaadin-grid-column>
                     <vaadin-grid-column header="[[localize('end_valid_date','date de fin de validité',language)]]" frozen>
                         <template>
-                            <vaadin-date-picker i18n="[[i18n]]" value="[[_endDate()]]" setter$="[[item.id]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            <vaadin-date-picker i18n="[[i18n]]" value="[[item.endValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
                         </template>
                     </vaadin-grid-column>
                     <dom-repeat items="[[prescriptionsGroups]]" as="group"><template>
                         <vaadin-grid-column header="[[_getGroupIndex(group)]]">
                             <template>
-                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" on-change="_check" checked="[[_isCheck(item.id,group)]]"></paper-checkbox>
+                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" disabled="[[_isCheckBoxDisabled(group)]]" on-change="_check" checked="[[_isCheck(item.id,group)]]"></paper-checkbox>
                             </template>
                         </vaadin-grid-column>
                     </template></dom-repeat>
@@ -117,7 +117,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             </div>
             <div class="buttons">
                 <paper-button class="button" dialog-dismiss>[[localize('can', "Annuler", language)]]</paper-button>
-                <paper-button class="button button--other" on-tap="sendByMail"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>
+                <!-- Request by @Fabien Zimmer
+                <paper-button class="button button--other" on-tap="sendByMail"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>-->
                 <paper-button class="button button--other" on-tap="print" ><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
                 <paper-button class="button button--save" autofocus on-tap="_sendToRecipe"><iron-icon icon="print"></iron-icon>[[localize('send_to_recipe','Envoyer à Recip-e',language)]]</paper-button>
             </div>
@@ -194,13 +195,19 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         const group = _.get(e.currentTarget.getAttributeNode("group"),'value','')-1
         if(!prescr || group<0)return;
         const index = _.get(this,"prescriptionsGroups",[]).findIndex(group => (group || []).find(id => id===prescr))
-        index>=0 && this.set("prescriptionsGroups."+index,_.get(this,"prescriptionsGroup."+index,[]).filter(id => id!==prescr))
+
+        index>=0 && this.set("prescriptionsGroups."+index,_.get(this,"prescriptionsGroups."+index,[]).filter(id => id!==prescr) || [])
         if(group!==index){
             this.push("prescriptionsGroups."+group,prescr)
         }
 
         this.set("prescriptionsGroups",_.get(this,"prescriptionsGroups",[]).filter(group => group && group.length))
         this.push("prescriptionsGroups",[])
+        this.completeDate()
+    }
+
+    _isReadOnly(id){
+        return !_.get(this,"prescriptionsGroups",[]).find(group => group && group.length && group[0]===id)
     }
 
     _isCheck(id,group){
@@ -209,7 +216,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     open() {
         this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
-        this.shadowRoot.querySelector('#prescriptions-grid').selectedItems=[]
         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
@@ -249,10 +255,29 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     _setStartDate(e){
         _.get(this,"prescriptionsList",[]).find(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')) && this.set("prescriptionsList."+(_.get(this,"prescriptionsList",[]).findIndex(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')))+".startValidDate",_.get(e,"detail.value",""))
+        this.completeDate()
     }
 
     _setEndDate(e){
         _.get(this,"prescriptionsList",[]).find(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')) && this.set("prescriptionsList."+(_.get(this,"prescriptionsList",[]).findIndex(p => p.id===_.get(e.currentTarget.getAttributeNode("setter"),'value','')))+".endValidDate",_.get(e,"detail.value",""))
+        this.completeDate()
+    }
+
+    completeDate(){
+        _.get(this,"prescriptionsGroups",[]).map(group => {
+            if(group.length<=1)return;
+            const mainId = _.get(group,"0","")
+            const mainIndex = _.get(this,"prescriptionsList",[]).findIndex(prescr => prescr.id===mainId)
+            group.filter(id => id!==mainId).map(id =>{
+                _.get(this,"prescriptionsList",[]).find(prescr => prescr.id===id) && this.set("prescriptionsList."+_.get(this,"prescriptionsList",[]).findIndex(prescr => prescr.id===id)+".startValidDate",_.get(this,"prescriptionsList."+mainIndex+".startValidDate",""))
+                _.get(this,"prescriptionsList",[]).find(prescr => prescr.id===id) && this.set("prescriptionsList."+_.get(this,"prescriptionsList",[]).findIndex(prescr => prescr.id===id)+".endValidDate",_.get(this,"prescriptionsList."+mainIndex+".endValidDate",""))
+            })
+
+        })
+    }
+
+    _isCheckBoxDisabled(group){
+        return group.length>=5
     }
 
     _sendToRecipe(){
@@ -260,7 +285,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
         //todo @julien gestion des prescriptions de 5 medocs
 
-        const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+        //const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+        const prescriptions = _.get(this,"prescriptionsList",[]).filter(prescr => _.flatMap(_.get(this,"prescriptionsGroups",[])).find(id => id===prescr.id))
 
         if(!prescriptions)return;
 
