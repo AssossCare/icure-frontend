@@ -1,4 +1,5 @@
 import '../../../styles/dialog-style.js';
+import '../../../styles/paper-input-style.js';
 
 import _ from 'lodash/lodash';
 import JsBarcode from 'jsbarcode';
@@ -20,7 +21,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
     static get template() {
     return html`
-        <style include="dialog-style">
+        <style include="dialog-style paper-input-style">
 
             paper-dialog {
 				width: 80%;
@@ -29,7 +30,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 			}
 
             vaadin-grid {
-				max-height:100%;
 				border: none;
 				--vaadin-grid-body-row-hover-cell: {
 					/* background-color: var(--app-primary-color); */
@@ -98,18 +98,22 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
                     <vaadin-grid-column header="[[localize('start_valid_date','date début validité',language)]]" frozen>
                         <template>
-                            <vaadin-date-picker i18n="[[i18n]]" value="[[item.startValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
+                                <vaadin-date-picker i18n="[[i18n]]" value="[[item.startValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            </template> 
                         </template>
                     </vaadin-grid-column>
                     <vaadin-grid-column header="[[localize('end_valid_date','date de fin de validité',language)]]" frozen>
                         <template>
-                            <vaadin-date-picker i18n="[[i18n]]" value="[[item.endValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
+                                <vaadin-date-picker i18n="[[i18n]]" value="[[item.endValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
+                            </template>
                         </template>
                     </vaadin-grid-column>
                     <dom-repeat items="[[prescriptionsGroups]]" as="group"><template>
-                        <vaadin-grid-column header="[[_getGroupIndex(group)]]">
+                        <vaadin-grid-column flex-grow="0" width="58px" header="[[_getGroupIndex(group)]]">
                             <template>
-                                <paper-checkbox prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" disabled="[[_isCheckBoxDisabled(group)]]" on-change="_check" checked="[[_isCheck(item.id,group)]]"></paper-checkbox>
+                                <paper-checkbox class="styled" prescription$="[[item.id]]" group$="[[_getGroupIndex(group)]]" disabled="[[_isCheckBoxDisabled(group,item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-change="_check" checked="[[_isCheck(item.id,group)]]"></paper-checkbox>
                             </template>
                         </vaadin-grid-column>
                     </template></dom-repeat>
@@ -230,6 +234,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         })
 
         this.set("prescriptionsGroups",[[]])
+        this.shadowRoot.querySelector('#prescriptions-grid').setRowHeight("50px")
 
     }
 
@@ -276,8 +281,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         })
     }
 
-    _isCheckBoxDisabled(group){
-        return group.length>=5
+    _isCheckBoxDisabled(group,id){
+        return group.length>=5 && !group.find( g => g.includes(id))
     }
 
     _sendToRecipe(){
@@ -286,11 +291,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         //todo @julien gestion des prescriptions de 5 medocs
 
         //const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
-        const prescriptions = _.get(this,"prescriptionsList",[]).filter(prescr => _.flatMap(_.get(this,"prescriptionsGroups",[])).find(id => id===prescr.id))
+        const prescriptionGroups = _.get(this,"prescriptionsGroups",[]).map(group => group.map(id => _.get(this,"prescriptionsList",[]).find(prescr => prescr.id===id)))
 
-        if(!prescriptions)return;
+        if(!prescriptionGroups || !prescriptionGroups.length)return;
 
-        if(prescriptions.find(p => !p.startValidDate || !p.endValidDate)){
+        if(prescriptionGroups.find( group => group.find(p => !p.startValidDate || !p.endValidDate))){
             this.set("errorMessage",this.localize("err_date_no_complete","Erreur: une des dates n'a pas été complété"))
             return;
         }
@@ -308,50 +313,57 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                 })
                 .then(hcp => {
-                    return Promise.all(prescriptions.map(p => {
-                        this.api.sleep(100)//moche mais c'est à cause de RECIP-E ils savent pas tout recevoir d'un coup
-                        const service = this.currentContact.services.find(s => p.id === s.id)
-                        const medicationValue = this.api.contact().medicationValue(service, this.language)
-                        if (medicationValue) {
-                            medicationValue.status = 0 ;
-                        }
+                    return Promise.all(prescriptionGroups.map( group=> {
+                        if(!group || !group.length)return Promise.resolve([])
+                        const medications = group.map( p => {
+                            const service = this.currentContact.services.find(s => p.id === s.id)
+                            const medicationValue = this.api.contact().medicationValue(service, this.language)
+                            if (medicationValue) {
+                                medicationValue.status = 0 ;
+                            }
+                            return service
+                        })
 
-                        return service ? this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
+                        return medications.length ? this.api.sleep(100).then(() =>this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
                             patient: _.omit(this.patient, ['personalStatus']),
                             hcp: hcp,
                             feedback: false,
-                            medications: [_.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})],
-                            deliveryDate: moment(p.startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
+                            medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
+                            deliveryDate: moment(group[0].startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             samVersion: _.get(this, 'samVersion.version', null),
-                            expirationDate: moment(p.endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
+                            expirationDate: moment(group[0].endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             vendorPhone: "+3223192241",
                             vendorEmail: "support@topaz.care",
                             packageVersion: "1",
                             packageName: "Topaz"
-                        }).then(recipe => {
-                            p.rid = recipe.rid
-                            p.recipeResponse = recipe
+                        })).then(recipe => {
                             this._download(_.get(recipe,"xmlRequest",""))
-                            this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
-
-                            return Promise.all([this.api.receipt().createReceipt({
-                                documentId: service.id,
-                                references: [recipe.rid],
-                                category: "recip-e",
-                                subCategory: "transactionRequest"
-                            }), Promise.resolve(recipe)])
-                        }).then(([receipt, recipe]) => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(recipe, "xmlRequest", null))))))
-                            .then((receipt) => {
-                                medicationValue.status = 2 ;
-                                service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
-                                return Promise.resolve(service)
-                            }).catch(error => {
-                                this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
-                                return service;
-                            }) : Promise.resolve({})
+                            return Promise.all(group.map( p => {
+                                const service = this.currentContact.services.find(s => p.id === s.id)
+                                const medicationValue = this.api.contact().medicationValue(service, this.language)
+                                p.rid = recipe.rid
+                                p.recipeResponse = recipe
+                                this.api.contact().medicationValue(service, this.language).prescriptionRID = _.get(recipe, "rid", "")
+                                return this.api.receipt().createReceipt({
+                                    documentId: service.id,
+                                    references: [recipe.rid],
+                                    category: "recip-e",
+                                    subCategory: "transactionRequest"
+                                })
+                                    .then(receipt => this.api.receipt().setReceiptAttachment(receipt.id, "kmehrResponse", undefined, (this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(_.get(recipe, "xmlRequest", null))))))
+                                    .then((receipt) => {
+                                        medicationValue.status = 2 ;
+                                        service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
+                                        return service
+                                    }).catch(error => {
+                                        this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                                        return service;
+                                    })
+                            }))
+                        }) : Promise.resolve({})
 
                     })).then((services) => {
-                        _.compact(services).map(service => {
+                        _.compact(_.flatMap(services)).filter(s => s.id).map(service => {
                             const id = "CD-LIFECYCLE|ordered|1";
                             const tag = service.tags.find(t => t.type === 'CD-LIFECYCLE')
                             if (tag) {
@@ -370,7 +382,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                 medicationValue.status |= 4;
                             }
                         })
-                        const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, barcode)
+                        const toPrint = this._formatPrescriptionsBody(prescriptionGroups.filter( g => g.length), _.compact(_.flatMap(services)).filter(s => s.id), this.patient, hcp, barcode)
                         return this._pdfReport(services, toPrint, this.selectedFormat)
                     }).catch(error => {
                         this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
@@ -465,9 +477,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         let prescriToPrint = [], allPages = []
         let prescNum = 0, pageNum = 1
 
-        const inRecipeMode = this.patient.ssin && splitColumns.find(c=>c.rid) // else print good old prescription format && this.api.tokenId
+        const inRecipeMode = this.patient.ssin && _.flatMap(splitColumns).find(c=>c.rid) // else print good old prescription format && this.api.tokenId
         splitColumns.forEach((c, idx) => {
-            const ridOrNihii = c.rid ? c.rid : hcp.nihii;
+            const ridOrNihii = c.length && c[0].rid ? c[0].rid : hcp.nihii;
             JsBarcode(element, ridOrNihii, {format: "CODE128A", displayValue: false, height: 75});
             const jpegUrl = element.toDataURL("image/jpeg");
             const ridLabel = ridOrNihii.split('').join('&nbsp;')
@@ -478,7 +490,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             } // will be set on next page
 
             let prescArray = [], posology = {}
-            _.flatMap(drugsToBePrescribed.filter(s => c.id.includes(s.id)), s => {
+            _.flatMap(drugsToBePrescribed.filter(s => c.find( p => p.id===s.id)), s => {
                 const medicationApi = this.api.contact().medication();
                 const med = this.api.contact().medicationValue(s, this.language);
                 const medPoso = this.api.contact().medication().posologyToString(med, this.language) || "N/A";
