@@ -391,13 +391,13 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <template is="dom-if" if="[[_canDisplayButton(isNewSubscription, tabs)]]">
+                    <template is="dom-if" if="[[_canDisplayButton(isNewSubscription, tabs)]]" restamp="true">
                         <paper-button class="button button--save" on-tap="_sendSubscription"><iron-icon icon="icons:note-add" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-send-subscription','Send subscription',language)]]</paper-button>
                     </template>
-                    <template is="dom-if" if="[[_canDisplayButton(isCancelSubscription, tabs)]]">
+                    <template is="dom-if" if="[[_canDisplayButton(isCancelSubscription, tabs)]]" restamp="true">
                         <paper-button class="button button--save" on-tap="_cancelSubscription"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-cancel-subscription','Cancel subscription',language)]]</paper-button>
                     </template>
-                    <template is="dom-if" if="[[_canDisplayButton(isNotifySubscriptionClosure, tabs)]]">
+                    <template is="dom-if" if="[[_canDisplayButton(isNotifySubscriptionClosure, tabs)]]" restamp="true">
                         <paper-button class="button button--save" on-tap="_notifySubscriptionClosure"><iron-icon icon="icons:last-page" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-notify-subscription-closure','Notify subscription closure',language)]]</paper-button>
                     </template>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
@@ -515,8 +515,11 @@
                         type: Object,
                         value: () => {
                         }
+                    },
+                    limitForByPassOfCancel:{
+                        type: String,
+                        value: "2020-10-31"
                     }
-
                 };
             }
 
@@ -587,8 +590,8 @@
                     this.set('selectedMedicalHouseContract', _.get(this, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null) && !(_.get(mhc, 'status', null) & (1 << 2)) && !(_.get(mhc, 'status', null) & (1 << 3))))
 
                     const now = moment().format('YYYY-MM-DD')
-                    this.set('isNotifySubscriptionClosure', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
-                    this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                    this.set('isNotifySubscriptionClosure', this.api.moment(now).isSameOrBefore(this.limitForByPassOfCancel) ? false : _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && this.api.moment(now).isSameOrAfter(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD')) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
+                    this.set('isCancelSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) && _.get(this.patient, 'medicalHouseContracts', []).find(mhs => _.get(mhs, 'contractId', null) && _.get(mhs, 'status', null) & (1 << 1) && _.get(mhs, 'startOfCoverage', null) && (this.api.moment(now).isSameOrBefore(this.limitForByPassOfCancel) || this.api.moment(now).isBefore(this.api.moment(_.get(mhs, 'startOfCoverage', null)).format('YYYY-MM-DD'))) && !_.get(mhs, 'endOfCoverage', null) && !_.get(mhs, 'endOfContract', null)))
                     this.set('isNewSubscription', _.size(_.get(this.patient, 'medicalHouseContracts', [])) === 0 || _.size(_.get(this.patient, 'medicalHouseContracts', []).filter(mhs => (_.get(mhs, 'hrStatus', null) === 'En cours' && _.get(mhs, 'contractId', null)))) === 0)
                 })
             }
