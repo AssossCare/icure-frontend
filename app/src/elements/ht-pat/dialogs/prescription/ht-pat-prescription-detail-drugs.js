@@ -14,8 +14,11 @@ import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class";
 import {IronResizableBehavior} from "@polymer/iron-resizable-behavior";
 import {PolymerElement, html} from '@polymer/polymer';
 import _ from "lodash/lodash";
+
 class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([IronResizableBehavior], PolymerElement)) {
+
     static get template() {
+
         return html`
         <style include="dialog-style scrollbar-style shared-styles">
             .table{         
@@ -146,39 +149,20 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
         <div class="container-drugs">
             <div class="drugs-list">
                 <div class="table">
-                
-<!--                    <div class="tr th">-->
-<!--                        <div class="td fg05">[[localize('presc-qt','Quantity',language)]]</div>-->
-<!--                        <div class="td fg05">[[localize('presc-type','Type',language)]]</div>-->
-<!--                        <div class="td fg2">[[localize('presc-descr','Description',language)]]</div>-->
-<!--                        <div class="td fg05"></div>-->
-<!--                    </div>-->
-
-<!--                    <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">-->
-<!--                        <div class$="tr [[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" on-tap="_selectedDrug">-->
-<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:remove" on-tap="_removeBoxes"></iron-icon>[[item.drug.boxes]]<iron-icon class="icon-type" icon="icons:add" on-tap="_addBoxes"></iron-icon></div>-->
-<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="[[_getDrugType(item)]]"></iron-icon></div>-->
-<!--                            <div class="td fg2">[[_getDrugName(item.drug)]]</div>     -->
-<!--                            <div class="td fg05"><iron-icon class="icon-type" icon="icons:delete" on-tap="_deleteDrug"></iron-icon></div>      -->
-<!--                        </div>   -->
-<!--                    </template>-->
-                    
                     <template is="dom-repeat" items="[[drugsToBePrescribe]]" id="drugList">
                         <div class$="singleDrugContainer [[_isSelected(item,selectedDrug)]]" data-id$="[[item.id]]" data-internal-id$="[[item.drug.internalUuid]]" on-tap="_selectedDrug">
                             <div class="drugLabel"><iron-icon class="icon-type-larger mr10" icon="[[_getDrugType(item)]]"></iron-icon>[[_getDrugName(item.drug)]]</div>     
                             <div class="drugQuantities">
-                                <iron-icon class="icon-quantities" icon="icons:remove-circle-outline" on-tap="_removeBoxes"></iron-icon>
+                                <iron-icon class="icon-quantities" icon="icons:remove-circle-outline" on-tap="_removeBox"></iron-icon>
                                 <span class="boxesQuantities">[[item.drug.boxes]] [[localize('boxeOrBoxes','Boxe(s)',language)]]</span>
-                                <iron-icon class="icon-quantities" icon="icons:add-circle-outline" on-tap="_addBoxes"></iron-icon>
+                                <iron-icon class="icon-quantities" icon="icons:add-circle-outline" on-tap="_addBox"></iron-icon>
                             </div>
                         </div>
                     </template>
-                                        
                 </div>
             </div>
-        </div>
+        </div>`
 
-`;
     }
 
     static get is() {
@@ -235,7 +219,9 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
     }
 
     _refreshDrugList(){
-        this.shadowRoot.querySelector("#drugList").render()
+
+        return this.shadowRoot.querySelector("#drugList").render()
+
     }
 
     _getDrugName(drug){
@@ -250,9 +236,16 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
         return _.get(drug,"id",null)===_.get(this,"selectedDrug.id","") ? 'selected' :''
     }
 
+    _getEventDatasetValue(e, datasetKey="id") {
+
+        return _.trim(_.get(_.find(_.get(e,"path"), it => _.some(_.get(it,"className").split(" "), cssClass => ["tr", "singleDrugContainer"].indexOf(cssClass) > -1)), "dataset." + datasetKey, null))
+
+    }
+
     _selectedDrug(e){
 
-        e.stopPropagation();
+        // Don't: could be we just clicked on + / -
+        // e.stopPropagation();
 
         const drugInternalId = this._getEventDatasetValue(e, "internalId")
         const drug = _.find(_.get(this,"drugsToBePrescribe"), it => _.trim(_.get(it,"drug.internalUuid")) === drugInternalId)
@@ -261,12 +254,6 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
             product : drugInternalId === _.trim(_.get(this,"selectedDrug.drug.internalUuid","")) ? {} : drug,
             bypassPosologyView: drugInternalId === _.trim(_.get(this,"selectedDrug.drug.internalUuid",""))
         }}))
-
-    }
-
-    _getEventDatasetValue(e, datasetKey="id") {
-
-        return _.trim(_.get(_.find(_.get(e,"path"), it => _.some(_.get(it,"className").split(" "), cssClass => ["tr", "singleDrugContainer"].indexOf(cssClass) > -1)), "dataset." + datasetKey, null))
 
     }
 
@@ -281,7 +268,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
 
     }
 
-    _removeBoxes(e){
+    _removeBox(e){
 
         e.stopPropagation();
 
@@ -297,7 +284,7 @@ class HtPatPrescriptionDetailDrugs extends TkLocalizerMixin(mixinBehaviors([Iron
 
     }
 
-    _addBoxes(e){
+    _addBox(e){
 
         e.stopPropagation();
 

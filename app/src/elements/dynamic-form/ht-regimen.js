@@ -208,7 +208,7 @@ class HtRegimen extends TkLocalizerMixin(PolymerElement) {
   // }
 
   _extraChanged() {
-      console.log("extraChanged");
+      // console.log("extraChanged");
       this.set("time",
           (Math.floor(this.extra.code / 10000) % 100).toString().padStart(2, '0') + ":" +
           (Math.floor(this.extra.code / 100) % 100).toString().padStart(2, '0'));

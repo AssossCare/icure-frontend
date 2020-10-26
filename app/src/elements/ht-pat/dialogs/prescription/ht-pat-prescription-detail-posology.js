@@ -1190,6 +1190,9 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _endMoment() {
 
+        // this.medicationDetail.endMomentAsString
+        // this.medicationContent.medicationValue.endMoment
+
         return this.api.moment(_.get(this,"medicationDetail.endMomentAsString"), "YYYY-MM-DD");
 
     }
@@ -1277,7 +1280,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     _substitutionAllowedChanged() {
 
-        return !_.get(this,"medicationDetail") ? null : this.set("medicationContent.medicationValue.substitutionAllowed", _.get(this,"medicationDetail.substitutionAllowed") === true)
+        return !_.get(this,"medicationDetail") ? null : this.set("medicationContent.medicationValue.substitutionAllowed", typeof _.get(this,"medicationDetail.substitutionAllowed") === "string" ? _.trim(_.get(this,"medicationDetail.substitutionAllowed")) === "true" : !!_.get(this,"medicationDetail.substitutionAllowed"))
 
     }
 
@@ -1468,7 +1471,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
                 if (_.trim(_.get(this,"medicationDetail.endMomentAsString")) && !_.get(this,"initializingDate")) {
 
-                    const endMoment = this._beginMoment().add(this.duration, "days")
+                    // Duration could still set to wrong value (switch between medications while creating)
+                    // const endMoment = _.cloneDeep(this._beginMoment()).add(this.duration, "days")
+
+                    const duration = this._endMoment().diff(this._beginMoment(), "days")
+                    const endMoment = _.cloneDeep(this._beginMoment()).add(((parseInt(duration)||0) < 0 ? 0 : (parseInt(duration)||0)), "days")
+
                     this.set("medicationDetail.endMomentAsString", endMoment.format("YYYY-MM-DD"))
                     this.set("medicationContent.medicationValue.endMoment", parseInt(endMoment.format("YYYYMMDD"), 10))
 
@@ -1651,13 +1659,15 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         const validAmpps = _
                             .chain(amps)
                             .filter(amp => _.trim(_.get(amp,"status")) === "AUTHORIZED" && _.size(_.get(amp,"ampps")))
-                            .map(amp => _.map(_.get(amp, "ampps"), ampp => _.some(_.get(ampp,"commercializations"), com => com && (com.from||0) < now && (!com.to || moment(com.to).add(12, "month") >= now)) && _.assign(ampp, {
+                            // Commercialization is still valid when expired less than two years ago (http://www.samportal.be/fr/sam_portal_news_messages/82) - Allow for no "to" value && don't check on "from" in the past but must still be present
+                            .map(amp => _.map(_.get(amp, "ampps"), ampp => _.some(_.get(ampp,"commercializations"), c => c && c.from && (c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to) ) && _.assign(ampp, {
                                 amp: amp,
                                 publicDmpp: _.find(_.get(ampp,"dmpps",[]), dmpp => dmpp
                                     && _.trim(_.get(dmpp,"deliveryEnvironment")) === "P"
                                     && _.trim(_.get(dmpp,"codeType")) === "CNK"
-                                    && _.get(dmpp,"from",0) < now
-                                    && (!_.get(dmpp,"to",false) || _.get(dmpp,"to") > now)
+                                    && _.get(dmpp,"from",false)
+                                    && _.get(dmpp,"from") <= now
+                                    && (!_.get(dmpp,"to",false) || _.get(dmpp,"to") >= now)
                                 )
                             })))
                             .flatten()
@@ -1686,7 +1696,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                     .catch(e => (console.log("[ERROR]", e)||true) && _.get(medication,"drug"))
             )
             .then(medicationWithAmpps => _.get(this,"cachedBoxes") && _.get(this,"cachedBoxes") !== _.get(medicationWithAmpps,"boxes") ? (this._updateStats()||true) && medicationWithAmpps : medicationWithAmpps)
-            .then(medicationWithAmpps => (this.set("cachedBoxes", _.get(medicationWithAmpps,"boxes"))||true) && medicationWithAmpps)
+            .then(medicationWithAmpps => { this.cachedBoxes = _.get(medicationWithAmpps,"boxes"); return medicationWithAmpps; })
             .then(medicationWithAmpps => {
                 const content = this.content || this.extractContentWithIdFromMedicationService(_.get(medicationWithAmpps,"newMedication"), _.get(medicationWithAmpps,"options.isNew"), _.get(medicationWithAmpps,"options.isPrescription"))
                 return (this.set("medicationContent", content)||true) && this.api.sleep(300).then(() => [medicationWithAmpps,content]) // Since P3, allow a little delay to initialize before giving it a value

@@ -277,6 +277,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             sam-version="[[samVersion]]" 
                             amps-by-vmp-group-list="[[ampsByVmpGroupList]]"      
                             selected-molecule-for-amps="[[selectedMoleculeForAmps]]" 
+                            on-open-posology-view="_openPosologyView"
                             on-close-commercial-by-substance-view="_closeAmpsByVmpGroupView"
                         ></ht-pat-prescription-detail-search-amps-by-vmp-group>                    
                     </div>                
@@ -715,7 +716,10 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             if(!_.get(e, 'detail.bypassPosologyView', null)) {
                 this.set('isPosologyView', true)
                 this.set('isSearchView', false)
+                this.set('isCnkInfoView', false)
                 this.set('isCheaperDrugView', false)
+                this.set('isAmpsByVmpGroupView', false)
+                this.set('isCompoundManagementView', false)
             }
 
             this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
@@ -724,11 +728,29 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     }
 
+    _goBackToSearch() {
+
+        let prom = Promise.resolve()
+
+        return prom
+            .then(() => {
+                this.set('isSearchView', true)
+                this.set('isCnkInfoView', false)
+                this.set('isPosologyView', false)
+                this.set('isCheaperDrugView', false)
+                this.set('isAmpsByVmpGroupView', false)
+                this.set('isCompoundManagementView', false)
+                this.set('selectedDrugForPosology', null)
+            })
+            .then(() => this.api.sleep(200))
+
+    }
+
     _selectedDrug(e){
 
         const drugInternalUuid = _.trim(_.get(e,"detail.product.internalUuid"))
 
-        return !drugInternalUuid ? null :
+        return !drugInternalUuid ? this._goBackToSearch() :
             (this.set('selectedDrugForPosology', _.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))||true) &&
             (this.set('isPosologyView', !_.get(e, 'detail.bypassPosologyView', false))||true) &&
             (this.set('isSearchView', _.get(e, 'detail.bypassPosologyView', true))||true) &&
@@ -751,24 +773,12 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set("drugsToBePrescribe", _.filter(_.get(this,"drugsToBePrescribe",[]), it => _.trim(_.get(it,"internalUuid",null)) !== drugInternalUuid))
     }
 
-    _closePosologyView(){
-        this.set("selectedDrugForPosology",null)
-
-        this.set('isPosologyView', false)
-        this.set('isCheaperDrugView', false)
-        this.set('isCnkInfoView', false)
-        this.set('isAmpsByVmpGroupView', false)
-        this.set('isCompoundManagementView', false)
-        this.set('isSearchView', true)
+    _closePosologyView() {
+        return this._goBackToSearch()
     }
 
     _closeCheaperDrugsView(){
-        this.set('isPosologyView', false)
-        this.set('isCheaperDrugView', false)
-        this.set('isCnkInfoView', false)
-        this.set('isAmpsByVmpGroupView', false)
-        this.set('isCompoundManagementView', false)
-        this.set('isSearchView', true)
+        return this._goBackToSearch()
     }
 
     _closeCnkInfoView(){
@@ -781,21 +791,11 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _closeAmpsByVmpGroupView(){
-        this.set('isPosologyView', false)
-        this.set('isCheaperDrugView', false)
-        this.set('isCnkInfoView', false)
-        this.set('isAmpsByVmpGroupView', false)
-        this.set('isCompoundManagementView', false)
-        this.set('isSearchView', true)
+        return this._goBackToSearch()
     }
 
     _closeCompoundManagementView(){
-        this.set('isPosologyView', false)
-        this.set('isCheaperDrugView', false)
-        this.set('isCnkInfoView', false)
-        this.set('isAmpsByVmpGroupView', false)
-        this.set('isCompoundManagementView', false)
-        this.set('isSearchView', true)
+        return this._goBackToSearch()
     }
 
     _searchCheaperDrugs(e){
@@ -811,10 +811,16 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _openCheaperDrugsView(e){
+
         this.set('cheaperDrugsList', [])
         this.set('selectedParentDrugForCheaper',{})
 
         if(_.get(e, 'detail.cheaperDrugsList', [])){
+
+            // Set internalUuid when not there yet
+            _.get(e,"detail.parentDrug") && !_.trim(_.get(e,"detail.parentDrug.internalUuid")) && _.merge(e.detail.parentDrug, {internalUuid: this.api.crypto().randomUuid()})
+            _.map(e.detail.cheaperDrugsList, it => !_.size(it) ? false : !Array.isArray(_.head(it)) ? _.map(it, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()})) : _.map(it, drugGroup => _.map(drugGroup, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()}))))
+
             this.set('cheaperDrugsList', _.get(e, 'detail.cheaperDrugsList', []))
             this.set('selectedParentDrugForCheaper', _.get(e, 'detail.parentDrug', {}))
             this.set('isPosologyView', false)
@@ -823,7 +829,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCnkInfoView', false)
             this.set('isAmpsByVmpGroupView', false)
             this.set('isCompoundManagementView', false)
+
         }
+
     }
 
     _openAdditionalCnkInfo(e) {
@@ -843,6 +851,12 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set('selectedMoleculeForAmps',{})
 
         if(_.get(e, 'detail.ampsByVmpGroupList', [])){
+
+            // Set internalUuid when not there yet
+            _.get(e,"detail.parentMolecule") && !_.trim(_.get(e,"detail.parentMolecule.internalUuid")) && _.merge(e.detail.parentMolecule, {internalUuid: this.api.crypto().randomUuid()})
+            _.map(e.detail.ampsByVmpGroupList, it => !_.size(it) ? false : !Array.isArray(_.head(it)) ? _.map(it, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()})) : _.map(it, drugGroup => _.map(drugGroup, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()}))))
+
+
             this.set('ampsByVmpGroupList', _.get(e, 'detail.ampsByVmpGroupList', []))
             this.set('selectedMoleculeForAmps', _.get(e, 'detail.parentMolecule', {}))
             this.set('isPosologyView', false)
@@ -851,7 +865,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set('isCnkInfoView', false)
             this.set('isAmpsByVmpGroupView', true)
             this.set('isCompoundManagementView', false)
+
         }
+
     }
 
     _openCompoundManagement(e){

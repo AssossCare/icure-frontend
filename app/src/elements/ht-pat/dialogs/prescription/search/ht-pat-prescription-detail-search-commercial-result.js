@@ -250,6 +250,10 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                 color: red;
             }
             
+            .willBeDeleted{
+                color: orange; 
+            }
+            
             .deletedIcon{
                 height: 14px;
                 width: 14px;
@@ -365,8 +369,8 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                             <div class="td fg05">[[drug.informations.publicPrice]] €</div> 
                         </div>
                         <template is="dom-if" if="[[_isFinishedCommercializations(drug)]]">
-                            <template is="dom-repeat" items="[[drug.informations.amppFinished]]" as="amppFinished">
-                                <div class="tr deletedDrug">
+                            <template is="dom-repeat" items="[[_getCorrespondingDrug(drug, drug.informations.amppFinished)]]" as="amppFinished">
+                                <div class$="tr [[_getDeletionColor(amppFinished)]]">
                                     <div class="td fg01"></div>  
                                     <div class="td fg01">
                                         <template is="dom-if" if="[[_hasGroupId(amppFinished.id)]]">
@@ -622,7 +626,7 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
             composed: true,
             detail: {
                 id: _.get(drug, 'id', null),
-                internalUuid: _.trim(_.get(it,"internalUuid","")),
+                internalUuid: _.trim(_.get(drug,"internalUuid","")),
                 uuid: _.get(drug, 'uuid', null),
                 groupId: _.get(drug, 'groupId', null),
                 uuids: _.get(drug, 'uuids', []),
@@ -654,7 +658,15 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
     }
 
     _getAmppFinishedName(drug){
-        return _.get(drug, 'amp.name.'+this.language, null)+' '+(_.get(drug, 'packDisplayValue', null) ? _.get(drug, 'packDisplayValue', null)+'x' : null)+' ('+this.localize('presc-not-available', 'not available from', this.language)+' '+this._getEndOfCommercialization(_.get(drug, 'commercializations', []))+')'
+        const endDate = this._getEndOfCommercialization(_.get(drug, 'commercializations', []))
+        const isInFuture = endDate && moment(_.cloneDeep(endDate), 'DD/MM/YYYY').isAfter(moment())
+        return isInFuture ? _.get(drug, 'amp.name.'+this.language, null)+' '+(_.get(drug, 'packDisplayValue', null) ? _.get(drug, 'packDisplayValue', null)+'x' : null)+' ('+ this.localize('presc-no-longer-available', 'Will no longer be available', this.language)+' '+endDate+')' : _.get(drug, 'amp.name.'+this.language, null)+' '+(_.get(drug, 'packDisplayValue', null) ? _.get(drug, 'packDisplayValue', null)+'x' : null)+' ('+this.localize('presc-not-available', 'not available from', this.language)+' '+endDate+')'
+    }
+
+    _getDeletionColor(drug){
+        const endDate = this._getEndOfCommercialization(_.get(drug, 'commercializations', []))
+        const isInFuture = endDate && moment(_.cloneDeep(endDate), 'DD/MM/YYYY').isAfter(moment())
+        return isInFuture ? "willBeDeleted" : "deletedDrug"
     }
 
     _getCategOfReimbursement(drug){
@@ -667,6 +679,10 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
 
     _isAvailableCheaperDrugsSearch(origin){
         return origin && origin === "commercialSearch"
+    }
+
+    _getCorrespondingDrug(drug, amppFinished){
+        return amppFinished && amppFinished.filter(ampp => _.get(ampp, 'ctiExtended', null) === _.get(drug, 'ctiExtended', '')) || []
     }
 }
 customElements.define(HtPatPrescriptionDetailSearchCommercialResult.is, HtPatPrescriptionDetailSearchCommercialResult);
