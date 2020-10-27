@@ -414,6 +414,10 @@
                 background: var(--app-status-color-ok)!important;
             }
 
+            .notification-msg-alert{
+                background: var(--app-primary-color-dark)!important;
+            }
+
             .rn-container-content{
                 height: calc(100% - 50px);
                 overflow: auto;
@@ -545,6 +549,7 @@
                         <template is="dom-if" if="[[_isNotificationTab(tabs)]]">
                             <paper-button class="button button--save" autofocus on-tap="_sendNotification"><iron-icon icon="vaadin:plus-circle-o" class="mr5 icon-button" ></iron-icon> [[localize('rn-notify','Notify',language)]]</paper-button>
                         </template>
+                        <paper-button class="button button--save" autofocus on-tap="_consultHistory"><iron-icon icon="vaadin:search" class="mr5 icon-button" ></iron-icon> [[localize('rn-history','History',language)]]</paper-button>
                     </div>
                 </div>
             </div>
@@ -555,6 +560,40 @@
                 <h4>[[localize('rn-import-success', 'Importation success', language)]]</h4>
                 <p>[[localize('rn-info-import', 'Informations were imported into patient folder', language)]]</p>
             </div>
+        </paper-item>
+
+        <paper-item id="rnConsult-error-notification" class="notification-container error">
+            <iron-icon class="notification-icn" src="[[_rnConsultPicture()]]"></iron-icon>
+            <div class="notification-msg">
+                <h4>[[localize('rn-consult-not-err', 'Rn consult error', language)]]</h4>
+                <p>[[rnHistoryResult.status.code]] :
+                    <template is="dom-repeat" items="[[rnHistoryResult.status.messages]]" as="msg">
+                        [[msg.value]]
+                    </template>
+                </p>
+            </div>
+        </paper-item>
+
+        <paper-item id="rnConsult-changed-notification" class="notification-container dark">
+            <iron-icon class="notification-icn" src="[[_rnConsultPicture()]]"></iron-icon>
+            <div class="notification-msg notification-msg-alert">
+                <h4>[[localize('rn-consult-not', 'Rn consult changed', language)]]</h4>
+                <p>[[localize('rn-consult-niss-changed', "Niss number changed", language)]]</p>
+            </div>
+            <paper-button name="closePostit" class="notification-btn" on-tap="_closeRnConsultChangedNotification">
+                [[localize('clo','Close',language)]]
+            </paper-button>
+        </paper-item>
+
+        <paper-item id="rnConsult-no-change-notification" class="notification-container dark">
+            <iron-icon class="notification-icn" src="[[_rnConsultPicture()]]"></iron-icon>
+            <div class="notification-msg notification-msg-alert">
+                <h4>[[localize('rn-consult-not', 'Rn consult changed', language)]]</h4>
+                <p>[[localize('rn-consult-niss-no-changed', "Niss number not changed", language)]]</p>
+            </div>
+            <paper-button name="closePostit" class="notification-btn" on-tap="_closeRnConsultNoChangeNotification">
+                [[localize('clo','Close',language)]]
+            </paper-button>
         </paper-item>
     </template>
     <script>
@@ -880,6 +919,62 @@
 
             _selectedGenderTypeChanged(){
                 this.set('rnSearch.gender', _.get(_.get(this, 'selectedGenderType', null), 'type', null))
+            }
+
+            _consultHistory(){
+                this.api.fhc().RnConsult().historyUsingGET(_.get(this, 'api.keystoreId', null), _.get(this, 'api.tokenId', null), _.get(this, 'api.credentials.ehpassword', null), _.get(this.patient, 'ssin', null)).then(resp => {
+                    this.set('rnHistoryResult', resp)
+                    if(!_.isEmpty(resp)){
+                        if(_.get(resp, 'ssin.value', null) && !_.get(resp, 'ssin.replaces', null) && _.get(resp, 'ssin.canceled', null) !== true){
+                            this._rnConsultNoChangeNotification()
+                        }else if(_.get(resp, 'ssin.replaces', null)){
+                            this._rnConsultChangedNotification()
+                        }else if(_.get(resp, 'ssin.canceled', null)){
+                            this._rnConsultErrorNotification()
+                        }else{
+                            this._rnConsultErrorNotification()
+                        }
+                    }else{
+                        this._rnConsultErrorNotification()
+                    }
+                })
+            }
+
+            _rnConsultErrorNotification(){
+                this.$["rnConsult-error-notification"].classList.add('notification')
+                setTimeout(() => {
+                    this._closeRnConsultErrorNotification()
+                }, 10000);
+            }
+
+            _rnConsultChangedNotification(){
+                this.$["rnConsult-changed-notification"].classList.add('notification')
+                setTimeout(() => {
+                    this._closeRnConsultChangedNotification()
+                }, 600000);
+            }
+
+            _rnConsultNoChangeNotification(){
+                this.$["rnConsult-no-change-notification"].classList.add('notification')
+                setTimeout(() => {
+                    this._closeRnConsultNoChangeNotification()
+                }, 600000);
+            }
+
+            _closeRnConsultErrorNotification(){
+                this.$["rnConsult-error-notification"].classList.remove('notification')
+            }
+
+            _closeRnConsultNoChangeNotification(){
+                this.$["rnConsult-no-change-notification"].classList.remove('notification')
+            }
+
+            _closeRnConsultChangedNotification(){
+                this.$["rnConsult-changed-notification"] ? this.$["rnConsult-changed-notification"].classList.remove('notification') : null
+            }
+
+            _rnConsultPicture(){
+                return require('../../../../../images/bcss.png')
             }
 
         }
