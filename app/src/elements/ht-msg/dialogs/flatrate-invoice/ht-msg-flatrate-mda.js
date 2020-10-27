@@ -3591,7 +3591,7 @@ class HtMsgFlatrateMda extends TkLocalizerMixin(PolymerElement) {
                                                     "tc2": _.trim(_.get(ins,"tc2")),
                                                     "preferentialstatus": !!_.get(ins,"preferentialstatus",false),
                                                     "paymentapproval": !!_.get(ins,"paymentapproval",false),
-                                                    "mdaInputReference": exportedDate + "@" + _.trim(_.get(mdaPatient,"mdaInputReference")),
+                                                    // "mdaInputReference": exportedDate + "@" + _.trim(_.get(mdaPatient,"mdaInputReference")),
                                                 },
                                                 "ambulatory": true,
                                                 "dental": false,

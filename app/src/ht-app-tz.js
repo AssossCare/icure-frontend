@@ -48,6 +48,7 @@ import './elements/menu-bar/menu-bar';
 import './elements/splash-screen/splash-screen'
 import './elements/mta/ht-mailer-dialog'
 import './elements/ht-pat/dialogs/subscription/ht-pat-subscription-recovery'
+import './elements/ht-pat/dialogs/subscription/ht-pat-fix-pats-ins'
 import './elements/tk-localizer';
 import './ht-view404'
 import './ht-update-dialog'
@@ -866,6 +867,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                                     <paper-item class="extra-menu-item" on-tap="_tuto">[[localize('tutorial','Tutorial',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="mikronoAppointmentsMigration">[[localize('imp_ep_app','Import Epicure appointments',language)]]</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="mmhSendRecoveryDialog">[[localize('mmh_send_recovery','Reprise des contrats MM',language)]]</paper-item>
+                                    <paper-item class="extra-menu-item" on-tap="fixPatsInsDialog" style="display:none">Fix patient insurances</paper-item>
                                     <paper-item class="extra-menu-item" on-tap="_myProfile">
                                         <iron-icon icon="icons:account-circle"></iron-icon>
                                         [[localize('my_pro','My profile',language)]]
@@ -1101,6 +1103,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         
         <ht-mailer-dialog id="htMailerDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]" on-feedback-message="_feedbackMessage"></ht-mailer-dialog>
         <ht-pat-subscription-recovery id="htPatSubscriptionRecovery" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-subscription-recovery>
+        <ht-pat-fix-pats-ins id="htPatFixPatsInsDialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" api="[[api]]" user="[[user]]"></ht-pat-fix-pats-ins>
 `;
   }
 
@@ -1496,8 +1499,14 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   return Promise.resolve(this._checkShowWelcomePage())
               })
           }else{
-              if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
-              if(fhcurl) this.set('fhcUrl',fhcurl.selected)
+
+              // That's gonna be a problem when "selected" not defined @carolais, no ?
+              //if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+              icureurl && icureurl.selected && this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+
+              // That's gonna be a problem when "selected" not defined @carolais, no ?
+              fhcurl && this.set('fhcUrl',fhcurl.selected||null)
+
               this.$["loginDialog"].disable()
               return Promise.resolve(this._checkShowWelcomePage())
           }
@@ -2487,6 +2496,12 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
         //}else{
         //    this._ehealthErrorNotification()
         //}
+    }
+
+    fixPatsInsDialog(e){
+
+      this.$["htPatFixPatsInsDialog"]._open()
+
     }
 
   mikronoAppointmentsMigration(){
