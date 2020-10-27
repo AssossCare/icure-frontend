@@ -1817,6 +1817,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             vaadin-split-layout{
                 height: 100%;
             }
+            
+            .noBck{
+                background-color: var(--app-background-color-dark)!important;
+            }
+
 
         </style>
 
@@ -1963,7 +1968,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                                             </paper-tooltip>
                                         </template>                                        
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'rnConsult')]]">
-                                            <paper-fab id="rnConsultStatus" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
+                                            <paper-fab id="rnConsultStatus" class="noBck" mini on-tap="_openRnConsultDialog" src="[[_rnConsultPicture()]]"></paper-fab>
                                             <paper-tooltip position="top" for="rnConsultStatus">[[localize('rn-consult','Rn consult',language)]]</paper-tooltip>
                                         </template>
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'subscription')]]">
@@ -5025,7 +5030,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         }
         this._isAvailableForHcp(this.hcpType, 'hub') ? this.getSumehrContent().then(res => this.set('sumehrContentOnPatientRefresh', res)) : null
         this._isAvailableForHcp(this.hcpType, 'edmg') ? this.updateEdmgStatus() : null
-        this._isAvailableForHcp(this.hcpType, 'rnConsult') ? this._consultRnHistory(_.get(this, 'patient', null)) : null
+        //this._isAvailableForHcp(this.hcpType, 'rnConsult') ? this._consultRnHistory(_.get(this, 'patient', null)) : null
         this._isAvailableForHcp(this.hcpType, 'mda') ? this._consultMda() : null
         this._isAvailableForHcp(this.hcpType, 'insurability') ? this._requestGenins() : null
     }
@@ -5055,9 +5060,9 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
         this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgPending'): null
         this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgOk'): null
         this.shadowRoot.querySelector("#edmgStatus") ? this.shadowRoot.querySelector("#edmgStatus").classList.remove('edmgNOk'): null
-        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultPending'): null
-        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultNOk'): null
-        this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultOk'): null
+        //this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultPending'): null
+        //this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultNOk'): null
+        //this.shadowRoot.querySelector("#rnConsultStatus") ? this.shadowRoot.querySelector("#rnConsultStatus").classList.remove('rnConsultOk'): null
         this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionNoSubscription') : null
         this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionSubscriptionOk') : null
         this.shadowRoot.querySelector('#subscriptionStatus') ? this.shadowRoot.querySelector('#subscriptionStatus').classList.remove('subscriptionPending') : null
@@ -7136,8 +7141,8 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
     }
 
     _showRnConsultDiff() {
-        this._closeRnConsultChangedNotification()
-        this.$["htPatRnConsultHistoryDialog"]._openDialog()
+        //this._closeRnConsultChangedNotification()
+        //this.$["htPatRnConsultHistoryDialog"]._openDialog()
     }
 
     _openMdaDialog(e) {
