@@ -234,8 +234,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         })
 
         this.set("prescriptionsGroups",[[]])
-        this.shadowRoot.querySelector('#prescriptions-grid').setRowHeight("50px")
-
     }
 
     _isDrugNotPrescribed(s) {
@@ -288,7 +286,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
     _sendToRecipe(){
 
 
-        //todo @julien gestion des prescriptions de 5 medocs
 
         //const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
         const prescriptionGroups = _.get(this,"prescriptionsGroups",[]).map(group => group.map(id => _.get(this,"prescriptionsList",[]).find(prescr => prescr.id===id)))
@@ -408,23 +405,23 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     print(e) {
-        const prescriptions = _.get(this.shadowRoot.querySelector('#prescriptions-grid'),"selectedItems",[])
+        const prescriptionGroups = _.get(this,"prescriptionsGroups",[]).map(group => group.map(id => _.get(this,"prescriptionsList",[]).find(prescr => prescr.id===id)))
 
-        if(!prescriptions)return;
+        if(!prescriptionGroups || !prescriptionGroups.length)return;
 
-        if(prescriptions.find(p => !p.startValidDate || !p.endValidDate)){
+        if(prescriptionGroups.find( group => group.find(p => !p.startValidDate || !p.endValidDate))){
             this.set("errorMessage",this.localize("err_date_no_complete","Erreur: une des dates n'a pas été complété"))
             return;
         }
         this.set('selectedFormat', (this.patient.ssin && this.api.tokenId) ? this.selectedFormat : 'presc')
         const element = this.root.querySelector("#barCode");
-        const services = this.currentContact.services.filter(s => prescriptions.find(p=> p.id === s.id))
+        const services = this.currentContact.services.filter(s => _.flatMap(prescriptionGroups).find(p=> p.id === s.id))
 
         this.set("isLoading",true)
 
         this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
         .then(hcp => {
-            const toPrint = this._formatPrescriptionsBody(prescriptions, services, this.patient, hcp, element)
+            const toPrint = this._formatPrescriptionsBody(prescriptionGroups.filter( g => g.length), _.compact(_.flatMap(services)).filter(s => s.id), this.patient, hcp, element)
             return this._pdfReport(services, toPrint, this.selectedFormat)
         })
         .then(() => {

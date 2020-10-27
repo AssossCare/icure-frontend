@@ -650,7 +650,7 @@ class IccApi extends PolymerElement {
 
                   return (printerName ? Promise.resolve(printerName) : this.printers().then(printers => printers.find(p => p.isDefault)).then(p => p && p.name))
                       .then(printerName =>
-                          (electron && type && printerName ? this.electron().print(html,encodeURIComponent(printerName)) : fetch(`${'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`, {
+                           fetch((electron && type && printerName ? `${this.electronHost}/print/${printerName}` : `${'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`), {
                               method: "POST",
                               mode: "cors", // no-cors, cors, *same-origin
                               credentials: "same-origin", // include, same-origin, *omit
@@ -660,7 +660,7 @@ class IccApi extends PolymerElement {
                           })).then(response => response.arrayBuffer()).then(data => ({
                               pdf: data,
                               printed: electron && type && printerName
-                          }))
+                          })
                       )
               }))
 
