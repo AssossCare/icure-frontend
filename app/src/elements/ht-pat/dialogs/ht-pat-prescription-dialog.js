@@ -80,6 +80,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 width: 42px;
                 height: 42px;
             }
+            
+            .error-message {
+                width: 100%;
+                height: 50px;
+                color : var(--app-error-color);
+            }
+            
 
 
         </style>
@@ -90,9 +97,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             <h2 class="modal-title">[[localize('list_prescription','Liste des prescriptions',language)]]</h2>
             <div class="content">
                 <div class="error-message">[[errorMessage]]</div>
-                <template is="dom-if" if="[[isLoading]]">
-                    <div style="height: 50px; width: 50px;"><ht-spinner active="[[isLoading]]"></ht-spinner></div>
-                </template>
                 <vaadin-grid id="prescriptions-grid" items="[[prescriptionsList]]">
                     <vaadin-grid-sort-column path="name" header="[[localize('name','Nom',language)]]"></vaadin-grid-sort-column>
                     <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
@@ -125,6 +129,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 <paper-button class="button button--other" on-tap="sendByMail"><iron-icon icon="communication:email"></iron-icon> [[localize('sendByEmail','Send by email',language)]]</paper-button>-->
                 <paper-button class="button button--other" on-tap="print" ><iron-icon icon="print"></iron-icon>[[localize('print_no_recipe', "Imprimer sans recipe", language)]]</paper-button>
                 <paper-button class="button button--save" autofocus on-tap="_sendToRecipe"><iron-icon icon="print"></iron-icon>[[localize('send_to_recipe','Envoyer à Recip-e',language)]]</paper-button>
+                 <template is="dom-if" if="[[isLoading]]">
+                    <div style="height: 50px; width: 50px;"><ht-spinner active="[[isLoading]]"></ht-spinner></div>
+                </template>
             </div>
         </paper-dialog>
 
@@ -304,6 +311,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
         if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
             this.set("isLoading",true)
+            const deleteUselessParameter= (pat)=>{
+                const clone = _.cloneDeep(pat)
+                clone.insurabilities = clone.insurabilities.map(ins => {
+                    ins.parameters = _.omit(ins.parameters,["name","medicalHouse.isMedicalHouse"])
+                    return ins
+                })
+                return clone
+            }
             this.api.besamv2().getSamVersion()
                 .then(v => {
                     this.set('samVersion', v)
@@ -322,7 +337,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         })
 
                         return medications.length ? this.api.sleep(100).then(() =>this.api.fhc().Recipe().createPrescriptionV4UsingPOST(this.api.keystoreId, this.api.tokenId, "persphysician", hcp.nihii, hcp.ssin, hcp.lastName, this.api.credentials.ehpassword, {
-                            patient: _.omit(this.patient, ['personalStatus']),
+                            patient: _.omit(deleteUselessParameter(this.patient), ['personalStatus']),
                             hcp: hcp,
                             feedback: false,
                             medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
@@ -353,7 +368,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                         service.receipts = receipt.id ? _.assign(service.receipts || {}, {recipe: receipt.id}) : service.receipts
                                         return service
                                     }).catch(error => {
-                                        this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                                        this.set("errorMessage", this.localize("error_send_recipe",error))
                                         return service;
                                     })
                             }))
@@ -382,7 +397,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         const toPrint = this._formatPrescriptionsBody(prescriptionGroups.filter( g => g.length), _.compact(_.flatMap(services)).filter(s => s.id), this.patient, hcp, barcode)
                         return this._pdfReport(services, toPrint, this.selectedFormat)
                     }).catch(error => {
-                        this.set("errorMessage", this.localize("error_send_recipe", "Error:" + error))
+                        this.set("errorMessage", this.localize("error_send_recipe", error))
                     }).finally(() => {
                         this.set("isLoading",false)
                         this.dispatchEvent(new CustomEvent("save-current-contact",{bubbles:true,composed:true,detail:{}}))
@@ -554,17 +569,17 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
-                  <p class="center">${c.startValidDate}</p>
+                  <p class="center">${c[0].startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;:</small>
-                  <p class="center">${c.startValidDate}</p>
+                  <p class="center">${c[0].startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</small>
-                  <p class="center">${c.endValidDate}</p>
+                  <p class="center">${c[0].endValidDate}</p>
               </footer>
           </article>` : prescriContent; // create single prescription body
 
-            prescriToPrint.push({name:medicName,'prescriBody':prescri,'page':pageNum,'posology':articlePoso, 'medWithPosology': articleMedWithPoso,'myRid':ridLabel, 'myJpegUrl':jpegUrl,"startValidDate": c.startValidDate,"endValidDate":c.endValidDate}) // add a prescription with its datas
+            prescriToPrint.push({name:medicName,'prescriBody':prescri,'page':pageNum,'posology':articlePoso, 'medWithPosology': articleMedWithPoso,'myRid':ridLabel, 'myJpegUrl':jpegUrl,"startValidDate": c[0].startValidDate,"endValidDate":c[0].endValidDate}) // add a prescription with its datas
         }) // splitCol forEach end
         // console.log("prescriToPrint",prescriToPrint)
 
@@ -810,12 +825,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             .then(pdfPrintingData=>this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user.healthcarePartyId, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent=>_.assign({encryptedFileContent:encryptedFileContent},pdfPrintingData)))
             .then(pdfPrintingData=>this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},pdfPrintingData)))
             .then(pdfPrintingData=>{
-                //todo @julien sauver le document dans un service
+                //todo @julien sauver le document dans un service à tester si ca s'enregistre bien
                 this.dispatchEvent(new CustomEvent('save-document-as-service', {detail: {
                         documentId: _.trim(_.get(pdfPrintingData, "createDocumentResponse.id", "")),
                         stringValue: pdfPrintingData.documentMetas.title,
-                        contactId: pdfPrintingData.documentMetas.contactId,
+                        contactId: _.get(this,"currentContact.id",""),
+                        formId: _.get(this,"currentContact.subContacts.0.formId",""),
                     }}))
+
                 return pdfPrintingData
             })
             .then(pdfPrintingData => !pdfPrintingData.printed && this.api.triggerFileDownload( pdfPrintingData.pdfFileContent, "application/pdf", pdfPrintingData.downloadFileName ))

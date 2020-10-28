@@ -2795,7 +2795,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" on-save-current-contact="saveCurrentContact"></ht-pat-prescription-dialog>
+        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" on-save-document-as-service="saveDocumentAsService" on-save-current-contact="saveCurrentContact"></ht-pat-prescription-dialog>
 
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
@@ -4172,6 +4172,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.currentContact.services.splice(oldSvcIdx, 1)
         this.currentContact.services.push(svc)
         return this.saveCurrentContact()
+    }
+
+    saveDocumentAsService(e){
+        if(!e || !e.detail)return;
+        this.root.querySelector('ht-pat-detail-ctc-detail-panel')._saveDocumentAsService(e.detail)
     }
 
     saveNewService(svc) {
