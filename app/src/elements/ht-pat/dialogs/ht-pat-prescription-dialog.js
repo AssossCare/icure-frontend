@@ -186,7 +186,11 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           },
           prescriptionsGroups:{
               type: Array,
-              object : ()=>[]
+              value : ()=>[]
+          },
+          codes: {
+              type: Array,
+              value : ()=> []
           }
       }
   }
@@ -226,7 +230,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     open() {
-        this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
+        this.api.code().findCodes('be', "CD-DAYPERIOD").then(codes =>{
+            this.set("codes",codes.filter(code => code.code==="beforebreakfast" || code.code==="duringlunch"))
+            this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
+        })
         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
@@ -319,6 +326,20 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 })
                 return clone
             }
+
+            const correctionRegimen = (medication,codes) =>{
+                medication.regimen = medication.regimen.map(regimen => {
+                    if(_.get(regimen,"dayPeriod.type","")==="care.topaz.customDayPeriod"){
+                        regimen.dayPeriod = codes.find(code => (code.code==="beforebreakfast" && regimen.dayPeriod.code==="afterwakingup") || (code.code==="duringlunch" && regimen.dayPeriod.code==="midday"))
+                    }
+                    return regimen
+                }).reduce((acc,regimen) => {
+                    const found = acc.find(e => _.get(e,"dayPeriod.code","")===_.get(regimen,"dayPeriod.code",false))
+                    found ? found.administratedQuantity.quantity += _.get(regimen,"administratedQuantity.quantity",0)  : acc.push(regimen)
+                    return acc;
+                },[])
+                return medication
+            }
             this.api.besamv2().getSamVersion()
                 .then(v => {
                     this.set('samVersion', v)
@@ -340,7 +361,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             patient: _.omit(deleteUselessParameter(this.patient), ['personalStatus']),
                             hcp: hcp,
                             feedback: false,
-                            medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language))), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
+                            medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(correctionRegimen(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language)),this.codes)), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
                             deliveryDate: moment(group[0].startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             samVersion: _.get(this, 'samVersion.version', null),
                             expirationDate: moment(group[0].endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
@@ -411,6 +432,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                 endValidDate :this._endDate()
                             }
                         }))
+                        this.set("prescriptionsGroups",[])
                     })
                 })
 
@@ -571,11 +593,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
                   <p class="center">${c[0].startValidDate}</p>
                   <hr>
-                  <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;:</small>
-                  <p class="center">${c[0].startValidDate}</p>
+                  <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;: ${c[0].startValidDate}</small>
                   <hr>
-                  <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</small>
-                  <p class="center">${c[0].endValidDate}</p>
+                  <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${c[0].endValidDate}</small>
               </footer>
           </article>` : prescriContent; // create single prescription body
 
@@ -675,15 +695,15 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                   <div class="vert w100">
                                       <div class="cell bb center">
                                           <p class="mt0">${this.localize('date_and_sign_of_presc',"Date and prescriber's signature",this.language)}</p>
-                                          <p>${onePage.startValidDate}</p>
+                                          <p>${onePage[0].startValidDate}</p>
                                       </div>
                                       <div class="cell">
                                           <p class="center">${this.localize('deliv_date','Deliverable from the specified date or from',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${onePage.startValidDate}</p>
+                                          <p class="signdate center bold w100">${onePage[0].startValidDate}</p>
                                       </div>
                                       <div class="cell">
                                           <p class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${onePage.endValidDate}</p>
+                                          <p class="signdate center bold w100">${onePage[0].endValidDate}</p>
                                       </div>
                                   </div>
                               </div>
