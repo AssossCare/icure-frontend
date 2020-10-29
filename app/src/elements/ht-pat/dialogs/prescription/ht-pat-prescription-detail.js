@@ -938,7 +938,27 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         return promResolve
             .then(() => this.set("isLoading", true))
             .then(() => this._closePosologyView())
+
+            // Create medication ?
             .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
+
+            // Assign deliveryMoment && endExecMoment
+            .then(drugsToBeSaved => {
+                _.map(drugsToBeSaved, drug => {
+
+                    const deliveryMoment = parseInt(moment(_.trim(_.get(drug,"deliveryMomentAsString")), "YYYY-MM-DD").format("YYYYMMDD")) || null
+                    const endExecMoment = parseInt(moment(_.trim(_.get(drug,"endExecMomentAsString")), "YYYY-MM-DD").format("YYYYMMDD")) || null
+                    const medicationValue = _.get(drug,"newMedication.content.fr.medicationValue") || _.get(drug,"newMedication.content.nl.medicationValue") || _.get(drug,"newMedication.content.en.medicationValue")
+
+                    _.assign(medicationValue, {
+                        deliveryMoment: deliveryMoment||null,
+                        endExecMoment: endExecMoment,
+                    })
+
+                })
+                return drugsToBeSaved
+            })
+
             .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
             .then(() => {
                 console.log("AFTER SAVE && AFTER UPDATE CTC")
