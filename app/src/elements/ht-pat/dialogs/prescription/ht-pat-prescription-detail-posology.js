@@ -1682,7 +1682,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             spcLink: _.trim(_.get(latestAmpp, "spcLink." + this.language)),
                             leafletLink: _.trim(_.get(latestAmpp, "leafletLink." + this.language)),
                             ctiExtended: _.get(latestAmpp, "ctiExtended"),
-                            posologyNote: _.trim(_.get(latestAmpp, "posologyNote")),
+                            posologyNote: _.trim(_.get(latestAmpp, "posologyNote." + this.language)),
                             dividable: _.get(latestAmpp, "dividable"),
                             packDisplayValue: _.trim(_.get(latestAmpp, "packDisplayValue")),
                             samCode: _.trim(_.get(latestAmpp, "amp.code")),

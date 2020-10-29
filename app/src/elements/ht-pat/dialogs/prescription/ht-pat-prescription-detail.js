@@ -631,32 +631,38 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         const promResolve = Promise.resolve()
 
         /* Still Missing
-            - amp (final)
-            - ctiExtended
-            - dividable
-            - groupId
-            - hasChildren
             - informations
-            - packDisplayValue
-            - parentUuid
-            - posologyNote
-            - reinfPharmaVigiIcon
-            - samCode
-            - samDate
-            - uuid
-            - uuids
          */
 
         return promResolve
             .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(givenProduct,"id"))).catch(()=>null))
             .then(amps => {
 
-                // const amp = _
-                //     .chain(amps)
-                //     .filter()
-                //     .value()
+                const now = +new Date()
 
-                const atcCodes = _
+                const validAmpps = _
+                    .chain(amps)
+                    .filter(amp => _.trim(_.get(amp,"status")) === "AUTHORIZED" && _.size(_.get(amp,"ampps")))
+                    // Commercialization is still valid when expired less than two years ago (http://www.samportal.be/fr/sam_portal_news_messages/82) - Allow for no "to" value && don't check on "from" in the past but must still be present
+                    .map(amp => _.map(_.get(amp, "ampps"), ampp => _.some(_.get(ampp,"commercializations"), c => c && c.from && (c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to) ) && _.assign(ampp, {
+                        amp: amp,
+                        publicDmpp: _.find(_.get(ampp,"dmpps",[]), dmpp => dmpp
+                            && _.trim(_.get(dmpp,"deliveryEnvironment")) === "P"
+                            && _.trim(_.get(dmpp,"codeType")) === "CNK"
+                            && _.get(dmpp,"from",false)
+                            && _.get(dmpp,"from") <= now
+                            && (!_.get(dmpp,"to",false) || _.get(dmpp,"to") >= now)
+                        )
+                    })))
+                    .flatten()
+                    .compact()
+                    .filter("publicDmpp")
+                    .value()
+
+                // Latest version
+                const latestAmpp = _.head(_.orderBy(validAmpps, ["from"], ["desc"]))||{}
+
+                const atcCodes = amps && _
                     .chain(amps)
                     .map( amp => _.map(_.get(amp, "ampps"), ampp => _.map(_.get(ampp,"atcs"), "code")))
                     .flattenDeep()
@@ -665,15 +671,34 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     .map(_.trim)
                     .value()
 
-                _.merge(givenProduct, {
-                    allergies: _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
-                    atcCodes: [_.get(givenProduct, "atc","")],
-                    officialName: [_.get(givenProduct, "label","")],
+                const publicDmpp = _.get(latestAmpp, "publicDmpp",{})
+                const currentReimbursement = _.find(_.get(latestAmpp, 'publicDmpp.reimbursements', []),reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now ))
+
+                return !latestAmpp ? givenProduct : _.merge(givenProduct, {
+                    allergies: !_.size(latestAmpp) || !_.size(atcCodes) ? _.get(givenProduct, "allergies", []) : _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
+                    atcCodes: atcCodes || _.get(givenProduct, "atcCodes",[]),
+                    officialName: _.get(givenProduct, "label",""),
                     type: "medicine",
+                    id: _.trim(_.get(latestAmpp, "publicDmpp.code")) || _.trim(_.get(givenProduct, "id")),
+                    uuid: _.trim(_.get(latestAmpp, "publicDmpp.code")) || _.trim(_.get(givenProduct, "id")),
+                    parentUuid: null,
+                    amp: _.get(latestAmpp,"amp",{}),
+                    publicDmpp: publicDmpp,
+                    dividable: _.trim(_.get(latestAmpp, "components[0].dividable")) !== "X",
+                    samDate: _.get(latestAmpp, "publicDmpp.from", null) ? moment(_.get(latestAmpp, "publicDmpp.from", null)).format("DD/MM/YYYY") : null,
+                    samCode: _.trim(_.get(latestAmpp,"amp.code")) || _.trim(_.get(givenProduct,"samCode")),
+                    posologyNote: _.trim(_.get(latestAmpp, 'posologyNote['+this.language+']')) || _.trim(_.get(givenProduct, "posologyNote")),
+                    packDisplayValue: _.trim(_.get(latestAmpp, "packDisplayValue")),
+                    ctiExtended: _.trim(_.get(latestAmpp, "ctiExtended")) || _.trim(_.get(givenProduct, "ctiExtended")),
+                    reinfPharmaVigiIcon: _.get(latestAmpp, "amp.blackTriangle", null) ? "reinf-pharma-vigi" : null,
+                    groupId: _.trim(_.get(latestAmpp, "amp.vmp.vmpGroup.id", null)) || _.trim(_.get(givenProduct, "groupId")),
+                    hasChildren: false, // Level is always 0 when resolving by findAmpsByDmppCode
+                    currentReimbursement: currentReimbursement,
+                    unit: _.get(latestAmpp, "amp.components[0].pharmaceuticalForms[0].name[" + this.language + "]", "") || _.trim(_.get(givenProduct, "unit")),
+                    informations: this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch") && this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._getCommercialInformations(latestAmpp, publicDmpp,currentReimbursement),
                 })
             })
-            .catch(e => console.log("[ERROR]", e))
-            .finally(() => givenProduct)
+            .catch(e => (console.log("[ERROR]", e)||true) && givenProduct)
 
     }
 
