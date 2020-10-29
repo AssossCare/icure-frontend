@@ -238,9 +238,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
                 posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
-                startValidDate :this._today(),
+                startValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"deliveryMoment",this._today())).format("YYYY_MM_DD"),
                 id : s.id,
-                endValidDate :this._endDate()
+                endValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"endExecMoment",this._endDate())).format("YYYY_MM_DD")
             }
         }))
         this.api.electron().getPrinterSetting(this.user.id).then( data => {
