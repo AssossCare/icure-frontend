@@ -238,9 +238,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
                 posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
-                startValidDate :this._today(),
+                startValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"deliveryMoment",this._today())).format("YYYY-MM-DD"),
                 id : s.id,
-                endValidDate :this._endDate()
+                endValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"endExecMoment",this._endDate())).format("YYYY-MM-DD")
             }
         }))
         this.api.electron().getPrinterSetting(this.user.id).then( data => {
@@ -591,11 +591,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
-                  <p class="center">${c[0].startValidDate}</p>
+                  <p class="center">${this._today()}</p>
                   <hr>
-                  <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;: ${c[0].startValidDate}</small>
+                  <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;:</small>
+                    <p class="center">${c[0].startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${c[0].endValidDate}</small>
+                  <p class="center"></p>
               </footer>
           </article>` : prescriContent; // create single prescription body
 
