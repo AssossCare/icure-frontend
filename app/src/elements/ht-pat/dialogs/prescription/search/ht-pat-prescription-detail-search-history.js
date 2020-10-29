@@ -230,18 +230,25 @@ class HtPatPrescriptionDetailSearchHistory extends TkLocalizerMixin(mixinBehavio
         const drugId = _.trim(_.get(e, 'currentTarget.dataset.id'))
         const dataType = _.trim(_.get(e, 'currentTarget.dataset.type'))
         const internalUuid = _.trim(_.get(e, 'currentTarget.dataset.internaluuid'))
+        const product = _.find(_.get(this, 'searchResult.history', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
+
+        const drugIdBasedOnService = _.trim(_.get(_.find(_.get(product,"service.codes",[]), {type:"CD-DRUG-CNK"}), "code"))
+        const drugIdBasedOnMedication = _.trim(_.get(_.find(_.get(product,"newMedication.codes",[]), {type:"CD-DRUG-CNK"}), "code"))
+        const resolvedCnk = drugIdBasedOnService || drugIdBasedOnMedication || drugId
 
         return !drugId || !dataType || !internalUuid ? null : this.dispatchEvent(new CustomEvent('open-posology-view', {
             bubbles: true,
             composed: true,
             detail: {
-                id: drugId,
+                id: resolvedCnk,
                 internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: true,
-                product: _.find(_.get(this, 'searchResult.history', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
+                product: _.trim(_.get(product,"id")) === resolvedCnk ? product : _.merge(product,{id:resolvedCnk})
             }
         }))
+
+
 
     }
 

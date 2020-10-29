@@ -446,7 +446,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         }
                     }).finally(() => {
                         // Assign internal id
-                        _.map(this.searchResult, it => !_.size(it) ? false : !Array.isArray(_.head(it)) ? _.map(it, drug =>_.assign(drug,{internalUuid: this.api.crypto().randomUuid()})) : _.map(it, drugGroup => _.map(drugGroup, drug =>_.assign(drug,{internalUuid: this.api.crypto().randomUuid()}))))
+                        _.map(this.searchResult, it => !_.size(it) ? false : !Array.isArray(_.head(it)) ? _.map(it, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()})) : _.map(it, drugGroup => _.map(drugGroup, drug => !_.trim(_.get(drug,"internalUuid")) && _.assign(drug,{internalUuid: this.api.crypto().randomUuid()}))))
                         this.set('isLoadingCommercial', false)
                         this.set('isLoadingOtc', false)
                         this.set('isLoadingSubstance', false)

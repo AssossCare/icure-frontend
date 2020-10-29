@@ -409,11 +409,11 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
 
     _createMedication(newMedications) {
         this.push('value', ..._.flatMap(newMedications, m => _.times(m.boxes || 1, () => _.omit(m.newMedication, ['id']))));
-        this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value}, bubbles: true, composed: true} ))
+        this.dispatchEvent(new CustomEvent('field-changed', { detail: {medications : this.value, saveNow:true}, bubbles: true, composed: true} ))
     }
 
     _medicationChanged(medication) {
-        console.log(medication);
+        // console.log(medication);
         const idx = this.value.findIndex(m => m.id === medication.newMedication.id)
         this.set("value."+idx,medication.newMedication)
         this.dispatchEvent(new CustomEvent('field-changed', {
@@ -426,7 +426,7 @@ class DynamicMedicationField extends TkLocalizerMixin(PolymerElement) {
 
     //edit
     extractContentWithIdFromMedicationService(m, isNew, isPrescription) {
-        console.log('extractContentWithIdFromMedicationService',m,isNew)
+        // console.log('extractContentWithIdFromMedicationService',m,isNew)
         return {
             id: m.id,
             codes: m.codes,
