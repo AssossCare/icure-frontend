@@ -630,10 +630,6 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
         const promResolve = Promise.resolve()
 
-        /* Still Missing
-            - informations
-         */
-
         return promResolve
             .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(givenProduct,"id"))).catch(()=>null))
             .then(amps => {
