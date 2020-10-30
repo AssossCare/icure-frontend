@@ -2585,6 +2585,7 @@
                                 ["soapResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.soapResponse"))],
                                 ["transactionRequest.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionRequest"))],
                                 ["transactionResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionResponse"))],
+                                ["decryptedXmlTransactionResponse.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.mycarenetConversation.decryptedResponseContent")))],
                                 ["memberDataMessageList.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.memberDataMessageList",[])))],
                                 ["acks.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.acks")))],
                                 ["genericErrors.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.genericErrors")))],
