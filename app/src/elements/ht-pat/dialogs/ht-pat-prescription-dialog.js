@@ -100,14 +100,14 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 <vaadin-grid id="prescriptions-grid" items="[[prescriptionsList]]">
                     <vaadin-grid-sort-column path="name" header="[[localize('name','Nom',language)]]"></vaadin-grid-sort-column>
                     <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
-                    <vaadin-grid-column header="[[localize('start_valid_date','date début validité',language)]]" frozen>
+                    <vaadin-grid-column header="[[localize('deliv_from','deliv_from',language)]]" frozen>
                         <template>
                             <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
                                 <vaadin-date-picker i18n="[[i18n]]" value="[[item.startValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
                             </template> 
                         </template>
                     </vaadin-grid-column>
-                    <vaadin-grid-column header="[[localize('end_valid_date','date de fin de validité',language)]]" frozen>
+                    <vaadin-grid-column header="[[localize('EndDateForExecution','EndDateForExecution',language)]]" frozen>
                         <template>
                             <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
                                 <vaadin-date-picker i18n="[[i18n]]" value="[[item.endValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setEndDate" min="[[_getMin(item.startValidDate,item)]]" max="[[_oneYear()]]"></vaadin-date-picker>
@@ -191,6 +191,19 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
           codes: {
               type: Array,
               value : ()=> []
+          },
+          _reimbursementReasonToInstructions: {
+              type: Object,
+              value: {
+                  tirdpartypaid: "PAYING_THIRD_PARTY",
+                  firstdose: "FIRST_DOSE",
+                  seconddose: "SECOND_DOSE",
+                  thirddose: "THIRD_DOSE",
+                  chronicalrenalcarepath: "CHRONIC_KINDEY_DISEASE",
+                  diabetescarepath: "DIABETES_TREATMENT",
+                  diabeteconvention: "DIABETES_CONVENTION",
+                  notreimbursable: "NOT_REIMBURSABLE"
+              }
           }
       }
   }
@@ -234,9 +247,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set("codes",codes.filter(code => code.code==="beforebreakfast" || code.code==="duringlunch"))
             this.shadowRoot.querySelector('#prescriptions-list-dialog').open()
         })
+        this.set("errorMessage","")
         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
             return {
-                name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
+                name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname","") ||  _.get(this.api.contact().medicationValue(s),"substanceProduct.intendedname",""),
                 posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
                 startValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"deliveryMoment",this._today())).format("YYYY-MM-DD"),
                 id : s.id,
@@ -327,19 +341,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 return clone
             }
 
-            const correctionRegimen = (medication,codes) =>{
-                medication.regimen = medication.regimen.map(regimen => {
-                    if(_.get(regimen,"dayPeriod.type","")==="care.topaz.customDayPeriod"){
-                        regimen.dayPeriod = codes.find(code => (code.code==="beforebreakfast" && regimen.dayPeriod.code==="afterwakingup") || (code.code==="duringlunch" && regimen.dayPeriod.code==="midday"))
-                    }
-                    return regimen
-                }).reduce((acc,regimen) => {
-                    const found = acc.find(e => _.get(e,"dayPeriod.code","")===_.get(regimen,"dayPeriod.code",false))
-                    found ? found.administratedQuantity.quantity += _.get(regimen,"administratedQuantity.quantity",0)  : acc.push(regimen)
-                    return acc;
-                },[])
-                return medication
-            }
             this.api.besamv2().getSamVersion()
                 .then(v => {
                     this.set('samVersion', v)
@@ -361,7 +362,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             patient: _.omit(deleteUselessParameter(this.patient), ['personalStatus']),
                             hcp: hcp,
                             feedback: false,
-                            medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(correctionRegimen(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language)),this.codes)), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
+                            //medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(correctionRegimen(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language)),this.codes)), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
+                            medications: this._convertForRecipe(medications).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
                             deliveryDate: moment(group[0].startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             samVersion: _.get(this, 'samVersion.version', null),
                             expirationDate: moment(group[0].endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
@@ -439,6 +441,55 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         }else{
             this.set("errorMessage",this.localize("err_ehealth_token","Erreur: vous n'êtes pas connecté à e-health"))
         }
+    }
+
+    _convertForRecipe(medications) {
+        // @todo: use code api
+        const medsDup = _.cloneDeep(medications);
+        medsDup.forEach(med => {
+            const medicationValue = this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(med, this.language));
+            if (!medicationValue) return;
+            if (medicationValue.regimen && medicationValue.regimen.length) {
+                medicationValue.knownUsage = false;
+                const customReg = medicationValue.regimen.filter(r => this._regCodeIsCustom(r));
+                if (customReg && customReg.length) {
+                    medicationValue.regimen = medicationValue.regimen.filter(r => !this._regCodeIsCustom(r));
+                    customReg.forEach(r => {
+                        if (r.dayPeriod.code === "midday") {
+                            medicationValue.regimen.push({timeOfDay: "120000", administratedQuantity: r.administratedQuantity});
+                        } else if (r.dayPeriod.code === "afterwakingup") {
+                            medicationValue.regimen.push({timeOfDay: "63000", administratedQuantity: r.administratedQuantity});
+                        }
+                    });
+                }
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/2").forEach(i => i.administratedQuantity.quantity = 0.5);
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/3").forEach(i => i.administratedQuantity.quantity = 0.33);
+                medicationValue.regimen.filter(r => r.administratedQuantity.quantity === "1/4").forEach(i => i.administratedQuantity.quantity = 0.25);
+            } else {
+                if (!medicationValue.instructionForPatient) {
+                    medicationValue.knownUsage = true;
+                }
+            }
+            if (medicationValue.substanceProduct) {
+                if (!_.get(medicationValue, 'substanceProduct.intendedcds', []).some(intendedcd => intendedcd.type === "CD-VMPGROUP")) {
+                    medicationValue.substanceProduct.intendedcds = [];
+                }
+            }
+            if (medicationValue.reimbursementReason) {
+                const key = Object.keys(this._reimbursementReasonToInstructions).find(key => key === medicationValue.reimbursementReason.code);
+                medicationValue.instructionsForReimbursement = key && this._reimbursementReasonToInstructions[key] || this._reimbursementReasonToInstructions.notreimbursable;
+            }
+
+            medicationValue.temporality = null
+            _.parseInt(_.get(medicationValue, 'endMoment', null)) === 0 ? medicationValue.endMoment = null : null
+
+        });
+
+        return this.api.deleteRecursivelyNullValues(medsDup);
+    }
+
+    _regCodeIsCustom(r) {
+        return r.dayPeriod && ["midday", "afterwakingup"].includes(r.dayPeriod.code);
     }
 
     print(e) {
@@ -591,10 +642,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
-                  <p class="center">${this._today()}</p>
-                  <hr>
-                  <small class="center">${this.localize('deliv_from','Deliverable from',this.language)}&nbsp;:</small>
-                    <p class="center">${c[0].startValidDate}</p>
+                  <p class="center">${c[0].startValidDate}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${c[0].endValidDate}</small>
                   <p class="center"></p>
@@ -699,10 +747,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                           <p class="mt0">${this.localize('date_and_sign_of_presc',"Date and prescriber's signature",this.language)}</p>
                                           <p>${onePage[0].startValidDate}</p>
                                       </div>
-                                      <div class="cell">
-                                          <p class="center">${this.localize('deliv_date','Deliverable from the specified date or from',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${onePage[0].startValidDate}</p>
-                                      </div>
+                                    
                                       <div class="cell">
                                           <p class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</p>
                                           <p class="signdate center bold w100">${onePage[0].endValidDate}</p>
