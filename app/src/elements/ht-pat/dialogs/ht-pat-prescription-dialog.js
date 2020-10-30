@@ -363,7 +363,19 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             hcp: hcp,
                             feedback: false,
                             //medications: medications.map( service => _.assign(_.omit(this.api.deleteRecursivelyNullValues(correctionRegimen(this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(service, this.language)),this.codes)), ['substanceProduct']), {instructionsForReimbursement: "NOT_REIMBURSABLE"})),
-                            medications: this._convertForRecipe(medications).map(s => this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(s, this.language))),
+                            medications: this._convertForRecipe(medications).map(s => {
+                                let medication = this.api.contact().medicationValue(s, this.language)
+                                if(!_.get(medication,"substanceProduct",false)){
+                                    medication = _.omit(medication,["substanceProduct"])
+                                }
+                                if(!_.get(medication,"compoundPrescription",false)){
+                                    medication = _.omit(medication,["compoundPrescription"])
+                                }
+                                if(!_.get(medication,"medicinalProduct",false)){
+                                    medication = _.omit(medication,["medicinalProduct"])
+                                }
+                                return this.addEmptyPosologyIfNeeded(medication)
+                            }),
                             deliveryDate: moment(group[0].startValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
                             samVersion: _.get(this, 'samVersion.version', null),
                             expirationDate: moment(group[0].endValidDate, "YYYY-MM-DD").format("YYYYMMDD"),
@@ -447,7 +459,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         // @todo: use code api
         const medsDup = _.cloneDeep(medications);
         medsDup.forEach(med => {
-            const medicationValue = this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(med, this.language));
+            let medicationValue = this.addEmptyPosologyIfNeeded(this.api.contact().medicationValue(med, this.language));
             if (!medicationValue) return;
             if (medicationValue.regimen && medicationValue.regimen.length) {
                 medicationValue.knownUsage = false;
@@ -562,6 +574,10 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         let prescriToPrint = [], allPages = []
         let prescNum = 0, pageNum = 1
 
+        const formatDate = (date) =>{
+            return moment(date,"YYYY-MM-DD").format("DD/MM/YYYY")
+        }
+
         const inRecipeMode = this.patient.ssin && _.flatMap(splitColumns).find(c=>c.rid) // else print good old prescription format && this.api.tokenId
         splitColumns.forEach((c, idx) => {
             const ridOrNihii = c.length && c[0].rid ? c[0].rid : hcp.nihii;
@@ -642,9 +658,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
-                  <p class="center">${c[0].startValidDate}</p>
+                  <p class="center">${formatDate(c[0].startValidDate)}</p>
                   <hr>
-                  <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${c[0].endValidDate}</small>
+                  <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${formatDate(c[0].endValidDate)}</small>
                   <p class="center"></p>
               </footer>
           </article>` : prescriContent; // create single prescription body
@@ -745,12 +761,12 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                                   <div class="vert w100">
                                       <div class="cell bb center">
                                           <p class="mt0">${this.localize('date_and_sign_of_presc',"Date and prescriber's signature",this.language)}</p>
-                                          <p>${onePage[0].startValidDate}</p>
+                                          <p>${formatDate(onePage[0].startValidDate)}</p>
                                       </div>
                                     
                                       <div class="cell">
                                           <p class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;:</p>
-                                          <p class="signdate center bold w100">${onePage[0].endValidDate}</p>
+                                          <p class="signdate center bold w100">${formatDate(onePage[0].endValidDate)}</p>
                                       </div>
                                   </div>
                               </div>
