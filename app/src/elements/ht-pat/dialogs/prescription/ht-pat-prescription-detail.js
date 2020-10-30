@@ -626,12 +626,41 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     }
 
-    _enrichChronicHistoryWithDetails(givenProduct) {
+    _enrichDataWithAllergies(givenProduct) {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.api.besamv2().findPaginatedAmpsByGroupId(_.trim(_.get(givenProduct,"vmpGroup.id"))).then(amps => _.get(amps,"rows")).catch(()=>amps))
+            .then(amps => {
+
+                const atcCodes = amps && _
+                    .chain(amps)
+                    .map( amp => _.map(_.get(amp, "ampps"), ampp => _.map(_.get(ampp,"atcs"), "code")))
+                    .flattenDeep()
+                    .compact()
+                    .uniq()
+                    .map(_.trim)
+                    .value()
+
+                return _.merge(givenProduct, {
+                    allergies: !_.size(atcCodes) ? _.get(givenProduct, "allergies", []) : _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
+                    atcCodes: atcCodes || _.get(givenProduct, "atcCodes",[]),
+                    id: _.trim(_.get(givenProduct, "code")) || _.trim(_.get(givenProduct, "id")),
+                    hasChildren: false,
+                })
+            })
+            .catch(e => (console.log("[ERROR]", e)||true) && givenProduct)
+
+    }
+
+    _enrichDataWithDetails(givenProduct) {
 
         const promResolve = Promise.resolve()
 
         return promResolve
             .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(givenProduct,"id"))).catch(()=>null))
+            // .then(amps => _.size(amps) ? amps : this.api.besamv2().findPaginatedAmpsByGroupId(_.trim(_.get(givenProduct,"vmpGroup.id"))).then(amps => _.get(amps,"rows")).catch(()=>amps))
             .then(amps => {
 
                 const now = +new Date()
@@ -705,8 +734,9 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         const drugInternalUuid = _.trim(_.get(e,'detail.internalUuid', null))
 
         return !_.trim(_.get(e, 'detail.id', null)) || !drugInternalUuid || !_.trim(_.get(e, 'detail.type', null)) ? promResolve : (
-            ["chronic","history"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? this._enrichChronicHistoryWithDetails(givenProduct) :
-            ["commercial","substance", "compound"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? Promise.resolve(givenProduct) :
+            ["chronic","history"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? this._enrichDataWithDetails(givenProduct) :
+            ["substance"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? this._enrichDataWithAllergies(givenProduct) :
+            ["commercial", "compound"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? Promise.resolve(givenProduct) :
             Promise.resolve({})
         )
             .then(drugInfo => {
@@ -720,7 +750,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     priority: "low",
                     label: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
                     intendedname: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
-                    intendedcds: [{type: drugType, code: _.trim(_.get(drugInfo,"id")) ? _.trim(_.get(drugInfo,"id")) : _.trim(_.get(drugInfo,"uuid"))}],
+                    intendedcds: [{type: drugType, code: drugType === "CD-VMPGROUP" ? _.trim(_.get(drugInfo,"code")) : _.trim(_.get(drugInfo,"id")) ? _.trim(_.get(drugInfo,"id")) : _.trim(_.get(drugInfo,"uuid"))}],
                 }
                 _.merge(drugInfo, {
                     unit: !medicationValue ? "" : _.get(medicationValue, "regimen[0].administratedQuantity.unit", this.localize("uni", "Unités")),
@@ -739,16 +769,16 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                             medicationValue: {
                                 regimen: [],
                                 substitutionAllowed: true,
-                                compoundPrescription: drugType === "compoundPrescription" && (_.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label"))),
-                                substanceProduct: drugType !== "compoundPrescription" && drugType === "CD-VMPGROUP" && prescribedProduct,
-                                medicinalProduct: drugType !== "compoundPrescription" && drugType !== "CD-VMPGROUP" && prescribedProduct,
+                                compoundPrescription: drugType === "compoundPrescription" && (_.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label"))) || null,
+                                substanceProduct: drugType !== "compoundPrescription" && drugType === "CD-VMPGROUP" && prescribedProduct || null,
+                                medicinalProduct: drugType !== "compoundPrescription" && drugType !== "CD-VMPGROUP" && prescribedProduct || null,
                             }
                         }]]),
                         codes: drugType === "compoundPrescription" ? _.get(newMedication, "codes",[]) : _
                             .chain(newMedication)
                             .get("codes",[])
                             .filter(c => [drugType, "CD-ATC"].indexOf(_.trim(_.get(c,"type"))) === -1)
-                            .concat(!_.trim(_.get(drugInfo,"id")) ? false : {type: drugType, version: "1", code: _.trim(_.get(drugInfo,"id"))})
+                            .concat(!_.trim(_.get(drugInfo,"id")) ? false : {type: drugType, version: "1", code: drugType === "CD-VMPGROUP" ? _.trim(_.get(drugInfo,"code")) : _.trim(_.get(drugInfo,"id"))})
                             .concat(!_.trim(_.get(drugInfo,"atcCodes[0]")) ? false : {type: "CD-ATC", version: "1", code: _.trim(_.get(drugInfo,"atcCodes[0]"))})
                             .compact()
                             .value()
@@ -1031,6 +1061,19 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         endExecMoment: endExecMoment||null,
                     })
 
+                })
+                return drugsToBeSaved
+            })
+
+            // Ensure of types
+            .then(drugsToBeSaved => {
+                _.map(drugsToBeSaved, drug => {
+                    const medicationValue = _.get(drug,"newMedication.content.fr.medicationValue") || _.get(drug,"newMedication.content.nl.medicationValue") || _.get(drug,"newMedication.content.en.medicationValue")
+                    _.assign(medicationValue, {
+                        compoundPrescription : typeof _.get(medicationValue, "compoundPrescription", null) === "boolean" ? null : _.get(medicationValue, "compoundPrescription"),
+                        substanceProduct : typeof _.get(medicationValue, "substanceProduct", null) === "boolean" ? null : _.get(medicationValue, "substanceProduct"),
+                        medicinalProduct : typeof _.get(medicationValue, "medicinalProduct", null) === "boolean" ? null : _.get(medicationValue, "medicinalProduct"),
+                    })
                 })
                 return drugsToBeSaved
             })
