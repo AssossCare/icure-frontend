@@ -1616,6 +1616,11 @@
                                 value: _.get(med, "content."+this.language+".medicationValue.instructionForPatient", null)
                             }
                         },
+                        instructionForPatient:{
+                            text: {
+                                value: _.get(med, "content."+this.language+".medicationValue.instructionForPatient", null)
+                            }
+                        },
                         suspensions: null,
                         usePresent: null,
                         useTexts: [],
@@ -1682,6 +1687,7 @@
                         regimenWeekDay: _.values(_.groupBy(this._decomposedRegimen(_.get(_.get(elTr, 'item', []).find(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "medication")), 'regimen', null)), item => _.get(item, 'weekDay', null) || 'other')),
                         regimenWeekNumber: _.values(_.groupBy(this._decomposedRegimen(_.get(_.get(elTr, 'item', []).find(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "medication")), 'regimen', null)), item => _.get(item, 'weekNumber', null) || 'other')),
                         posology: _.get(_.get(elTr, 'item', []).find(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "medication")), 'posology', null),
+                        instructionForPatient: _.get(_.get(elTr, 'item', []).find(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "medication")), 'instructionforpatient', null),
                         suspensions: [],
                         usePresent: !!_.get(_.get(elTr, 'item', []).filter(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "healthcareelement")).find(itm => _.get(itm, 'contents', []).find(it => _.get(it, 'cds', []).find(cd => _.get(cd, 'value', null) === "medicationuse"))), 'contents', []).find(it => _.size(_.get(it, 'cds', [])) === 0),
                         useTexts: _.get(_.get(_.get(elTr, 'item', []).filter(itm => _.get(itm, 'cds', []).find(cd => _.get(cd, 'value', null) === "healthcareelement")).find(itm => _.get(itm, 'contents', []).find(it => _.get(it, 'cds', []).find(cd => _.get(cd, 'value', null) === "medicationuse"))), 'contents', []).find(it => _.size(_.get(it, 'cds', [])) === 0), 'texts', []),
@@ -1879,6 +1885,7 @@
                     Object.assign(medicationValue, data.medicinalproduct ? {medicinalProduct: product} : {substanceProduct: product});
                     Object.assign(medicationValue, {
                         posology: _.get(data, "posology.text.value", ""),
+                        instructionForPatient: _.get(data, "instructionForPatient.text.value", ""),
                         beginMoment: data.beginmoment ? moment(data.beginmoment, 'DD/MM/YYYY', true).format('YYYYMMDD') : null
                     });
                     if (data.endmoment) {

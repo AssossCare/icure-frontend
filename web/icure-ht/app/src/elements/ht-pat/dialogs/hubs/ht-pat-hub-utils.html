@@ -182,9 +182,19 @@
                 //3.1. Get the transactionset (for detailled info) (optional)
                 //4. handle error messages
                 //5. update services using the putTransactionSet Response
+                // return this.checkMedicationServices(services)
+                //     .then(svcs => this.generateMedicationScheme(svcs, serviceAuthors, version, hubConfig))
+                //     .then(msMessage => console.log("ms-kmehr", msMessage))
+                //     .finally(() => {
+                //         this.dispatchEvent(new CustomEvent('update-ms', {detail: {}, bubbles: true, composed: true}))
+                //     })
+
                 return this.checkMedicationServices(services)
                     .then(svcs => this.generateMedicationScheme(svcs, serviceAuthors, version, hubConfig))
-                    .then(msMessage => this.putTransactionSet(msMessage, hubConfig, isTest))
+                    .then(msMessage => {
+                        console.log("ms-kmehr", msMessage)
+                        return this.putTransactionSet(msMessage, hubConfig, isTest)
+                    })
                     .then(putResponse => this.handleResponse(putResponse, services, hubConfig))
                     .finally(() => {
                         this.dispatchEvent(new CustomEvent('update-ms', {detail: {}, bubbles: true, composed: true}))
@@ -283,7 +293,7 @@
                         const idLocalSl = trInfo.ids.find(id => id.s === "LOCAL").sl;
                         const idLocalValue = trInfo.ids.find(id => id.s === "LOCAL").value;
                         const trTimeStamp = this.transactionDateTime(trOnHub);
-                        if(idKmehr === 1){ //set the medicationscheme ids to all services
+                        if(idKmehr === "1" || idKmehr === 1){ //set the medicationscheme ids to all services
                             services.forEach(svc => {
                                 const med = this.api.contact().preferredContent(svc, this.language);
                                 med.medicationSchemeIdOnSafe = idLocalValue;
@@ -294,8 +304,12 @@
                             const svcId = this.iCureServiceId(trOnHub);
                             const svc = svcId ? services.find(svc => svc.id === svcId) : services[idKmehr - 1];
                             const med = this.api.contact().preferredContent(svc, this.language);
-                            med.idOnSafes = idLocalValue;
-                            med.timestampOnSafe = this.transactionDateTime(trOnHub);
+                            if(med) {
+                                med.idOnSafes = idLocalValue;
+                                med.timestampOnSafe = this.transactionDateTime(trOnHub);
+                            } else {
+                                console.log("no service found for", JSON.stringify(trOnHub))
+                            }
                         }
                     });
                     console.log("updated services", services);
@@ -322,7 +336,7 @@
 
             iCureServiceId(tr){
                 const itm = tr.item.find(it => it.ids.find(id => id.sl === "iCure-Service"));
-                const svcId = itm.ids.find(id => id.sl === "iCure-Service") ? itm.ids.find(id => id.sl === "iCure-Service").value : null
+                const svcId = itm && itm.ids.find(id => id.sl === "iCure-Service") ? itm.ids.find(id => id.sl === "iCure-Service").value : null
                 return svcId;
             }
         }
