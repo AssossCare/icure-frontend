@@ -806,6 +806,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const promResolve = Promise.resolve()
                 const exportedDate = moment().format("YYYYMM") + "01"
 
+                // Hardcoded for Sam
+                return this.set("mdaRequestsAlreadyRanThisMonth", true);
+
                 return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
                     .then(pl => { return {
                         rows:_.filter(pl.rows, it => it &&
