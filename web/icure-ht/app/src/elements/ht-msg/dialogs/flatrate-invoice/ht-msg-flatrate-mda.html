@@ -2321,7 +2321,7 @@
 
             _e_getCurrentMonthHr() {
 
-                return this.localize('month_' + moment().format('M'),this.language)
+                return this.localize('month_' + moment().add(-1, 'M').format('M'),this.language)
 
             }
 
@@ -2948,7 +2948,8 @@
 
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils
-                const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                //const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                const exportedDate = _.trim(moment().add(-1, 'M').format("YYYYMM") + "01")
 
                 return promResolve
                     .then(() => {
@@ -3084,7 +3085,7 @@
 
             _e_saveMdaResponse(mdaResponse) {
 
-                const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                const exportedDate = _.trim(moment().add(-1, 'M').format("YYYYMM") + "01")
 
                 return this.api.message().newInstance(this.user)
                     .then(newMessageInstance => retry.retry(() => (this.api.message().createMessage(_.merge(newMessageInstance, {
@@ -3114,8 +3115,10 @@
                 let currentMh = null
 
                 const promResolve = Promise.resolve()
-                const exportedDate = _.trim(moment().format("YYYYMM") + "01")
-                const exportedDateEndOfMonth = _.trim(moment().endOf("month").format("YYYYMMDD"))
+                //const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                const exportedDate = _.trim(moment().add(-1, 'M').format("YYYYMM") + "01")
+                //const exportedDateEndOfMonth = _.trim(moment().endOf("month").format("YYYYMMDD"))
+                const exportedDateEndOfMonth = _.trim(moment().add(-1, 'M').endOf("month").format("YYYYMMDD"))
 
                 return promResolve
 
@@ -3511,7 +3514,8 @@
                 let prom = Promise.resolve([])
                 let insurancesData = []
                 const totalPatients = _.size(mdaFormattedResponse)
-                const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                //const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                const exportedDate = _.trim(moment().add(-1, 'M').format("YYYYMM") + "01")
                 const insuranceCodes = _.chain(mdaFormattedResponse).map(it => _.map(_.get(it,"insurabilities",[]), ins => _.trim(_.get(ins,"code",null)))).flatten().compact().uniq().value()
 
                 return this.api.hcparty().getCurrentHealthcareParty()
@@ -3644,7 +3648,7 @@
 
                 let eInvoicingStep = "placeMdaRequests"
                 const promResolve = Promise.resolve()
-                const exportedDate = _.trim(moment().format("YYYYMM") + "01")
+                const exportedDate = _.trim(moment().add(-1, 'M').format("YYYYMM") + "01")
 
                 return promResolve
                     .then(() => {
