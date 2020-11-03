@@ -658,6 +658,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <p class="center">${this.localize('no_man_ad','No manuscript additions will be taken into account',this.language)}.</p>
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
+                  <p class="center">${formatDate(this._today())}</p>
+                  <hr>
+                  <small class="center">${this.localize('deliv_date','Délivrable à partir de la date précisée ou à partir du',this.language)}&nbsp;:</small>
                   <p class="center">${formatDate(c[0].startValidDate)}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${formatDate(c[0].endValidDate)}</small>
