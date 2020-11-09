@@ -426,7 +426,7 @@
                 this.api.setPreventLogging()
 
                 this.api.invoice().listToInsurancesUnsent(this.user.id).then(invoicesUnsent => {
-                    const efactUnsent = invoicesUnsent.filter(iu => iu.sentMediumType === "efact")
+                    const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && _.get(iu, 'careProviderType', null) === "persphysician")
 
                     efactUnsent.forEach(eu =>
                         prom = prom.then(listOfEfact =>
