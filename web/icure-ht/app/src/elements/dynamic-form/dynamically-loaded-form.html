@@ -581,7 +581,7 @@
                                     ;['StringEditor', 'PopupMenuEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'string') && self.setStringValue(comp.name, compValue, false);
                                     ;['NumberEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'number') && self.setNumberValue(comp.name, compValue === 0 ? 0 : (Number(compValue.toFixed(3)) || null), false);
                                     ;['MeasureEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'number') && self.setMeasureValue(comp.name, {value: Number(compValue.toFixed(3))} || null, false);
-                                    ;['MeasureEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'object') && self.setMeasureValue(comp.name, Number(compValue.toFixed(3)) || null, false);
+                                    ;['MeasureEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'object') && self.setMeasureValue(comp.name, compValue || null, false);
                                     ;['DateTimeEditor'].includes(comp.li.editor.key) && (!compValue || typeof compValue === 'number') && self.setDateValue(comp.name, status.value || null, false);
                                     ;['DateTimeEditor'].includes(comp.li.editor.key) && (typeof compValue === 'string') && self.setDateValue(comp.name,isNaN(Date.parse(compValue)) ? compValue : Date.parse(compValue) || null, false);
                                     ;['CheckBoxEditor'].includes(comp.li.editor.key) && (typeof compValue === 'boolean') && self.setBooleanValue(comp.name, compValue || false,false);
