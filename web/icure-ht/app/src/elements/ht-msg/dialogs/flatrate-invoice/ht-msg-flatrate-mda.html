@@ -3068,6 +3068,7 @@
 
                 const promResolve = Promise.resolve()
 
+                // Comment this for PROD
                 // return promResolve.then(() => console.log("[ACTIVATE FOR PROD] _e_confirmMdaMessagesByReferences", messageReferences))
 
                 return this.api.fhc().MemberData().confirmMemberDataMessagesAsyncUsingPOST(
@@ -3155,7 +3156,7 @@
                             return _.some(_.get(responseMessage,"memberDataResponse",[]), it => requestTopazPatientIds.indexOf(_.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))) > -1) ? mdaResponseReferenceId : false
                         })))
 
-                        return !_.size(mdaResponse) ? [null, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
+                        return !_.size(mdaResponse) ? [{}, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
 
                     })
 
@@ -3545,33 +3546,72 @@
                                     const mostRecentMhcThatIsNotMine = _.find(_.orderBy(mdaMhcs, ["startOfCoverage"], ["desc"]), it => _.trim(_.get(it,"mmNihii")).substr(0,8) !== currentMhNihii.substr(0,8) && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate ))
                                     const otherMedicalHouseContractBelongsTo = _.find(_.get(this,"medicalHouseList.medicalHouseList",[]), mhIt => _.trim(_.get(mhIt,"nihii")).substr(0,8) === _.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii")).substr(0,8))
 
+                                    // 20201109 - Get the most recent (1!) local MHC contract of mine that is closed
+                                    // 20201109 - Meant to fix bug OA's once had (they were closing all valid / active MHC of ours...)
+                                    // 20201109 - Idea: we will re-open the most recent closed MHC of ours
+                                    const mostRecentLocalAndClosedMhcBelongingToMe = _
+                                        .chain(topazPatient)
+                                        .get("medicalHouseContracts")
+                                        .filter(mhc =>
+                                            _.trim(_.get(mhc,"mmNihii")).substr(0,8) === currentMhNihii.substr(0,8)
+                                            && _.trim(_.get(mhc, "contractId"))
+                                            && (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false))
+                                            && (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) === "0" || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate )
+                                            && _.trim(_.get(mhc,"endOfCoverage")) && _.trim(_.get(mhc,"endOfCoverage")) !== "0" && _.trim(_.get(mhc,"endOfCoverage")) <= exportedDate
+                                        )
+                                        .orderBy(["endOfCoverage"],["desc"])
+                                        .head()
+                                        .value()
+
+                                    // 20201109 - Does PAT have at least one valid local MHC?
+                                    // 20201109 - Meant to fix bug OA's once had (they were closing all valid / active MHC of ours...).
+                                    // 20201109 - Idea: we will re-open the most recent closed MHC of ours
+                                    const hasAtLeastOneValidLocalMhc = !!_
+                                        .chain(topazPatient)
+                                        .get("medicalHouseContracts")
+                                        .filter(mhc =>
+                                            _.trim(_.get(mhc,"mmNihii")).substr(0,8) === currentMhNihii.substr(0,8)
+                                            && _.trim(_.get(mhc, "contractId"))
+                                            && (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false))
+                                            && (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) === "0" || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate )
+                                            && (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate )
+                                        )
+                                        .head()
+                                        .size()
+                                        .value()
+
 
 
                                     // Update Medical House contracts
                                     _.assign(topazPatient, {medicalHouseContracts:
 
                                         // There isn't any contracts
-                                            !_.size(mdaMhcs) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoMhc", "patientHasNoMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc :  _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+                                        !_.size(mdaMhcs) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoMhc", "patientHasNoMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc :  _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
 
-                                                // None of the contract belongs to me
-                                                !_.size(_.filter(mdaMhcs, it => _.trim(_.get(it,"mmNihii")).substr(0,8) === currentMhNihii.substr(0,8))) ?
+                                        // None of the contract belongs to me
+                                        !_.size(_.filter(mdaMhcs, it => _.trim(_.get(it,"mmNihii")).substr(0,8) === currentMhNihii.substr(0,8))) ?
 
-                                                    ((_.assign(mdaPatient, {isError:true, errorsData: [{message:
-                                                                this.localize("patientIsNowInMhc", "patientIsNowInMhc", this.language) + ": " +
-                                                                (!_.size(otherMedicalHouseContractBelongsTo) ?
-                                                                        this.api.formatInamiNumber(_.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii"))) + " ("+this.localize("nihiiVerbose",this.language)+")" :
-                                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "name")) + " ("+
-                                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.street")) + " - " +
-                                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.zip")) + " " +
-                                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.city")) + ") - Tel: " +
-                                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.telecom.phone"))
-                                                                )}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => /* ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : */ _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+                                            ((_.assign(mdaPatient, {isError:true, errorsData: [{message:
+                                                this.localize("patientIsNowInMhc", "patientIsNowInMhc", this.language) + ": " +
+                                                (!_.size(otherMedicalHouseContractBelongsTo) ?
+                                                        this.api.formatInamiNumber(_.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii"))) + " ("+this.localize("nihiiVerbose",this.language)+")" :
+                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "name")) + " ("+
+                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.street")) + " - " +
+                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.zip")) + " " +
+                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.city")) + ") - Tel: " +
+                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.telecom.phone"))
+                                                )}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => /* ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : */ _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
 
-                                                    // None of my contracts is valid anymore
-                                                    !_.some(mdaMhcs, it => _.trim(_.get(it,"startOfCoverage")) <= exportedDate && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate)) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoOnGoingMhc", "patientHasNoOnGoingMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+                                        // None of my contracts is valid anymore (% MDA response)
+                                        !_.some(mdaMhcs, it => _.trim(_.get(it,"startOfCoverage")) <= exportedDate && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate)) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoOnGoingMhc", "patientHasNoOnGoingMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
 
-                                                        // Any other scenario: patient's MHC are valid / don't update anything
-                                                        _.get(topazPatient,"medicalHouseContracts",[])
+                                        // 20201109 - Meant to fix bug OA's once had (they were closing all valid / active MHC of ours...).
+                                        // 20201109 - Idea: we will re-open the most recent closed MHC of ours
+                                        // 20201109 - Remember: at this stage: we're "sure" (based on MDA responses) PAT has at least 1! valid MHC (according to MDA) AND LOCAL database says otherwise AND local database has at least 18 closed MHC that belongs to us
+                                        !hasAtLeastOneValidLocalMhc && mostRecentLocalAndClosedMhcBelongingToMe ? (_.assign(mostRecentLocalAndClosedMhcBelongingToMe, { endOfContract: null, endOfCoverage: null, status: (1 << 1) /* STATUS_ONGOING_MCN */ }) || true) && _.get(topazPatient,"medicalHouseContracts",[]) :
+
+                                        // Any other scenario: patient's MHC are valid / don't update anything
+                                        _.get(topazPatient,"medicalHouseContracts",[])
 
                                     })
 
@@ -3790,8 +3830,6 @@
         }
 
         customElements.define(HtMsgFlatrateMda.is, HtMsgFlatrateMda);
-
-        // Todo for prod: confirm TACK confirmMemberDataAcksAsyncUsingPOST(xFHCTokenId: string, xFHCKeystoreId: string, xFHCPassPhrase: string, hcpNihii: string, hcpName: string, mdaAcksHashes: Array<string>): Promise<boolean | any>;
 
     </script>
 
