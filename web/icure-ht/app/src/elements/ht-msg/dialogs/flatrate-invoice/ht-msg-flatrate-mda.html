@@ -3113,6 +3113,7 @@
             _e_checkForMdaResponses() {
 
                 let currentMh = null
+                let mdaMessageIdsToConfirm = []
 
                 const promResolve = Promise.resolve()
                 const exportedDate = _.trim(moment().format("YYYYMM") + "01")
@@ -3151,12 +3152,15 @@
                         const requestTopazPatientIds = _.uniq(_.compact(_.map(_.get(this,"mdaRequestsData.message.attachment.request",[]), it => _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_"))) )))
 
                         // Is at least one patient ours: drop leading underscore, if any (inResponseTo is "_" + our reconcileKey) and take first part (topazPatientId)
-                        const mdaMessageIdsToConfirm = _.uniq(_.compact(_.map(_.get(mdaResponse,"memberDataMessageList",[]), responseMessage => {
+                        // Just store value to confirm at the very end of the process
+                        mdaMessageIdsToConfirm = _.uniq(_.compact(_.map(_.get(mdaResponse,"memberDataMessageList",[]), responseMessage => {
                             const mdaResponseReferenceId = _.trim(_.get(responseMessage,"reference"))
                             return _.some(_.get(responseMessage,"memberDataResponse",[]), it => requestTopazPatientIds.indexOf(_.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))) > -1) ? mdaResponseReferenceId : false
                         })))
 
-                        return !_.size(mdaResponse) ? [{}, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
+                        // Do not confirm directly anymore, only confirm at the very end of the process
+                        // return !_.size(mdaResponse) ? [{}, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
+                        return !_.size(mdaResponse) ? [{}, responseMessage] : [mdaResponse, responseMessage]
 
                     })
 
@@ -3367,6 +3371,7 @@
 
                     )
                     .then(requestMessages=>this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_14_done",this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+                    .then(() => this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm))
                     .catch(e=>console.log("[ERROR] _e_checkForMdaResponses", e))
                     .finally(() => (this.set("_isLoading",false)||true) && this._e_loadDataAndGetStep())
 
