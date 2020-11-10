@@ -1868,6 +1868,20 @@
 
 
 
+        <!-- Medical Houses - Flatrate E-Invoicing - Error placing MDA request -->
+        <paper-dialog class="modalDialog" id="errorSendingMdaRequests" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title"><iron-icon icon="icons:verified-user"></iron-icon> Member Data</h2>
+            <div class="content textaligncenter pt20 pb70 pl20 pr20">
+                <p class="">[[localize('mh_eInvoicing.mda.errorSendingMdaRequests.text1',"Attention, la requête de vérification n'a pas aboutie en raison d'un problème technique.",language)]]</p>
+                <p class="fw700">[[localize('mh_eInvoicing.mda.errorSendingMdaRequests.text2',"Veuillez s'il vous plait essayer à nouveau dans 15 minutes.",language)]]</p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--other" dialog-dismiss><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+
+
         <!-- Medical Houses - Flatrate MDA calls didn't take place yet (this month) -->
         <paper-dialog class="modalDialog" id="routeGotRewritten" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title"><iron-icon icon="vaadin:euro"></iron-icon> [[localize('fac_fla_rat','Facturation au forfait',language)]]</h2>
@@ -2909,6 +2923,18 @@
 
             }
 
+            _e_deleteRequestDocumentAndMessage(createdMessage) {
+
+                const promResolve = Promise.resolve(null);
+
+                return promResolve
+                    .then(() => this.api.document().deleteDocument(_.get(createdMessage,"documentId")).catch(()=>null))
+                    .then(() => this.api.message().deleteMessages(_.get(createdMessage,"id")).catch(()=>null))
+                    .then(() => null)
+                    .catch(() => null)
+
+            }
+
             _e_getAsyncMemberDataRequest(requestedData) {
 
                 const promResolve = Promise.resolve();
@@ -2940,7 +2966,7 @@
                         message: mdaResponse,
                         mdaInputReference: _.trim(_.get(mdaResponse, "tack.reference")),
                     }))
-                    .catch(e=>null)
+                    .catch(e=> (console.log("ERROR with _e_getAsyncMemberDataRequest",e)||true) && null)
 
             }
 
@@ -3031,13 +3057,13 @@
                         return this._e_getAsyncMemberDataRequest(pats)
                             .then(mdaResponse => !_.trim(_.get(mdaResponse,"mdaInputReference")) || !_.get(mdaResponse,"message.result") ? [null,createdMessage] : retry.retry(() => (this.api.message().modifyMessage(_.merge(createdMessage, {status:successStatus,metas:{mdaInputReference:_.get(mdaResponse,"mdaInputReference")}})).then(modifiedMessage => [_.get(mdaResponse,"message"),modifiedMessage])), 4, 1000, 1.5))
                             .then(([mdaResponse,modifiedMessage]) => this._sleep(200).then(()=>[mdaResponse,modifiedMessage])) // Cool down
-                            .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? modifiedMessage : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(createdMessage,"documentId")),_.get(createdMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(_.get(createdMessage,"attachmentContent", {}), {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
-                            .catch(e=> (console.log("ERROR with _e_placeMdaRequests",e)||true) && createdMessage)
+                            .then(([mdaResponse,modifiedMessage]) => !mdaResponse || !modifiedMessage ? this._e_deleteRequestDocumentAndMessage(createdMessage) : retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(createdMessage,"documentId")),_.get(createdMessage,"edKeys",[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(_.merge(_.get(createdMessage,"attachmentContent", {}), {response:mdaResponse}))))).then(()=>modifiedMessage)), 4, 1000, 1.5))
+                            .catch(e=> (console.log("ERROR with _e_placeMdaRequests",e)||true) && null)
 
                     })
 
-                    // Confirm & goto mda responses
-                    .then(() => this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
+                    // Confirm & goto mda responses when successfull or show error message (mda request couldn't be placed)
+                    .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? this.shadowRoot.getElementById("errorSendingMdaRequests") && this.shadowRoot.getElementById("errorSendingMdaRequests").open() : this.shadowRoot.getElementById("mdaRequestsSent") && this.shadowRoot.getElementById("mdaRequestsSent").open())
                     .finally(() => this.set("_isLoading",false))
 
             }

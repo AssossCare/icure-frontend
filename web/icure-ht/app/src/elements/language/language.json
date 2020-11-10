@@ -5900,6 +5900,8 @@
     "mh_eInvoicing.mda.text2": "Vous pourrez en consulter les résultats d'ici une heure.",
     "mh_eInvoicing.mdaMustRun.text1": "La vérification des données du membre (MDA) n'as pas encore été invoquée ce mois-ci.",
     "mh_eInvoicing.mdaMustRun.text2": "Veuillez s'il vous plait suivre les instructions à l'écran afin d'y procéder.",
+	"mh_eInvoicing.mda.errorSendingMdaRequests.text1": "Attention, la requête de vérification n'a pas aboutie en raison d'un problème technique.",
+	"mh_eInvoicing.mda.errorSendingMdaRequests.text2": "Veuillez s'il vous plait réessayer dans 15 minutes.",
     "askedOn": "Demandé le",
     "lastCheckedOn": "Dernière vérification le",
     "answeredOn": "Réponse obtenue le",
