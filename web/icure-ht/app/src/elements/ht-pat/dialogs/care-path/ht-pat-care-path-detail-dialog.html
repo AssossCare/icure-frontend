@@ -1288,7 +1288,7 @@
                      let prom = Promise.resolve([]);
                      const encryptedDocumentIds = _.uniq(_.compact(_.flatten(_.map(_.get(this.selectedCarePath, "encryptedDocumentsId", [])))))
                      _.map(encryptedDocumentIds, encryptedDocId => {
-                         prom = prom.then(promisesCarrier => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", _.get(this,"user",{}), _.get(this,"patient",{}), this.api.crypto().utils.text2ua(Base64.decode(_.trim(encryptedDocId))))
+                         prom = prom.then(promisesCarrier => this.api.encryptDecrypt("decrypt", _.get(this,"user",{}), _.get(this,"patient",{}), this.api.crypto().utils.text2ua(Base64.decode(_.trim(encryptedDocId))))
                              .then(uaDecryptedContent => _.concat(promisesCarrier, {encryptedDocId: encryptedDocId, decryptedDocId: this.api.crypto().utils.ua2text(uaDecryptedContent)}))
                              .catch(()=>_.concat(promisesCarrier, {encryptedDocId: encryptedDocId, decryptedDocId: encryptedDocId}))
                          )
@@ -1818,7 +1818,7 @@
 
                             return !_.size(_.get(poaToAdd,"documentIds",[])) ? ([he, poaToAdd]) :
                                 Promise.all(_.map(poaToAdd.documentIds, docId =>
-                                    this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject( "encrypt", _.get(this,"user",{}), _.get(this,"patient",{}), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(docId)))
+                                    this.api.encryptDecrypt( "encrypt", _.get(this,"user",{}), _.get(this,"patient",{}), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(docId)))
                                         .then(encryptedContent => Base64.encode(String.fromCharCode.apply(null, new Uint8Array(encryptedContent))))
                                         .catch(()=>docId)))
                                     .then(encryptedDocumentIds => ([he, _.merge(poaToAdd, {documentIds: _.uniq(_.compact(encryptedDocumentIds||[]))})]))
