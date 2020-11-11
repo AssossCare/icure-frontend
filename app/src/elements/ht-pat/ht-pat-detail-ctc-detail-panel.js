@@ -1790,7 +1790,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
 
     // _decryptComment(subContact, encryptedComment) {
     // 	const uaEncryptedComment = this.api.crypto().utils.text2ua(Base64.decode(encryptedComment));
-    // 	this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, subContact, uaEncryptedComment)
+    // 	this.api.encryptDecrypt("decrypt", this.user, subContact, uaEncryptedComment)
     // 		.then(uaDecryptedComment => {
     // 			const decryptedComment = this.api.crypto().utils.ua2text(uaDecryptedComment);
     // 			return decryptedComment;
@@ -1816,12 +1816,12 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             this.api.document().getDocument(docId)
                 .then(doc => {
                     this._doc = doc
-                    return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, this._doc, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(decrypted)))
+                    return this.api.encryptDecrypt("encrypt", this.user, this._doc, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(decrypted)))
                 })
                 .then(uaEncryptedComment => {
                     const encoded = Base64.encode(this.api.crypto().utils.ua2text(uaEncryptedComment))
                     const decoded = Base64.decode(encoded)
-                    return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, this._doc, this.api.crypto().utils.text2ua(decoded))
+                    return this.api.encryptDecrypt("decrypt", this.user, this._doc, this.api.crypto().utils.text2ua(decoded))
                 })
                 .then(uaDecryptedComment => {
                     const decryptedComment = this.api.crypto().utils.ua2text(uaDecryptedComment)
@@ -1854,7 +1854,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 return !docId ? Promise.resolve() : this.api.document().getDocument(docId)
                     .then(doc => {
                         const ua = this.api.crypto().utils.text2ua(Base64.decode(service.comment))
-                        return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, ua)
+                        return this.api.encryptDecrypt("decrypt", this.user, doc, ua)
                     })
                     .then(ua => service.clearComment = this.api.crypto().utils.ua2text(ua))
                     .catch(error => Promise.resolve())
@@ -1875,7 +1875,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
     // 			const docId = this._documentId(service);
     // 			this.api.document().getDocument(docId)
     // 					.then(doc => {
-    // 						return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, uaEncryptedComment);
+    // 						return this.api.encryptDecrypt("decrypt", this.user, doc, uaEncryptedComment);
     // 					})
     // 					.then(uaDecryptedComment => {
     // 						const decryptedComment = this.api.crypto().utils.ua2text(uaDecryptedComment);
@@ -2739,7 +2739,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
             )
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
             .then(resourcesObject => this.api.pdfReport(this._getProsePdfHeader() + this.api.rewriteTableColumnsWidth(proseHtmlContent) + this._getPdfFooter()).then(pdfFileContent => _.assign({pdfFileContent: pdfFileContent}, resourcesObject)))
-            .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
+            .then(resourcesObject => this.api.encryptDecrypt("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
             .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => this._saveDocumentAsService({
                 documentId: _.trim(_.get(resourcesObject, "createDocumentResponse.id", "")),
@@ -3093,7 +3093,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 ).then(newDocumentInstance => _.assign({newDocumentInstance: newDocumentInstance}, resourcesObject))
             )
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
-            .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
+            .then(resourcesObject => this.api.encryptDecrypt("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
             .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => {
                 this._saveDocumentAsService({
@@ -3376,7 +3376,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 ).then(newDocumentInstance => _.assign({newDocumentInstance: newDocumentInstance}, pdfPrintingData))
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.encryptDecrypt("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({
@@ -3570,7 +3570,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 ).then(newDocumentInstance => _.assign({newDocumentInstance: newDocumentInstance}, pdfPrintingData))
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.encryptDecrypt("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({
@@ -4188,7 +4188,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 ).then(newDocumentInstance => _.assign({newDocumentInstance: newDocumentInstance}, resourcesObject))
             )
             .then(resourcesObject => this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, resourcesObject)))
-            .then(resourcesObject => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
+            .then(resourcesObject => this.api.encryptDecrypt("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, resourcesObject)))
             .then(resourcesObject => this.api.document().setDocumentAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, resourcesObject)))
             .then(resourcesObject => {
                 this._saveDocumentAsService({
@@ -4501,7 +4501,7 @@ class HtPatDetailCtcDetailPanel extends TkLocalizerMixin(PolymerElement) {
                 ).then(newDocumentInstance => _.assign({newDocumentInstance: newDocumentInstance}, pdfPrintingData))
             )
             .then(pdfPrintingData => this.api.document().createDocument(pdfPrintingData.newDocumentInstance).then(createDocumentResponse => _.assign({createDocumentResponse: createDocumentResponse}, pdfPrintingData)))
-            .then(pdfPrintingData => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
+            .then(pdfPrintingData => this.api.encryptDecrypt("encrypt", this.user, pdfPrintingData.createDocumentResponse, pdfPrintingData.pdfFileContent).then(encryptedFileContent => _.assign({encryptedFileContent: encryptedFileContent}, pdfPrintingData)))
             .then(pdfPrintingData => this.api.document().setDocumentAttachment(pdfPrintingData.createDocumentResponse.id, null, pdfPrintingData.encryptedFileContent).then(setAttachmentResponse => _.assign({setAttachmentResponse: setAttachmentResponse}, pdfPrintingData)))
             .then(pdfPrintingData => {
                 this._saveDocumentAsService({

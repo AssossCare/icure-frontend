@@ -1799,10 +1799,10 @@ class DynamicDoc extends TkLocalizerMixin(PolymerElement) {
               return Promise.resolve("");
           } else {
               const ua = this.api.crypto().utils.text2ua(Base64.decode(encryptedComment));
-              return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, this.contact, ua)
+              return this.api.encryptDecrypt("decrypt", this.user, this.contact, ua)
                   .then(ua => this.api.crypto().utils.ua2text(ua))
                   .catch(err => {
-                      return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, this.document, ua)
+                      return this.api.encryptDecrypt("decrypt", this.user, this.document, ua)
                       .then(ua => this.api.crypto().utils.ua2text(ua))
                   })
           }

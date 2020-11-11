@@ -803,7 +803,7 @@ class IccApi extends PolymerElement {
       catch(e) { window.open(_.trim(downloadUrl)) }
   }
 
-  encryptDecryptFileContentByUserHcpIdAndDocumentObject( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
+  encryptDecrypt( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
       const edf = this.crypto().AES[_.trim(encryptOrDecryptMethod).toLocaleLowerCase()].bind(this.crypto().AES)
       if( !_.trim(encryptOrDecryptMethod) || !_.trim(user.healthcarePartyId) || !documentObject || !rawFileContent || typeof edf !== "function" ) return Promise.resolve(rawFileContent);
 

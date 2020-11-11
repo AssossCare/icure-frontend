@@ -1648,7 +1648,7 @@ class HtMsgNew extends TkLocalizerMixin(PolymerElement) {
                 ]
             }).then(documentInstance => ([createdMessage, documentInstance])))
             .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument => ([createdMessage, createdDocument])))
-            .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this, "user", {}), createdDocument, this.api.crypto().utils.text2ua(_.get(this, "_data.eMediattest.khmerContent", ""))).then(encryptedFileContent => [createdMessage, createdDocument, encryptedFileContent]))
+            .then(([createdMessage, createdDocument]) => this.api.encryptDecrypt("encrypt", _.get(this, "user", {}), createdDocument, this.api.crypto().utils.text2ua(_.get(this, "_data.eMediattest.khmerContent", ""))).then(encryptedFileContent => [createdMessage, createdDocument, encryptedFileContent]))
             .then(([createdMessage, createdDocument, encryptedFileContent]) => this.api.document().setDocumentAttachment(_.get(createdDocument, "id"), null, encryptedFileContent).then(() => ([createdMessage, createdDocument])))
             .then(([createdMessage, createdDocument]) => this._saveDocumentAsService({
                 documentId: _.trim(_.get(createdDocument, "id", "")),

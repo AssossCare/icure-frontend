@@ -1806,7 +1806,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                 subject: "[HUB] "+ documentTitle,
                 status : 0 | 1<<25 | (_.trim(_.get(this,"patient.id")) ? 1<<26 : 0)
             })))
-            .then(createdMessage => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.trim(_.get(this,"patient.id")), isAssigned: true})))).then(encryptedContent => [createdMessage,encryptedContent]).catch(e=>[createdMessage,null]))
+            .then(createdMessage => this.api.encryptDecrypt("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : _.trim(_.get(this,"patient.id")), isAssigned: true})))).then(encryptedContent => [createdMessage,encryptedContent]).catch(e=>[createdMessage,null]))
             .then(([createdMessage, cryptedData]) => this.api.message().modifyMessage(_.merge(createdMessage, {metas:{cryptedInfo:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedData))||null)}})))
             .then(modifiedMessage => this.api.document().newInstance(this.user, modifiedMessage, {
                 documentType: documentType,
@@ -1814,7 +1814,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                 name: documentFileName
             }))
             .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-            .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(_.get(this,"selectedDocumentToBeImported.document.value")))
+            .then(createdDocument => this.api.encryptDecrypt('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(_.get(this,"selectedDocumentToBeImported.document.value")))
                 .then(encryptedFileContent => [createdDocument,encryptedFileContent])
                 .catch(e => [createdDocument,this.api.crypto().utils.base64toArrayBuffer(_.get(this,"selectedDocumentToBeImported.document.value"))])
             )
