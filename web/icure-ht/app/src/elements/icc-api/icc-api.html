@@ -1276,6 +1276,14 @@
             }).join('')
         }
 
+        fixSsinLength(ssin) {
+
+            ssin = _.trim(ssin).replace(new RegExp("[^(0-9)]", "g"), "")
+
+            return !ssin.length || ssin.length === 11 ? ssin : ssin.padStart(11, "0")
+
+        }
+
     }
 
     customElements.define(IccApi.is, IccApi)

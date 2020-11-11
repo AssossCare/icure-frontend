@@ -1795,7 +1795,7 @@
                                     .uniqBy( 'ssin' )
                                     .value()
                                     .map((i) => {
-                                        i.ssin = _.trim(_.get(i,"ssin","")).replace(/[^\d]/gmi,"")
+                                        i.ssin = this.api.fixSsinLength(_.trim(_.get(i,"ssin","")).replace(/[^\d]/gmi,""))
                                         i.lastName = (_.get(i,"lastName","")).toUpperCase()
                                         i.firstName = (_.get(i,"firstName","")).toUpperCase()
                                         i.dateOfBirth = (!!_.trim(_.get(i,"dateOfBirth",""))?moment(_.trim(_.get(i,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")

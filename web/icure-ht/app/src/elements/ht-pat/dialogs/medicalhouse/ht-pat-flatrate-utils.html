@@ -271,7 +271,7 @@
                 inf.invoicedMonth = res.invoicedMonth;
                 inf.LName = res.pat.lastName;
                 inf.FName = res.pat.firstName;
-                inf.ssin = res.pat.ssin;
+                inf.ssin = this.api.fixSsinLength(res.pat.ssin);
                 inf.MUT = "---";
                 inf.CT12 = res.ct12Check.valid ? res.ct12Check.ct12 : "---/---";
                 if(this.getLastMHContract(res.pat)) {
@@ -480,7 +480,7 @@
             }
 
             checkNissValid(pat) {
-                return (pat.ssin && pat.ssin !== "") ? (pat.ssin.length === 11 ? {valid: true, error: ''} : {
+                return (pat.ssin && pat.ssin !== "") ? (this.api.fixSsinLength(pat.ssin).length === 11 ? {valid: true, error: ''} : {
                     valid: false,
                     error: 'niss-invalid'
                 }) : {valid: false, error: 'niss-absent'}
@@ -488,7 +488,7 @@
 
             checkGenderNiss(pat, genderCheck, nissCheck) {
                 if (genderCheck.valid && nissCheck.valid) {
-                    const genderDigit = pat.ssin.substr(8, 1)
+                    const genderDigit = this.api.fixSsinLength(pat.ssin).substr(8, 1)
                     return (genderDigit % 2 === 0 && pat.gender === 'female') || (genderDigit % 2 !== 0 && pat.gender === 'male') ? {
                         valid: true,
                         error: ''
@@ -508,7 +508,7 @@
                 this.set("insList", null)
                 let insList = []
                 Promise.all(aMonths.map(m => this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp => this.api.fhc().Genins().getGeneralInsurabilityUsingGET(
-                    this.cleanNiss(this.patient.ssin),
+                    this.cleanNiss(this.api.fixSsinLength(this.patient.ssin)),
                     this.api.tokenId ? this.api.tokenId : this.api.tokenIdMH, this.api.tokenId ? this.api.keystoreId : this.api.keystoreIdMH, this.api.tokenId ? this.api.credentials.ehpassword : this.api.credentials.ehpasswordMH,
                     this.api.tokenId ? hcp.nihii : this.api.nihiiMH, this.api.isMH ? this.api.MHContactPersonSsin : hcp.ssin, this.api.isMH ? this.api.MHContactPersonName : hcp.lastName + ' ' + hcp.firstName, this.api.tokenId ? "doctor" : "medicalhouse", m.format('x'), null
                     ))
@@ -907,7 +907,7 @@
                                 .filter(it => {
 
                                     const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
-                                    const ssinIsValid = this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""))
+                                    const ssinIsValid = this.api.patient().isValidSsin(this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")))
 
                                     return it &&
 
@@ -926,7 +926,7 @@
                                 })
                                 .map(it => {
 
-                                    const ssinIsValid = this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""))
+                                    const ssinIsValid = this.api.patient().isValidSsin(this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")))
 
                                     const latestInsurability = _
                                         .chain(_.get(it, "insurabilities", []))
@@ -953,7 +953,7 @@
 
                                     return {
                                         patientId: _.trim(_.get(it, "id")),
-                                        patientSsin: ssinIsValid && _.trim(_.get(it, "ssin")).replace(/[^\d]/gmi, ""),
+                                        patientSsin: ssinIsValid && this.api.fixSsinLength(_.trim(_.get(it, "ssin")).replace(/[^\d]/gmi, "")),
                                         nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
                                         insuranceId: _.trim(_.get(finalInsurability, "insuranceId")) ? _.trim(_.get(finalInsurability, "insuranceId")) : _.trim(_.get(latestInsurability, "insuranceId")),
                                         patientIdentificationNumber: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
@@ -1064,7 +1064,7 @@
                                             _.get(it, "active", true) &&
 
                                             // 2. SSIN must be valid (because of mda call)
-                                            this.api.patient().isValidSsin(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")) &&
+                                            this.api.patient().isValidSsin(this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""))) &&
 
                                             // 3. Has to be alive (not deceased before exportedDate)
                                             (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
@@ -1108,7 +1108,7 @@
                                         return _.merge(it, {
                                             lastName: _.trim(_.get(it,"lastName")).toUpperCase(),
                                             firstName: _.trim(_.get(it,"firstName")).toUpperCase(),
-                                            ssin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
+                                            ssin: this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")),
                                             finalInsurability: _
                                                 .chain(_.get(it, "insurabilities", []))
                                                 .filter(ins =>

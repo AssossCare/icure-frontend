@@ -2318,7 +2318,7 @@
 
             _formatSsin(input) {
 
-                return this.api.formatSsinNumber(_.trim(input))
+                return this.api.formatSsinNumber(this.api.fixSsinLength(_.trim(input)))
 
             }
 
@@ -2731,7 +2731,7 @@
                             let tempPat = _.cloneDeep(invAndPat[1]);
                             const momentInvoiceDate = moment(_.trim(_.get(invAndPat,"[0].invoiceDate",0)),"YYYYMMDD")
                             tempPat.invoiceToBeResent = _.get(_.cloneDeep(invAndPat),"[0]",{});
-                            tempPat.ssin = _.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,"");
+                            tempPat.ssin = this.api.fixSsinLength(_.trim(_.get(tempPat,"ssin","")).replace(/[^\d]/gmi,""));
                             tempPat.lastName = (_.get(tempPat,"lastName","")).toUpperCase()
                             tempPat.firstName = (_.get(tempPat,"firstName","")).toUpperCase()
                             tempPat.dateOfBirth = (!!_.trim(_.get(tempPat,"dateOfBirth",""))?moment(_.trim(_.get(tempPat,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
@@ -2775,7 +2775,7 @@
                                     _.size(_.get(it, "medicalHouseContracts", []))
                                 )
                                 .map(it => {
-                                    it.ssin = _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,"")
+                                    it.ssin = this.api.fixSsinLength(_.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,""))
                                     it.lastName = (_.get(it,"lastName",""))
                                     it.firstName = (_.get(it,"firstName",""))
                                     it.dateOfBirth = (!!_.trim(_.get(it,"dateOfBirth",""))?moment(_.trim(_.get(it,"dateOfBirth",0)), "YYYYMMDD").format('DD/MM/YYYY'):"")
@@ -2886,7 +2886,7 @@
                             .chain(_.concat((myPatients||[]),(patsToResend||[])))
                             .map(it => { return {
                                 patientId: _.trim(_.get(it,"id")),
-                                patientSsin: _.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,""),
+                                patientSsin: this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")),
                                 nameHr: _.trim(_.get(it,"lastName","")) + " " + _.trim(_.get(it,"firstName","")),
                                 insuranceId: _.trim(_.get(it, "finalInsurability.insuranceId")),
                                 patientIdentificationNumber: _.trim(_.get(it, "finalInsurability.identificationNumber")),
@@ -2954,7 +2954,7 @@
                         members:_.compact(_.map(requestedData, it => _.merge({},
                             {
                                 hospitalized:false,
-                                ssin: _.get(it,"patientSsin", null) ? _.trim(_.get(it,"patientSsin", null)) : null,
+                                ssin: _.get(it,"patientSsin", null) ? this.api.fixSsinLength(_.trim(_.get(it,"patientSsin", null))) : null,
                                 io: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"parentInsuranceCode")),
                                 ioMembership: _.trim(_.get(it,"patientSsin", null)) ? null : _.trim(_.get(it,"patientIdentificationNumber", null)),
                                 uniqId: _.trim(_.get(it, 'reconcileKey'))
@@ -3265,7 +3265,7 @@
                                     patient: _.merge({},{
                                         firstName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:firstName"}).get("attributeValues").join(" ").trim().value(),
                                         lastName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:name"}).get("attributeValues").join(" ").trim().value(),
-                                        ssin: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:fgov:person:ssin"}).get("attributeValues[0]").trim().value().replace(/[^\d]/gmi,""),
+                                        ssin: this.api.fixSsinLength(_.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:fgov:person:ssin"}).get("attributeValues[0]").trim().value().replace(/[^\d]/gmi,"")),
                                         gender: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:gender"}).get("attributeValues[0]").trim().value(),
                                         dateOfBirth: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:birthDate"}).get("attributeValues[0]").trim().value(),
                                         dateOfDeath: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:deceasedDate"}).get("attributeValues[0]").trim().value(),
@@ -3369,7 +3369,7 @@
                                             mdaResponsePatientHasValidInsAndMhc: !!_.size(responseMatchingPat) && !_.get(responseMatchingPat,"isError",false) && !_.get(responseMatchingPat,"isErrorMdaRequest",false),
                                             requestErrorMessage: _.get(responseMatchingPat,"isErrorMdaRequest",false) ? _.trim(_.get(responseMatchingPat,"errorsData[0].detail")) ? _.trim(_.get(responseMatchingPat,"errorsData[0].detail")) : _.trim(_.get(responseMatchingPat,"errorsData[0].message")) : "",
                                             responseErrorMessage: !_.get(responseMatchingPat,"isErrorMdaRequest",false) && _.get(responseMatchingPat,"isError",false) ? _.map(_.get(responseMatchingPat, "errorsData",[]), errorMessage => _.trim(_.get(errorMessage,"message"))).join(" ; ") : "",
-                                            patientSsin: _.trim(_.get(requestedPat,"patientSsin")) ? requestedPat.patientSsin : _.trim(_.get(responseMatchingPat,"patient.")),
+                                            patientSsin: _.trim(_.get(requestedPat,"patientSsin")) ? this.api.fixSsinLength(requestedPat.patientSsin) : this.api.fixSsinLength(_.trim(_.get(responseMatchingPat,"patient.ssin"))),
                                             patientIdentificationNumber: _.trim(_.get(requestedPat,"patientIdentificationNumber")) ? requestedPat.patientIdentificationNumber : _.trim(_.chain(responseMatchingPat).get("insurabilities").filter("identificationNumber").orderBy(["startDate"],["desc"]).head().get("identificationNumber").value()),
                                             parentInsuranceCode: _.trim(_.get(requestedPat,"parentInsuranceCode")) ? _.trim(_.get(requestedPat,"parentInsuranceCode")) : _.trim(_.get(responseMatchingPat,"oa"))
                                         }
@@ -3471,7 +3471,7 @@
                         .map(pat => {
                             return _.merge({},pat,{
                                 oa: _.trim(_.get(pat,"parentInsuranceCode")),
-                                ssinHr: this.api.formatSsinNumber(_.trim(_.get(pat,"patientSsin"))),
+                                ssinHr: this.api.formatSsinNumber(this.api.fixSsinLength(_.trim(_.get(pat,"patientSsin")))),
                                 message: _.trim(_.get(pat,"responseErrorMessage")) ? _.trim(_.get(pat,"responseErrorMessage")) : this._getFriendlyMessage(_.trim(_.get(pat,"requestErrorMessage"))),
                                 patientMatchedWithMdaResponse: _.get(pat,"patientMatchedWithMdaResponse",false),
                                 mdaResponsePatientHasValidInsAndMhc: _.get(pat,"mdaResponsePatientHasValidInsAndMhc",false),
@@ -3622,16 +3622,16 @@
                                         // None of the contract belongs to me
                                         !_.size(_.filter(mdaMhcs, it => _.trim(_.get(it,"mmNihii")).substr(0,8) === currentMhNihii.substr(0,8))) ?
 
-                                            ((_.assign(mdaPatient, {isError:true, errorsData: [{message:
-                                                this.localize("patientIsNowInMhc", "patientIsNowInMhc", this.language) + ": " +
-                                                (!_.size(otherMedicalHouseContractBelongsTo) ?
-                                                        this.api.formatInamiNumber(_.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii"))) + " ("+this.localize("nihiiVerbose",this.language)+")" :
-                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "name")) + " ("+
-                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.street")) + " - " +
-                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.zip")) + " " +
-                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.city")) + ") - Tel: " +
-                                                        _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.telecom.phone"))
-                                                )}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => /* ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : */ _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
+                                        ((_.assign(mdaPatient, {isError:true, errorsData: [{message:
+                                            this.localize("patientIsNowInMhc", "patientIsNowInMhc", this.language) + ": " +
+                                            (!_.size(otherMedicalHouseContractBelongsTo) ?
+                                                    this.api.formatInamiNumber(_.trim(_.get(mostRecentMhcThatIsNotMine,"mmNihii"))) + " ("+this.localize("nihiiVerbose",this.language)+")" :
+                                                    _.trim(_.get(otherMedicalHouseContractBelongsTo, "name")) + " ("+
+                                                    _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.street")) + " - " +
+                                                    _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.zip")) + " " +
+                                                    _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.city")) + ") - Tel: " +
+                                                    _.trim(_.get(otherMedicalHouseContractBelongsTo, "address.telecom.phone"))
+                                            )}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => /* ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : */ _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
 
                                         // None of my contracts is valid anymore (% MDA response)
                                         !_.some(mdaMhcs, it => _.trim(_.get(it,"startOfCoverage")) <= exportedDate && (!_.trim(_.get(it,"endOfCoverage")) || _.trim(_.get(it,"endOfCoverage")) >= exportedDate)) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoOnGoingMhc", "patientHasNoOnGoingMhc", this.language)}]}))||true) && _.map(_.get(topazPatient,"medicalHouseContracts",[]), mhc => ((_.get(mhc,"status",0) & (1<<2)) || (_.get(mhc,"status",0) & (1<<3))) ? mhc : _.merge(mhc, { endOfContract: endOfPreviousMonthYYYYMMDD, endOfCoverage:endOfPreviousMonthYYYYMMDD, status: (1 << 3) })) :
@@ -3649,7 +3649,7 @@
 
 
                                     // Update gender, ssin && dateOfDeath
-                                    if(_.trim(_.get(mdaPatient,"patient.ssin"))) _.assign(topazPatient, {ssin:_.trim(_.get(mdaPatient,"patient.ssin"))})
+                                    if(_.trim(_.get(mdaPatient,"patient.ssin"))) _.assign(topazPatient, {ssin:this.api.fixSsinLength(_.trim(_.get(mdaPatient,"patient.ssin")))})
                                     if(["male","female"].indexOf(_.trim(_.get(mdaPatient,"patient.gender")).toLowerCase()) > -1) _.assign(topazPatient, {gender:_.trim(_.get(mdaPatient,"patient.gender")).toLowerCase()})
                                     if((parseInt(_.get(mdaPatient,"patient.dateOfDeath"))||0)) _.assign(topazPatient, {dateOfDeath:parseInt(_.get(mdaPatient,"patient.dateOfDeath"))})
 
@@ -3662,37 +3662,33 @@
                                     _.assign(topazPatient, {insurabilities:
 
                                         // There isn't any mdaInsurability
-                                            !_.size(mdaInsurabilities) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoIns", "patientHasNoIns", this.language)}]}))||true) && [] :
+                                        !_.size(mdaInsurabilities) ? ((_.assign(mdaPatient, {isError:true, errorsData: [{message: this.localize("patientHasNoIns", "patientHasNoIns", this.language)}]}))||true) && [] :
 
-                                                _
-                                                    .chain(mdaInsurabilities)
-                                                    .map(ins => _.merge({},{
-                                                        "parameters": {
-                                                            "tc1": _.trim(_.get(ins,"tc1")),
-                                                            "tc2": _.trim(_.get(ins,"tc2")),
-                                                            "preferentialstatus": !!_.get(ins,"preferentialstatus",false),
-                                                            "paymentapproval": !!_.get(ins,"paymentapproval",false),
-                                                            // "mdaInputReference": exportedDate + "@" + _.trim(_.get(mdaPatient,"mdaInputReference")),
-                                                        },
-                                                        "ambulatory": true,
-                                                        "dental": false,
-                                                        "identificationNumber": _.trim(_.get(ins,"identificationNumber")),
-                                                        "insuranceId": _.trim(_.get(_.find(insurancesData, it => _.trim(_.get(ins,"code")) && _.trim(_.get(it,"code")).split(",").indexOf(_.trim(_.get(ins,"code"))) > -1), "id")),
-                                                        "startDate": (parseInt(_.get(ins,"startDate",null))||0) ? parseInt(_.get(ins,"startDate",null)) : null,
-                                                        "endDate": (parseInt(_.get(ins,"endDate",null))||0) ? parseInt(_.get(ins,"endDate",null)) : null
-                                                    }))
-                                                    .filter(it => _.trim(_.get(it,"insuranceId")))
-                                                    .compact()
-                                                    .value()
+                                        _
+                                            .chain(mdaInsurabilities)
+                                            .map(ins => _.merge({},{
+                                                "parameters": {
+                                                    "tc1": _.trim(_.get(ins,"tc1")),
+                                                    "tc2": _.trim(_.get(ins,"tc2")),
+                                                    "preferentialstatus": !!_.get(ins,"preferentialstatus",false),
+                                                    "paymentapproval": !!_.get(ins,"paymentapproval",false),
+                                                    // "mdaInputReference": exportedDate + "@" + _.trim(_.get(mdaPatient,"mdaInputReference")),
+                                                },
+                                                "ambulatory": true,
+                                                "dental": false,
+                                                "identificationNumber": _.trim(_.get(ins,"identificationNumber")),
+                                                "insuranceId": _.trim(_.get(_.find(insurancesData, it => _.trim(_.get(ins,"code")) && _.trim(_.get(it,"code")).split(",").indexOf(_.trim(_.get(ins,"code"))) > -1), "id")),
+                                                "startDate": (parseInt(_.get(ins,"startDate",null))||0) ? parseInt(_.get(ins,"startDate",null)) : null,
+                                                "endDate": (parseInt(_.get(ins,"endDate",null))||0) ? parseInt(_.get(ins,"endDate",null)) : null
+                                            }))
+                                            .filter(it => _.trim(_.get(it,"insuranceId")))
+                                            .compact()
+                                            .value()
 
                                     })
 
-
-
                                     // Only return patients we should update
                                     return patientCounter++ && _.isEqual(originalTopazPatient, topazPatient) ? null : topazPatient
-
-
 
                                 }))
                                 .then(patientToUpdate => !patientToUpdate ? promResolve : this.api.patient().modifyPatientWithUser(_.get(this,"user",{}), patientToUpdate))
