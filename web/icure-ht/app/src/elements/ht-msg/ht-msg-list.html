@@ -1596,10 +1596,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 _.map(givenMessages, singleMessage => {
                     prom = prom.then(promisesCarrier => !_.trim(_.get(singleMessage,"metas.annexesInfos")) ?
                         Promise.resolve(_.concat(promisesCarrier, singleMessage)) :
-                        this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, singleMessage, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(singleMessage,"metas.annexesInfos")))) )
+                        this.api.encryptDecrypt("decrypt", this.user, singleMessage, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(singleMessage,"metas.annexesInfos")))) )
                             .then(uaDecryptedContent => _.merge({}, singleMessage, {annexesInfos:JSON.parse(this.api.crypto().utils.ua2text(uaDecryptedContent))||[]}))
                             .then(singleMessage => _.concat(promisesCarrier, singleMessage))
-                            .catch(e=>{console.log("ERROR with encryptDecryptFileContentByUserHcpIdAndDocumentObject: ",e); return Promise.resolve(_.concat(promisesCarrier, singleMessage))})
+                            .catch(e=>{console.log("ERROR with encryptDecrypt: ",e); return Promise.resolve(_.concat(promisesCarrier, singleMessage))})
                     )
                 })
 
@@ -1801,7 +1801,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         this.api.contact().modifyContactWithUser(_.get(this,"user",{}), contactToDelete).catch(e=>{ console.log("ERROR with modifyContactWithUser: ", e); return promResolve; }),
                         this.api.form().modifyForm(formToDelete).catch(e=>{ console.log("ERROR with modifyForm: ", e); return promResolve; })
                     ]))
-                    .then(() => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos))))
+                    .then(() => this.api.encryptDecrypt( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos))))
                         .then(encryptedContent => _.merge({},givenMessage, {metas:{annexesInfos:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(encryptedContent)))}}))
                         .then(givenMessageWithCryptedMetasPatientInfos => {
 
@@ -2095,7 +2095,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 _.concat(givenMessage.annexesInfos, updatedAnnexInfosForDocumentToAssign)
 
                     })
-                    .then(updatedAnnexesInfos => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos.map(ai=>_.omit(ai,"patientData"))))))
+                    .then(updatedAnnexesInfos => this.api.encryptDecrypt( "encrypt", _.get(this,"user",{}), givenMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(updatedAnnexesInfos.map(ai=>_.omit(ai,"patientData"))))))
                         .then(encryptedContent => _.merge({},givenMessage, {metas:{annexesInfos:Base64.encode(String.fromCharCode.apply(null, new Uint8Array(encryptedContent)))}}))
                         .then(givenMessageWithCryptedMetasPatientInfos => this.api.message().modifyMessage( (totalAnnexes && totalAssignedAnnexes===totalAnnexes) ? _.merge({}, givenMessageWithCryptedMetasPatientInfos, { status: (_.get(givenMessageWithCryptedMetasPatientInfos,"status",0) |(1<<20) ) |(1<<26) }) : givenMessageWithCryptedMetasPatientInfos ))    // Everything assigned, flag as "STATUS_SHOULD_BE_DELETED_ON_SERVER" && "STATUS_TRAITED"
                         .then(modifiedMessage => this._updateCachedMessagesDataStructure([{action:"saveAssignment", message:modifiedMessage}],!!(totalAnnexes && totalAssignedAnnexes===totalAnnexes))

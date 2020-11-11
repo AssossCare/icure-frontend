@@ -994,7 +994,7 @@
                             false;
                         let documentList = []; try{ documentList = JSON.parse(_.trim(_.get(msg,"metas.documentListJson",{}))); } catch(e) {}
 
-                        return !dataToDecrypt ? msg : this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, msg, dataToDecrypt)
+                        return !dataToDecrypt ? msg : this.api.encryptDecrypt("decrypt", this.user, msg, dataToDecrypt)
                             .then(uaDecryptedContent => JSON.parse(this.api.crypto().utils.ua2text(uaDecryptedContent)))
                             .then(decryptedContent => _.merge(msg,{metas:{
                                 decryptedInfo: !!Array.isArray(decryptedContent) ? _.head(decryptedContent) : decryptedContent,
@@ -1010,7 +1010,7 @@
                         const targetDocumentList = _.find(_.get(docAndMsg,"message.metas.documentList",[]), {id:_.trim(_.get(docAndMsg,"id",""))})
                         return (!_.size(targetDocumentList) || !_.trim(_.get(targetDocumentList,"comment",""))) ?
                             Promise.resolve(docAndMsg) :
-                            this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, docAndMsg, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(targetDocumentList,"comment","")))))
+                            this.api.encryptDecrypt("decrypt", this.user, docAndMsg, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(targetDocumentList,"comment","")))))
                                 .then(uaDecryptedContent => docAndMsg.message.metas.documentList = _.merge(targetDocumentList, {decryptedComment: this.api.crypto().utils.ua2text(uaDecryptedContent)}))
                                 .then(()=>docAndMsg)
                                 .catch(()=>docAndMsg)
@@ -1099,7 +1099,7 @@
                                 false;
                             let documentList = []; try{ documentList = JSON.parse(_.trim(_.get(msg,"metas.documentListJson",{}))); } catch(e) {}
 
-                            return !dataToDecrypt ? msg : this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, msg, dataToDecrypt)
+                            return !dataToDecrypt ? msg : this.api.encryptDecrypt("decrypt", this.user, msg, dataToDecrypt)
                                 .then(uaDecryptedContent => JSON.parse(this.api.crypto().utils.ua2text(uaDecryptedContent)))
                                 .then(decryptedContent => _.merge(msg,{metas:{
                                     decryptedInfo: !!Array.isArray(decryptedContent) ? _.head(decryptedContent) : decryptedContent,
@@ -1113,7 +1113,7 @@
                         .then(messagesLinkedToDocuments => Promise.all(_.map(messagesLinkedToDocuments, msg => {
                             const targetDocument = _.get(_.find(contactsAndDocuments, {documentId:_.get(msg,"linkedDocumentId","")}),"document", {})
                             const targetMessageDocumentList = _.find(_.get(msg,"metas.documentList",[]), {id:_.get(msg,"linkedDocumentId","")})
-                            return !_.trim(_.get(targetMessageDocumentList,"comment","")) ? Promise.resolve(msg) : this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, targetDocument, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(targetMessageDocumentList,"comment",""))))).then(uaDecryptedContent => msg.metas.documentList = _.merge(targetMessageDocumentList, {decryptedComment: this.api.crypto().utils.ua2text(uaDecryptedContent)})).then(()=>msg).catch(()=>msg)
+                            return !_.trim(_.get(targetMessageDocumentList,"comment","")) ? Promise.resolve(msg) : this.api.encryptDecrypt("decrypt", this.user, targetDocument, this.api.crypto().utils.text2ua(Base64.decode(_.trim(_.get(targetMessageDocumentList,"comment",""))))).then(uaDecryptedContent => msg.metas.documentList = _.merge(targetMessageDocumentList, {decryptedComment: this.api.crypto().utils.ua2text(uaDecryptedContent)})).then(()=>msg).catch(()=>msg)
                         })))
                         .then(decryptedMessages => _.map(contactsAndDocuments, it => _.merge({}, it, {message:_.find(decryptedMessages,{linkedDocumentId:_.get(it,"documentId")})})))
                         .catch(e=>{ console.log("ERROR _getMessages", e); return promResolve; })

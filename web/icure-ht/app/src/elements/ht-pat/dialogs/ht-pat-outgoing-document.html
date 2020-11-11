@@ -1025,7 +1025,7 @@
                         ]
                     }).then(documentInstance=>([createdMessage, documentInstance])))
                     .then(([createdMessage, documentInstance]) => this.api.document().createDocument(documentInstance).then(createdDocument=>([createdMessage, createdDocument])))
-                    .then(([createdMessage, createdDocument]) => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this,"user",{}), createdDocument, _.get(this, "_data.pdf.data", "")).then(encryptedFileContent => [createdMessage,createdDocument,encryptedFileContent]))
+                    .then(([createdMessage, createdDocument]) => this.api.encryptDecrypt("encrypt", _.get(this,"user",{}), createdDocument, _.get(this, "_data.pdf.data", "")).then(encryptedFileContent => [createdMessage,createdDocument,encryptedFileContent]))
                     .then(([createdMessage,createdDocument,encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument,"id"), null, encryptedFileContent).then(() => ([createdMessage,createdDocument])))
                     .then(([createdMessage,createdDocument])=> this._saveDocumentAsService({
                         documentId: _.trim(_.get(createdDocument, "id", "")),
@@ -1373,7 +1373,7 @@
                                 ]
                             }))
                             .then(documentInstance => this.api.document().createDocument(documentInstance))
-                            .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", _.get(this,"user",{}), createdDocument, printedPdf).then(encryptedFileContent => [createdDocument,encryptedFileContent]))
+                            .then(createdDocument => this.api.encryptDecrypt("encrypt", _.get(this,"user",{}), createdDocument, printedPdf).then(encryptedFileContent => [createdDocument,encryptedFileContent]))
                             .then(([createdDocument,encryptedFileContent]) => this.api.document().setAttachment(_.get(createdDocument,"id"), null, encryptedFileContent).then(() => createdDocument))
                             .then(createdDocument=> this._saveDocumentAsService({
                                 documentId: _.trim(_.get(createdDocument, "id", "")),

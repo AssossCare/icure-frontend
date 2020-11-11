@@ -1304,7 +1304,7 @@ class HtMsgDocDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     //             this.set("document",found[0]);
     //             return this.api.document().getAttachment(found[0].id, found[0].attachmentId, found[0].secretForeignKeys);
     //         })
-    //         .then(attachmentResponse => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, this.document, attachmentResponse))
+    //         .then(attachmentResponse => this.api.encryptDecrypt("decrypt", this.user, this.document, attachmentResponse))
     //         .then(decryptedFileContent => {
     //             let type = _.toLower(this.document.name.split('.').pop());
     //             let base64 = btoa([].reduce.call(new Uint8Array(decryptedFileContent), (p,c) => p+ String.fromCharCode(c),''));
@@ -1328,7 +1328,7 @@ class HtMsgDocDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             return Promise.resolve("");
         }
         const ua = this.api.crypto().utils.text2ua(Base64.decode(cryptedString));
-        return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, documentObject, ua)
+        return this.api.encryptDecrypt("decrypt", this.user, documentObject, ua)
             .then(ua => this.api.crypto().utils.ua2text(ua));
     }
 
@@ -1343,7 +1343,7 @@ class HtMsgDocDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         this.set('disabled', ((selMsg.status & (1 << 26)) !== 0));
         this.api.document().findByMessage(this.user.healthcarePartyId, selMsg)
             .then(documents => Promise.all(documents.map(document => this.api.document().getAttachment(document.id, document.attachmentId, document.secretForeignKeys)
-                .then(attachment => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, document, attachment))
+                .then(attachment => this.api.encryptDecrypt("decrypt", this.user, document, attachment))
                 .then(decryptedAttachment => {
                     let type = _.toLower(document.name.split('.').pop());
                     let base64 = btoa([].reduce.call(new Uint8Array(decryptedAttachment), (p, c) => p + String.fromCharCode(c), ''));

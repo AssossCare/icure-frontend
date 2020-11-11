@@ -3115,7 +3115,7 @@
                                 name: this.downloadFileName
                             }))
                             .then(newDocumentInstance => this.api.document().createDocument(newDocumentInstance))
-                            .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, pdfFileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
+                            .then(createdDocument => this.api.encryptDecrypt("encrypt", this.user, createdDocument, pdfFileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
                             .then(({createdDocument, encryptedFileContent}) => this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent))
                             .then(() => !printed && this.api.triggerFileDownload( pdfFileContent, "application/pdf", this.downloadFileName ))
                     })
@@ -3160,7 +3160,7 @@
                     if(singleMessage && singleMessage[0] && singleMessage[0].id && singleMessage[0].attachmentId && singleMessage[0].secretForeignKeys) {
                         this.api.document().getAttachment(singleMessage[0].id, singleMessage[0].attachmentId, singleMessage[0].secretForeignKeys).then(attachmentResponse => {
                             if(attachmentResponse) {
-                                this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, _.head(singleMessage), attachmentResponse).then(decryptedFileContent =>{
+                                this.api.encryptDecrypt("decrypt", this.user, _.head(singleMessage), attachmentResponse).then(decryptedFileContent =>{
                                     this.api.triggerFileDownload(decryptedFileContent,"application/pdf",_.get( _.head(_.filter(this.archiveListingMessages, {"id":_.trim(messageId)})), "filename","listing-patients.pdf"));
                                 }).catch(()=>{})
                             }
@@ -3718,7 +3718,7 @@
 
                 return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, batchMessage)
                     .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
-                    .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
+                    .then(({doc,attachment})=> attachment ? this.api.encryptDecrypt("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
                     .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/zip",_.get( doc, "name", doc.id + ".zip")))
                     .catch(e=>{console.log(e)})
                     .finally(()=>{this.set('_isLoadingSmall', false );})
@@ -3737,7 +3737,7 @@
 
                 return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, batchMessage)
                     .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}).catch(e=>{console.log(e)}) : prom )
-                    .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
+                    .then(({doc,attachment})=> attachment ? this.api.encryptDecrypt("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
                     .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/pdf",_.get( doc, "name", doc.id + ".pdf")))
                     .catch(e=>{console.log(e)})
                     .finally(()=>{this.set('_isLoadingSmall', false );})
@@ -3752,7 +3752,7 @@
 
                 return !messageId ? null : this.api.document().findByMessage(this.user.healthcarePartyId, _.get(_.filter(this.messageDetailsData, {id:messageId}), "[0].messageData" ))
                     .then(doc => (doc && doc[0] && doc[0].id && doc[0].attachmentId && doc[0].secretForeignKeys) ? this.api.document().getAttachment(doc[0].id, doc[0].attachmentId, doc[0].secretForeignKeys).then(attachment=>{return {doc:_.head(doc),attachment:attachment }}) : prom )
-                    .then(({doc,attachment})=> attachment ? this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
+                    .then(({doc,attachment})=> attachment ? this.api.encryptDecrypt("decrypt", this.user, doc, attachment).then(decryptedContent=>{return {doc:doc,decryptedContent:decryptedContent }}) : prom)
                     .then(({doc,decryptedContent})=> this.api.triggerFileDownload(decryptedContent,"application/pdf",_.get( doc, "name", doc.id + ".pdf")))
                     .catch(e=>{console.log(e)})
                     .finally(()=>{this.set('_isLoadingSmall', false );})
@@ -5420,7 +5420,7 @@
                                 })
                                 .then(createdDocument => {
                                     _.merge(singleFileObject, {documentId:createdDocument.id})
-                                    return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
+                                    return this.api.encryptDecrypt("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment flatfile---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         }))
@@ -5452,7 +5452,7 @@
                                         })
                                         .then(createdDocument => {
                                             _.merge(singleFileObject, {documentId:createdDocument.id})
-                                            return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
+                                            return this.api.encryptDecrypt("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(singleFileObject.fileContent))).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                         })
                                         .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment slip---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                                 })).then(x=>x)
@@ -5522,7 +5522,7 @@
                                 })
                                 .then(createdDocument => {
                                     _.merge(singlePdfFileObject, {documentId:createdDocument.id})
-                                    return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
+                                    return this.api.encryptDecrypt("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         })).then(x=>x)
@@ -5576,7 +5576,7 @@
                                 })
                                 .then(createdDocument => {
                                     _.merge(singlePdfFileObject, {documentId:createdDocument.id})
-                                    return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
+                                    return this.api.encryptDecrypt("encrypt", this.user, createdDocument, singlePdfFileObject.fileContent).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                                 })
                                 .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment parent oa pdf---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                         })).then(x=>x)
@@ -5615,7 +5615,7 @@
                             })
                             .then(createdDocument => {
                                 _.merge(this.flatRateInvoicingDataObject.finalArchive, {documentId:createdDocument.id})
-                                return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
+                                return this.api.encryptDecrypt("encrypt", this.user, createdDocument, this.flatRateInvoicingDataObject.finalArchive.batchZipFileBlob).then(encryptedFileContent => ({createdDocument, encryptedFileContent}))
                             })
                             .then(({createdDocument, encryptedFileContent}) => { return this.api.document().setAttachment(createdDocument.id, null, encryptedFileContent).then(x=>x).catch((e)=>{console.log("---error upload attachment batch---");console.log(createdDocument);console.log(encryptedFileContent);}) })
                     }) //20
