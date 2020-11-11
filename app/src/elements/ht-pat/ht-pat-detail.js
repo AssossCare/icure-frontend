@@ -6941,7 +6941,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         status: 0 | 1 << 25 | (this.patient.id ? 1 << 26 : 0)
                     }))
                         .then(createdMessage => Promise.all([createdMessage,
-                            this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt",
+                            this.api.encryptDecrypt("encrypt",
                                 this.user, createdMessage,
                                 this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({
                                     patientId: this.patient.id,
@@ -6957,7 +6957,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                             name: "sumehrImport" + itemId + "_" + moment().format("YYYYMMDDhhmmss")
                         }))
                         .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
+                        .then(createdDocument => this.api.encryptDecrypt('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
                             .then(encryptedFileContent => ({createdDocument, encryptedFileContent})))
                         .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                         .then(resourcesObject => {

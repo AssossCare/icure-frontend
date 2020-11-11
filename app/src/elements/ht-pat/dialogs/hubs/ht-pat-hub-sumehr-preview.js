@@ -1022,7 +1022,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                       status : 0 | 1<<25 | (this.patient.id ? 1<<26 : 0)
                   }))
                       .then(createdMessage => Promise.all([createdMessage,
-                          this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt",
+                          this.api.encryptDecrypt("encrypt",
                               this.user, createdMessage,
                               this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : this.patient.id, isAssigned: true}))))]))
                       .then(([createdMessage, cryptedMeta]) => {
@@ -1035,7 +1035,7 @@ class HtPatHubSumehrPreview extends TkLocalizerMixin(mixinBehaviors([IronResizab
                           name: "sumehrUpdate_" + messageName + "_" +moment().format("YYYYMMDDhhmmss")
                       }))
                       .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                      .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(message)))
+                      .then(createdDocument => this.api.encryptDecrypt("encrypt", this.user, createdDocument, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(message)))
                           .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
                       .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                       .then(resourcesObject => {

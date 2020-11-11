@@ -1798,7 +1798,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                   subject: "Import document from hub: "+ this.selectedDocumentToBeImported.title || null,
                   status : 0 | 1<<25 | (this.patient.id ? 1<<26 : 0)
                   }))
-                  .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : this.patient.id, isAssigned: true}))))]))
+                  .then(createdMessage => Promise.all([createdMessage, this.api.encryptDecrypt("encrypt", this.user, createdMessage, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({patientId : this.patient.id, isAssigned: true}))))]))
                   .then(([createdMessage, cryptedMeta]) => {
                       createdMessage.metas.cryptedInfo = Base64.encode(String.fromCharCode.apply(null, new Uint8Array(cryptedMeta)))
                       return this.api.message().modifyMessage(createdMessage)
@@ -1809,7 +1809,7 @@ class HtPatHubTransactionViewSecond extends TkLocalizerMixin(mixinBehaviors([Iro
                       name: this.selectedDocumentToBeImported && this.selectedDocumentToBeImported.title ? "documentDownloadFromHub_" + this.selectedDocumentToBeImported.title : "documentDownloadFromHub_"+moment().format("YYYYMMDDhhmmss")
                   }))
                   .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                  .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(this.selectedDocumentToBeImported.document.value))
+                  .then(createdDocument => this.api.encryptDecrypt('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(this.selectedDocumentToBeImported.document.value))
                   .then(encryptedFileContent => ({createdDocument, encryptedFileContent })))
                   .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                   .then(resourcesObject => {
