@@ -1752,7 +1752,7 @@
                                     hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                                     this.patient.ssin,
                                     transaction.ids.find(id => id.s === 'LOCAL').sv, transaction.ids.find(id => id.s === 'LOCAL').sl, transaction.ids.find(id => id.s === 'LOCAL').value,
-                                    this.hubPackageId, this.breakTheGlassReason
+                                    this.hubPackageId, this.breakTheGlassReason, this.$["htPatHubUtils"].getTransactionHubId(transaction), this.$["htPatHubUtils"].getTransactionHubName(transaction)
                                 )
                             ).then(tranResp => {
                                     if (tranResp) {
@@ -1893,7 +1893,7 @@
                                 hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
                                 this.patient.ssin,
                                 transaction.ids.find(id => id.s==='LOCAL').sv, transaction.ids.find(id => id.s==='LOCAL').sl, transaction.ids.find(id => id.s==='LOCAL').value,
-                                this.hubPackageId, this.breakTheGlassReason
+                                this.hubPackageId, this.breakTheGlassReason, this.$["htPatHubUtils"].getTransactionHubId(transaction), this.$["htPatHubUtils"].getTransactionHubName(transaction)
                             )
                         ).then(tranResp => {
                                 if (tranResp) {

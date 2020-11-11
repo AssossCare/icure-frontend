@@ -157,6 +157,18 @@
                 return hubConfig;
             }
 
+            getTransactionHubId(transaction){
+                console.log("getTransactionHubId", JSON.stringify(transaction))
+                const hubHcp  = _.get(_.get(transaction, "author", {}), "hcparties", []).find(hcp => !!hcp.cds.find(cd => cd.s === "CD-HCPARTY" && cd.value === "hub"))
+                return hubHcp ? (_.get(hubHcp, "ids", []).find(id => id.s === "ID-HCPARTY") ? _.get(hubHcp, "ids", []).find(id => id.s === "ID-HCPARTY").value : null) : null
+            }
+
+            getTransactionHubName(transaction){
+                console.log("getTransactionHubName", transaction)
+                const hubHcp  = _.get(_.get(transaction, "author", {}), "hcparties", []).find(hcp => !!hcp.cds.find(cd => cd.s === "CD-HCPARTY" && cd.value === "hub"))
+                return hubHcp ? _.get(hubHcp, "name", null) : null
+            }
+
             getLocalMedicationschemeStatus(pat){
                 //last reading time
                 //last read version

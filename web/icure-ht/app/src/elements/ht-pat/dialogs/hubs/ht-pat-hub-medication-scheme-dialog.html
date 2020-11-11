@@ -25,6 +25,7 @@
 <link rel="import" href="../../../../styles/dialog-style.html">
 <link rel="import" href="../../../../styles/scrollbar-style.html">
 <link rel="import" href="ht-pat-hub-medication-scheme-extended-view.html">
+<link rel="import" href="ht-pat-hub-utils.html">
 
 <dom-module id="ht-pat-hub-medication-scheme-dialog">
     <template>
@@ -90,6 +91,7 @@
                 <paper-button class="button button--save" on-tap="_synchronizeScheme">[[localize('','Synchronize scheme',language)]]</paper-button>
             </div>
         </paper-dialog>
+        <ht-pat-hub-utils id="htPatHubUtils" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]" on-hub-download="_hubDownload" on-close-hub-dialog="_closeOverlay"></ht-pat-hub-utils>
     </template>
     <script>
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
@@ -220,7 +222,7 @@
                                 _.get(this.hcp, 'lastName', null), _.get(this.hcp, 'firstName', null), _.get(this.hcp,'nihii', null), _.get(this.hcp, 'ssin', null), this.hcpZip,
                                 this.patient.ssin,
                                 medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').sv, medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').sl, medicationSchemeTransaction.ids.find(id => id.s==='LOCAL').value,
-                                this.hubPackageId, this.breakTheGlassReason
+                                this.hubPackageId, this.breakTheGlassReason, this.$["htPatHubUtils"].getTransactionHubId(medicationSchemeTransaction), this.$["htPatHubUtils"].getTransactionHubName(medicationSchemeTransaction)
                             ) : Promise.resolve({})
                         })
                         .then(transaction => {
