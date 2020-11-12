@@ -1604,6 +1604,7 @@
                                         this.api.invoice().newInstance(this.user, pat, _.head(invoices)).then(inv => {
                                             inv.printedDate =  moment().format("YYYYMMDD")
                                             inv.careProviderType = "medicalhouse"
+                                            inv.recipientId = _.trim(_.get(pat,"finalInsurability.insuranceId"))
                                             return inv
                                         }).then(inv => retry.retry(() => (this.api.invoice().createInvoice(inv, 'invoice:' + _.trim(_.get(this,"user.healthcarePartyId")) + ':' + (_.trim(_.get(patParentInsuranceData,"code")) ? _.trim(_.get(patParentInsuranceData,"code")) : '000') + ':')))) :
                                         Promise.resolve(invoices[0])
