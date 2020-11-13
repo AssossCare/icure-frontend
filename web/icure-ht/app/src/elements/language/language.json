@@ -4715,6 +4715,7 @@
 		"pr_ctr_block_inv": "Contrôle(s) préalable(s) bloquant(s)",
 		"pr_nihii_inv": "- Inami invalide",
 		"pr_ssin_inv": "- Niss invalide",
+		"pr_ssin_inv_flat": "- Niss de la personne de contact invalide",
 		"pr_cbe_inv": "- Bce invalide",
 		"pr_iban_inv": "- Iban invalide",
 		"pr_bic_inv": "- Bic invalide",

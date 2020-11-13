@@ -591,7 +591,7 @@
                             <div class="errorBeforeSendInvoice">[[localize('pr_nihii_inv','- Nihii invalid',language)]]</div>
                         </template>
                         <template is="dom-if" if="[[checkBeforeSendEfact.ssinCheck]]">
-                            <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv','- Ssin invalid',language)]]</div>
+                            <div class="errorBeforeSendInvoice">[[localize('pr_ssin_inv_flat','- Ssin of responsible invalid',language)]]</div>
                         </template>
                         <template is="dom-if" if="[[checkBeforeSendEfact.bceCheck]]">
                             <div class="errorBeforeSendInvoice">[[localize('pr_cbe_inv','- Cbe invalid',language)]]</div>
@@ -757,6 +757,10 @@
                     _loadingMessages: {
                         type: Array,
                         value: () => []
+                    },
+                    responsibleHcp:{
+                        type: Object,
+                        value: {}
                     }
                 }
             }
@@ -853,33 +857,40 @@
             }
 
             _checkBeforeSend(){
+                this.set("responsibleHcp", {})
+                ;(_.get(this.hcp, 'contactPersonHcpId', null) ? this.api.hcparty().getHealthcareParty(_.get(this.hcp, 'contactPersonHcpId', null)) : Promise.resolve({})).then(responsibleHcp => {
+                    console.log(responsibleHcp)
+                    this.set('responsibleHcp', responsibleHcp)
+                    this.set('checkBeforeSendEfact.inamiCheck', !_.get(this.hcp, 'nihii', null))
+                    this.set('checkBeforeSendEfact.bceCheck', !_.get(this.hcp, 'cbe', null))
+                    this.set('checkBeforeSendEfact.ssinCheck', !_.get(responsibleHcp, 'ssin', null))
 
-                this.set('checkBeforeSendEfact.inamiCheck', !_.get(this.hcp, 'nihii', null))
-                this.set('checkBeforeSendEfact.bceCheck', !_.get(this.hcp, 'cbe', null))
+                    this.set('checkBeforeSendEfact.ibanCheck', !((this.hcp && this.hcp.bankAccount && this.hcp.nihii.bankAccount) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bankAccount)))
+                    this.set('checkBeforeSendEfact.bicCheck', !((this.hcp && this.hcp.bic && this.hcp.bic.length) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bic)))
+                    this.set('patientWithoutMutuality', _.get(this, 'listOfInvoice', []).filter(inv => inv.insurabilityCheck === false) || [])
 
-                this.set('checkBeforeSendEfact.ibanCheck', !((this.hcp && this.hcp.bankAccount && this.hcp.nihii.bankAccount) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bankAccount)))
-                this.set('checkBeforeSendEfact.bicCheck', !((this.hcp && this.hcp.bic && this.hcp.bic.length) || (this.hcp && this.hcp.financialInstitutionInformation && this.hcp.financialInstitutionInformation[0] && this.hcp.financialInstitutionInformation[0].bic)))
-                this.set('patientWithoutMutuality', _.get(this, 'listOfInvoice', []).filter(inv => inv.insurabilityCheck === false) || [])
+                    this.set('checkBeforeSendEfact.invoiceCheck100',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 100, 200))
+                    this.set('checkBeforeSendEfact.invoiceCheck200',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 200, 300))
+                    this.set('checkBeforeSendEfact.invoiceCheck300',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 300, 400))
+                    this.set('checkBeforeSendEfact.invoiceCheck306',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 306, 307))
+                    this.set('checkBeforeSendEfact.invoiceCheck400',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 400, 500))
+                    this.set('checkBeforeSendEfact.invoiceCheck500',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 500, 600))
+                    this.set('checkBeforeSendEfact.invoiceCheck600',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 600, 700))
+                    this.set('checkBeforeSendEfact.invoiceCheck900',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 900, 1000))
 
-                this.set('checkBeforeSendEfact.invoiceCheck100',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 100, 200))
-                this.set('checkBeforeSendEfact.invoiceCheck200',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 200, 300))
-                this.set('checkBeforeSendEfact.invoiceCheck300',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 300, 400))
-                this.set('checkBeforeSendEfact.invoiceCheck306',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 306, 307))
-                this.set('checkBeforeSendEfact.invoiceCheck400',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 400, 500))
-                this.set('checkBeforeSendEfact.invoiceCheck500',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 500, 600))
-                this.set('checkBeforeSendEfact.invoiceCheck600',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 600, 700))
-                this.set('checkBeforeSendEfact.invoiceCheck900',this.checkIfDoubleInvoiceNumber(_.get(this, 'listOfInvoice', []), 900, 1000))
+                    if(_.size(_.get(this, 'patientWithoutMutuality', [])) > 0 || _.get(this, 'checkBeforeSendEfact.inamiCheck', null) === true || _.get(this, 'checkBeforeSendEfact.ssinCheck', null) === true ||
+                        _.get(this, 'checkBeforeSendEfact.bceCheck', null) === true || _.get(this, 'checkBeforeSendEfact.ibanCheck', null) === true || _.get(this, 'checkBeforeSendEfact.bicCheck', null) === true ||
+                        _.get(this, 'checkBeforeSendEfact.invoiceCheck100', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck200', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck300', null) === false ||
+                        _.get(this, 'checkBeforeSendEfact.invoiceCheck306', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck400', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck500', null) === false ||
+                        _.get(this, 'checkBeforeSendEfact.invoiceCheck600', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck900', null) === false){
+                        this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
+                    }else{
+                        this._showSummaryDialog()
 
-                if(_.size(_.get(this, 'patientWithoutMutuality', [])) > 0 || _.get(this, 'checkBeforeSendEfact.inamiCheck', null) === true || _.get(this, 'checkBeforeSendEfact.ssinCheck', null) === true ||
-                    _.get(this, 'checkBeforeSendEfact.bceCheck', null) === true || _.get(this, 'checkBeforeSendEfact.ibanCheck', null) === true || _.get(this, 'checkBeforeSendEfact.bicCheck', null) === true ||
-                    _.get(this, 'checkBeforeSendEfact.invoiceCheck100', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck200', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck300', null) === false ||
-                    _.get(this, 'checkBeforeSendEfact.invoiceCheck306', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck400', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck500', null) === false ||
-                    _.get(this, 'checkBeforeSendEfact.invoiceCheck600', null) === false || _.get(this, 'checkBeforeSendEfact.invoiceCheck900', null) === false){
-                    this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
-                }else{
-                    this._showSummaryDialog()
+                    }
+                })
 
-                }
+
             }
 
             _showSummaryDialog(){
@@ -923,7 +934,7 @@
                             prom = prom.then(() =>
                                 this.api.message().sendBatch(
                                     this.user,
-                                    this.hcp,
+                                    _.assign(this.hcp, {ssin: _.get(this.responsibleHcp, 'ssin', null)}),
                                     invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})),
                                     _.get(this.api, 'keystoreId', null),
                                     _.get(this.api, 'tokenIdMH', null),
