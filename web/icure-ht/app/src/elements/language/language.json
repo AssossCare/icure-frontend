@@ -1093,6 +1093,7 @@
 		"hcp_ident": "HCP",
 		"hea_bac_to_hom": "Head back to home.",
 		"header": "Header",
+		"date-del": "Delivery date",
 		"healthcareelement": "Problem",
 		"healthcareelements": "Healthcare Elements",
 		"healthissue": "Health issue",
@@ -4593,7 +4594,7 @@
 		"no_ehe_con": "Pas de connection à eHealth",
 		"no_fam_ris": "Pas d'antécédent familial",
 		"no_hist": "Pas d'historique",
-		"no_man_ad": "Aucun ajout manuscrit ne sera pris en compte",
+		"no_man_ad": "Aucun ajout manuscrit à ce document ne sera pris en compte",
 		"no_med": "Pas de médication chronique",
 		"no_med_ant": "Pas d'antécédent médical",
 		"no_sur_hea_ele": "Pas d'antécédent chirurgical",
@@ -4706,7 +4707,7 @@
 		"please_valid_mail": "Veuillez entrer une email valide",
 		"please_wait": "Veuillez patienter svp ...",
 		"ple_sel_the_ehe_key": "Veuillez sélectionner le trousseau eHealth",
-		"ple_present_doc": "Veuillez présenter ce document au pharmacien pour scanner le code-barres et délivrer les médicaments prescrits",
+		"ple_present_doc": "Veuillez présenter ce document à votre pharmacien pour scanner le code-barres et vous délivrer les médicaments prescrits",
 		"pos": "Posologie",
 		"poss_matches": "Correspondances possibles",
 		"postalCode": "Code postal",
@@ -5997,7 +5998,8 @@
     "mhm-rep-run-pat" : "Patient en cours",
     "mhm-rep-ready" : "Prêt pour lancer reprise.",
     "mhm-rep-invalid-date" : "Reprise seulement possible entre 1/10/2020 et 31/10/2020",
-    "mhm-rep-log" : "Log"
+    "mhm-rep-log" : "Log",
+	"date-del": "Date de délivrance"
 	},
 	"nl": {
     "backward": "achteruit",
@@ -6824,6 +6826,7 @@
 		"dat-eid-read" : "Last time eid card was read",
 		"data": "Data",
 		"date": "Datum",
+		"date-del": "Delivery datum",
 		"date_send": "Verzendingsdatum",
 		"date_and_sign_of_presc": "Datum and handtekening van de voorschrijver",
 		"day_0": "Zondag",
