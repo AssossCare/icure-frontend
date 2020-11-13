@@ -4187,7 +4187,7 @@
 		"inv-oa-title" : "pour l'oa",
 		"inv-trt-in-prog" : "Traitement en progression",
 		"inv-step-1" : "Création des envois",
-		"inv-step-2" : "Envoi des facture de l'oa: ",
+		"inv-step-2" : "Envoi des factures de l'oa: ",
 		"inv-get-step-1": "Reception des envois",
 		"inv-get-step-2": "Traitement des envois",
 		"inv-get-step-3": "Confirmation de la reception",
