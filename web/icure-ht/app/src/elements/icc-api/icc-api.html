@@ -28,6 +28,7 @@
     import {IccUserXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-user-x-api'
     import {IccInvoiceXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-invoice-x-api'
     import {IccMessageXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-message-x-api'
+    import {IccMessageXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-message-x-api'
     import {IccClassificationXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-classification-x-api'
     import {ElectronApi} from 'topaz-electron-api/src/api/ElectronApi'
 
@@ -187,6 +188,7 @@
             this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
             this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc)
             this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
+            this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
             this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
             this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
@@ -201,6 +203,7 @@
                 [this.invoiceicc,["deleteInvoice","getInvoice","getInvoices","mergeTo","modifyInvoice","createInvoice"]],
                 [this.documenticc,["createDocument","deleteAttachment","deleteDocument","getAttachment","getDocument","getDocuments","modifyDocument","modifyDocuments","setAttachment","setAttachmentMulti"]],
                 [this.messageicc,["createMessage","deleteMessages","deleteMessagesBatch","getChildren","getChildrenOfList","getMessage","modifyMessage","setMessagesReadStatus"]],
+                [this.messageiccv3,["createMessage","deleteMessages","deleteMessagesBatch","getChildren","getChildrenOfList","getMessage","modifyMessage","setMessagesReadStatus"]],
             ];
             this._Spy(toObserve);
             this.dispatchEvent(new CustomEvent('refresh', {detail: {}}))
@@ -360,6 +363,10 @@
 
         message() {
             return this.messageicc
+        }
+
+        messagev3() {
+            return this.messageiccv3
         }
 
         patient() {

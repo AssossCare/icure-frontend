@@ -934,7 +934,7 @@
                         .toPairs().value()
                         .forEach(([fedId,invoices]) => {
                             prom = prom.then(() =>
-                                this.api.message().sendBatch(
+                                this.api.messagev3().sendBatch(
                                     this.user,
                                     _.assign(this.hcp, {ssin: _.get(this.responsibleHcp, 'ssin', null)}),
                                     invoices.map(iv=>({invoiceDto:iv.invoice, patientDto:_.omit(iv.patient, ['personalStatus'])})),
