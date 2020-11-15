@@ -17,19 +17,29 @@
     import {IccBekmehrXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-bekmehr-x-api'
     import {IccCodeXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-code-x-api'
     import {IccContactXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-contact-x-api'
+    import {IccContactXApi as IccContactXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-contact-x-api'
     import {IccCryptoXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-crypto-x-api'
+    import {IccCryptoXApi as IccCryptoXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-crypto-x-api'
     import {IccDocumentXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-document-x-api'
+    import {IccDocumentXApi as IccDocumentXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-document-x-api'
     import {IccFormXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-form-x-api'
+    import {IccFormXApi as IccFormXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-form-x-api'
     import {IccHcpartyXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-hcparty-x-api'
+    import {IccHcpartyXApi as IccHcpartyXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-hcparty-x-api'
     import {IccHelementXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-helement-x-api'
+    import {IccHelementXApi as IccHelementXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-helement-x-api'
     import {IccPatientXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-patient-x-api'
+    import {IccPatientXApi as IccPatientXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-patient-x-api'
     import {IccReceiptXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-receipt-x-api'
+    import {IccReceiptXApi as IccReceiptXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-receipt-x-api'
     import {IccAccesslogXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-accesslog-x-api'
     import {IccUserXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-user-x-api'
     import {IccInvoiceXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-invoice-x-api'
+    import {IccInvoiceXApi as IccInvoiceXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-invoice-x-api'
     import {IccMessageXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-message-x-api'
     import {IccMessageXApi as IccMessageXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-message-x-api'
     import {IccClassificationXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-classification-x-api'
+    import {IccClassificationXApi as IccClassificationXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-classification-x-api'
     import {ElectronApi} from 'topaz-electron-api/src/api/ElectronApi'
 
     import heic2any from 'heic2any'
@@ -149,6 +159,7 @@
             Object.assign(this.headers120s, this.headers)
 
             this.authicc = new api.iccAuthApi(this.host, this.headers)
+            this.authiccv3 = new apiV3.iccAuthApi(this.host, this.headers)
             this.bemikronoicc = new api.iccBeMikronoApi(this.host, this.headers)
             this.onlineBeMikronoicc = new api.iccBeMikronoApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
             this.beresultexporticc = new api.iccBeResultExportApi(this.host, this.headers)
@@ -158,11 +169,14 @@
             this.genericicc = new api.iccGenericApi(this.host, this.headers)
             this.icureicc = new api.iccIcureApi(this.host, this.headers)
             this.insuranceicc = new api.iccInsuranceApi(this.host, this.headers)
+            this.insuranceiccv3 = new apiV3.iccInsuranceApi(this.host, this.headers)
             this.replicationicc = new api.iccReplicationApi(this.host, this.headers)
             this.tarificationicc = new api.iccTarificationApi(this.host, this.headers)
             this.entityreficc = new api.iccEntityrefApi(this.host, this.headers30s)
+            this.entityreficcv3 = new apiV3.iccEntityrefApi(this.host, this.headers30s)
 
             this.calendaritemicc = new api.iccCalendarItemApi(this.host, this.headers)
+            this.calendaritemiccv3 = new api.iccCalendarItemApiV3(this.host, this.headers)
             this.calendaritemtypeicc = new api.iccCalendarItemTypeApi(this.host, this.headers)
             this.besamv2icc = new api.iccBeSamv2Api(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
             this.besamv2v3icc = new apiV3.iccBesamv2Api(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? this.host : "https://backend.svc.icure.cloud/rest/v1", this.headers)
@@ -173,22 +187,34 @@
             this.bedrugsicc = new IccBedrugsXApi(this.host, this.headers)
 
             this.hcpartyiccLight = new api.iccHcpartyApi(this.host, this.headers)
+            this.hcpartyiccLightv3 = new apiV3.iccHcpartyApi(this.host, this.headers)
             this.hcpartyicc = new IccHcpartyXApi(this.host, this.headers)
+            this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
 
             this.patienticcLight = new api.iccPatientApi(this.host, this.headers)
+            this.patienticcLightv3 = new apiV3.iccPatientApi(this.host, this.headers)
             this.cryptoicc = new IccCryptoXApi(this.host, this.headers, this.hcpartyiccLight, this.patienticcLight)
+            this.cryptoiccv3 = new IccCryptoXApiV3(this.host, this.headers, this.hcpartyiccLightv3, this.patienticcLightv3)
 
             this.classificationicc = new IccClassificationXApi(this.host, this.headers, this.cryptoicc)
+            this.classificationiccv3 = new IccClassificationXApiV3(this.host, this.headers, this.cryptoiccv3)
 
             this.receipticc = new IccReceiptXApi(this.host, this.headers, this.cryptoicc)
+            this.receipticcv3 = new IccReceiptXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.contacticc = new IccContactXApi(this.host, this.headers, this.cryptoicc)
+            this.contacticcv3 = new IccContactXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc)
+            this.documenticcv3 = new IccDocumentXApiV3(this.host, this.headers, this.cryptoiccv3, this.authiccv3)
             this.formicc = new IccFormXApi(this.host, this.headers, this.cryptoicc)
+            this.formiccv3 = new IccFormXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.helementicc = new IccHelementXApi(this.host, this.headers, this.cryptoicc)
+            this.helementiccv3 = new IccHelementXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
-            this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc)
+            this.invoiceiccv3 = new IccInvoiceXApiV3(this.host, this.headers30s, this.cryptoiccv3, this.entityreficcv3)
+            this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc, this.calendaritemicc)
+            this.patienticcv3 = new IccPatientXApiV3(this.host, this.headers, this.cryptoiccv3, this.contacticcv3, this.formiccv3, this.helementiccv3, this.invoiceiccv3, this.documenticcv3, this.hcpartyiccv3, this.classificationiccv3, this.calendaritemiccv3)
             this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
-            this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
+            this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoicc, this.insuranceiccv3, this.entityreficcv3, this.invoiceiccv3, this.documenticcv3, this.receipticcv3, this.patienticcv3)
             this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
             this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
