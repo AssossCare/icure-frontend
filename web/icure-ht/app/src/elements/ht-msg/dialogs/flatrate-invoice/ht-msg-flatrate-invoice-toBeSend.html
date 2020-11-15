@@ -412,6 +412,7 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
@@ -668,6 +669,7 @@
         import _ from 'lodash/lodash'
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
         import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
+        import promiseLimit from 'promise-limit';
         const md5 = require('md5')
 
 
@@ -2080,6 +2082,17 @@
                     })
             }
 
+            _updatePatReopenMHC(pat, contractId){
+                return this.api.patient().getPatientWithUser(this.user, pat.id)
+                    .then(patient => {
+                        let mhc = patient.medicalHouseContracts.find(c => c.contractId === contractId)
+                        mhc.endOfContract = 0
+                        mhc.endOfCoverage = 0
+                        return this.api.patient().modifyPatientWithUser(this.user, patient)
+                            .then(p => this.api.register(p, 'patient'))
+                    })
+            }
+
             _isPTDInvoicable(ptd, invDate){
                 // 1. startdate is before or equal to invdate
                 // 2. enddate is after invdate or before 01/01/1900
@@ -2134,6 +2147,28 @@
             _gotoMyAdmin() {
                 this._closeDialogs()
                 this.dispatchEvent(new CustomEvent('trigger-goto-admin', { bubbles: true, composed: true, detail: {} }));
+            }
+
+            _fixPatient300(){
+                const promResolve = Promise.resolve()
+                const flatRateUtil = this.$.flatrateUtils;
+                const exportedDate = "2020" + "11" + "01"
+                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+                let limit = promiseLimit(50);
+                flatRateUtil.getPatientsEligibleForClosedMHHCFix(exportedDate).then(pats => Promise.all([this._getInsurancesDataByPatientsList(pats), pats])
+                ).then(([insList, pats]) => {
+                    console.log(insList, pats);
+                    const ins300 = insList.filter(ins => ins.code.startsWith("3")).map(ins => ins.id);
+                    return pats.filter(pat => !!ins300.find(ins => pat.finalInsurability.insuranceId === ins))
+                }).then(pats300 => {
+                    console.log(pats300)
+                    return Promise.all(pats300.map(pat => {
+                        return limit(() => {
+                            return this._updatePatReopenMHC(pat, pat.finalMedicalHouseContract.contractId)
+                        })
+
+                    }))
+                })
             }
 
             _exportFlatRateInvoicing_step2_v2() {
