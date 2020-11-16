@@ -210,7 +210,7 @@
             this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
 
             this.patienticcLightv3 = new apiV3.iccPatientApi(this.host, this.headers)
-            this.cryptoiccv3 = new IccCryptoXApiV3(this.host, this.headers, this.hcpartyiccLightv3, this.patienticcLightv3)
+            this.cryptoiccv3 = new IccCryptoXApiV3(this.host, this.headers, this.hcpartyiccv3, this.patienticcLightv3)
             this.classificationiccv3 = new IccClassificationXApiV3(this.host, this.headers, this.cryptoiccv3)
 
             this.receipticcv3 = new IccReceiptXApiV3(this.host, this.headers, this.cryptoiccv3)
