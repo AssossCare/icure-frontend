@@ -1393,6 +1393,12 @@
                                                 </vaadin-grid-column>
                                                 <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
                                                     <template class="header">
+                                                        <vaadin-grid-sorter path="item.flatrateInfo.contractId">[[localize('cov_contract_id','Id',language)]]</vaadin-grid-sorter>
+                                                    </template>
+                                                    <template>[[item.flatrateInfo.contractId]]</template>
+                                                </vaadin-grid-column>
+                                                <vaadin-grid-column flex-grow="0" width="10%" class="invoice-col">
+                                                    <template class="header">
                                                         [[localize('open_pat','Open',language)]]
                                                     </template>
                                                     <template><paper-icon-button class="button--icon-btn" id="openPatient" data-id$="[[item.pat.id]]" on-tap="openPatient" icon="vaadin:edit">Open</paper-icon-button></template>

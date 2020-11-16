@@ -259,6 +259,7 @@
                     res.flatrateStatus = this.checkMHStatus(res)
                     //console.log("res", res, JSON.stringify(res));
                     res.flatrateInfo = this.getFlatrateInfo(res)
+
                 } else {
                     // non flatrate
                     res.flatrateStatus = {status: "ok-no-flatrate-mh", errors: []}
@@ -281,13 +282,14 @@
                     inf.DFAC = contract.startOfCoverage ? contract.startOfCoverage : "--/--/----";
                     inf.DDES = contract.endOfContract ? contract.endOfContract : "--/--/----";
                     inf.DFIN = contract.endOfCoverage ? contract.endOfCoverage : "--/--/----";
-
+                    inf.contractId = contract.contractId ? contract.contractId : "--noId--";
                 } else {
                     inf.ABON = "NNN";
                     inf.DINS = "--/--/----";
                     inf.DFAC = "--/--/----";
                     inf.DDES = "--/--/----";
                     inf.DFIN = "--/--/----";
+                    inf.contractId = "--noId--";
                 }
                 return inf;
             }
