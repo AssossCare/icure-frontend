@@ -642,7 +642,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <div class="profile">
                       <small>${this.localize("benef_name_lastname","Name and surname of the beneficiary",this.language)}&nbsp;:</small>
                       <ul class="patient-details">
-                          <li><b>${this.patient.firstName} ${this.patient.lastName}</b></li>
+                          <li><b>${this.patient.lastName} ${this.patient.firstName}</b></li>
                           <li><b>NISS&nbsp;:</b> ${this.patient.ssin}</li>
                       </ul>
                   </div>
