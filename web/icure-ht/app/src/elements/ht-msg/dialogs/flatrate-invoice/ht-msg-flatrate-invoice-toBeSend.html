@@ -948,7 +948,8 @@
                                     this.api.fhc().Efact(),
                                     undefined,
                                     (fed, hcpId) => Promise.resolve(`efact:${hcpId}:${fed.code === "306" ? "300" : fed.code}:`),
-                                    false
+                                    false,
+                                    "medicalhouse"
                                 )
                             ).then(message => {
                                 console.log(message)
