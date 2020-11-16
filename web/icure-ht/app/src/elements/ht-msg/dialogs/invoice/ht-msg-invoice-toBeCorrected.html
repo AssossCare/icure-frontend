@@ -415,7 +415,7 @@
                         ic.pending = true
                         ic.resent = false
                     })
-                    inv.printedDate = this.api.moment(new Date).format('YYYYMMDD')
+                    _.assign(inv, {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
                     prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
                 })
 
