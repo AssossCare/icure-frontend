@@ -593,20 +593,19 @@
                                 prom = prom.then(messages =>
                                     new Promise((resolve) => {
                                         if (message.detail) {
-                                            this.api.messagev3().processEfactMessage(this.user, this.hcp, message, null, (iv, hcpId) =>
-                                                iv.recipientId && this.api.insurancev3().getInsurance(iv.recipientId)
-                                                    .then(ins => this.api.insurancev3().getInsurance(ins.parent))
+                                            this.api.message().processEfactMessage(this.user, this.hcp, message, null, (iv, hcpId) =>
+                                                iv.recipientId && this.api.insurance().getInsurance(iv.recipientId)
+                                                    .then(ins => this.api.insurance().getInsurance(ins.parent))
                                                     .then(ins => `invoice:${hcpId}:${ins.code || '000'}:`)
                                                 || Promise.resolve(`invoice:${hcpId}:000:`)
                                             ).then(msg => {
                                                 msg ? resolve(_.concat(messages, message)) : resolve(messages)
+                                            }).catch(e => {
+                                                console.log('Erreur lors de la reception des messages efact',e)
+                                                resolve(messages)
                                             })
-                                                .catch(e => {
-                                                    console.log('Erreur lors de la reception des messages efact',e)
-                                                    resolve(messages)
-                                                })
                                         } else if (message.tack) {
-                                            this.api.messagev3().processTack(this.user, this.hcp, message)
+                                            this.api.message().processTack(this.user, this.hcp, message)
                                                 .then(rcpt => {
                                                     rcpt ? resolve(_.concat(messages, message)) : resolve(messages)
                                                 })
