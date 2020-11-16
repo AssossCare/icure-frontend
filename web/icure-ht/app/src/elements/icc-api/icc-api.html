@@ -207,12 +207,12 @@
             this.entityreficcv3 = new apiV3.iccEntityrefApi(this.host, this.headers30s)
             this.calendaritemiccv3 = new apiV3.iccCalendarItemApi(this.host, this.headers)
             this.hcpartyiccLightv3 = new apiV3.iccHcpartyApi(this.host, this.headers)
-            this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
 
             this.patienticcLightv3 = new apiV3.iccPatientApi(this.host, this.headers)
             this.cryptoiccv3 = new IccCryptoXApiV3(this.host, this.headers, this.hcpartyiccv3, this.patienticcLightv3)
             this.classificationiccv3 = new IccClassificationXApiV3(this.host, this.headers, this.cryptoiccv3)
 
+            this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
             this.receipticcv3 = new IccReceiptXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.contacticcv3 = new IccContactXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.documenticcv3 = new IccDocumentXApiV3(this.host, this.headers, this.cryptoiccv3, this.authiccv3)
@@ -220,7 +220,7 @@
             this.helementiccv3 = new IccHelementXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.invoiceiccv3 = new IccInvoiceXApiV3(this.host, this.headers30s, this.cryptoiccv3, this.entityreficcv3)
             this.patienticcv3 = new IccPatientXApiV3(this.host, this.headers, this.cryptoiccv3, this.contacticcv3, this.formiccv3, this.helementiccv3, this.invoiceiccv3, this.documenticcv3, this.hcpartyiccv3, this.classificationiccv3, this.calendaritemiccv3)
-            this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoicc, this.insuranceiccv3, this.entityreficcv3, this.invoiceiccv3, this.documenticcv3, this.receipticcv3, this.patienticcv3)
+            this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoiccv3, this.insuranceiccv3, this.entityreficcv3, this.invoiceiccv3, this.documenticcv3, this.receipticcv3, this.patienticcv3)
 
             this.desktopApi = new ElectronApi(this.electronHost)
 
