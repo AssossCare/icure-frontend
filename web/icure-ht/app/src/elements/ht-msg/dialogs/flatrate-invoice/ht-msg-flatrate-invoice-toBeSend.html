@@ -1017,7 +1017,14 @@
             }
 
             _exportFlatRateInvoicing() {
-                this.shadowRoot.querySelector('#selectMonthDialog').open()
+
+                // Triggers opening of popup / dialog to choose which month export
+                // 20201116 - Don't do anymore, force current month, always
+                // this.shadowRoot.querySelector('#selectMonthDialog').open()
+
+                // 20201116 - Force export of current month
+                return this._exportFlatRateInvoicing_step2_v2();
+
             }
 
             _exportFlatRateInvoicing_dialogResult() {
@@ -2181,8 +2188,14 @@
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
 
-                const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))
-                let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth())); exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
+                // 20201116 - Force export of current month (ISO letting user choose)
+                // const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))
+                const exportedYear = _.trim(parseInt(this._getExportCurrentYear()))
+
+                // 20201116 - Force export of current month (ISO letting user choose)
+                // let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth()));
+                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth()));
+                exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
 
                 const exportedDate = exportedYear + exportedMonth + "01"
                 const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
