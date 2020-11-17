@@ -3868,6 +3868,56 @@
 
         customElements.define(HtMsgFlatrateMda.is, HtMsgFlatrateMda);
 
+
+
+
+        // Reset MDA requests && responses to last step (for log downloading)
+        // const promResolve = Promise.resolve(null)
+        //
+        // promResolve
+        //     .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000).then(pl => {return {rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1), nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair }})))
+        //     .then(requestMessages => _.chain(requestMessages).orderBy(["metas.requestedDate"],["desc"]).head().value())
+        //     .then(requestMessage => requestMessage && _.merge(requestMessage, {metas:{step5Validated:"false"}}))
+        //     .then(requestMessage => this.api.message().modifyMessage(requestMessage))
+        //     .then(() => console.log("----- MDA REQUEST MESSAGE UPDATED -----"))
+
+
+
+
+
+
+        // Full reset of MDA (both messages and invoices)
+        // CAREFUL: No filters applied, will delete ALL invoices (eFlatRate) and ALL MDA messages (requests && responses)
+        // const promResolve = Promise.resolve(null)
+        //
+        // promResolve
+        //
+        //     //DELETE MDA MESSAGES
+        //     .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000).then(pl => {return {rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1), nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair }})))
+        //     .then(requestMessages => _.size(requestMessages) && _.flatten(_.compact(_.map(requestMessages, it => it && _.concat([it.id], _.trim(_.get(it,"metas.responseMessageIds")).split(','))))))
+        //     .then(messageIdsToDelete => (console.log("MDA messages to delete: ", messageIdsToDelete)||true) && messageIdsToDelete)
+        //     .then(messageIdsToDelete => _.size(messageIdsToDelete) && this.api.message().deleteMessages(messageIdsToDelete.join(",")))
+        //
+        //     // DELETE "efact" invoices with "medicalhouse" as "careProviderType"
+        //     .then(() => this.api.invoice().listToInsurancesUnsent(this.user.id))
+        //     .then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'sentMediumType')) === "efact" && _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
+        //     .then(invoiceUidssToDelete => {
+        //
+        //         let totalDeletedInvoices = 0;
+        //         const totalInvoicesToDelete = _.size(invoiceUidssToDelete);
+        //
+        //         if(!totalInvoicesToDelete) return (console.log("No invoices to delete")||true) && null;
+        //
+        //         console.log("Invoices to delete: ", totalInvoicesToDelete)
+        //
+        //         prom = Promise.resolve([]); _.map(invoiceUidssToDelete, it => { prom = prom.then(() => this.api.invoice().deleteInvoice(it).then(() => totalDeletedInvoices++ && console.log("Deleted invoice: " + totalDeletedInvoices + "/" + totalInvoicesToDelete ))); }); return prom
+        //
+        //     })
+        //     .then(() => console.log("----- DONE DELETE INVOICES && MDA MESSAGES -----"))
+
+
+
+
     </script>
 
 
