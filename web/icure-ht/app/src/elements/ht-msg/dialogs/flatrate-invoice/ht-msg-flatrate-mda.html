@@ -3832,6 +3832,16 @@
                     )
                     .then(() => {
 
+                        // Debug purposes only
+                        const totalPatsByOa = { "100": 0, "200": 0, "300": 0, "400": 0, "500": 0, "600": 0, "900": 0 };
+                        _.map(_.get(this,"mdaRequestsData.message.attachment.request"), it => _.trim(_.get(it,"parentInsuranceCode")) && totalPatsByOa[_.trim(_.get(it,"parentInsuranceCode"))]++);
+
+                        console.log("Pats by OA: ", totalPatsByOa)
+                        console.log("Total pats sent: ", _.reduce(totalPatsByOa, (acc,v) => acc+(parseInt(v)||0), 0))
+
+                    })
+                    .then(() => {
+
                         // 005 - Do we have any pending responses to wait for ? (Either not all patients we sent in request were matched in response(s) (or response(s) not obtained yet) AND user did not override / bypass the response checks)
                         if (eInvoicingStep === "mdaCheckForResponses") throw new Error("dontGoAnyFurther");
 
