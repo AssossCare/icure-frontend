@@ -3832,12 +3832,71 @@
                     )
                     .then(() => {
 
-                        // Debug purposes only
+                        // For statistics / debug
                         const totalPatsByOa = { "100": 0, "200": 0, "300": 0, "400": 0, "500": 0, "600": 0, "900": 0 };
                         _.map(_.get(this,"mdaRequestsData.message.attachment.request"), it => _.trim(_.get(it,"parentInsuranceCode")) && totalPatsByOa[_.trim(_.get(it,"parentInsuranceCode"))]++);
 
+                        console.log("----- Request statistics ----- ")
                         console.log("Pats by OA: ", totalPatsByOa)
                         console.log("Total pats sent: ", _.reduce(totalPatsByOa, (acc,v) => acc+(parseInt(v)||0), 0))
+
+                    })
+                    .then(() => {
+
+                        // For statistics / debug
+                        const responseStatistics = {}
+
+                        const acceptableRequestErrors = [
+                            "[ONLY_FIVE_PERIODS_RETURNED]",
+                        ]
+
+                        const acceptableResponseErrors = [
+                            "Le patient n'est pas assuré",
+                            "Le patient ne dispose d'aucune assurance en cours de validité",
+                            "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
+                            "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale",
+                            "Le patient est désormais dans la Maison Médicale",
+                        ]
+
+                        _.map(_.get(this,"mdaRequestsGridData",[]), it => {
+
+                            // Target - could be none
+                            const oa = _.trim(_.get(it,"parentInsuranceCode")) ? _.trim(_.get(it,"parentInsuranceCode")) : "NO_OA"
+
+                            const requestError = _.trim(_.get(it,"requestErrorMessage")) && acceptableRequestErrors.indexOf(_.trim(_.get(it,"requestErrorMessage"))) === -1 && !_.trim(_.get(it,"requestErrorMessage")).startsWith(acceptableRequestErrors[0]) ? _.trim(_.get(it,"requestErrorMessage")) : ""
+                            const responseError = _.trim(_.get(it,"responseErrorMessage")) && acceptableResponseErrors.indexOf(_.trim(_.get(it,"responseErrorMessage"))) === -1 && !_.trim(_.get(it,"responseErrorMessage")).startsWith(acceptableResponseErrors[4]) ? _.trim(_.get(it,"responseErrorMessage")) : ""
+                            const responseObtained = !!_.get(it,"patientMatchedWithMdaResponse")
+
+                            // Define structure
+                            if(!responseStatistics[oa]) responseStatistics[oa] = {
+                                nfa: 0,
+                                responses: 0,
+                                missingResponses: 0,
+                                totalErrors: 0,
+                                errors: [],
+                                data: [],
+                            }
+
+                            // Success
+                            if(responseObtained && !requestError && !responseError) responseStatistics[oa].responses++;
+
+                            // Response not obtained yet
+                            if(!responseObtained && !requestError && !responseError) responseStatistics[oa].missingResponses++;
+
+                            // Response obtained, with an error
+                            if(responseObtained && (requestError || responseError)) {
+                                responseStatistics[oa].totalErrors++;
+                                responseStatistics[oa].errors.push({ ssin: _.trim(_.get(it,"patientSsin")), requestError: requestError, responseError: responseError })
+                            }
+
+                            // Collect pats without oa
+                            if(oa==="NO_OA") responseStatistics[oa].data.push({ ssin: _.trim(_.get(it,"patientSsin")), nameHr: _.trim(_.get(it,"nameHr")), requestError: requestError, responseError: responseError })
+
+                        })
+
+                        console.log("----- Response statistics -----")
+                        console.log(responseStatistics)
+                        console.log(JSON.stringify(responseStatistics))
 
                     })
                     .then(() => {
