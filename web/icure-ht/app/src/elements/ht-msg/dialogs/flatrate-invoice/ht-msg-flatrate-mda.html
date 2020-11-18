@@ -3832,6 +3832,75 @@
                     )
                     .then(() => {
 
+                        // For statistics / debug
+                        const totalPatsByOa = { "100": 0, "200": 0, "300": 0, "400": 0, "500": 0, "600": 0, "900": 0 };
+                        _.map(_.get(this,"mdaRequestsData.message.attachment.request"), it => _.trim(_.get(it,"parentInsuranceCode")) && totalPatsByOa[_.trim(_.get(it,"parentInsuranceCode"))]++);
+
+                        console.log("----- Request statistics ----- ")
+                        console.log("Pats by OA: ", totalPatsByOa)
+                        console.log("Total pats sent: ", _.reduce(totalPatsByOa, (acc,v) => acc+(parseInt(v)||0), 0))
+
+                    })
+                    .then(() => {
+
+                        // For statistics / debug
+                        const responseStatistics = {}
+
+                        const acceptableRequestErrors = [
+                            "[ONLY_FIVE_PERIODS_RETURNED]",
+                        ]
+
+                        const acceptableResponseErrors = [
+                            "Le patient n'est pas assuré",
+                            "Le patient ne dispose d'aucune assurance en cours de validité",
+                            "Le patient ne dispose d'aucun contrat avec une Maison Médicale",
+                            "Le patient ne dispose d'aucun contrat en cours / valide avec votre Maison Médicale",
+                            "Le patient est désormais dans la Maison Médicale",
+                        ]
+
+                        _.map(_.get(this,"mdaRequestsGridData",[]), it => {
+
+                            // Target - could be none
+                            const oa = _.trim(_.get(it,"parentInsuranceCode")) ? _.trim(_.get(it,"parentInsuranceCode")) : "NO_OA"
+
+                            const requestError = _.trim(_.get(it,"requestErrorMessage")) && acceptableRequestErrors.indexOf(_.trim(_.get(it,"requestErrorMessage"))) === -1 && !_.trim(_.get(it,"requestErrorMessage")).startsWith(acceptableRequestErrors[0]) ? _.trim(_.get(it,"requestErrorMessage")) : ""
+                            const responseError = _.trim(_.get(it,"responseErrorMessage")) && acceptableResponseErrors.indexOf(_.trim(_.get(it,"responseErrorMessage"))) === -1 && !_.trim(_.get(it,"responseErrorMessage")).startsWith(acceptableResponseErrors[4]) ? _.trim(_.get(it,"responseErrorMessage")) : ""
+                            const responseObtained = !!_.get(it,"patientMatchedWithMdaResponse")
+
+                            // Define structure
+                            if(!responseStatistics[oa]) responseStatistics[oa] = {
+                                nfa: 0,
+                                responses: 0,
+                                missingResponses: 0,
+                                totalErrors: 0,
+                                errors: [],
+                                data: [],
+                            }
+
+                            // Success
+                            if(responseObtained && !requestError && !responseError) responseStatistics[oa].responses++;
+
+                            // Response not obtained yet
+                            if(!responseObtained && !requestError && !responseError) responseStatistics[oa].missingResponses++;
+
+                            // Response obtained, with an error
+                            if(responseObtained && (requestError || responseError)) {
+                                responseStatistics[oa].totalErrors++;
+                                responseStatistics[oa].errors.push({ ssin: _.trim(_.get(it,"patientSsin")), requestError: requestError, responseError: responseError })
+                            }
+
+                            // Collect pats without oa
+                            if(oa==="NO_OA") responseStatistics[oa].data.push({ ssin: _.trim(_.get(it,"patientSsin")), nameHr: _.trim(_.get(it,"nameHr")), requestError: requestError, responseError: responseError })
+
+                        })
+
+                        console.log("----- Response statistics -----")
+                        console.log(responseStatistics)
+                        console.log(JSON.stringify(responseStatistics))
+
+                    })
+                    .then(() => {
+
                         // 005 - Do we have any pending responses to wait for ? (Either not all patients we sent in request were matched in response(s) (or response(s) not obtained yet) AND user did not override / bypass the response checks)
                         if (eInvoicingStep === "mdaCheckForResponses") throw new Error("dontGoAnyFurther");
 
@@ -3857,6 +3926,56 @@
         }
 
         customElements.define(HtMsgFlatrateMda.is, HtMsgFlatrateMda);
+
+
+
+
+        // Reset MDA requests && responses to last step (for log downloading)
+        // const promResolve = Promise.resolve(null)
+        //
+        // promResolve
+        //     .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000).then(pl => {return {rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1), nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair }})))
+        //     .then(requestMessages => _.chain(requestMessages).orderBy(["metas.requestedDate"],["desc"]).head().value())
+        //     .then(requestMessage => requestMessage && _.merge(requestMessage, {metas:{step5Validated:"false"}}))
+        //     .then(requestMessage => this.api.message().modifyMessage(requestMessage))
+        //     .then(() => console.log("----- MDA REQUEST MESSAGE UPDATED -----"))
+
+
+
+
+
+
+        // Full reset of MDA (both messages and invoices)
+        // CAREFUL: No filters applied, will delete ALL invoices (eFlatRate) and ALL MDA messages (requests && responses)
+        // const promResolve = Promise.resolve(null)
+        //
+        // promResolve
+        //
+        //     //DELETE MDA MESSAGES
+        //     .then(() => this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:*', null, key, docId, 1000).then(pl => {return {rows: _.filter(pl.rows, it => it && _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId && _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1), nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair }})))
+        //     .then(requestMessages => _.size(requestMessages) && _.flatten(_.compact(_.map(requestMessages, it => it && _.concat([it.id], _.trim(_.get(it,"metas.responseMessageIds")).split(','))))))
+        //     .then(messageIdsToDelete => (console.log("MDA messages to delete: ", messageIdsToDelete)||true) && messageIdsToDelete)
+        //     .then(messageIdsToDelete => _.size(messageIdsToDelete) && this.api.message().deleteMessages(messageIdsToDelete.join(",")))
+        //
+        //     // DELETE "efact" invoices with "medicalhouse" as "careProviderType"
+        //     .then(() => this.api.invoice().listToInsurancesUnsent(this.user.id))
+        //     .then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'sentMediumType')) === "efact" && _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
+        //     .then(invoiceUidssToDelete => {
+        //
+        //         let totalDeletedInvoices = 0;
+        //         const totalInvoicesToDelete = _.size(invoiceUidssToDelete);
+        //
+        //         if(!totalInvoicesToDelete) return (console.log("No invoices to delete")||true) && null;
+        //
+        //         console.log("Invoices to delete: ", totalInvoicesToDelete)
+        //
+        //         prom = Promise.resolve([]); _.map(invoiceUidssToDelete, it => { prom = prom.then(() => this.api.invoice().deleteInvoice(it).then(() => totalDeletedInvoices++ && console.log("Deleted invoice: " + totalDeletedInvoices + "/" + totalInvoicesToDelete ))); }); return prom
+        //
+        //     })
+        //     .then(() => console.log("----- DONE DELETE INVOICES && MDA MESSAGES -----"))
+
+
+
 
     </script>
 
