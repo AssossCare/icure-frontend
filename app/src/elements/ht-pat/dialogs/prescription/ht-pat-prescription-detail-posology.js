@@ -933,7 +933,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
             '_changeBeginMoment(medicationDetail.beginMomentAsString)',
             '_changeEndMoment(medicationDetail.endMomentAsString)',
             '_changeDuration(duration)',
-            '_regimenChanged(medicationContent.medicationValue, medicationDetail.commentForPatient, medicationContent.medicationValue.regimen.*)',
+            '_regimenChanged(medicationContent.medicationValue, medicationDetail.commentForPatient,medicationDetail.deliveryMomentAsString , medicationContent.medicationValue.regimen.*)',
             '_quantityFactorChanged(quantityFactor)',
             '_periodChanged(periodConfig)',
             '_renewalChanged(medicationDetail.renewal)',
@@ -1116,7 +1116,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         // Exists in form, when creating
         const commentForPatient = _.trim(_.get(this,"medication.drug.commentForPatient"))
 
-        const comment = !instructionForPatient ? "" : _.trim(instructionForPatient.replace(this.api.contact().medication().posologyToString(_.get(this,"medicationContent.medicationValue")||{}, this.language), ""))
+        const comment = !instructionForPatient ? "" : _.trim(instructionForPatient.replace(this.api.addDateDelivToPosology(_.get(this,"medicationContent.medicationValue")||{}, this.language), ""))
 
         _.merge(this, {medicationContent:{medicationValue:{instructionForPatient:""}}})
 
@@ -1398,7 +1398,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
         return !_.get(this,"medicationContent.medicationValue") || !this.medicationDetail ? promResolve : promResolve
             .then(() => this._updateStats())
             .then(() => this.set("medicationContent.medicationValue.instructionForPatient", ""))
-            .then(() => this.api.contact().medication().posologyToString(_.get(this,"medicationContent.medicationValue",{}), this.language))
+            .then(() => this.api.addDateDelivToPosology(_.assign(_.get(this,"medicationContent.medicationValue",{}),{ deliveryMoment : _.get(this,"medicationDetail.deliveryMomentAsString",false)}), this.language))
             .then(currentPosology => (this.set("medicationDetail.posology", currentPosology)||true) && currentPosology)
             .then(currentPosology => this.set("medicationContent.medicationValue.instructionForPatient", _.trim(currentPosology) + (currentPosology && instructionsForPatient ? this.commentSeparator : "") + instructionsForPatient))
 

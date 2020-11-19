@@ -71,7 +71,19 @@ class HtPatPrescriptionDetailSearchCheaperDrugs extends TkLocalizerMixin(mixinBe
                     sam-version="[[samVersion]]"  
                     search-result="[[cheaperDrugsList]]"
                     origin="[[origin]]"     
-                ></ht-pat-prescription-detail-search-commercial-result>             
+                ></ht-pat-prescription-detail-search-commercial-result>
+                <!--add vmp HtPatPrescriptionDetailSearchSubstance todo @julien refaire car fait en vitesse pour mini-lab--> 
+                <!--<ht-pat-prescription-detail-search-substance 
+                                id="htPatPrescriptionDetailSearchSubstance" 
+                                api="[[api]]" 
+                                user="[[user]]" 
+                                hcp="[[hcp]]" 
+                                language="[[language]]" 
+                                search-result="[[vmp]]" 
+                                resources="[[resources]]" 
+                                is-loading="[[isLoadingSubstance]]"
+                                sam-version="[[samVersion]]"
+                            ></ht-pat-prescription-detail-search-substance>      -->      
             </div>
          </div>
                     
@@ -111,10 +123,15 @@ class HtPatPrescriptionDetailSearchCheaperDrugs extends TkLocalizerMixin(mixinBe
             selectedParentDrugForCheaper:{
                 type: Object,
                 value: () => {}
+                //observer : "_parentDrugChanged"
             },
             origin:{
                 type: String,
                 value: "cheaperDrugsSearch"
+            },
+            vmp : {
+                type: Object,
+                value : () => {}
             }
         };
     }
@@ -133,6 +150,19 @@ class HtPatPrescriptionDetailSearchCheaperDrugs extends TkLocalizerMixin(mixinBe
             composed: true
         }))
     }
+
+    /*_parentDrugChanged(){
+        if(!this.parentDrug){
+            this.set("vmp",{})
+        }
+        this.set("vmp",{
+            molecule : [{
+                id : "",
+                internalUuid : "",
+                label : _.get(this,"parentDrug.informations.vmpName",""),
+            }]
+        })
+    }*/
 
 }
 customElements.define(HtPatPrescriptionDetailSearchCheaperDrugs.is, HtPatPrescriptionDetailSearchCheaperDrugs);
