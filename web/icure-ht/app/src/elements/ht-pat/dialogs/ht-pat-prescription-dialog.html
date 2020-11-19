@@ -692,17 +692,7 @@
 
                 if (this.patient.ssin && this.api.tokenId) { // if ehealth connected
                     this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId).then(hcp =>
-                        /*this.api.fhc().Recipe().listOpenPrescriptionsByPatientUsingGET(
-                            this.api.keystoreId,
-                            this.api.tokenId,
-                            "persphysician",
-                            hcp.nihii,
-                            hcp.ssin,
-                            hcp.lastName,
-                            this.patient.ssin,
-                            this.api.credentials.ehpassword*/
-                            Promise.resolve()
-                        ).then(presclist => {
+                        Promise.resolve([]).then(presclist => {
                                 presclist = presclist.reverse()
                                 console.log("presclist", presclist)
                                 if(presclist.length > 0) {
