@@ -47,6 +47,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             
             .cnk-info-container-content{
                height: calc(100% - 30px);
+               overflow: auto;
             }
             
             .btn-close{
@@ -330,7 +331,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                              </div>
                              <div class="headerInfoLine">
                                 <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Chapitre',language)]]: &nbsp;</span> 
+                                    <span class="headerLabel">[[localize('','Chapitre',language)]]: &nbsp;[[_getChapter(selectedCnkForInformation)]]</span> 
                                 </div>
                                  <div class="headerInfoField">
                                     <span class="headerLabel">[[localize('','Interventions',language)]]: &nbsp;</span>
@@ -503,6 +504,10 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
 
     _getStartOfReimbursment(drug){
         return _.get(drug, 'informations.currentReimbursement.from', null) ? this.api.moment(_.get(drug, 'informations.currentReimbursement.from', null)).format('DD/MM/YYYY') : '-'
+    }
+
+    _getChapter(drug){
+        return _.get(drug, 'informations.currentReimbursement.legalReferencePath', null) !== null ? _.trim(_.get(drug, 'informations.currentReimbursement.legalReferencePath', null)).split('-')[1] : null
     }
 
 
