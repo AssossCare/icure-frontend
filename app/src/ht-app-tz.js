@@ -1497,7 +1497,7 @@ class HtAppTz extends TkLocalizerMixin(PolymerElement) {
                   return Promise.resolve(this._checkShowWelcomePage())
               })
           }else{
-              if(icureurl) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
+              if(icureurl && icureurl.selected) this.set('icureUrl',icureurl.selected.includes("/rest/v1") ? icureurl.selected : icureurl.selected+"/rest/v1")
               if(fhcurl) this.set('fhcUrl',fhcurl.selected)
               this.$["loginDialog"].disable()
               return Promise.resolve(this._checkShowWelcomePage())
