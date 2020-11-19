@@ -60,28 +60,24 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             }
             
             .cnk-info-reimbursement-container{
-                height: 100px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
             }
             
             .cnk-info-delivery-container{
-                height: 115px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
             }
             
             .cnk-info-commercialisation-container{
-                height: 100px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
             }
             
             .cnk-info-drug-container{
-                height: 115px;
                 width: auto;
                 border: 1px solid var(--app-background-color-dark);
                 margin: 5px;
@@ -165,6 +161,33 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 padding: 4px;
             }
             
+            .headerInfoLine{
+                padding: 4px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+
+            .headerInfoField{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: stretch;
+                width: calc(100% / 4);
+                padding: 0 8px;
+                box-sizing: border-box;
+            }
+
+            .headerLabel{
+                font-weight: bold;
+            }
+            
+            .fw2{
+                width: calc(100% / 2);
+            }
+            
         </style>
         
          <div class="cnk-info-container">
@@ -179,39 +202,49 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                     </div>
                     <div class="cnk-info-drug-container-content">
                         <div class="table">
-                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Nom',language)]]</div>    
-                                <div class="td fg1">[[selectedCnkForInformation.label]]</div>
-                             </div>
-                             <template is="dom-if" if="[[!_isDCI(selectedCnkForInformation)]]">
-                                 <div class="tr">
-                                    <div class="td fg1 bold">[[localize('','Vmp',language)]]</div>    
-                                    <div class="td fg1">[[_getVmp(selectedCnkForInformation)]]</div>
-                                    <div class="td fg1 bold">[[localize('','Vmp group',language)]]</div>
-                                    <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div>   
-                                 </div>
-                             </template>
-                             <template is="dom-if" if="[[_isDCI(selectedCnkForInformation)]]">
-                                 <div class="tr">
-                                     <div class="td fg1 bold">[[localize('','Nom du groupe vmp',language)]]</div>
-                                    <div class="td fg1">[[_getVmpGroup(selectedCnkForInformation)]]</div> 
-                                    <div class="td fg1 bold">[[localize('','Code du groupe vmp',language)]]</div>
-                                    <div class="td fg1">[[_getVmpGroupCode(selectedCnkForInformation)]]</div> 
-                                 </div>
-                                 <div class="tr">
-                                    <div class="td fg1 bold">[[localize('','Status du groupe vmp',language)]]</div>
-                                    <div class="td fg1">[[_getVmpGroupStatusCode(selectedCnkForInformation)]] </div>
-                                    <div class="td fg1 bold">[[localize('','Description',language)]]</div>
-                                    <div class="td fg1">[[_getVmpGroupStatusDescription(selectedCnkForInformation)]] </div>
-                                 </div>
-                             </template>
-                             <template is="dom-if" if="[[_isWadaSpecification(selectedCnkForInformation)]]">
-                                 <div class="tr">
-                                    <div class="td fg1 warningColor">
-                                        <iron-icon icon='vaadin:warning' class="warningIcon"></iron-icon> [[_isNarcotic(selectedCnkForInformation)]]
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Nom',language)]]: &nbsp;</span> [[selectedCnkForInformation.label]]
+                                </div>
+                                <template is="dom-if" if="[[!_isDCI(selectedCnkForInformation)]]">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('','Vmp',language)]]: &nbsp;</span> [[_getVmp(selectedCnkForInformation)]]
                                     </div>
-                                 </div>
-                             </template>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('','Vmp group',language)]]: &nbsp;</span> [[_getVmpGroup(selectedCnkForInformation)]]
+                                    </div>
+                                </template>
+                                 <template is="dom-if" if="[[_isDCI(selectedCnkForInformation)]]">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('','Nom du groupe vmp',language)]]: &nbsp;</span> [[_getVmpGroup(selectedCnkForInformation)]]
+                                    </div>
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('','Code du groupe vmp',language)]]: &nbsp;</span> [[_getVmpGroupCode(selectedCnkForInformation)]]
+                                    </div>
+                                 </template>
+                             </div>
+                              <template is="dom-if" if="[[_isDCI(selectedCnkForInformation)]]">
+                                  <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">[[localize('','Status du groupe vmp',language)]]: &nbsp;</span> [[_getVmpGroupStatusCode(selectedCnkForInformation)]]
+                                    </div>
+                                    <div class="headerInfoField fw2">
+                                        <span class="headerLabel">[[localize('','Description',language)]]: &nbsp;</span> [[_getVmpGroupStatusDescription(selectedCnkForInformation)]]
+                                    </div>
+                                  </div>
+                              </template>
+                              <template is="dom-if" if="[[_isWadaSpecification(selectedCnkForInformation)]]">
+                                  <div class="headerInfoLine">
+                                    <div class="headerInfoField fw2 warningColor">
+                                        <span class="headerLabel">&nbsp;</span> <iron-icon icon='vaadin:warning' class="warningIcon"></iron-icon> [[_isNarcotic(selectedCnkForInformation)]]
+                                    </div>
+                                  </div>
+                              </template>
+                              <div class="headerInfoLine">
+                                <div class="headerInfoField fw2">
+                                    <span class="headerLabel">[[localize('','Statut no dci/no switch',language)]]: &nbsp;</span> [[_getNoSwitch(selectedVmpGroup)]] - [[_getNovos(selectedVmpGroup)]]
+                                </div>
+                              </div>
                         </div>
                     </div>
                 </div>
@@ -221,17 +254,21 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                     </div>
                     <div class="cnk-info-commercialisation-container-content">
                         <div class="table">
-                            <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Début de la commercialisation',language)]]</div>    
-                                <div class="td fg1">[[_getStartDateOfCommercialization(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Fin de la commercialisation',language)]]</div>
-                                <div class="td fg1">[[_getEndDateOfCommercialization(selectedCnkForInformation)]]</div>
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Début de la commercialisation',language)]]: &nbsp;</span> [[_getStartDateOfCommercialization(selectedCnkForInformation)]]
+                                </div>
+                                 <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Fin de la commercialisation',language)]]: &nbsp;</span> [[_getEndDateOfCommercialization(selectedCnkForInformation)]]
+                                </div>
                              </div>
-                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Début prescriptibilité',language)]]</div>    
-                                <div class="td fg1">[[_getStartDateOfPrescribing(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Fin de prescriptibilité',language)]]</div>
-                                <div class="td fg1">[[_getEndDateOfPrescribing(selectedCnkForInformation)]]</div>
+                             <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Début prescriptibilité',language)]]: &nbsp;</span> [[_getStartDateOfPrescribing(selectedCnkForInformation)]]
+                                </div>
+                                 <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Fin de prescriptibilité',language)]]: &nbsp;</span> [[_getEndDateOfPrescribing(selectedCnkForInformation)]]
+                                </div>
                              </div>
                         </div>
                     </div>
@@ -242,20 +279,26 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                     </div>
                     <div class="cnk-info-delivery-container-content">
                         <div class="table">
-                            <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Mode de délivrance',language)]]</div>    
-                                <div class="td fg1">[[_getDeliveryModus(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Condition de prescription',language)]]</div>    
-                                <div class="td fg1">[[_getDeliveryModusSpecification(selectedCnkForInformation)]]</div>
+                             <div class="headerInfoLine">
+                                <div class="headerInfoField fw2">
+                                    <span class="headerLabel">[[localize('','Mode de délivrance',language)]]: &nbsp;</span> [[_getDeliveryModus(selectedCnkForInformation)]]
+                                </div>
+                             </div>
+                             <div class="headerInfoLine">
+                                 <div class="headerInfoField fw2">
+                                        <span class="headerLabel">&nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
+                                    </div>
                              </div>
                         </div>
                         <template is="dom-repeat" items="[[_getWadaSpecification(selectedCnkForInformation)]]" as="wada">
                             <div class="table">
-                                 <div class="tr heightUnset">
-                                    <div class="td fg1 overflowUnset whiteSpaceUnset">[[_getWadaName(wada)]]</div>
-                                 </div>
-                                 <div class="tr heightUnset">
-                                    <div class="td fg1 overflowUnset whiteSpaceUnset">[[_getWadaDescr(wada)]]</div>
+                                 <div class="headerInfoLine">
+                                    <div class="headerInfoField">
+                                        <span class="headerLabel">&nbsp;</span> [[_getWadaName(wada)]]
+                                    </div>
+                                     <div class="headerInfoField">
+                                        <span class="headerLabel">&nbsp;</span> [[_getWadaDescr(wada)]]
+                                    </div>
                                  </div>
                             </div>
                         </template>
@@ -267,17 +310,31 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                     </div>
                     <div class="cnk-info-reimbursement-container-content">
                         <div class="table">
-                            <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Catégorie',language)]]</div>    
-                                <div class="td fg1">[[_getReimbursementName(selectedCnkForInformation)]]</div>
-                                <div class="td fg1 bold">[[localize('','Description',language)]]</div>    
-                                <div class="td fg1">[[_getReimbursementDescription(selectedCnkForInformation)]]</div>
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Catégorie',language)]]: &nbsp;</span> [[_getReimbursementName(selectedCnkForInformation)]]
+                                </div>
+                            </div>
+                            <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Début du remb.',language)]]: &nbsp;</span> [[_getStartOfReimbursment(selectedCnkForInformation)]]
+                                </div>
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Fin du remb.',language)]]: &nbsp;</span> [[_getEndOfReimbursment(selectedCnkForInformation)]]
+                                </div>
+                            </div>
+                            <div class="headerInfoLine">
+                                 <div class="headerInfoField fw2">
+                                    <span class="headerLabel">[[localize('','Description',language)]]: &nbsp;</span> [[_getReimbursementDescription(selectedCnkForInformation)]]
+                                </div>
                              </div>
-                             <div class="tr">
-                                <div class="td fg1 bold">[[localize('','Chapitre',language)]]</div>    
-                                <div class="td fg1"></div>
-                                <div class="td fg1 bold">[[localize('','Interventions',language)]]</div>    
-                                <div class="td fg1"></div>
+                             <div class="headerInfoLine">
+                                <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Chapitre',language)]]: &nbsp;</span> 
+                                </div>
+                                 <div class="headerInfoField">
+                                    <span class="headerLabel">[[localize('','Interventions',language)]]: &nbsp;</span>
+                                </div>
                              </div>
                         </div>
                     </div>
@@ -318,17 +375,30 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
             selectedCnkForInformation:{
                 type: Object,
                 value: () => {}
+            },
+            selectedVmpGroup:{
+                type: Object,
+                value: () => {}
             }
         };
     }
 
     static get observers() {
-        return [];
+        return ["_initialize(user, selectedCnkForInformation)"];
     }
 
     ready() {
         super.ready();
     }
+
+   _initialize(){
+        this.set('selectedVmpGroup', {})
+        if(!_.isEmpty(this.selectedCnkForInformation)){
+            this.api.besamv2().findPaginatedVmpGroupsByLabel(this.language, _.head(_.trim(_.get(this, 'selectedCnkForInformation.informations.vmpGroupName', null)).split(' '))).then(vmpGroup => {
+                this.set("selectedVmpGroup", _.get(vmpGroup, 'rows', []).find(gr => _.get(gr, 'code', null) === _.get(this.selectedCnkForInformation, 'informations.vmpGroupCode', '')))
+            })
+        }
+   }
 
     _closeCnkInfoView(){
         this.dispatchEvent(new CustomEvent('close-cnk-info-view', {
@@ -419,6 +489,21 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
         return _.get(drug,"vmpGroup.noSwitchReason.description."+this.language,"-")
     }
 
+    _getNoSwitch(selectedVmpGroup){
+        return _.get(selectedVmpGroup, 'noSwitchReason.description.'+this.language, null)
+    }
+
+    _getNovos(selectedVmpGroup){
+        return _.get(selectedVmpGroup, 'noGenericPrescriptionReason.description.'+this.language, null)
+    }
+
+    _getEndOfReimbursment(drug){
+        return _.get(drug, 'informations.currentReimbursement.to', null) ? this.api.moment(_.get(drug, 'informations.currentReimbursement.to', null)).format('DD/MM/YYYY') : '-'
+    }
+
+    _getStartOfReimbursment(drug){
+        return _.get(drug, 'informations.currentReimbursement.from', null) ? this.api.moment(_.get(drug, 'informations.currentReimbursement.from', null)).format('DD/MM/YYYY') : '-'
+    }
 
 
 }
