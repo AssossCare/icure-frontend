@@ -360,7 +360,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
       }
   }
 
-  scanServicesAndScheduleSave(ctc) {
+  scanServicesAndScheduleSave(ctc, saveNow=false) {
       if (!ctc) {
           return;
       }
@@ -415,7 +415,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                   return new Promise((resolve,reject) =>
                       this.dispatchEvent(new CustomEvent('must-save-contact', {detail: {contact: ctc, preSave: () => this.dataProvider.computeFormulas(['OnSave']), postSave:(ctc) => resolve(ctc), postError: (e) => {this.dataProvider.saveError(e);reject(e);}}, bubbles: true, composed: true})))//Must be fired before the end of the save otherwise the element won't exist anymore and the event will not bubble up
               };
-              this.saveTimeout = setTimeout(saveAction, 10000); //Make sure the save is done with the right saveAction by using a const
+              this.saveTimeout = setTimeout(saveAction, (!!saveNow ? 1000 : 10000)); //Make sure the save is done with the right saveAction by using a const
           })
       })
 
@@ -658,7 +658,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
               const c = _.compact(self.services(label).map(line => line && line[0]).map(s => s && s.svc && !s.svc.endOfLife && s.svc)).map(s => _.cloneDeep(s)); //Never provide the real objects so that we can compare them later on
               return c;
           },
-          setValueContainers: (label, containers) => {
+          setValueContainers: (label, containers, saveNow=false) => {
               if (!this.currentContact) {
                   return;
               }
@@ -706,7 +706,7 @@ class DynamicallyLoadedForm extends TkLocalizerMixin(PolymerElement) {
                   }
               });
               if (isModified || currentValueContainers.length) {
-                  this.scanServicesAndScheduleSave(this.currentContact);
+                  this.scanServicesAndScheduleSave(this.currentContact, saveNow||false);
               }
           },
           getStringValue: (label, original) => {

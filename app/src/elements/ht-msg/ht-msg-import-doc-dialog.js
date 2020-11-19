@@ -570,7 +570,7 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
       if (!message.metas)
           return Promise.reject('Invalid message structure');
       try {
-          return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, message, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(info))))
+          return this.api.encryptDecrypt("encrypt", this.user, message, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(info))))
               .then(encrypted => {
                   message.metas.cryptedInfo = btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)));
                   return message;
@@ -695,7 +695,7 @@ class HtMsgImportDocDialog extends TkLocalizerMixin(PolymerElement) {
               .then(newDoc => this.api.document().createDocument(newDoc))
               .then(createdDoc =>{
                   doc.docId = createdDoc.id
-                  return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob)
+                  return this.api.encryptDecrypt("encrypt", this.user, createdDoc, doc.fileBlob)
               })
               .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent)
                   .then(x=>x)

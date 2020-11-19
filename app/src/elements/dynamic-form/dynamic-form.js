@@ -967,7 +967,7 @@ class DynamicForm extends TkLocalizerMixin(PolymerElement) {
         }
         const layoutItem = this.layoutItemPerName[event.target.id];
         if (layoutItem) {
-            this._isTokenField(layoutItem) ? this.dataProvider.setValueContainers(layoutItem.name, change.value) : this._isMedicationField(layoutItem) ? this.dataProvider.setValueContainers(layoutItem.name, change.medications) : null;
+            this._isTokenField(layoutItem) ? this.dataProvider.setValueContainers(layoutItem.name, change.value) : this._isMedicationField(layoutItem) ? this.dataProvider.setValueContainers(layoutItem.name, change.medications, change.saveNow||false) : null;
         }
     }
 

@@ -361,9 +361,11 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                         <template is="dom-if" if="[[_isRma(medicationDetail)]]"><iron-icon icon="medication-svg-icons:[[_getRmaIcon(medicationDetail)]]" id="rma_[[medicationDetail.id]]" class="table-icon" on-tap="_openRmaLink"></iron-icon><paper-tooltip for="rma_[[medicationDetail.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>                                                
                     </h3>
                     <p class="m0 mt5">
-                        <template is="dom-if" if="[[medicationDetail.id]]">
-                            <paper-icon-button id="CBIPLink[[medicationDetail.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
-                            <paper-tooltip id="tt_CBIPLink[[medicationDetail.id]]" position="right" for="CBIPLink[[medicationDetail.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
+                        <template is="dom-if" if="[[_canShowMedicationDetailHeaders(medicationDetail)]]">
+                            <template is="dom-if" if="[[medicationDetail.id]]">
+                                <paper-icon-button id="CBIPLink[[medicationDetail.id]]" class="infoIcon" src="[[_getCbipPicture()]]" role="button" on-tap="_openCbipLink"></paper-icon-button>
+                                <paper-tooltip id="tt_CBIPLink[[medicationDetail.id]]" position="right" for="CBIPLink[[medicationDetail.id]]">[[localize('cbip','CBIP',language)]]</paper-tooltip>
+                            </template>
                         </template>
                         
                         <template is="dom-if" if="[[_getRcpLink(medicationDetail)]]">
@@ -380,9 +382,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             <paper-icon-button id="DhpcLink_[[medicationDetail.id]]" class="infoIcon" src="[[_getDhpcPicture()]]" role="button" on-tap="_openDhpcLink"></paper-icon-button>
                             <paper-tooltip id="tt_leafletLink_[[medicationDetail.id]]" position="right" for="DhpcLink_[[medicationDetail.id]]">[[localize('med_Dhpc','DHPC',language)]]</paper-tooltip>
                         </template>                    
-                        [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;
-                        <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_getDrugCnk(medicationDetail)]]</template>
-                        <template is="dom-if" if="[[medicationDetail.oldCnk]]"><iron-icon class="alert-icon darkRed" icon="icons:warning"></iron-icon>[[localize('', 'Attention', language)]] <span class="strikeOut">CNK: [[medicationDetail.oldCnk]]</span> [[localize('', 'devient', language)]] <b>[[_getDrugCnk(medicationDetail)]]</b></template>                        
+                        
+                        <template is="dom-if" if="[[_canShowMedicationDetailHeaders(medicationDetail)]]">
+                            [[_getDrugId(medicationDetail)]]&nbsp;&nbsp;
+                            <template is="dom-if" if="[[!medicationDetail.oldCnk]]">[[_getDrugCnk(medicationDetail)]]</template>
+                            <template is="dom-if" if="[[medicationDetail.oldCnk]]"><iron-icon class="alert-icon darkRed" icon="icons:warning"></iron-icon>[[localize('', 'Attention', language)]] <span class="strikeOut">CNK: [[medicationDetail.oldCnk]]</span> [[localize('', 'devient', language)]] <b>[[_getDrugCnk(medicationDetail)]]</b></template>                        
+                        </template>
                     </p>
                     
                     <template is="dom-if" if="[[_hasAllergies(medicationDetail)]]">
@@ -1640,6 +1645,12 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
 
     }
 
+    _canShowMedicationDetailHeaders(medicationDetail) {
+
+        return ["substance"].indexOf(_.get(medicationDetail,"productType")) === -1
+
+    }
+
     _medicationChanged(user, medication) {
 
         const now = +new Date()
@@ -1682,7 +1693,7 @@ class HtPatPrescriptionDetailPosology extends TkLocalizerMixin(mixinBehaviors([I
                             spcLink: _.trim(_.get(latestAmpp, "spcLink." + this.language)),
                             leafletLink: _.trim(_.get(latestAmpp, "leafletLink." + this.language)),
                             ctiExtended: _.get(latestAmpp, "ctiExtended"),
-                            posologyNote: _.trim(_.get(latestAmpp, "posologyNote")),
+                            posologyNote: _.trim(_.get(latestAmpp, "posologyNote." + this.language)),
                             dividable: _.get(latestAmpp, "dividable"),
                             packDisplayValue: _.trim(_.get(latestAmpp, "packDisplayValue")),
                             samCode: _.trim(_.get(latestAmpp, "amp.code")),

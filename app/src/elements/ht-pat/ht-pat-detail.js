@@ -2795,7 +2795,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                 <paper-button class="button" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" on-save-current-contact="saveCurrentContact"></ht-pat-prescription-dialog>
+        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" on-save-document-as-service="saveDocumentAsService" on-save-current-contact="saveCurrentContact"></ht-pat-prescription-dialog>
 
         <ht-msg-new id="new-msg" api="[[api]]" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" user="[[user]]" credentials="[[credentials]]" patient="[[patient]]" on-refresh-patient="refreshPatientAndServices"></ht-msg-new>
 
@@ -4172,6 +4172,11 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
             this.currentContact.services.splice(oldSvcIdx, 1)
         this.currentContact.services.push(svc)
         return this.saveCurrentContact()
+    }
+
+    saveDocumentAsService(e){
+        if(!e || !e.detail)return;
+        this.root.querySelector('ht-pat-detail-ctc-detail-panel')._saveDocumentAsService(e.detail)
     }
 
     saveNewService(svc) {
@@ -6936,7 +6941,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                         status: 0 | 1 << 25 | (this.patient.id ? 1 << 26 : 0)
                     }))
                         .then(createdMessage => Promise.all([createdMessage,
-                            this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt",
+                            this.api.encryptDecrypt("encrypt",
                                 this.user, createdMessage,
                                 this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify({
                                     patientId: this.patient.id,
@@ -6952,7 +6957,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
                             name: "sumehrImport" + itemId + "_" + moment().format("YYYYMMDDhhmmss")
                         }))
                         .then(newDocInstance => this.api.document().createDocument(newDocInstance))
-                        .then(createdDocument => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
+                        .then(createdDocument => this.api.encryptDecrypt('encrypt', this.user, createdDocument, this.api.crypto().utils.base64toArrayBuffer(btoa(sumehrXml)))
                             .then(encryptedFileContent => ({createdDocument, encryptedFileContent})))
                         .then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, sumehrXml)) //.then(({createdDocument, encryptedFileContent}) => this.api.document().setDocumentAttachment(createdDocument.id, null, encryptedFileContent))
                         .then(resourcesObject => {

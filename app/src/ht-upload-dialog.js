@@ -1072,7 +1072,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
     }
 
     _encrypt(documentObject, object) {
-        return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, documentObject, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(object || "")))
+        return this.api.encryptDecrypt("encrypt", this.user, documentObject, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(object || "")))
             .then(ua => Base64.encode(this.api.crypto().utils.ua2text(ua)))
     }
 
@@ -1081,7 +1081,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
             return Promise.resolve("")
         }
         const ua = this.api.crypto().utils.text2ua(Base64.decode(cryptedString))
-        return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("decrypt", this.user, documentObject, ua)
+        return this.api.encryptDecrypt("decrypt", this.user, documentObject, ua)
             .then(ua => this.api.crypto().utils.ua2text(ua))
     }
 
@@ -1089,7 +1089,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
         if (!message.metas)
             return Promise.reject('Invalid message structure')
         try {
-            return this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, message, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(info))))
+            return this.api.encryptDecrypt("encrypt", this.user, message, this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.text2ua(JSON.stringify(info))))
                 .then(encrypted => {
                     message.metas.cryptedInfo = btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)))
                     return message
@@ -1361,7 +1361,7 @@ class HtUploadDialog extends TkLocalizerMixin(PolymerElement) {
                                             })
                                             .then(() => createdDoc)
                                         )
-                                        .then(createdDoc => this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, createdDoc, doc.fileBlob))
+                                        .then(createdDoc => this.api.encryptDecrypt("encrypt", this.user, createdDoc, doc.fileBlob))
                                         .then(encryptedFileContent => this.api.document().setDocumentAttachment(doc.docId, null, encryptedFileContent))
                                 }))
                                     .then(() => contact)

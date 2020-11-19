@@ -227,7 +227,7 @@ class HtPatPrescriptionDetailSearchOtc extends TkLocalizerMixin(mixinBehaviors([
                 internalUuid: internalUuid,
                 type: dataType,
                 bypassPosologyView: false,
-                product: _.find(_.get(this, 'searchResult.compound', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
+                product: _.find(_.get(this, 'searchResult.otc', []), it => _.trim(_.get(it,"internalUuid","")) === internalUuid)
             }
         }))
 

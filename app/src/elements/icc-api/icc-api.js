@@ -650,14 +650,14 @@ class IccApi extends PolymerElement {
 
                   return (printerName ? Promise.resolve(printerName) : this.printers().then(printers => printers.find(p => p.isDefault)).then(p => p && p.name))
                       .then(printerName =>
-                          (electron && type && printerName ? this.electron().print(html,encodeURIComponent(printerName)) : fetch(`${'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`, {
+                          fetch(`${electron && type && printerName ? _.get(this,"electronHost","http://127.0.0.1:16042") + '/print/' + encodeURIComponent(printerName) : 'https://report.icure.cloud/pdf'}${optionsString && optionsString.length ? `?${optionsString}` : ''}`, {
                               method: "POST",
                               mode: "cors", // no-cors, cors, *same-origin
                               credentials: "same-origin", // include, same-origin, *omit
                               headers: {"Content-Type": "text/html; charset=utf-8"},
                               redirect: "follow",
                               body: html,
-                          })).then(response => response.arrayBuffer()).then(data => ({
+                          }).then(response => response.arrayBuffer()).then(data => ({
                               pdf: data,
                               printed: electron && type && printerName
                           }))
@@ -803,7 +803,7 @@ class IccApi extends PolymerElement {
       catch(e) { window.open(_.trim(downloadUrl)) }
   }
 
-  encryptDecryptFileContentByUserHcpIdAndDocumentObject( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
+  encryptDecrypt( encryptOrDecryptMethod, user, documentObject, rawFileContent  ) {
       const edf = this.crypto().AES[_.trim(encryptOrDecryptMethod).toLocaleLowerCase()].bind(this.crypto().AES)
       if( !_.trim(encryptOrDecryptMethod) || !_.trim(user.healthcarePartyId) || !documentObject || !rawFileContent || typeof edf !== "function" ) return Promise.resolve(rawFileContent);
 

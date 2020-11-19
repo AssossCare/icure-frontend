@@ -309,12 +309,12 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                     </template>      
                     <template is="dom-if" if="[[isPosologyView]]">
                         <paper-button class="button button--other" on-tap="_closePosologyView"><iron-icon icon="icons:close"></iron-icon> [[localize('pos-clo-pos','Close posology',language)]]</paper-button>
-                        <paper-button class="button button--other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>
-                        <paper-button class="button button--other" on-tap="_prescribe"><iron-icon icon="icons:check"></iron-icon> [[localize('pre','Prescribe',language)]]</paper-button>
+<!--                        <paper-button class="button button&#45;&#45;other" on-tap="_createMedication"><iron-icon icon="icons:add-circle-outline"></iron-icon> [[localize('pos-crea-med','Create medication',language)]]</paper-button>-->
                     </template>
                     <template is="dom-if" if="[[isCompoundSearchView]]">
                         <paper-button class="button button--other" on-tap="_openCompoundManagement"><iron-icon icon="vaadin:flask"></iron-icon> [[localize('btn-comp-mng','Create compound',language)]]</paper-button>
                     </template>
+                    <paper-button class="button button--other" on-tap="_save"><iron-icon icon="icons:check"></iron-icon> [[localize('save','Save',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_closeDialog"><iron-icon icon="icons:close"></iron-icon> [[localize('clo','Close',language)]]</paper-button>
                 </template>
             </div>
@@ -506,7 +506,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.api.entitytemplate().findEntityTemplates(this.user.id, 'org.taktik.icure.entities.embed.Medication', null, true)
             .then(compoundTemplateList => {
                 const compoundFromUserList = _.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds") ? JSON.parse(_.get(_.get(this, 'user.properties', []).find(prop => _.get(prop, 'type.identifier', null) === "org.taktik.icure.user.compounds"), 'typedValue.stringValue', null)) : []
-                this.set('listOfCompound', _.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList)))
+                this.set('listOfCompound', _.map(_.concat(this._prepareCompoundFromUserForDisplay(compoundFromUserList), this._prepareCompoundFromTemplateForDisplay(compoundTemplateList))), it => _.trim(_.get(it,"internalUuid")) ? it : _.assign(it, {internalUuid: this.api.crypto().randomUuid()}))
                 return true;
             })
     }
@@ -522,20 +522,26 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
     }
 
     _refreshList(serviceList){
-        return serviceList.map(service => {
-            if(_.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null)){
-                if(_.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) || _.get(service, 'content.medicationValue.medicinalProduct', null)){
-                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) :  _.get(service, 'content.medicationValue.medicinalProduct', null)
-                    return this._composeHistory(drug, service, 'commercial')
-                }else if(_.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) || _.get(service, 'content.medicationValue.substanceProduct', null)){
-                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) : _.get(service, 'content.medicationValue.substanceProduct', null)
-                    return this._composeHistory(drug, service, 'substance')
-                }else if(_.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) || _.get(service, 'content.medicationValue.compoundPrescription', null)){
-                    const drug = _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) ? _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) : _.get(service, 'content.medicationValue.compoundPrescription', null)
-                    return this._composeHistory(drug, service, 'compound')
+
+        return _
+            .chain(serviceList)
+            .map(service => {
+                if(_.get(service, 'content.'+this.language+'.medicationValue', null) || _.get(service, 'content.medicationValue', null)){
+                    if(_.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) || _.get(service, 'content.medicationValue.medicinalProduct', null)){
+                        const drug = _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.medicinalProduct', null) :  _.get(service, 'content.medicationValue.medicinalProduct', null)
+                        return this._composeHistory(drug, service, 'commercial')
+                    }else if(_.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) || _.get(service, 'content.medicationValue.substanceProduct', null)){
+                        const drug = _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) ? _.get(service, 'content.'+this.language+'.medicationValue.substanceProduct', null) : _.get(service, 'content.medicationValue.substanceProduct', null)
+                        return this._composeHistory(drug, service, 'substance')
+                    }else if(_.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) || _.get(service, 'content.medicationValue.compoundPrescription', null)){
+                        const drug = _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) ? _.get(service, 'content.'+this.language+'.medicationValue.compoundPrescription', null) : _.get(service, 'content.medicationValue.compoundPrescription', null)
+                        return this._composeHistory(drug, service, 'compound')
+                    }
                 }
-            }
-        })
+            })
+            .map(it => _.trim(_.get(it,"internalUuid")) ? it : _.assign(it, {internalUuid: this.api.crypto().randomUuid()}))
+            .value()
+
     }
 
     _prepareCompoundFromUserForDisplay(compoundFromUser){
@@ -604,7 +610,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
             status:  null,
             service: service,
             normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(drug, 'intendedname', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
-            drugType: drugType
+            drugType: drugType,
         }
     }
 
@@ -620,111 +626,212 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     }
 
+    _enrichDataWithAllergies(givenProduct) {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.api.besamv2().findPaginatedAmpsByGroupId(_.trim(_.get(givenProduct,"vmpGroup.id"))).then(amps => _.get(amps,"rows")).catch(()=>amps))
+            .then(amps => {
+
+                const atcCodes = amps && _
+                    .chain(amps)
+                    .map( amp => _.map(_.get(amp, "ampps"), ampp => _.map(_.get(ampp,"atcs"), "code")))
+                    .flattenDeep()
+                    .compact()
+                    .uniq()
+                    .map(_.trim)
+                    .value()
+
+                return _.merge(givenProduct, {
+                    allergies: !_.size(atcCodes) ? _.get(givenProduct, "allergies", []) : _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
+                    atcCodes: atcCodes || _.get(givenProduct, "atcCodes",[]),
+                    id: _.trim(_.get(givenProduct, "code")) || _.trim(_.get(givenProduct, "id")),
+                    hasChildren: false,
+                })
+            })
+            .catch(e => (console.log("[ERROR]", e)||true) && givenProduct)
+
+    }
+
+    _enrichDataWithDetails(givenProduct) {
+
+        const promResolve = Promise.resolve()
+
+        return promResolve
+            .then(() => this.api.besamv2().findAmpsByDmppCode(_.trim(_.get(givenProduct,"id"))).catch(()=>null))
+            // .then(amps => _.size(amps) ? amps : this.api.besamv2().findPaginatedAmpsByGroupId(_.trim(_.get(givenProduct,"vmpGroup.id"))).then(amps => _.get(amps,"rows")).catch(()=>amps))
+            .then(amps => {
+
+                const now = +new Date()
+
+                const validAmpps = _
+                    .chain(amps)
+                    .filter(amp => _.trim(_.get(amp,"status")) === "AUTHORIZED" && _.size(_.get(amp,"ampps")))
+                    // Commercialization is still valid when expired less than two years ago (http://www.samportal.be/fr/sam_portal_news_messages/82) - Allow for no "to" value && don't check on "from" in the past but must still be present
+                    .map(amp => _.map(_.get(amp, "ampps"), ampp => _.some(_.get(ampp,"commercializations"), c => c && c.from && (c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to) ) && _.assign(ampp, {
+                        amp: amp,
+                        publicDmpp: _.find(_.get(ampp,"dmpps",[]), dmpp => dmpp
+                            && _.trim(_.get(dmpp,"deliveryEnvironment")) === "P"
+                            && _.trim(_.get(dmpp,"codeType")) === "CNK"
+                            && _.get(dmpp,"from",false)
+                            && _.get(dmpp,"from") <= now
+                            && (!_.get(dmpp,"to",false) || _.get(dmpp,"to") >= now)
+                        )
+                    })))
+                    .flatten()
+                    .compact()
+                    .filter("publicDmpp")
+                    .value()
+
+                // Latest version
+                const latestAmpp = _.head(_.orderBy(validAmpps, ["from"], ["desc"]))||{}
+
+                const atcCodes = amps && _
+                    .chain(amps)
+                    .map( amp => _.map(_.get(amp, "ampps"), ampp => _.map(_.get(ampp,"atcs"), "code")))
+                    .flattenDeep()
+                    .compact()
+                    .uniq()
+                    .map(_.trim)
+                    .value()
+
+                const publicDmpp = _.get(latestAmpp, "publicDmpp",{})
+                const currentReimbursement = _.find(_.get(latestAmpp, 'publicDmpp.reimbursements', []),reimbursement => _.get(reimbursement, 'from', null) < now && (!_.get(reimbursement, 'to', null) || _.get(reimbursement, 'to', null) > now ))
+
+                return !latestAmpp ? givenProduct : _.merge(givenProduct, {
+                    allergies: !_.size(latestAmpp) || !_.size(atcCodes) ? _.get(givenProduct, "allergies", []) : _.filter(_.get(this,"allergies"), patAllergy => _.size(_.get(patAllergy,"codes",[])) && _.some(_.get(patAllergy,"codes",[]), code => _.trim(_.get(code,"type")) === "CD-ATC" && _.trim(_.get(code,"code")).indexOf(atcCodes) > -1 )),
+                    atcCodes: atcCodes || _.get(givenProduct, "atcCodes",[]),
+                    officialName: _.get(givenProduct, "label",""),
+                    type: "medicine",
+                    id: _.trim(_.get(latestAmpp, "publicDmpp.code")) || _.trim(_.get(givenProduct, "id")),
+                    uuid: _.trim(_.get(latestAmpp, "publicDmpp.code")) || _.trim(_.get(givenProduct, "id")),
+                    parentUuid: null,
+                    amp: _.get(latestAmpp,"amp",{}),
+                    publicDmpp: publicDmpp,
+                    dividable: _.trim(_.get(latestAmpp, "components[0].dividable")) !== "X",
+                    samDate: _.get(latestAmpp, "publicDmpp.from", null) ? moment(_.get(latestAmpp, "publicDmpp.from", null)).format("DD/MM/YYYY") : null,
+                    samCode: _.trim(_.get(latestAmpp,"amp.code")) || _.trim(_.get(givenProduct,"samCode")),
+                    posologyNote: _.trim(_.get(latestAmpp, 'posologyNote['+this.language+']')) || _.trim(_.get(givenProduct, "posologyNote")),
+                    packDisplayValue: _.trim(_.get(latestAmpp, "packDisplayValue")),
+                    ctiExtended: _.trim(_.get(latestAmpp, "ctiExtended")) || _.trim(_.get(givenProduct, "ctiExtended")),
+                    reinfPharmaVigiIcon: _.get(latestAmpp, "amp.blackTriangle", null) ? "reinf-pharma-vigi" : null,
+                    groupId: _.trim(_.get(latestAmpp, "amp.vmp.vmpGroup.id", null)) || _.trim(_.get(givenProduct, "groupId")),
+                    hasChildren: false, // Level is always 0 when resolving by findAmpsByDmppCode
+                    currentReimbursement: currentReimbursement,
+                    unit: _.get(latestAmpp, "amp.components[0].pharmaceuticalForms[0].name[" + this.language + "]", "") || _.trim(_.get(givenProduct, "unit")),
+                    informations: this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch") && this.shadowRoot.querySelector("#htPatPrescriptionDetailSearch")._getCommercialInformations(latestAmpp, publicDmpp,currentReimbursement),
+                })
+            })
+            .catch(e => (console.log("[ERROR]", e)||true) && givenProduct)
+
+    }
+
     _openPosologyView(e) {
 
         const promResolve = Promise.resolve()
+        const givenProduct = _.get(e, 'detail.product', null)
         const drugInternalUuid = _.trim(_.get(e,'detail.internalUuid', null))
 
-        return !_.trim(_.get(e, 'detail.id', null)) || !drugInternalUuid || !_.trim(_.get(e, 'detail.type', null)) ? promResolve :
+        return !_.trim(_.get(e, 'detail.id', null)) || !drugInternalUuid || !_.trim(_.get(e, 'detail.type', null)) ? promResolve : (
+            ["chronic","history"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? this._enrichDataWithDetails(givenProduct) :
+            ["substance"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? this._enrichDataWithAllergies(givenProduct) :
+            ["commercial", "compound"].indexOf(_.trim(_.get(e, 'detail.type'))) > -1 ? Promise.resolve(givenProduct) :
+            Promise.resolve({})
+        )
+            .then(drugInfo => {
 
-        //chronic, history => get drug by id to check if it still exist
-        //commercial, substance, compound => no need to check if it still exist
-        (
-            _.trim(_.get(e, 'detail.type')) === "chronic" || _.get(e, 'detail.type', null) === "history" ? Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.trim(_.get(e, 'detail.type')) === "commercial" ? Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.trim(_.get(e, 'detail.type')) === "substance" ?  Promise.resolve(_.get(e, 'detail.product', null)) :
-            _.trim(_.get(e, 'detail.type')) === "compound" ?  Promise.resolve(_.get(e, 'detail.product', null)) : Promise.resolve({})
-        ).then(drugInfo => {
-
-            const isPrescription = _.get(this,"openParameters.isPrescription",false)
-            const drugType = _.trim(_.get(drugInfo,"type")) === "medicine" ? "CD-DRUG-CNK" : _.trim(_.get(drugInfo,"type")) === "substance" ? "CD-VMPGROUP" : "compoundPrescription"
-            const newMedication =  _.size(_.get(drugInfo,"service", null)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
-            const medicationValue = newMedication && this.api.contact().medicationValue(newMedication, this.language)
-            const hasMedicationTag = _.find(_.get(drugInfo,"service.tags",[]), t => _.trim(_.get(t,"type"))==="CD-ITEM" && _.trim(_.get(t,"code")) === "medication")
-            const prescribedProduct = {
-                priority: "low",
-                label: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
-                intendedname: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
-                intendedcds: [{type: drugType, code: _.trim(_.get(drugInfo,"id")) ? _.trim(_.get(drugInfo,"id")) : _.trim(_.get(drugInfo,"uuid"))}],
-            }
-            _.merge(drugInfo, {
-                unit: !medicationValue ? "" : _.get(medicationValue, "regimen[0].administratedQuantity.unit", this.localize("uni", "Unités")),
-                isPrescription: isPrescription,
-                content: _.get(this,"openParameters.content",null),
-                intendedName: prescribedProduct.label,
-                allergyType: _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"type")) === "allergy") ? "allergy" : _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"adr"))) ? "adr" : "",
-                boxes: 1, // 1! box = 1! svc
-                drugType: drugType
-            })
-
-            if(!medicationValue) {
-
-                _.assign(newMedication, {
-                    content: _.fromPairs([[this.language, {
-                        medicationValue: {
-                            regimen: [],
-                            substitutionAllowed: true,
-                            compoundPrescription: drugType === "compoundPrescription" && (_.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label"))),
-                            substanceProduct: drugType !== "compoundPrescription" && drugType === "CD-VMPGROUP" && prescribedProduct,
-                            medicinalProduct: drugType !== "compoundPrescription" && drugType !== "CD-VMPGROUP" && prescribedProduct,
-                        }
-                    }]]),
-                    codes: drugType === "compoundPrescription" ? _.get(newMedication, "codes",[]) : _
-                        .chain(newMedication)
-                        .get("codes",[])
-                        .filter(c => [drugType, "CD-ATC"].indexOf(_.trim(_.get(c,"type"))) === -1)
-                        .concat(!_.trim(_.get(drugInfo,"id")) ? false : {type: drugType, version: "1", code: _.trim(_.get(drugInfo,"id"))})
-                        .concat(!_.trim(_.get(drugInfo,"atcCodes[0]")) ? false : {type: "CD-ATC", version: "1", code: _.trim(_.get(drugInfo,"atcCodes[0]"))})
-                        .compact()
-                        .value()
+                const isPrescription = _.get(this,"openParameters.isPrescription",false)
+                const drugType = _.trim(_.get(drugInfo,"type")) === "medicine" ? "CD-DRUG-CNK" : _.trim(_.get(drugInfo,"type")) === "substance" ? "CD-VMPGROUP" : "compoundPrescription"
+                const newMedication =  _.size(_.get(drugInfo,"service", null)) ? _.get(drugInfo,"service") : _.get(this,"openParameters.service") ? _.get(this,"openParameters.service") : {}
+                const medicationValue = newMedication && this.api.contact().medicationValue(newMedication, this.language)
+                const hasMedicationTag = _.find(_.get(drugInfo,"service.tags",[]), t => _.trim(_.get(t,"type"))==="CD-ITEM" && _.trim(_.get(t,"code")) === "medication")
+                const prescribedProduct = {
+                    samId : _.get(drugInfo, 'informations.dmpp.productId', null),
+                    priority: "low",
+                    label: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
+                    intendedname: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
+                    intendedcds: [{type: drugType, code: drugType === "CD-VMPGROUP" ? _.trim(_.get(drugInfo,"code")) : _.trim(_.get(drugInfo,"id")) ? _.trim(_.get(drugInfo,"id")) : _.trim(_.get(drugInfo,"uuid"))}],
+                }
+                _.merge(drugInfo, {
+                    unit: !medicationValue ? "" : _.get(medicationValue, "regimen[0].administratedQuantity.unit", this.localize("uni", "Unités")),
+                    isPrescription: isPrescription,
+                    content: _.get(this,"openParameters.content",null),
+                    intendedName: prescribedProduct.label,
+                    allergyType: _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"type")) === "allergy") ? "allergy" : _.some(_.get(this,"allergies",[]), it => _.trim(_.get(it,"adr"))) ? "adr" : "",
+                    boxes: 1, // 1! box = 1! svc
+                    drugType: drugType
                 })
 
-            }
+                if(!medicationValue) {
 
-            _.assign(medicationValue, {knownUsage: _.size(_.get(medicationValue,"regimen")) && !_.trim(_.get(medicationValue,"instructionForPatient"))})
+                    _.assign(newMedication, {
+                        content: _.fromPairs([[this.language, {
+                            medicationValue: {
+                                regimen: [],
+                                substitutionAllowed: true,
+                                compoundPrescription: drugType === "compoundPrescription" && (_.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label"))) || null,
+                                substanceProduct: drugType !== "compoundPrescription" && drugType === "CD-VMPGROUP" && prescribedProduct || null,
+                                medicinalProduct: drugType !== "compoundPrescription" && drugType !== "CD-VMPGROUP" && prescribedProduct || null,
+                            }
+                        }]]),
+                        codes: drugType === "compoundPrescription" ? _.get(newMedication, "codes",[]) : _
+                            .chain(newMedication)
+                            .get("codes",[])
+                            .filter(c => [drugType, "CD-ATC"].indexOf(_.trim(_.get(c,"type"))) === -1)
+                            .concat(!_.trim(_.get(drugInfo,"id")) ? false : {type: drugType, version: "1", code: drugType === "CD-VMPGROUP" ? _.trim(_.get(drugInfo,"code")) : _.trim(_.get(drugInfo,"id"))})
+                            .concat(!_.trim(_.get(drugInfo,"atcCodes[0]")) ? false : {type: "CD-ATC", version: "1", code: _.trim(_.get(drugInfo,"atcCodes[0]"))})
+                            .compact()
+                            .value()
+                    })
 
-            const newMedicationClone = _.assign(_.cloneDeep(newMedication), {
-                beginMoment: null,
-                endMoment: null,
-                tags: _.filter(_.get(newMedication,"tags",[]), {type:"org.taktik.icure.entities.embed.Confidentiality"})
+                }
+
+                _.assign(medicationValue, {knownUsage: _.size(_.get(medicationValue,"regimen")) && !_.trim(_.get(medicationValue,"instructionForPatient"))})
+
+                const newMedicationClone = _.assign(_.cloneDeep(newMedication), {
+                    beginMoment: null,
+                    endMoment: null,
+                    tags: _.filter(_.get(newMedication,"tags",[]), {type:"org.taktik.icure.entities.embed.Confidentiality"})
+                })
+                const newMedCloneVal = this.api.contact().medicationValue(newMedicationClone, this.language) || {medicationValue: {}}
+
+                _.assign(newMedCloneVal, {
+                    beginMoment: !medicationValue ? newMedCloneVal.beginMoment : !hasMedicationTag ? parseInt(moment().format("YYYYMMDD"), 10) : newMedCloneVal.beginMoment,
+                    endMoment: !medicationValue ? newMedCloneVal.endMoment : !hasMedicationTag ? null : newMedCloneVal.endMoment,
+                    status: 0
+                })
+
+                _.assign(drugInfo, !this._serviceDescription(newMedicationClone) ? {} : {
+                    newMedication: newMedicationClone,
+                    options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
+                })
+
+                // Only push when not in yet
+                if(!_.size(_.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))) this.push('drugsToBePrescribe', {
+                    id: _.trim(_.get(e ,'detail.id', null)),
+                    internalUuid: drugInternalUuid,
+                    type: _.get(e, 'detail.type', null),
+                    drug: drugInfo
+                })
+
+                !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', _.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))
+
             })
-            const newMedCloneVal = this.api.contact().medicationValue(newMedicationClone, this.language) || {medicationValue: {}}
+            .finally(() => {
 
-            _.assign(newMedCloneVal, {
-                beginMoment: !medicationValue ? newMedCloneVal.beginMoment : !hasMedicationTag ? parseInt(moment().format("YYYYMMDD"), 10) : newMedCloneVal.beginMoment,
-                endMoment: !medicationValue ? newMedCloneVal.endMoment : !hasMedicationTag ? null : newMedCloneVal.endMoment,
-                status: 0
+                if(!_.get(e, 'detail.bypassPosologyView', null)) {
+                    this.set('isPosologyView', true)
+                    this.set('isSearchView', false)
+                    this.set('isCnkInfoView', false)
+                    this.set('isCheaperDrugView', false)
+                    this.set('isAmpsByVmpGroupView', false)
+                    this.set('isCompoundManagementView', false)
+                }
+
+                this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
+
             })
-
-            _.assign(drugInfo, !this._serviceDescription(newMedicationClone) ? {} : {
-                newMedication: newMedicationClone,
-                options: {isPrescription: isPrescription, isNew: !medicationValue, createMedication: false},
-            })
-
-            // Only push when not in yet
-            if(!_.size(_.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))) this.push('drugsToBePrescribe', {
-                id: _.trim(_.get(e ,'detail.id', null)),
-                internalUuid: drugInternalUuid,
-                type: _.get(e, 'detail.type', null),
-                drug: drugInfo
-            })
-
-            !_.get(e, 'detail.bypassPosologyView', null) && this.set('selectedDrugForPosology', _.find(this.drugsToBePrescribe, {internalUuid:drugInternalUuid}))
-
-        }).finally(() => {
-
-            if(!_.get(e, 'detail.bypassPosologyView', null)) {
-                this.set('isPosologyView', true)
-                this.set('isSearchView', false)
-                this.set('isCnkInfoView', false)
-                this.set('isCheaperDrugView', false)
-                this.set('isAmpsByVmpGroupView', false)
-                this.set('isCompoundManagementView', false)
-            }
-
-            this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs") ? this.shadowRoot.querySelector("#htPatPrescriptionDetailDrugs")._refreshDrugList() : null
-
-        })
 
     }
 
@@ -931,35 +1038,50 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
 
     }
 
-    _prescribe(){
+    _save() {
 
         const promResolve = Promise.resolve()
 
         return promResolve
             .then(() => this.set("isLoading", true))
             .then(() => this._closePosologyView())
+
+            // Create medication ?
             .then(() => _.map(this.drugsToBePrescribe, it =>  !_.get(it,"drug.options.createMedication",false) || _.size(_.find(_.get(it, "drug.newMedication.tags",[]), t => t && t.type==="CD-ITEM" && t.code==="medication")) ? _.get(it,"drug") : _.merge(_.get(it,"drug"), {newMedication:{tags:_.concat(_.get(it,"drug.newMedication.tags",[]), [{type:"CD-ITEM",code:"medication"}])}})))
-            .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
-            .then(() => {
-                console.log("AFTER SAVE && AFTER UPDATE CTC")
-                console.log("close this window")
-                console.log("flush posology cache / call reset:any method")
-                console.log("prescribe if should / open julien window: ht-pat-prescription-dialog")
-                console.log("prescribe if should")
+
+            // Assign deliveryMoment && endExecMoment
+            .then(drugsToBeSaved => {
+                _.map(drugsToBeSaved, drug => {
+
+                    const deliveryMoment = parseInt(moment(_.trim(_.get(drug,"deliveryMomentAsString")), "YYYY-MM-DD").format("YYYYMMDD")) || null
+                    const endExecMoment = parseInt(moment(_.trim(_.get(drug,"endExecMomentAsString")), "YYYY-MM-DD").format("YYYYMMDD")) || null
+                    const medicationValue = _.get(drug,"newMedication.content.fr.medicationValue") || _.get(drug,"newMedication.content.nl.medicationValue") || _.get(drug,"newMedication.content.en.medicationValue")
+
+                    _.assign(medicationValue, {
+                        deliveryMoment: deliveryMoment||null,
+                        endExecMoment: endExecMoment||null,
+                    })
+
+                })
+                return drugsToBeSaved
             })
-            .finally(() => this.set("isLoading", false))
 
-    }
+            // Ensure of types
+            .then(drugsToBeSaved => {
+                _.map(drugsToBeSaved, drug => {
+                    const medicationValue = _.get(drug,"newMedication.content.fr.medicationValue") || _.get(drug,"newMedication.content.nl.medicationValue") || _.get(drug,"newMedication.content.en.medicationValue")
+                    _.assign(medicationValue, {
+                        compoundPrescription : typeof _.get(medicationValue, "compoundPrescription", null) === "boolean" ? null : _.get(medicationValue, "compoundPrescription"),
+                        substanceProduct : typeof _.get(medicationValue, "substanceProduct", null) === "boolean" ? null : _.get(medicationValue, "substanceProduct"),
+                        medicinalProduct : typeof _.get(medicationValue, "medicinalProduct", null) === "boolean" ? null : _.get(medicationValue, "medicinalProduct"),
+                    })
+                })
+                return drugsToBeSaved
+            })
 
-    _createMedication(){
-
-        // Todo: refactor this / axel code
-        // this.saveAction(this.medicationAccumulator.map(m => {
-        //     if(_.get(m,'options.createMedication',false) && !_.get(m,"newMedication.tags",[]).find(t => t.type==="CD-ITEM" && t.code==="medication")){
-        //         m.newMedication.tags.push({type:"CD-ITEM",code:"medication"})
-        //     }
-        //     return m;
-        // }))
+            .then(drugsToBeSaved => typeof _.get(this,"openParameters.onSave") === "function" && _.get(this,"openParameters.onSave")(drugsToBeSaved))
+            .then(() => console.log("flush posology cache / call reset:any method"))
+            .finally(() => (this.set("isLoading", false)||true) && this._closeDialog())
 
     }
 
