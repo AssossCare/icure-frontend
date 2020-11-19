@@ -428,8 +428,8 @@
             }
 
             _updateFeedback(e) {
-
-                return !this.hcp ? null : this.api.fhc().Recipe().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
+                return Promise.resolve({})
+                //return !this.hcp ? null : this.api.fhc().Recipe().updateFeedbackFlagUsingPUT(this.api.keystoreId, this.api.tokenId, "persphysician", this.hcp.nihii, this.hcp.ssin, this.hcp.lastName, this.api.credentials.ehpassword, _.get(e,"currentTarget.dataset.rid"))
 
             }
 
