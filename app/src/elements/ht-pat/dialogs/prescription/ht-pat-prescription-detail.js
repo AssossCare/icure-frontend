@@ -747,6 +747,7 @@ class HtPatPrescriptionDetail extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 const medicationValue = newMedication && this.api.contact().medicationValue(newMedication, this.language)
                 const hasMedicationTag = _.find(_.get(drugInfo,"service.tags",[]), t => _.trim(_.get(t,"type"))==="CD-ITEM" && _.trim(_.get(t,"code")) === "medication")
                 const prescribedProduct = {
+                    samId : _.get(drugInfo, 'informations.dmpp.productId', null),
                     priority: "low",
                     label: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
                     intendedname: _.trim(_.get(drugInfo,"intendedName")) ? _.trim(_.get(drugInfo,"intendedName")) : _.trim(_.get(drugInfo,"label")),
