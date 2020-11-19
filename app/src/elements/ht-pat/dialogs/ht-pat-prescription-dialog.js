@@ -100,13 +100,13 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                 <vaadin-grid id="prescriptions-grid" items="[[prescriptionsList]]">
                     <vaadin-grid-sort-column path="name" header="[[localize('name','Nom',language)]]"></vaadin-grid-sort-column>
                     <vaadin-grid-column path="posology" header="[[localize('posology','Posology',language)]]"></vaadin-grid-column>
-                    <vaadin-grid-column header="[[localize('deliv_from','deliv_from',language)]]" frozen>
+                    <!--<vaadin-grid-column header="[[localize('deliv_from','deliv_from',language)]]" frozen>
                         <template>
                             <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
                                 <vaadin-date-picker i18n="[[i18n]]" value="[[item.startValidDate]]" setter$="[[item.id]]" disabled="[[_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]" on-value-changed="_setStartDate" min="[[_today()]]" max="[[_oneYear()]]"></vaadin-date-picker>
                             </template> 
                         </template>
-                    </vaadin-grid-column>
+                    </vaadin-grid-column>-->
                     <vaadin-grid-column header="[[localize('EndDateForExecution','EndDateForExecution',language)]]" frozen>
                         <template>
                             <template is="dom-if" if="[[!_isReadOnly(item.id,prescriptionsGroups,prescriptionsGroups.*)]]">
@@ -251,7 +251,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
             return {
                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname","") ||  _.get(this.api.contact().medicationValue(s),"substanceProduct.intendedname",""),
-                posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                posology : this.api.addDateDelivToPosology(this.api.contact().medicationValue(s, this.language), this.language),
                 startValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"deliveryMoment",this._today())).format("YYYY-MM-DD"),
                 id : s.id,
                 endValidDate : this.api.moment(_.get(this.api.contact().medicationValue(s),"endExecMoment",this._endDate())).format("YYYY-MM-DD")
@@ -440,8 +440,8 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                         this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
                             return {
                                 name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
-                                posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
-                                startValidDate :this._today(),
+                                posology : this.api.addDateDelivToPosology(this.api.contact().medicationValue(s, this.language), this.language),
+                                startValidDate :this.api.moment(_.get(this.api.contact().medicationValue(s),"deliveryMoment",this._today())).format("YYYY-MM-DD"),
                                 id : s.id,
                                 endValidDate :this._endDate()
                             }
@@ -550,7 +550,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             this.set("prescriptionsList", this.api.contact().filteredServices([this.currentContact], (service)=> this._isDrugNotPrescribed(service)).map(s => {
                 return {
                     name : _.get(this.api.contact().medicationValue(s),"medicinalProduct.label",false) || _.get(this.api.contact().medicationValue(s),"medicinalProduct.intendedname",""),
-                    posology : this.api.contact().medication().posologyToString(this.api.contact().medicationValue(s, this.language), this.language) ,
+                    posology : this.api.addDateDelivToPosology(this.api.contact().medicationValue(s, this.language), this.language),
                     startValidDate :this._today(),
                     id : s.id,
                     endValidDate :this._endDate()
@@ -594,9 +594,9 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
             _.flatMap(drugsToBePrescribed.filter(s => c.find( p => p.id===s.id)), s => {
                 const medicationApi = this.api.contact().medication();
                 const med = this.api.contact().medicationValue(s, this.language);
-                const medPoso = this.api.contact().medication().posologyToString(med, this.language) || "N/A";
+                const medPoso = this.api.addDateDelivToPosology(med, this.language) || "N/A";
                 const medR = medicationApi.medicationNameToString(med, this.language)
-                const medS = med.regimen && med.regimen.length && medicationApi.posologyToString(med, this.language) || med.instructionForPatient || this.localize("known_usage", "Usage connu");
+                const medS = med.regimen && med.regimen.length && this.api.addDateDelivToPosology(med, this.language) || med.instructionForPatient || this.localize("known_usage", "Usage connu");
                 const thisMed = {'S': medS, 'R': medR, 'poso':medPoso};
                 const medC = medicationApi.reimbursementReasonToString(med, this.language);
                 if (medC) {
@@ -634,7 +634,7 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <div class="profile">
                       <small>${this.localize("prescriber_name_lastname","Prescriber first name and last name",this.language)}&nbsp;:</small>
                       <ul class="prescripteur-details">
-                          <li><b>${hcp.firstName} ${hcp.lastName}</b></li>
+                          <li><b>${hcp.lastName} ${hcp.firstName}</b></li>
                           <li><b>`+ this.localize('inami','inami',this.language) +`&nbsp;:</b> ${hcp.nihii}</li>
                       </ul>
                   </div>
@@ -659,9 +659,6 @@ class HtPatPrescriptionDialog extends TkLocalizerMixin(mixinBehaviors([IronResiz
                   <hr>
                   <small class="center">${this.localize('date','Date',this.language)}&nbsp;:</small>
                   <p class="center">${formatDate(this._today())}</p>
-                  <hr>
-                  <small class="center">${this.localize('deliv_date','Délivrable à partir de la date précisée ou à partir du',this.language)}&nbsp;:</small>
-                  <p class="center">${formatDate(c[0].startValidDate)}</p>
                   <hr>
                   <small class="center">${this.localize('EndDateForExecution','End date for execution',this.language)}&nbsp;: ${formatDate(c[0].endValidDate)}</small>
                   <p class="center"></p>

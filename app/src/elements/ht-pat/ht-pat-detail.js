@@ -5836,7 +5836,7 @@ class HtPatDetail extends TkLocalizerMixin(PolymerElement) {
 
     shortMedicationDescription(svc, lng) {
         let rawContent = svc && this.api && this.api.contact().preferredContent(svc, lng)
-        return rawContent && rawContent.medicationValue && `${this.api.contact().medication().medicationNameToString(rawContent.medicationValue)} ${this.api.contact().medication().posologyToString(rawContent.medicationValue, lng)}` || ''
+        return rawContent && rawContent.medicationValue && `${this.api.contact().medication().medicationNameToString(rawContent.medicationValue)} ${this.api.addDateDelivToPosology(rawContent.medicationValue, lng)}` || ''
     }
 
     contentHasData(c) {
