@@ -208,11 +208,11 @@
             this.calendaritemiccv3 = new apiV3.iccCalendarItemApi(this.host, this.headers)
             this.hcpartyiccLightv3 = new apiV3.iccHcpartyApi(this.host, this.headers)
 
+            this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
             this.patienticcLightv3 = new apiV3.iccPatientApi(this.host, this.headers)
             this.cryptoiccv3 = new IccCryptoXApiV3(this.host, this.headers, this.hcpartyiccv3, this.patienticcLightv3)
             this.classificationiccv3 = new IccClassificationXApiV3(this.host, this.headers, this.cryptoiccv3)
 
-            this.hcpartyiccv3 = new IccHcpartyXApiV3(this.host, this.headers)
             this.receipticcv3 = new IccReceiptXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.contacticcv3 = new IccContactXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.documenticcv3 = new IccDocumentXApiV3(this.host, this.headers, this.cryptoiccv3, this.authiccv3)
