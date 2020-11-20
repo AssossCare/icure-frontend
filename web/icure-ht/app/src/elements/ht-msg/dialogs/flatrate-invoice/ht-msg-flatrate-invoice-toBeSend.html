@@ -931,7 +931,8 @@
                     this.shadowRoot.querySelector('#sendingDialog').open()
                     this.set('isSending', true)
                     this.push('progressItem', this.localize('inv-step-1', 'inv-step-1', this.language))
-
+                    this.hcp.lastName = this.hcp.lastName ? this.hcp.lastName : "-"
+                    this.hcp.firstName = this.hcp.firstName ? this.hcp.firstName : "-"
                     let prom = Promise.resolve()
                     _.chain(this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true))
                         .groupBy(fact => fact.insuranceParent)
