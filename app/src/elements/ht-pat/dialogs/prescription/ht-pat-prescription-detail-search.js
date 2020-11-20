@@ -484,12 +484,19 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
     }
 
     _searchCheaperAlternative(groupId, parentUuid, parentUuids, parentDrug){
-        this.api.besamv2().findPaginatedAmpsByGroupId(groupId).then(amps => {
+        Promise.all([
+            this.api.besamv2().findPaginatedVmpsByGroupCode(_.get(parentDrug, 'informations.vmpGroupCode')),
+            this.api.besamv2().findPaginatedAmpsByGroupId(groupId)]
+        ).then(([vmps, amps]) => {
             this.dispatchEvent(new CustomEvent('cheaper-drugs-list-loaded', {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    cheaperDrugsList: _.map(_.groupBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), 'officialName'), group => group),
+                    cheaperDrugsList: _.map(_.assign(
+                        _.groupBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), 'officialName'),
+                        {
+                            'Générique': this._formatIngredient(_.get(vmps, 'rows', []))
+                        }), group => group),
                     parentDrug: parentDrug
                 }
             }))
@@ -719,7 +726,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                        commercialization:{
                            from: _.get(vmpGroup, 'from', null),
                            to: _.get(vmpGroup, 'to', null)
-                       }},
+                       },
+                       patientPrice: '0.00',
+                       publicPrice: '0.00'
+                   },
                    type: 'substance'
                 }
             })
