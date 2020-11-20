@@ -495,7 +495,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                     cheaperDrugsList: _.map(_.assign(
                         _.groupBy(this._prepareCommercialForDisplay(amps, parentUuid, parentUuids), 'officialName'),
                         {
-                            'Générique': this._formatIngredient(_.get(vmps, 'rows', []))
+                            'Générique': _.uniqBy(this._formatIngredient(_.get(vmps, 'rows', [])), 'code')
                         }), group => group),
                     parentDrug: parentDrug
                 }
