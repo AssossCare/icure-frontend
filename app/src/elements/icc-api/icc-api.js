@@ -1181,7 +1181,7 @@ class IccApi extends PolymerElement {
 
     //todo @julien déplacer dans contact x api. Pas eu le temps pour le mini-lab
     addDateDelivToPosology(m, lang){
-        return m.instructionForPatient ? m.instructionForPatient : this.contact().medication().posologyToString(m,lang) +(_.get(m,"deliveryMoment",false) ? this.localize({ fr :  "- Délivrable à partir du " , nl : "- Uitvoerbaar vanaf voornoemde datum of vanaf ", en : "- Deliverable from the specified date or from "},lang) + this.moment(_.get(m,"deliveryMoment",moment().format("YYYYMMDD"))).format("DD-MM-YYYY") : "");
+        return m.instructionForPatient ? m.instructionForPatient : this.contact().medication().posologyToString(m,lang) +(_.get(m,"deliveryMoment",false) ? this.localize({ fr :  "- date du début du traitement " , nl : "- Uitvoerbaar vanaf voornoemde datum of vanaf ", en : "- Deliverable from the specified date or from "},lang) + this.moment(_.get(m,"deliveryMoment",moment().format("YYYYMMDD"))).format("DD-MM-YYYY") : "");
     }
 }
 
