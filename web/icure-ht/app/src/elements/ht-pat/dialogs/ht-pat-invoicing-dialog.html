@@ -1208,7 +1208,7 @@
                         <template is="dom-repeat" items="[[invoices]]">
                             <paper-item class="layout vertical invoice-item invoice--big invoice-text" id="[[item.id]]">
                                 <div class="invoice-text-row invoice-text-date">
-                                    <label>N° [[item.invoiceReference]]</label>
+                                    <label>N° [[item.invoiceReference]] [[item.id]]</label>
                                     <label>[[_formatInvoiceDate(item.invoiceDate)]]</label>
                                 </div>
                                 <div class="invoice-text-row grey">
