@@ -189,6 +189,10 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 width: calc(100% / 2);
             }
             
+            .fw1{
+                width: 100%;
+            }
+            
         </style>
         
          <div class="cnk-info-container">
@@ -237,7 +241,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                               <template is="dom-if" if="[[_isWadaSpecification(selectedCnkForInformation)]]">
                                   <div class="headerInfoLine">
                                     <div class="headerInfoField fw2 warningColor">
-                                        <span class="headerLabel">&nbsp;</span> <iron-icon icon='vaadin:warning' class="warningIcon"></iron-icon> [[_isNarcotic(selectedCnkForInformation)]]
+                                        <span class="headerLabel">Narcotique: &nbsp;</span> <iron-icon icon='vaadin:warning' class="warningIcon"></iron-icon> [[_isNarcotic(selectedCnkForInformation)]]
                                     </div>
                                   </div>
                               </template>
@@ -251,24 +255,24 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-commercialisation-container">
                     <div class="cnk-info-container-title">
-                        [[localize('', 'Commercialisation', language)]]
+                        [[localize('', 'Conditions de prescription', language)]]
                     </div>
                     <div class="cnk-info-commercialisation-container-content">
                         <div class="table">
                             <div class="headerInfoLine">
                                 <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Début de la commercialisation',language)]]: &nbsp;</span> [[_getStartDateOfCommercialization(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('','Commercialisé à partir dû',language)]]: &nbsp;</span> [[_getStartDateOfCommercialization(selectedCnkForInformation)]]
                                 </div>
                                  <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Fin de la commercialisation',language)]]: &nbsp;</span> [[_getEndDateOfCommercialization(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('',"Commercialisé jusqu'au",language)]]: &nbsp;</span> [[_getEndDateOfCommercialization(selectedCnkForInformation)]]
                                 </div>
                              </div>
                              <div class="headerInfoLine">
                                 <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Début prescriptibilité',language)]]: &nbsp;</span> [[_getStartDateOfPrescribing(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('','Prescriptible à partir dû',language)]]: &nbsp;</span> [[_getStartDateOfPrescribing(selectedCnkForInformation)]]
                                 </div>
                                  <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Fin de prescriptibilité',language)]]: &nbsp;</span> [[_getEndDateOfPrescribing(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('',"Prescriptible jusqu'au",language)]]: &nbsp;</span> [[_getEndDateOfPrescribing(selectedCnkForInformation)]]
                                 </div>
                              </div>
                         </div>
@@ -276,7 +280,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-delivery-container heightUnset">
                     <div class="cnk-info-container-title">
-                        [[localize('', 'Délivrance', language)]]
+                        [[localize('', 'Conditions de délivrance', language)]]
                     </div>
                     <div class="cnk-info-delivery-container-content">
                         <div class="table">
@@ -286,8 +290,8 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                                 </div>
                              </div>
                              <div class="headerInfoLine">
-                                 <div class="headerInfoField fw2">
-                                        <span class="headerLabel">&nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
+                                 <div class="headerInfoField fw1">
+                                        <span class="headerLabel">[[localize('','Condition de délivrance',language)]]:&nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
                                     </div>
                              </div>
                         </div>
@@ -295,10 +299,10 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                             <div class="table">
                                  <div class="headerInfoLine">
                                     <div class="headerInfoField">
-                                        <span class="headerLabel">&nbsp;</span> [[_getWadaName(wada)]]
+                                        <span class="headerLabel">Catégorie WADA:&nbsp;</span> [[_getWadaName(wada)]]
                                     </div>
-                                     <div class="headerInfoField">
-                                        <span class="headerLabel">&nbsp;</span> [[_getWadaDescr(wada)]]
+                                     <div class="headerInfoField fw2">
+                                        <span class="headerLabel">Description:&nbsp;</span> [[_getWadaDescr(wada)]]
                                     </div>
                                  </div>
                             </div>
@@ -307,7 +311,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                 </div>
                 <div class="cnk-info-reimbursement-container">
                    <div class="cnk-info-container-title">
-                        [[localize('', 'Remboursement', language)]]
+                        [[localize('', 'Conditions de remboursement', language)]]
                     </div>
                     <div class="cnk-info-reimbursement-container-content">
                         <div class="table">
@@ -318,14 +322,14 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                             </div>
                             <div class="headerInfoLine">
                                 <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Début du remb.',language)]]: &nbsp;</span> [[_getStartOfReimbursment(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('','Remboursable à partir dû',language)]]: &nbsp;</span> [[_getStartOfReimbursment(selectedCnkForInformation)]]
                                 </div>
                                 <div class="headerInfoField">
-                                    <span class="headerLabel">[[localize('','Fin du remb.',language)]]: &nbsp;</span> [[_getEndOfReimbursment(selectedCnkForInformation)]]
+                                    <span class="headerLabel">[[localize('',"Remboursable jusqu'au",language)]]: &nbsp;</span> [[_getEndOfReimbursment(selectedCnkForInformation)]]
                                 </div>
                             </div>
                             <div class="headerInfoLine">
-                                 <div class="headerInfoField fw2">
+                                 <div class="headerInfoField fw1">
                                     <span class="headerLabel">[[localize('','Description',language)]]: &nbsp;</span> [[_getReimbursementDescription(selectedCnkForInformation)]]
                                 </div>
                              </div>

@@ -521,7 +521,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
         const level = parentUuid ? 1 : 0
 
-        const hierarchicalAmpps = _.get(ampps, 'rows', []).reduce((ampps, row) => {
+        const hierarchicalAmpps = _.sortBy(_.get(ampps, 'rows', []).reduce((ampps, row) => {
             if (_.size(_.get(row, 'ampps', []))){
                 return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
                     const now = moment().valueOf();
@@ -552,7 +552,8 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             return ampps;
         }, [])
         .filter(e => _.trim(_.get(e,"amp.status")) === "AUTHORIZED" && _.get(e, 'publicDmpp', null) && _.get(e, 'id', null) && _.get(e, 'intendedName', null) && (level === 0 || level === 1 && _.get(e, 'uuid', null) !== parentUuid))
-        .filter((e, i, a) => a.findIndex(x => _.get(x, 'id', null) === _.get(e, 'id', '')) === i)
+        .filter((e, i, a) => a.findIndex(x => _.get(x, 'id', null) === _.get(e, 'id', '')) === i), ['amp.officialName', 'index'])
+        .filter(a => _.get(a, 'status', null) === "AUTHORIZED")
 
         let filteredAmpps = [];
         if (level === 0) {
@@ -571,7 +572,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             });
         }
 
-        return this._formatCommercial(filteredAmpps).sort((a, b) => _.get(a, 'informations.priceIndex', null) !== _.get(b, 'informations.priceIndex', '') ? (_.get(a, 'informations.priceIndex', 0) - _.get(b, 'informations.priceIndex', 0)) : (_.get(a, 'informations.patientPrice', 0) - _.get(b, 'informations.patientPrice', 0)))
+        return this._formatCommercial(filteredAmpps)
     }
 
     _getCommercialInformations(ampp, currentDmpp, currentReimbursement) {
@@ -596,7 +597,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             commercializations: _.get(amppAmpAmpps, 'commercializations', null),
             currentCommercialization: this._getCurrentCommercialization(_.get(amppAmpAmpps, 'commercializations', null)),
             amppFinished: this._getFinishedCommercializations(_.get(ampp, 'amp.ampps', [])),
-            hasAtLeastOneValidAmpp: this._hasAtLeastOneValidAmpp(_.get(ampp, 'amp.ampps', [])),
+            hasAtLeastOneValidAmpp: this._hasAtLeastOneValidAmpp(_.get(ampp, 'ctiExtended', null), _.get(ampp, 'amp.ampps', [])),
             vmpName: _.get(ampp, 'amp.vmp.name.'+this.language, null),
             vmpGroupName: _.get(ampp, 'amp.vmp.vmpGroup.name.'+this.language, null),
             rmaLink: _.get(ampp, 'rmaPatientLink', {}),
@@ -605,6 +606,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             patientPrice: this._getPatientPrice(currentReimbursement, currentDmpp),
             publicPrice: this._getPublicPrice(currentReimbursement, currentDmpp),
             priceIndex: this._getPriceIndex(currentDmpp),
+            index: _.get(ampp, 'index', null),
             vmpGroupCode: _.get(ampp, 'amp.vmp.vmpGroup.code', null),
         }
 
@@ -662,7 +664,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
        return ampps && ampps.filter(a => _.get(a, 'commercializations', []).find(c => _.get(c, 'from', null) && (_.get(c, 'to', null) ? this.api.moment(_.clone(_.get(c, 'to', null))).add(12, 'month') > now : false))) || []
     }
 
-    _hasAtLeastOneValidAmpp(ampps){
+    _hasAtLeastOneValidAmpp(ctiExtended, ampps){
 
         const now = +new Date()
 
@@ -672,7 +674,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
         // return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.from <= now && c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to && c.from && c.from <= now))
 
         // Allow for no "to" value && don't check on "from" in the past but must still be present
-        return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to && c.from))
+        return _.some(ampps.filter(ampp => _.get(ampp, 'ctiExtended', null) === ctiExtended), ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && moment(_.clone(c.to)).add(24, "month") >= now || !c.to && c.from))
 
         // Should not appear when no "commercialized_until" defined
         // return _.some(ampps, ampp => _.find(_.get(ampp,"commercializations"), c => c && c.from && c.to && c.from <= now && moment(_.clone(c.to)).add(24, "month") >= now))
