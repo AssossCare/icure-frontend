@@ -438,13 +438,9 @@
 
                 this.api.setPreventLogging()
 
-                this.getUserIds(_.get(this,"hcp.supervisorId",""),this.user.id)
-                .then(ids => Promise.all([this.api.invoice().listToInsurancesUnsent(ids),this._getHcpTrainees(_.get(this,"hcp.id",""))]))
-                .then(([invoicesUnsent,hcps]) => {
-                    /*&& _.get(iu, 'careProviderType', null) === "persphysician" useless things*/
-                    //iu.responsible!==_.get(this,"hcp.supervisorId","")
-                    let hcpIds = _.compact(_.uniq(hcps.map(hcp => hcp.id).concat(_.get(this,"hcp.id",""))))
-                    const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && hcpIds.find(id => iu.responsible===id))
+                 this.api.invoice().listToInsurancesUnsent(this.user.id)
+                .then((invoicesUnsent) => {
+                    const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && (_.get(iu, 'careProviderType', null) === "persphysician" || _.get(iu, 'careProviderType', null) === "trainee"))
 
                     efactUnsent.forEach(eu =>
                         prom = prom.then(listOfEfact =>
