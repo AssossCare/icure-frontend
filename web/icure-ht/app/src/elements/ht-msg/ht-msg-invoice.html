@@ -395,6 +395,19 @@
                 return ['_getDataProvider(api, user, routeData)', '_invoicesStatusChanged(invoicesStatus)'];
             }
 
+            //renvoie une string avec l'id du user et les user id des supervisor à la chaine
+            getUserIds(hcpId,buffer){
+                if(hcpId){
+                    return Promise.all([this.api.user().findByHcpartyId(hcpId),this.api.hcparty().getHealthcareParty(hcpId)]).then(([user,hcp]) => this.getUserIds(hcp.supervisorId,buffer+","+_.first(user)))
+                }else{
+                    return Promise.resolve(buffer)
+                }
+            }
+
+            _getHcpTrainees(id){
+                return this.api.hcparty().listHealthcareParties( null,null, 1000,"asc").then(hcps=> _.get(hcps,"rows",[]).filter(hcp => hcp.supervisorId===id))
+            }
+
             _getDataProvider(){
                 this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
                     .then(hcp => this.set('hcp', hcp))
@@ -425,8 +438,9 @@
 
                 this.api.setPreventLogging()
 
-                this.api.invoice().listToInsurancesUnsent(this.user.id).then(invoicesUnsent => {
-                    const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && _.get(iu, 'careProviderType', null) === "persphysician")
+                 this.api.invoice().listToInsurancesUnsent(this.user.id)
+                .then((invoicesUnsent) => {
+                    const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && (_.get(iu, 'careProviderType', null) === "persphysician" || _.get(iu, 'careProviderType', null) === "trainee"))
 
                     efactUnsent.forEach(eu =>
                         prom = prom.then(listOfEfact =>
