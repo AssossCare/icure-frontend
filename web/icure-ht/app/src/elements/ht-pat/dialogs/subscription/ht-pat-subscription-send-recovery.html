@@ -612,6 +612,17 @@
                         const mhc = _.sortBy(_.get(pat, 'medicalHouseContracts', []).filter(mhs => _.get(mhs, 'startOfCoverage', null)), 'startOfContract', 'desc')[0]
                         mhc.contractId = _.get(mhmResponse, 'reference', null)
                         recoveryLogItem.sendSubscriptionRespone = mhmResponse
+                        let fakeId = false
+                        if(!mhc.contractId){
+                            //TODO: if the error is of type: 'contract already exists' --> create fake contractId (starting with 999)
+                            console.log("error",mhmResponse.errors);
+                            //30620201016000030274
+                            //999yyyyMMddHHmmssfff
+                            //99920201123000000000
+                            const err260 = mhmResponse.errors.find(err => err.code === "260")
+                            mhc.contractId = !!err260 ? "99920201123000000000" : null;
+                            fakeId = !!err260;
+                        }
                         if(!mhc.contractId){
                             console.log("sendSubscriptionLog no contractid for", pat)
                             recoveryLogItem.sendSubscriptionResponseErrpr = "no contractid"
@@ -627,6 +638,12 @@
                             mhc.status = 1 << 1
                             pat.medicalHouseContracts = []
                             pat.medicalHouseContracts.push(mhc)
+
+                            if(fakeId){
+                                recoveryLogItem.requestSucceeded = true
+                                recoveryLogItem.status = "OK: FakeContractId" + mhc.contractId
+                                return this._updatePatient(pat)
+                            }
 
                             return Promise.all([
                                 this.api.receipt().createReceipt({

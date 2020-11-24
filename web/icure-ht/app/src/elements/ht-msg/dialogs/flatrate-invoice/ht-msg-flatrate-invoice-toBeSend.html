@@ -416,7 +416,8 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <paper-button class="button button--other hidden" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
+                    <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
@@ -2182,6 +2183,22 @@
 
                     }))
                 })
+            }
+
+            _deleteInvoicesToBeSend(){
+                const promResolve = Promise.resolve(null)
+                // DELETE "efact" invoices with "medicalhouse" as "careProviderType"
+                promResolve
+                    .then(() => this.api.invoice().listToInsurancesUnsent(this.user.id))
+                    .then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'sentMediumType')) === "efact" && _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
+                    .then(invoiceUidssToDelete => {
+                        let totalDeletedInvoices = 0;
+                        const totalInvoicesToDelete = _.size(invoiceUidssToDelete);
+                        if(!totalInvoicesToDelete) return (console.log("No invoices to delete")||true) && null;
+                        console.log("Invoices to delete: ", totalInvoicesToDelete)
+                        let prom = Promise.resolve([]); _.map(invoiceUidssToDelete, it => { prom = prom.then(() => this.api.invoice().deleteInvoice(it).then(() => totalDeletedInvoices++ && console.log("Deleted invoice: " + totalDeletedInvoices + "/" + totalInvoicesToDelete ))); }); return prom
+                    })
+                    .then(() => console.log("----- DONE DELETING INVOICES -----"))
             }
 
             _exportFlatRateInvoicing_step2_v2() {
