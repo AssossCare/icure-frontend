@@ -1636,13 +1636,16 @@
                         </div>
                     </template>
 
-                    <!-- Bypass response (only if got checked 1+ times && waiting for next check -->
-                    <!-- 20200701 - Do not let user bypass anymore / platform should always answer (even if it won't answer for 1+ pat, it will say so / no facets) -->
-                    <!--                    <template is="dom-if" if="[[mdaRequestsData.everGotChecked]]">-->
-                    <!--                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">-->
-                    <!--                          <paper-button class="button button&#45;&#45;save" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>-->
-                    <!--                       </template>-->
-                    <!--                    </template>-->
+                     <!--
+                        Bypass response (only if got checked 1+ times && waiting for next check)
+                        MCN on 20200701 - Do not let user bypass anymore / platform should always answer (even if it won't answer for 1+ pat, it will say so / no facets)
+                        MCN on 20201124 - Well... allow it again, after 72h
+                    -->
+                    <template is="dom-if" if="[[_e_canBypassMdaAnswers(mdaRequestsData)]]" restamp="true">
+                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">
+                          <paper-button class="button button--save" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
+                       </template>
+                    </template>
 
                 </div>
             </div>
@@ -2708,6 +2711,19 @@
                 return type === "tot" ? _.size(mdaRequestsGridData) :
                     type === "resp" ? _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) :
                         type === "pend" ? _.size(mdaRequestsGridData) - _.size(mdaRequestsGridData.filter(req => _.get(req, 'patientMatchedWithMdaResponse', false) === true)) : null
+            }
+
+            _e_canBypassMdaAnswers(mdaRequestsData) {
+
+                // When we first placed MDA requests
+                const requestDate = _.trim(_.get(mdaRequestsData,"originalMessage.metas.requestDate",0))
+
+                // Must have been done X hours in the past
+                // T + 24h -> OA's must have answered
+                // T + 48h -> Minfin / platform must send closing / timeout
+                // T + 72h -> If not -> allow going for next step
+                return mdaRequestsData && mdaRequestsData.everGotChecked && moment(_.cloneDeep(requestDate),"YYYYMMDDHHmmss").add(72,"hours").isBefore(moment())
+
             }
 
 
