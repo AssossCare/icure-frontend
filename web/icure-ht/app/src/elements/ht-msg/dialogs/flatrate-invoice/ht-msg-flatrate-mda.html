@@ -3885,8 +3885,20 @@
 
                             // Response obtained, with an error
                             if(responseObtained && (requestError || responseError)) {
-                                responseStatistics[oa].totalErrors++;
-                                responseStatistics[oa].errors.push({ ssin: _.trim(_.get(it,"patientSsin")), requestError: requestError, responseError: responseError })
+
+                                if(requestError === "[NO_FACET] NO REQUESTED FACET IS AVAILABLE") {
+
+                                    responseStatistics[oa].nfa++;
+                                    responseStatistics[oa].data.push({ ssin: _.trim(_.get(it,"patientSsin")), nameHr: _.trim(_.get(it,"nameHr")), requestError: requestError, responseError: responseError })
+
+                                } else {
+
+                                    // "Real" error
+                                    responseStatistics[oa].totalErrors++;
+                                    responseStatistics[oa].errors.push({ ssin: _.trim(_.get(it,"patientSsin")), requestError: requestError, responseError: responseError })
+
+                                }
+
                             }
 
                             // Collect pats without oa
