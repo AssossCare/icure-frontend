@@ -224,6 +224,10 @@
                 cursor: pointer;
             }
 
+            .none{
+                display: none;
+            }
+
         </style>
 
         <div class="panel">
@@ -275,7 +279,7 @@
                 </div>
             </div>
             <div class="panel-button">
-                <paper-button class="button button--other" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>
+                <paper-button class="button button--other none" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>
             </div>
         </div>
 
@@ -412,12 +416,13 @@
                         ic.pending = false
                         ic.resent = false
                     })
-                    _.assign(inv, {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
+                    _.assign(_.get(inv, 'invoice', {}), {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
                     prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
                 })
 
                 prom.then(listOfModifiedInv => {
                     console.log(listOfModifiedInv)
+                    this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
                 })
             }
 
