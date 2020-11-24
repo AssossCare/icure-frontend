@@ -417,6 +417,7 @@
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
+                    <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -2199,6 +2200,26 @@
                         let prom = Promise.resolve([]); _.map(invoiceUidssToDelete, it => { prom = prom.then(() => this.api.invoice().deleteInvoice(it).then(() => totalDeletedInvoices++ && console.log("Deleted invoice: " + totalDeletedInvoices + "/" + totalInvoicesToDelete ))); }); return prom
                     })
                     .then(() => console.log("----- DONE DELETING INVOICES -----"))
+            }
+
+            _resetPatientInvoicingState() {
+
+                const promResolve = Promise.resolve()
+                const flatRateUtil = this.$.flatrateUtils;
+
+                // 20201116 - Force export of current month (ISO letting user choose)
+                // const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))
+                const exportedYear = _.trim(parseInt(this._getExportCurrentYear()))
+
+                // 20201116 - Force export of current month (ISO letting user choose)
+                // let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth()));
+                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth()));
+                exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
+
+                const exportedDate = exportedYear + exportedMonth + "01"
+                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+
+                return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
             }
 
             _exportFlatRateInvoicing_step2_v2() {
