@@ -4189,7 +4189,7 @@
 		"inv-step-1" : "Création des envois",
 		"inv-step-2" : "Envoi des factures de l'oa: ",
 		"inv-get-step-1": "Reception des envois",
-		"inv-get-step-2": "Traitement des envois",
+		"inv-get-step-2": "Traitement des envois (Peut prendre plusieurs minutes)",
 		"inv-get-step-3": "Confirmation de la reception",
 		"inv-num-inv-detail": "Détail de la facture n°",
 		"inv_use_or_pas": "Nom d'utilisateur ou mot de passe invalide",
