@@ -421,6 +421,8 @@
 
             fetchMessageToBeSendOrToBeCorrected(e){
                 this.set("isLoading",true)
+                this.set('selectedInvoicesToBeSend', [])
+                this.set('messagesToBeCorrected', [])
                 this.set("refreshAll", _.get(e, 'detail.refreshAll', true))
                 let prom = Promise.resolve()
 
@@ -500,7 +502,12 @@
 
             fetchMessages() {
                 this.messageIdsCanBeAutoArchived = []
-
+                this.set('fetchStep', [])
+                this.set('allMessages', [])
+                this.set('messagesRejected', [])
+                this.set('messagesAccepted', [])
+                this.set('messagesProcessed', [])
+                this.set('messagesArchived', [])
                 this.api.message().findMessagesByTransportGuid("EFACT:BATCH:*").then(messages => {
 
                     const filteredMessages = messages.rows.filter(msg => msg.transportGuid && msg.responsible === this.hcp.id && (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || msg.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))))
