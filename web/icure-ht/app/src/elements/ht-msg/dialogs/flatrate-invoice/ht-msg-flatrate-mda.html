@@ -1642,9 +1642,9 @@
                         MCN on 20201124 - Well... allow it again, after 72h
                     -->
                     <template is="dom-if" if="[[_e_canBypassMdaAnswers(mdaRequestsData)]]" restamp="true">
-                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">
+<!--                       <template is="dom-if" if="[[!_e_allowForMdaResponsesCheck(mdaRequestsData.lastCheckedSecondsAgo)]]" restamp="true" id="domIfTriggerRefresh3">-->
                           <paper-button class="button button--save" on-tap="_e_bypassMdaResponses"><iron-icon icon="icons:warning"></iron-icon> [[localize('checkMdaData6','Outrepasser le délai',language)]]</paper-button>
-                       </template>
+<!--                       </template>-->
                     </template>
 
                 </div>
@@ -2688,6 +2688,20 @@
                     a==="mdaDoInvoicing" ? 5 :
                     ""
 
+            }
+
+            _e_mdaFlagAllAsValid(e){
+
+                Promise.resolve(_.map(this.mdaResultsGridData, it => {
+                    if(this._isEqual(_.get(it, "patientHasValidInsurabilityBoolean", false),'false') && this._canFlagAsValid(it)){
+                        const reconcileKey = _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_")));
+                        console.log(reconcileKey);
+                        return _.assign(_.find(_.get(this,"mdaRequestsData.message.attachment.request",[]), it2 => _.trim(_.head(_.trim(_.get(it2,"reconcileKey")).split("_"))) === reconcileKey), {patientForcedAsValid:true})
+                    } else {
+                        return it;
+                    }
+                }))
+                    .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
             }
 
             _e_mdaFlagPatAs(e) {
