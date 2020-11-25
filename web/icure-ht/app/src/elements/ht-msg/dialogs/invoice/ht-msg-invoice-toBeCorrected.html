@@ -415,12 +415,13 @@
                         ic.pending = true
                         ic.resent = false
                     })
-                    _.assign(inv, {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
+                    _.assign(_.get(inv, 'invoice', {}), {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
                     prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
                 })
 
                 prom.then(listOfModifiedInv => {
                     console.log(listOfModifiedInv)
+                    this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
                 })
             }
 

@@ -2238,10 +2238,11 @@
                 exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
 
                 const exportedDate = exportedYear + exportedMonth + "01"
+                // const exportedDate = "20201001"
                 const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
 
                 // DEVELOPERS ONLY (reset pat's tag of type "flatRateLastInvoiced" and "code" >= exportedDate)
-                //return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
+                // return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
 
                 return promResolve
 
