@@ -417,7 +417,7 @@
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
-                    <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
+                    <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -2191,7 +2191,8 @@
                 // DELETE "efact" invoices with "medicalhouse" as "careProviderType"
                 promResolve
                     .then(() => this.api.invoice().listToInsurancesUnsent(this.user.id))
-                    .then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'sentMediumType')) === "efact" && _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
+                    //.then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'sentMediumType')) === "efact" && _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
+                    .then(unsentInvoices => _.map(_.filter(unsentInvoices, it => _.trim(_.get(it, 'careProviderType')) === "medicalhouse"), 'id'))
                     .then(invoiceUidssToDelete => {
                         let totalDeletedInvoices = 0;
                         const totalInvoicesToDelete = _.size(invoiceUidssToDelete);
