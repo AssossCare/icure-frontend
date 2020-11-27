@@ -929,6 +929,15 @@
                 const maySend =  !this.api.moment(lastSend).isSame(this.api.moment(Date.now()).format('YYYY-MM-DD'))
 
                 if (maySend) {
+                    this.listOfInvoice.filter(inv => _.get(inv, 'insurabilityCheck', false) === true && _.get(inv, 'sendingFlag', false) === true).forEach(inv => {
+                        const ipat = _.get(inv, 'patient', null);
+                        const mhc = _.get(_.orderBy(_.get(ipat, 'medicalHouseContracts', []).filter(mc => !!mc.contractId), ["startOfCoverage"],
+                            ["desc"]), "[0]", null);
+                        const ics = _.get(inv, "invoice.invoicingCodes", [])
+                        ics.forEach(ic => ic.contractDate = _.get(mhc, "startOfCoverage", 0))
+                    })
+
+
                     this.set('cannotSend',true)
                     //localStorage.setItem('lastInvoicesSent', Date.now())
                     this.shadowRoot.querySelector('#sendingDialog').open()
