@@ -417,6 +417,7 @@
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
+                    <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
                     <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
@@ -2503,7 +2504,19 @@
 
             }
 
+            _markAsSent(){
+                let prom = Promise.resolve()
 
+
+                _.head(_.get(this, 'filteredListOfInvoice', [])).map(inv => {
+                    _.assign(_.get(inv, 'invoice', {}), {sentDate: 20201126})
+                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+                })
+
+                prom.then(listOfModifiedInv => {
+                    console.log(listOfModifiedInv)
+                })
+            }
 
         }
 
