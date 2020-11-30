@@ -421,6 +421,7 @@
                         <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
                     </div>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -2527,6 +2528,36 @@
                 prom.then(listOfModifiedInv => {
                     console.log(listOfModifiedInv)
                 })
+            }
+
+            _reOpenUpComingMhc() {
+
+                const promResolve = Promise.resolve()
+                const flatRateUtil = this.$.flatrateUtils;
+
+                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth())); exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
+                const exportedDate = _.trim(parseInt(this._getExportCurrentYear())) + exportedMonth + "01"
+                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+
+                return promResolve
+                    .then(() => flatRateUtil.getPatientsEligibleForMdaRequestByExportedDate(exportedDate, {justGetRecords:true}))
+                    // Contract ended before it started -> impossible
+                    .then(pats => _.filter(pats, pat => _.some(_.get(pat, "medicalHouseContracts"), mhc => mhc && mhc.contractId && mhc.endOfCoverage && mhc.startOfCoverage && mhc.endOfCoverage <= mhc.startOfCoverage && _.assign(mhc, { endOfContract: null, endOfCoverage: null, status: (1 << 1) /* STATUS_ONGOING_MCN */ }))))
+                    .then(pats => {
+
+                        console.log(_.size(pats) + " patients to update")
+
+                        if(!_.size(pats)) return;
+
+                        let prom = Promise.resolve()
+
+                        _.map(pats, pat => { prom = prom.then(() => this.api.patient().modifyPatientWithUser(this.user, pat)) })
+
+                        return prom
+
+                    })
+                    .then(() => console.log("--- DONE _reOpenUpComingMhc ---"))
+
             }
 
         }
