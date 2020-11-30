@@ -2520,7 +2520,7 @@
 
                 _.head(_.get(this, 'filteredListOfInvoice', [])).map(inv => {
                     _.assign(_.get(inv, 'invoice', {}), {sentDate: 20201126})
-                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv))).catch(e => console.log(e))
                 })
 
                 prom.then(listOfModifiedInv => {
