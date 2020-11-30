@@ -360,7 +360,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         const flatRateTarifications = this.hcpParent && this.hcpParent.flatRateTarifications || []
 
-                        this.set('flatRateTarificationTab', _.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))) )
+                        this.set('flatRateTarificationTab',  _.sortBy(_.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))), ['code', 'valorisation.startOfValidity']) )
 
                 })
             }
@@ -412,7 +412,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     .then(hcp => this.set('hcpParent', hcp))
                     .finally(() => {
                     const flatRateTarifications = this.hcpParent && this.hcpParent.flatRateTarifications || []
-                    this.set('flatRateTarificationTab', _.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))) )
+                    this.set('flatRateTarificationTab',  _.sortBy(_.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))), ['code', 'valorisation.startOfValidity']) )
                     this.set('flatRateTarification', { code: null, label: null, reimbursement : Number(0.00), startOfValidity: null})
                 })
 
@@ -474,7 +474,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         .then(hcp => this.set('hcpParent', hcp))
                         .finally(() => {
                             const flatRateTarifications = this.hcpParent && this.hcpParent.flatRateTarifications || []
-                            this.set('flatRateTarificationTab', _.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))) )
+                            this.set('flatRateTarificationTab',  _.sortBy(_.flatten(flatRateTarifications.map(tar => tar.valorisations.map(val => ({valorisation: val, code: tar.code, label: tar.label, flatRateType: tar.flatRateType})))), ['code', 'valorisation.startOfValidity']) )
                         })
                 }
             }
