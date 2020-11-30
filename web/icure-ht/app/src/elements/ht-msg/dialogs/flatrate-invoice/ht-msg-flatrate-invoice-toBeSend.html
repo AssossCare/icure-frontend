@@ -416,11 +416,11 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
-                    <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
-                    <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
+                    <paper-button style="display:none" class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
+                    <paper-button style="display:none" class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
+                    <paper-button style="display:none" class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
+                    <paper-button style="display:none" class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
+                    <paper-button style="display:none" class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
