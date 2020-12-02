@@ -348,6 +348,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                                     select-list="[[selectList]]"
                                                     invoices-status="[[eFlatrateStatus]]"
                                                     route-data="[[routeData]]"
+                                                    mda-requests-already-ran-this-month="[[mdaRequestsAlreadyRanThisMonth]]"
                                                     on-selection-messages-change="handleMessageChange"
                                                     on-initialize-batch-counter="initializeFlatrateBatchCounter"
                                                     on-do-route="_doRouteElectronicFlatRate"
@@ -578,8 +579,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const availableLayouts = ["invoicesLayout","documentLayout","flatrateinvoicesLayout","flatrateinvoicesReportLayout","mycarenetLayout","isEHealthBox", "electronicFlatRateInvoicesLayout"]
 
 
-                // Do allow to go for toBeSenT page when mdaRequests weren't place this month yet
-                selectedStatus = selectedItem === "eflatrateInvocingMenuItem" && selectedStatus === "toBeSend" && !_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "ej20_mda" :
+                // Don' allow to go for toBeSenT page when mdaRequests weren't place this month yet
+                // Update: always let go to "To be sent", jsut disable button within that page
+                selectedStatus = selectedItem === "eflatrateInvocingMenuItem" && selectedStatus === "toBeSend" && !_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? /* "ej20_mda" */ "toBeSend" :
                     selectedItem === "flatRateeInvoicingMenuItem" && selectedStatus === "ej20_mda" && !!_.get(this,"mdaRequestsAlreadyRanThisMonth",false) ? "toBeSend" :
                         selectedStatus
 

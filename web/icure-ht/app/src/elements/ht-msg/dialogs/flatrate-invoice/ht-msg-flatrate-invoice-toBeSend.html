@@ -424,7 +424,9 @@
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
                     </div>
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                    <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
+                        <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                    </template>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
                     </template>
@@ -773,6 +775,10 @@
                     responsibleHcp:{
                         type: Object,
                         value: {}
+                    },
+                    mdaRequestsAlreadyRanThisMonth:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -786,7 +792,11 @@
             }
 
             static get observers() {
-                return ['_initialize(api, user, listOfInvoice)', '_filterValueChanged(filter)']
+                return [
+                    '_initialize(api, user, listOfInvoice)',
+                    '_filterValueChanged(filter)',
+                    '_loadMdaRequestsStatus(user)',
+                ]
             }
 
             _initialize(){
@@ -2558,6 +2568,29 @@
                     })
                     .then(() => console.log("--- DONE _reOpenUpComingMhc ---"))
 
+            }
+
+            _loadMdaRequestsStatus() {
+
+                const promResolve = Promise.resolve()
+                const exportedDate = moment().format("YYYYMM") + "01"
+
+                return this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+                    .then(pl => {
+                        return {
+                            rows: _.filter(pl.rows, it => it &&
+                                _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId &&
+                                _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                                _.trim(_.get(it, "metas.step5Validated")) === "true"
+                            ),
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(() => promResolve)
+                )
+                    .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
             }
 
         }

@@ -115,6 +115,7 @@
                         is-loading="[[isLoading]]"
                         on-open-invoice-detail-panel="_openInvoiceDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        mda-requests-already-ran-this-month="[[mdaRequestsAlreadyRanThisMonth]]"
                         id="ht-msg-flatrate-invoice-to-be-sent"
                 >
                 </ht-msg-flatrate-invoice-to-be-send>
@@ -381,6 +382,10 @@
                             {code: "675", name: {"fr": "Caisse auxiliaire d'assurance maladie-invalidité - Marins 675", "nl": "Hulpkas voor Ziekte-en Invaliditeitsverzekering - Zeiler 675"}},
                             {code: "900", name: {"fr": "Caisse des Soins de santé de HR Rail", "nl": "Kas der Geneeskundige Verzorging van HR Rail"}}
                         ]
+                    },
+                    mdaRequestsAlreadyRanThisMonth:{
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
