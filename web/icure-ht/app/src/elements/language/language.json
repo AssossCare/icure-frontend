@@ -5975,6 +5975,7 @@
     "mh_eInvoicing.downloadRequest": "Télécharger la requête",
     "mh_eInvoicing.downloadResponses": "Télécharger les réponses",
     "mh_eInvoicing.technicalDetails": "Détails techniques",
+    "mh_eInvoicing.export": "Exporter le résultat",
     "mh_flatrate_history" : "Historique facturation au forfait",
     "mda_no_facet": "Les données n’ont pas pu être vérifiées ",
     "conv_start_date": "date de commencement de la convention",
