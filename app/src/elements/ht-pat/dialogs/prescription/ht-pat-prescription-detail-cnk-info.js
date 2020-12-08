@@ -275,6 +275,11 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                                     <span class="headerLabel">[[localize('',"Prescriptible jusqu'au",language)]]: &nbsp;</span> [[_getEndDateOfPrescribing(selectedCnkForInformation)]]
                                 </div>
                              </div>
+                             <div class="headerInfoLine">
+                                <div class="headerInfoField fw1">
+                                    <span class="headerLabel">[[localize('','Conditions pour la prescription',language)]]: &nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
+                                </div>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -291,7 +296,7 @@ class HtPatPrescriptionDetailCnkInfo extends TkLocalizerMixin(mixinBehaviors([Ir
                              </div>
                              <div class="headerInfoLine">
                                  <div class="headerInfoField fw1">
-                                        <span class="headerLabel">[[localize('','Condition de délivrance',language)]]:&nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
+                                        <span class="headerLabel">[[localize('','Condition pour la délivrance',language)]]:&nbsp;</span> [[_getDeliveryModusSpecification(selectedCnkForInformation)]]
                                     </div>
                              </div>
                         </div>
