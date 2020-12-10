@@ -416,13 +416,14 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <div class="hidden">
+
                         <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_fixAssuTooLate">[[localize('fix_assu_late','Fix Assu Late',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
-                    </div>
+
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
                         <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -1046,10 +1047,10 @@
 
                 // Triggers opening of popup / dialog to choose which month export
                 // 20201116 - Don't do anymore, force current month, always
-                // this.shadowRoot.querySelector('#selectMonthDialog').open()
+                this.shadowRoot.querySelector('#selectMonthDialog').open()
 
                 // 20201116 - Force export of current month
-                return this._exportFlatRateInvoicing_step2_v2();
+                //return this._exportFlatRateInvoicing_step2_v2();
 
             }
 
@@ -2120,6 +2121,18 @@
                     })
             }
 
+            _updateAssuStart(pat, oldAssuStart, newAssuStart){
+                return this.api.patient().getPatientWithUser(this.user, pat.id)
+                    .then(patient => {
+                        let assu = patient.insurabilities.find(i =>  _.trim(_.get(i,"startDate")) === oldAssuStart)
+                        if(!!assu){
+                            assu.startDate = parseInt(newAssuStart)
+                        }
+                        return this.api.patient().modifyPatientWithUser(this.user, patient)
+                            .then(p => this.api.register(p, 'patient'))
+                    })
+            }
+
             _updatePatReopenMHC(pat, contractId){
                 return this.api.patient().getPatientWithUser(this.user, pat.id)
                     .then(patient => {
@@ -2187,6 +2200,26 @@
                 this.dispatchEvent(new CustomEvent('trigger-goto-admin', { bubbles: true, composed: true, detail: {} }));
             }
 
+            _fixAssuTooLate(){
+                const promResolve = Promise.resolve()
+                const flatRateUtil = this.$.flatrateUtils;
+                const exportedDate = "2020" + "10" + "01"
+                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+                const currentAssuDate = "2020" + "12" + "01"
+                const currentAssuDateMoment = moment(currentAssuDate, "YYYYMMDD")
+                let limit = promiseLimit(50);
+                flatRateUtil.getPatientsEligibleForEarlierAssuFix(exportedDate, currentAssuDate).then(pats => Promise.all([this._getInsurancesDataByPatientsList(pats), pats])
+                ).then(([insList, pats]) => {
+                    console.log(insList, pats);
+                    return Promise.all(pats.map(pat => {
+                        return limit(() => {
+                            return this._updateAssuStart(pat, currentAssuDate, exportedDate)
+                        })
+
+                    }))
+                })
+            }
+
             _fixPatient300(){
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
@@ -2251,13 +2284,17 @@
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
 
+
+                const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))	                // 20201116 - Force export of current month (ISO letting user choose)
+                let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth()));
+
                 // 20201116 - Force export of current month (ISO letting user choose)
                 // const exportedYear = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedYear"), "value"))||this._getExportCurrentYear()))
-                const exportedYear = _.trim(parseInt(this._getExportCurrentYear()))
+                //const exportedYear = _.trim(parseInt(this._getExportCurrentYear()))
 
                 // 20201116 - Force export of current month (ISO letting user choose)
                 // let exportedMonth = _.trim(parseInt(parseInt(_.get(this.shadowRoot.getElementById("exportedMonth"), "value"))||this._getExportCurrentMonth()));
-                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth()));
+                //let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth()));
                 exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
 
                 const exportedDate = exportedYear + exportedMonth + "01"
@@ -2431,7 +2468,14 @@
                     //      e) 1+ valid INS (versus exportedDate)
                     //      f) Not already exported (versus exportedDate)
                     //      g) Rules (some) can be overridden if patient was forced as valid (using mda flow)
-                    .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth => _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:patientsToExportThisMonth})))
+                    .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth =>
+                        {
+                            // console.log("patientsToExportThisMonth", JSON.stringify(patientsToExportThisMonth))
+                            // throw new Error("STOP HERE")
+                            return _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:patientsToExportThisMonth})
+                        }
+                        )
+                    )
 
                     // 5 - Collect insurances
                     .then(() => {
