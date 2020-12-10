@@ -707,7 +707,7 @@
                         encrypted: false,
                         destinations: recipients,
                         sender: {
-                            identifierType: "NIHII",
+                            identifierType: {type: "NIHII"},
                             id: _.trim(_.get(currentHcp, "nihii", "")),
                             quality: _.trim(_.get(currentHcp, "quality", "doctor")).toUpperCase(),
                             applicationId: "",
