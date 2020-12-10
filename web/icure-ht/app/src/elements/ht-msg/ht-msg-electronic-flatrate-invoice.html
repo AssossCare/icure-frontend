@@ -502,6 +502,9 @@
                         }
                     })
                         .catch(e => console.log('Erreur lors de la récupération des factures: ', e))
+                }).catch(err => {
+                    console.log('Erreur lors de la récupération des factures: ', err)
+                    this.fetchMessageToBeSendOrToBeCorrected(e)
                 })
             }
 
