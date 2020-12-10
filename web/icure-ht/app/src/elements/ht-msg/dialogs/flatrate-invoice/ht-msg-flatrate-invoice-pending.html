@@ -593,9 +593,9 @@
                                 prom = prom.then(messages =>
                                     new Promise((resolve) => {
                                         if (message.detail) {
-                                            this.api.message().processEfactMessage(this.user, this.hcp, message, null, (iv, hcpId) =>
-                                                iv.recipientId && this.api.insurance().getInsurance(iv.recipientId)
-                                                    .then(ins => this.api.insurance().getInsurance(ins.parent))
+                                            this.api.messagev3().processEfactMessage(this.user, this.hcp, message, null, (iv, hcpId) =>
+                                                iv.recipientId && this.api.insurancev3().getInsurance(iv.recipientId)
+                                                    .then(ins => this.api.insurancev3().getInsurance(ins.parent))
                                                     .then(ins => `invoice:${hcpId}:${ins.code || '000'}:`)
                                                 || Promise.resolve(`invoice:${hcpId}:000:`)
                                             ).then(msg => {
