@@ -664,7 +664,7 @@
             <div class="buttons">
                 <paper-button class="button button--other" dialog-dismiss="">[[localize('clo','Close',language)]]</paper-button>
                 <template is="dom-if" if="[[patientWithoutMutuality.length]]">
-                    <paper-button class="button button--save" on-tap="sendInvoices">[[localize('continue','Continue',language)]]</paper-button>
+                    <paper-button class="button button--save" on-tap="_showSummaryDialog">[[localize('continue','Continue',language)]]</paper-button>
                 </template>
             </div>
         </paper-dialog>
@@ -909,7 +909,6 @@
                         this.shadowRoot.querySelector('#checkBeforeSendingDialog').open()
                     }else{
                         this._showSummaryDialog()
-
                     }
                 })
 
@@ -917,6 +916,7 @@
             }
 
             _showSummaryDialog(){
+                this.shadowRoot.querySelector("#checkBeforeSendingDialog") ? this.shadowRoot.querySelector("#checkBeforeSendingDialog").close() : null
                 this.shadowRoot.querySelector("#htMsgFlatrateInvoiceSummary")._openSummaryDialog()
             }
 
