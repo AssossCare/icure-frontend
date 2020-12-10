@@ -251,17 +251,25 @@
             }
 
             .btn-20-left{
-                height: 20px;
-                width: 20px;
+                height: 25px;
                 z-index: 20;
+                padding-top: 2px;
             }
 
             #editContractId{
                 height: 200px;
                 width: 400px;
             }
+
+            #editMKI{
+                height: 200px;
+                width: 400px;
+            }
             .flex {
                 display: flex;
+            }
+            .padder{
+                padding : 30px;
             }
         </style>
         <paper-dialog id="subscriptionDetailDialog">
@@ -312,7 +320,7 @@
                                                                 <div class="headerMasterTitle headerLabel">
                                                                     <div class="flex">
                                                                         [[localize('mhm-sub', 'Subscription', language)]]: [[mhc.contractId]]
-                                                                        <paper-icon-button class="button button--save btn-20-left" icon="icons:setting" on-tap="_openEditContractId" data-item$="[[index]]">[[localize('mhm-edit-contract-id','Edit contract id',language)]]</paper-icon-button>
+                                                                        <paper-icon-button class="action-edit-btn btn-20-left" icon="create" on-tap="_openEditContractId" data-item$="[[index]]">[[localize('mhm-edit-contract-id','Edit contract id',language)]]</paper-icon-button>
                                                                     </div>
                                                                     <paper-tooltip position="bottom" for="dl-master"></paper-tooltip>
                                                                     <paper-menu-button class="btn-20" horizontal-align="right" dynamic-align="true" vertical-offset="26">
@@ -352,6 +360,7 @@
                                                                     </div>
                                                                     <div class="headerInfoField">
                                                                         <span class="headerLabel">[[localize('mhm-flatrate-type', 'Flatrate type', language)]]: &nbsp;</span> [[mhc.hrFlatRateType]]
+                                                                        <paper-icon-button class="action-edit-btn btn-20-left" icon="create" on-tap="_openEditMKI" data-item$="[[index]]">[[localize('mhm-edit-MKI','Edit MKI',language)]]</paper-icon-button>
                                                                     </div>
                                                                 </div>
                                                                 <div class="headerInfoLine">
@@ -427,8 +436,20 @@
                 <paper-input label="[[localize('contract-id','ID du contrat',language)]]" value="{{contractIdTmp}}"></paper-input>
             </div>
             <div class="buttons">
-                <paper-button class="button button--save" on-tap="_editContractId"><iron-icon icon="icons:pen" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-edit-contract-id','Edit contract ID',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_editContractId"><iron-icon icon="create" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-edit-contract-id','Edit contract ID',language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_closeEditContractId"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+        <paper-dialog id="editMKI">
+            <h2 class="modal-title"> Edition MKI</h2>
+            <div class="content padder">
+                <paper-checkbox checked="{{gpTmp}}">[[localize('gp','General Practice',language)]]</paper-checkbox><br/>
+                <paper-checkbox checked="{{kineTmp}}">[[localize('kine','Kiné',language)]]</paper-checkbox><br/>
+                <paper-checkbox checked="{{nurseTmp}}">[[localize('nurse','Nurse',language)]]</paper-checkbox>
+            </div>
+            <div class="buttons">
+                <paper-button class="button button--save" on-tap="_editMKI"><iron-icon icon="create" class="mr5 smallIcon" ></iron-icon> [[localize('mhm-edit-MKI','Edit MKI',language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_closeEditMKI"><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
     </template>
@@ -548,6 +569,18 @@
                         value: "2020-10-31"
                     },
                     contractIdTmp:{
+                        type: String,
+                        value: ''
+                    },
+                    gpTmp:{
+                        type: String,
+                        value: ''
+                    },
+                    kineTmp:{
+                        type: String,
+                        value: ''
+                    },
+                    nurseTmp:{
                         type: String,
                         value: ''
                     },
@@ -781,6 +814,31 @@
 
             _closeEditContractId(e){
                 this.shadowRoot.querySelector('#editContractId') ? this.shadowRoot.querySelector('#editContractId').close() : null
+            }
+
+            _editMKI(e){
+                this.set("medicalHouseContracts."+this.idxTmp+".gp",this.gpTmp)
+                this.set("medicalHouseContracts."+this.idxTmp+".kine",this.kineTmp)
+                this.set("medicalHouseContracts."+this.idxTmp+".nurse",this.nurseTmp)
+                this.set("medicalHouseContracts."+this.idxTmp+".hrFlatRateType", this._getFlatRateType(_.get(this,"medicalHouseContracts."+this.idxTmp,{})))
+                this.set("patient.medicalHouseContracts."+_.get(this, "medicalHouseContracts."+this.idxTmp+".idxPatObject","")+".gp",this.gpTmp)
+                this.set("patient.medicalHouseContracts."+_.get(this, "medicalHouseContracts."+this.idxTmp+".idxPatObject","")+".kine",this.kineTmp)
+                this.set("patient.medicalHouseContracts."+_.get(this, "medicalHouseContracts."+this.idxTmp+".idxPatObject","")+".nurse",this.nurseTmp)
+                this.api.patient().modifyPatientWithUser(this.user, this.patient)
+                    .then(pat => this.set('patient', this.api.register(pat, 'patient')))
+                this.shadowRoot.querySelector('#editMKI') ? this.shadowRoot.querySelector('#editMKI').close() : null
+            }
+
+            _openEditMKI(e){
+                this.set("idxTmp",_.get(e,"target.dataset.item",""))
+                this.set("gpTmp",_.get(this,"medicalHouseContracts."+this.idxTmp+".gp"),false)
+                this.set("kineTmp",_.get(this,"medicalHouseContracts."+this.idxTmp+".kine"),false)
+                this.set("nurseTmp",_.get(this,"medicalHouseContracts."+this.idxTmp+".nurse"),false)
+                this.shadowRoot.querySelector('#editMKI') ? this.shadowRoot.querySelector('#editMKI').open() : null
+            }
+
+            _closeEditMKI(e){
+                this.shadowRoot.querySelector('#editMKI') ? this.shadowRoot.querySelector('#editMKI').close() : null
             }
 
         }
