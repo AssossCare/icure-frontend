@@ -423,6 +423,7 @@
                         <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
                     </div>
+                    <!--<paper-button class="button button--save" on-tap="_correctAllInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>-->
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
                         <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -2591,6 +2592,81 @@
                     .catch(() => promResolve)
                 )
                     .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
+            }
+
+            _correctAllInvoice(){
+                this.set('isLoading', true)
+                let valorisationMonths = [];
+                this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
+                    let prom = Promise.resolve()
+                    for (let i = 0; i < 240; i++) { valorisationMonths.push(_.trim(moment().startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
+                    const valorisationList = valorisationMonths.map(valorisationMonth => {
+                        return {
+                            month: parseInt(valorisationMonth),
+                            valorisations: _.merge(
+                                [
+                                    {code: "109616", price: 0.00, flatRateType: "physician"},
+                                    {code: "509611", price: 0.00, flatRateType: "physiotherapist"},
+                                    {code: "409614", price: 0.00, flatRateType: "nurse"},
+                                    {code: "109594", price: 0.00, flatRateType: "ptd"}
+                                ],
+                                _.compact(
+                                    _.chain(_.get(hcp, 'flatRateTarifications', []))
+                                        .map(singleNomenclature => {
+                                            const valorisationObject = _.head(
+                                                _.orderBy(
+                                                    _
+                                                        .chain(singleNomenclature.valorisations)
+                                                        .filter(singleValorisation => {
+                                                            return (
+                                                                !!singleValorisation
+                                                                && parseFloat(_.get(singleValorisation, "reimbursement", 0))
+                                                                && (
+                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).isBefore(moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month')) ||
+                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).format("YYYYMMDD") === moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month').format("YYYYMMDD")
+                                                                )
+                                                            )
+
+                                                        })
+                                                        .value(),
+                                                    ["startOfValidity"],
+                                                    ["desc"]
+                                                )
+                                            )
+                                            return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
+                                                code: _.trim(_.get(singleNomenclature, "code")),
+                                                label: _.get(singleNomenclature, "label"),
+                                                flatRateType: _.trim(_.get(singleNomenclature, "flatRateType")),
+                                                price: parseFloat(_.get(valorisationObject, "reimbursement", 0)),
+                                                valorisationMonth: parseInt(valorisationMonth)
+                                            } : false
+                                        })
+                                        .value()
+                                )
+                            )
+                        }
+                    })
+
+                    _.get(this, 'listOfInvoice', []).map(inv => {
+                        const currentValorisation = valorisationList.find(val => _.get(val, 'month', null) === _.get(inv, 'invoiceDate', ''))
+                        _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
+                            _.assign(ic, {
+                                pending: false,
+                                resent: false,
+                                reimbursement: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00),
+                                totalAmount: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00)
+                            })
+                        })
+                        _.assign(_.get(inv, 'invoice', {}), {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
+                        prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+                    })
+
+                    prom.then(listOfModifiedInv => {
+                        console.log(listOfModifiedInv)
+                        this.set('isLoading', false)
+                        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
+                    })
+                })
             }
 
         }
