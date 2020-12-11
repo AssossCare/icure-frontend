@@ -195,7 +195,7 @@
             this.documenticc = new IccDocumentXApi(this.host, this.headers, this.cryptoicc)
             this.formicc = new IccFormXApi(this.host, this.headers, this.cryptoicc)
             this.helementicc = new IccHelementXApi(this.host, this.headers, this.cryptoicc)
-            this.invoiceicc = new IccInvoiceXApi(this.host, this.headers30s, this.cryptoicc, this.entityreficc)
+            this.invoiceicc = new IccInvoiceXApi(this.host, this.headers120s, this.cryptoicc, this.entityreficc)
             this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc, this.calendaritemicc)
             this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
             this.bekmehricc = new IccBekmehrXApi(this.host, this.headers, this.contacticc, this.helementicc)
@@ -218,7 +218,7 @@
             this.documenticcv3 = new IccDocumentXApiV3(this.host, this.headers, this.cryptoiccv3, this.authiccv3)
             this.formiccv3 = new IccFormXApiV3(this.host, this.headers, this.cryptoiccv3)
             this.helementiccv3 = new IccHelementXApiV3(this.host, this.headers, this.cryptoiccv3)
-            this.invoiceiccv3 = new IccInvoiceXApiV3(this.host, this.headers30s, this.cryptoiccv3, this.entityreficcv3)
+            this.invoiceiccv3 = new IccInvoiceXApiV3(this.host, this.headers120s, this.cryptoiccv3, this.entityreficcv3)
             this.patienticcv3 = new IccPatientXApiV3(this.host, this.headers, this.cryptoiccv3, this.contacticcv3, this.formiccv3, this.helementiccv3, this.invoiceiccv3, this.documenticcv3, this.hcpartyiccv3, this.classificationiccv3, this.calendaritemiccv3)
             this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoiccv3, this.insuranceiccv3, this.entityreficcv3, this.invoiceiccv3, this.documenticcv3, this.receipticcv3, this.patienticcv3)
 
