@@ -138,13 +138,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _getPatients(mhNihii) {
 
-                return this.api.getRowsUsingPagination(
+                const insuranceIdsToResolve = []
+                const momentExportedDate = _.trim(moment().format("YYYYMM")) + "01"
+
+                const prom = this.api.getRowsUsingPagination(
                     (key,docId) =>
                         this.api.patient().listPatientsByHcPartyWithUser(this.user, _.trim(_.get(this,"user.healthcarePartyId","")), null, key && JSON.stringify(key), docId, 1000)
                             .then(pl => {
                                 pl.rows = _
                                     .chain(pl.rows)
-                                    .map(it => _.assign(it, {validMhc: _
+
+                                    // .map(it => _.assign(it, {
+                                    //     validMhc: _
+                                    //         .chain(_.get(it, "medicalHouseContracts",[]))
+                                    //         .filter(mhc => mhc
+                                    //             && _.trim(_.get(mhc,"hcpId"))
+                                    //             && _.trim(_.get(mhc,"hcpId")) === _.trim(_.get(this,"user.healthcarePartyId"))
+                                    //             && _.trim(_.get(mhc,"mmNihii")) === mhNihii
+                                    //             && _.trim(_.get(mhc,"contractId"))
+                                    //             && ( (_.get(mhc,"status",0) & (1 << 1)) || false === _.get(mhc,"status",false))
+                                    //             && !(_.get(mhc,"status",0) & (1 << 2))
+                                    //             && !(_.get(mhc,"status",0) & (1 << 3))
+                                    //         )
+                                    //         .orderBy(['startOfCoverage'],['desc'])
+                                    //         .head()
+                                    //         .value()
+                                    // }))
+                                    // .filter(it=> _.get(it,"active", true) && _.trim(_.get(it,"ssin", "")) && _.size(_.get(it,"validMhc", null)))
+
+                                    .map(it => {
+
+                                        const latestInsurability = _
+                                            .chain(_.get(it, "insurabilities", []))
+                                            .filter(ins => _.size(ins)
+                                                // && _.trim(_.get(ins, "identificationNumber"))
+                                                && _.trim(_.get(ins, "insuranceId", ""))
+                                                // && _.trim(_.get(ins, "parameters.tc1", "")).length === 3
+                                                // && _.trim(_.get(ins, "parameters.tc2", "")).length === 3
+                                                // (_.trim(_.get(ins, "parameters.tc1", "")) + _.trim(_.get(ins, "parameters.tc2", "")) !== "000000")
+                                            )
+                                            .orderBy(["startDate"], ["desc"])
+                                            .head()
+                                            .value()
+
+                                        const finalInsurability = _.find(_.get(it, "insurabilities", []), ins => _.size(ins)
+                                            // && _.trim(_.get(ins, "identificationNumber"))
+                                            && _.trim(_.get(ins, "insuranceId"))
+                                            // && _.trim(_.get(ins, "parameters.tc1")).length === 3
+                                            // && _.trim(_.get(ins, "parameters.tc2")).length === 3
+                                            // && (_.trim(_.get(ins, "parameters.tc1")) + _.trim(_.get(ins, "parameters.tc2")) !== "000000")
+                                            && (moment(_.trim(_.get(ins, "startDate" + "", 0)), 'YYYYMMDD').isSameOrBefore(momentExportedDate) || !(parseInt(_.get(ins, "startDate", 0))||0))
+                                            && (moment(_.trim(_.get(ins, "endDate" + "", 0)), 'YYYYMMDD').isSameOrAfter(momentExportedDate) || !(parseInt(_.get(ins, "endDate", 0))||0))
+                                        )
+
+                                        const latestMhc = _
                                             .chain(_.get(it, "medicalHouseContracts",[]))
                                             .filter(mhc => mhc
                                                 && _.trim(_.get(mhc,"hcpId"))
@@ -158,18 +205,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                             .orderBy(['startOfCoverage'],['desc'])
                                             .head()
                                             .value()
-                                    }))
-                                    .filter(it=> _.get(it,"active", true) && _.trim(_.get(it,"ssin", "")) && _.size(_.get(it,"validMhc", null)))
-                                    .map(it => ({
-                                        firstName: _.upperFirst(_.trim(_.get(it,"firstName","")).toLocaleLowerCase()),
-                                        lastName: _.upperFirst(_.trim(_.get(it,"lastName","")).toLocaleLowerCase()),
-                                        ssin: _.trim(_.get(it,"ssin","")).replace(/[^\d]/gmi,""),
-                                        contractId: _.trim(_.get(it, "validMhc.contractId")),
-                                        startOfContract: _.trim(_.get(it, "validMhc.startOfContract")),
-                                        startOfCoverage: _.trim(_.get(it, "validMhc.startOfCoverage")),
-                                        signatureType: _.trim(_.get(it, "validMhc.signatureType")),
-                                        lastInvoicing : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoiced"}), "code", "")),
-                                    }))
+
+                                        const mhcIsValid = _.trim(_.get(latestMhc,"contractId"))
+                                            && ((_.get(latestMhc,"status",0) & (1 << 1)) || false === _.get(latestMhc,"status",false))
+                                            && !(_.get(latestMhc,"status",0) & (1 << 2))
+                                            && !(_.get(latestMhc,"status",0) & (1 << 3))
+
+                                        const dateOfDeath = (parseInt(_.get(it, "dateOfDeath", 0)) || 0)
+
+                                        const insuranceCode = _.trim(_.get(finalInsurability, "insuranceId")) ? _.trim(_.get(finalInsurability, "insuranceId")) : _.trim(_.get(latestInsurability, "insuranceId"))
+
+                                        // Collect, we'll resolve later
+                                        insuranceIdsToResolve.push(insuranceCode)
+
+                                        return {
+                                            active: (_.get(it,"active", true) ? "Yes" : "No"),
+                                            firstName: _.upperFirst(_.trim(_.get(it,"firstName","")).toLocaleLowerCase()),
+                                            lastName: _.upperFirst(_.trim(_.get(it,"lastName","")).toLocaleLowerCase()),
+                                            ssin: this.api.fixSsinLength(_.trim(_.get(it,"ssin")).replace(/[^\d]/gmi,"")),
+                                            dateOfDeath: (!dateOfDeath ? "" : dateOfDeath),
+
+                                            insuranceCode: insuranceCode,
+                                            insuranceContractId: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
+                                            insuranceStartDate: _.trim(_.get(finalInsurability, "startDate")) ? _.trim(_.get(finalInsurability, "startDate")) : _.trim(_.get(latestInsurability, "startDate")),
+                                            insuranceEndDate: _.trim(_.get(finalInsurability, "endDate")) ? _.trim(_.get(finalInsurability, "endDate")) : _.trim(_.get(latestInsurability, "endDate")),
+                                            insuranceTc1: _.trim(_.get(finalInsurability, "parameters.tc1")) ? _.trim(_.get(finalInsurability, "parameters.tc1")) : _.trim(_.get(latestInsurability, "parameters.tc1")),
+                                            insuranceTc2: _.trim(_.get(finalInsurability, "parameters.tc2")) ? _.trim(_.get(finalInsurability, "parameters.tc2")) : _.trim(_.get(latestInsurability, "parameters.tc2")),
+                                            insurancePreferentialstatus: ((_.trim(_.get(finalInsurability, "parameters.preferentialstatus")) ? _.trim(_.get(finalInsurability, "parameters.preferentialstatus")) : _.trim(_.get(latestInsurability, "parameters.preferentialstatus"))) === "true" ? "Yes" : _.size(latestInsurability) ? "No" : ""),
+
+                                            mhcIsValid: (mhcIsValid ? "Yes" : "No"),
+                                            mhContractId: _.trim(_.get(latestMhc, "contractId")),
+                                            mhStartOfContract: _.trim(_.get(latestMhc, "startOfContract")) === "0" ? "" : _.trim(_.get(latestMhc, "startOfContract")),
+                                            mhEndOfContract: _.trim(_.get(latestMhc, "endOfContract")) === "0" ? "" : _.trim(_.get(latestMhc, "endOfContract")),
+                                            mhStartOfCoverage: _.trim(_.get(latestMhc, "startOfCoverage")) === "0" ? "" : _.trim(_.get(latestMhc, "startOfCoverage")),
+                                            mhEndOfCoverage: _.trim(_.get(latestMhc, "endOfCoverage")) === "0" ? "" : _.trim(_.get(latestMhc, "endOfCoverage")),
+                                            mhSignatureType: _.trim(_.get(latestMhc, "signatureType")),
+
+                                            lastInvoiced : _.trim(_.get(_.find(_.get(it, "tags", []), {type:"flatRateLastInvoiced"}), "code", ""))
+                                        }
+
+                                    })
                                     .value()
                                 return {
                                     rows:pl.rows,
@@ -179,7 +254,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 }
                             })
                             .catch(()=>{ return Promise.resolve(); })
-                )||[];
+                )||[]
+
+                return prom
+                    .then(data => this.api.insurance().getInsurances({ids:_.chain(data).map("insuranceCode").compact().uniq().value()}).then(insurances => [data, insurances]).catch(() => [data,[]]))
+                    .then(([data, insurances]) => _.map(data, it => !it.insuranceCode ? it : _.assign(it, {insuranceCode: _.get(_.find(insurances,{id:it.insuranceCode}), "code")})))
 
             }
 
