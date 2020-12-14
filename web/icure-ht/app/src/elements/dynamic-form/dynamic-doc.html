@@ -1811,44 +1811,34 @@
             }
 
             _documentIdChanged() {
-                if (!this.documentId || !this.api || !this.user) {
-                    this.set('isLoading',false)
-                    return;
-                }
+
+                if (!this.documentId || !this.api || !this.user) { this.set('isLoading',false); return; }
+
                 this.set('isLoading',true)
 
                 const contact = _.find(this.contacts, ctc => _.some(_.get(ctc,"services",[]), svc => _.trim(_.get(svc,"content."+ this.language +".documentId")) === _.trim(_.get(this,"documentId",""))));
                 this.set("contact", contact);
                 this.set("contactId", _.trim(_.get(this.contact,"id","")));
 
-                const docId = this.documentId
-                this.api.document().getDocument(docId)
+                return this.api.document().getDocument(this.documentId)
                     .then(doc => {
                         this.set('document', doc)
-                        if (_.size(doc.encryptionKeys) || _.size(doc.delegations)) {
+                        return !_.size(doc.encryptionKeys) && !_.size(doc.delegations) ?
+                            this.set('dataUrl', doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)) :
                             this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, doc.id, _.size(doc.encryptionKeys) ? doc.encryptionKeys : doc.delegations)
-                                .then(({extractedKeys: enckeys}) => {
-                                    if(_.trim(_.get(doc,"mainUti","")) === "public.html") this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null}))
-                                    const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)
-                                    this.set('dataUrl', url)
-                                })
-                                .catch(() => {
-                                    const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                                    this.set('dataUrl', url)
-                                })
-                        } else {
-                            const url = doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)
-                            this.set('dataUrl', url)
-                        }
+                                .then(({extractedKeys: enckeys}) => _.trim(_.get(doc,"mainUti","")) === "public.html" ?
+                                    this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")), enckeys.join(',')).then(attachmentContent=>this.set("data", {content:[_.trim(attachmentContent)], l:null})) :
+                                    this.api.document().getAttachment(_.trim(_.get(doc,"id","")), _.trim(_.get(doc,"attachmentId","")))
+                                        .then(attachment => this.api.encryptDecrypt("decrypt", this.user, doc, attachment, true))
+                                        // Used to fix / encrypt correctly based on right key (this won't happen when already encrypted with correct key)
+                                        .then(([decryptedContent, wrongEDKey]) => !_.trim(wrongEDKey) ? null : this.api.document().setAttachment(doc.id, enckeys, decryptedContent))
+                                        .then(() => this.set('dataUrl', doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, enckeys, this.api.sessionId)))
+                                )
+                                .catch(() => this.set('dataUrl', doc && this.api.document().getAttachmentUrl(doc.id, doc.attachmentId, undefined, this.api.sessionId)))
                     })
                     .then(() => this._getComment())
-                    .then(comment => {
-                        comment && this.set("comment", comment);
-                        this.set("hasComment", !!comment);
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    })
+                    .then(comment => { comment && this.set("comment", comment); this.set("hasComment", !!comment); })
+                    .catch(error =>  console.log(error))
                     .finally(() => this.set('isLoading', false))
             }
 
