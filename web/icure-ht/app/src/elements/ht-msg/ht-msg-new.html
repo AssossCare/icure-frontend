@@ -2274,7 +2274,9 @@
                             encrypted : isEncrypted,
                             destinations : _.compact(_.map(_.get(this,"newMessage.recipients",[]), singleRecipient => this._wrapRecipientData(singleRecipient))),
                             sender : {
-                                identifierType: "NIHII",
+                                identifierType: {
+                                    type: "NIHII"
+                                },
                                 id: isSortingCenter ? _.trim(_.get(boxInfo,"boxId")) : _.trim(_.get(currentHcp, "nihii", "")),
                                 quality: isSortingCenter ? _.trim(_.get(boxInfo,"quality")) : _.trim(_.get(currentHcp,"quality","doctor")).toUpperCase(),
                                 applicationId: "",
