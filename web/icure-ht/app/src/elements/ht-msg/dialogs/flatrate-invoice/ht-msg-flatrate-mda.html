@@ -1850,7 +1850,7 @@
                         <paper-item on-tap="_triggerDownloadCalls" data-request-type="responses">[[localize("mh_eInvoicing.downloadResponses","Download responses",language)]]</paper-item>
                     </paper-listbox>
                 </paper-menu-button>
-                <paper-button class="button button--other" on-tap="_exportMdaResult"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.export","Export",language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_e_exportMdaResult"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.export","Export",language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button>
             </div>
 
@@ -2695,13 +2695,8 @@
             _e_mdaFlagAllAsValid(e){
 
                 Promise.resolve(_.map(this.mdaResultsGridData, it => {
-                    if(this._isEqual(_.get(it, "patientHasValidInsurabilityBoolean", false),'false') && this._canFlagAsValid(it)){
-                        const reconcileKey = _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_")));
-                        console.log(reconcileKey);
-                        return _.assign(_.find(_.get(this,"mdaRequestsData.message.attachment.request",[]), it2 => _.trim(_.head(_.trim(_.get(it2,"reconcileKey")).split("_"))) === reconcileKey), {patientForcedAsValid:true})
-                    } else {
-                        return it;
-                    }
+                    const reconcileKey = _.trim(_.head(_.trim(_.get(it,"reconcileKey")).split("_")));
+                    return !this._isEqual(_.get(it, "patientHasValidInsurabilityBoolean", false),'false') || !this._canFlagAsValid(it) ? it : _.assign(_.find(_.get(this,"mdaRequestsData.message.attachment.request",[]), it2 => _.trim(_.head(_.trim(_.get(it2,"reconcileKey")).split("_"))) === reconcileKey), {patientForcedAsValid:true})
                 }))
                     .then(() => this._e_gotoMdaLastCallResultsDetails(null,_.get(this,"mdaActiveTab", "invalidPatients")))
             }
@@ -2740,6 +2735,55 @@
                 // T + 72h -> If not -> allow going for next step
                 return mdaRequestsData && mdaRequestsData.everGotChecked && moment(_.cloneDeep(requestDate),"YYYYMMDDHHmmss").add(72,"hours").isBefore(moment())
 
+            }
+
+            _e_exportMdaResult() {
+
+                this.set("_isLoadingSmall",true)
+
+                let prom = Promise.resolve()
+                const promResolve = Promise.resolve()
+
+                const clonedResult = _.cloneDeep(_.get(this,"rawMdaResultsGridData",[]))
+                _.chunk(clonedResult,100).map(chunked => {
+                    prom = prom
+                        .then(() => this.api.patient().getPatientsWithUser(this.user,{ids:chunked.map(data => data.patientId)}).then(patients => patients.map(patient =>Promise.resolve(_.assign(clonedResult.find(result =>result.patientId===patient.id),{patient : patient})))))
+                        .catch(()=> console.log("error getPatient"))
+                })
+
+                prom
+                    .then(() =>{
+                        const patients = clonedResult.map(result =>{
+                            const contract = _.get(result,"patient.medicalHouseContracts",[]).find(contract => contract && contract.startOfCoverage && this.api.moment(contract.startOfCoverage).isSameOrBefore(moment(),"day") && (!contract.endOfCoverage || this.api.moment(contract.endOfCoverage).isSameOrAfter(moment(),"day")))
+                            return {
+                                "Name" : _.get(result,"nameHr",""),
+                                "NISS": _.get(result,"ssinHr",""),
+                                "OA": _.get(result,"oa",""),
+                                "numberContract": _.get(contract,"contractId",""),
+                                "statutContract" : this._e_getSubscriptionStatus(contract),
+                                "startCoverageDate":_.get(contract,"startOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"startOfCoverage","")) : "",
+                                "endCoverageDate": _.get(contract,"endOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"endOfCoverage","")) : "",
+                                "contractType":(_.get(contract,"gp",false) ? "M" :"") + (_.get(contract,"kine",false) ? "K" :"") + (_.get(contract,"nurse",false) ? "I" :"") ,
+                                "url": "https://tz.icure.cloud/#pat/"+_.get(result,"patient.id","")
+                            }
+                        })
+
+                        const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                        xlsWorkBook.Props = {Title: "MH Invoicing patient list", Author: "Topaz"}
+                        XLSX.utils.book_append_sheet(xlsWorkBook, XLSX.utils.json_to_sheet(patients), 'MH Invoicing patient list')
+
+                        return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                    })
+                    .then(xlsFile => !xlsFile ? promResolve : this.api.triggerFileDownload(xlsFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  "mh-invoicing-patient-list-" + moment().format("YYYYMMDD-HHmmss") + ".xls"))
+                    .finally(() => this.set("_isLoadingSmall",false))
+            }
+
+            _e_getSubscriptionStatus(mhc) {
+                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? this.localize('mhm_stat_closed', 'Closed', this.language) :
+                    !!(_.get(mhc, 'status', null) & (1 << 2)) ? this.localize('mhm_stat_cancelled', 'Cancelled', this.language) :
+                        !!(_.get(mhc, 'status', null) & (1 << 1)) ? this.localize('mhm_stat_ongoing', 'On going', this.language) :
+                            this.localize('mhm_stat_other', 'Manual encoding', this.language)
             }
 
 
@@ -3967,57 +4011,6 @@
                         }, 300)
                     });
 
-            }
-
-            _exportMdaResult(){
-                this.set("_isLoadingSmall",true)
-                let prom = Promise.resolve()
-                const clonedResult = _.cloneDeep(_.get(this,"rawMdaResultsGridData",[]))
-                _.chunk(clonedResult,100).map(chunked => {
-                    prom = prom.then(() => {
-                        return this.api.patient().getPatientsWithUser(this.user,{ids:chunked.map(data => data.patientId)}).then(patients => {
-                            return patients.map(patient =>Promise.resolve(_.assign(clonedResult.find(result =>result.patientId===patient.id),{patient : patient})))
-                        })
-                    }).catch(()=> console.log("error getPatient"))
-                })
-                /*clonedResult.map(result =>{
-                    prom = prom.then(() => {
-                        return this.api.patient().getPatientWithUser(this.user,result.patientId).then(patient => {
-                            return Promise.resolve(_.assign(result,{patient : patient}))
-                        })
-                    }).catch(()=> console.log("error getPatient"))
-                })*/
-
-                prom.then(() =>{
-                    const patients = clonedResult.map(result =>{
-                        const contract = _.get(result,"patient.medicalHouseContracts",[]).find(contract => contract.startOfCoverage && this.api.moment(contract.startOfCoverage).isSameOrBefore(moment(),"day") && (!contract.endOfCoverage || this.api.moment(contract.endOfCoverage).isSameOrAfter(moment(),"day")))
-                        return {
-                            "Name" : _.get(result,"nameHr",""),
-                            "NISS": _.get(result,"ssinHr",""),
-                            "OA": _.get(result,"oa",""),
-                            "numberContract": _.get(contract,"contractId",""),
-                            "statutContract" : this._getSubscriptionStatus(contract),
-                            "startCoverageDate":_.get(contract,"startOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"startOfCoverage","")) : "",
-                            "endCoverageDate": _.get(contract,"endOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"endOfCoverage","")) : "",
-                            "contractType":(_.get(contract,"gp",false) ? "M" :"") + (_.get(contract,"kine",false) ? "K" :"") + (_.get(contract,"nurse",false) ? "I" :"") ,
-                            "url": "https://tz.icure.cloud/#pat/"+_.get(result,"patient.id","")
-                        }
-                    })
-
-                    const xlsWorkBook = {SheetNames: [], Sheets: {}}
-                    xlsWorkBook.Props = {Title: "MH Invoicing patient list", Author: "Topaz"}
-                    var xlsWorkSheet = XLSX.utils.json_to_sheet(patients)
-                    XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, 'MH Invoicing patient list')
-                    this.set("_isLoadingSmall",false)
-                    return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
-                }).then(xlsFile => !xlsFile ? promResolve : this.api.triggerFileDownload(xlsFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  "mh-invoicing-patient-list-" + moment().format("YYYYMMDD-HHmmss") + ".xls"))
-            }
-
-            _getSubscriptionStatus(mhc) {
-                return !!(_.get(mhc, 'status', null) & (1 << 3)) ? this.localize('mhm_stat_closed', 'Closed', this.language) :
-                    !!(_.get(mhc, 'status', null) & (1 << 2)) ? this.localize('mhm_stat_cancelled', 'Cancelled', this.language) :
-                        !!(_.get(mhc, 'status', null) & (1 << 1)) ? this.localize('mhm_stat_ongoing', 'On going', this.language) :
-                            this.localize('mhm_stat_other', 'Manual encoding', this.language)
             }
 
         }
