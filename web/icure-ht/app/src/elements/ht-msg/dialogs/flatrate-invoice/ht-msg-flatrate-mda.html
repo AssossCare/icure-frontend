@@ -3071,7 +3071,7 @@
                     // Get all patients of mine, valid for MDA request
                     // 1. Has to be active
                     // 2. Has to be alive (not deceased before exportedDate)
-                    // 3. 1+ mhc.contractId (expired or not)
+                    // 3. 1+ mhc (expired or not) -> we used to check for "1+ mhc.contractId" but since some OAs didn't behave correctly, some valid PATS didn't receive their contractId
                     // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not, most recent if 1+)
                     .then(() => flatRateUtil.getPatientsEligibleForMdaRequestByExportedDate(exportedDate))
 
@@ -3164,7 +3164,7 @@
                     []
                 )
                     .then(mdaResponse => _.size(_.get(mdaResponse,"genericErrors",null)) || !_.size(_.get(mdaResponse,"memberDataMessageList")) || !_.size(_.get(mdaResponse,"mycarenetConversation")) ? null : mdaResponse)
-                    .catch(e=>console.log("[ERROR] getMemberDataMessageAsyncUsingPOST", e))
+                    .catch(e=>(console.log("[ERROR] getMemberDataMessageAsyncUsingPOST", e)||true) && null)
 
             }
 
@@ -3243,7 +3243,7 @@
                     .then(mdaResponse => {
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_9_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_10",this.language), icon:"arrow-forward"})
-                        return !_.size(mdaResponse) ? null : this._e_saveMdaResponse(mdaResponse).then(responseMessage => [mdaResponse, responseMessage])
+                        return !_.size(mdaResponse) ? [null, null] : this._e_saveMdaResponse(mdaResponse).then(responseMessage => [mdaResponse, responseMessage])
                     })
 
                     // 5 - Confirm MDA responses back, using MDA references
@@ -3257,10 +3257,7 @@
 
                         // Is at least one patient ours: drop leading underscore, if any (inResponseTo is "_" + our reconcileKey) and take first part (topazPatientId)
                         // Just store value to confirm at the very end of the process
-                        mdaMessageIdsToConfirm = _.uniq(_.compact(_.map(_.get(mdaResponse,"memberDataMessageList",[]), responseMessage => {
-                            const mdaResponseReferenceId = _.trim(_.get(responseMessage,"reference"))
-                            return _.some(_.get(responseMessage,"memberDataResponse",[]), it => requestTopazPatientIds.indexOf(_.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))) > -1) ? mdaResponseReferenceId : false
-                        })))
+                        mdaMessageIdsToConfirm = _.uniq(_.compact(_.map(_.get(mdaResponse,"memberDataMessageList",[]), singleMdaResponseMessage => _.some(_.get(singleMdaResponseMessage,"memberDataResponse",[]), it => requestTopazPatientIds.indexOf(_.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))) > -1) ? _.trim(_.get(singleMdaResponseMessage,"reference")) : false)))
 
                         // Do not confirm directly anymore, only confirm at the very end of the process
                         // return !_.size(mdaResponse) ? [{}, responseMessage] : this._e_confirmMdaMessagesByReferences(mdaMessageIdsToConfirm).then(() => [mdaResponse, responseMessage])
@@ -3268,78 +3265,51 @@
 
                     })
 
-                    // 6 - Format MDA Answer
+                    // 6 - Format MDA Answers
                     .then(([mdaResponse, responseMessage]) => !_.size(mdaResponse) ? [null, responseMessage] : promResolve.then(() => {
+
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_11_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12",this.language), icon:"arrow-forward"})
-                        const mdaErrorFormattedResponses = _
-                            .chain(_.get(mdaResponse,"memberDataMessageList",[]))
-                            .filter(it => !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")) && _.size(_.get(it,"reference")))
+
+                        // Create Topaz map as {patientId: medicalHouseContractId}
+                        const topazMhcIdByPatientId = _.fromPairs(_.map(_.get(this,"mdaRequestsData.message.attachment.request",[]), it => [_.trim(it.patientId), _.trim(it.patientMhcId)]))
+
+                        return _
+                            .chain(mdaResponse)
+                            .get("memberDataMessageList",[])
+                            .filter(it => it && it.reference && !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")))
                             .map(it => _.get(it, "memberDataResponse",[]))
                             .flatten()
-                            .filter(it => _.trim(_.get(it,"responseId")) && _.trim(_.get(it,"inResponseTo")) && _.trim(_.get(it,"issuer")) && _.trim(_.get(it,"issuer")).split(":").pop().toLowerCase() === "aa") // issuer "urn:be:cin:nippin:aa" is no OA / it's an error
+                            .compact()
                             .map(it => {
 
-                                const isError = !!_.size(_.get(it,"errors"))
-                                const errorsData = !isError ? null : _.map(_.get(it,"errors"), error => _.merge({}, { faultCode: _.trim(_.get(error,"faultCode")), faultSource: _.trim(_.get(error,"faultSource")), message: _.trim(_.get(error,"message.value")), detail: _.map(_.get(error,"details.details"), detail => (!_.trim(_.get(detail,"detailCode")) ? "" : "["+ _.trim(_.get(detail,"detailCode")) +"] ") + _.trim(_.get(detail,"message.value"))).join(" - ") }))
-                                const allInsurabilities = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:period").value()
-                                const allPayments = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:payment").value()
-                                const allMhc = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:medicalHouse").value()
-                                const topazId = _.trim(_.get(_.trim(_.get(it,"inResponseTo")).split("_"), "[1]"))
+                                // No response / something wrong -> drop
+                                if(!it.responseId || !it.inResponseTo || !it.issuer) return false
+
+                                // issuer "urn:be:cin:nippin:aa" is no OA / it's an error
+                                const faultyIssuer = _.trim(_.get(it,"issuer")).split(":").pop().toLowerCase() === "aa"
+                                const topazId = _.trim(_.head(_.compact(_.trim(_.get(it,"inResponseTo")).split("_"))))
+                                const reconcileKey = _.trim(_.compact(_.trim(_.get(it,"inResponseTo")).split("_")).join("_"))
+                                const mdaInputReference = _.trim(_.get(it,"responseId")) ? _.trim(_.get(it,"responseId")) : _.trim(_.get(it,"inResponseTo"))
+
+                                const errorsData = !_.size(_.get(it,"errors")) ? [] : _.map(_.get(it,"errors"), error => _.merge({}, { faultCode: _.trim(_.get(error,"faultCode")), faultSource: _.trim(_.get(error,"faultSource")), message: _.trim(_.get(error,"message.value")), detail: _.map(_.get(error,"details.details"), detail => (!_.trim(_.get(detail,"detailCode")) ? "" : "["+ _.trim(_.get(detail,"detailCode")) +"] ") + _.trim(_.get(detail,"message.value"))).join(" - ") }))
+                                const allInsurabilities = faultyIssuer ? [] : _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:period").value()
+                                const allPayments = faultyIssuer ? [] : _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:payment").value()
+                                const allMhc = faultyIssuer ? [] : _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:medicalHouse").value()
 
                                 const mdaFormattedResponse = _.merge({},{
-                                    oa: _.trim(_.get(it,"issuer")).split(":").pop(),
-                                    mdaInputReference: _.trim(_.get(it,"responseId")) ? _.trim(_.get(it,"responseId")) : _.trim(_.get(it,"inResponseTo")),
-                                    reconcileKey: _.trim(_.compact(_.trim(_.get(it,"inResponseTo")).split("_")).join("_")),
-                                    patient: {
-                                        topazId: topazId
-                                    },
+                                    mdaInputReference: mdaInputReference,
+                                    reconcileKey: reconcileKey,
+                                    patient: { topazId: topazId, mhcId: topazMhcIdByPatientId[topazId] },
+                                    isError: !!_.size(_.get(it,"errors")),
+                                    errorsData: errorsData,
                                     insurabilities: [],
                                     mhcs: [],
-                                    isError: isError,
-                                    errorsData: errorsData,
-                                    // assertions: _.get(it,"assertions")
-                                })
-                                return _.merge(mdaFormattedResponse, {
-                                    patient: {
-                                    },
-                                    uniqueKey: md5(JSON.stringify({
-                                        oa: _.trim(_.get(mdaFormattedResponse,"oa")),
-                                        patient: _.get(mdaFormattedResponse,"patient"),
-                                        insCode: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].code")),
-                                        identificationNumber: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].identificationNumber")),
-                                        topazId: topazId
-                                    }))
                                 })
 
-                            })
-                            .filter(it => _.trim(_.get(it,"patient.topazId")))
-                            .reduce((acc,it) => (!(acc[_.get(it,"uniqueKey")]) ? (acc[_.get(it,"uniqueKey")]=it) : _.get(acc[_.get(it,"uniqueKey")], "insurabilities").push(_.get(it,"insurabilities")) && _.get(acc[_.get(it,"uniqueKey")], "mhcs").push(_.get(it,"mhcs")) ) && acc, {})
-                            .map(it => _.omit(it, ["uniqueKey"]))
-                            .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
-                            .value()
-
-                        // console.log("mdaErrorFormattedResponses", JSON.stringify(mdaErrorFormattedResponses))
-
-                        return  [_
-                            .chain(_.get(mdaResponse,"memberDataMessageList",[]))
-                            .filter(it => !_.size(_.get(it,"errors")) && _.size(_.get(it,"memberDataResponse")) && _.size(_.get(it,"reference")))
-                            .map(it => _.get(it, "memberDataResponse",[]))
-                            .flatten()
-                            .filter(it => _.trim(_.get(it,"responseId")) && _.trim(_.get(it,"inResponseTo")) && _.trim(_.get(it,"issuer")) && _.trim(_.get(it,"issuer")).split(":").pop().toLowerCase() !== "aa") // issuer "urn:be:cin:nippin:aa" is no OA / it's an error
-                            .map(it => {
-
-                                const isError = !!_.size(_.get(it,"errors"))
-                                const errorsData = !isError ? null : _.map(_.get(it,"errors"), error => _.merge({}, { faultCode: _.trim(_.get(error,"faultCode")), faultSource: _.trim(_.get(error,"faultSource")), message: _.trim(_.get(error,"message.value")), detail: _.map(_.get(error,"details.details"), detail => (!_.trim(_.get(detail,"detailCode")) ? "" : "["+ _.trim(_.get(detail,"detailCode")) +"] ") + _.trim(_.get(detail,"message.value"))).join(" - ") }))
-                                const allInsurabilities = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:period").value()
-                                const allPayments = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:payment").value()
-                                const allMhc = _.chain(_.get(it,"assertions",[])).filter(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:medicalHouse").value()
-                                const topazId = _.trim(_.get(_.trim(_.get(it,"inResponseTo")).split("_"), "[1]"))
-
-                                const mdaFormattedResponse = _.merge({},{
+                                // legit issuer "urn:be:cin:nippin:XXX" where XXX !== "aa" is an OA
+                                _.merge(mdaFormattedResponse, faultyIssuer ? {} : {
                                     oa: _.trim(_.get(it,"issuer")).split(":").pop(),
-                                    mdaInputReference: _.trim(_.get(it,"responseId")) ? _.trim(_.get(it,"responseId")) : _.trim(_.get(it,"inResponseTo")),
-                                    reconcileKey: _.trim(_.compact(_.trim(_.get(it,"inResponseTo")).split("_")).join("_")),
                                     patient: _.merge({},{
                                         firstName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:firstName"}).get("attributeValues").join(" ").trim().value(),
                                         lastName: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:name"}).get("attributeValues").join(" ").trim().value(),
@@ -3347,7 +3317,6 @@
                                         gender: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:gender"}).get("attributeValues[0]").trim().value(),
                                         dateOfBirth: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:birthDate"}).get("attributeValues[0]").trim().value(),
                                         dateOfDeath: _.chain(_.get(it,"assertions",[])).find(assertion => _.trim(_.get(assertion, "advice.assertionType")) === "urn:be:cin:nippin:insurability:patientData").get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:deceasedDate"}).get("attributeValues[0]").trim().value(),
-                                        topazId: topazId
                                     }),
                                     insurabilities: (_.map(allInsurabilities, (insurability,index) => _.merge({}, {
                                         identificationNumber: _.chain(insurability).get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:careReceiver:registrationNumber"}).get("attributeValues[0]").trim().value(),
@@ -3363,68 +3332,65 @@
                                         // Either not set or set to the end of this (exported) month => don't take into account. If not, take into account
                                         endDate: (!(parseInt(_.get(ins,"endDate"))||0) || _.trim(moment((parseInt(_.get(ins,"endDate"))||0)).endOf("month").format("YYYYMMDD")) === exportedDateEndOfMonth) ? null : _.trim(moment((parseInt(_.get(ins,"endDate"))||0)).format("YYYYMMDD"))
                                     })),
-                                    mhcs: (_.map(allMhc, (mhc,index) => _.merge({}, {
+                                    mhcs: (_.map(allMhc, mhc => _.merge({}, {
                                         startOfCoverage: _.chain(mhc).get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:medicalHouse:start"}).get("attributeValues[0]").trim().value(),
                                         endOfCoverage: _.chain(mhc).get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:medicalHouse:end"}).get("attributeValues[0]").trim().value(),
                                         mmNihii: _.chain(mhc).get("statementsAndAuthnStatementsAndAuthzDecisionStatements.[0].attributesAndEncryptedAttributes").find({name:"urn:be:cin:nippin:medicalHouse:nihii11"}).get("attributeValues[0]").trim().value(),
-                                        // Not required, only take coverage dates into account
-                                        // startDate: _.chain(mhc).get("subject.subjectConfirmations").find({method: "urn:be:cin:nippin:memberIdentification"}).get("subjectConfirmationData.notBefore").trim().value(),
-                                        // endDate: _.chain(mhc).get("subject.subjectConfirmations").find({method: "urn:be:cin:nippin:memberIdentification"}).get("subjectConfirmationData.notOnOrAfter").trim().value(),
                                     }))||[]).map(mhc => _.merge(mhc, {
                                         startOfCoverage: (parseInt(_.get(mhc,"startOfCoverage"))||0) ? moment((parseInt(_.get(mhc,"startOfCoverage"))||0)).format("YYYYMMDD") : null,
                                         // Either not set or set to the end of this (exported) month => don't take into account. If not, take into account
                                         endOfCoverage: (!(parseInt(_.get(mhc,"endOfCoverage"))||0) || _.trim(moment((parseInt(_.get(mhc,"endOfCoverage"))||0)).endOf("month").format("YYYYMMDD")) === exportedDateEndOfMonth) ? null : _.trim(moment((parseInt(_.get(mhc,"endOfCoverage"))||0)).format("YYYYMMDD"))
-                                        // Not required, only take coverage dates into account
-                                        // startDate: (parseInt(_.get(mhc,"startDate"))||0) ? moment((parseInt(_.get(mhc,"startDate"))||0)).format("YYYYMMDD") : null,
-                                        // endDate: (parseInt(_.get(mhc,"endDate"))||0) ? moment((parseInt(_.get(mhc,"endDate"))||0)).subtract(1, 'day').format("YYYYMMDD") : null
-                                    })),
-                                    isError: isError,
-                                    errorsData: errorsData,
-                                    // assertions: _.get(it,"assertions")
+                                    }))
                                 })
 
                                 return _.merge(mdaFormattedResponse, {
-                                    patient: {
-                                        dateOfBirth: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0)).format("YYYYMMDD") : null,
-                                        dateOfDeath: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0)).format("YYYYMMDD") : null
-                                    },
                                     uniqueKey: md5(JSON.stringify({
                                         oa: _.trim(_.get(mdaFormattedResponse,"oa")),
                                         patient: _.get(mdaFormattedResponse,"patient"),
                                         insCode: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].code")),
                                         identificationNumber: _.trim(_.get(mdaFormattedResponse,"insurabilities[0].identificationNumber")),
-                                        topazId: topazId
-                                    }))
-                                })
+                                        topazId: _.trim(_.get(mdaFormattedResponse,"patient.topazId"))
+                                    }))},
+                                    faultyIssuer ? {} : {
+                                        patient: {
+                                            dateOfBirth: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfBirth"))||0)).format("YYYYMMDD") : null,
+                                            dateOfDeath: (parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0) ? moment((parseInt(_.get(mdaFormattedResponse,"patient.dateOfDeath"))||0)).format("YYYYMMDD") : null
+                                        }
+                                    }
+                                )
 
                             })
-                            .filter(it => _.trim(_.get(it,"patient.topazId")))
+                            .filter(it => it && _.trim(_.get(it,"patient.topazId")))
                             .reduce((acc,it) => (!(acc[_.get(it,"uniqueKey")]) ? (acc[_.get(it,"uniqueKey")]=it) : _.get(acc[_.get(it,"uniqueKey")], "insurabilities").push(_.get(it,"insurabilities")) && _.get(acc[_.get(it,"uniqueKey")], "mhcs").push(_.get(it,"mhcs")) ) && acc, {})
-                            .map(it => _.omit(it, ["uniqueKey"]))
-                            .map(it => _.assign(it, { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
-                            .value(), mdaErrorFormattedResponses, responseMessage]
-                    }))
+                            .map(it => _.assign(_.omit(it, ["uniqueKey"]), { insurabilities: _.chain(_.get(it,"insurabilities",[])).flatten().uniqWith(_.isEqual).value(), mhcs: _.chain(_.get(it,"mhcs",[])).flatten().uniqWith(_.isEqual).value() }))
+                            .value()
 
-                    // Pre 7 - join the formatted responses
-                    .then(([mdaFormattedResponse, mdaErrorFormattedResponses,responseMessage]) => {
-                        const mdaFormattedResponseWithErrors = _.concat(mdaFormattedResponse, mdaErrorFormattedResponses)
-                        return [mdaFormattedResponseWithErrors,responseMessage]
-                    })
+                            // Todo: reconcile on the fly, prior to next step
+                            // _.map(this.mdaRequestsData.message.attachment.request, request => request.responses=[])
+                            // _.map(mdaFormattedResponses, response => {
+                            //     const requestPat = _.find(this.mdaRequestsData.message.attachment.request, {patientId:response.patient.topazId})
+                            //     if(!requestPat) console.log("NOT FOUND", response)
+                            //     if(requestPat) requestPat.responses.push(response)
+                            // })
+                            // Se baser sur requestedPats -> assign responses on the fly -> update reste
+                            // Multiple INS && MHCS peuvent être collecté(s)s -> analyse further / lequel prendre % most recent && matching % period
+
+
+                        })
+                        // Promise made on purposes, heaving computing
+                        .then(mdaFormattedResponses => [mdaFormattedResponses,responseMessage])
+                    )
 
                     // 7 - Update patients' insurabilities and Medical House contracts
-                    .then(([mdaFormattedResponse,responseMessage]) => !_.size(mdaFormattedResponse) ? [null,responseMessage] : promResolve.then(() => {
-
-                        // console.log("mdaFormattedResponse", JSON.stringify(mdaFormattedResponse))
-                        // console.log("responseMessage", JSON.stringify(responseMessage))
-
+                    .then(([mdaFormattedResponses,responseMessage]) => !_.size(mdaFormattedResponses) ? [null,responseMessage] : promResolve.then(() => {
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_12_done",this.language), icon:"check-circle", updateLastMessage: true, done:true})
                         this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_13",this.language), icon:"arrow-forward"})
-                        return this._e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponse).then(mdaFormattedResponse => [mdaFormattedResponse,responseMessage])
-                        // Group by OA: _.reduce(mdaFormattedResponse, (acc,it) => (acc[_.get(it,"oa")]||(acc[_.get(it,"oa")]=[])).push(it) && acc, {})
+                        return this._e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponses).then(mdaFormattedResponses => [mdaFormattedResponses,responseMessage])
+                        // Group by OA: _.reduce(mdaFormattedResponses, (acc,it) => (acc[_.get(it,"oa")]||(acc[_.get(it,"oa")]=[])).push(it) && acc, {})
                     }))
 
                     // 8 - Reconcile MDA requests with MDA responses
-                    .then(([mdaFormattedResponse,responseMessage]) => !_.size(mdaFormattedResponse) ?
+                    .then(([mdaFormattedResponses,responseMessage]) => !_.size(mdaFormattedResponses) ?
 
                         // No / invalid answer from mda / OA -> simply update meta "responseLastCheckDate" of request message
                         retry.retry(() => (this.api.message().modifyMessage(_.omit(_.merge(_.get(this,"mdaRequestsData.originalMessage",{}), {metas:{responseLastCheckDate: moment().format("YYYYMMDDHHmmss")}}), ["metas.requestDateHr","metas.responseDateHr","metas.responseLastCheckDateHr"]))), 4, 1000, 1.5)
@@ -3436,7 +3402,7 @@
                             .then(() => this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_14",this.language), icon:"arrow-forward"}))
                             .then(() => _.map(_.get(this,"mdaRequestsData.message.attachment.request",[]), requestedPat => {
 
-                                const responseMatchingPat = _.find(mdaFormattedResponse, it => _.trim(_.get(_.trim(_.get(it,"reconcileKey")).split("_"), "[0]")) === _.trim(_.get(_.trim(_.get(requestedPat,"reconcileKey")).split("_"), "[0]")) )
+                                const responseMatchingPat = _.find(mdaFormattedResponses, it => _.trim(_.get(_.trim(_.get(it,"reconcileKey")).split("_"), "[0]")) === _.trim(_.get(_.trim(_.get(requestedPat,"reconcileKey")).split("_"), "[0]")) )
                                 const patientIsAlreadyValid = _.get(requestedPat,"mdaResponsePatientHasValidInsAndMhc",false)
                                 const patientIsAlreadyMatched = _.get(requestedPat,"patientMatchedWithMdaResponse",false)
 
@@ -3613,16 +3579,16 @@
 
             }
 
-            _e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponse) {
+            _e_updatePatientInsurabilitiesAndMhcs(mdaFormattedResponses) {
 
                 const promResolve = Promise.resolve()
 
                 let patientCounter = 1
                 let prom = Promise.resolve([])
                 let insurancesData = []
-                const totalPatients = _.size(mdaFormattedResponse)
+                const totalPatients = _.size(mdaFormattedResponses)
                 const exportedDate = _.trim(moment().format("YYYYMM") + "01")
-                const insuranceCodes = _.chain(mdaFormattedResponse).map(it => _.map(_.get(it,"insurabilities",[]), ins => _.trim(_.get(ins,"code",null)))).flatten().compact().uniq().value()
+                const insuranceCodes = _.chain(mdaFormattedResponses).map(it => _.map(_.get(it,"insurabilities",[]), ins => _.trim(_.get(ins,"code",null)))).flatten().compact().uniq().value()
 
                 return this.api.hcparty().getCurrentHealthcareParty()
                     .then(currentMh => this._getInsurancesDataByCodes(insuranceCodes).then(insurances=>[currentMh,insurances]))
@@ -3632,7 +3598,7 @@
                         const currentMhNihii = _.trim(_.get(currentMh,"nihii"))
                         const endOfPreviousMonthYYYYMMDD = parseInt(moment().endOf("month").subtract(1, "month").format("YYYYMMDD"))
 
-                        _.compact(_.map(mdaFormattedResponse, mdaPatient => {
+                        _.compact(_.map(mdaFormattedResponses, mdaPatient => {
 
                             const patientId = _.trim(_.get(mdaPatient,"patient.topazId"))
                             const requestMatchingPat = _.find(_.get(this,"mdaRequestsData.message.attachment.request",[]), it => _.trim(_.get(_.trim(_.get(it,"reconcileKey")).split("_"),"[0]")) === _.trim(_.get(_.trim(_.get(mdaPatient,"reconcileKey")).split("_"),"[0]")))
@@ -3780,8 +3746,8 @@
                         return prom
 
                     })
-                    .then(updatedPatients => mdaFormattedResponse)
-                    .catch(e => (console.log("ERROR _e_updatePatientInsurabilitiesAndMhcs", e)||true) && mdaFormattedResponse)
+                    .then(updatedPatients => mdaFormattedResponses)
+                    .catch(e => (console.log("ERROR _e_updatePatientInsurabilitiesAndMhcs", e)||true) && mdaFormattedResponses)
 
             }
 
