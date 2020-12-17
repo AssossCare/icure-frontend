@@ -4000,6 +4000,9 @@
                             "startCoverageDate":_.get(contract,"startOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"startOfCoverage","")) : "",
                             "endCoverageDate": _.get(contract,"endOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"endOfCoverage","")) : "",
                             "contractType":(_.get(contract,"gp",false) ? "M" :"") + (_.get(contract,"kine",false) ? "K" :"") + (_.get(contract,"nurse",false) ? "I" :"") ,
+                            "facturable" : _.get(result,"patientHasValidInsurabilityBoolean",false),
+                            "statutAssurability" : _.get(result,"patientInsurabilityStatusHr",""),
+                            "message" :  _.get(result,"message",""),
                             "url": "https://tz.icure.cloud/#pat/"+_.get(result,"patient.id","")
                         }
                     })
