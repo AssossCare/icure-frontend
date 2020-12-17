@@ -199,14 +199,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <paper-button on-tap="_generateListWithoutContract" class="button button--save">[[localize('rep-gen','Generate',language)]]</paper-button>
                     </div>
                 </div>
-                <!--<div class="panel-content-block">
+                <div class="panel-content-block">
                     <div>
                         [[localize('rep-flatrate-invoice', 'List of invoices', language)]]
                     </div>
                     <div class="btn-container">
                         <paper-button on-tap="_generateInvoiceReport" class="button button--save">[[localize('rep-gen','Generate',language)]]</paper-button>
                     </div>
-                </div>-->
+                </div>
                 <div class="panel-content-block">
                     <div>
                         [[localize('rep-flatrate-infos-patient', 'List of infos patient : contracts and insurabilities', language)]]
@@ -253,6 +253,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         import { filter as icrFilter } from '../../../../scripts/filters'
         import '../../../../bower_components/js-xlsx/shim.js'
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
         const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class HtAdminReportsFlatrate extends Polymer.TkLocalizerMixin(Polymer.Element) {
@@ -290,6 +291,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Array,
                         value: () => []
                     },
+                    displayedYear: {
+                        type: Number,
+                        value: () => Number(moment().format('YYYY'))
+                    },
                     processStep:{
                         type: Array,
                         value: () => []
@@ -307,6 +312,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             ready() {
                 super.ready()
+            }
+
+            _initializeDataProvider(){
+                if(this.api && this.user){
+                    this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null))
+                        .then(hcp => this.set('hcp', hcp))
+                }
             }
 
             _reset(){
@@ -461,50 +473,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 xlsWorkBookOutput = false
             }
 
-            _generateInvoiceReport(){
-                this._reset()
-                this.$['processDialog'].open()
-                this.set("isLoading", true)
-                this.push('processStep',  this.localize('', 'Listing des factures non-envoyées ce mois-ci', this.language))
-
-                let prom = Promise.resolve();
-
-                this.api.invoice().listToInsurancesUnsent(this.user.id)
-                    .then((invoicesUnsent) => {
-                        const efactUnsent = invoicesUnsent.filter(iu => _.get(iu, 'sentMediumType', null) === "efact" && (_.get(iu, 'careProviderType', null) === "persphysician" || _.get(iu, 'careProviderType', null) === "trainee"))
-
-                        efactUnsent.forEach(eu =>
-                            prom = prom.then(listOfEfact =>
-                                this.api.crypto().extractCryptedFKs(eu, this.user.healthcarePartyId).then(ids => _.concat(listOfEfact, {invoice: eu, patientId: ids.extractedKeys[0]})))
-                        )
-                        prom = prom.then(listOfEfact =>
-                            Promise.all([_.compact(listOfEfact), this.api.patient().getPatientsWithUser(this.user, new models.ListOfIdsDto({ids: _.uniq(_.compact(listOfEfact).map(x => x.patientId))}))])
-                                .then(([listOfEfact, patientsList]) => listOfEfact.map(efact => _.assign(efact, {patient: patientsList.find(p => p.id === efact.patientId)})))
-                        ).then(listOfEfact =>
-                            Promise.all([listOfEfact, this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.compact(listOfEfact.map(e => e.invoice.recipientId || null)))}))])
-                                .then(([listOfEfact, insuranceList]) => listOfEfact.map(efact => _.assign(efact, {insurance: insuranceList.find(i => i.id === efact.invoice.recipientId) || null})))
-                        ).then( listOfEfact =>
-                            Promise.all([listOfEfact, this.api.insurance().getInsurances(new models.ListOfIdsDto({ids: _.uniq(_.compact(listOfEfact.map(e => _.get(e, 'insurance.parent', null))))}))])
-                                .then(([listOfEfact, parentInsuranceList]) => listOfEfact.map(efact => _.assign(efact, {parentInsurance: parentInsuranceList.find(ins => ins.id === _.get(efact, 'insurance.parent', null))})))
-                        ).then(listOfEfact => console.log(listOfEfact))
-                    })
-
-                /*let messageList =[]
-
-                this.push('processStep',  this.localize('', 'get messages du mois', this.language))
-                this.api.message().findMessagesByTransportGuid("EFACT:BATCH:*").then(messages=>{
-                    messageList = _.get(messages,"rows",[]).filter(message => message.transportGuid && message.responsible === this.hcp.id  && this.api.moment(new Date).isBefore(this.displayedYear+'0301') ? (message.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || message.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))) : (message.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear)) && moment().isSame(moment("01"+_.get(message,"metas.invoiceMonth","")+_.get(message,"metas.invoiceYear",""),"DDMMYYYY"),"month"))
-                    this.push('processStep',  this.localize('', 'listing des factures des messages', this.language))
-                    return Promise.all(messageList.map(message => {
-                        return this.api.invoice().getInvoices({ids : _.get(message,"invoiceIds",[])})
-                        //inv.correctiveInvoiceId
-                    }))
-                }).then(invoices => {
-                    console.log(invoices)
-                })*/
-
-            }
-
             _generateInfosReport(){
                 this._reset()
                 this.$['processDialog'].open()
@@ -567,6 +535,233 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     !!(_.get(mhc, 'status', null) & (1 << 2)) ? this.localize('mhm_stat_cancelled', 'Cancelled', this.language) :
                         !!(_.get(mhc, 'status', null) & (1 << 1)) ? this.localize('mhm_stat_ongoing', 'On going', this.language) :
                             this.localize('mhm_stat_other', 'Manual encoding', this.language)
+            }
+
+
+            _generateInvoiceReport(){
+                this._reset()
+                this.$['processDialog'].open()
+                this.set("isLoading", true)
+
+                this.api.message().findMessagesByTransportGuid("EFACT:BATCH:*").then(messages => {
+                    const filteredMessages =  messages.rows.filter(msg => msg.transportGuid && msg.responsible === this.hcp.id && this.api.moment(new Date).isBefore(this.displayedYear+'0301') ? (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || msg.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))) : (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear)))
+                    const promCarrier = []
+                    let prom = Promise.resolve([])
+                    _.chunk(filteredMessages, 25).map(chunckMessages => {
+                        prom = prom.then(msgStruct => {
+                            return Promise.all(
+                                chunckMessages.map(msg =>
+                                    this._getInvoicesFormBatch(msg.invoiceIds.map(id => id))
+                                        .then(invsFromMess => this._getInvoicesFormBatch(invsFromMess.map(inv => inv.correctiveInvoiceId)))
+                                        .then(correctiveInvoices => {
+                                            let allInvoicesIsCorrected = false
+
+                                            if((msg.status & (1 << 17)) !== 0 && !(msg.status & (1 << 21))){
+                                                const resentNmclStatus = _.uniq(_.flatten(correctiveInvoices && correctiveInvoices.map(inv =>inv && inv.invoicingCodes && inv.invoicingCodes.map(c => c.resent))))
+                                                let allInvoicesIsCorrected = false
+
+                                                if(resentNmclStatus.length === 1 && resentNmclStatus[0] === false){
+                                                    allInvoicesIsCorrected = true
+                                                }
+                                            }
+
+                                            return this.api.document().findByMessage(this.user.healthcarePartyId, msg)
+                                                .then(docs => {
+                                                    const jsonDoc = docs.find(d => d.mainUti === "public.json" && _.endsWith(d.name, '_records'))
+
+                                                    return jsonDoc && jsonDoc.attachmentId ?
+                                                        (_.size(jsonDoc.encryptionKeys) || _.size(jsonDoc.delegations) ?
+                                                            this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, jsonDoc.id, _.size(jsonDoc.encryptionKeys) ? jsonDoc.encryptionKeys : jsonDoc.delegations).then(({extractedKeys: enckeys}) => this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId, enckeys.join(','))) : this.api.document().getAttachment(jsonDoc.id, jsonDoc.attachmentId))
+                                                            .then(a => {
+
+                                                                if (typeof a === "string"){
+                                                                    try { a = JSON.parse( this.cleanStringForJsonParsing(a) ) } catch (ignored) {}
+                                                                } else if (typeof a === "object") {
+                                                                    try { a = JSON.parse( this.cleanStringForJsonParsing(new Uint8Array(a).reduce((data, byte) => data + String.fromCharCode(byte), ''))); } catch (ignored) {}
+                                                                }
+
+                                                                const zone200 = a && a.find(enr => enr.zones.find(z => z.zone === "200"))
+                                                                const zone300 = a && a.find(enr => enr.zones.find(z => z.zone === "300"))
+                                                                const zone400 = a && a.find(enr => enr.zones.find(z => z.zone === "400"))
+                                                                const zone500 = a && a.find(enr => enr.zones.find(z => z.zone === "500"))
+                                                                const enr10 = a && a.find(enr => enr.zones.find(z => z.zone === "1" && z.value === "10"))
+
+                                                                const st = msg.status
+
+                                                                const invoiceStatus =
+                                                                    !!(st & (1 << 21)) ? this.localize('inv_arch','Archived',this.language):
+                                                                        !!(st & (1 << 17)) ? this.localize('inv_err','Error',this.language):
+                                                                            !!(st & (1 << 16)) ? this.localize('inv_par_acc','Partially accepted',this.language):
+                                                                                !!(st & (1 << 15)) ? this.localize('inv_full_acc','Fully accepted',this.language):
+                                                                                    !!(st & (1 << 12)) ? this.localize('inv_rej','Rejected',this.language):
+                                                                                        !!(st & (1 << 11)) ? this.localize('inv_tre','Treated',this.language):
+                                                                                            !!(st & (1 << 10)) ? this.localize('inv_acc_tre','Accepted for treatment',this.language):
+                                                                                                !!(st & (1 << 9))  ? this.localize('inv_succ_tra_oa','Successfully transmitted to OA',this.language):
+                                                                                                    !!(st & (1 << 8))  ? this.localize('inv_pen','Pending',this.language):
+                                                                                                        !!(st & (1 << 7))  ? this.localize('inv_pen','Pending',this.language): ""
+
+
+                                                                const rejectionReason = !!(st & (1 << 17)) ? this.localize('inv_rej_5%','More than 5% error',this.language) :
+                                                                    !!(st & (1 << 12)) ? this.localize('inv_rej_block','Blocking error',this.language): ""
+
+                                                                return (zone200 && zone300) ?
+                                                                    ({
+                                                                        message: msg,
+                                                                        messageInfo: {
+                                                                            messageType:        zone200.zones && zone200.zones.find(z => z.zone === "200") ? zone200.zones.find(z => z.zone === "200").value : "",
+                                                                            hcp:                this.hcp.firstName + " " + this.hcp.lastName,
+                                                                            oa:                 _.get(msg, 'metas.ioFederationCode', ""),
+                                                                            hcpReference:       enr10.zones && enr10.zones.find(z => z.zone === "28") ? enr10.zones.find(z => z.zone === "28").value : "",
+                                                                            invoiceNumber:      zone300.zones && zone300.zones.find(z => z.zone === "301") ? zone300.zones.find(z => z.zone === "301").value : "",
+                                                                            invoiceMonth:       zone300.zones &&zone300.zones.find(z => z.zone === "300") ? zone300.zones.find(z => z.zone === "300").value : "",
+                                                                            invoiceDate:        zone300.zones && zone300.zones.find(z => z.zone === "302") ? zone300.zones.find(z => z.zone === "302").value : "",
+                                                                            invoicedAmount:     Number(_.get(msg, 'metas.totalAmount', '0.00')),
+                                                                            acceptedAmount:     Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')),
+                                                                            refusedAmount:      Number(_.get(msg, 'metas.totalRejectedAmount', '0.00')),
+                                                                            invoiceStatus:      invoiceStatus,
+                                                                            rejectionReason:    rejectionReason,
+                                                                            paymentReference:   _.get(msg, 'metas.paymentReferenceAccount1', ""),
+                                                                            paymentDate:        "",
+                                                                            amountPaid:         Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')).toFixed(2),
+                                                                            paymentAccount:     enr10.zones && enr10.zones.find(z => z.zone === "36") ? enr10.zones.find(z => z.zone === "36").value : "",
+                                                                            paid: false,
+                                                                            allInvoicesIsCorrected : allInvoicesIsCorrected,
+                                                                            sendError: false
+                                                                        },
+                                                                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(msg, 'metas.ioFederationCode', "")), _.trim(_.get(this.hcp, 'firstName', "")), _.trim(_.get(this.hcp, 'lastName', "")), _.trim(zone300.zones && zone300.zones.find(z => z.zone === "301") ? zone300.zones.find(z => z.zone === "301").value : ""), _.trim(zone300.zones &&zone300.zones.find(z => z.zone === "300") ? zone300.zones.find(z => z.zone === "300").value : ""), _.trim(zone300.zones && zone300.zones.find(z => z.zone === "302") ? zone300.zones.find(z => z.zone === "302").value : ""), _.trim(msg.metas && msg.metas.paymentReferenceAccount1 ? msg.metas.paymentReferenceAccount1 : "")])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                                                                    }) : {}
+                                                            }) : Promise.resolve({
+                                                            message: msg,
+                                                            messageInfo: {
+                                                                messageType:        null,
+                                                                hcp:                _.get(this.hcp, 'firstName', "") + " " + _.get(this.hcp, 'lastName', ""),
+                                                                oa:                 _.get(msg, 'metas.ioFederationCode', null),
+                                                                hcpReference:       _.get(msg, 'metas.errors', null),
+                                                                invoiceNumber:      _.get(msg, 'externalRef', null),
+                                                                invoiceMonth:       msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth : null,
+                                                                invoiceDate:        msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth+'01' : null,
+                                                                invoicedAmount:     Number(_.get(msg, 'metas.totalAmount', '0.00')),
+                                                                acceptedAmount:     Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')),
+                                                                refusedAmount:      Number(_.get(msg, 'metas.totalAmount', '0.00')),
+                                                                invoiceStatus:      !!(msg.status & (1 << 21)) ? this.localize('inv_arch','Archived',this.language) : this.localize('inv_send_err','Send error',this.language),
+                                                                rejectionReason:    _.get(msg, 'metas.errors', ""),
+                                                                paymentReference:   _.get(msg, 'metas.paymentReferenceAccount1', ""),
+                                                                paymentDate:        null,
+                                                                amountPaid:         Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')).toFixed(2),
+                                                                paymentAccount:     null,
+                                                                paid:               false,
+                                                                allInvoicesIsCorrected : false,
+                                                                sendError:          true
+                                                            },
+                                                            normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(msg, 'metas.ioFederationCode', "")), _.trim(_.get(this.hcp, 'firstName', "")), _.trim(_.get(this.hcp, 'lastName', "")), _.trim(_.get(msg, 'externalRef', "")), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth : null,), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth+'01' : null), _.trim(_.get(msg, 'metas.paymentReferenceAccount1', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                                                        })
+                                                })
+
+
+                                        })
+                                )
+                            ).then(messageInfo => {
+                                promCarrier.push(messageInfo)
+                            }).catch(e => console.log(e))
+                        })
+                    })
+
+                    prom.then(() => {
+                        //traitement pour le XLS
+                        const data = _.compact(_.flatten(promCarrier)).map( message => {
+                            let formatedData = {};
+                            formatedData[this.localize("batchnr","Numéro d'envoi")] = _.get(message,"messageInfo.invoiceNumber","-")
+                            formatedData[this.localize("status","statut")] = _.get(message,"messageInfo.invoiceStatus","")
+                            formatedData[this.localize("inv_oa","OA")] = _.get(message,"messageInfo.oa","-")
+                            formatedData[this.localize('inv_prest','Physician')] = _.get(message,"messageInfo.hcp","-")
+                            formatedData[this.localize('inv_batch_amount','Amount')+ " " +this.localize('inv_batch_amount_invoiced','Invoiced')] = this._formatAmount(_.get(message,"messageInfo.invoicedAmount","-")) + " €"
+                            formatedData[this.localize('inv_batch_bank_account','Bank account')] = _.get(message,"messageInfo.paymentAccount","-")
+                            formatedData[this.localize('inv_batch_month','Billed month')] = this.formatDate(_.get(message,"messageInfo.invoiceMonth",""),"month")
+                            formatedData[this.localize('inv_batch_amount','Amount')+ " " +this.localize('inv_batch_amount_acc','Accepted')] = this._formatAmount(_.get(message,"messageInfo.acceptedAmount","")) + " €"
+                            formatedData[this.localize('inv-ref-pai','Paiement reference')] = _.get(message,"messageInfo.paymentReference","")
+                            formatedData[this.localize('inv_date_fact','Invoice date')] = this.formatDate(_.get(message,"messageInfo.invoiceDate",""),'date')
+                            formatedData[this.localize('inv_batch_amount','Amount')+ " "+ this.localize('inv_batch_amount_rej','Rejected')] = this._getRefusedAmount(_.get(message,"messageInfo.invoicedAmount",0), _.get(message,"messageInfo.acceptedAmount",0))+ " €"
+                            formatedData[this.localize('inv_batch_amount_paid','Paid')] = this._formatAmount(_.get(message,"messageInfo.amountPaid",""))+" €"
+                            formatedData[this.localize('error','error')] = _.get(message,"invoicesErrorMsg",[]).join(" ")
+
+                            return formatedData;
+                        })
+
+                        this.generateXlsFile(data,
+                            "invoices"+moment().format("YYYYMMDD-HHmmss")+ ".xls" ,
+                            "invoices",
+                            "Topaz"
+                        )
+                    }).finally(() => {
+                        this.$['processDialog'].close()
+                        this.set("isLoading", false)
+                    })
+                })
+
+            }
+
+            formatDate(d,f) {
+                const input = d && d.toString() || _.trim(d)
+                const yyyy = input.slice(0,4), mm = input.slice(4,6), dd = input.slice(6,8)
+                switch(f) {
+                    case 'date' :
+                        return `${dd}/${mm}/${yyyy}`;
+                    case 'month' :
+                        const monthStr =
+                            (mm.toString() === '01') ? this.localize('Jan',this.language) :
+                                (mm.toString() === '02') ? this.localize('Feb',this.language) :
+                                    (mm.toString() === '03') ? this.localize('Mar',this.language) :
+                                        (mm.toString() === '04') ? this.localize('Apr',this.language) :
+                                            (mm.toString() === '05') ? this.localize('May',this.language) :
+                                                (mm.toString() === '06') ? this.localize('Jun',this.language) :
+                                                    (mm.toString() === '07') ? this.localize('Jul',this.language) :
+                                                        (mm.toString() === '08') ? this.localize('Aug',this.language) :
+                                                            (mm.toString() === '09') ? this.localize('Sep',this.language) :
+                                                                (mm.toString() === '10') ? this.localize('Oct',this.language) :
+                                                                    (mm.toString() === '11') ? this.localize('Nov',this.language) :
+                                                                        this.localize('Dec',this.language)
+                        return `${monthStr} ${yyyy}`
+                }
+            }
+
+            _formatAmount(amount){
+                return this.findAndReplace(((Number(amount).toFixed(2)).toString()),'.',',')
+            }
+
+            _getRefusedAmount(totalAmount, acceptedAmount){
+                return this.findAndReplace(((Number(Number(totalAmount) - Number(acceptedAmount)).toFixed(2)).toString()),'.',',')
+            }
+
+            findAndReplace(string, target, replacement) {
+                for (let i = 0; i < string.length; i++) { string = string.replace(target, replacement); }
+                return string;
+            }
+
+
+            _getInvoicesFormBatch(listOfInvoiceId){
+                let prom = Promise.resolve([])
+                _.chunk(listOfInvoiceId, 50).map(chunkList =>
+                    prom = prom.then(listOfInvoice =>
+                        retry.retry(() => (this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: chunkList.map(id => id)}))), 4, 1000, 1)
+                            .then(inv => _.concat(listOfInvoice, inv))
+                            .catch(e => console.log(e))
+                    )
+                )
+
+                return prom
+            }
+
+            cleanStringForJsonParsing(inputValue) {
+                return inputValue
+                    .replace(/\\n/g, "\\n")
+                    .replace(/\\'/g, "\\'")
+                    .replace(/\\"/g, '\\"')
+                    .replace(/\\&/g, "\\&")
+                    .replace(/\\r/g, "\\r")
+                    .replace(/\\t/g, "\\t")
+                    .replace(/\\b/g, "\\b")
+                    .replace(/\\f/g, "\\f")
+                    .replace(/[\u0000-\u0019]+/g,"")
             }
         }
 
