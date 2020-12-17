@@ -920,7 +920,10 @@
                                         (!dateOfDeath || moment(_.trim(dateOfDeath), 'YYYYMMDD').startOf('month').isSameOrAfter(momentExportedDate)) &&
 
                                         // 3. 1+ mhc.contractId (expired or not)
-                                        _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
+                                        // _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId && _.trim(_.get(mhc, "contractId"))) &&
+
+                                        // 3. 1+ mhc (expired or not) -> we used to check for "1+ mhc.contractId" but since some OAs didn't behave correctly, some valid PATS didn't receive their contractId
+                                        _.some(_.get(it, "medicalHouseContracts", []), mhc => _.trim(_.get(mhc, "hcpId")) === mhHcpId) &&
 
                                         // 4. Either a valid SSIN [OR] 1+ ins.IndetificationNumber && insuranceId (expired or not, most recent if 1+)
                                         ( ssinIsValid || _.some(_.get(it, "insurabilities", []), ins => _.trim(_.get(ins, "insuranceId")) && _.trim(_.get(ins, "identificationNumber"))) )
@@ -953,6 +956,21 @@
                                         (moment(_.trim(_.get(ins, "endDate" + "", 0)), 'YYYYMMDD').isSameOrAfter(momentExportedDate) || !(parseInt(_.get(ins, "endDate", 0))||0))
                                     )
 
+                                    const finalMhc = _
+                                        .chain(it)
+                                        .get("medicalHouseContracts", [])
+                                        .filter(mhc => _.size(mhc) &&
+                                            _.trim(_.get(mhc, "hcpId")) === mhHcpId &&
+                                            _.trim(_.get(mhc, "contractId")) &&
+                                            (_.get(mhc,"kine",false) || _.get(mhc,"gp",false) || _.get(mhc,"nurse",false)) &&
+                                            (!_.trim(_.get(mhc,"startOfCoverage")) || _.trim(_.get(mhc,"startOfCoverage")) === "0" || _.trim(_.get(mhc,"startOfCoverage")) <= exportedDate ) &&
+                                            (!_.trim(_.get(mhc,"endOfCoverage")) || _.trim(_.get(mhc,"endOfCoverage")) === "0" || _.trim(_.get(mhc,"endOfCoverage")) >= exportedDate) &&
+                                            (!_.get(mhc,"status") || _.trim(_.get(mhc,"status",0)) === "0" || (_.get(mhc,"status",0) & (1<<1)) && !(_.get(mhc,"status",0) & (1<<2)) && !(_.get(mhc,"status",0) & (1<<3)))
+                                        )
+                                        .orderBy(["startOfCoverage"], ["desc"])
+                                        .head()
+                                        .value()
+
                                     return options && options.justGetRecords ? it : {
                                         patientId: _.trim(_.get(it, "id")),
                                         patientSsin: ssinIsValid && this.api.fixSsinLength(_.trim(_.get(it, "ssin")).replace(/[^\d]/gmi, "")),
@@ -961,7 +979,8 @@
                                         patientIdentificationNumber: _.trim(_.get(finalInsurability, "identificationNumber")) ? _.trim(_.get(finalInsurability, "identificationNumber")) : _.trim(_.get(latestInsurability, "identificationNumber")),
                                         startDate: parseInt(exportedDate),
                                         endDate: parseInt(moment(_.trim(exportedDate),"YYYYMMDD").add(1, 'months').format("YYYYMMDD")),
-                                        reconcileKey: _.trim(_.get(it,"id")) + "_" + this.api.crypto().randomUuid()
+                                        reconcileKey: _.trim(_.get(it,"id")) + "_" + this.api.crypto().randomUuid(),
+                                        patientMhcId: _.trim(_.get(finalMhc,"contractId"))
                                     }
 
                                 })
