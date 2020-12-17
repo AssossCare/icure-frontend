@@ -2754,20 +2754,27 @@
                 prom
                     .then(() =>{
                         const patients = clonedResult.map(result =>{
+                            const insurance = _.get(result,"patient.insurabilities",[]).find(ins => ins && ins.startDate && this.api.moment(ins.startDate).isSameOrBefore(moment(),"day") && (!ins.endDate || this.api.moment(ins.endDate).isSameOrAfter(moment(),"day")))
                             const contract = _.get(result,"patient.medicalHouseContracts",[]).find(contract => contract && contract.startOfCoverage && this.api.moment(contract.startOfCoverage).isSameOrBefore(moment(),"day") && (!contract.endOfCoverage || this.api.moment(contract.endOfCoverage).isSameOrAfter(moment(),"day")))
                             return {
                                 "Name" : _.get(result,"nameHr",""),
                                 "NISS": _.get(result,"ssinHr",""),
                                 "OA": _.get(result,"oa",""),
+                                "CT1-2": _.get(insurance,"parameters.tc1","")+ " - "+_.get(insurance,"parameters.tc2",""),
+                                "identificationNumber": _.get(insurance,"identificationNumber",""),
+                                "startDateInsurance": _.get(insurance,"startDate","") ? this.api.formatedMoment(_.get(insurance,"startDate","")) : "",
+                                "endDateInsurance": _.get(insurance,"endDate","") ? this.api.formatedMoment(_.get(insurance,"endDate","")) : "",
                                 "numberContract": _.get(contract,"contractId",""),
                                 "statutContract" : this._e_getSubscriptionStatus(contract),
                                 "startCoverageDate":_.get(contract,"startOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"startOfCoverage","")) : "",
                                 "endCoverageDate": _.get(contract,"endOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"endOfCoverage","")) : "",
+                                "startContractDate":_.get(contract,"startOfContract",false) ? this.api.formatedMoment(_.get(contract,"startOfContract","")) : "",
+                                "endContractDate": _.get(contract,"endOfContract",false) ? this.api.formatedMoment(_.get(contract,"endOfContract","")) : "",
                                 "contractType":(_.get(contract,"gp",false) ? "M" :"") + (_.get(contract,"kine",false) ? "K" :"") + (_.get(contract,"nurse",false) ? "I" :"") ,
                                 "facturable" : _.get(result,"patientHasValidInsurabilityBoolean",false) ? "oui" : "non",
                                 "statutAssurability" : _.get(result,"patientInsurabilityStatusHr",""),
                                 "message" :  _.get(result,"message",""),
-                                "url": "https://tz.icure.cloud/#pat/"+_.get(result,"patient.id","")
+                                "id": _.get(result,"patient.id","")
                             }
                         })
 
