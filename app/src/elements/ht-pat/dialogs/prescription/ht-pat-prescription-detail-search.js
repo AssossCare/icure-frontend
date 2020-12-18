@@ -438,7 +438,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
                         ])
                     ).then(([vmpGroups, amps, nmps]) => {
                         if (reqIdx === this.reqIdx){
-                            this.set("searchResult.commercialName", _.map(_.groupBy(this._prepareCommercialForDisplay(amps, null, null), 'officialName'), group => group))
+                            this.set("searchResult.commercialName", this._prepareCommercialForDisplay(amps, null, null)),
                             this.set("searchResult.molecule", _.orderBy(this._formatIngredient(_.get(vmpGroups, 'rows', []).filter(vpmGroup => _.get(vpmGroup, 'id', null))), ['label'], ['asc']))
                             this.set("searchResult.otc", _.orderBy(this._prepareOtcForDisplay(nmps), ['label'], ['asc']))
                             this.set('isLoadingCommercial', false)
@@ -521,7 +521,7 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
 
         const level = parentUuid ? 1 : 0
 
-        const hierarchicalAmpps = _.sortBy(_.get(ampps, 'rows', []).reduce((ampps, row) => {
+        let hierarchicalAmpps = _.sortBy(_.get(ampps, 'rows', []).reduce((ampps, row) => {
             if (_.size(_.get(row, 'ampps', []))){
                 return ampps.concat(_.get(row, 'ampps', []).map(ampp => {
                     const now = moment().valueOf();
@@ -552,8 +552,10 @@ class HtPatPrescriptionDetailSearch extends TkLocalizerMixin(mixinBehaviors([Iro
             return ampps;
         }, [])
         .filter(e => _.trim(_.get(e,"amp.status")) === "AUTHORIZED" && _.get(e, 'publicDmpp', null) && _.get(e, 'id', null) && _.get(e, 'intendedName', null) && (level === 0 || level === 1 && _.get(e, 'uuid', null) !== parentUuid))
-        .filter((e, i, a) => a.findIndex(x => _.get(x, 'id', null) === _.get(e, 'id', '')) === i), ['amp.officialName', 'index'])
-        .filter(a => _.get(a, 'status', null) === "AUTHORIZED")
+        , ['index', 'label'])
+        //.filter(a => _.get(a, 'status', null) === "AUTHORIZED")
+
+        hierarchicalAmpps = _.map(_.groupBy(hierarchicalAmpps, 'ctiExtended'), x => _.head(x)).filter(hierarchicalAmpp => _.size(_.get(hierarchicalAmpp, 'commercializations', [])) > 0)
 
         let filteredAmpps = [];
         if (level === 0) {

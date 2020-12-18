@@ -282,143 +282,129 @@ class HtPatPrescriptionDetailSearchCommercialResult extends TkLocalizerMixin(mix
                     <div class="td fg05">[[localize('presc-sear-pat','Pat',language)]]</div>
                     <div class="td fg05">[[localize('presc-sear-pub','Pub',language)]]</div>
                 </div>
-                <template is="dom-repeat" items="[[searchResult]]"as="group">
-                    <div class="tr-group">             
-                        <div class="td fg01"></div> 
-                        <div class="td fg01"></div>    
-                        <div class="td fg2">[[_getCategoryName(group)]]</div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
-                        <div class="td fg05"></div>
+                <template is="dom-repeat" items="[[searchResult]]" as="drug">
+                    <div class$="tr tr-item [[_isCheapestDrugLine(drug)]]">
+                        <div class="td fg01 notRel">
+                            <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon>
+                            <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
+                        </div>  
+                        <div class="td fg01 notRel">
+                            <template is="dom-if" if="[[_isAvailableCheaperDrugsSearch(origin)]]">
+                                <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" on-tap="_searchCheaperDrugs"></iron-icon>
+                                <paper-tooltip for="alt_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
+                            </template>
+                        </div>   
+                        <div class="td fg2 notRel" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView">
+                            [[drug.label]]
+                            <template is="dom-if" if="[[_isNewDrug(drug)]]">
+                                <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
+                            </template>
+                            <template is="dom-if" if="[[_isSupplyProblem(drug)]]">
+                                <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>   
+                                <paper-tooltip class="tooltipSupply" for="supply_[[drug.id]]" position="right" animation-delay="0">
+                                    <div class="fs12">
+                                        <iron-icon icon="vaadin:truck" class="supplyIcon"></iron-icon>&nbsp;&nbsp;
+                                        [[localize('presc-sup-prob-una', 'Temporarily unavailable', language)]]
+                                    </div>
+                                    <div>
+                                        <div class="table">
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-from', 'From', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getStartOfUnavailability(drug)]]</div>
+                                             </div>
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-until', 'Until', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getEndOfUnavailability(drug)]]</div>
+                                             </div>
+                                             <div class="tr-tooltip">
+                                                <div class="td-tooltip fg05">[[localize('presc-sup-prob-reason', 'Reason', language)]]: </div>
+                                                <div class="td-tooltip fg1">[[_getReasonOfUnavailability(drug)]]</div>
+                                             </div>
+                                        </div>
+                                    </div>
+                                </paper-tooltip>                  
+                            </template>
+                        </div>
+                        <div class="td fg05 notRel">
+                            <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]] id="tt_[[drug.atcCat]]_[[drug.id]]"></iron-icon></template>
+                            <template is="dom-if" if="[[_hasColor(drug)]]">
+                                <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]" id="tt_[[drug.atcCat]]_[[drug.id]]" ><span></span></label>
+                                <paper-tooltip for="tt_[[drug.atcCat]]_[[drug.id]]" position="right" animation-delay="0">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
+                            </template>
+                        </div>
+                        <div class="td fg05 notRel">
+                            <div class="icon-type-group">
+                                <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon></template>-->
+                                <template is="dom-if" if="[[_isDoping(drug)]]"><iron-icon icon="medication-svg-icons:[[_getDopingIcon(drug)]]" id="doping_[[drug.id]]" class="table-icon"</iron-icon></template>
+                                <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon></template>-->
+                                <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><iron-icon icon="medication-svg-icons:[[_getBlackTriangleIcon(drug)]]" id="bt_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
+                                <template is="dom-if" if="[[_isRma(drug)]]"><iron-icon icon="medication-svg-icons:[[_getRmaIcon(drug)]]" id="rma_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
+                            </div>
+                            <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-prohib', 'Prohibited drug', language)]]</paper-tooltip> </template>-->
+                            <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-rein', 'Renal failure', language)]]</paper-tooltip> </template>-->
+                            <template is="dom-if" if="[[_isDoping(drug)]]"><paper-tooltip for="doping_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-narco', 'Doping', language)]]</paper-tooltip></template>
+                            <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-act-ing', 'New active ingredient', language)]]</paper-tooltip></template>
+                            <template is="dom-if" if="[[_isRma(drug)]]"><paper-tooltip for="rma_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>
+                        </div>
+                        <div class="td fg05 notRel">
+                            <span id="reimbCateg_[[drug.id]]">[[_getCategOfReimbursement(drug)]]</span>
+                            <paper-tooltip for="reimbCateg_[[drug.id]]" position="right" animation-delay="0">[[_getDescriptionOfCategForReimbursement(drug)]]</paper-tooltip>
+                        </div>
+                        <div class="td fg05"></div>  
+                        <div class="td fg05"><iron-icon icon="medication-svg-icons:[[_isCheapestDrug(drug)]]" class="table-icon"></iron-icon></div>
+                        <div class="td fg05">[[drug.informations.patientPrice]] €</div>
+                        <div class="td fg05">[[drug.informations.publicPrice]] €</div> 
                     </div>
-                    <template is="dom-repeat" items="[[group]]" as="drug">
-                        <div class$="tr tr-item [[_isCheapestDrugLine(drug)]]">
-                            <div class="td fg01 notRel">
-                                <iron-icon class="addIcon" id="add_[[drug.id]]" icon="icons:add" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView"></iron-icon>
-                                <paper-tooltip for="add_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-add-drug', 'Add drug', language)]]</paper-tooltip>
-                            </div>  
-                            <div class="td fg01 notRel">
-                                <template is="dom-if" if="[[_isAvailableCheaperDrugsSearch(origin)]]">
-                                    <iron-icon class="addIcon" id="alt_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" on-tap="_searchCheaperDrugs"></iron-icon>
-                                    <paper-tooltip for="alt_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
-                                </template>
-                            </div>   
-                            <div class="td fg2 notRel" data-id$="[[drug.id]]" data-internaluuid$="[[drug.internalUuid]]" data-type="commercial" on-tap="_openPosologyView">
-                                [[drug.label]]
-                                <template is="dom-if" if="[[_isNewDrug(drug)]]">
-                                    <span class="newDrug">[[localize('presc-new', 'New', language)]]</span>
-                                </template>
-                                <template is="dom-if" if="[[_isSupplyProblem(drug)]]">
-                                    <iron-icon icon="vaadin:truck" class="supplyIcon" id="supply_[[drug.id]]"></iron-icon>   
-                                    <paper-tooltip class="tooltipSupply" for="supply_[[drug.id]]" position="right" animation-delay="0">
+                    <template is="dom-if" if="[[_isFinishedCommercializations(drug)]]">
+                        <template is="dom-repeat" items="[[_getCorrespondingDrug(drug, drug.informations.amppFinished)]]" as="amppFinished">
+                            <div class$="tr [[_getDeletionColor(amppFinished)]]">
+                                <div class="td fg01"></div>  
+                                <div class="td fg01">
+                                    <template is="dom-if" if="[[_hasGroupId(amppFinished.id)]]">
+                                        <iron-icon class="addIcon" id="alt_[[amppFinished.id]]_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative"></iron-icon>
+                                        <paper-tooltip for="alt_[[amppFinished.id]]_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
+                                    </template>
+                                </div>   
+                                <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
+                                    [[_getAmppFinishedName(amppFinished)]]
+                                    <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]_[[drug.id]]" class="deletedIcon"></iron-icon>
+                                    <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]_[[drug.id]]" position="right" animation-delay="0">
                                         <div class="fs12">
-                                            <iron-icon icon="vaadin:truck" class="supplyIcon"></iron-icon>&nbsp;&nbsp;
-                                            [[localize('presc-sup-prob-una', 'Temporarily unavailable', language)]]
+                                            <iron-icon icon="medication-svg-icons:deletedDrug" class="deletedIcon"></iron-icon>&nbsp;&nbsp;
+                                            [[localize('presc-rec-del', 'Recent deletion', language)]]
                                         </div>
                                         <div>
                                             <div class="table">
                                                  <div class="tr-tooltip">
-                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-from', 'From', language)]]: </div>
-                                                    <div class="td-tooltip fg1">[[_getStartOfUnavailability(drug)]]</div>
+                                                    <div class="td-tooltip fg05">[[localize('presc-del-from', 'From', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getStartOfCommercialization(amppFinished.commercializations)]]</div>
                                                  </div>
                                                  <div class="tr-tooltip">
-                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-until', 'Until', language)]]: </div>
-                                                    <div class="td-tooltip fg1">[[_getEndOfUnavailability(drug)]]</div>
+                                                    <div class="td-tooltip fg05">[[localize('presc-del-until', 'Until', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getEndOfCommercialization(amppFinished.commercializations)]]</div>
                                                  </div>
                                                  <div class="tr-tooltip">
-                                                    <div class="td-tooltip fg05">[[localize('presc-sup-prob-reason', 'Reason', language)]]: </div>
-                                                    <div class="td-tooltip fg1">[[_getReasonOfUnavailability(drug)]]</div>
+                                                    <div class="td-tooltip fg05">[[localize('presc-del-reason', 'Reason', language)]]: </div>
+                                                    <div class="td-tooltip fg1">[[_getReasonOfEndOfCommercialization(amppFinished.commercializations)]]</div>
                                                  </div>
                                             </div>
                                         </div>
-                                    </paper-tooltip>                  
-                                </template>
-                            </div>
-                            <div class="td fg05 notRel">
-                                <template is="dom-if" if="[[_hasIcon(drug)]]"><iron-icon class$="icon-code [[_getStyle('ATC', drug.atcCat)]]" icon="[[_getIcon(drug)]] id="tt_[[drug.atcCat]]_[[drug.id]]"></iron-icon></template>
-                                <template is="dom-if" if="[[_hasColor(drug)]]">
-                                    <label class$="colour-code [[_getStyle('ATC', drug.atcCat, 'span')]]" id="tt_[[drug.atcCat]]_[[drug.id]]" ><span></span></label>
-                                    <paper-tooltip for="tt_[[drug.atcCat]]_[[drug.id]]" position="right" animation-delay="0">[[_atcTooltip(drug.atcCat)]]</paper-tooltip>
-                                </template>
-                            </div>
-                            <div class="td fg05 notRel">
-                                <div class="icon-type-group">
-                                    <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.compProhibIcon]]" class="table-icon"></iron-icon></template>-->
-                                    <template is="dom-if" if="[[_isDoping(drug)]]"><iron-icon icon="medication-svg-icons:[[_getDopingIcon(drug)]]" id="doping_[[drug.id]]" class="table-icon"</iron-icon></template>
-                                    <!--<template is="dom-if" if="[[]]"><iron-icon icon="medication-svg-icons:[[drug.reinfPharmaVigiIcon]]" class="table-icon"></iron-icon></template>-->
-                                    <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><iron-icon icon="medication-svg-icons:[[_getBlackTriangleIcon(drug)]]" id="bt_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
-                                    <template is="dom-if" if="[[_isRma(drug)]]"><iron-icon icon="medication-svg-icons:[[_getRmaIcon(drug)]]" id="rma_[[drug.id]]" class="table-icon"></iron-icon></template>                                                
+                                    </paper-tooltip>   
                                 </div>
-                                <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-prohib', 'Prohibited drug', language)]]</paper-tooltip> </template>-->
-                                <!--<template is="dom-if" if="[[]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-rein', 'Renal failure', language)]]</paper-tooltip> </template>-->
-                                <template is="dom-if" if="[[_isDoping(drug)]]"><paper-tooltip for="doping_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-narco', 'Doping', language)]]</paper-tooltip></template>
-                                <template is="dom-if" if="[[_isBlackTriangle(drug)]]"><paper-tooltip for="bt_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-act-ing', 'New active ingredient', language)]]</paper-tooltip></template>
-                                <template is="dom-if" if="[[_isRma(drug)]]"><paper-tooltip for="rma_[[drug.id]]" position="right" animation-delay="0">[[localize('presc-new-rma', 'Risk Minimisation Activities', language)]]</paper-tooltip></template>
-                            </div>
-                            <div class="td fg05 notRel">
-                                <span id="reimbCateg_[[drug.id]]">[[_getCategOfReimbursement(drug)]]</span>
-                                <paper-tooltip for="reimbCateg_[[drug.id]]" position="right" animation-delay="0">[[_getDescriptionOfCategForReimbursement(drug)]]</paper-tooltip>
-                            </div>
-                            <div class="td fg05"></div>  
-                            <div class="td fg05"><iron-icon icon="medication-svg-icons:[[_isCheapestDrug(drug)]]" class="table-icon"></iron-icon></div>
-                            <div class="td fg05">[[drug.informations.patientPrice]] €</div>
-                            <div class="td fg05">[[drug.informations.publicPrice]] €</div> 
-                        </div>
-                        <template is="dom-if" if="[[_isFinishedCommercializations(drug)]]">
-                            <template is="dom-repeat" items="[[_getCorrespondingDrug(drug, drug.informations.amppFinished)]]" as="amppFinished">
-                                <div class$="tr [[_getDeletionColor(amppFinished)]]">
-                                    <div class="td fg01"></div>  
-                                    <div class="td fg01">
-                                        <template is="dom-if" if="[[_hasGroupId(amppFinished.id)]]">
-                                            <iron-icon class="addIcon" id="alt_[[amppFinished.id]]_[[drug.id]]" icon="icons:swap-horiz" data-id$="[[amppFinished.id]]" on-tap="_searchAlternative"></iron-icon>
-                                            <paper-tooltip for="alt_[[amppFinished.id]]_[[drug.id]]" position="left" animation-delay="0">[[localize('presc-sear-cheaper-alt', 'Search cheaper alternative', language)]]</paper-tooltip>
-                                        </template>
-                                    </div>   
-                                    <div class="td fg2 notRel" data-id$="[[amppFinished.id]]" data-type="commercial">
-                                        [[_getAmppFinishedName(amppFinished)]]
-                                        <iron-icon icon="medication-svg-icons:deletedDrug" id="deleted_[[amppFinished.id]]_[[drug.id]]" class="deletedIcon"></iron-icon>
-                                        <paper-tooltip class="tooltipSupply" for="deleted_[[amppFinished.id]]_[[drug.id]]" position="right" animation-delay="0">
-                                            <div class="fs12">
-                                                <iron-icon icon="medication-svg-icons:deletedDrug" class="deletedIcon"></iron-icon>&nbsp;&nbsp;
-                                                [[localize('presc-rec-del', 'Recent deletion', language)]]
-                                            </div>
-                                            <div>
-                                                <div class="table">
-                                                     <div class="tr-tooltip">
-                                                        <div class="td-tooltip fg05">[[localize('presc-del-from', 'From', language)]]: </div>
-                                                        <div class="td-tooltip fg1">[[_getStartOfCommercialization(amppFinished.commercializations)]]</div>
-                                                     </div>
-                                                     <div class="tr-tooltip">
-                                                        <div class="td-tooltip fg05">[[localize('presc-del-until', 'Until', language)]]: </div>
-                                                        <div class="td-tooltip fg1">[[_getEndOfCommercialization(amppFinished.commercializations)]]</div>
-                                                     </div>
-                                                     <div class="tr-tooltip">
-                                                        <div class="td-tooltip fg05">[[localize('presc-del-reason', 'Reason', language)]]: </div>
-                                                        <div class="td-tooltip fg1">[[_getReasonOfEndOfCommercialization(amppFinished.commercializations)]]</div>
-                                                     </div>
-                                                </div>
-                                            </div>
-                                        </paper-tooltip>   
-                                    </div>
-                                    <div class="td fg05 notRel">
-                                        
-                                    </div>
-                                    <div class="td fg05 notRel">
-                                        <div class="icon-type-group">
-                                                                                 
-                                        </div>
-                                    </div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>  
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div>
-                                    <div class="td fg05"></div> 
+                                <div class="td fg05 notRel">
+                                    
                                 </div>
-                            </template>
+                                <div class="td fg05 notRel">
+                                    <div class="icon-type-group">
+                                                                             
+                                    </div>
+                                </div>
+                                <div class="td fg05"></div>
+                                <div class="td fg05"></div>  
+                                <div class="td fg05"></div>
+                                <div class="td fg05"></div>
+                                <div class="td fg05"></div> 
+                            </div>
                         </template>
                     </template>
                 </template>
