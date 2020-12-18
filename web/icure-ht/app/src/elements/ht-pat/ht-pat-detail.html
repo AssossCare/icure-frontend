@@ -1963,6 +1963,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                             <paper-fab id="sumehrStatus" mini icon="editor:format-list-bulleted" on-tap="_openHubDialogDirectToUpload"></paper-fab>
                                             <paper-tooltip position="top" for="sumehrStatus">[[sumehrStatusDesc]]</paper-tooltip>
                                         </template>
+                                        <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'medicationScheme')]]">
+                                            <paper-fab id="medicationStatus" mini icon="vaddin:drugs" on-tap="_openMedicationSchemeDialog"></paper-fab>
+                                            <paper-tooltip position="top" for="tlStatus">[[localize('ms','Medication scheme',language)]]</paper-tooltip>
+                                        </template>
                                         <template is="dom-if" if="[[_isAvailableForHcp(hcpType, 'edmg')]]">
                                             <paper-fab id="edmgStatus" mini icon="vaadin:clipboard-pulse" on-tap="_openEdmgDialog"></paper-fab>
                                             <paper-tooltip position="top" for="edmgStatus">[[localize('edmg','e-DMG',language)]]
@@ -3000,6 +3004,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <ht-pat-member-data-detail id="htPatMemberDataDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]" on-mda-response="_updateMdaFlags"></ht-pat-member-data-detail>
         <ht-pat-subscription-detail id="htPatSubscriptionDetail" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" mda-result="[[mdaResult]]"></ht-pat-subscription-detail>
         <ht-pat-eform-dialog id="htPatEformDialog" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" patient-sumehr="[[sumehrContentOnPatientLoad]]" contacts="[[contacts]]" health-elements="[[allHealthElements]]" on-eforms-download="_eformsDownload"></ht-pat-eform-dialog>
+        <ht-pat-medication-scheme-dialog id="htPatMedicationScheme" api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" contacts="[[contacts]]"></ht-pat-medication-scheme-dialog>
+
     </template>
     <script>
         import moment from 'moment/src/moment';
@@ -3455,7 +3461,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             consent: ["physician", "specialist"],
                             mda: ["physician", "medicalHouse"],
                             subscription: ["medicalHouse"],
-                            insurability: ["specialist", "officedoctors"]
+                            insurability: ["specialist", "officedoctors"],
+                            medicationScheme: ["physician"]
                         }
                     },
                     conventionStatus: {
@@ -7598,6 +7605,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 e.stopPropagation()
                 if(this._checkForEhealthSession() === true){
                     this.$["htPatSubscriptionDetail"]._openDialog()
+                }else{
+                    this._ehealthErrorNotification()
+                }
+            }
+
+            _openMedicationSchemeDialog(e){
+                e.stopPropagation()
+                if(this._checkForEhealthSession() === true){
+                    this.$["htPatMedicationScheme"]._openDialog()
                 }else{
                     this._ehealthErrorNotification()
                 }
