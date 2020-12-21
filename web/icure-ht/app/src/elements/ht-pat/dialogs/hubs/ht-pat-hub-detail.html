@@ -1823,16 +1823,23 @@
             // hubPackageId?: string, breakTheGlassReason?: string): Promise<string | any>;
 
             _revokeHubTransaction(transaction){
-                if (this.patient.ssin && this.api.tokenId && transaction) {
+                if (_.get(this, 'patient.ssin', null) && _.get(this, 'api.tokenId', null) && transaction) {
                     return this.api.hcparty().getHealthcareParty(this.user.healthcarePartyId)
                         .then(hcp => this.api.fhc().Hub().revokeTransactionUsingDELETE(this.hubEndPoint,
-                            this.api.keystoreId, this.api.tokenId, this.api.credentials.ehpassword,
-                            hcp.lastName, hcp.firstName, hcp.nihii, hcp.ssin, this.hcpZip,
-                            this.patient.ssin,
-                            transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).sv,
-                            transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).sl,
-                            transaction.ids.find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(id.sl)).value,
-                            this.hubPackageId, null
+                            _.get(this, 'api.keystoreId', null),
+                            _.get(this, 'api.tokenId', null),
+                            _.get(this, 'api.credentials.ehpassword', null),
+                            _.get(hcp, 'lastName', null),
+                            _.get(hcp, 'firstName', null),
+                            _.get(hcp, 'nihii', null),
+                            _.get(hcp, 'ssin', null),
+                            _.get(this, 'hcpZip', null),
+                            _.get(this, 'patient.ssin', null),
+                            _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sv', null),
+                            _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'sl', null),
+                            _.get(_.get(transaction, 'ids', []).find(id => ["vitalinkuri", "RSWID", "RSBID"].includes(_.get(id, 'sl', null))), 'value', null),
+                            _.get(this, 'hubPackageId', null),
+                            null
                             ) //TODO: add break the glass reason
                         ).then(tranResp => {
                                 if (tranResp) {
@@ -1841,7 +1848,7 @@
                                     return null;
                                 }
                             }
-                        )
+                        ).catch(e => console.log(e))
                 } else {
                     return Promise.resolve(null)
                 }
