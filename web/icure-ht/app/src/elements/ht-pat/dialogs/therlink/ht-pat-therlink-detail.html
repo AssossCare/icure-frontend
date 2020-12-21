@@ -979,7 +979,7 @@
             }
 
             _isReturnErrorStatus(error){
-                return _.size(error) > 0
+                return _.size(error) > 0 && _.get(_.head(error), 'code', null)
             }
 
             _getError(error){

@@ -906,21 +906,21 @@
                                 const updateReference = this.api.crypto().randomUuid();
                                 this._logUpdateMessage(JSON.stringify(getResp), "new", updateReference, "text/xml").then(() => this._logUpdateMessage(JSON.stringify(this.hubSumehr), "old", updateReference, "text/xml")).then(() => {
                                     if (this.hubSumehr) {
-                                        if (this.hubSumehr.folders[0].transactions[0].ids && this.hubSumehr.folders[0].transactions[0].ids.find(id => id.value === putResp.id[0].value)) {
-                                            console.log("putNRevoke: id to revoke is same as new id, don't revoke", this.hubSumehr.folders[0].transactions[0].ids);
+                                        if (_.get(_.head(_.get(_.head(_.get(this, 'hubSumehr.folders', [])), 'transactions', [])), 'ids', []).find(id => _.get(id, 'value', null) === _.get(_.head(_.get(putResp, 'id', [])), 'value', null))) {
+                                            console.log("putNRevoke: id to revoke is same as new id, don't revoke", _.get(_.head(_.get(_.head(_.get(this, 'hubSumehr.folders', [])), 'transactions', [])), 'ids', []));
                                             this.parentDialog._runGetTransactionList();
                                             this.set("uploading", false);
                                             if (this.$['commentDialog']) this.$['commentDialog'].close();
                                             this.$["sumehrPreviewDialog"].close();
                                         } else {
-                                            console.log("putNRevoke: id to revoke", this.hubSumehr.folders[0].transactions[0].ids);
-                                            if (this.hubSumehr && this.hubSumehr.folders) this.parentDialog._revokeHubTransaction(this.hubSumehr.folders[0].transactions[0]).then(r => {
+                                            console.log("putNRevoke: id to revoke", _.get(_.head(_.get(_.head(_.get(this, 'hubSumehr.folders', [])), 'transactions', [])), 'ids', []));
+                                            _.get(this, 'hubSumehr.folders', []) ?  this.parentDialog._revokeHubTransaction(this.hubSumehr.folders[0].transactions[0]).then(r => {
                                                 console.log(r)
                                                 this.parentDialog._runGetTransactionList();
                                                 this.set("uploading", false);
                                                 if (this.$['commentDialog']) this.$['commentDialog'].close();
                                                 this.$["sumehrPreviewDialog"].close();
-                                            });
+                                            }).catch(e => console.log(e)) : null
                                         }
                                     } else {
                                         console.log("there was no sumehr on the hub yet");
@@ -937,6 +937,8 @@
                             this.set("uploading", false);
                         }
                         ;
+                    }).finally(() => {
+                        this.set("uploading", false);
                     }).catch(error => {
                         console.log(error);
                         this.set("uploading", false);
