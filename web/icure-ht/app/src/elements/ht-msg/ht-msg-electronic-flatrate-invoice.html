@@ -474,6 +474,7 @@
                             uuid : efact.invoice.id,
                             parentUuid : efact.insurance && efact.insurance.code ? efact.insurance.code.charAt(0) : null,
                             patient: _.get(efact, 'patient', {}),
+                            patientId: _.get(efact, 'patient.id', null),
                             invoice: _.get(efact, 'invoice', {}),
                             insuranceDto: _.get(efact, 'insurance', {}),
                             parentInsuranceDto: _.get(efact, 'parentInsurance', {}),

@@ -416,19 +416,20 @@
             </div>
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <div>
+                    <div class="hidden">
+                        <paper-button class="button button--other " on-tap="_deleteDoubleInvoice">[[localize('','Delete double invoice',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_fixPatientInvalidState">[[localize('fix_pat_inv','Fix pats Invalid State',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_fixAssuTooLate">[[localize('fix_assu_late','Fix Assu Late',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_fixAssuTooLate">[[localize('fix_assu_late','Fix Assu Late',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
-                    </div>
+                     </div>
                     <!--<paper-button class="button button--save" on-tap="_correctAllInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>-->
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
-                        <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                      <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
                     </template>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
@@ -2745,6 +2746,16 @@
                 })
             }
 
+            _deleteDoubleInvoice() {
+                let prom = Promise.resolve()
+                return prom
+                    .then(() => _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'invoiceDate'), invByDate => _.map(_.groupBy(invByDate, 'patientId'), invs => _.map((invs || []).slice(1), "invoiceId"))))
+                    .then(invoiceIdsToBeDeleted => _.chain(invoiceIdsToBeDeleted).flattenDeep().uniq().compact().value())
+                    .then(invoiceIdsToBeDeleted => {
+                        _.map(invoiceIdsToBeDeleted, inv => prom = prom.then(() => this.api.invoice().deleteInvoice(inv).then(inv => console.log("Invoice successfully deleted: " + inv))))
+                        return prom.then(() => console.log("----------------------------------------\nAll double invoices are deleted"))
+                    })
+            }
         }
 
         customElements.define(HtMsgFlatrateInvoiceToBeSend.is, HtMsgFlatrateInvoiceToBeSend);
