@@ -417,6 +417,7 @@
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <div class="hidden">
+                        <paper-button class="button button--other " on-tap="_deleteDoubleInvoice">[[localize('','Delete double invoice',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
@@ -2667,6 +2668,17 @@
                         this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
                     })
                 })
+            }
+
+            _deleteDoubleInvoice() {
+                let prom = Promise.resolve()
+                return prom
+                    .then(() => _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'invoiceDate'), invByDate => _.map(_.groupBy(invByDate, 'patientId'), invs => _.map((invs || []).slice(1), "invoiceId"))))
+                    .then(invoiceIdsToBeDeleted => _.chain(invoiceIdsToBeDeleted).flattenDeep().uniq().compact().value())
+                    .then(invoiceIdsToBeDeleted => {
+                        _.map(invoiceIdsToBeDeleted, inv => prom = prom.then(() => this.api.invoice().deleteInvoice(inv).then(inv => console.log("Invoice successfully deleted: " + inv))))
+                        return prom.then(() => console.log("----------------------------------------\nAll double invoices are deleted"))
+                    })
             }
 
         }
