@@ -346,6 +346,7 @@
                     <span class="batchNumber batchPending">{{_forceZeroNum(listOfInvoice.length)}}</span>
                 </div>
             </div>
+
             <div class="panel-search">
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
             </div>
@@ -427,7 +428,9 @@
                     <!--<paper-button class="button button--save" on-tap="_correctAllInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>-->
                     <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
                     <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
-                        <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                        <template is="dom-if" if="[[!invoicingAlreadyRanThisMonth]]" restamp="true">
+                            <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
+                        </template>
                     </template>
                     <template is="dom-if" if="[[api.tokenIdMH]]" restamp="true">
                         <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
@@ -781,6 +784,10 @@
                     mdaRequestsAlreadyRanThisMonth:{
                         type: Boolean,
                         value: false
+                    },
+                    invoicingAlreadyRanThisMonth:{
+                        type: Boolean,
+                        value: false
                     }
                 }
             }
@@ -798,6 +805,7 @@
                     '_initialize(api, user, listOfInvoice)',
                     '_filterValueChanged(filter)',
                     '_loadMdaRequestsStatus(user)',
+                    '_getLastInvoicingDate(user)',
                 ]
             }
 
@@ -2248,6 +2256,187 @@
                 return flatRateUtil.resetPatientsLastInvoicedTagByMaxExportedDate(exportedDate);
             }
 
+            _markAsSent(){
+                let prom = Promise.resolve()
+
+
+                _.head(_.get(this, 'filteredListOfInvoice', [])).map(inv => {
+                    _.assign(_.get(inv, 'invoice', {}), {sentDate: 20201126})
+                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv))).catch(e => console.log(e))
+                })
+
+                prom.then(listOfModifiedInv => {
+                    console.log(listOfModifiedInv)
+                })
+            }
+
+            _reOpenUpComingMhc() {
+
+                const promResolve = Promise.resolve()
+                const flatRateUtil = this.$.flatrateUtils;
+
+                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth())); exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
+                const exportedDate = _.trim(parseInt(this._getExportCurrentYear())) + exportedMonth + "01"
+                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
+
+                return promResolve
+                    .then(() => flatRateUtil.getPatientsEligibleForMdaRequestByExportedDate(exportedDate, {justGetRecords:true}))
+                    // Contract ended before it started -> impossible
+                    .then(pats => _.filter(pats, pat => _.some(_.get(pat, "medicalHouseContracts"), mhc => mhc && mhc.contractId && mhc.endOfCoverage && mhc.startOfCoverage && mhc.endOfCoverage <= mhc.startOfCoverage && _.assign(mhc, { endOfContract: null, endOfCoverage: null, status: (1 << 1) /* STATUS_ONGOING_MCN */ }))))
+                    .then(pats => {
+
+                        console.log(_.size(pats) + " patients to update")
+
+                        if(!_.size(pats)) return;
+
+                        let prom = Promise.resolve()
+
+                        _.map(pats, pat => { prom = prom.then(() => this.api.patient().modifyPatientWithUser(this.user, pat)) })
+
+                        return prom
+
+                    })
+                    .then(() => console.log("--- DONE _reOpenUpComingMhc ---"))
+
+            }
+
+            _loadMdaRequestsStatus() {
+
+                const promResolve = Promise.resolve()
+                const exportedDate = moment().format("YYYYMM") + "01"
+
+                return this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
+                    .then(pl => {
+                        return {
+                            rows: _.filter(pl.rows, it => it &&
+                                _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId &&
+                                _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
+                                _.trim(_.get(it, "metas.step5Validated")) === "true"
+                            ),
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(() => promResolve)
+                )
+                    .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
+            }
+
+            _correctAllInvoice(){
+                this.set('isLoading', true)
+                let valorisationMonths = [];
+                this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
+                    let prom = Promise.resolve()
+                    for (let i = 0; i < 240; i++) { valorisationMonths.push(_.trim(moment().startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
+                    const valorisationList = valorisationMonths.map(valorisationMonth => {
+                        return {
+                            month: parseInt(valorisationMonth),
+                            valorisations: _.merge(
+                                [
+                                    {code: "109616", price: 0.00, flatRateType: "physician"},
+                                    {code: "509611", price: 0.00, flatRateType: "physiotherapist"},
+                                    {code: "409614", price: 0.00, flatRateType: "nurse"},
+                                    {code: "109594", price: 0.00, flatRateType: "ptd"}
+                                ],
+                                _.compact(
+                                    _.chain(_.get(hcp, 'flatRateTarifications', []))
+                                        .map(singleNomenclature => {
+                                            const valorisationObject = _.head(
+                                                _.orderBy(
+                                                    _
+                                                        .chain(singleNomenclature.valorisations)
+                                                        .filter(singleValorisation => {
+                                                            return (
+                                                                !!singleValorisation
+                                                                && parseFloat(_.get(singleValorisation, "reimbursement", 0))
+                                                                && (
+                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).isBefore(moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month')) ||
+                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).format("YYYYMMDD") === moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month').format("YYYYMMDD")
+                                                                )
+                                                            )
+
+                                                        })
+                                                        .value(),
+                                                    ["startOfValidity"],
+                                                    ["desc"]
+                                                )
+                                            )
+                                            return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
+                                                code: _.trim(_.get(singleNomenclature, "code")),
+                                                label: _.get(singleNomenclature, "label"),
+                                                flatRateType: _.trim(_.get(singleNomenclature, "flatRateType")),
+                                                price: parseFloat(_.get(valorisationObject, "reimbursement", 0)),
+                                                valorisationMonth: parseInt(valorisationMonth)
+                                            } : false
+                                        })
+                                        .value()
+                                )
+                            )
+                        }
+                    })
+
+                    _.get(this, 'listOfInvoice', []).map(inv => {
+                        const currentValorisation = valorisationList.find(val => _.get(val, 'month', null) === _.get(inv, 'invoiceDate', ''))
+                        _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
+                            _.assign(ic, {
+                                pending: false,
+                                resent: false,
+                                reimbursement: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00),
+                                totalAmount: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00)
+                            })
+                        })
+                        _.assign(_.get(inv, 'invoice', {}), {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
+                        prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
+                    })
+
+                    prom.then(listOfModifiedInv => {
+                        console.log(listOfModifiedInv)
+                        this.set('isLoading', false)
+                        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
+                    })
+                })
+            }
+
+            _deleteDoubleInvoice() {
+                let prom = Promise.resolve()
+                return prom
+                    .then(() => _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'invoiceDate'), invByDate => _.map(_.groupBy(invByDate, 'patientId'), invs => _.map((invs || []).slice(1), "invoiceId"))))
+                    .then(invoiceIdsToBeDeleted => _.chain(invoiceIdsToBeDeleted).flattenDeep().uniq().compact().value())
+                    .then(invoiceIdsToBeDeleted => {
+                        _.map(invoiceIdsToBeDeleted, inv => prom = prom.then(() => this.api.invoice().deleteInvoice(inv).then(inv => console.log("Invoice successfully deleted: " + inv))))
+                        return prom.then(() => console.log("----------------------------------------\nAll double invoices are deleted"))
+                    })
+            }
+
+            _getLastInvoicingDate(currentUser=null) {
+
+                const currentYearAndMonth = _.trim(moment().format("YYYYMM"))
+
+                return (currentUser ? Promise.resolve(currentUser) : this.api.user().getCurrentUser())
+                    .then(user => [user, _.trim(_.get(_.find(_.get(user,"properties",[]), p => _.trim(_.get(p,"type.identifier","")) === "org.taktik.icure.user.lastInvoicingDate"),"typedValue.stringValue"))])
+                    .then(([user, lastInvoicedValue]) => !currentUser ? _.assign(this,{user:user}) && lastInvoicedValue : lastInvoicedValue) // Assign directly in this.user to bypass observers / refresh
+                    .then(lastInvoicedValue => (this.set("invoicingAlreadyRanThisMonth", currentYearAndMonth === _.trim(lastInvoicedValue))||true) && lastInvoicedValue)
+
+            }
+
+            _setLastInvoicingDate() {
+
+                const currentYearAndMonth = _.trim(moment().format("YYYYMM"))
+                const propertyKeyName = "org.taktik.icure.user.lastInvoicingDate"
+
+                // Get user and force refresh
+                return this._getLastInvoicingDate()
+                    .then(() => {
+                        const otherProperties = _.filter(_.get(this.user,"properties",[]), p => _.trim(_.get(p,"type.identifier","")) !== propertyKeyName)
+                        const updatedProperty = {type: {identifier: propertyKeyName}, typedValue: { type: "STRING", stringValue: currentYearAndMonth} }
+                        return this.api.user().modifyUser(_.assign(this.user, {properties:_.concat(otherProperties, updatedProperty)}))
+                    })
+                    .then(modifiedUser => _.assign(this,{user:modifiedUser}) && this.api.register(modifiedUser, "user"))
+                    .then(() => this._getLastInvoicingDate(this.user))
+
+            }
+
             _exportFlatRateInvoicing_step2_v2() {
 
                 const promResolve = Promise.resolve()
@@ -2502,16 +2691,19 @@
                     // 8 - Invoices are generated
                     .then(createdInvoicesAndPats => (_.assign(this.flatRateInvoicingDataObject, {createdInvoicesAndPats: createdInvoicesAndPats})||true) && this._setLoadingMessage({ message:this.localize('mhInvoicing.spinner.step_4_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
 
+                    // 9 - Update user's properties with last invoicing date
+                    .then(() => this._setLastInvoicingDate())
+
                     .catch(e => (console.log("[ERROR] _exportFlatRateInvoicing_step2_v2", e)||true) && (
                         ( _.trim(e).indexOf('no-nihii') > -1 ) ? this._showWarningNoHcpNihii() && e :
-                        ( _.trim(e).indexOf('missing-flatrate-tarification') > -1 ) ? this._showWarningNoHcpFlatrateTarification() && e :
-                        ( _.trim(e).indexOf('no-data-to-export') > -1 ) ? this._showWarningNoDataToExport() && e :
-                        ( _.trim(e).indexOf('missing-contact-person') > -1 ) ? this._showWarningNoHcpContactPerson() && e :
-                        ( _.trim(e).indexOf('missing-cbe') > -1 ) ? this._showWarningNoCbe() && e :
-                        ( _.trim(e).indexOf('missing-bank-account') > -1 ) ? this._showWarningNoBankAccount() && e :
-                        ( _.trim(e).indexOf('export-already-ran') > -1 ) ? this._showWarningExportAlreadyRan() && e :
-                        ( _.trim(e).indexOf('missing-ptd-valorisation') > -1 ) ? this._showWarningNoHcpFlatratePtdTarification() && e :
-                        e
+                            ( _.trim(e).indexOf('missing-flatrate-tarification') > -1 ) ? this._showWarningNoHcpFlatrateTarification() && e :
+                                ( _.trim(e).indexOf('no-data-to-export') > -1 ) ? this._showWarningNoDataToExport() && e :
+                                    ( _.trim(e).indexOf('missing-contact-person') > -1 ) ? this._showWarningNoHcpContactPerson() && e :
+                                        ( _.trim(e).indexOf('missing-cbe') > -1 ) ? this._showWarningNoCbe() && e :
+                                            ( _.trim(e).indexOf('missing-bank-account') > -1 ) ? this._showWarningNoBankAccount() && e :
+                                                ( _.trim(e).indexOf('export-already-ran') > -1 ) ? this._showWarningExportAlreadyRan() && e :
+                                                    ( _.trim(e).indexOf('missing-ptd-valorisation') > -1 ) ? this._showWarningNoHcpFlatratePtdTarification() && e :
+                                                        e
                     ))
 
                     .finally(()=>{
@@ -2526,159 +2718,6 @@
                         this._refreshInvoiceList();
                     })
 
-            }
-
-            _markAsSent(){
-                let prom = Promise.resolve()
-
-
-                _.head(_.get(this, 'filteredListOfInvoice', [])).map(inv => {
-                    _.assign(_.get(inv, 'invoice', {}), {sentDate: 20201126})
-                    prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv))).catch(e => console.log(e))
-                })
-
-                prom.then(listOfModifiedInv => {
-                    console.log(listOfModifiedInv)
-                })
-            }
-
-            _reOpenUpComingMhc() {
-
-                const promResolve = Promise.resolve()
-                const flatRateUtil = this.$.flatrateUtils;
-
-                let exportedMonth = _.trim(parseInt(this._getExportCurrentMonth())); exportedMonth = exportedMonth.length === 1 ? "0" + exportedMonth : exportedMonth;
-                const exportedDate = _.trim(parseInt(this._getExportCurrentYear())) + exportedMonth + "01"
-                const exportedDateMoment = moment(exportedDate, "YYYYMMDD")
-
-                return promResolve
-                    .then(() => flatRateUtil.getPatientsEligibleForMdaRequestByExportedDate(exportedDate, {justGetRecords:true}))
-                    // Contract ended before it started -> impossible
-                    .then(pats => _.filter(pats, pat => _.some(_.get(pat, "medicalHouseContracts"), mhc => mhc && mhc.contractId && mhc.endOfCoverage && mhc.startOfCoverage && mhc.endOfCoverage <= mhc.startOfCoverage && _.assign(mhc, { endOfContract: null, endOfCoverage: null, status: (1 << 1) /* STATUS_ONGOING_MCN */ }))))
-                    .then(pats => {
-
-                        console.log(_.size(pats) + " patients to update")
-
-                        if(!_.size(pats)) return;
-
-                        let prom = Promise.resolve()
-
-                        _.map(pats, pat => { prom = prom.then(() => this.api.patient().modifyPatientWithUser(this.user, pat)) })
-
-                        return prom
-
-                    })
-                    .then(() => console.log("--- DONE _reOpenUpComingMhc ---"))
-
-            }
-
-            _loadMdaRequestsStatus() {
-
-                const promResolve = Promise.resolve()
-                const exportedDate = moment().format("YYYYMM") + "01"
-
-                return this.api.getRowsUsingPagination((key, docId) => this.api.message().findMessagesByTransportGuid('MH:FLATRATE-MDA-REQUEST:' + exportedDate, null, key, docId, 1000)
-                    .then(pl => {
-                        return {
-                            rows: _.filter(pl.rows, it => it &&
-                                _.get(it, 'fromHealthcarePartyId', false) === this.user.healthcarePartyId &&
-                                _.get(it, "recipients", []).indexOf(this.user.healthcarePartyId) > -1 &&
-                                _.trim(_.get(it, "metas.step5Validated")) === "true"
-                            ),
-                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
-                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
-                            done: !pl.nextKeyPair
-                        }
-                    })
-                    .catch(() => promResolve)
-                )
-                    .then(mdaMessages => this.set("mdaRequestsAlreadyRanThisMonth", !!_.size(mdaMessages)))
-            }
-
-            _correctAllInvoice(){
-                this.set('isLoading', true)
-                let valorisationMonths = [];
-                this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
-                    let prom = Promise.resolve()
-                    for (let i = 0; i < 240; i++) { valorisationMonths.push(_.trim(moment().startOf('month').subtract(i, "month").format("YYYYMMDD"))) }
-                    const valorisationList = valorisationMonths.map(valorisationMonth => {
-                        return {
-                            month: parseInt(valorisationMonth),
-                            valorisations: _.merge(
-                                [
-                                    {code: "109616", price: 0.00, flatRateType: "physician"},
-                                    {code: "509611", price: 0.00, flatRateType: "physiotherapist"},
-                                    {code: "409614", price: 0.00, flatRateType: "nurse"},
-                                    {code: "109594", price: 0.00, flatRateType: "ptd"}
-                                ],
-                                _.compact(
-                                    _.chain(_.get(hcp, 'flatRateTarifications', []))
-                                        .map(singleNomenclature => {
-                                            const valorisationObject = _.head(
-                                                _.orderBy(
-                                                    _
-                                                        .chain(singleNomenclature.valorisations)
-                                                        .filter(singleValorisation => {
-                                                            return (
-                                                                !!singleValorisation
-                                                                && parseFloat(_.get(singleValorisation, "reimbursement", 0))
-                                                                && (
-                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).isBefore(moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month')) ||
-                                                                    (moment(_.trim(_.get(singleValorisation, "startOfValidity", "0")), "YYYYMMDD").startOf('month')).format("YYYYMMDD") === moment(_.trim(valorisationMonth), "YYYYMMDD").startOf('month').format("YYYYMMDD")
-                                                                )
-                                                            )
-
-                                                        })
-                                                        .value(),
-                                                    ["startOfValidity"],
-                                                    ["desc"]
-                                                )
-                                            )
-                                            return parseFloat(_.get(valorisationObject, "reimbursement", 0)) ? {
-                                                code: _.trim(_.get(singleNomenclature, "code")),
-                                                label: _.get(singleNomenclature, "label"),
-                                                flatRateType: _.trim(_.get(singleNomenclature, "flatRateType")),
-                                                price: parseFloat(_.get(valorisationObject, "reimbursement", 0)),
-                                                valorisationMonth: parseInt(valorisationMonth)
-                                            } : false
-                                        })
-                                        .value()
-                                )
-                            )
-                        }
-                    })
-
-                    _.get(this, 'listOfInvoice', []).map(inv => {
-                        const currentValorisation = valorisationList.find(val => _.get(val, 'month', null) === _.get(inv, 'invoiceDate', ''))
-                        _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
-                            _.assign(ic, {
-                                pending: false,
-                                resent: false,
-                                reimbursement: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00),
-                                totalAmount: _.get(_.get(currentValorisation, 'valorisations', []).find(val => _.get(val, 'code', null) === _.get(ic, 'code', '')), 'price', 0.00)
-                            })
-                        })
-                        _.assign(_.get(inv, 'invoice', {}), {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
-                        prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(_.get(inv, 'invoice', {})).then(inv => _.concat(listOfModifiedInv, inv)))
-                    })
-
-                    prom.then(listOfModifiedInv => {
-                        console.log(listOfModifiedInv)
-                        this.set('isLoading', false)
-                        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
-                    })
-                })
-            }
-
-            _deleteDoubleInvoice() {
-                let prom = Promise.resolve()
-                return prom
-                    .then(() => _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'invoiceDate'), invByDate => _.map(_.groupBy(invByDate, 'patientId'), invs => _.map((invs || []).slice(1), "invoiceId"))))
-                    .then(invoiceIdsToBeDeleted => _.chain(invoiceIdsToBeDeleted).flattenDeep().uniq().compact().value())
-                    .then(invoiceIdsToBeDeleted => {
-                        _.map(invoiceIdsToBeDeleted, inv => prom = prom.then(() => this.api.invoice().deleteInvoice(inv).then(inv => console.log("Invoice successfully deleted: " + inv))))
-                        return prom.then(() => console.log("----------------------------------------\nAll double invoices are deleted"))
-                    })
             }
 
         }
