@@ -617,6 +617,26 @@
                 height: calc(100% - 50px);
             }
 
+            .modalDialog{
+                height: 350px;
+                width: 600px;
+            }
+
+            .modalDialogContent{
+                height: calc(100% - 69px);
+                width: auto;
+                margin: 0;
+                background-color: white;
+                position: relative;
+                padding: 10px;
+            }
+
+            .sendingSpinner{
+                height: 100px!important;
+                width: 100px!important;
+                margin: auto;
+            }
+
 
         </style>
 
@@ -1005,6 +1025,15 @@
 
         </paper-dialog>
 
+        <paper-dialog class="modalDialog" id="loadingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('','Récupération des données',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <div class="sendingSpinner">
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                </div>
+            </div>
+        </paper-dialog>
+
     </template>
     <script>
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models';
@@ -1190,6 +1219,10 @@
                     selectedDocumentId:{
                         type: String,
                         value: null
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
                     }
 
                 };
@@ -1214,6 +1247,8 @@
             }
 
             open(){
+                this.set('isLoading', true)
+                this.shadowRoot.querySelector('#loadingDialog').open()
                 const carePathCode = ["BE-THESAURUS|10025768|3.1.0", "BE-THESAURUS|10119104|3.1.0"]
                 ;(_.get(this.selectedCarePathInfo, 'linkedHeId', null) && _.get(this.selectedCarePathInfo, 'carePathId', null) ? this.api.helement().getHealthElement(_.get(this.selectedCarePathInfo, 'linkedHeId', null)) : Promise.resolve({}))
                  .then(he => Promise.all([he, this._getCurrentCareTeam()]))
@@ -1326,6 +1361,8 @@
                  .finally(() => {
                      this.set('availablePackageOfProcedure', _.get(this, 'packageOfProcedure', []).filter(pack => _.get(pack, 'qualifiedLinks.relatedCode', null).find(code => code === _.get(_.get(this, 'selectedHealthElement.codes', []).find(c => c.type === "BE-THESAURUS"), 'id', null))))
                      this.set('contactsOfCarePath',this.contacts.filter(c => c.healthElements && c.healthElements.find(eh => eh.codes && eh.codes.find(c => c.type === "BE-THESAURUS" && c.id === _.get(this.selectedCarePathType, 'linkedHe.id', null)))).map(c => _.merge(c, {contactYear: this.api.moment(c.openingDate).format('YYYY')})))
+                     this.shadowRoot.querySelector('#loadingDialog').close()
+                     this.set('isLoading', false);
                      this._initializeChartsDataProvider()
                      this.$['care-path-detail'].open()
                  })
