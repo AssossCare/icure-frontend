@@ -418,6 +418,7 @@
             <div class="panel-button">
                 <template is="dom-if" if="[[!isLoading]]" restamp="true">
                     <div class="hidden">
+                        <paper-button class="button button--other " on-tap="_setLastInvoicingDate">[[localize('','Set last invoicing date',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_deleteDoubleInvoice">[[localize('','Delete double invoice',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_deleteInvoicesToBeSend">[[localize('del_unsent','Delete All Unsent',language)]]</paper-button>
                         <paper-button class="button button--other " on-tap="_markAsSent">[[localize('del_unsent','Mark as sent',language)]]</paper-button>
