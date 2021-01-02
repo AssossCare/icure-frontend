@@ -3647,6 +3647,7 @@
                 if (this.selectedInvoice && (this.selectedInvoice.invoiceDate !== dateInt)) {
                     if (dateInt <= dateNow) {
                         this.set('selectedInvoice.invoiceDate', dateInt)
+                        _.get(this,"selectedInvoice.invoicingCodes",[]).map(code => code.dateCode = dateInt)
                     } else {
                         this.$['invoice-date'].set(Date.now())
                     }

@@ -201,7 +201,7 @@
                         <paper-input label="[[localize('nomen','Prestation code',language)]]" value="{{nomenclature}}" ></paper-input>
                         <vaadin-date-picker label="[[localize('prest-dat','Encounter date',language)]]" value="{{encounterDate}}" i18n="[[i18n]]"></vaadin-date-picker>
                             <vaadin-checkbox checked="{{asSupervisor}}">[[localize('in_name_sup','In the name of the supervisor',language)]]</vaadin-checkbox>
-                            <paper-button class="action" on-tap="_dmgNotify" disabled="[[isLoading]]">[[localize('dmg_not','Notify',language)]]</paper-button>
+
 
                             <template is="dom-if" if="{{notifyDmgResp}}">
                                 <template is="dom-if" if="{{_hasErrors(notifyDmgResp.errors)}}">
@@ -227,6 +227,9 @@
             </iron-pages>
             <div class="buttons">
                 <ht-spinner active="[[isLoading]]"></ht-spinner>
+                <template is="dom-if" if="[[_isNotifyPage(tabs)]]">
+                    <paper-button class="action button button--save" on-tap="_dmgNotify" disabled="[[isLoading]]">[[localize('dmg_not','Notify',language)]]</paper-button>
+                </template>
                 <paper-button class="button" dialog-dismiss>[[localize('clo','Close',language)]]</paper-button>
             </div>
         </paper-dialog>
@@ -736,6 +739,10 @@
 
             close() {
                 this.$.dialog.close();
+            }
+
+            _isNotifyPage(){
+                return this.tabs===1
             }
 
 
