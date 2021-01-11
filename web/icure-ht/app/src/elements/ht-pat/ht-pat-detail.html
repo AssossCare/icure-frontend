@@ -6660,6 +6660,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             flatrateMsgChanged(value){
+                // Don't bother
+                return
                 const trimmedValue = value && value.trim()
                 if(trimmedValue && trimmedValue.length) {
                     this.$["flatrate-notification"].classList.add('notification')
