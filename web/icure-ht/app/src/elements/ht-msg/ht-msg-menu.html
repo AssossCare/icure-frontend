@@ -580,18 +580,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
             <!-- Flatrate invoicing as user (via parent hcp id)-->
-            <template is="dom-if" if="[[!isAMedicalHouse]]">
-                <template is="dom-if" if="[[isParentAMedicalHouse]]">
-                    <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
-                        <collapse-button id="flatRateInvoicingListingBoxCollapse">
-                            <paper-item id="flatRateInvoicingListingBox2" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBox2Tapped" elevation="">
-                                <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
-                                <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
-                            </paper-item>
-                            <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
-                                <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
-                            </paper-listbox>
-                        </collapse-button>
+            <template is="dom-if" if="[[doNotShowThisAnyMore]]">
+                <template is="dom-if" if="[[!isAMedicalHouse]]">
+                    <template is="dom-if" if="[[isParentAMedicalHouse]]">
+                        <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
+                            <collapse-button id="flatRateInvoicingListingBoxCollapse">
+                                <paper-item id="flatRateInvoicingListingBox2" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBox2Tapped" elevation="">
+                                    <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
+                                    <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                                </paper-item>
+                                <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
+                                    <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
+                                </paper-listbox>
+                            </collapse-button>
+                        </template>
                     </template>
                 </template>
             </template>
@@ -599,34 +601,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
             <!-- Flatrate invoicing -->
-            <template is="dom-if" if="[[isAMedicalHouse]]">
-                <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
-                    <collapse-button id="flatRateInvoicingListingBoxCollapse">
-                        <paper-item id="flatRateInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBoxTapped" elevation="">
-                            <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
-                            <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
-                        </paper-item>
-                        <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
-                            <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
-                            <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
-                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j3"><div class="one-line-menu list-title"><iron-icon icon="view-headline"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_listing','Export listing',language)]]</span></div></paper-item>
-                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="archivej3"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_archives_listing','Archives listing',language)]]</span></div></paper-item>
-                                <hr class="menuHr"/>
-                            </template>
+            <template is="dom-if" if="[[doNotShowThisAnyMore]]">
+                <template is="dom-if" if="[[isAMedicalHouse]]">
+                    <template is="dom-if" if="[[medicalHouseBillingTypeIsFlatRate]]">
+                        <collapse-button id="flatRateInvoicingListingBoxCollapse">
+                            <paper-item id="flatRateInvoicingListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="_flatRateInvoivingBoxTapped" elevation="">
+                                <div class="one-line-menu list-title"><iron-icon icon="vaadin:euro"></iron-icon><span class="force-left force-ellipsis box-txt">[[localize('flatrateInvoicing','Facturation au forfait',language)]]</span></div>
+                                <paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>
+                            </paper-item>
+                            <paper-listbox id="flatRateInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoicingSelectionIndex}}" selected-item="{{flatRateInvoicingSelectionItem}}" selectable="paper-item">
+                                <paper-item class="one-line-menu menu-item" id="e_flatraterptOut" data-status="rpt"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_report','Report',language)]]</span></div></paper-item>
+                                <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
+                                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j3"><div class="one-line-menu list-title"><iron-icon icon="view-headline"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_listing','Export listing',language)]]</span></div></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="archivej3"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('_e_flatrateinv_archives_listing','Archives listing',language)]]</span></div></paper-item>
+                                    <hr class="menuHr"/>
+                                </template>
 
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[j20_batchCounter.error]]</span></paper-item>
-                            <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
-                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
-                            </template>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[j20_batchCounter.pending]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[j20_batchCounter.rejected]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.partiallyAccepted]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_accept"><div class="one-line-menu list-title"><iron-icon icon="check-circle"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_accept','Accepted',language)]]</span></div> <span class="batchNumber j20_batchNumber batchAccepted">[[j20_batchCounter.fullyAccepted]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_archive"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_archive','Archived',language)]]</span></div> <span class="batchNumber j20_batchNumber batchArchived">[[j20_batchCounter.archived]]</span></paper-item>
-                            <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reset"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reset','Reset',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRed">[[j20_batchCounter.reset]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[j20_batchCounter.error]]</span></paper-item>
+                                <template is="dom-if" if="[[_isBeforeEInvoicingDate()]]">
+                                    <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">+</span></paper-item>
+                                </template>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[j20_batchCounter.pending]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[j20_batchCounter.rejected]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_partiallyAccepted"><div class="one-line-menu list-title"><iron-icon icon="settings-backup-restore"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_partiallyAccepted','Partially accepted batches',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeSend">[[j20_batchCounter.partiallyAccepted]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_accept"><div class="one-line-menu list-title"><iron-icon icon="check-circle"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_accept','Accepted',language)]]</span></div> <span class="batchNumber j20_batchNumber batchAccepted">[[j20_batchCounter.fullyAccepted]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_archive"><div class="one-line-menu list-title"><iron-icon icon="markunread-mailbox"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_archive','Archived',language)]]</span></div> <span class="batchNumber j20_batchNumber batchArchived">[[j20_batchCounter.archived]]</span></paper-item>
+                                <paper-item class="one-line-menu menu-item" id="e_flatrateinvOut" data-status="j20_reset"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reset','Reset',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRed">[[j20_batchCounter.reset]]</span></paper-item>
 
-                        </paper-listbox>
-                    </collapse-button>
+                            </paper-listbox>
+                        </collapse-button>
+                    </template>
                 </template>
             </template>
 
