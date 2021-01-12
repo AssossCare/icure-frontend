@@ -2788,7 +2788,7 @@
                         xlsWorkBook.Props = {Title: "MH Invoicing patient list", Author: "Topaz"}
                         XLSX.utils.book_append_sheet(xlsWorkBook, XLSX.utils.json_to_sheet(patients), 'MH Invoicing patient list')
 
-                        return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+                        return new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xlsx', type: 'buffer'}))
 
                     })
                     .then(xlsFile => !xlsFile ? promResolve : this.api.triggerFileDownload(xlsFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  "mh-invoicing-patient-list-" + moment().format("YYYYMMDD-HHmmss") + ".xls"))
