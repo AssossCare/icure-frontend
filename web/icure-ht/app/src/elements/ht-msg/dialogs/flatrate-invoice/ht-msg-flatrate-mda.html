@@ -2175,6 +2175,7 @@
                 return _.get(item, "requestErrorMessage", "").toLowerCase().includes("no_facet") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("missing_nameid_format") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("unknown_niss_routing") ||
+                    _.get(item, "requestErrorMessage", "").toLowerCase().includes("iosm_exception") ||
                     !_.get(item, "patientMatchedWithMdaResponse", false)
             }
 
