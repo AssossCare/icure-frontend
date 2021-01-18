@@ -190,6 +190,15 @@
 		{"nihii": "89250490111", "name": "MAISON MEDICALE LA POUDRIERE", "address": {"street":  "Rue de la Poudrière 25", "zip":  "5100", "city" : "Namur", "country" : "Belgique", "telecom": {"phone":  "081 30 69 11"}}},
 		{"nihii": "89950177111", "name": "MAISON MEDICALE LE CAR D'OR", "address": {"street":  "Avenue de Jemappes 135", "zip":  "7000", "city" : "Mons", "country" : "Belgique", "telecom": {"phone":  "065 34 88 01"}}},
 		{"nihii": "89950276101", "name": "GENEESKUNDE VOOR HET VOLK DEURNE", "address": {"street":  "Sint-Rochusstraat 57", "zip":  "2100", "city" : "Antwerpen", "country" : "Belgique", "telecom": {"phone":  "03 320 85 20"}}},
-		{"nihii": "82653995111", "name": "MAISON MEDICALE SAINT JOSSE", "address": {"street":  "Place Saint-Josse 15", "zip":  "1210", "city" : "Bruxelles", "country" : "Belgique", "telecom": {"phone":  "02 899 69 62"}}}
+		{"nihii": "82653995111", "name": "MAISON MEDICALE SAINT JOSSE", "address": {"street":  "Place Saint-Josse 15", "zip":  "1210", "city" : "Bruxelles", "country" : "Belgique", "telecom": {"phone":  "02 899 69 62"}}},
+		{"nihii": "81152079101", "name": "Medisch Centrum Onspraktijk", "address": {"street":  "Michel Witlockstraat 1 B 202", "zip":  "2610", "city" : "Wilrijk", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "82750403111", "name": "Maison Médicale d’Auderghem", "address": {"street":  "rue Edouard Henrard 19", "zip":  "1160", "city" : "Auderghem", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "83450088111", "name": "Eerstelijnsgezondheidszorgcentrum De Piramide", "address": {"street":  "Leopoldstraat 70", "zip":  "8930", "city" : "Menen", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "84451069111", "name": "Wijkgezondheidscentrum ‘t Vlot", "address": {"street":  "New Orleansstraat 271", "zip":  "9000", "city" : "Gent", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "86253487111", "name": "Maison Médicale de Jemeppe", "address": {"street":  "Esplanade du Pont 1 / B1", "zip":  "4101", "city" : "Jemeppe-sur-Meuse", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "86253586101", "name": "Centre de Santé Guillemins", "address": {"street":  "Boulevard d’Avroy 262", "zip":  "4000", "city" : "Liège", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "86253685101", "name": "Centre de Santé de l’Ourthe", "address": {"street":  "avenue des Ardennes 24/06", "zip":  "4130", "city" : "Tilff", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "86253784101", "name": "Centre Médical Mouawad", "address": {"street":  "Rue de Hesbaye 149", "zip":  "4000", "city" : "Liège", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "87150441101", "name": "Medisch Huis ‘t Rondpunt", "address": {"street":  "Meerlaarstraat 62", "zip":  "2430", "city" : "Laakdal", "country" : "Belgique", "telecom": {"phone":  ""}}}
 	]
 }
