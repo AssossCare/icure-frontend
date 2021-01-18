@@ -172,7 +172,7 @@
 		{"nihii": "86350784111", "name": "MAISON MEDICALE LE BRASERO", "address": {"street":  "Rue du Palais 151", "zip":  "4800", "city" : "Verviers", "country" : "Belgique", "telecom": {"phone":  "087 68 67 49"}}},
 		{"nihii": "82951628111", "name": "MAISON MEDICALE MD", "address": {"street":  "Rue du Laekenveld 43", "zip":  "1080", "city" : "Bruxelles", "country" : "Belgique", "telecom": {"phone":  "02 424 33 80"}}},
 		{"nihii": "82951727111", "name": "MAISON MEDICALE MORANVILLE", "address": {"street":  "Avenue de Selliers de Moranville 84", "zip":  "1082", "city" : "Berchem-Sainte-Agathe", "country" : "Belgique", "telecom": {"phone":  "02 346 06 26"}}},
-		{"nihii": "82951826111", "name": "MAISON MEDICALE SOINS POUR TOUS", "address": {"street":  "", "zip":  "", "city" : "", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "82951826111", "name": "MAISON MEDICALE SOINS POUR TOUS 1083", "address": {"street":  "Place Marguerite d'Autriche 19-21", "zip":  "1083", "city" : "GANSHOREN", "country" : "Belgique", "telecom": {"phone":  ""}}},
 		{"nihii": "82951925111", "name": "MAISON MEDICALE DE GANSHOREN", "address": {"street":  "Avenue des Gloires Nationales 81", "zip":  "1083", "city" : "Ganshoren", "country" : "Belgique", "telecom": {"phone":  "02 380 87 10"}}},
 		{"nihii": "86350883101", "name": "ÄRZTEHAUS KLOSTERSTRASSE - PRAXIS FÜR ALLGEMEINMEDIZIN", "address": {"street":  "Klosterstraße 17", "zip":  "4780", "city" : "St. Vith", "country" : "Belgique", "telecom": {"phone":  "080 33 01 99"}}},
 		{"nihii": "87150045100", "name": "MEDISCH HUIS PRAKTIJK ZONHOVERHEIDE", "address": {"street":  "Zonhoverweg 35", "zip":  "3600", "city" : "Genk", "country" : "Belgique", "telecom": {"phone":  "089 36 39 39"}}},
