@@ -1852,6 +1852,7 @@
                 </paper-menu-button>
                 <paper-button class="button button--other" on-tap="_e_exportMdaResult"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.export","Export",language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_e_mdaFlagAllAsValid"><iron-icon icon="icons:check-circle"></iron-icon> [[localize("mh_eInvoicing.flagAllAsValid","Flag all as valid",language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_e_step4SaveChanges"><iron-icon icon="icons:save"></iron-icon> [[localize("save","Save",language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button>
             </div>
 
@@ -2176,6 +2177,7 @@
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("missing_nameid_format") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("unknown_niss_routing") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("iosm_exception") ||
+                    _.get(item, "responseErrorMessage", "").toLowerCase().includes("dans la maison médicale:  (numéro inami)") ||
                     !_.get(item, "patientMatchedWithMdaResponse", false)
             }
 
@@ -3697,6 +3699,34 @@
                     ))
                     .then(()=>this._e_gotoMdaTabAndRefreshGrid(e instanceof Event ? "invalidPatients" : tabToGoFor||"invalidPatients"))
                     .finally(() => (this.set("eInvoicingStep","mdaLastCallResultsDetails")||true) && this.set("_isLoading",false))
+
+            }
+
+            _e_step4SaveChanges() {
+
+                const promResolve = Promise.resolve()
+
+                return promResolve
+                    .then(() => {
+                        this.set('_isLoading', true )
+                        this.api.setPreventLogging()
+                        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                        this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+                    })
+                    .then(() => {
+
+                        const originalMessage = _.get(this,"mdaRequestsData.originalMessage")
+                        const gridDynamicMessage = _.get(this,"mdaRequestsData.message")
+                        const attachmentToUpdate = _.get(gridDynamicMessage,"attachment")
+
+                        return !_.size(originalMessage) || !_.size(gridDynamicMessage) || !_.size(attachmentToUpdate) ? promResolve : promResolve
+                            .then(() => this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_15", "Sauvegarde des changements", this.language), icon:"arrow-forward"})||true)
+                            .then(() => retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate))))), 4, 1000, 1.5))
+                            .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+                            .catch(e=> (console.log("[ERROR] _e_step4SaveChanges",e)||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+
+                    })
+                    .then(() => (this.set('_isLoading',false)||true) && this._e_loadDataAndGetStep())
 
             }
 
