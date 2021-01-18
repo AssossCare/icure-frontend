@@ -293,8 +293,11 @@
                 </div>
             </div>
             <div class="panel-button">
-                <paper-button class="button button--other none" on-tap="_getDoubleInvoicing">[[localize('','Delete double invoicing',language)]]</paper-button>
-                <paper-button class="button button--other none" on-tap="_deleteInvoice">[[localize('','Delete invoice',language)]]</paper-button>
+                <div class="none">
+                    <paper-button class="button button--other" on-tap="_deleteInvoiceWithError" id="502255">[[localize('','Delete error code 502255',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_deleteInvoiceWithError" id="500544">[[localize('','Delete error code 500544',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_deleteInvoice">[[localize('','Delete invoice',language)]]</paper-button>
+                </div>
                 <paper-button class="button button--other" on-tap="_openConfirmCorrectAllInvoiceDialog">[[localize('inv_corr_all','Toggle all invoice',language)]]</paper-button>
             </div>
         </div>
@@ -530,23 +533,26 @@
                 })
             }
 
-            _getDoubleInvoicing(){
-                const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))
-                let invoiceToBeDeleted = []
-                listOfInvoice.map(inv => {
-                    _.size(_.get(inv, 'invoicingCodes', []).filter(ic => _.startsWith(_.get(ic, 'error', null), "502255"))) === _.size(_.get(inv, 'invoicingCodes', [])) ? invoiceToBeDeleted.push(inv.id) : null
-                })
+            _deleteInvoiceWithError(e){
+                if(_.get(e, 'target.id', null)){
+                    const errorToBeDeleted = _.get(e, 'target.id', null)
+                    const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))
+                    let invoiceToBeDeleted = []
+                    listOfInvoice.map(inv => {
+                        _.size(_.get(inv, 'invoicingCodes', []).filter(ic => _.startsWith(_.get(ic, 'error', null), errorToBeDeleted))) === _.size(_.get(inv, 'invoicingCodes', [])) ? invoiceToBeDeleted.push(inv.id) : null
+                    })
 
-                let prom = Promise.resolve([])
-                invoiceToBeDeleted.map(inv => {
-                    prom = prom.then(listOfDeletedInv => this.api.invoice().deleteInvoice(inv).then(inv => _.concat(listOfDeletedInv, inv)))
-                })
+                    let prom = Promise.resolve([])
+                    invoiceToBeDeleted.map(inv => {
+                        prom = prom.then(listOfDeletedInv => this.api.invoice().deleteInvoice(inv).then(inv => _.concat(listOfDeletedInv, inv)))
+                    })
 
-                prom.then(listOfDeletedInv => {
-                    console.log(listOfDeletedInv)
-                    this.set('isLoading', false)
-                    this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
-                })
+                    prom.then(listOfDeletedInv => {
+                        console.log(listOfDeletedInv)
+                        this.set('isLoading', false)
+                        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
+                    })
+                }
             }
 
         }
