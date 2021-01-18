@@ -199,6 +199,11 @@
 		{"nihii": "86253586101", "name": "Centre de Santé Guillemins", "address": {"street":  "Boulevard d’Avroy 262", "zip":  "4000", "city" : "Liège", "country" : "Belgique", "telecom": {"phone":  ""}}},
 		{"nihii": "86253685101", "name": "Centre de Santé de l’Ourthe", "address": {"street":  "avenue des Ardennes 24/06", "zip":  "4130", "city" : "Tilff", "country" : "Belgique", "telecom": {"phone":  ""}}},
 		{"nihii": "86253784101", "name": "Centre Médical Mouawad", "address": {"street":  "Rue de Hesbaye 149", "zip":  "4000", "city" : "Liège", "country" : "Belgique", "telecom": {"phone":  ""}}},
-		{"nihii": "87150441101", "name": "Medisch Huis ‘t Rondpunt", "address": {"street":  "Meerlaarstraat 62", "zip":  "2430", "city" : "Laakdal", "country" : "Belgique", "telecom": {"phone":  ""}}}
+		{"nihii": "87150441101", "name": "Medisch Huis ‘t Rondpunt", "address": {"street":  "Meerlaarstraat 62", "zip":  "2430", "city" : "Laakdal", "country" : "Belgique", "telecom": {"phone":  ""}}},
+		{"nihii": "82653896111", "name": "MAISON DE SANTE POTAGER", "address": {"street":  "rue Potagère 115", "zip":  "1210", "city" : "Saint-Josse-ten-Noode", "country" : "Belgique", "telecom": {"phone":  "02 452 73 92"}}},
+		{"nihii": "82550364111", "name": "Maison de Santé Clémentine", "address": {"street":  "Avenue des Combattants 72", "zip":  "1340", "city" : "OTTIGNIES", "country" : "Belgique", "telecom": {"phone":  "010 75 07 25"}}},
+		{"nihii": "82550562111", "name": "Maison Médicale de Limal", "address": {"street":  "rue Joséphine Rauscent 16", "zip":  "1300", "city" : "Wavre", "country" : "Belgique", "telecom": {"phone":  "010 56 04 60"}}},
+		{"nihii": "82851365111", "name": "Maison Medicale Soins Pour Tous 1070", "address": {"street":  "Chaussée de Mons 814", "zip":  "1070", "city" : "Anderlecht", "country" : "Belgique", "telecom": {"phone":  "02 880 01 55"}}},
+		{"nihii": "82651226111", "name": "MM Bruxelles Riches-Claires", "address": {"street":  "Rue de la Buanderie 16", "zip":  "1000", "city" : "Bruxelles", "country" : "Belgique", "telecom": {"phone":  "02 513 59 94"}}}
 	]
 }
