@@ -524,7 +524,7 @@
                     filter: function (proceduresFilterValue) {
                         const keywords = _.trim(proceduresFilterValue).split(" ")
                         const normalizedKeywords = _.trim(proceduresFilterValue).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g,' ').split(" ")
-                        return Promise.all(_.map(keywords, keyword => this.api.code().findPaginatedCodesByLabel('be', 'BE-THESAURUS-PROCEDURES', _.get(this,"language", "fr"), keyword, null, null, 50)))
+                        return Promise.all(_.map(keywords, keyword => this.api.code().findPaginatedCodesByLabel('be', 'BE-THESAURUS-PROCEDURES', _.get(this,"language", "fr"), keyword, null, null, 100)))
                             .then(results => _
                                 .chain(results)
                                 .map("rows")
