@@ -554,7 +554,7 @@
 
             _deleteInvoice(){
                 let prom = Promise.resolve([])
-                this._getInvoiceOfOa().map(inv => {
+                _.get(this, 'listOfInvoice', []).map(inv => {
                     prom = prom.then(listOfDeletedInv => this.api.invoice().deleteInvoice(_.get(inv, 'invoice.id', {})).then(inv => _.concat(listOfDeletedInv, inv)))
                 })
                 prom.then(listOfDeletedInv => {
@@ -567,7 +567,7 @@
             _deleteInvoiceWithError(e){
                 if(_.get(e, 'target.id', null)){
                     const errorToBeDeleted = _.get(e, 'target.id', null)
-                    const listOfInvoice =  this._getInvoiceOfOa().map(inv => _.get(inv, 'invoice', {}))
+                    const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))
                     let invoiceToBeDeleted = []
                     listOfInvoice.map(inv => {
                         _.size(_.get(inv, 'invoicingCodes', []).filter(ic => _.startsWith(_.get(ic, 'error', null), errorToBeDeleted))) === _.size(_.get(inv, 'invoicingCodes', [])) ? invoiceToBeDeleted.push(inv.id) : null
