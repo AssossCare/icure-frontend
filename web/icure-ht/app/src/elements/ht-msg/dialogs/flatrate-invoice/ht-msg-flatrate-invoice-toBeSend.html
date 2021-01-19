@@ -996,13 +996,13 @@
                                 let subProm = Promise.resolve()
                                 invoices.map(inv => {
                                     //remove tag flatRateLastInvoiced
-                                    _.remove(_.get(inv, 'patient.tags', []).find(tag => tag.type === "flatRateLastInvoiced"))
+                                    _.remove(_.get(inv, 'patient.tags', []).find(tag => tag && tag.type && tag.type === "flatRateLastInvoiced"))
                                     !_.get(inv, 'patient.tags', null) ? _.assign(inv.patient, {tags: []}) : null
 
                                     //added new tag flatRateLastInvoiced
                                     inv.patient.tags.push({
                                         type: "flatRateLastInvoiced",
-                                        code: moment().startOf('month').format("YYYYMMDD")
+                                        code: moment(_.trim(_.get(inv, "invoiceDate")), "YYYYMMDD").startOf('month').format("YYYYMMDD")
                                     })
 
                                     //modify patient
