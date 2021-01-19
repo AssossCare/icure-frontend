@@ -1620,7 +1620,7 @@
                                              label="[[localize('prescriber_nihii','Prescriber nihii',language)]]"
                                              value="{{activeNmclItem.prescriberNihii}}" readOnly="[[isInvoiceClosed]]"
                                                validator="ht-inami-validator" theme="always-float-label" auto-validate></vaadin-text-field>
-                                <template is="dom-if" if="[[_isSelectedInvoiceEattest(selectedInvoice.*)]]"><vaadin-date-picker id="prescription-date" label="[[localize('prescr_date','prescription date',language)]]" value="{{prescriptionDateAsString}}" i18n="[[i18n]]" readOnly="[[isInvoiceClosed]]"></vaadin-date-picker></template>
+                                <vaadin-date-picker id="prescription-date" label="[[localize('prescr_date','prescription date',language)]]" value="{{prescriptionDateAsString}}" i18n="[[i18n]]" readOnly="[[isInvoiceClosed]]"></vaadin-date-picker>
                             </template>
                         </div>
                         <div class="flex-container-nmcl">

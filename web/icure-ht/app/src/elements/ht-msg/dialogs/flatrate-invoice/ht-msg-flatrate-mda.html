@@ -1852,6 +1852,7 @@
                 </paper-menu-button>
                 <paper-button class="button button--other" on-tap="_e_exportMdaResult"><iron-icon icon="icons:info-outline"></iron-icon> [[localize("mh_eInvoicing.export","Export",language)]]</paper-button>
                 <paper-button class="button button--other" on-tap="_e_mdaFlagAllAsValid"><iron-icon icon="icons:check-circle"></iron-icon> [[localize("mh_eInvoicing.flagAllAsValid","Flag all as valid",language)]]</paper-button>
+                <paper-button class="button button--other" on-tap="_e_step4SaveChanges"><iron-icon icon="icons:save"></iron-icon> [[localize("save","Save",language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_e_step4SaveChangesAndGoToStep5"><iron-icon icon="icons:save"></iron-icon> [[localize("saveChangesAndGoToNextStep","Save changes and go to next step",language)]]</paper-button>
             </div>
 
@@ -2176,6 +2177,7 @@
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("missing_nameid_format") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("unknown_niss_routing") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("iosm_exception") ||
+                    _.get(item, "responseErrorMessage", "").toLowerCase().includes("dans la maison médicale:  (numéro inami)") ||
                     !_.get(item, "patientMatchedWithMdaResponse", false)
             }
 
@@ -2741,6 +2743,62 @@
                 // T + 72h -> If not -> allow going for next step
                 return mdaRequestsData && mdaRequestsData.everGotChecked && moment(_.cloneDeep(requestDate),"YYYYMMDDHHmmss").add(72,"hours").isBefore(moment())
 
+            }
+
+            _e_exportMdaResultIntoCSV(){
+                this.set("_isLoadingSmall",true)
+
+                let prom = Promise.resolve()
+                const promResolve = Promise.resolve()
+
+                const clonedResult = _.cloneDeep(_.get(this,"rawMdaResultsGridData",[]))
+                _.chunk(clonedResult,100).map(chunked => {
+                    prom = prom
+                        .then(() => this.api.patient().getPatientsWithUser(this.user,{ids:chunked.map(data => data.patientId)}).then(patients => patients.map(patient =>Promise.resolve(_.assign(clonedResult.find(result =>result.patientId===patient.id),{patient : patient})))))
+                        .catch(()=> console.log("error getPatient"))
+                })
+
+                prom.then(() =>{
+                    const cols=["Name", "NISS", "OA", "CT1-2", "identificationNumber", "startDateInsurance", "endDateInsurance", "numberContract", "statutContract", "startCoverageDate", "endCoverageDate", "startContractDate", "endContractDate","contractType", "facturable", "statutAssurability", "message", "id"]
+
+
+
+                    const data = clonedResult.reduce((accumulator, result) =>{
+                        let data = []
+                        const insurance = _.get(result,"patient.insurabilities",[]).find(ins => ins && ins.startDate && this.api.moment(ins.startDate).isSameOrBefore(moment(),"day") && (!ins.endDate || this.api.moment(ins.endDate).isSameOrAfter(moment(),"day")))
+                        const contract = _.get(result,"patient.medicalHouseContracts",[]).find(contract => contract && contract.startOfCoverage && this.api.moment(contract.startOfCoverage).isSameOrBefore(moment(),"day") && (!contract.endOfCoverage || this.api.moment(contract.endOfCoverage).isSameOrAfter(moment(),"day")))
+                        data.push(_.get(result,"nameHr",""))
+                        data.push(_.get(result,"ssinHr",""))
+                        data.push(_.get(insurance,"parameters.tc1","")+ " - "+_.get(insurance,"parameters.tc2",""))
+                        data.push(_.get(insurance,"identificationNumber",""))
+                        data.push( _.get(insurance,"startDate","") ? this.api.formatedMoment(_.get(insurance,"startDate","")) : "")
+                        data.push(_.get(insurance,"endDate","") ? this.api.formatedMoment(_.get(insurance,"endDate","")) : "")
+                        data.push( _.get(contract,"contractId",""))
+                        data.push(this._e_getSubscriptionStatus(contract))
+                        data.push(_.get(contract,"startOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"startOfCoverage","")) : "")
+                        data.push(_.get(contract,"endOfCoverage",false) ? this.api.formatedMoment(_.get(contract,"endOfCoverage","")) : "")
+                        data.push(_.get(contract,"startOfContract",false) ? this.api.formatedMoment(_.get(contract,"startOfContract","")) : "")
+                        data.push(_.get(contract,"endOfContract",false) ? this.api.formatedMoment(_.get(contract,"endOfContract","")) : "")
+                        data.push((_.get(contract,"gp",false) ? "M" :"") + (_.get(contract,"kine",false) ? "K" :"") + (_.get(contract,"nurse",false) ? "I" :""))
+                        data.push(_.get(result,"patientHasValidInsurabilityBoolean",false) ? "oui" : "non")
+                        data.push(_.get(result,"patientInsurabilityStatusHr",""))
+                        data.push(_.get(result,"message",""))
+                        data.push(_.get(result,"patient.id",""))
+                        return accumulator+data.join(";")+"\n"
+                    },cols.join(";")+"\n")
+
+                    var fileBlob = new Blob([data], {type: "text/csv"})
+                    var downloadLink = document.createElement("a")
+                    document.body.appendChild(downloadLink)
+                    downloadLink.style = "display: none"
+
+                    var urlObject = window.URL.createObjectURL(fileBlob)
+
+                    downloadLink.href = urlObject
+                    downloadLink.download = "mda-result.csv"
+                    downloadLink.click()
+                    window.URL.revokeObjectURL(urlObject)
+                })
             }
 
             _e_exportMdaResult() {
@@ -3697,6 +3755,34 @@
                     ))
                     .then(()=>this._e_gotoMdaTabAndRefreshGrid(e instanceof Event ? "invalidPatients" : tabToGoFor||"invalidPatients"))
                     .finally(() => (this.set("eInvoicingStep","mdaLastCallResultsDetails")||true) && this.set("_isLoading",false))
+
+            }
+
+            _e_step4SaveChanges() {
+
+                const promResolve = Promise.resolve()
+
+                return promResolve
+                    .then(() => {
+                        this.set('_isLoading', true )
+                        this.api.setPreventLogging()
+                        this.dispatchEvent(new CustomEvent('idle', {bubbles: true, composed: true}))
+                        this._setLoadingMessage({ message:this.localize('please_wait',this.language), icon:"watch-later", updateLastMessage: true, done:true})
+                    })
+                    .then(() => {
+
+                        const originalMessage = _.get(this,"mdaRequestsData.originalMessage")
+                        const gridDynamicMessage = _.get(this,"mdaRequestsData.message")
+                        const attachmentToUpdate = _.get(gridDynamicMessage,"attachment")
+
+                        return !_.size(originalMessage) || !_.size(gridDynamicMessage) || !_.size(attachmentToUpdate) ? promResolve : promResolve
+                            .then(() => this._setLoadingMessage({ message:this.localize("mh_eInvoicing.mda.step_15", "Sauvegarde des changements", this.language), icon:"arrow-forward"})||true)
+                            .then(() => retry.retry(() => (this.api.document().setAttachment(_.trim(_.get(gridDynamicMessage,"document.id")),(_.get(gridDynamicMessage,"edKeys")||[]).join(','), this.api.crypto().utils.ua2ArrayBuffer(this.api.crypto().utils.utf82ua(JSON.stringify(attachmentToUpdate))))), 4, 1000, 1.5))
+                            .then(() => this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+                            .catch(e=> (console.log("[ERROR] _e_step4SaveChanges",e)||true) && this._setLoadingMessage({ message:this.localize('mh_eInvoicing.mda.step_15_done',this.language), icon:"check-circle", updateLastMessage: true, done:true}))
+
+                    })
+                    .then(() => (this.set('_isLoading',false)||true) && this._e_loadDataAndGetStep())
 
             }
 

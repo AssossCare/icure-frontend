@@ -5993,7 +5993,7 @@
     "mh_eInvoicing.downloadResponses": "Télécharger les réponses",
     "mh_eInvoicing.technicalDetails": "Détails techniques",
     "mh_eInvoicing.export": "Exporter le résultat",
-    "mh_eInvoicing.flagAllAsValid": "Marquer tous les patients comme facturables",
+    "mh_eInvoicing.flagAllAsValid": "Tout marquer comme facturable",
     "mh_flatrate_history" : "Historique facturation au forfait",
     "mda_no_facet": "Les données n’ont pas pu être vérifiées ",
     "conv_start_date": "date de commencement de la convention",
