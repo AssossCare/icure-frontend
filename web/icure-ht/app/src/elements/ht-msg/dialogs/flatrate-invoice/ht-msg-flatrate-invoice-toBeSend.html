@@ -1002,7 +1002,7 @@
                                     //added new tag flatRateLastInvoiced
                                     inv.patient.tags.push({
                                         type: "flatRateLastInvoiced",
-                                        code: moment(_.trim(_.get(inv, "invoiceDate")), "YYYYMMDD").startOf('month').format("YYYYMMDD")
+                                        code: moment(_.trim(_.get(inv, "invoice.invoiceDate")), "YYYYMMDD").startOf('month').format("YYYYMMDD")
                                     })
 
                                     //modify patient
