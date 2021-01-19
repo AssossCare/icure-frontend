@@ -246,8 +246,8 @@
 
         <div class="panel">
             <div class="panel-title">
-                [[localize('inv-to-be-corrected', 'To be corrected', language)]]
-                <span class="batchNumber batchToBeCorrected">{{_forceZeroNum(listOfInvoice.length)}}</span>
+                [[localize('inv-to-be-corrected', 'To be corrected', language)]] (OA [[selectedOa.oa]])
+                <span class="batchNumber batchToBeCorrected">{{numberOfInvoice}}</span>
             </div>
             <div class="panel-search">
                 <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
@@ -357,6 +357,25 @@
                     filter:{
                         type: String,
                         value: null
+                    },
+                    invoicesStatus:{
+                        type: String,
+                        value: null
+                    },
+                    numberOfInvoice:{
+                        type: Number,
+                        value: 0
+                    },
+                    selectedOa:{
+                        type: Object,
+                        value: {
+                            oa: null,
+                            range: {
+                                start: null,
+                                end: null,
+                                exclude: null
+                            }
+                        }
                     }
                 };
             }
@@ -366,19 +385,29 @@
             }
 
             static get observers() {
-                return ['_initialize(api, user, listOfInvoice)','_filterValueChanged(filter)'];
+                return ['_initialize(api, user, listOfInvoice, invoicesStatus)','_filterValueChanged(filter)'];
             }
 
             ready() {
                 super.ready();
             }
 
-            _forceZeroNum(num) {
-                return (!num) ? '0' : num.toString()
+            _initialize(){
+                const oa = _.last(_.split(_.get(this, 'invoicesStatus', null), '_'))
+                this.set('selectedOa', {
+                    oa: oa,
+                    range: {
+                        start: oa === "306" ? "306" : oa.charAt(0)+"00",
+                        end: oa === "306" ? "306" : oa.charAt(0)+"99",
+                        exclude: oa === "300" ? "306" : null
+                    }
+                })
+                this.set('filteredListOfInvoice', this._getInvoiceOfOa())
+                this.set('numberOfInvoice', this._getNumberOfInvoice())
             }
 
-            _initialize(){
-                this.set('filteredListOfInvoice', _.get(this, 'listOfInvoice', []))
+            _getInvoiceOfOa(){
+                return _.get(this, 'listOfInvoice', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= _.parseInt(_.get(this, 'selectedOa.range.start', 0)) && _.parseInt(_.get(inv, 'insuranceCode', null)) <= _.parseInt(_.get(this, 'selectedOa.range.end', 0)) && _.parseInt(_.get(inv, 'insuranceCode', null)) !== _.parseInt(_.get(this, 'selectedOa.range.exclude', 8)))
             }
 
             _filterValueChanged(){
@@ -388,7 +417,7 @@
 
                     setTimeout(() => {
                         if(parseInt(_.get(keywordsString,"length",0)) > 2) {
-                            const invoiceSearchResults =  _.chain(_.get(this, "listOfInvoice", []))
+                            const invoiceSearchResults =  _.chain(this._getInvoiceOfOa())
                                 .chain(_.get(this, "filter", []))
                                 .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
                                 .compact()
@@ -397,9 +426,11 @@
                                 .value()
                             this.set('filteredListOfInvoice', _.sortBy(invoiceSearchResults, ['insuranceCode'], ['asc']))
                         }else{
-                            this.set('filteredListOfInvoice', _.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']))
+                            this.set('filteredListOfInvoice', _.sortBy(this._getInvoiceOfOa(), ['insuranceCode'], ['asc']))
                         }
                     }, 100)
+                }else{
+                    this.set('filteredListOfInvoice', _.map(_.sortBy(this._getInvoiceOfOa(), ['insuranceCode'], ['asc']), inv => inv))
                 }
             }
 
@@ -499,7 +530,7 @@
                         }
                     })
 
-                    _.get(this, 'listOfInvoice', []).map(inv => {
+                    this._getInvoiceOfOa().map(inv => {
                         const currentValorisation = valorisationList.find(val => _.get(val, 'month', null) === _.get(inv, 'invoiceDate', ''))
                         _.get(inv, 'invoice.invoicingCodes', []).map(ic => {
                             _.assign(ic, {
@@ -523,7 +554,7 @@
 
             _deleteInvoice(){
                 let prom = Promise.resolve([])
-                _.get(this, 'listOfInvoice', []).map(inv => {
+                this._getInvoiceOfOa().map(inv => {
                     prom = prom.then(listOfDeletedInv => this.api.invoice().deleteInvoice(_.get(inv, 'invoice.id', {})).then(inv => _.concat(listOfDeletedInv, inv)))
                 })
                 prom.then(listOfDeletedInv => {
@@ -536,7 +567,7 @@
             _deleteInvoiceWithError(e){
                 if(_.get(e, 'target.id', null)){
                     const errorToBeDeleted = _.get(e, 'target.id', null)
-                    const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))
+                    const listOfInvoice =  this._getInvoiceOfOa().map(inv => _.get(inv, 'invoice', {}))
                     let invoiceToBeDeleted = []
                     listOfInvoice.map(inv => {
                         _.size(_.get(inv, 'invoicingCodes', []).filter(ic => _.startsWith(_.get(ic, 'error', null), errorToBeDeleted))) === _.size(_.get(inv, 'invoicingCodes', [])) ? invoiceToBeDeleted.push(inv.id) : null
@@ -553,6 +584,10 @@
                         this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
                     })
                 }
+            }
+
+            _getNumberOfInvoice(){
+                return _.size(this._getInvoiceOfOa())
             }
 
         }

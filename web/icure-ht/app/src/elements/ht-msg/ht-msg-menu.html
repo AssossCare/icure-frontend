@@ -516,6 +516,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 right:4px;
             }
 
+            .space{
+                margin-left: 30px;
+            }
+
+            .ml10{
+                margin-left: 10px;
+            }
+
         </style>
 
         <div class="col-left">
@@ -651,7 +659,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             <!--<paper-item class="one-line-menu menu-item" id="flatRateeInvoicingMenuItem" data-status="ej20_mda_history"><div class="one-line-menu list-title"><iron-icon icon="assignment-late"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('mhEInvoicingMdaPatientCheckHistory','Historique contrôle patients (Member data)',language)]]</span></div></paper-item>-->
 
                             <hr class="menuHr"/>
-                            <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected"><div class="one-line-menu list-title"><iron-icon icon="error"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected]]</span></paper-item>
+
+                            <collapse-button id="flatRateInvoiceToBeCorrectedBoxCollapse">
+                                <paper-item id="flatRateInvoiceToBeCorrectedListingBox" slot="sublist-collapse-item" class="menu-trigger menu-item" on-tap="toggleMenu" elevation="">
+                                    <div class="one-line-menu list-title">
+                                        <iron-icon icon="error"></iron-icon>
+                                        <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected','To be corrected',language)]]</span>
+                                    </div>
+                                    <span class="batchNumber j20_batchNumber batchToBeCorrected ml10">[[flatrateBatchCounter.toBeCorrected.all]]</span>
+                                    <!--<paper-icon-button class="menu-item-icon" icon="hardware:keyboard-arrow-down" hover="none" on-tap="toggleMenu"></paper-icon-button>-->
+                                </paper-item>
+                                <paper-listbox id="flatRateeInvoicingListingBoxList" class="menu-content sublist"  selected="{{flatRateInvoiceToBeCorrectedIndex}}" selected-item="{{flatRateInvoiceToBeCorrectedSelectionItem}}" selectable="paper-item">
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_100"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_100','To be corrected (OA100)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.100]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_200"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_200','To be corrected (OA200)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.200]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_300"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_300','To be corrected (OA300)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.300]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_306"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_306','To be corrected (OA306)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.306]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_400"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_400','To be corrected (OA400)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.400]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_500"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_500','To be corrected (OA500)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.500]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_600"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_600','To be corrected (OA600)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.600]]</span></paper-item>
+                                    <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeCorrected_900"><div class="one-line-menu list-title"><span class="space"></span><span class="force-left force-ellipsis box-txt">[[localize('j20_toBeCorrected_900','To be corrected (OA900)',language)]]</span></div> <span class="batchNumber j20_batchNumber batchToBeCorrected">[[flatrateBatchCounter.toBeCorrected.900]]</span></paper-item>
+                                </paper-listbox>
+                            </collapse-button>
+
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="toBeSend"><div class="one-line-menu list-title"><iron-icon icon="send"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_toBeSend','To be send',language)]]</span></div> <!--<span class="batchNumber j20_batchNumber batchToBeSend">[[flatrateBatchCounter.xxx]]</span>--><span class="batchNumber j20_batchNumber batchToBeSend">[[flatrateBatchCounter.toBeSend]]</span></paper-item>
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="process"><div class="one-line-menu list-title"><iron-icon icon="cached"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_process','Processing',language)]]</span></div> <span class="batchNumber j20_batchNumber batchProcessed">[[flatrateBatchCounter.processing]]</span></paper-item>
                             <paper-item class="one-line-menu menu-item" id="eflatrateInvocingMenuItem" data-status="reject"><div class="one-line-menu list-title"><iron-icon icon="cancel"></iron-icon> <span class="force-left force-ellipsis box-txt">[[localize('j20_reject','Rejected',language)]]</span></div> <span class="batchNumber j20_batchNumber batchRejected">[[flatrateBatchCounter.rejected]]</span></paper-item>
@@ -721,7 +750,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Object,
                         value: () => ({
                             toBeSend: 0,
-                            toBeCorrected: 0,
+                            toBeCorrected: {
+                                'all' : 0,
+                                '100': 0,
+                                '200': 0,
+                                '300': 0,
+                                '306': 0,
+                                '400': 0,
+                                '500': 0,
+                                '600': 0,
+                                '900': 0
+                            },
                             processing: 0,
                             rejected: 0,
                             accepted: 0,
@@ -784,6 +823,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Number,
                         value: null
                     },
+                    flatRateInvoiceToBeCorrectedIndex:{
+                        type: Number,
+                        value: null
+                    },
                     sentboxSelectionIndex: {
                         type: Number,
                         value: null
@@ -811,6 +854,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     medicalHouseBillingTypeIsFlatRate: {
                         type: Boolean,
                         value: false
+                    },
+                    flatRateInvoiceToBeCorrectedSelectionItem:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    flatRateInvoicingSelectionItem:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    flatRateeInvoicingSelectionItem:{
+                        type: Object,
+                        value: () => {}
                     }
                 };
             }
@@ -822,7 +877,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     '_documentBoxSelectionIndexChanged(documentBoxSelectionIndex)',
                     '_invoiceSelectionIndexChanged(invoiceSelectionIndex)',
                     '_flatRateInvoicingSelectionIndexChanged(flatRateInvoicingSelectionIndex)',
-                    '_flatRateeInvoicingSelectionIndexChanged(flatRateeInvoicingSelectionIndex)'
+                    '_flatRateeInvoicingSelectionIndexChanged(flatRateeInvoicingSelectionIndex)',
+                    '_flatRateInvoicingToBeCorrectedIndexChanged(flatRateInvoiceToBeCorrectedIndex)'
                 ];
             }
 
@@ -841,8 +897,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             toggleMenu(e) {
                 e.stopPropagation();
                 e.preventDefault();
-                styx.parent(e.target, el => el.tagName.toLowerCase() === 'collapse-button').toggle();
-                styx.parent(e.target, el => el.tagName.toLowerCase() === 'paper-item').classList.toggle('opened');
+                styx.parent(_.get(e, 'target', null), el => _.get(el, 'tagName', null).toLowerCase() === 'collapse-button').toggle();
+                styx.parent(_.get(e, 'target', null), el => _.get(el, 'tagName', null).toLowerCase() === 'paper-item') && styx.parent(_.get(e, 'target', null), el => _.get(el, 'tagName', null).toLowerCase() === 'paper-item').classList && styx.parent(_.get(e, 'target', null), el => _.get(el, 'tagName', null).toLowerCase() === 'paper-item').classList.toggle('opened');
             }
 
             initializeDocCounter(e){
@@ -935,21 +991,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.$.invoicebox.classList.remove('iron-selected')
                 this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
                 this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
-            }
-
-            _documentBoxSelectionIndexChanged() {
-                if (this.documentBoxSelectionIndex !== null && this.documentBoxSelectionIndex !== undefined) {
-                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: "documentBox", folder: _.trim(_.get(this,"documentBoxSelectionItem.dataset.folder","todealwith")) } } }));
-                    this.set('inboxSelectionIndex', null)
-                    this.set('invoiceSelectionIndex', null)
-                    this.set('flatRateInvoicingSelectionIndex', null)
-                    this.set('flatRateeInvoicingSelectionIndex', null)
-                    this.$.inbox.classList.remove('iron-selected')
-                    this.$.documentBox.classList.remove('iron-selected')
-                    this.$.invoicebox.classList.remove('iron-selected')
-                    this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
-                    this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
-                }
             }
 
             _invoiceboxTapped(e){
@@ -1058,6 +1099,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.$.invoicebox.classList.remove('iron-selected')
                     this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
                     this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.remove('iron-selected')
+                }
+            }
+
+            _flatRateInvoiceToBeCorrectedBoxTapped(e){
+                e.stopPropagation()
+                e.preventDefault()
+                this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: 'flatRateeInvoicingMenuItem', status: 'ej20_toBeSend'} } }));
+                this.set('inboxSelectionIndex', null)
+                this.set('documentBoxSelectionIndex', null)
+                this.set('invoiceSelectionIndex', null)
+                this.set('flatRateInvoicingSelectionIndex', null)
+                this.set('flatRateeInvoicingSelectionIndex', null)
+                this.$.inbox.classList.remove('iron-selected')
+                this.$.documentBox.classList.remove('iron-selected')
+                this.$.invoicebox.classList.remove('iron-selected')
+                this.$.flatRateInvoicingListingBox && this.$.flatRateInvoicingListingBox.classList.remove('iron-selected')
+                this.$.flatRateeInvoicingListingBox && this.$.flatRateeInvoicingListingBox.classList.add('iron-selected')
+            }
+
+            _flatRateInvoicingToBeCorrectedIndexChanged() {
+                if (this.flatRateInvoiceToBeCorrectedIndex !== null && this.flatRateInvoiceToBeCorrectedIndex !== undefined) {
+                    this.dispatchEvent(new CustomEvent('selection-change', { detail: { selection: { item: _.get(this, 'flatRateInvoiceToBeCorrectedSelectionItem.id', null), status: _.get(this, 'flatRateInvoiceToBeCorrectedSelectionItem.dataset.status', null) } } }));
+                    this.set('inboxSelectionIndex', null)
+                    this.set('documentBoxSelectionIndex', null)
+                    this.set('invoiceSelectionIndex', null)
+                    this.set('flatRateInvoiceToBeCorrectedIndex', null)
+                    this.$.inbox.classList.remove('iron-selected')
+                    this.$.documentBox.classList.remove('iron-selected')
+                    this.$.invoicebox.classList.remove('iron-selected')
+                    this.$.flatRateInvoiceToBeCorrectedListingBox && this.$.flatRateInvoiceToBeCorrectedListingBox.classList.remove('iron-selected')
+                    this.$.flatRateInvoiceToBeCorrectedListingBox && this.$.flatRateInvoiceToBeCorrectedListingBox.classList.remove('iron-selected')
                 }
             }
 
