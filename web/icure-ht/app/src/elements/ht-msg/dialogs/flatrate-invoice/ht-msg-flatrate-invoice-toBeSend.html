@@ -2729,7 +2729,7 @@
                     bubbles: true,
                     composed: true,
                     detail: {
-                        data: _.flatten(_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv)).map(groupedInvoice => groupedInvoice.map(inv => {
+                        data: _.flatten(_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv).map(groupedInvoice => groupedInvoice.map(inv => {
                             return {
                                 [this.localize('', "Mutuelle", this.language)]: _.get(inv, 'insuranceCode', ''),
                                 [this.localize('', "N° facture", this.language)]: _.get(inv, 'invoiceReference', ''),
@@ -2742,7 +2742,7 @@
                                 [this.localize('', "Montant total", this.language)]: _.get(inv, 'totalAmount', 0)+" €",
                                 [this.localize('', "Statut", this.language)]: _.get(inv, 'statut', '')
                             }
-                        })),
+                        }))),
                         name: "invoice_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
                         title: "Factures à envoyer"
                     }
