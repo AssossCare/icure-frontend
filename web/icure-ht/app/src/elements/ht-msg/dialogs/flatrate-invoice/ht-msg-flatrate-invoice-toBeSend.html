@@ -2734,7 +2734,7 @@
                                 [this.localize('', "Mutuelle", this.language)]: _.get(inv, 'insuranceCode', ''),
                                 [this.localize('', "N° facture", this.language)]: _.get(inv, 'invoiceReference', ''),
                                 [this.localize('', "Patient", this.language)]: _.get(inv, 'patientName', ''),
-                                [this.localize('', "Niss", this.language)]: this.formatDate(_.get(inv, 'patientSsin', ''),'month') ,
+                                [this.localize('', "Niss", this.language)]: _.get(inv, 'patientSsin', ''),
                                 [this.localize('', "Date de la facturation", this.language)]: this.formatDate( _.get(inv, 'invoiceDate', ''), 'date'),
                                 [this.localize('', "Montant oa", this.language)]: _.get(inv, 'reimbursement', 0)+" €",
                                 [this.localize('', "Montant patient", this.language)]: _.get(inv, 'patientIntervention', 0)+" €",
