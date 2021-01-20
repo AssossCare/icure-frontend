@@ -102,6 +102,7 @@
                         is-loading="[[isLoading]]"
                         on-open-invoice-detail-panel="_openInvoiceDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-to-be-corrected>
             </template>
             <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeSend')]]">
@@ -118,6 +119,7 @@
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
                         mda-requests-already-ran-this-month="[[mdaRequestsAlreadyRanThisMonth]]"
                         id="ht-msg-flatrate-invoice-to-be-sent"
+                        on-export-xslx-list="exportXslxList"
                 >
                 </ht-msg-flatrate-invoice-to-be-send>
             </template>
@@ -133,6 +135,7 @@
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-pending>
             </template>
@@ -149,6 +152,7 @@
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-rejected>
             </template>
@@ -163,6 +167,7 @@
                         list-of-invoice="[[messagesAccepted]]"
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-accepted>
             </template>
@@ -177,6 +182,7 @@
                         list-of-invoice="[[messagesArchived]]"
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-archived>
             </template>
@@ -194,6 +200,7 @@
                     on-archive-batch="_openArchiveDialog"
                     on-transfer-invoices-for-resending="_transferInvoicesForResending"
                     on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                    on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-batch-detail>
             </template>
             <template is="dom-if" if="[[isDisplayInvoiceDetail]]">
@@ -208,6 +215,7 @@
                     selected-invoice-for-detail="[[selectedInvoiceForDetail]]"
                     on-close-invoice-detail-panel="_closeInvoiceDetailPanel"
                     on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                    on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-invoice-detail>
             </template>
             <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'ej20_mda')]]"><ht-msg-flatrate-mda api="[[api]]" i18n="[[i18n]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" resources="[[resources]]" id="ht-msg-flatrate-mda"></ht-msg-flatrate-mda></template>
@@ -221,10 +229,10 @@
 
 
     <script>
-
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        const XLSX = require('../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class htMsgElectronicFlatrateInvoice extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
@@ -752,6 +760,53 @@
                     .replace(/\\b/g, "\\b")
                     .replace(/\\f/g, "\\f")
                     .replace(/[\u0000-\u0019]+/g,"")
+            }
+
+            exportXslxList(e){
+                if(_.get(e, 'detail', {})){
+                    this.generateXlsFile(_.get(e, 'detail.data'), _.get(e, 'detail.name'), _.get(e, 'detail.title'), "Topaz")
+                }
+            }
+
+            generateXlsFile(data, filename, title, author) {
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: title, Author: author}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, title)
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = filename
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+                return
             }
 
         }

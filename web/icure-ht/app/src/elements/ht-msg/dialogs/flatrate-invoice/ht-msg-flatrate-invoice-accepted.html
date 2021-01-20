@@ -246,6 +246,13 @@
                 font-weight: bold;
             }
 
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
 
         </style>
 
@@ -320,8 +327,10 @@
                     </template>
                 </div>
             </div>
-            <div class="buttons">
-
+            <div class="panel-button">
+                <template is="dom-if" if="[[!isLoading]]">
+                    <paper-button class="button button--other" on-tap="_generateReport">[[localize('flatrate-exp-list','Export list',language)]]</paper-button>
+                </template>
             </div>
         </div>
 
@@ -518,6 +527,35 @@
                 return type === "fact" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00))}, 0).toFixed(2) :
                     type === "acc" ? group.reduce((tot, mess) => {return tot + Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00))}, 0).toFixed(2) :
                         type === "ref" ? group.reduce((tot, mess) => {return tot + Number(Number(_.get(mess, 'messageInfo.invoicedAmount', 0.00)) - Number(_.get(mess, 'messageInfo.acceptedAmount', 0.00)))}, 0).toFixed(2) : 0.00
+            }
+
+            _generateReport(){
+                this.dispatchEvent(new CustomEvent('export-xslx-list', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        data: _.flatten(_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'message.metas.ioFederationCode'), inv => inv).map(groupedBatch => groupedBatch.map(batch => {
+                            return {
+                                [this.localize('', "Prestataire", this.language)]: _.get(batch, 'messageInfo.hcp', ''),
+                                [this.localize('', "Oa", this.language)]: _.get(batch, 'messageInfo.oa', ''),
+                                [this.localize('', "N° de l'envoi", this.language)]: _.get(batch, 'messageInfo.invoiceNumber', ''),
+                                [this.localize('', "Mois facturé", this.language)]: this.formatDate(_.get(batch, 'messageInfo.invoiceMonth', ''),'month') ,
+                                [this.localize('', "Date de l'envoi", this.language)]: this.formatDate( _.get(batch, 'messageInfo.invoiceDate', ''), 'date'),
+                                [this.localize('', "Montant facturé", this.language)]: this._formatAmount(_.get(batch, 'messageInfo.invoicedAmount', 0))+" €",
+                                [this.localize('', "Montant accepté", this.language)]: this._formatAmount(_.get(batch, 'messageInfo.acceptedAmount', 0))+" €",
+                                [this.localize('', "Montant refusé", this.language)]: this._getRefusedAmount(_.get(batch, 'messageInfo.invoicedAmount', 0), _.get(batch, 'messageInfo.acceptedAmount', 0))+" €",
+                                [this.localize('', "Statut", this.language)]: _.get(batch, 'messageInfo.invoiceStatus', ''),
+                                [this.localize('', "Information de paiement", this.language)]: _.get(batch, 'messageInfo.paymentReference', ''),
+                                [this.localize('', "Montant", this.language)]: _.get(batch, 'messageInfo.amountPaid', ''),
+                                [this.localize('', "Payé", this.language)]: _.get(batch, 'messageInfo.paid', ''),
+                                [this.localize('', "Cpt bancaire", this.language)]: _.get(batch, 'messageInfo.paymentAccount', ''),
+                                [this.localize('', "Date", this.language)]: _.get(batch, 'messageInfo.paymentDate', '')
+                            }
+                        }))),
+                        name: "batch_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                        title: "Envois_acc"
+                    }
+                }))
             }
 
         }

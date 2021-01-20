@@ -298,7 +298,10 @@
                     <paper-button class="button button--other" on-tap="_deleteInvoiceWithError" id="500544">[[localize('','Delete error code 500544',language)]]</paper-button>
                     <paper-button class="button button--other" on-tap="_deleteInvoice">[[localize('','Delete invoice',language)]]</paper-button>
                 </div>
-                <paper-button class="button button--other" on-tap="_openConfirmCorrectAllInvoiceDialog">[[localize('inv_corr_all','Toggle all invoice',language)]]</paper-button>
+                <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_openConfirmCorrectAllInvoiceDialog">[[localize('inv_corr_all','Toggle all invoice',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_generateReport">[[localize('flatrate-exp-list','Export list',language)]]</paper-button>
+                </template>
             </div>
         </div>
 
@@ -588,6 +591,32 @@
 
             _getNumberOfInvoice(){
                 return _.size(this._getInvoiceOfOa())
+            }
+
+            _generateReport(){
+                this.dispatchEvent(new CustomEvent('export-xslx-list', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        data: _.map(_.sortBy(this._getInvoiceOfOa(), ['insuranceCode'], ['asc']), inv => inv).map(inv =>
+                        {
+                            return {
+                                [this.localize('', "Mutuelle", this.language)]: _.get(inv, 'insuranceCode', ''),
+                                [this.localize('', "N° facture", this.language)]: _.get(inv, 'invoiceReference', ''),
+                                [this.localize('', "Patient", this.language)]: _.get(inv, 'patientName', ''),
+                                [this.localize('', "Niss", this.language)]: this.formatDate(_.get(inv, 'patientSsin', ''),'month') ,
+                                [this.localize('', "Date de la facturation", this.language)]: this.formatDate( _.get(inv, 'invoiceDate', ''), 'date'),
+                                [this.localize('', "Montant oa", this.language)]: _.get(inv, 'reimbursement', 0)+" €",
+                                [this.localize('', "Montant patient", this.language)]: _.get(inv, 'patientIntervention', 0)+" €",
+                                [this.localize('', "Montant supplément", this.language)]: _.get(inv, 'doctorSupplement', 0)+" €",
+                                [this.localize('', "Montant total", this.language)]: _.get(inv, 'totalAmount', 0)+" €",
+                                [this.localize('', "Statut", this.language)]: _.get(inv, 'statut', '')
+                            }
+                        }),
+                        name: "invoice_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                        title: "Factures à corriger"
+                    }
+                }))
             }
 
         }
