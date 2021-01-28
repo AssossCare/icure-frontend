@@ -437,6 +437,9 @@
                 </div>
             </div>
             <div class="panel-button">
+                <template is="dom-if" if="[[!isLoading]]">
+                    <paper-button class="button button--other" on-tap="_generateReport">[[localize('flatrate-exp-list','Export list',language)]]</paper-button>
+                </template>
                 <template is="dom-if" if="[[correctiveInvoiceCanBeCreated]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_createInvoiceToBeCorrectedFromBatch">[[localize('btn-crea-fro-bat', 'Create invoice from batch', language)]]</paper-button>
                 </template>
@@ -1489,6 +1492,34 @@
                     this.set('showMoreOptionContainer', false)
 
                 }
+            }
+
+            _generateReport(){
+                this.dispatchEvent(new CustomEvent('export-xslx-list', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        data: _.flatten(_.sortBy(_.get(this, 'invoicesFromBatch', []), ['insuranceCode'], ['asc']).map(inv =>
+                            _.get(inv, 'invoicingCodes', []).map(nmcl => {
+                            return {
+                                [this.localize('', "N° facture", this.language)]: _.get(inv, 'invoiceReference', ''),
+                                [this.localize('', "Patient", this.language)]: _.get(inv, 'patient', ''),
+                                [this.localize('', "Niss", this.language)]: this.formatDate(_.get(inv, 'patientDto.ssin', ''),'month') ,
+                                [this.localize('', "Nomenclature", this.language)]: _.get(nmcl, 'invoicingCode', ''),
+                                [this.localize('', "Mois facturé", this.language)]: this.formatDate(_.get(inv, 'invoiceDate', ''),'month') ,
+                                [this.localize('', "Date de la prestation", this.language)]: this.formatDate( _.get(inv, 'invoiceDate', ''), 'date'),
+                                [this.localize('', "Montant facturé", this.language)]: _.get(nmcl, 'invoicedAmount', 0)+" €",
+                                [this.localize('', "Montant accepté", this.language)]: _.get(nmcl, 'acceptedAmount', 0)+" €",
+                                [this.localize('', "Montant refusé", this.language)]: _.get(nmcl, 'refusedAmount', 0)+" €",
+                                [this.localize('', "Motif de rejet", this.language)]: _.get(nmcl, 'rejectionReason', ''),
+                                [this.localize('', "Payé", this.language)]: _.get(inv, 'paid', ''),
+                                [this.localize('', "Statut", this.language)]: _.get(inv, 'statut', '')
+                            }
+                        }))),
+                        name: "invoice_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                        title: "Factures batch"
+                    }
+                }))
             }
 
         }

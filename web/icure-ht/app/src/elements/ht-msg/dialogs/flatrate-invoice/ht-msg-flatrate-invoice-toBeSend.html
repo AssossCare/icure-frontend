@@ -427,7 +427,10 @@
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
                     </div>
                     <!--<paper-button class="button button--save" on-tap="_correctAllInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>-->
-                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
+                    <template is="dom-if" if="[[!isLoading]]" restamp="true">
+                        <paper-button class="button button--other" on-tap="_generateReport">[[localize('flatrate-exp-list','Export list',language)]]</paper-button>
+                        <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
+                    </template>
                     <template is="dom-if" if="[[mdaRequestsAlreadyRanThisMonth]]" restamp="true">
                         <template is="dom-if" if="[[!invoicingAlreadyRanThisMonth]]" restamp="true">
                             <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
@@ -996,13 +999,13 @@
                                 let subProm = Promise.resolve()
                                 invoices.map(inv => {
                                     //remove tag flatRateLastInvoiced
-                                    _.remove(_.get(inv, 'patient.tags', []).find(tag => tag.type === "flatRateLastInvoiced"))
+                                    _.remove(_.get(inv, 'patient.tags', []).find(tag => tag && tag.type && tag.type === "flatRateLastInvoiced"))
                                     !_.get(inv, 'patient.tags', null) ? _.assign(inv.patient, {tags: []}) : null
 
                                     //added new tag flatRateLastInvoiced
                                     inv.patient.tags.push({
                                         type: "flatRateLastInvoiced",
-                                        code: moment().startOf('month').format("YYYYMMDD")
+                                        code: moment(_.trim(_.get(inv, "invoice.invoiceDate")), "YYYYMMDD").startOf('month').format("YYYYMMDD")
                                     })
 
                                     //modify patient
@@ -2719,6 +2722,31 @@
                         this._refreshInvoiceList();
                     })
 
+            }
+
+            _generateReport(){
+                this.dispatchEvent(new CustomEvent('export-xslx-list', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        data: _.flatten(_.map(_.groupBy(_.sortBy(_.get(this, 'listOfInvoice', []), ['insuranceCode'], ['asc']), 'parentInsuranceDto.code'), inv => inv).map(groupedInvoice => groupedInvoice.map(inv => {
+                            return {
+                                [this.localize('', "Mutuelle", this.language)]: _.get(inv, 'insuranceCode', ''),
+                                [this.localize('', "N° facture", this.language)]: _.get(inv, 'invoiceReference', ''),
+                                [this.localize('', "Patient", this.language)]: _.get(inv, 'patientName', ''),
+                                [this.localize('', "Niss", this.language)]: _.get(inv, 'patientSsin', ''),
+                                [this.localize('', "Date de la facturation", this.language)]: this.formatDate( _.get(inv, 'invoiceDate', ''), 'date'),
+                                [this.localize('', "Montant oa", this.language)]: _.get(inv, 'reimbursement', 0)+" €",
+                                [this.localize('', "Montant patient", this.language)]: _.get(inv, 'patientIntervention', 0)+" €",
+                                [this.localize('', "Montant supplément", this.language)]: _.get(inv, 'doctorSupplement', 0)+" €",
+                                [this.localize('', "Montant total", this.language)]: _.get(inv, 'totalAmount', 0)+" €",
+                                [this.localize('', "Statut", this.language)]: _.get(inv, 'statut', '')
+                            }
+                        }))),
+                        name: "invoice_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                        title: "Factures à envoyer"
+                    }
+                }))
             }
 
         }

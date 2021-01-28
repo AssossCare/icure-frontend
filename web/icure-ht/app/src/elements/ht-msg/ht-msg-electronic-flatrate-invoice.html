@@ -97,10 +97,12 @@
                         hcp="[[hcp]]"
                         language="[[language]]"
                         resources="[[resources]]"
+                        invoices-status="[[invoicesStatus]]"
                         list-of-invoice="[[messagesToBeCorrected]]"
                         is-loading="[[isLoading]]"
                         on-open-invoice-detail-panel="_openInvoiceDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-to-be-corrected>
             </template>
             <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'toBeSend')]]">
@@ -117,6 +119,7 @@
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
                         mda-requests-already-ran-this-month="[[mdaRequestsAlreadyRanThisMonth]]"
                         id="ht-msg-flatrate-invoice-to-be-sent"
+                        on-export-xslx-list="exportXslxList"
                 >
                 </ht-msg-flatrate-invoice-to-be-send>
             </template>
@@ -132,6 +135,7 @@
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-pending>
             </template>
@@ -148,6 +152,7 @@
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-rejected>
             </template>
@@ -162,6 +167,7 @@
                         list-of-invoice="[[messagesAccepted]]"
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-accepted>
             </template>
@@ -176,6 +182,7 @@
                         list-of-invoice="[[messagesArchived]]"
                         list-of-oa="[[listOfOa]]"
                         on-open-detail-panel="_openDetailPanel"
+                        on-export-xslx-list="exportXslxList"
                         is-loading="[[isLoading]]"
                 ></ht-msg-flatrate-invoice-archived>
             </template>
@@ -193,6 +200,7 @@
                     on-archive-batch="_openArchiveDialog"
                     on-transfer-invoices-for-resending="_transferInvoicesForResending"
                     on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                    on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-batch-detail>
             </template>
             <template is="dom-if" if="[[isDisplayInvoiceDetail]]">
@@ -207,6 +215,7 @@
                     selected-invoice-for-detail="[[selectedInvoiceForDetail]]"
                     on-close-invoice-detail-panel="_closeInvoiceDetailPanel"
                     on-get-message="fetchMessageToBeSendOrToBeCorrected"
+                    on-export-xslx-list="exportXslxList"
                 ></ht-msg-flatrate-invoice-invoice-detail>
             </template>
             <template is="dom-if" if="[[_displayInvoicePanel(invoicesStatus, 'ej20_mda')]]"><ht-msg-flatrate-mda api="[[api]]" i18n="[[i18n]]" user="[[user]]" hcp="[[hcp]]" language="[[language]]" resources="[[resources]]" id="ht-msg-flatrate-mda"></ht-msg-flatrate-mda></template>
@@ -220,10 +229,10 @@
 
 
     <script>
-
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        const XLSX = require('../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
 
         class htMsgElectronicFlatrateInvoice extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
@@ -283,7 +292,7 @@
                     },
                     messagesToBeCorrected:{
                         type: Object,
-                        value : () => ({})
+                        value : () => []
                     },
                     selectedInvoicesByStatus:{
                         type: Object,
@@ -411,7 +420,7 @@
             }
 
             _displayInvoicePanel(selectedStatus, status){
-                return selectedStatus === status
+               return _.startsWith(selectedStatus, 'toBeCorrected') ? 'toBeCorrected' : selectedStatus === status
             }
 
             _closeAllPanel(){
@@ -647,11 +656,46 @@
                 !!this.set("messagesAccepted", this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
                 !!this.set("messagesRejected", this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))))
 
-                !!this.initializeBatchCounter(this.selectedInvoicesToBeSend.length ? this.selectedInvoicesToBeSend.length : 0, this.messagesToBeCorrected.length ? this.messagesToBeCorrected.length : 0 , this.allMessages.filter(m =>_.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length, this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 21)) !== 0).length)
+                !!this.initializeBatchCounter(
+                    this.selectedInvoicesToBeSend.length ? this.selectedInvoicesToBeSend.length : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', [])) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 100 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 199)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 200 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 299)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 300 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 399 && _.parseInt(_.get(inv, 'insuranceCode', null)) !== 306)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 306 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 306)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 400 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 499)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 500 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 599)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 600 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 699)) : 0,
+                    this.messagesToBeCorrected.length ? _.size(_.get(this, 'messagesToBeCorrected', []).filter(inv => _.parseInt(_.get(inv, 'insuranceCode', null)) >= 900 && _.parseInt(_.get(inv, 'insuranceCode', null)) <= 999)) : 0,
+                    this.allMessages.filter(m =>_.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 | 1 << 17)) === 0 && !(_.get(m, 'message.status', null) & (1<<21))).length,
+                    this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 15 | 1 << 16 )) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length,
+                    this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 17)) !== 0 && !(_.get(m, 'message.status', null) & (1<<21))).length,
+                    this.allMessages.filter( m => _.get(m, 'message.status', null) && (_.get(m, 'message.status', null) & (1 << 21)) !== 0).length)
             }
 
-            initializeBatchCounter(toBeSend, toBeCorrected, processedCounter, acceptedCounter, rejectedCounter, archivedCounter){
-                this.dispatchEvent(new CustomEvent('initialize-batch-counter', { bubbles: true, composed: true, detail: { toBeSend: toBeSend, toBeCorrected: toBeCorrected,  processing: processedCounter, rejected: rejectedCounter, accepted: acceptedCounter, archived: archivedCounter} }));
+            initializeBatchCounter(toBeSend, toBeCorrected, toBeCorrected_100, toBeCorrected_200, toBeCorrected_300, toBeCorrected_306, toBeCorrected_400, toBeCorrected_500, toBeCorrected_600, toBeCorrected_900, processedCounter, acceptedCounter, rejectedCounter, archivedCounter){
+                this.dispatchEvent(new CustomEvent('initialize-batch-counter', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        toBeSend: toBeSend,
+                        toBeCorrected: {
+                            "all": toBeCorrected,
+                            "100": toBeCorrected_100,
+                            "200": toBeCorrected_200,
+                            "300": toBeCorrected_300,
+                            "306": toBeCorrected_306,
+                            "400": toBeCorrected_400,
+                            "500": toBeCorrected_500,
+                            "600": toBeCorrected_600,
+                            "900": toBeCorrected_900
+                        },
+                        processing: processedCounter,
+                        rejected: rejectedCounter,
+                        accepted: acceptedCounter,
+                        archived: archivedCounter
+                    }
+                }));
             }
 
             _openDetailPanel(e){
@@ -716,6 +760,53 @@
                     .replace(/\\b/g, "\\b")
                     .replace(/\\f/g, "\\f")
                     .replace(/[\u0000-\u0019]+/g,"")
+            }
+
+            exportXslxList(e){
+                if(_.get(e, 'detail', {})){
+                    this.generateXlsFile(_.get(e, 'detail.data'), _.get(e, 'detail.name'), _.get(e, 'detail.title'), "Topaz")
+                }
+            }
+
+            generateXlsFile(data, filename, title, author) {
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: title, Author: author}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, title)
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = filename
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+                return
             }
 
         }
