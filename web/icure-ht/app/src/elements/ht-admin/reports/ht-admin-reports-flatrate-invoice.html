@@ -1,0 +1,783 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../../../../bower_components/iron-iconset/iron-iconset.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../bower_components/vaadin-material-theme/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="../../../styles/dialog-style.html">
+<link rel="import" href="../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../styles/buttons-style.html">
+<link rel="import" href="../../../styles/paper-tabs-style.html">
+
+<link rel="import" href="../../ht-spinner/ht-spinner.html">
+
+
+<dom-module id="ht-admin-reports-flatrate-invoice">
+
+    <template>
+
+        <style include="shared-styles dialog-style buttons-style paper-tabs-style">
+
+
+            ht-spinner {
+                height: 42px;
+                width: 42px;
+                display: block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+            }
+
+            .processDialogContent{
+                padding: 5px;
+                text-align: center;
+            }
+
+            .process-icon{
+                height: 14px;
+                width: 14px;
+                padding: 0px;
+                color: var(--app-status-color-ok);
+            }
+
+            .table{
+                height: auto;
+                width: 98%;
+                padding: 1%;
+            }
+
+            .tr{
+                height: auto;
+                width: 100%;
+                display: flex;
+            }
+
+            .td .info{
+                width: 5%;
+            }
+
+            .td .title{
+                width: 65%;
+            }
+
+            .td .result{
+                width: 28%;
+            }
+
+            .w5{
+                width: 5%;
+            }
+
+            .w65{
+                width: 65%;
+            }
+
+            .w30{
+                width: 28%;
+                text-align: right;
+            }
+
+            .w90{
+                width: 90%;
+            }
+
+            .panel{
+                margin: 0.5%;
+                height: calc(100% - 20px);
+                width: auto;
+            }
+
+            .panel-title{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-search{
+                height: 45px;
+                width: auto;
+            }
+
+            .panel-content{
+                height: calc(100% - 125px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 40px;
+                width: auto;
+            }
+
+            .invoice-status {
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .invoice-status--orangeStatus{
+                background: #fcdf354d;
+            }
+            .invoice-status--greenStatus{
+                background: #07f8804d;
+            }
+            .invoice-status--blueStatus {
+                background: #84c8ff;
+            }
+            .invoice-status--redStatus{
+                background: #ff4d4d4d;
+            }
+            .invoice-status--purpleStatus {
+                background: #e1b6e6;
+            }
+
+
+            .statusIcon{
+                height: 8px;
+                width: 8px;
+            }
+            .statusIcon.invoice-status--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            .statusIcon.invoice-status--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            .statusIcon.invoice-status--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            .statusIcon.invoice-status--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            .statusIcon.invoice-status--purpleStatus {
+                color: var(--paper-purple-300);
+            }
+            .statusIcon.invoice-status--orangeStatus,
+            .statusIcon.invoice-status--greenStatus,
+            .statusIcon.invoice-status--redStatus,
+            .statusIcon.invoice-status--purpleStatus {
+                background: transparent !important;
+            }
+
+            *.txtcolor--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            *.txtcolor--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            *.txtcolor--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            *.txtcolor--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            *.txtcolor--purpleStatus {
+                color: var(--paper-purple-300)
+            }
+
+            .batchNumber{
+                color: var(--app-text-color-light);
+                border-radius: 25px;
+                min-height: 0;
+                margin-left: 8px;
+                font-size: .6em;
+                display: inline-block;
+                line-height: 0.8;
+                text-align: center;
+                height: 10px;
+                padding: 5px;
+                margin-top: 2px;
+            }
+            .batchPending{background-color: var(--paper-orange-400);}
+            .batchToBeCorrected{background-color: var(--paper-red-400);}
+            .batchProcessed{background-color: var(--paper-blue-400);}
+            .batchRejected{background-color: var(--paper-red-400);}
+            .batchAccepted{background-color: var(--paper-green-400);}
+            .batchArchived{background-color: var(--paper-purple-300);}
+
+
+            .table{
+                width: auto;
+                height: calc(100% - 50px);
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .tr-item{
+                cursor: pointer;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .tr{
+                display: flex;
+                height: 22px;
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg5{
+                flex-grow: 4.6;
+            }
+
+
+            .status{
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .info-icon{
+                heigth: 14px;
+                width: 14px;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+            .title{
+                display:flex;
+                padding: 5px;
+            }
+
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .bold{
+                font-weight: bold;
+            }
+
+            .bck{
+                background-color: var(--app-background-color-dark);;
+            }
+
+            #fetchStepDialog{
+                height: 150px;
+                width: 400px;
+                background-color: #fff;
+                padding: 20px;
+                border: 1px solid var(--app-secondary-color);
+                margin: 40px auto 0 auto;
+                text-align: center;
+            }
+
+
+        </style>
+
+        <div class="panel">
+            <div class="panel-title">
+                <div class="title">
+                    [[localize('rash-report', 'Report', language)]] - [[localize('rep-flatrate-title', 'Report about flatrate', language)]]
+                </div>
+            </div>
+            <div class="panel-search">
+                <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+            </div>
+            <div class="panel-content">
+                <div class="table">
+                    <div class="tr bb th">
+                        <div class="td fg0"></div>
+                        <div class="td fg1">[[localize('rep-flat-inv-nb','Invoice nb',language)]]</div>
+                        <div class="td fg1">[[localize('rep-flat-inv-date','Invoice date',language)]]</div>
+                        <div class="td fg1">[[localize('rep-flat-sent-date','Sent date',language)]]</div>
+                        <div class="td fg1">[[localize('rep-flat-res-date','Resent date',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-correc-inv','Corrective in',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-m','M',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-k','K',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-i','I',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-tot','Total',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-acc','Accepted amount',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-ref','Refused amount',language)]]</div>
+                        <div class="td fg05">[[localize('rep-flat-stat','Status',language)]]</div>
+                    </div>
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                    <template is="dom-if" if="[[!isLoading]]">
+                        <template is="dom-repeat" items="[[filteredListOfPatient]]" as="pat">
+                            <div class="tr bck">
+                                <div class="td fg5">
+                                    <span class="bold">[[pat.patient.lastName]] [[pat.patient.firstName]]</span>
+                                    [[_formatNiss(pat.patient.ssin)]]
+                                </div>
+                            </div>
+                            <template is="dom-repeat" items="[[pat.invoices]]" as="inv">
+                                <div class="tr">
+                                    <div class="td fg0"></div>
+                                    <div class="td fg1">[[inv.invoiceReference]]</div>
+                                    <div class="td fg1">[[_formatDate(inv.invoiceDate, 'date')]]</div>
+                                    <div class="td fg1">[[_formatTmsp(inv.sentDate, 'date')]]</div>
+                                    <div class="td fg1">[[_getResentDate(inv, pat)]]</div>
+                                    <div class="td fg05">[[_getCorrectiveInvoice(inv, pat)]]</div>
+                                    <div class="td fg05">[[_getAmount(inv, '109616')]]€</div>
+                                    <div class="td fg05">[[_getAmount(inv, '509611')]]€</div>
+                                    <div class="td fg05">[[_getAmount(inv, '409614')]]€</div>
+                                    <div class="td fg05">[[_getTotalAmount(inv)]]€</div>
+                                    <div class="td fg05">[[_getAcceptedAmount(inv)]]€</div>
+                                    <div class="td fg05">[[_getRefusedAmount(inv)]]€</div>
+                                    <div class="td fg05">
+                                        <span class$="invoice-status [[_getStatusClass(inv)]]">
+                                            <iron-icon icon="vaadin:circle" class$="statusIcon [[_getStatusClass(inv)]]"></iron-icon>
+                                            [[_getStatus(inv)]]
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </div>
+            <div class="panel-button">
+                <template is="dom-if" if="[[!isLoading]]">
+                    <paper-button class="button button--other" on-tap="_generateReport">[[localize('flatrate-exp-list','Export list',language)]]</paper-button>
+                </template>
+            </div>
+        </div>
+
+        <paper-dialog id="fetchStepDialog" class="fetchStepDialog" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <template is="dom-repeat" items="[[fetchStep]]" as="step" restamp="true">
+                <div class="loadingContent">
+                    <p>
+                        <iron-icon icon="arrow-forward" class="loadingIcon"></iron-icon>
+                        [[localize(step.step, step.step, language)]]
+                        <template is="dom-if" if="[[step.activeCount]]" restamp="true">
+                            [[step.count]]/[[step.entry]]
+                        </template>
+                    </p>
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                </div>
+
+
+            </template>
+        </paper-dialog>
+
+
+    </template>
+
+    <script>
+
+        import moment from 'moment/src/moment';
+        import _ from 'lodash/lodash';
+        import { parse } from '../../../../scripts/icure-reporting'
+        import { filter as icrFilter } from '../../../../scripts/filters'
+        import '../../../../bower_components/js-xlsx/shim.js'
+        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
+        const XLSX = require('../../../../bower_components/js-xlsx/dist/xlsx.full.min.js')
+
+        class HtAdminReportsFlatrateInvoice extends Polymer.TkLocalizerMixin(Polymer.Element) {
+            static get is() {
+                return 'ht-admin-reports-flatrate-invoice'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: () => {}
+                    },
+                    user: {
+                        type: Object,
+                        value: () => {}
+                    },
+                    hcp:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    },
+                    listOfPatient:{
+                        type: Array,
+                        value: () => []
+                    },
+                    filter:{
+                        type: String,
+                        value: null
+                    },
+                    filteredListOfPatient:{
+                        type: Array,
+                        value: () => []
+                    },
+                    listOfOa:{
+                        type: Array,
+                        value: [
+                            {code: "100", name: {"fr": "Alliance nationale des mutualités chrétiennes", "nl": "Landsbond der christelijke mutualiteiten"}},
+                            {code: "200", name: {"fr": "Union nationale des mutualités neutres", "nl": "Landsbond van de neutrale ziekenfondsen"}},
+                            {code: "300", name: {"fr": "Union Nationale des Mutualités Socialistes", "nl": "Nationaal verbond van socialistiche mutualiteiten"}},
+                            {code: "306", name: {"fr": "Union Nationale des Mutualités Socialistes 306", "nl": "Nationaal verbond van socialistiche mutualiteiten 306"}},
+                            {code: "400", name: {"fr": "Union nationale des mutualités libérales", "nl": "Landsbond van liberale mutualiteiten"}},
+                            {code: "500", name: {"fr": "Union nationale des mutualités libres", "nl": "Landsbond van de onafhankelijke ziekenfondsen"}},
+                            {code: "600", name: {"fr": "Caisse auxiliaire d'assurance maladie-invalidité", "nl": "Hulpkas voor Ziekte-en Invaliditeitsverzekering"}},
+                            {code: "675", name: {"fr": "Caisse auxiliaire d'assurance maladie-invalidité - Marins 675", "nl": "Hulpkas voor Ziekte-en Invaliditeitsverzekering - Zeiler 675"}},
+                            {code: "900", name: {"fr": "Caisse des Soins de santé de HR Rail", "nl": "Kas der Geneeskundige Verzorging van HR Rail"}}
+                        ]
+                    },
+                    fetchStep:{
+                        type: Array,
+                        value: () => []
+                    }
+                }
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user)', '_filterValueChanged(filter)'];
+            }
+
+            constructor() {
+                super()
+            }
+
+            ready() {
+                super.ready()
+            }
+
+            _reset(){
+                this.set('listOfPatient', [])
+                this.set('filteredListOfPatient', [])
+                this.set('fetchStep', [])
+            }
+
+            _initializeDataProvider(){
+                this._reset()
+                this.shadowRoot.querySelector('#fetchStepDialog').open()
+                this.set('isLoading', true)
+                let listOfPatient = []
+                this.api.hcparty().getHealthcareParty(_.get(this, 'user.healthcarePartyId', null))
+                    .then(hcp => {
+                        this.push('fetchStep', {stepId: 1, step: "rep-flat-getPatient", count: 0, entry: 0, activeCount: false})
+                        return this._getPatientsByHcp(hcp.id)
+                    })
+                    .then(allPatient => {
+                        let prom = Promise.resolve()
+                        this.push('fetchStep', {stepId: 2, step: "rep-flat-getInvoice", count: 0, entry: _.size(allPatient.filter(pat => _.size(_.get(pat, 'medicalHouseContracts', [])) > 0 && _.get(_.get(pat, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null)), 'contractId', null) !== null && _.get(_.get(pat, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null)), 'contractId', null) !== "")), activeCount: true})
+                        _.chunk(allPatient.filter(pat => _.size(_.get(pat, 'medicalHouseContracts', [])) > 0 && _.get(_.get(pat, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null)), 'contractId', null) !== null && _.get(_.get(pat, 'medicalHouseContracts', []).find(mhc => _.get(mhc, 'contractId', null)), 'contractId', null) !== ""), 50)
+                            .map((patChunk, index) =>
+                                prom = prom.then(() =>
+                                    Promise.all(
+                                        patChunk.map(pat =>
+                                            this.api.invoice().findBy(_.get(this, 'user.healthcarePartyId', null), pat)
+                                                .then(invs => {
+                                                    this.set('fetchStep.1.count', _.get(this, 'fetchStep.1.count', 0) + 1)
+                                                    listOfPatient.push({
+                                                        patient: pat,
+                                                        invoices: _.sortBy(invs.filter(inv => _.get(inv, 'careProviderType', null) === "medicalhouse"), ['sentDate', 'invoiceDate'], ['ASC', 'ASC']),
+                                                        normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.get(pat, _.trim('lastName'), ""), _.get(pat, _.trim('firstName'), ""), _.trim(_.get(pat, 'ssin', "")).toString()])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                                                    })
+                                                }).catch(ex => console.log(ex))
+                                        )
+                                    )
+                                )
+                            )
+
+                        prom.then(() => {
+                            this.push('fetchStep', {stepId: 3, step: "rep-flat-rendering", count: 0, entry: 0, activeCount: false})
+                            this.set("listOfPatient", _.sortBy(listOfPatient, ['patient.lastName', 'patient.firstName'], ['asc']))
+                            this.set("filteredListOfPatient", _.sortBy(listOfPatient, ['patient.lastName', 'patient.firstName'], ['asc']))
+                        }).finally(() => {
+                            this.set('fetchStep', [])
+                            this.set('isLoading', false)
+                            this.shadowRoot.querySelector('#fetchStepDialog').close()
+                        })
+                    })
+            }
+
+            _getPatientsByHcp(hcpId){
+
+                const patientIdStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientIdStartsWith=([^&#]*)/gi)).split("=").pop()
+                const patientNameStartsWith = _.trim(_.trim(_.get(document,"location.href")).match(/patientNameStartsWith=([^&#]*)/gi)).split("=").pop()
+
+
+                console.log("url parametes", patientIdStartsWith, patientNameStartsWith)
+
+                return this.api.getRowsUsingPagination((key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, hcpId, null, key && JSON.stringify(key), docId, 1000)
+                    .then(pl => {
+                        pl.rows = _
+                            .chain(pl.rows)
+                            .filter(pat => !_.trim(patientIdStartsWith) ? true : _.trim(_.get(pat,"id")).startsWith(patientIdStartsWith))
+                            .filter(pat => !_.trim(patientNameStartsWith) ? true : _.trim(_.get(pat,"lastName")).toLowerCase().startsWith(patientNameStartsWith.toLowerCase()))
+                            .value()
+                        return {
+                            rows:pl.rows,
+                            nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                            nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                            done: !pl.nextKeyPair
+                        }
+                    })
+                    .catch(()=>null)
+                )||[];
+
+            }
+
+            _getStatus(ic){
+                return
+            }
+
+            _getAmount(inv, type){
+                return _.get(_.get(inv, 'invoicingCodes', []).find(code => _.get(code, 'code', null) === type), 'totalAmount', 0.00)
+            }
+
+            _getTotalAmount(inv){
+               return  _.reduce(_.get(inv, 'invoicingCodes', []), function (tot, ic){
+                    return tot + Number(ic.totalAmount)
+                }, 0.00)
+            }
+
+            _getRefusedAmount(inv){
+                return  _.reduce(_.get(inv, 'invoicingCodes', []), function (tot, ic){
+                    return _.get(ic, 'canceled', false) ? tot + Number(ic.totalAmount) : 0.00
+                }, 0.00)
+            }
+
+            _getAcceptedAmount(inv){
+                return  _.reduce(_.get(inv, 'invoicingCodes', []), function (tot, ic){
+                    return ic.accepted ? tot + Number(ic.totalAmount) : 0.00
+                }, 0.00)
+            }
+
+            _formatDate(d,f) {
+                const input = d && d.toString() || _.trim(d)
+                const yyyy = input.slice(0,4), mm = input.slice(4,6), dd = input.slice(6,8)
+                switch(f) {
+                    case 'date' :
+                        return `${dd}/${mm}/${yyyy}`;
+                    case 'month' :
+                        const monthStr =
+                            (mm.toString() === '01') ? this.localize('Jan',this.language) :
+                                (mm.toString() === '02') ? this.localize('Feb',this.language) :
+                                    (mm.toString() === '03') ? this.localize('Mar',this.language) :
+                                        (mm.toString() === '04') ? this.localize('Apr',this.language) :
+                                            (mm.toString() === '05') ? this.localize('May',this.language) :
+                                                (mm.toString() === '06') ? this.localize('Jun',this.language) :
+                                                    (mm.toString() === '07') ? this.localize('Jul',this.language) :
+                                                        (mm.toString() === '08') ? this.localize('Aug',this.language) :
+                                                            (mm.toString() === '09') ? this.localize('Sep',this.language) :
+                                                                (mm.toString() === '10') ? this.localize('Oct',this.language) :
+                                                                    (mm.toString() === '11') ? this.localize('Nov',this.language) :
+                                                                        this.localize('Dec',this.language)
+                        return `${monthStr} ${yyyy}`
+                }
+            }
+
+            _formatTmsp(timestamp){
+                return timestamp ? this.api.moment(timestamp).format('DD/MM/YYYY') : ''
+            }
+
+            _getStatus(inv){
+                return _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'accepted', false) ? this.localize('rep-flat-accepted', 'Accepted', this.language) :
+                    _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'resent', false) ? this.localize('rep-flat-corrected', 'To be corrected', this.language) :
+                        _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'pending', false) ? this.localize('rep-flat-pending', 'Pending', this.language) :
+                            _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'canceled', false) ? this.localize('rep-flat-rejected', 'Rejected', this.language) :
+                                _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'lost', false) ? this.localize('rep-flat-lost', 'Lost', this.language) :
+                                ""
+            }
+
+            _getStatusClass(inv){
+                return _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'accepted', false) ? "invoice-status--greenStatus" :
+                    _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'resent', false) ? "invoice-status--redStatus" :
+                        _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'pending', false) ? "invoice-status--blueStatus" :
+                            _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'canceled', false) ? "invoice-status--redStatus" :
+                                _.get(_.head(_.get(inv, 'invoicingCodes', [])), 'lost', false) ? "invoice-status--orangeStatus" :
+                                    ""
+            }
+
+            _getResentDate(invoice, patient){
+                const correctiveInvoice = _.get(patient, 'invoices', []).find(inv => _.get(invoice, 'id', null) === _.get(inv, 'correctedInvoiceId', null))
+                return this._formatTmsp(_.get(correctiveInvoice, 'sentDate', null))
+            }
+
+            _getCorrectiveInvoice(invoice, patient){
+                const correctiveInvoice = _.get(patient, 'invoices', []).find(inv => _.get(invoice, 'id', null) === _.get(inv, 'correctedInvoiceId', null))
+                return _.get(correctiveInvoice, 'invoiceReference', null)
+            }
+
+            _formatNiss(niss){
+                return niss ? '(Niss: '+this.api.formatSsinNumber(niss)+')' : ''
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const invoiceSearchResults =  _.chain(_.get(this, "listOfPatient", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .value()
+                            this.set('filteredListOfPatient', _.sortBy(invoiceSearchResults, ['patient.lastName', 'patient.firstName'], ['asc']))
+                        }else{
+                            this.set('filteredListOfPatient', _.sortBy(_.get(this, 'listOfPatient', []), ['patient.lastName', 'patient.firstName'], ['asc']))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredListOfPatient',_.sortBy(_.get(this, 'listOfPatient', []), ['patient.lastName', 'patient.firstName'], ['asc']))
+                }
+            }
+
+            _generateReport(){
+                this.exportXslxList({
+                    data: _.flatten(_.sortBy(_.get(this, 'listOfPatient', []), ['patient.lastName', 'patient.firstName'], ['asc']).map(pat =>
+                        _.get(pat, 'invoices', []).map(inv => {
+                            return {
+                                [this.localize('', "Patient", this.language)]: _.get(pat, 'patient.lastName', '')+' '+ _.get(pat, 'patient.firstName', ''),
+                                [this.localize('rep-flat-inv-ref', "Invoice reference", this.language)]: _.get(inv, 'invoiceReference', ''),
+                                [this.localize('rep-flat-inv-date', "Invoice date", this.language)]: this._formatDate(_.get(inv, 'invoiceDate', null), 'date'),
+                                [this.localize('rep-flat-res-date', "Sent date", this.language)]: this._formatTmsp(_.get(inv, 'sentDate', null), 'date'),
+                                [this.localize('rep-flat-res-date', "Resent date", this.language)]: this._getResentDate(inv, pat),
+                                [this.localize('rep-flat-correc-inv', "Corrective inv", this.language)]: this._getCorrectiveInvoice(inv, pat),
+                                [this.localize('rep-flat-m', "M", this.language)]: this._getAmount(inv, '109616')+" €",
+                                [this.localize('rep-flat-k', "K", this.language)]: this._getAmount(inv, '509611')+" €",
+                                [this.localize('rep-flat-i', "I", this.language)]: this._getAmount(inv, '409614')+" €",
+                                [this.localize('rep-flat-tot', "Total amount", this.language)]: this._getTotalAmount(inv)+" €",
+                                [this.localize('rep-flat-acc', "Accepted amount", this.language)]: this._getAcceptedAmount(inv)+"€",
+                                [this.localize('rep-flat-ref', "Refused amount", this.language)]: this._getRefusedAmount(inv)+"€",
+                                [this.localize('rep-flat-stat', "Status", this.language)]: this._getStatus(inv)
+                            }
+                        })
+                    )),
+                    name: "invoices_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
+                    title: "All invoice by patient"
+                })
+            }
+
+            exportXslxList(data){
+                this.generateXlsFile(_.get(data, 'data'), _.get(data, 'name'), _.get(data, 'title'), "Topaz")
+            }
+
+            generateXlsFile(data, filename, title, author) {
+
+                // Create xls work book and assign properties
+                const xlsWorkBook = {SheetNames: [], Sheets: {}}
+                xlsWorkBook.Props = {Title: title, Author: author}
+
+                // Create sheet based on json data collection
+                var xlsWorkSheet = XLSX.utils.json_to_sheet(data)
+
+                // Link sheet to workbook
+                XLSX.utils.book_append_sheet(xlsWorkBook, xlsWorkSheet, title)
+
+                // Virtual data output
+                var xlsWorkBookOutput = new Buffer(XLSX.write(xlsWorkBook, {bookType: 'xls', type: 'buffer'}))
+
+                // Put output to virtual "file"
+                var fileBlob = new Blob([xlsWorkBookOutput], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+
+                // Create download link and append to page's body
+                var downloadLink = document.createElement("a")
+                document.body.appendChild(downloadLink)
+                downloadLink.style = "display: none"
+
+                // Create url
+                var urlObject = window.URL.createObjectURL(fileBlob)
+
+                // Link to url
+                downloadLink.href = urlObject
+                downloadLink.download = filename
+
+                // Trigger download and drop object
+                downloadLink.click()
+                window.URL.revokeObjectURL(urlObject)
+
+                // Free mem
+                fileBlob = false
+                xlsWorkBookOutput = false
+
+                return
+            }
+
+        }
+
+        customElements.define(HtAdminReportsFlatrateInvoice.is, HtAdminReportsFlatrateInvoice)
+    </script>
+</dom-module>
