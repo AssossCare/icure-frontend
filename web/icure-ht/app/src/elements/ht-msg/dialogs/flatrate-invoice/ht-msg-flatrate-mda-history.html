@@ -32,6 +32,8 @@
 <link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
 <link rel="import" href="../../../../../bower_components/vaadin-themes/material/vaadin-date-picker.html">
 
+<link rel="import" href="ht-msg-flatrate-mda-history-detail.html">
+
 
 
 <dom-module id="ht-msg-flatrate-mda-history">
@@ -42,7 +44,7 @@
 
         <style include="shared-styles spinner-style scrollbar-style buttons-style dialog-style invoicing-style">
             .panel{
-                margin: 5px;
+                margin: 0.5%;
                 height: calc(100% - 20px);
                 width: auto;
             }
@@ -63,23 +65,8 @@
             }
 
             .panel-button{
-                height: 32px;
+                height: 40px;
                 width: auto;
-                padding: 4px;
-                display: flex;
-                justify-content: flex-end!important;
-            }
-
-            .assurability--redStatus{
-                color: var(--app-status-color-nok);
-                height: 8px;
-                width: 8px;
-            }
-
-            .assurability--greenStatus{
-                color: var(--app-status-color-ok);
-                height: 8px;
-                width: 8px;
             }
 
             .invoice-status {
@@ -97,16 +84,39 @@
             .invoice-status--orangeStatus{
                 background: #fcdf354d;
             }
+            .invoice-status--greenStatus{
+                background: #07f8804d;
+            }
+            .invoice-status--blueStatus {
+                background: #84c8ff;
+            }
+            .invoice-status--redStatus{
+                background: #ff4d4d4d;
+            }
+            .invoice-status--purpleStatus {
+                background: #e1b6e6;
+            }
+
 
             .statusIcon{
                 height: 8px;
                 width: 8px;
-                background: transparent !important
             }
             .statusIcon.invoice-status--orangeStatus {
                 color: var(--app-status-color-pending);
             }
-
+            .statusIcon.invoice-status--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            .statusIcon.invoice-status--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            .statusIcon.invoice-status--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            .statusIcon.invoice-status--purpleStatus {
+                color: var(--paper-purple-300);
+            }
             .statusIcon.invoice-status--orangeStatus,
             .statusIcon.invoice-status--greenStatus,
             .statusIcon.invoice-status--redStatus,
@@ -116,6 +126,18 @@
 
             *.txtcolor--orangeStatus {
                 color: var(--app-status-color-pending);
+            }
+            *.txtcolor--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            *.txtcolor--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            *.txtcolor--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            *.txtcolor--purpleStatus {
+                color: var(--paper-purple-300)
             }
 
             .batchNumber{
@@ -131,7 +153,6 @@
                 padding: 5px;
                 margin-top: 2px;
             }
-
             .batchPending{background-color: var(--paper-orange-400);}
             .batchToBeCorrected{background-color: var(--paper-red-400);}
             .batchProcessed{background-color: var(--paper-blue-400);}
@@ -144,6 +165,10 @@
                 height: 100%;
                 overflow: auto;
                 font-size: var(--font-size-normal);
+            }
+
+            .tr-item{
+                cursor: pointer;
             }
 
             .th{
@@ -177,10 +202,6 @@
             }
 
             .fg0{
-                flex-grow: 0;
-            }
-
-            .fg02{
                 flex-grow: 0.2;
             }
 
@@ -196,9 +217,10 @@
                 flex-grow: 2;
             }
 
-            .fg4{
-                flex-grow: 4.2;
+            .fg5{
+                flex-grow: 4.6;
             }
+
 
             .status{
                 display: block;
@@ -215,82 +237,9 @@
                 display: block;
             }
 
-            .button{
-                display: inline-flex!important;
-                align-items: center!important;
-            }
-
             .title{
                 display:flex;
                 padding: 5px;
-            }
-
-            .tr-item{
-                cursor: pointer;
-            }
-
-            .modalDialog{
-                height: 350px;
-                width: 600px;
-            }
-
-            .modalDialogContent{
-                height: calc(100% - 69px);
-                width: auto;
-                margin: 0;
-                background-color: white;
-                position: relative;
-                padding: 10px;
-            }
-
-            #checkBeforeSendingDialog{
-                height: 500px;
-                width: 800px;
-            }
-
-            .unsentInvoice{
-                height: 250px;
-                width: auto;
-            }
-
-            previousCheck{
-                height: 100px;
-                width: auto;
-            }
-
-            .errorBeforeSendInvoice{
-                color: var(--app-status-color-nok);
-                font-weight: bold;
-            }
-
-            #patientsWithoutAssurabilityGrid{
-                max-height: 200px;
-                overflow: auto;
-            }
-
-            .sendingSpinner{
-                height: 100px!important;
-                width: 100px!important;
-                margin: auto;
-            }
-
-            .prossessList{
-                height: calc(100% - 100px);
-                width: auto;
-                padding: 4px;
-            }
-
-            .content-container{
-                padding: 4px;
-                width: auto;
-            }
-
-            .previousCheckContainer{
-
-            }
-
-            .listOfUnsentInvoiceContainer{
-
             }
 
             .tr-group{
@@ -298,48 +247,75 @@
                 font-weight: bold;
             }
 
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
         </style>
 
-        <div class="panel">
-            <div class="panel-title">
-                <div class="title">
-                    [[localize('inv-to-be-send', 'Invoice to be send', language)]]
-                    <span class="batchNumber batchPending">{{_forceZeroNum(listOfInvoice.length)}}</span>
+        <template is="dom-if" if="[[!isSelectedRequest]]" restamp="true">
+            <div class="panel">
+                <div class="panel-title">
+                    <div class="title">
+                        [[localize('', 'Historique des demandes MDA asynchrone', language)]]
+                        <span class="batchNumber batchPending">{{_forceZeroNum(listOfMdaMessage.length)}}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="panel-search">
-                <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
-            </div>
-            <div class="panel-content">
-                [MDA HISTORY] Panel content
-            </div>
-            <div class="panel-button">
-                <template is="dom-if" if="[[!isLoading]]" restamp="true">
-                    <paper-button class="button button--other" on-tap="_refreshInvoiceList">[[localize('refresh','Refresh',language)]]</paper-button>
-                    <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('generate','Generate',language)]]</paper-button>
-                    <template is="dom-if" if="[[api.tokenId]]" restamp="true">
-                        <paper-button on-tap="_checkBeforeSend" class="button button--save" disabled="[[cannotSend]]">[[localize('inv_send','Send',language)]]</paper-button>
-                    </template>
-                    <template is="dom-if" if="[[!api.tokenId]]" restamp="true">
-                        <paper-button on-tap="" class="button button--other" disabled title="Pas de connexion ehealth active">[[localize('inv_send','Send',language)]]</paper-button>
-                    </template>
-                </template>
-            </div>
-        </div>
+                <div class="panel-search">
+                    <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+                </div>
+                <div class="panel-content">
+                    <div class="table">
+                        <div class="tr th">
+                            <div class="td fg05">[[localize('','Date',language)]]</div>
+                            <div class="td fg1">[[localize('','Référence',language)]]</div>
+                            <div class="td fg2">[[localize('','Titre',language)]]</div>
+                            <div class="td fg1">[[localize('','Dernier relevé',language)]]</div>
+                            <div class="td fg1">[[localize('','Dernière réponse',language)]]</div>
+                            <div class="td fg1">[[localize('','Date de clôture',language)]]</div>
+                            <div class="td fg1">[[localize('','Statut',language)]]</div>
+                        </div>
+                        <ht-spinner active="[[isLoading]]"></ht-spinner>
+                        <template is="dom-if" if="[[!isLoading]]">
+                            <template is="dom-repeat" items="[[filteredListOfMdaMessage]]" as="message">
+                                <div class="tr tr-item" id="[[message.requestId]]"  on-tap="_displayInfoPanel">
+                                    <div class="td fg05">[[_formatDate(message.request.metas.requestedDate)]]</div>
+                                    <div class="td fg1">[[message.request.metas.mdaInputReference]]</div>
+                                    <div class="td fg2">[[localize('', 'Requête MDA asynchrone', language)]]</div>
+                                    <div class="td fg1">[[_formatDate(message.request.metas.responseLastCheckDate)]]</div>
+                                    <div class="td fg1">[[_formatDate(message.request.metas.responseDate)]]</div>
+                                    <div class="td fg1">[[_formatDate(message.request.metas.overriddenByUserDate)]]</div>
+                                    <div class="td fg1">[[_getStatus(message.request.metas)]]</div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+                <div class="panel-button">
+                    <template is="dom-if" if="[[!isLoading]]" restamp="true">
 
-        <paper-dialog class="modalDialog" id="sendingDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
-            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('inv-trt-in-prog','treatment in progress',language)]]</h2>
-            <div class="modalDialogContent m-t-50">
-                <div class="sendingSpinner">
-                    <ht-spinner active="[[isSending]]"></ht-spinner>
-                </div>
-                <div class="prossessList">
-                    <template is="dom-repeat" items="[[progressItem]]" as="pi">
-                        <div>[[pi]]</div>
                     </template>
                 </div>
             </div>
-        </paper-dialog>
+        </template>
+        <template is="dom-if" if="[[isSelectedRequest]]" restamp="true">
+            <ht-msg-flatrate-mda-history-detail
+                    id="htMsgFlatrateMdaHistoryDetail"
+                    api="[[api]]"
+                    i18n="[[i18n]]"
+                    user="[[user]]"
+                    hcp="[[hcp]]"
+                    language="[[language]]"
+                    resources="[[resources]]"
+                    selected-request="[[selectedRequest]]"
+                    on-close-detail-panel="_closeDetailPanel"
+            ></ht-msg-flatrate-mda-history-detail>
+        </template>
+
 
     </template>
 
@@ -380,6 +356,26 @@
                     isLoading:{
                         type: Boolean,
                         value: false
+                    },
+                    listOfMdaMessage:{
+                        type: Array,
+                        value: () => []
+                    },
+                    filteredListOfMdaMessage:{
+                        type: Array,
+                        value: () => []
+                    },
+                    selectedRequest:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    isSelectedRequest:{
+                        type: Boolean,
+                        value: false
+                    },
+                    filter:{
+                        type: String,
+                        value: null
                     }
                 }
             }
@@ -393,7 +389,85 @@
             }
 
             static get observers() {
-                return []
+                return ['_initializeDataProvider(api, user)', '_selectedRequestChanged(selectedRequest, selectedRequest.*)',  '_filterValueChanged(filter)']
+            }
+
+            _reset(){
+                this.set("listOfMdaMessage", [])
+                this.set("filteredListOfMdaMessage", [])
+                this.set("selectedRequest", {})
+            }
+
+            _initializeDataProvider(){
+                this._reset()
+                this.set("isLoading",true)
+
+                this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-REQUEST:*")
+                    .then(listOfRequest => Promise.all([_.get(listOfRequest, 'rows', []), this.api.message().findMessagesByTransportGuid("MH:FLATRATE-MDA-RESPONSE:*")]))
+                    .then(([listOfRequest, listOfResponse]) => {
+                        this.set("listOfMdaMessage", _.sortBy(listOfRequest.map(request => {
+                            return {
+                                normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([this._formatDate(_.get(request, 'metas.requestedDate', null)), this._getStatus(_.get(request, 'metas', null)), this._formatDate(_.get(request, 'metas.responseLastCheckDate', null)), this._formatDate(_.get(request, 'metas.overriddenByUserDate', null))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" "),
+                                requestId: _.get(request, 'id', null),
+                                request: request,
+                                listOfResponse: _.split(_.get(request, 'metas.responseMessageIds', null), ',').map(id => _.get(listOfResponse, 'rows', []).find(resp => resp.id === id))
+                            }
+                        }), ['request.metas.requestedDate'], ['asc']))
+                        this.set("filteredListOfMdaMessage", _.get(this, 'listOfMdaMessage', []))
+                    })
+                    .finally(() =>  {
+                        this.set("isLoading",false)
+                    })
+            }
+
+            _formatDate(date){
+                return date ? this.api.moment(date).format('DD/MM/YYYY') : null
+            }
+
+            _getStatus(metas){
+               return _.get(metas, 'step5Validated', false) ? "Cloturé" : "En cours"
+            }
+
+            _displayInfoPanel(e){
+                if(_.get(e, 'currentTarget.id', null)){
+                    this.set("selectedRequest", _.get(this, 'listOfMdaMessage', []).find(req => _.get(req, 'requestId', null) === _.get(e, 'currentTarget.id')))
+                }
+            }
+
+            _forceZeroNum(num) {
+                return (!num) ? '0' : num.toString()
+            }
+
+            _selectedRequestChanged(){
+                this.set('isSelectedRequest', !_.isEmpty(this.selectedRequest))
+            }
+
+            _closeDetailPanel(){
+                this.set('selectedRequest', {})
+                this.set('isSelectedRequest', false)
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const mdaMessageSearchResult =  _.chain(_.get(this, "listOfMdaMessage", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .value()
+                            this.set('filteredListOfMdaMessage', _.sortBy(mdaMessageSearchResult, ['request.metas.requestedDate'], ['asc']))
+                        }else{
+                            this.set('filteredListOfMdaMessage', _.sortBy(_.get(this, 'listOfMdaMessage', []), ['request.metas.requestedDate'], ['asc']))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredListOfMdaMessage', _.sortBy(_.get(this, 'listOfMdaMessage', []), ['request.metas.requestedDate'], ['asc']))
+                }
             }
 
         }
