@@ -348,6 +348,10 @@
                 box-sizing: border-box;
             }
 
+            .hidden{
+                visibility: hidden;
+            }
+
         </style>
 
         <div class="panel">
@@ -446,9 +450,13 @@
                 <template is="dom-if" if="[[batchCanBeArchived]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_openArchiveDialog">[[localize('btn-arch', 'Archive', language)]]</paper-button>
                 </template>
+                <template is="dom-if" if="[[batchCanBeUnArchived]]" restamp="true">
+                    <paper-button class="button button--other" on-tap="_openUnarchiveDialog">[[localize('btn-unarch', 'Unarchive', language)]]</paper-button>
+                </template>
                 <template is="dom-if" if="[[batchCanBeResent]]" restamp="true">
                     <paper-button class="button button--other" on-tap="_openResendDialog">[[localize('btn-trans-for-res', 'Transfer for resending', language)]]</paper-button>
                 </template>
+                <!--<paper-button class="button button--other hidden" on-tap="_unRejectedBatch">[[localize('','Unrejected',language)]]</paper-button>-->
                 <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>
                 <paper-icon-button class="button--icon-btn" icon="more-vert" on-tap="_toggleAddActions"></paper-icon-button>
                 <template is="dom-if" if="[[showMoreOptionContainer]]">
@@ -470,6 +478,18 @@
             <div class="buttons">
                 <paper-button class="button" on-tap="_closeArchiveDialog">[[localize('can','Cancel',language)]]</paper-button>
                 <paper-button class="button button--save" on-tap="_archiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog class="modalDialog" id="unarchiveBatchDialog" no-cancel-on-outside-click="" no-cancel-on-esc-key="">
+            <h2 class="modal-title"><iron-icon icon="icons:warning"></iron-icon> [[localize('warning','Warning',language)]]</h2>
+            <div class="modalDialogContent m-t-50">
+                <h3 class="textAlignCenter">[[localize('confirm-unarch-batch','Are you sure you wish to unarchive this batch?',language)]]</h3>
+                <p class="textAlignCenter m-t-50 bold"></p>
+            </div>
+            <div class="buttons">
+                <paper-button class="button" on-tap="_closeUnarchiveDialog">[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="button button--save" on-tap="_unArchiveBatch"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -558,6 +578,10 @@
                         type: Boolean,
                         value: false
                     },
+                    batchCanBeUnArchived:{
+                        type: Boolean,
+                        value: false
+                    },
                     batchCanBeResent:{
                         type: Boolean,
                         value: false
@@ -599,6 +623,7 @@
             _closeDetailPanel(){
                 this.set('invoicesFromBatch', [])
                 this.set('batchCanBeArchived', false)
+                this.set('batchCanBeUnArchived', false)
                 this.set('batchCanBeResent', false)
                 this.set('isSendError', false)
                 this.set('isLoading', false)
@@ -609,6 +634,7 @@
 
             _showDetail() {
                 this.set('batchCanBeArchived', false)
+                this.set('batchCanBeUnArchived', false)
                 this.set('batchCanBeResent', false)
                 this.set('isLoading', true)
                 this.set('invoicesErrorMsg', [])
@@ -751,6 +777,7 @@
                         })
                     }).finally(()=>{
                     this._batchCanBeArchived()
+                    this._batchCanBeUnarchived()
                     this.set('correctiveInvoiceCanBeCreated', _.size(_.compact(_.get(this, 'invoicesFromBatch',[]).map(inv => _.get(inv, 'invoice', [])).map(invDto => _.get(invDto, 'correctiveInvoiceId', null)))) === 0 && ((!!(_.get(this,"selectedInvoiceForDetail.message.status") & (1 << 16))) || (!!(_.get(this,"selectedInvoiceForDetail.message.status") & (1 << 12)))))
                     this.set('filteredInvoicesFormBatch', _.get(this, 'invoicesFromBatch', []))
                     this.set('batchCanBeResent', _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) ? _.get(this.selectedInvoiceForDetail, 'messageInfo.sendError', null) : false)
@@ -1266,6 +1293,11 @@
                 this.set('batchCanBeArchived', res)
             }
 
+            _batchCanBeUnarchived(){
+                const res = this._getBatchStatus(_.get(this, 'selectedInvoiceForDetail.message.status', null)) === "archived"
+                this.set('batchCanBeUnArchived', res)
+            }
+
             _getMessage(){
                 this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: true}}))
             }
@@ -1279,19 +1311,28 @@
             _archiveBatch(){
                 if(_.get(this, 'selectedInvoiceForDetail.message.id', null)){
                     this.set('isLoading', true)
+                    let prom = Promise.resolve()
                     const newStatus = (_.get(this, 'selectedInvoiceForDetail.message.status', null) | (1 << 21))
                     this.set('selectedInvoiceForDetail.message.status', newStatus)
                     this.api.message().modifyMessage(_.get(this, 'selectedInvoiceForDetail.message', null))
                         .then(msg => this.api.register(msg, 'message'))
                         .then(msg => this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: msg.invoiceIds.map(i => i)})))
-                        .then(invoices => invoices.map(inv => {
-                            inv.invoicingCodes.map(ic => ic.archived = true)
-                            this.api.invoice().modifyInvoice(inv).then(inv => this.api.register(inv,'invoice'))
-                        }))
-                        .finally(() => {
-                            this._closeArchiveDialog()
-                            this._closeDetailPanel()
-                            this._getMessage()
+                        .then(invoices => {
+                            _.chunk(invoices, 50).map(chunkInvoice => {
+                                prom = prom.then(() => Promise.all(chunkInvoice.map(inv => {
+                                    inv.invoicingCodes.map(ic => ic.archived = true)
+                                    return this.api.invoice().modifyInvoice(inv)
+                                        .then(inv => this.api.register(inv,'invoice'))
+                                        .catch(ex => console.log(ex))
+                                })))
+                            })
+
+                            prom.then(() => console.log('Treatment is done'))
+                                .finally(() => {
+                                    this._closeArchiveDialog()
+                                    this._closeDetailPanel()
+                                    this._getMessage()
+                                })
                         })
                 }
             }
@@ -1520,6 +1561,76 @@
                         title: "Factures batch"
                     }
                 }))
+            }
+
+            _unArchiveBatch(){
+                if(_.get(this, 'selectedInvoiceForDetail.message.id', null)){
+                    this.set('isLoading', true)
+                    let prom = Promise.resolve()
+                    const newStatus = (_.get(this, 'selectedInvoiceForDetail.message.status', null) ^ (1 << 21))
+                    this.set('selectedInvoiceForDetail.message.status', newStatus)
+                    this.api.message().modifyMessage(_.get(this, 'selectedInvoiceForDetail.message', null))
+                        .then(msg => this.api.register(msg, 'message'))
+                        .then(msg => this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: msg.invoiceIds.map(i => i)})))
+                        .then(invoices => {
+                            _.chunk(invoices, 50).map(chunkInvoice => {
+                                prom = prom.then(() => Promise.all(chunkInvoice.map(inv => {
+                                    inv.invoicingCodes.map(ic => ic.archived = false)
+                                    return this.api.invoice().modifyInvoice(inv)
+                                        .then(inv => this.api.register(inv,'invoice'))
+                                        .catch(ex => console.log(ex))
+                                })))
+                            })
+
+                            prom.then(() => console.log("Treatment is done"))
+                                .finally(() => {
+                                this._closeUnarchiveDialog()
+                                this._closeDetailPanel()
+                                this._getMessage()
+                            })
+                        })
+
+                }
+            }
+
+            _unRejectedBatch(){
+                if(_.get(this, 'selectedInvoiceForDetail.message.id', null)){
+                    this.set('isLoading', true)
+                    let prom = Promise.resolve()
+                    const newStatus = 448
+                    this.set('selectedInvoiceForDetail.message.status', newStatus)
+                    this.api.message().modifyMessage(_.get(this, 'selectedInvoiceForDetail.message', null))
+                        .then(msg => this.api.register(msg, 'message'))
+                        .then(msg => this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: msg.invoiceIds.map(i => i)})))
+                        .then(invoices => {
+                            _.chunk(invoices, 50).map(chunkInvoice => {
+                                prom = prom.then(() => Promise.all(chunkInvoice.map(inv => {
+                                    inv.invoicingCodes.map(ic => {
+                                        ic.pending = true
+                                        ic.canceled = false
+                                    })
+                                    return this.api.invoice().modifyInvoice(inv)
+                                        .then(inv => this.api.register(inv,'invoice'))
+                                        .catch(ex => console.log(ex))
+                                })))
+                            })
+
+                            prom.then(() => console.log("Treatment is done"))
+                                .finally(() => {
+                                    this._closeDetailPanel()
+                                    this._getMessage()
+                                })
+                        })
+
+                }
+            }
+
+            _openUnarchiveDialog(){
+                this.shadowRoot.querySelector("#unarchiveBatchDialog").open()
+            }
+
+            _closeUnarchiveDialog(){
+                this.shadowRoot.querySelector("#unarchiveBatchDialog").close()
             }
 
         }
