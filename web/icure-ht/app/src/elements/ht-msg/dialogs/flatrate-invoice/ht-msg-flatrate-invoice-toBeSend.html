@@ -425,6 +425,7 @@
                         <paper-button class="button button--other " on-tap="_resetPatientInvoicingState">[[localize('reset_pat','Reset pat',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_fixPatient300">[[localize('fix_pat_300','Fix pats 300',language)]]</paper-button>
                         <paper-button class="button button--other" on-tap="_reOpenUpComingMhc">Reopen upcoming MHC</paper-button>
+                        <paper-button class="button button--other" on-tap="_exportFlatRateInvoicing">[[localize('inv_gen','Generate invoice',language)]]</paper-button>
                     </div>
                     <!--<paper-button class="button button--save" on-tap="_correctAllInvoice"><iron-icon icon="check-circle"></iron-icon> [[localize('confirm','Confirm',language)]]</paper-button>-->
                     <template is="dom-if" if="[[!isLoading]]" restamp="true">

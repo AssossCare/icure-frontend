@@ -323,6 +323,7 @@
                         <div class="td fg05">[[localize('','OA',language)]]</div>
                         <div class="td fg05">[[localize('','Mutuelle',language)]]</div>
                         <div class="td fg1">[[localize('','Patient',language)]]</div>
+                        <div class="td fg1">[[localize('','Niss',language)]]</div>
                         <div class="td fg5">[[localize('','Erreur',language)]]</div>
                     </div>
                     <ht-spinner active="[[isLoading]]"></ht-spinner>
@@ -331,6 +332,7 @@
                             <div class="td fg05">[[res.parentInsuranceCode]]</div>
                             <div class="td fg05">[[res.insuranceCode]]</div>
                             <div class="td fg1">[[res.nameHr]]</div>
+                            <div class="td fg1">[[_formatNiss(res.patientSsin)]]</div>
                             <div class="td fg5">[[res.requestErrorMessage]] [[res.responseErrorMessage]]</div>
                         </div>
                     </template>
@@ -474,7 +476,7 @@
                         _.map(_.get(mdaRequestMessage, "attachment.request", []), it => _.merge(it, {
                             normalizedSearchTerms: _
                                 .chain(it)
-                                .pick(["patientId", "patientSsin", "nameHr", "patientIdentificationNumber", "insuranceCode", "parentInsuranceCode", "startDate", "requestErrorMessage"])
+                                .pick(["patientId", "patientSsin", "nameHr", "patientIdentificationNumber", "insuranceCode", "parentInsuranceCode", "startDate", "requestErrorMessage", "responseErrorMessage"])
                                 .flatMap()
                                 .compact()
                                 .map(itt => _.trim(itt).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))
@@ -614,6 +616,10 @@
 
             _toggleAddActions() {
                 this.showMoreOptionContainer = !this.showMoreOptionContainer;
+            }
+
+            _formatNiss(niss){
+                return niss ? this.api.formatSsinNumber(niss) : ''
             }
 
 
