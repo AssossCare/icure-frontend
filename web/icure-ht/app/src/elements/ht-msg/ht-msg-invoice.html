@@ -523,8 +523,8 @@
                 this.set('messagesArchived', [])
                 this.push('fetchStep', {stepId: 1, step: "getMessageStep", count: 0, entry: 0, activeCount: false})
                 this.messageIdsCanBeAutoArchived = []
-                this.api.message().findMessagesByTransportGuid("EFACT:BATCH:*").then(messages => {
-                    const filteredMessages =  messages.rows.filter(msg => msg.transportGuid && msg.responsible === this.hcp.id && this.api.moment(new Date).isBefore(this.displayedYear+'0301') ? (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || msg.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))) : (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear)))
+                this._getPaginatedMessage().then(messages => {
+                    const filteredMessages =  messages.filter(msg => msg.transportGuid && msg.responsible === this.hcp.id && this.api.moment(new Date).isBefore(this.displayedYear+'0301') ? (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear) || msg.transportGuid.startsWith("EFACT:BATCH:" + (this.displayedYear-1))) : (msg.transportGuid.startsWith("EFACT:BATCH:" + this.displayedYear)))
                     const promCarrier = []
                     let prom = Promise.resolve([])
                     this.push('fetchStep', {stepId: 2, step: "treatMessageStep", count: 0, entry: _.size(filteredMessages), activeCount: true})
@@ -660,6 +660,18 @@
                     })
                 })
 
+            }
+
+            _getPaginatedMessage() {
+                return this.api.getRowsUsingPagination((key,docId) => this.api.message().findMessagesByTransportGuid('EFACT:BATCH:*', null, key, docId, 1000)
+                    .then(pl => { return {
+                        rows: pl.rows,
+                        nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey,
+                        nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId,
+                        done: !pl.nextKeyPair
+                    }})
+                    .catch(()=>promResolve)
+                )
             }
 
             _getInvoicesFormBatch(listOfInvoiceId){
