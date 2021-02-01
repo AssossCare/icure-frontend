@@ -115,11 +115,13 @@
                         resources="[[resources]]"
                         list-of-invoice="[[selectedInvoicesToBeSend]]"
                         is-loading="[[isLoading]]"
+                        forced-patients="[[forcedPatients]]"
                         on-open-invoice-detail-panel="_openInvoiceDetailPanel"
                         on-get-message="fetchMessageToBeSendOrToBeCorrected"
                         mda-requests-already-ran-this-month="[[mdaRequestsAlreadyRanThisMonth]]"
                         id="ht-msg-flatrate-invoice-to-be-sent"
                         on-export-xslx-list="exportXslxList"
+                        on-generate-missing-invoices-button="_generateMissingInvoices"
                 >
                 </ht-msg-flatrate-invoice-to-be-send>
             </template>
@@ -395,6 +397,10 @@
                     mdaRequestsAlreadyRanThisMonth:{
                         type: Boolean,
                         value: false
+                    },
+                    forcedPatients: {
+                        type: Array,
+                        value : () =>[]
                     }
                 };
             }
@@ -807,6 +813,35 @@
                 xlsWorkBookOutput = false
 
                 return
+            }
+
+            _generateMissingInvoices(e){
+                if(!e || !e.detail || !e.detail.toCall)return;
+                e.detail.toCall(20210101,this.messagesToBeCorrected,this.selectedInvoicesToBeSend,this.allMessages).then(patientWithoutInvoice =>{
+                    const data =patientWithoutInvoice.map(pat => _.get(pat,"insurabilities",[]).find(ins => ins && ins.startDate && this.api.moment(ins.startDate).isSameOrBefore(moment(),"day") && (!ins.endDate || this.api.moment(ins.endDate).isSameOrAfter(moment(),"day"))))
+
+                    /*this.api.insurance().getInsurances({ids:_.chain(data).map("insuranceId").compact().uniq().value()}).then(insurances =>{
+                        patientWithoutInvoice.map(pat => {
+                            const insurance = _.get(pat,"insurabilities",[]).find(ins => ins && ins.startDate && this.api.moment(ins.startDate).isSameOrBefore(moment(),"day") && (!ins.endDate || this.api.moment(ins.endDate).isSameOrAfter(moment(),"day")))
+                            _.assign(pat,{insurance : _.get(insurances.find(insu => _.get(insurance,"insuranceId","")===insu.id),"code","")})
+                        })
+
+                        this.generateXlsFile(patientWithoutInvoice.map(pat =>{
+                            return {
+                                id : pat.id,
+                                firstName : pat.firstName,
+                                lastName : pat.lastName,
+                                assurance : pat.insurance,
+                                ssin : pat.ssin,
+                                marqueCommeFacture : _.trim(_.get(_.find(_.get(pat,"tags",[]), {type: "flatRateLastInvoiced"}), "code"))
+                            }
+                        }),"forFlorimond.xls", "patients", "Julien Wathelet")
+                    })*/
+
+                    this.set("forcedPatients",patientWithoutInvoice);
+                    this.shadowRoot.querySelector("#ht-msg-flatrate-invoice-to-be-sent")._exportFlatRateInvoicing_step2_v2();
+                });
+
             }
 
         }
