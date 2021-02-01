@@ -1,0 +1,634 @@
+<link rel="import" href="../../../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../dynamic-form/ckmeans-grouping.html">
+
+<link rel="import" href="../../../ht-spinner/ht-spinner.html">
+
+<link rel="import" href="../../../../styles/vaadin-icure-theme.html">
+<link rel="import" href="../../../../styles/spinner-style.html">
+<link rel="import" href="../../../../styles/scrollbar-style.html">
+<link rel="import" href="../../../../styles/shared-styles.html">
+<link rel="import" href="../../../../styles/buttons-style.html">
+<link rel="import" href="../../../../styles/dialog-style.html">
+<link rel="import" href="../../../../styles/invoicing-style.html">
+
+<link rel="import" href="../../../ht-pat/dialogs/medicalhouse/ht-pat-flatrate-utils.html">
+
+<link rel="import" href="../../../../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-column-group.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../../../../../bower_components/vaadin-grid/vaadin-grid-tree-toggle.html">
+
+<link rel="import" href="../../../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../../../../../bower_components/vaadin-themes/material/vaadin-date-picker.html">
+
+
+
+<dom-module id="ht-msg-flatrate-mda-history-detail">
+
+
+
+    <template>
+
+        <style include="shared-styles spinner-style scrollbar-style buttons-style dialog-style invoicing-style">
+            .panel{
+                margin: 0.5%;
+                height: calc(100% - 20px);
+                width: auto;
+            }
+
+            .panel-title{
+                height: 40px;
+                width: auto;
+            }
+
+            .panel-search{
+                height: 45px;
+                width: auto;
+            }
+
+            .panel-content{
+                height: calc(100% - 125px);
+                width: auto;
+            }
+
+            .panel-button{
+                height: 40px;
+                width: auto;
+            }
+
+            .invoice-status {
+                border-radius: 20px;
+                padding: 1px 12px 1px 8px;
+                font-size: 12px;
+                display: block;
+                width: auto;
+                max-width: fit-content;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .invoice-status--orangeStatus{
+                background: #fcdf354d;
+            }
+            .invoice-status--greenStatus{
+                background: #07f8804d;
+            }
+            .invoice-status--blueStatus {
+                background: #84c8ff;
+            }
+            .invoice-status--redStatus{
+                background: #ff4d4d4d;
+            }
+            .invoice-status--purpleStatus {
+                background: #e1b6e6;
+            }
+
+
+            .statusIcon{
+                height: 8px;
+                width: 8px;
+            }
+            .statusIcon.invoice-status--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            .statusIcon.invoice-status--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            .statusIcon.invoice-status--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            .statusIcon.invoice-status--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            .statusIcon.invoice-status--purpleStatus {
+                color: var(--paper-purple-300);
+            }
+            .statusIcon.invoice-status--orangeStatus,
+            .statusIcon.invoice-status--greenStatus,
+            .statusIcon.invoice-status--redStatus,
+            .statusIcon.invoice-status--purpleStatus {
+                background: transparent !important;
+            }
+
+            *.txtcolor--orangeStatus {
+                color: var(--app-status-color-pending);
+            }
+            *.txtcolor--greenStatus {
+                color: var(--app-status-color-ok);
+            }
+            *.txtcolor--blueStatus {
+                color: var(--paper-blue-400);
+            }
+            *.txtcolor--redStatus {
+                color: var(--app-status-color-nok);
+            }
+            *.txtcolor--purpleStatus {
+                color: var(--paper-purple-300)
+            }
+
+            .batchNumber{
+                color: var(--app-text-color-light);
+                border-radius: 25px;
+                min-height: 0;
+                margin-left: 8px;
+                font-size: .6em;
+                display: inline-block;
+                line-height: 0.8;
+                text-align: center;
+                height: 10px;
+                padding: 5px;
+                margin-top: 2px;
+            }
+            .batchPending{background-color: var(--paper-orange-400);}
+            .batchToBeCorrected{background-color: var(--paper-red-400);}
+            .batchProcessed{background-color: var(--paper-blue-400);}
+            .batchRejected{background-color: var(--paper-red-400);}
+            .batchAccepted{background-color: var(--paper-green-400);}
+            .batchArchived{background-color: var(--paper-purple-300);}
+
+            .table{
+                width: auto;
+                height: 100%;
+                overflow: auto;
+                font-size: var(--font-size-normal);
+            }
+
+            .tr-item{
+                cursor: pointer;
+            }
+
+            .th{
+                height: auto!important;
+                font-weight: bold;
+                vertical-align: middle;
+            }
+
+            .tr{
+                display: flex;
+                height: 22px;
+                border-bottom: 1px solid var(--app-background-color-dark);
+                padding: 4px;
+            }
+
+            .td{
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                flex-grow: 1;
+                flex-basis: 0;
+                padding: 6px;
+                overflow: hidden;
+                min-width: 0px;
+                z-index: 2;
+                word-break: break-word;
+                white-space: nowrap;
+                font-size: 13px;
+                text-overflow: ellipsis;
+            }
+
+            .fg0{
+                flex-grow: 0.2;
+            }
+
+            .fg05{
+                flex-grow: 0.5;
+            }
+
+            .fg1{
+                flex-grow: 1;
+            }
+
+            .fg2{
+                flex-grow: 2;
+            }
+
+            .fg5{
+                flex-grow: 4.6;
+            }
+
+
+            .status{
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .info-icon{
+                height: 14px;
+                width: 14px;
+            }
+
+            .searchField{
+                display: block;
+            }
+
+            .title{
+                display:flex;
+                padding: 5px;
+            }
+
+            .tr-group{
+                background-color: #f4f4f6;
+                font-weight: bold;
+            }
+
+            .panel-button{
+                height: 32px;
+                width: auto;
+                padding: 4px;
+                display: flex;
+                justify-content: flex-end!important;
+            }
+
+            .btn-dropdown-container {
+                text-align: right;
+                position: absolute;
+                bottom: 53px;
+                margin-top: 8px;
+                right: 0px;
+                background-color: var(--app-background-color);
+                opacity: 1;
+                border-radius: 2px;
+                z-index: 200;
+                height: auto !important;
+                box-shadow: var(--app-shadow-elevation-2);
+                display: flex;
+                flex-flow: column nowrap;
+                align-items: stretch;
+                border-radius: 3px;
+                overflow: hidden;
+                padding: 0;
+                color: var(--app-text-color);
+            }
+
+            .btn-dropdown-container paper-button{
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: flex-start;
+                align-items: center;
+                text-transform: capitalize;
+                height: 28px;
+                padding: 0 12px 0 8px;
+                font-weight: 400;
+                font-size: var(--font-size-normal);
+                text-align: left;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex-grow: 1;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            .btn-dropdown-container paper-icon-button:hover{
+                background: var(--app-background-color-dark);
+            }
+
+            .btn-dropdown-container paper-button iron-icon{
+                color: var(--app-secondary-color);
+                height: 20px;
+                width: 20px;
+                margin-right: 4px;
+                box-sizing: border-box;
+            }
+
+        </style>
+
+        <div class="panel">
+            <div class="panel-title">
+                <div class="title">
+                    [[localize('', 'Détail de la demande MDA', language)]]
+                    <span class="batchNumber batchPending">{{_forceZeroNum(gridData.length)}}</span>
+                </div>
+            </div>
+            <div class="panel-search">
+                <dynamic-text-field label="[[localize('filter','Filter',language)]]" class="ml1 searchField" value="{{filter}}"></dynamic-text-field>
+            </div>
+            <div class="panel-content">
+                <div class="table">
+                    <div class="tr th">
+                        <div class="td fg05">[[localize('','OA',language)]]</div>
+                        <div class="td fg05">[[localize('','Mutuelle',language)]]</div>
+                        <div class="td fg1">[[localize('','Patient',language)]]</div>
+                        <div class="td fg1">[[localize('','Niss',language)]]</div>
+                        <div class="td fg5">[[localize('','Erreur',language)]]</div>
+                    </div>
+                    <ht-spinner active="[[isLoading]]"></ht-spinner>
+                    <template is="dom-repeat" items="[[filteredGridData]]" as="res">
+                        <div class="tr">
+                            <div class="td fg05">[[res.parentInsuranceCode]]</div>
+                            <div class="td fg05">[[res.insuranceCode]]</div>
+                            <div class="td fg1">[[res.nameHr]]</div>
+                            <div class="td fg1">[[_formatNiss(res.patientSsin)]]</div>
+                            <div class="td fg5">[[res.requestErrorMessage]] [[res.responseErrorMessage]]</div>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+            <div class="panel-button">
+                <paper-button class="button button--other" on-tap="_closeDetailPanel">[[localize('clo','Close',language)]]</paper-button>
+                <paper-icon-button class="button--icon-btn" icon="more-vert" on-tap="_toggleAddActions"></paper-icon-button>
+                <paper-listbox slot="dropdown-content">
+                    <template is="dom-if" if="[[showMoreOptionContainer]]">
+                        <div class="btn-dropdown-container">
+                            <paper-button on-tap="_triggerDownloadCalls" data-request-type="request"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[localize("mh_eInvoicing.downloadRequest","Download request",language)]]</paper-button>
+                            <paper-button on-tap="_triggerDownloadCalls" data-request-type="responses"><iron-icon icon="vaadin:clipboard-text"></iron-icon>[[localize("mh_eInvoicing.downloadResponses","Download responses",language)]]</paper-button>
+                        </div>
+                    </template>
+                </paper-listbox>
+            </div>
+        </div>
+
+    </template>
+    <script>
+
+        import moment from 'moment/src/moment'
+        import _ from 'lodash/lodash'
+        import * as models from '@taktik/icc-api-legacy/dist/icc-api/model/models'
+        import * as retry from "@taktik/icc-api-legacy/dist/icc-x-api/utils/net-utils"
+        import jsZip from "jszip/dist/jszip.js"
+        const md5 = require('md5')
+
+        class HtMsgFlatrateMdaHistoryDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
+
+            static get is() {
+                return 'ht-msg-flatrate-mda-history-detail'
+            }
+
+            static get properties() {
+                return {
+                    api: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    user: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    hcp: {
+                        type: Object,
+                        value: () => {
+                        }
+                    },
+                    isLoading:{
+                        type: Boolean,
+                        value: false
+                    },
+                    selectedRequest:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    mdaRequestsData:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    mdaResponsesData:{
+                        type: Object,
+                        value: () => {}
+                    },
+                    filter:{
+                        type: String,
+                        value: null
+                    },
+                    gridData:{
+                        type: Array,
+                        value: () => []
+                    },
+                    filteredGridData:{
+                        type: Array,
+                        value: () => []
+                    },
+                    showMoreOptionContainer: {
+                        type: Boolean,
+                        value: false
+                    }
+                }
+            }
+
+            constructor() {
+                super();
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            static get observers() {
+                return ['_initializeDataProvider(api, user, selectedRequest, selectedRequest.*)', '_filterValueChanged(filter)']
+            }
+
+            _reset(){
+                this.set("listOfMdaMessage", [])
+                this.set("gridData", [])
+                this.set("filteredGridData", [])
+                this.set("mdaResponsesData", [])
+                this.set("mdaRequestsData", [])
+            }
+
+            _initializeDataProvider(){
+                let promResolve = Promise.resolve()
+                promResolve
+                    .then(() => {
+                        this._reset()
+                        this.set('isLoading', true)
+                    })
+                    .then(() => Promise.resolve(_.get(this, 'selectedRequest.request', {})))
+                    .then(mdaRequestMessage => !_.size(mdaRequestMessage) ? promResolve : promResolve.then(() => {
+                        return retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaRequestMessage).then(document => _.head(document))), 4, 1000, 1.5)
+                            .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
+                            .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                            .then(([document, edKeys, attachment]) => _.merge(mdaRequestMessage, {
+                                document: document,
+                                edKeys: edKeys,
+                                attachment: JSON.parse(attachment) || {}
+                            }))
+                            .catch(() => mdaRequestMessage)
+                    }))
+                    .then(mdaRequestMessage => {
+
+                        // 001 - Did not invoke "MDA request" yet (this month)
+                        if (!_.size(mdaRequestMessage)) throw new Error("dontGoAnyFurther");
+
+                        const originalMessage = _.omit(mdaRequestMessage, ["evaluatedStatus", "document", "edKeys", "attachment"])
+                        const missingAtLeastOneAnswer = _.some(_.get(mdaRequestMessage, "attachment.request", []), it => !_.get(it, "patientMatchedWithMdaResponse", false))
+                        const latestCheck = _.trim(_.get(mdaRequestMessage, "metas.responseLastCheckDate"))
+                        const mostRecentRequestDate = (parseInt(_.get(mdaRequestMessage, "metas.requestDate", 0)) || 0)
+                        const mostRecentCheckOrRequestDate = moment(_.trim(latestCheck ? latestCheck : mostRecentRequestDate), "YYYYMMDDHHmmss")
+                        const nextRequestDate = _.clone(mostRecentCheckOrRequestDate).add((parseInt(_.get(this, "minimumSecondsBetweenMdaResponseChecks", 86400)) || 86400), 'seconds')
+
+                        // Assign search terms
+                        _.map(_.get(mdaRequestMessage, "attachment.request", []), it => _.merge(it, {
+                            normalizedSearchTerms: _
+                                .chain(it)
+                                .pick(["patientId", "patientSsin", "nameHr", "patientIdentificationNumber", "insuranceCode", "parentInsuranceCode", "startDate", "requestErrorMessage", "responseErrorMessage"])
+                                .flatMap()
+                                .compact()
+                                .map(itt => _.trim(itt).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))
+                                .value()
+                                .join(" ")
+                        }))
+
+                        this.set("mdaRequestsData", {
+                            originalMessage: originalMessage,
+                            message: _.merge(mdaRequestMessage, {
+                                metas: {
+                                    requestDateHr: moment(_.trim(_.get(mdaRequestMessage, "metas.requestDate")), "YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                                    responseDateHr: !_.trim(_.get(mdaRequestMessage, "metas.responseDate")) ? "" : moment(_.trim(_.get(mdaRequestMessage, "metas.responseDate")), "YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss"),
+                                    responseLastCheckDateHr: !_.trim(_.get(mdaRequestMessage, "metas.responseLastCheckDate")) ? "" : moment(_.trim(_.get(mdaRequestMessage, "metas.responseLastCheckDate")), "YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")
+                                }
+                            }),
+                            mdaRequestsGridData: _.get(mdaRequestMessage, "attachment.request", []),
+                            nextRequestDate: nextRequestDate,
+                            everGotChecked: !!latestCheck,
+                            lastCheckedSecondsAgo: moment().diff(mostRecentCheckOrRequestDate, "seconds", true),
+                        })
+
+                    })
+
+                    // 003 - Get responses no matter what (if any yet)
+                    .then(() => Promise.resolve(_.get(this, 'selectedRequest.listOfResponse', []))
+                    )
+
+                    // 004 - Get attachment of each response(s)
+                    .then(mdaResponseMessages => !_.size(mdaResponseMessages) ? promResolve : promResolve.then(() => {
+                        let prom = Promise.resolve([])
+                        _.map(mdaResponseMessages, mdaResponseMessage => {
+                            prom = prom
+                                .then(promisesCarrier =>
+                                    retry.retry(() => (this.api.document().findByMessage(this.user.healthcarePartyId, mdaResponseMessage).then(document => _.head(document))), 4, 1000, 1.5)
+                                        .then(document => !(_.size(_.get(document, "encryptionKeys")) || _.size(_.get(document, "delegations"))) ? ([document, []]) : this.api.crypto().extractKeysFromDelegationsForHcpHierarchy(this.user.healthcarePartyId, _.get(document, "id"), _.size(_.get(document, "encryptionKeys")) ? document.encryptionKeys : _.get(document, "delegations")).then(({extractedKeys}) => ([document, extractedKeys])))
+                                        .then(([document, edKeys]) => retry.retry(() => (this.api.document().getAttachment(_.get(document, "id"), _.get(document, "attachmentId"), (edKeys || []).join(','))), 4, 1000, 1.5).then(attachment => ([document, edKeys, attachment])).catch(() => ([document, edKeys, null])))
+                                        .then(([document, edKeys, attachment]) => _.merge(mdaResponseMessage, { document: document, edKeys: edKeys, attachment: JSON.parse(attachment) || {} }))
+                                        .then(messageAndAttachment => this._sleep(200).then(()=>messageAndAttachment)) // Cool down
+                                        .then(messageAndAttachment => _.concat(promisesCarrier, messageAndAttachment))
+                                        .catch(() => _.concat(promisesCarrier, mdaResponseMessage))
+                                )
+                        })
+                        return prom
+                    }))
+
+                    .then(mdaResponseMessages => (this.set("mdaResponsesData", !_.size(mdaResponseMessages) ? {} : {
+                            originalMessages: _.chain((mdaResponseMessages || [])).cloneDeep().map(it => _.omit(it, ["document", "edKeys", "attachment"])).value(),
+                            messages: _.map(mdaResponseMessages || [], it => _.merge(it, {metas: {responseDateHr: !_.trim(_.get(it, "metas.responseDate")) ? "" : moment(_.trim(_.get(it, "metas.responseDate")), "YYYYMMDDHHmmss").format("DD/MM/YYYY - HH:mm:ss")}}))
+                        }) || true)
+                    ).catch(() => {})
+                    .finally(() => {
+                        this.set("isLoading", false)
+                        this.set("gridData", _.sortBy(_.get(this.mdaRequestsData, 'mdaRequestsGridData', []), ['parentInsuranceCode', 'insuranceCode', 'nameHr'], ['asc']))
+                        this.set("filteredGridData", _.sortBy(_.get(this.mdaRequestsData, 'mdaRequestsGridData', []), ['parentInsuranceCode', 'insuranceCode', 'nameHr'], ['asc']))
+                    });
+
+            }
+
+            _closeDetailPanel(){
+                this.set("selectedRequest", null)
+                this.dispatchEvent(new CustomEvent('close-detail-panel', {bubbles: true, composed: true}))
+            }
+
+            _forceZeroNum(num) {
+                return (!num) ? '0' : num.toString()
+            }
+
+            _filterValueChanged(){
+                if(this.filter){
+                    const keywordsString = _.trim(_.get(this,"filter","")).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                    const keywordsArray = _.compact(_.uniq(_.map(keywordsString.split(" "), i=>_.trim(i))))
+
+                    setTimeout(() => {
+                        if(parseInt(_.get(keywordsString,"length",0)) > 2) {
+                            const mdaRepsonseSearch =  _.chain(_.get(this, "gridData", []))
+                                .chain(_.get(this, "filter", []))
+                                .filter(i => _.size(keywordsArray) === _.size(_.compact(_.map(keywordsArray, keyword => _.trim(_.get(i, "normalizedSearchTerms", "")).indexOf(keyword) > -1))))
+                                .compact()
+                                .uniq()
+                                .value()
+                            this.set('filteredGridData', _.sortBy(mdaRepsonseSearch, ['parentInsuranceCode', 'insuranceCode', 'nameHr'], ['asc']))
+                        }else{
+                            this.set('filteredGridData', _.sortBy(_.get(this, 'gridData', []), ['parentInsuranceCode', 'insuranceCode', 'nameHr'], ['asc']))
+                        }
+                    }, 100)
+                }else{
+                    this.set('filteredGridData', _.sortBy(_.get(this, 'gridData', []), ['parentInsuranceCode', 'insuranceCode', 'nameHr'], ['asc']))
+                }
+            }
+
+            _triggerDownloadCalls(e) {
+
+                let zipArchive = new jsZip();
+                this.set("isLoading", true)
+                const promResolve = Promise.resolve()
+
+                const requestType = _.trim(_.get(_.find(_.get(e,"path",[]), nodePath=> !!_.trim(_.get(nodePath,"dataset.requestType",""))), "dataset.requestType"))
+                const downloadFileName = moment().format("YYYYMMDD-HHmmss") + "-technicalDetails-" + requestType + ".zip"
+
+                return promResolve
+                    .then(() => requestType === "request" ?
+                        _.map(
+                            _.fromPairs([
+                                ["soapRequest.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.soapRequest"))],
+                                ["soapResponse.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.soapResponse"))],
+                                ["transactionRequest.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.transactionRequest"))],
+                                ["transactionResponse.xml", _.trim(_.get(this,"mdaRequestsData.message.attachment.response.mycarenetConversation.transactionResponse"))],
+                                ["tack.json", _.trim(JSON.stringify(_.get(this,"mdaRequestsData.message.attachment.response.tack")))]
+                            ]),
+                            (v,k) => zipArchive.file(k, v)
+                        ) :
+                        _.map(_.get(this,"mdaResponsesData.messages",[]), responseMessage => _.map(
+                            _.fromPairs([
+                                ["soapRequest.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.soapRequest"))],
+                                ["soapResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.soapResponse"))],
+                                ["transactionRequest.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionRequest"))],
+                                ["transactionResponse.xml", _.trim(_.get(responseMessage,"attachment.mycarenetConversation.transactionResponse"))],
+                                ["decryptedXmlTransactionResponse.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.mycarenetConversation.decryptedResponseContent")))],
+                                ["memberDataMessageList.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.memberDataMessageList",[])))],
+                                ["acks.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.acks")))],
+                                ["genericErrors.json", _.trim(JSON.stringify(_.get(responseMessage,"attachment.genericErrors")))],
+                            ]),
+                            (v,k) => zipArchive
+                                .folder(_.trim(_.get(responseMessage,"metas.requestDate")).substr(0,8) + "-" + _.trim(_.get(responseMessage,"metas.requestDate")).substr(8,8))
+                                .file(k, v)
+                        ))
+                    )
+                    .then(() => zipArchive.generateAsync({ type:"arraybuffer", mimeType: "application/zip", compression: "DEFLATE", compressionOptions: { level: 9 }}))
+                    .then(zipFile => !zipFile ? null : this.api.triggerFileDownload(zipFile, "application/zip", downloadFileName))
+                    .finally(() => {
+                        this.set('showMoreOptionContainer', false)
+                        this.set("isLoading",false)
+                    })
+
+            }
+
+            _toggleAddActions() {
+                this.showMoreOptionContainer = !this.showMoreOptionContainer;
+            }
+
+            _formatNiss(niss){
+                return niss ? this.api.formatSsinNumber(niss) : ''
+            }
+
+
+        }
+
+        customElements.define(HtMsgFlatrateMdaHistoryDetail.is, HtMsgFlatrateMdaHistoryDetail)
+
+    </script>
+
+
+
+</dom-module>
