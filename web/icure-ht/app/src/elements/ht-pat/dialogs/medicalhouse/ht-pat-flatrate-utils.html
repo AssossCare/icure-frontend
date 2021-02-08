@@ -1273,7 +1273,35 @@
             }
 
 
+            findUnsentPatients(exportedDate,toBeCorrected,toBeSend,allMessages){
+                const promResolve = Promise.resolve()
+                const mhHcpId = _.trim(_.get(this,"user.healthcarePartyId"))
 
+                return promResolve
+                    .then(()=> this.getPatientsEligibleForInvoicingByExportedDate(exportedDate))
+                    /*.then(() => this.api.getRowsUsingPagination(
+                        (key,docId) => this.api.patient().listPatientsByHcPartyWithUser(this.user, mhHcpId, null, key && JSON.stringify(key), docId, 1000)
+                            .then(pl => {
+                                pl.rows =pl.rows.filter(pat => _.get(pat,"medicalHouseContracts",[]).find(mhc => (!mhc.endOfCoverage || mhc.endOfCoverage >= exportedDate) && mhc.startOfCoverage <= exportedDate))
+                                return {rows:pl.rows, nextKey: pl.nextKeyPair && pl.nextKeyPair.startKey, nextDocId: pl.nextKeyPair && pl.nextKeyPair.startKeyDocId, done: !pl.nextKeyPair}
+                            })
+                    ))
+                    .then(pats => _.orderBy(_.uniqBy(pats,"ssin"),["lastName","firstName"],["asc","asc"]))*/
+                    .then(allPatients=>{
+                        let invoicesMatchWithDate = toBeSend.concat(toBeCorrected).filter(inv => _.get(inv,"invoiceDate",0)===exportedDate)
+                        let prom = Promise.resolve();
+
+                        allMessages.filter(message => _.get(message,"messageInfo.invoiceDate",0)>=exportedDate).map(message=> {
+                            prom = prom.then(() => this.api.invoice().getInvoices(new models.ListOfIdsDto({ids: _.get(message, 'message.invoiceIds', []).map(i => i)})))
+                                .then(invoices => Promise.all(invoices.map(inv => this.api.crypto().extractCryptedFKs(inv, _.get(this.user, 'healthcarePartyId', null)).then(ids => _.assign(inv, {patientId : ids.extractedKeys[0]})))))
+                                .then(invoices => invoicesMatchWithDate = invoicesMatchWithDate.concat(invoices.filter(inv => _.get(inv,"invoiceDate",0)===exportedDate)))
+                        })
+
+
+                        return prom.then(() => _.filter(allPatients,pat => !invoicesMatchWithDate.find(inv => inv.patientId===pat.id)))
+                    })
+                    .catch(() => Promise.resolve([]))
+            }
 
         }
 
