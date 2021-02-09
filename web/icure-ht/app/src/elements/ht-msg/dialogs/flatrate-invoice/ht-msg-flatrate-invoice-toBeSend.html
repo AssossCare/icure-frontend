@@ -2632,7 +2632,7 @@
                     //      e) 1+ valid INS (versus exportedDate)
                     //      f) Not already exported (versus exportedDate)
                     //      g) Rules (some) can be overridden if patient was forced as valid (using mda flow)
-                    .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth => _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:this.forcedPatients || patientsToExportThisMonth})))
+                    .then(() => flatRateUtil.getPatientsEligibleForInvoicingByExportedDate(exportedDate).then(patientsToExportThisMonth => _.assign(this.flatRateInvoicingDataObject, {patientsOfExportedMonth:patientsToExportThisMonth})))
 
                     // 5 - Collect insurances
                     .then(() => {
@@ -2751,17 +2751,6 @@
                         }))),
                         name: "invoice_" +moment().format("YYYYMMDD-HHmmss")+ ".xls",
                         title: "Factures à envoyer"
-                    }
-                }))
-            }
-
-            _generateMissingInvoices(){
-                const funct = this.shadowRoot.querySelector("#flatrateUtils").findUnsentPatients
-                this.dispatchEvent(new CustomEvent('generate-missing-invoices-button', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        toCall : funct.bind(this.shadowRoot.querySelector("#flatrateUtils"))
                     }
                 }))
             }
