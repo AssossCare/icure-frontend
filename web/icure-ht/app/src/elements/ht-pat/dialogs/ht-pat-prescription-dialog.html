@@ -871,11 +871,11 @@
                                     this.api.fhc().Recipe().createPrescriptionV4UsingPOST(
                                         _.get(this, 'api.keystoreId', null),
                                         _.get(this, 'api.tokenId', null),
+                                        _.get(this, 'api.credentials.ehpassword', null),
                                         "persphysician",
                                         _.get(hcp, 'nihii', null),
                                         _.get(hcp, 'ssin', null),
                                         _.get(hcp, 'lastName', null),
-                                        _.get(this, 'api.credentials.ehpassword', null),
                                         {
                                             patient: _.omit(this.patient, ['personalStatus']),
                                             hcp: hcp,
