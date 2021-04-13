@@ -644,7 +644,34 @@
                                             })
                                     })
 
-                            }).catch(e => console.log(e))
+                            }).catch(e => {
+                                console.log(e)
+                                return Promise.resolve({
+                                    message: msg,
+                                    messageInfo: {
+                                        messageType:        null,
+                                        hcp:                _.get(this.hcp, 'firstName', "") + " " + _.get(this.hcp, 'lastName', ""),
+                                        oa:                 _.get(msg, 'metas.ioFederationCode', null),
+                                        hcpReference:       _.get(msg, 'metas.errors', null),
+                                        invoiceNumber:      _.get(msg, 'externalRef', null),
+                                        invoiceMonth:       msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth : null,
+                                        invoiceDate:        msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth+'01' : null,
+                                        invoicedAmount:     Number(_.get(msg, 'metas.totalAmount', '0.00')),
+                                        acceptedAmount:     Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')),
+                                        refusedAmount:      Number(_.get(msg, 'metas.totalAmount', '0.00')),
+                                        invoiceStatus:      !!(msg.status & (1 << 21)) ? this.localize('inv_arch','Archived',this.language) : this.localize('inv_send_err_und','Status error',this.language),
+                                        rejectionReason:    _.get(msg, 'metas.errors', ""),
+                                        paymentReference:   _.get(msg, 'metas.paymentReferenceAccount1', ""),
+                                        paymentDate:        null,
+                                        amountPaid:         Number(_.get(msg, 'metas.totalAcceptedAmount', '0.00')).toFixed(2),
+                                        paymentAccount:     null,
+                                        paid:               false,
+                                        allInvoicesIsCorrected : false,
+                                        sendError:          true
+                                    },
+                                    normalizedSearchTerms: _.map(_.uniq(_.compact(_.flatten(_.concat([_.trim(_.get(msg, 'metas.ioFederationCode', "")), _.trim(_.get(this.hcp, 'firstName', "")), _.trim(_.get(this.hcp, 'lastName', "")), _.trim(_.get(msg, 'externalRef', "")), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth : null,), _.trim(msg.metas && msg.metas.invoiceMonth && msg.metas.invoiceYear ? msg.metas.invoiceYear+''+msg.metas.invoiceMonth+'01' : null), _.trim(_.get(msg, 'metas.paymentReferenceAccount1', ""))])))), i =>  _.trim(i).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")).join(" ")
+                                })
+                            })
                     ))
                         .then(msgsStructs => {
                             this.set("isMessagesLoaded",true)

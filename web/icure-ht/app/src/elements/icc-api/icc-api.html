@@ -198,7 +198,7 @@
             this.invoiceicc = new IccInvoiceXApi(this.host, this.headers120s, this.cryptoicc, this.entityreficc)
             this.patienticc = new IccPatientXApi(this.host, this.headers, this.cryptoicc, this.contacticc, this.formicc, this.helementicc, this.invoiceicc, this.documenticc, this.hcpartyicc, this.classificationicc, this.calendaritemicc)
             this.messageicc = new IccMessageXApi(this.host, this.headers120s, this.cryptoicc, this.insuranceicc, this.entityreficc, this.invoiceicc, this.documenticc, this.receipticc, this.patienticc)
-            this.bekmehricc = new IccBekmehrXApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? "https://backendb.svc.icure.cloud/rest/v1" : "https://backendb.svc.icure.cloud/rest/v1", this.headers, this.contacticc, this.helementicc)
+            this.bekmehricc = new IccBekmehrXApi(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? "https://kraken.svc.icure.cloud/rest/v1" : "https://kraken.svc.icure.cloud/rest/v1", this.headers, this.contacticc, this.helementicc)
             this.accesslogicc = new IccAccesslogXApi(this.host, this.headers, this.cryptoicc)
             this.medexicc = new api.iccMedexApi(this.host, this.headers)
 
