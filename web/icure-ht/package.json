@@ -81,7 +81,7 @@
   },
   "dependencies": {
     "@taktik/fhc-api": "^0.3.11",
-    "@taktik/icc-api": "git+https://github.com/taktik/icc-api.git#36353714615d1d4c69e02f5fcd44f93a69d127b9",
+    "@taktik/icc-api": "^3.0.65",
     "@taktik/icc-api-legacy": "^1.0.242",
     "@types/base64-js": "^1.2.5",
     "@types/chroma-js": "^1.3.6",
