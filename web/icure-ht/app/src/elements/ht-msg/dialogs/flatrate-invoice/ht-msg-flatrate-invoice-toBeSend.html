@@ -955,6 +955,10 @@
             }
 
             sendInvoices(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 //todo
                 this._closeSummaryDialog()
                 this.shadowRoot.querySelector('#checkBeforeSendingDialog') ? this.shadowRoot.querySelector('#checkBeforeSendingDialog').close() : null
@@ -1726,6 +1730,9 @@
 
             _createOrUpdateMedicalHousePatientsInvoices(patsToInvoice) {
 
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 let prom = Promise.resolve([])
                 const patsCount = _.size(patsToInvoice)
                 const childrenInsurancesData = _.get(this,"flatRateInvoicingDataObject.insurancesData", [])
@@ -2232,6 +2239,10 @@
             }
 
             _deleteInvoicesToBeSend(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 const promResolve = Promise.resolve(null)
                 // DELETE "efact" invoices with "medicalhouse" as "careProviderType"
                 promResolve
@@ -2249,6 +2260,9 @@
             }
 
             _resetPatientInvoicingState() {
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
 
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
@@ -2269,6 +2283,10 @@
             }
 
             _markAsSent(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 let prom = Promise.resolve()
 
 
@@ -2283,6 +2301,9 @@
             }
 
             _reOpenUpComingMhc() {
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
 
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
@@ -2336,6 +2357,10 @@
             }
 
             _correctAllInvoice(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 this.set('isLoading', true)
                 let valorisationMonths = [];
                 this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {
@@ -2411,6 +2436,10 @@
             }
 
             _deleteDoubleInvoice() {
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 let prom = Promise.resolve()
                 return prom
                     .then(() => _.map(_.groupBy(_.get(this, 'listOfInvoice', []), 'invoiceDate'), invByDate => _.map(_.groupBy(invByDate, 'patientId'), invs => _.map((invs || []).slice(1), "invoiceId"))))
@@ -2450,6 +2479,9 @@
             }
 
             _exportFlatRateInvoicing_step2_v2() {
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
 
                 const promResolve = Promise.resolve()
                 const flatRateUtil = this.$.flatrateUtils;
@@ -2758,6 +2790,10 @@
             }
 
             _flagInvoiceWithoutCodeAsLost(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 this.set('isLoading', true)
                 let prom = Promise.resolve()
 
@@ -2772,6 +2808,10 @@
             }
 
             _correctInvoicingCodes(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 this.set('isLoading', true)
                 let valorisationMonths = [];
                 this.api.hcparty().getHealthcareParty(_.get(this.user, 'healthcarePartyId', null)).then(hcp => {

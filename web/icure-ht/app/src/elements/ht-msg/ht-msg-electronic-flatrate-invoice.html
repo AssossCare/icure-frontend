@@ -843,6 +843,10 @@
             }
 
             _generateMissingInvoices(e){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 if(!e || !e.detail || !e.detail.toCall)return;
                 e.detail.toCall(20210101,this.messagesToBeCorrected,this.selectedInvoicesToBeSend,this.allMessages).then(patientWithoutInvoice =>{
                     const data =patientWithoutInvoice.map(pat => _.get(pat,"insurabilities",[]).find(ins => ins && ins.startDate && this.api.moment(ins.startDate).isSameOrBefore(moment(),"day") && (!ins.endDate || this.api.moment(ins.endDate).isSameOrAfter(moment(),"day"))))
