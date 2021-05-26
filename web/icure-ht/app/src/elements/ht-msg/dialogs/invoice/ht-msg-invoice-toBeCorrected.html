@@ -232,6 +232,11 @@
                 cursor: pointer;
             }
 
+            .none{
+                visibility: hidden;
+            }
+
+
         </style>
 
         <div class="panel">
@@ -283,7 +288,10 @@
                 </div>
             </div>
             <div class="panel-button">
-                <!--<paper-button class="button button--other" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>-->
+                <div class="none">
+                    <paper-button class="button button--other" on-tap="_correctInvoiceWithError" id="500610">[[localize('','Correct error code 500610',language)]]</paper-button>
+                    <paper-button class="button button--other" on-tap="_correctAllInvoice">[[localize('inv_corr_all','Correct all invoice',language)]]</paper-button>
+                </div>
             </div>
         </div>
 
@@ -426,6 +434,35 @@
                 }).finally(() => {
                     this.set('isLoading', false)
                 })
+            }
+
+            _correctInvoiceWithError(e){
+                if(_.get(e, 'target.id', null)){
+                    let prom = Promise.resolve([])
+
+                    const errorToBeCorrected = _.get(e, 'target.id', null)
+                    const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))
+                    let invoiceToBeCorrected = []
+                    listOfInvoice.map(inv => {
+                        _.size(_.get(inv, 'invoicingCodes', []).filter(ic => _.startsWith(_.get(ic, 'error', null), errorToBeCorrected))) === _.size(_.get(inv, 'invoicingCodes', [])) ? invoiceToBeCorrected.push(inv) : null
+                    })
+
+                    invoiceToBeCorrected.map(inv => {
+                        _.get(inv, 'invoicingCodes', []).map(ic => {
+                            ic.pending = true
+                            ic.resent = false
+                        })
+                        _.assign(inv, {printedDate: this.api.moment(new Date).format('YYYYMMDD')})
+                        prom = prom.then(listOfModifiedInv => this.api.invoice().modifyInvoice(inv).then(inv => _.concat(listOfModifiedInv, inv))).catch(err => console.log(err))
+                    })
+
+                    prom.then(listOfModifiedInv => {
+                        console.log(listOfModifiedInv)
+                        this.dispatchEvent(new CustomEvent('get-message', {bubbles: true, composed: true, detail: {refreshAll: false}}))
+                    }).finally(() => {
+                        this.set('isLoading', false)
+                    })
+                }
             }
 
         }

@@ -711,6 +711,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         _.get(pat, 'invoices', []).map(inv => {
                             return {
                                 [this.localize('', "Patient", this.language)]: _.get(pat, 'patient.lastName', '')+' '+ _.get(pat, 'patient.firstName', ''),
+                                [this.localize('', "Ssin", this.language)]: _.get(pat, 'patient.ssin', ''),
+                                [this.localize('', "ExternalId", this.language)]: _.get(pat, 'patient.externalId', ''),
                                 [this.localize('rep-flat-inv-ref', "Invoice reference", this.language)]: _.get(inv, 'invoiceReference', ''),
                                 [this.localize('rep-flat-inv-date', "Invoice date", this.language)]: this._formatDate(_.get(inv, 'invoiceDate', null), 'date'),
                                 [this.localize('rep-flat-res-date', "Sent date", this.language)]: this._formatTmsp(_.get(inv, 'sentDate', null), 'date'),
