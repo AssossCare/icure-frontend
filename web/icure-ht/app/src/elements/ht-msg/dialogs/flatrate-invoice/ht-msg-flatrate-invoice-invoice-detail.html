@@ -647,6 +647,10 @@
             }
 
             _flagInvoiceAsLost() {
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
                     this.api.invoice().getInvoice(_.get(this, 'selectedInvoiceForDetail.invoiceId', null))
                         .then(invoice => {
@@ -690,6 +694,10 @@
             }
 
             _cancelInvoice(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 if(_.get(this, 'selectedInvoiceForDetail.invoiceId', null)){
                     this.api.invoice().getInvoice(_.get(this, 'selectedInvoiceForDetail.invoiceId', null))
                         .then(inv => this.api.invoice().modifyInvoice( _.omit(inv, ['printedDate'])))
@@ -735,6 +743,9 @@
             }
 
             _correctInvoice(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
 
                 this.selectedInvoiceForCorrection.printedDate = moment().format('YYYYMMDD')
                 _.get(this, 'selectedInvoiceForCorrection.invoicingCodes', []).map(ic => {

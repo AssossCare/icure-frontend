@@ -480,6 +480,10 @@
             }
 
             _correctAllInvoice(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 this._closeConfirmCorrectAllInvoiceDialog()
                 this.set('isLoading', true)
                 let valorisationMonths = [];
@@ -556,6 +560,10 @@
             }
 
             _deleteInvoice(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 let prom = Promise.resolve([])
                 _.get(this, 'listOfInvoice', []).map(inv => {
                     prom = prom.then(listOfDeletedInv => this.api.invoice().deleteInvoice(_.get(inv, 'invoice.id', {})).then(inv => _.concat(listOfDeletedInv, inv)))
@@ -568,6 +576,10 @@
             }
 
             _deleteInvoiceWithError(e){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 if(_.get(e, 'target.id', null)){
                     const errorToBeDeleted = _.get(e, 'target.id', null)
                     const listOfInvoice =  _.get(this, 'listOfInvoice', []).map(inv => _.get(inv, 'invoice', {}))

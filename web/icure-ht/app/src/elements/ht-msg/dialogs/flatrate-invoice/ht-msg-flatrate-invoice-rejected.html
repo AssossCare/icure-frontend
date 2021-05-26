@@ -447,6 +447,10 @@
             }
 
             _archiveBatchAuto(){
+
+                // 20210503 - Disallow once migrated to Medispring
+                if(!!_.size(_.filter(_.get(this,"user.roles"), it => _.trim(it).startsWith("MS_")))) return;
+
                 if(_.size(_.get(this, 'messageIdsCanBeAutoArchived', [])) > 0){
                     this.api.setPreventLogging()
                     Promise.all(_.get(this, 'messageIdsCanBeAutoArchived', []).map(id =>
