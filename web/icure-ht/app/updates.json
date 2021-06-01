@@ -1,6 +1,33 @@
 {
   "updates": [
 	  {
+		  "version": "0.0.630",
+		  "updateDate": "2021-05-31",
+		  "startDate" : "2021-05-31",
+		  "endDate" : "2022-12-31",
+		  "mainType" : "News",
+		  "mainTitle" : "Fin de Topaz",
+		  "mainLink" : null,
+		  "modules" : [
+			  {
+				  "type" : {},
+				  "areaCode" : {
+					  "fr" : ""
+				  },
+				  "title" : {
+					  "fr" : "Fin de Topaz",
+					  "nl" : "Fin de Topaz"
+				  },
+				  "description": {
+					  "fr" : "Chers utilisateurs Topaz,<br/><br/>Comme vous le savez probablement, Topaz est arrivé en fin de parcours. Le relais a été passé à la coopérative Medispring. </br>En vue de fournir le meilleur service possible, la coopérative a décidé de mettre fin aux développements de Topaz et de concentrer son énergie sur le développement du logiciel Medispring.  En effet, et comme nous l’envisagions initialement compte tenu des demandes légales, administratives et techniques toujours plus contraignantes, il n’est pas possible de maintenir deux logiciels en production. Nous avons néanmoins pu intégrer divers composants de Topaz en les améliorant au sein du logiciel Medispring (e.g. facturation au forfait, schéma de médication, etc) et assurer plusieurs développements importants dans Topaz jusqu’à ce que la migration vers Medispring soit rendue possible (e.g. base de données SAMv2).</br></br>Concrètement, le support de Topaz prendra fin le <b>01/08/2021</b>. Pour la majorité d’entre vous, le choix d’un nouveau logiciel est d’ores et déjà réalisé. A partir d’août, la lecture seule dans Topaz sera bien entendu garantie mais il est impératif qu’à cette date, chacun ait choisi un autre logiciel pour l’écriture.</br>Si vous désirez plus d’information concernant Medispring, nous vous invitons à vous rendre sur le site <a href='https://www.medispring.be' target='_blank'>www.medispring.be</a>  et à poser vos questions sur l’adresse <a href='mailto:contact@medispring.be'>contact@medispring.be</a>.</br></br><u>Concernant la facturation au forfait :</u></br>Pour les Maisons Médicales au Forfait, la facturation des forfaits s’effectuera à partir de ce mois de mai via Medispring. Pour certaines Maisons Médicales, il sera encore possible de facturer le mois de mai via Topaz.</br>Voici déjà une première <a href='https://www.youtube.com/watch?v=SkHfmpCNVHA' target='_blank'>vidéo de présentation du module de facturation au forfait de Medispring</a></br></br><u>Concernant la facturation à l’acte :</u></br>Nous demandons aux médecins de clôturer dans Topaz les factures réalisées via Topaz avant de débuter les facturations dans Medispring. <ul><li>L’onglet « envois en cours » doit être vide</li><li>L’onglet des factures « à envoyer » doit être vide</li></ul></br>Vous trouverez sur <a href='https://www.topaz.care/content/uploads/2021/05/procedure-bascule-factures-actes-1-0.pdf' target='_blank'>le lien suivant</a> la documentation utile en détails</br></br>Nous vous remercions de la confiance que vous avez apportée durant ces deux années à Topaz et nous en profitons pour remercier toutes les personnes qui ont œuvré à créer ce logiciel ainsi que pour leurs efforts dans cette aventure.</br></br>Medispring SCRL",
+					  "nl" : "Chers utilisateurs Topaz,<br/><br/>Comme vous le savez probablement, Topaz est arrivé en fin de parcours. Le relais a été passé à la coopérative Medispring. </br>En vue de fournir le meilleur service possible, la coopérative a décidé de mettre fin aux développements de Topaz et de concentrer son énergie sur le développement du logiciel Medispring.  En effet, et comme nous l’envisagions initialement compte tenu des demandes légales, administratives et techniques toujours plus contraignantes, il n’est pas possible de maintenir deux logiciels en production. Nous avons néanmoins pu intégrer divers composants de Topaz en les améliorant au sein du logiciel Medispring (e.g. facturation au forfait, schéma de médication, etc) et assurer plusieurs développements importants dans Topaz jusqu’à ce que la migration vers Medispring soit rendue possible (e.g. base de données SAMv2).</br></br>Concrètement, le support de Topaz prendra fin le <b>01/08/2021</b>. Pour la majorité d’entre vous, le choix d’un nouveau logiciel est d’ores et déjà réalisé. A partir d’août, la lecture seule dans Topaz sera bien entendu garantie mais il est impératif qu’à cette date, chacun ait choisi un autre logiciel pour l’écriture.</br>Si vous désirez plus d’information concernant Medispring, nous vous invitons à vous rendre sur le site <a href='https://www.medispring.be' target='_blank'>www.medispring.be</a>  et à poser vos questions sur l’adresse <a href='mailto:contact@medispring.be'>contact@medispring.be</a>.</br></br><u>Concernant la facturation au forfait :</u></br>Pour les Maisons Médicales au Forfait, la facturation des forfaits s’effectuera à partir de ce mois de mai via Medispring. Pour certaines Maisons Médicales, il sera encore possible de facturer le mois de mai via Topaz.</br>Voici déjà une première <a href='https://www.youtube.com/watch?v=SkHfmpCNVHA' target='_blank'>vidéo de présentation du module de facturation au forfait de Medispring</a></br></br><u>Concernant la facturation à l’acte :</u></br>Nous demandons aux médecins de clôturer dans Topaz les factures réalisées via Topaz avant de débuter les facturations dans Medispring. <ul><li>L’onglet « envois en cours » doit être vide</li><li>L’onglet des factures « à envoyer » doit être vide</li></ul></br>Vous trouverez sur <a href='https://www.topaz.care/content/uploads/2021/05/procedure-bascule-factures-actes-1-0.pdf' target='_blank'>le lien suivant</a> la documentation utile en détails</br></br>Nous vous remercions de la confiance que vous avez apportée durant ces deux années à Topaz et nous en profitons pour remercier toutes les personnes qui ont œuvré à créer ce logiciel ainsi que pour leurs efforts dans cette aventure.</br></br>Medispring SCRL"
+				  },
+				  "images" : [],
+				  "links" : []
+			  }
+		  ]
+	  },
+	  {
 		  "version": "0.0.560",
 		  "updateDate": "2020-10-01",
 		  "startDate" : "2020-10-01",
