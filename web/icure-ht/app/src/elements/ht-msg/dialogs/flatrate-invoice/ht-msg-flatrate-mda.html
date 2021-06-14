@@ -2177,6 +2177,8 @@
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("missing_nameid_format") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("unknown_niss_routing") ||
                     _.get(item, "requestErrorMessage", "").toLowerCase().includes("iosm_exception") ||
+                    _.get(item, "requestErrorMessage", "").toLowerCase().includes("missing_facet") ||
+                    _.get(item, "responseErrorMessage", "").toLowerCase().includes("missing_facet") ||
                     _.get(item, "responseErrorMessage", "").toLowerCase().includes("dans la maison médicale:  (numéro inami)") ||
                     !_.get(item, "patientMatchedWithMdaResponse", false)
             }
