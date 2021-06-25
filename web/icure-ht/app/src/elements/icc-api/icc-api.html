@@ -15,6 +15,7 @@
 
     import {IccBedrugsXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-bedrugs-x-api'
     import {IccBekmehrXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-bekmehr-x-api'
+    import {IccBekmehrXApi as IccBekmehrXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-bekmehr-x-api'
     import {IccCodeXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-code-x-api'
     import {IccContactXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-contact-x-api'
     import {IccContactXApi as IccContactXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-contact-x-api'
@@ -34,6 +35,7 @@
     import {IccReceiptXApi as IccReceiptXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-receipt-x-api'
     import {IccAccesslogXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-accesslog-x-api'
     import {IccUserXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-user-x-api'
+    import {IccUserXApi as IccUserXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-user-x-api'
     import {IccInvoiceXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-invoice-x-api'
     import {IccInvoiceXApi as IccInvoiceXApiV3} from '@taktik/icc-api/dist/icc-x-api/icc-invoice-x-api'
     import {IccMessageXApi} from '@taktik/icc-api-legacy/dist/icc-x-api/icc-message-x-api'
@@ -222,15 +224,23 @@
             this.patienticcv3 = new IccPatientXApiV3(this.host, this.headers, this.cryptoiccv3, this.contacticcv3, this.formiccv3, this.helementiccv3, this.invoiceiccv3, this.documenticcv3, this.hcpartyiccv3, this.classificationiccv3, this.calendaritemiccv3)
             this.messageiccv3 = new IccMessageXApiV3(this.host, this.headers120s, this.cryptoiccv3, this.insuranceiccv3, this.entityreficcv3, this.invoiceiccv3, this.documenticcv3, this.receipticcv3, this.patienticcv3)
 
+            this.usericcV3 = new IccUserXApiV3(this.host, this.headers)
+            this.bekmehriccV3 = new IccBekmehrXApiV3(this.host && this.host.match(/https:\/\/backend.(.+).icure.cloud.+/) ? "https://kraken.svc.icure.cloud/rest/v1" : "https://kraken.svc.icure.cloud/rest/v1", this.headers, this.authiccv3,  this.contacticcv3, this.helementiccv3, this.documenticcv3)
+
             this.desktopApi = new ElectronApi(this.electronHost)
 
             const toObserve = [
                 [this.accesslogicc,["newInstance"]],
                 [this.patienticc,["modifyPatientWithUser","createPatientWithUser","getPatientsWithUser","mergeIntoWithUser","modifyPatientReferralWithUser","getPatientWithUser"]],
+                [this.patienticcv3,["modifyPatientWithUser","createPatientWithUser","getPatientsWithUser","mergeIntoWithUser","modifyPatientReferralWithUser","getPatientWithUser"]],
                 [this.contacticc,["modifyContactWithUser","getContactWithUser","getContactsWithUser","modifyContactsWithUser","createContactWithUser"]],
+                [this.contacticcv3,["modifyContactWithUser","getContactWithUser","getContactsWithUser","modifyContactsWithUser","createContactWithUser"]],
                 [this.helementicc,["serviceToHealthElement"]],
+                [this.helementiccv3,["serviceToHealthElement"]],
                 [this.invoiceicc,["deleteInvoice","getInvoice","getInvoices","mergeTo","modifyInvoice","createInvoice"]],
+                [this.invoiceiccv3,["deleteInvoice","getInvoice","getInvoices","mergeTo","modifyInvoice","createInvoice"]],
                 [this.documenticc,["createDocument","deleteAttachment","deleteDocument","getAttachment","getDocument","getDocuments","modifyDocument","modifyDocuments","setAttachment","setAttachmentMulti"]],
+                [this.documenticcv3,["createDocument","deleteAttachment","deleteDocument","getAttachment","getDocument","getDocuments","modifyDocument","modifyDocuments","setAttachment","setAttachmentMulti"]],
                 [this.messageicc,["createMessage","deleteMessages","deleteMessagesBatch","getChildren","getChildrenOfList","getMessage","modifyMessage","setMessagesReadStatus"]],
                 [this.messageiccv3,["createMessage","deleteMessages","deleteMessagesBatch","getChildren","getChildrenOfList","getMessage","modifyMessage","setMessagesReadStatus"]],
             ];
@@ -292,6 +302,10 @@
 
         bekmehr() {
             return this.bekmehricc
+        }
+
+        bekmehrV3(){
+            return this.bekmehriccV3
         }
 
         bemikrono() {
@@ -370,6 +384,10 @@
             return this.hcpartyicc
         }
 
+        hcpartyV3(){
+            return this.hcpartyiccv3
+        }
+
         hcpartyLight() {
             return this.hcpartyiccLight
         }
@@ -422,8 +440,16 @@
             return this.usericc
         }
 
+        userV3(){
+            return this.usericcV3
+        }
+
         crypto() {
             return this.cryptoicc
+        }
+
+        cryptoV3(){
+            return this.cryptoiccv3
         }
 
         fhc() {

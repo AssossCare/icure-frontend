@@ -2725,7 +2725,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         .extractDelegationsSFKs(patientDto, this.user.healthcarePartyId)
                                         .then(secretForeignKeys => {
                                             console.log("exportAsPMF", this.exportAsPMF)
-                                            return this.api.bekmehr().generateSmfExportWithEncryptionSupport(patientDto.id, this.user.healthcarePartyId, "fr", {
+                                            return this.api.bekmehrV3().generateSmfExportWithEncryptionSupport(patientDto.id, this.user.healthcarePartyId, "fr", {
                                                 exportAsPMF: this.exportAsPMF,
                                                 secretForeignKeys: secretForeignKeys.extractedKeys,
                                                 comment: null
